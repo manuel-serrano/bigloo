@@ -205,20 +205,20 @@
 
 ;; section 3.2.12
 (define (valid-rect env::env l x::long)
-   (define (valid-st t x)
+   (define (valid-st t x::long)
       (match-case t
          ((sub final . ?rst)
           `(sub final ,@(cdr (valid-st `(sub ,@rst) x))))
          ((sub ?y ?ct)
-          (if (<= x (type-get-index env y))
+          (if (<= x (cer y))
               (raise `(forward-subtype ,x ,y)))
-          (match-case (cdr (unroll-dt (type-get env y)))
+          (match-case (cdr (unroll-dt (type-get env (cer y))))
              ((final . ?-) (raise `(supertype-final ,x ,y)))
              ((or (?- ?ct') (?ct'))
               (unless (<ct= env ct ct')
                  (raise `(non-matching-supertype ,x ,y ,ct ,ct'))))
              (else (raise 'internal-error)))
-          `(sub ,(type-get-index env y) ,ct))
+          `(sub ,y ,ct))
          ((sub ?-) t)))
 
    (define (valid-rec-list l x)
@@ -267,11 +267,11 @@
    (let ((sts (map-in-order
                  (match-lambda
                     ((type (and (? ident?) ?id) ?st)
-                     (add-type! env id `(rec ,(-fx (-> env ntype) x)
-                                         ,(-> env ntype))) st)
+                     (add-type! env id (econs 'rec (list (-fx (-> env ntype) x))
+                                              (-> env ntype))) st)
                     ((type ?st)
-                     (add-type! env #f `(rec ,(-fx (-> env ntype) x)
-                                         ,(-> env ntype))) st)
+                     (add-type! env #f (econs 'rec (list (-fx (-> env ntype) x))
+                                              (-> env ntype))) st)
                     ((type ?x ?-)
                      (raise `((expected ident) ,x)))
                     (?x (raise `(expected-typedef ,x)))) l)))
@@ -280,9 +280,9 @@
                (match-case st
                   ((sub final ?ct) `(sub final ,(valid-ct env ct x)))
                   ((sub final (and ?y (? idx?)) ?ct)
-                   `(sub final ,(type-get-index env y) ,(valid-ct env ct x)))
+                   `(sub final ,(type-get env y) ,(valid-ct env ct x)))
                   ((sub (and ?y (? idx?)) ?ct)
-                   `(sub ,(type-get-index env y) ,(valid-ct env ct x)))
+                   `(sub ,(type-get env y) ,(valid-ct env ct x)))
                   ((sub ?ct)
                    `(sub ,(valid-ct env ct x)))
                   (else
@@ -292,7 +292,7 @@
       (let ((rolled-sts (map valid-st sts (iota (length sts) x 1))))
          (for-each (lambda (i)
                      (set-type! env (+fx x i)
-                                `(deftype ,(+fx x i) ,rolled-sts ,i)))
+                                (econs 'deftype (list rolled-sts i) (+fx x i))))
                    (iota (length sts)))
          rolled-sts)))
 
@@ -380,7 +380,8 @@
             ((equal? st '(poly)) '(poly))
             ((<vt= env (car st) (car ts))
              (aux (cdr st) (cdr ts)))
-            (else (raise `(non-matching-stack ,(car st) ,(car ts))))))
+            (else
+             (raise `(non-matching-stack ,(car st) ,(car ts))))))
    (aux st (reverse ts)))
 
 (define (check-block::sequence env::env body::pair-nil t::pair-nil
@@ -693,7 +694,7 @@
       ((func . ?ft)
        (multiple-value-bind (p r) (valid-param/result env ft)
           (vector-set! *funcs* (-> env nfunc) #f)
-          (let ((t `(deftype -1 ((sub final (func ,p ,r))) ,0)))
+          (let ((t (econs 'deftype (list `((sub final (func ,p ,r))) 0) -1)))
              (func-add! env t)
              (duplicate::import-func imp (deftype t)))))
       ((global ?gt)
@@ -707,7 +708,7 @@
           (duplicate::import-mem imp (memtype mt))))
       ((tag . ?tt)
        (multiple-value-bind (p r) (valid-param/result env tt)
-          (let ((t `(deftype -1 ((sub final (func ,p ,r))) ,0)))
+          (let ((t (econs 'deftype (list `((sub final (func ,p ,r))) 0) -1)))
              (tag-add! env t)
              (duplicate::import-tag imp (tagtype t)))))
       (else (raise `(expected-importdesc ,d)))))
@@ -780,7 +781,7 @@
                            (body tl)
                            (locals '())
                            (pos (cdr m))))
-             (func-add! env `(deftype -1 ((sub final (func ,@f))) 0))))
+             (func-add! env (econs 'deftype (list `((sub final (func ,@f))) 0) -1))))
 
          ((data (and (? ident?) ?id) (memory ?memidx) (offset . ?expr) . ?-)
           (raise 'todo))
@@ -841,9 +842,9 @@
          ((tag . ?tu)
           (multiple-value-bind (p r) (valid-param/result env tu)
              (unless (null? r)
-                (tag-add! env '(deftype -1 ((sub final (error))) ,0))
+                (tag-add! env (econs 'deftype (list '((sub final (error))) 0) -1))
                 (raise `(non-empty-tag-result ,r)))
-             (tag-add! env `(deftype -1 ((sub final (func ,p ,r))) ,0))))
+             (tag-add! env (econs 'deftype (list `((sub final (func ,p ,r))) 0) -1))))
 
          ; section 6.6.6
          ((memory (and (? ident?) ?id) . ?rst)
@@ -949,7 +950,7 @@
    (if (isa? e &error)
        (raise e))
    (define (type->string::bstring t)
-      (cond ((deftype? t) (sdisplay (type-get-name env (cadr t))))
+      (cond ((deftype? t) (sdisplay (type-get-name env (cer t))))
             ((number? t) (sdisplay (type-get-name env t)))
             ((reftype? t)
              (string-append "ref " (if (nullable? t) "null " "")

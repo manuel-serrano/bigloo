@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jul 15 08:18:14 2025 (serrano)                */
+/*    Last change :  Tue Jul 15 10:11:55 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -422,6 +422,12 @@ function __js_io() {
 	 } catch(e) {
 	    return -1;
 	 }
+      },
+
+      open_fd: (fd, flags, addr) => {
+	 const buf = fd.toString();
+	 storeJSStringToScheme(self.instance, buf, addr);
+	 return buf.length;
       },
       
       close_file: (fd) => {

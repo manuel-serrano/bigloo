@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jul 15 09:08:12 2025 (serrano)                */
+/*    Last change :  Tue Jul 15 10:28:08 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -486,6 +486,12 @@ function __js_io() {
 	 } catch(e) {
 	    return -1;
 	 }
+      },
+      
+      open_fd: (fd, flags, addr) => {
+	 const buf = fd.toString();
+	 storeJSStringToScheme(self.instance, buf, addr);
+	 return buf.length;
       },
       
       close_file: (fd) => {

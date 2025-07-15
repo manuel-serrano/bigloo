@@ -63,8 +63,7 @@
       ((ref ?t)
        (write-byte #x64 op)
        (write-type t op))
-      ((? deftype?) (leb128-write-signed (cadr t) op))
-      ((? rectype?) (leb128-write-signed (caddr t) op))
+      ((or (? rectype?) (? deftype?)) (leb128-write-signed (cer t) op))
       ((ref null ?t)
        (write-byte #x63 op)
        (write-type t op))))
@@ -92,12 +91,12 @@
       ((final ?x ?ct)
        (write-byte #x4F op)
        (write-byte #x01 op)
-       (leb128-write-unsigned x op)
+       (leb128-write-unsigned (cer x) op)
        (write-comptype ct op))
       ((?x ?ct)
        (write-byte #x50 op)
        (write-byte #x01 op)
-       (leb128-write-unsigned x op)
+       (leb128-write-unsigned (cer x) op)
        (write-comptype ct op))
       ((?ct)
        (write-byte #x50 op)
@@ -199,7 +198,8 @@
       ((() . (?vt)) (write-type vt op))
       ((?p . ?r)
        (let ((x (-> env ntype)))
-          (add-type! env #f `(deftype -1 ((sub final (func ,p ,r))) 0))
+          (add-type! env #f (econs 'deftype (list `((sub final (func ,p ,r))) 0)
+                                   -1))
           (leb128-write-signed x op)))))
 
 (define-method (write-instruction i::block env::env op::output-port)
@@ -257,7 +257,8 @@
 
 (define (write-func f::func env::env)
    (let ((x (-> env ntype)))
-      (add-type! env #f `(deftype -1 ((sub final (func ,@(-> f type)))) 0))
+      (add-type! env #f (econs 'deftype
+                               (list `((sub final (func ,@(-> f type)))) 0) -1))
       (leb128-write-unsigned x *func-op*))
    (set! *ncode* (+fx 1 *ncode*))
    (let ((func (call-with-output-string
@@ -270,9 +271,9 @@
      (write-string func *code-op*)))
 
 (define (write-deftype t::pair)
-   (when (= 0 (cadddr t))
+   (when (= 0 (caddr t))
       (set! *nrec* (+fx 1 *nrec*))
-      (write-rectype (caddr t) *type-op*)))
+      (write-rectype (cadr t) *type-op*)))
 
 (define-generic (write-exportdesc d::parameter)
    (write-param d *export-op*))

@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Jul  8 07:58:34 2025 (serrano)                */
+;*    Last change :  Tue Jul 15 10:24:11 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -524,7 +524,7 @@
 		      (local.get $argv)))
 		(local.set $i (i32.sub (local.get $i) (i32.const 1)))
 		(br $loop))))
-      
+
       (call $bgl_init_io)
       (call $bgl_init_trace (call $BGL_CURRENT_DYNAMIC_ENV))
       

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Tue Jul 15 08:18:55 2025 (serrano)                */
+;*    Last change :  Tue Jul 15 09:15:44 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -50,6 +50,7 @@
    ;; -----------------------------------------------------------------
 
    (import "__js_io" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
+   (import "__js_io" "open_fd" (func $js_open_fd (param i32 i32 i32) (result i32)))
    (import "__js_io" "close_file" (func $js_close_file (param i32)))
    (import "__js_io" "read_file" (func $js_read_file (param i32 i32 i32 i32) (result i32)))
    (import "__js_io" "path_size" (func $js_path_size (param i32) (param i32) (result i32)))
@@ -1641,6 +1642,75 @@
       (struct.new $file-input-port
 	 ;; name
 	 (local.get $path)
+	 ;; chook
+	 (global.get $BUNSPEC)
+	 ;; isclosed
+	 (i32.const 0)
+	 ;; sysclose
+	 (ref.func $_CLOSE)
+	 ;; sysseek
+	 (ref.func $bgl_input_file_seek)
+	 ;; userseek
+	 (global.get $BUNSPEC)
+	 ;; sysread
+	 (ref.func $bgl_sysread)
+	 ;; rgc
+	 (local.get $rgc)
+	 ;; File descriptor
+	 (local.get $fd)
+	 ;; position
+	 (i32.const 0)))
+
+   ;; bgl_open_input_descriptor
+   (func $bgl_open_input_descriptor (export "bgl_open_input_descriptor")
+      (param $fd i32)
+      (param $buffer (ref $bstring))
+      (result (ref eq))
+      (local $rgc (ref $rgc))
+      (local $name (ref $bstring))
+      
+      (local.set $name
+	 (call $load_string (i32.const 128)
+	    (call $js_open_fd
+	       (local.get $fd)
+	       ;; READ-ONLY flag
+	       (i32.const 0)
+	       (i32.const 128))))
+
+      (if (i32.lt_s (local.get $fd) (i32.const 0))
+	  (then (return (global.get $BFALSE))))
+      
+      (local.set $rgc
+	 (struct.new $rgc
+	    ;; eof
+	    (i32.const 0)
+	    ;; filepos
+	    (i32.const 0)
+	    ;; fillbarrier
+	    (i32.const -1)
+	    ;; forward
+	    (i32.const 0)
+	    ;; bufpos
+	    (i32.const 0)
+	    ;; matchstart
+	    (i32.const 0)
+	    ;; matchstop
+	    (i32.const 0)
+	    ;; lastchar
+	    (i32.const 0x0A #;(ASCII NEWLINE '\n'))
+	    ;; buf
+	    (if (result (ref $bstring))
+		(ref.is_null (local.get $buffer))
+		(then (array.new_default $bstring (i32.const 4096)))
+		(else
+		 (if (result (ref $bstring))
+		     (i32.eqz (array.len (local.get $buffer)))
+		     (then (array.new_default $bstring (i32.const 4096)))
+		     (else (ref.cast (ref $bstring) (local.get $buffer))))))))
+      
+      (struct.new $fd-input-port
+	 ;; name
+	 (local.get $name)
 	 ;; chook
 	 (global.get $BUNSPEC)
 	 ;; isclosed

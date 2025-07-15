@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Thu Dec 12 08:42:06 2024 (serrano)                */
+;*    Last change :  Tue Jul 15 09:22:31 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1208,7 +1208,7 @@
 ;*---------------------------------------------------------------------*/
 (define (number->string x #!optional (radix 10))
    (cond
-      ((not (integer? radix)) (error 'number->string "Illegal radix" radix))
+      ((not (integer? radix)) (error "number->string" "Illegal radix" radix))
       ((fixnum? x) (integer->string x radix))
       ((flonum? x) (real->string x))
       ((elong? x) (elong->string x radix))

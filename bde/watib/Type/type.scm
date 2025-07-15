@@ -96,8 +96,12 @@
       (i32 #l32)
       (i64 #l64)))
 
-;; deftypes type x = (rec subtypes*).i are represented as (deftype x subtypes*
-;; i)); x = (rec i) are represented as (rec i x)
+;; deftypes type x = (rec subtypes*).i are represented as epairs (deftype
+;; subtypes* i)) with cer equal to x ; x = (rec i) are represented as (rec i)
+;; with cer equal to x
+;;
+;; this works pretty well because when comparing epairs for equality, cers are
+;; not taken into account
 (define (deftype?::bool t)
    (and (pair? t) (eq? 'deftype (car t))))
 
@@ -106,7 +110,7 @@
 
 ;; avoid full expansion when it is not needed
 (define (deftype-head::symbol t::pair)
-   (match-case (cdr (list-ref (caddr t) (cadddr t))) ; remove the "sub" keyword
+   (match-case (cdr (list-ref (cadr t) (caddr t))) ; remove the "sub" keyword
       ((or (final ?- (?hd . ?-))
            (final (?hd . ?-))
            (?- (?hd . ?-))
@@ -132,7 +136,7 @@
       ; types in the context, otherwise, we may have to close the whole context
       ; each time we want to close a type
       ((and (deftype? t1) (deftype? t2))
-       (equal? (cddr t1) (cddr t2)))
+       (equal? (cdr t1) (cdr t2)))
       ((and (rectype? t1) (rectype? t2))
        (=fx (cadr t1) (cadr t2)))
       ((and (pair? t1) (pair? t2))
@@ -142,24 +146,24 @@
       (else #f)))
 
 (define (eq-clos-dt?::bool env::env t1::pair t2::pair)
-   (and (=fx (cadddr t1) (cadddr t2))
+   (and (=fx (caddr t1) (caddr t2))
         (every-same-length (lambda (st1 st2) (eq-clos-st? env st1 st2))
-                (caddr t1) (caddr t2))))
+                (cadr t1) (cadr t2))))
 
 ;; section 3.1.3
 
 ;; we use the same slopiness as in eq-clos-st?
 (define (unroll-st x::bint sts st)
    (cond ((rectype? st)
-          `(deftype ,(+fx (cadr st) x) ,sts ,(cadr st)))
+          (econs 'deftype (list sts (cadr st)) (+fx (cadr st) x)))
          ((deftype? st) st)
          ((pair? st) (map (lambda (st) (unroll-st x sts st)) st))
          (else st)))
 
 ;; expects well formed arguments
 (define (unroll-dt::pair t::pair)
-   (unroll-st (-fx (cadr t) (cadddr t))
-              (caddr t) (list-ref (caddr t) (cadddr t))))
+   (unroll-st (-fx (cer t) (caddr t))
+              (cadr t) (list-ref (cadr t) (caddr t))))
 
 (define (expand t)
    (match-case (cdr (unroll-dt t)) ; remove the sub keyword
