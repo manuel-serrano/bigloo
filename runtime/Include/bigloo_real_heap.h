@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Jul 15 05:38:18 2025 (serrano)                */
+/*    Last change :  Tue Jul 15 09:01:22 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -52,7 +52,7 @@ struct bgl_real {
 #   define CREAL(p) ((obj_t)((long)p - TAG_REAL))
 #   define BGL_REAL_CNST(name) name
 #   define BGL_CREATE_REAL(aux, flonum) \
-      static struct { double real; } aux = { flonum }
+      static struct { double val; } aux = { flonum }
       
 #   define FLONUMP(c) BGL_TAGGED_PTRP(c, TAG_REAL, TAG_MASK)
 #   define REALP(c) FLONUMP(c)
@@ -63,7 +63,7 @@ struct bgl_real {
 #   define CREAL(p) CREF(p)
 #   define BGL_REAL_CNST(name) name
 #   define BGL_CREATE_REAL(aux, flonum) \
-      static struct { __CNST_ALIGN header_t header; double real; } \
+      static struct { __CNST_ALIGN header_t header; double val; } \
 	 aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }
       
 #   define FLONUMP(c) (POINTERP(c) && (TYPE(c) == REAL_TYPE))
