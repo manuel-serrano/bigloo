@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Tue Jul  8 07:51:21 2025 (serrano)                */
+#*    Last change :  Tue Jul 15 11:27:42 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -122,10 +122,10 @@ POPULATION	= $(SOURCES_FILES) \
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
 all: all-common dobmem 
-	if [ "$(JVMBACKEND) " != "no " ]; then \
+	if [ "$(JVMBACKEND)" != "no" ]; then \
 	  $(MAKE) all-jvm; \
 	fi
-	if [ "$(WASMBACKEND) " != "no " ]; then \
+	if [ "$(WASMBACKEND)" != "no" ]; then \
 	  $(MAKE) all-wasm; \
 	fi
 
@@ -143,7 +143,7 @@ all-jvm: $(BOOTBINDIR)/bgljas
 all-wasm: $(BOOTBINDIR)/bglwatib
 
 boot:
-	$(MAKE) all BFLAGS="$(BFLAGS) -ld-relative"
+	$(MAKE) all BFLAGS="$(BFLAGS) -ld-relative" WASMBACKEND=$(WASMBACKEND)
 
 dobmem: $(BOOTBINDIR)/bglafile
 	@ if [ "$(LDPRELOADSUPPORT)" = "yes" \
