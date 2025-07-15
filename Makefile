@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Jul 15 11:30:13 2025 (serrano)                */
+#*    Last change :  Tue Jul 15 11:30:53 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -450,12 +450,13 @@ fullbootstrap-sans-configure:
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) -C runtime heap-jvm libs-jvm; \
         fi
+	$(MAKE) -C bde -i clean
+	$(MAKE) -C bde WASMBACKEND=no
+	$(MAKE) -C api fullbootstrap
+	$(MAKE) -C bde WASMBACKEND=yes
 	if [ "$(WASMBACKEND)" = "yes" ]; then \
 	  $(MAKE) -C runtime heap-wasm libs-wasm; \
         fi
-	$(MAKE) -C bde -i clean; $(MAKE) -C bde WASMBACKEND=no
-	$(MAKE) -C api fullbootstrap
-	$(MAKE) -C bde WASMBACKEND=yes
 	$(MAKE) -C cigloo -i clean; $(MAKE) -C cigloo
 	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
 	  $(MAKE) -C bglpkg -i clean; \
