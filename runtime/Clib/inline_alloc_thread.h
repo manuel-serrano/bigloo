@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */
-/*    Last change :  Mon Jun 30 08:06:50 2025 (serrano)                */
+/*    Last change :  Tue Jul 15 08:50:16 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Multi-threaded Boehm allocations                                 */
@@ -90,16 +90,35 @@ make_cell(obj_t val) {
 /*---------------------------------------------------------------------*/
 #ifndef BGL_MAKE_REAL
 #define BGL_MAKE_REAL
-
-#if (!defined(TAG_REALZ))
-BGL_DEFINE_REAL(bgl_zero, bgl_zero_tmp, 0.);
-BGL_DEFINE_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
 #endif
 
 #if (!BGL_NAN_TAGGING && !BGL_NUN_TAGGING) 
+#  if (!defined(TAG_REALZ))
+#    if (!defined(TAG_REAL))
+#      define BGL_CREATE_SLOW_REAL(aux, flonum) \
+         static struct { __CNST_ALIGN header_t header; double val; } \
+            aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }
+#      define BGL_DECLARE_SLOW_REAL(n, aux) \
+         static obj_t n = BREAL(&(aux.header))
+#    else
+#      define BGL_CREATE_SLOW_REAL(aux, flonum) \
+         static struct { double val; } \
+           aux = { flonum }
+#      define BGL_DECLARE_SLOW_REAL(n, aux) \
+         static obj_t n = BREAL(&(aux.val))
+#    endif
+
+#    define BGL_DEFINE_SLOW_REAL(name, aux, flonum) \
+       BGL_CREATE_SLOW_REAL(aux, flonum); \
+       BGL_DECLARE_SLOW_REAL(name, aux)
+
+BGL_DEFINE_SLOW_REAL(bgl_zero, bgl_zero_tmp, 0.);
+BGL_DEFINE_SLOW_REAL(bgl_negative_zero, bgl_negative_zero_tmp, -0.);
+#  endif
+
 GC_API obj_t
 make_real(double d) {
-#if (!defined(TAG_REALZ))
+#  if (!defined(TAG_REALZ))
    if ((((union { double d; int64_t l; })(d)).l << 1) == 0) {
       if (((union { double d; int64_t l; })(d)).l == 0) {
 	 return BGL_REAL_CNST(bgl_zero);
@@ -107,7 +126,7 @@ make_real(double d) {
 	 return BGL_REAL_CNST(bgl_negative_zero);
       }
    } else
-#endif
+#  endif
    {
       obj_t a_real = GC_THREAD_MALLOC_ATOMIC(REAL_SIZE);
       BGL_INIT_REAL(a_real, d);
@@ -115,8 +134,6 @@ make_real(double d) {
       return BREAL(a_real);
    }
 }
-#endif
-
 #endif
 
 /*---------------------------------------------------------------------*/

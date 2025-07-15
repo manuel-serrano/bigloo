@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Tue Jul  1 12:18:56 2025 (serrano)                */
+/*    Last change :  Tue Jul 15 08:23:26 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -161,7 +161,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 #define BGL_CREATE_ELONG(aux, num) \
    static struct { __CNST_ALIGN header_t header; long elong; } \
-      const aux = { __CNST_FILLER BGL_MAKE_HEADER(ELONG_TYPE, 0), num }; \
+      const aux = { __CNST_FILLER BGL_MAKE_HEADER(ELONG_TYPE, 0), num } \
 
 #if BGL_CNST_TWO_STEPS_INIT
 #   define BGL_DECLARE_ELONG(name, cobj) \
