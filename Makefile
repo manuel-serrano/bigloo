@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/Makefile                      */
+#*    serrano/prgm/project/bigloo/wasm/Makefile                        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Jun 26 10:40:18 2025 (serrano)                */
+#*    Last change :  Tue Jul 15 10:40:44 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -180,7 +180,7 @@ checkconf:
 	fi
 
 boot: boot-c
-	$(MAKE) boot-bde
+	$(MAKE) boot-bde WASMBACKEND=no
 	$(MAKE) boot-api
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) boot-jvm; \
@@ -188,6 +188,7 @@ boot: boot-c
 	if [ "$(WASMBACKEND)" = "yes" ]; then \
 	  $(MAKE) boot-wasm; \
         fi
+	$(MAKE) boot-bde WASMBACKEND=yes
 	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
 	  $(MAKE) boot-bglpkg; \
         fi
@@ -346,8 +347,9 @@ dohostboot:
 	$(MAKE) -C runtime clean-quick
 	$(MAKE) -C runtime $(HOSTBOOTMAKEOPT) heap libs BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) -C bde clean boot BIGLOO=$(BOOTBINDIR)/bigloo
-	$(MAKE) boot-bde BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) boot-bde WASMBACKEND=no BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) -C api clean-quick BIGLOO=$(BOOTBINDIR)/bigloo
+	$(MAKE) boot-bde WASMBACKEND=yes BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) $(HOSTBOOTMAKEOPT) fullbootstrap-sans-configure BGLBUILDBINDIR=$(BOOTBINDIR)
 	@ echo "\e[1;34mhostboot\e[0m done..."
 
