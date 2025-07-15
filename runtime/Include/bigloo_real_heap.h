@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Thu Jul  3 11:19:47 2025 (serrano)                */
+/*    Last change :  Tue Jul 15 05:38:18 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -77,11 +77,21 @@ struct bgl_real {
 #if BGL_CNST_TWO_STEPS_INIT
 #  define BGL_DECLARE_REAL(name, aux) \
      obj_t name = 0L
-#  define BGL_BIND_REAL(name, aux) \
-   name = BREAL(&aux)
+#  if (defined(TAG_REAL))   
+#    define BGL_BIND_REAL(name, aux) \
+       name = BREAL(&(aux.val))
+#  else
+#    define BGL_BIND_REAL(name, aux) \
+       name = BREAL(&(aux.header))
+#  endif
 #else
-#  define BGL_DECLARE_REAL(name, aux) \
-     const obj_t name = BREAL(&aux)
+#  if (defined(TAG_REAL))   
+#    define BGL_DECLARE_REAL(name, aux) \
+       const obj_t name = BREAL(&(aux.val))
+#  else
+#    define BGL_DECLARE_REAL(name, aux) \
+       const obj_t name = BREAL(&(aux.header))
+#  endif
 #  define BGL_BIND_REAL(name, aux)
 #endif
 
@@ -95,7 +105,7 @@ struct bgl_real {
 #define BGL_FAST_REALP(c) FLONUMP(c)
 
 #if (defined(TAG_REAL))
-#  define BGL_FAST_REALSP(c, d) (((unsigned long)CREAL(c) | (unsigned long)CREAL(d)) == 0)
+#  define BGL_FAST_REALSP(c, d) ((((unsigned long)CREAL(c) | (unsigned long)CREAL(d)) & TAG_REAL) == 0)
 #else
 #  define BGL_FAST_REALSP(c, d) (FLONUMP(c) && FLONUMP(d))
 #endif

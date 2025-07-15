@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 11 08:25:48 2025 (serrano)                */
+/*    Last change :  Tue Jul 15 08:18:14 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -438,6 +438,14 @@ function __js_io() {
 	 return nbread;
       },
 
+      password: (prompt_addr, prompt_length, res_addr) => {
+	 const memory = new Uint8Array(self.instance.exports.memory.buffer, offset, length, position);
+	 const buf = "toto";
+
+	 storeJSStringToScheme(self.instance, buf, addr);
+	 return buf.length;
+      },
+      
       path_size: (path_addr, path_length) => {
 	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
 	 const path = loadSchemeString(buffer);

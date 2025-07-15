@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Wed Jul  2 17:10:58 2025 (serrano)                */
+/*    Last change :  Tue Jul 15 05:44:23 2025 (serrano)                */
 /*    Copyright   :  2017-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -199,13 +199,15 @@ make_cell(obj_t val) {
 #      define BGL_CREATE_SLOW_REAL(aux, flonum) \
          static struct { __CNST_ALIGN header_t header; double real; } \
             aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }
+#      define BGL_DECLARE_SLOW_REAL(n, aux) \
+         static obj_t n = BREAL(&(aux.header))
 #    else
 #      define BGL_CREATE_SLOW_REAL(aux, flonum) \
          static struct { double real; } \
            aux = { flonum }
+#      define BGL_DECLARE_SLOW_REAL(n, aux) \
+         static obj_t n = BREAL(&(aux.real))
 #    endif
-
-#    define BGL_DECLARE_SLOW_REAL(n, aux) static obj_t n = BREAL(&aux)
 
 #    define BGL_DEFINE_SLOW_REAL(name, aux, flonum) \
        BGL_CREATE_SLOW_REAL(aux, flonum); \

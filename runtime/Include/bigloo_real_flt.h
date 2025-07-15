@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Thu Jul  3 12:27:41 2025 (serrano)                */
+/*    Last change :  Tue Jul  8 15:15:11 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -46,7 +46,7 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real(double);
 /*    bgl_real ...                                                     */
 /*---------------------------------------------------------------------*/
 struct bgl_real {
-#if (!defined(TAG_REAL))   
+#if (!defined(TAG_REAL))
    header_t header;
 #endif   
    double val;
@@ -154,9 +154,9 @@ INLINE bool BGL_TAGGED_REALP(obj_t _o) {
 	     "r"((uint16_t)((uint16_t)(~(uint16_t)0)/0xff * BGL_REAL_TAG_SET)));
    return carry;
 }
+#  endif
 #  define BGL_TAGGED_REALSP(o, p) \
      (BGL_TAGGED_REALP(o) && BGL_TAGGED_REALP(p))
-#  endif
 #elif BGL_TAGGING == BGL_TAGGING_FLLB
 // ----------------------------------
 #  define BGL_TAGGED_REALP(o) \
@@ -166,7 +166,7 @@ INLINE bool BGL_TAGGED_REALP(obj_t _o) {
 #elif BGL_TAGGING == BGL_TAGGING_FL1
 // ---------------------------------
 #  define BGL_TAGGED_REALP(o) \
-     (((long)o & TAG_MASK) == TAG_REALZ)
+     ((((long)o - TAG_REALZ) & TAG_MASK) == 0)
 #  define BGL_TAGGED_REALSP(o, p) \
      (((((long)o - TAG_REALZ) | ((long)p - TAG_REALZ)) & TAG_MASK) == 0)
 #else

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Jul  5 07:30:36 2025 (serrano)                */
+#*    Last change :  Mon Jul 14 07:22:32 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -927,7 +927,7 @@ while : ; do
       cstrip="no";
       strip="no";;
 
-    --customgc=yes|--customgc)
+    --customgc=yes|--customgc|--custom-gc)
       customgc=yes;;
 
     --customgc=no)
@@ -1099,7 +1099,7 @@ while : ; do
       gmpversion=""
       gmpforce="yes";;
 
-    --customgmp=yes|--customgmp)
+    --customgmp=yes|--customgmp|--custom-gmp)
       customgmp=yes;;
 
     --customgmp=no)
@@ -1125,7 +1125,7 @@ while : ; do
       unistring=""
       unistringforce="yes";;
 
-    --customunistring=yes)
+    --customunistring=yes|--custom-unistring)
       customunistring=yes;;
 
     --customunistring=no)
@@ -1144,7 +1144,7 @@ while : ; do
       libbacktrace=""
       libbacktraceforce="yes";;
 
-    --customlibbacktrace=yes)
+    --customlibbacktrace=yes|--custom-libbacktrace)
       customlibbacktrace=yes;;
 
     --customlibbacktrace=no)
@@ -1153,7 +1153,7 @@ while : ; do
     --libbacktraceconfigureopt=*)
       libbacktraceconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
 
-    --customlibuv=yes|--customlibuv)
+    --customlibuv=yes|--customlibuv|--custom-libuv)
       customlibuv=yes;;
 
     --customlibuv=no)
@@ -1174,7 +1174,7 @@ while : ; do
     --no-pcre|--disable-pcre)
       enable_configure_pcre="no";;
 
-    --custompcre=yes|--custompcre)
+    --custompcre=yes|--custompcre|--custom-pcre)
       custompcre=yes;;
 
     --pcreconfigureopt=*)
@@ -1186,7 +1186,7 @@ while : ; do
     --no-pcre2|--disable-pcre2)
       enable_configure_pcre2="no";;
 
-    --custompcre2=yes|--custompcre2)
+    --custompcre2=yes|--custompcre2|--custom-pcre2)
       custompcre2=yes;;
 
     --pcre2configureopt=*)

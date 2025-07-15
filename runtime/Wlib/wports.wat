@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Sun Jul  6 10:31:48 2025 (serrano)                */
+;*    Last change :  Tue Jul 15 08:18:55 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -71,6 +71,7 @@
    (import "__js_io" "read_dir_entry" (func $js_read_dir_entry (param externref) (param i32) (param i32) (result i32)))
 
    (import "__js_io" "file_separator" (global $js_file_separator i32))
+   (import "__js_io" "password" (func $js_password (param i32 i32 i32) (result i32)))
 
    (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
@@ -2468,10 +2469,10 @@
 		   (br $while))))))
       (unreachable))
    
-;*---------------------------------------------------------------------*/
-;*    files                                                            */
-;*---------------------------------------------------------------------*/
-
+   ;; -----------------------------------------------------------------
+   ;; files 
+   ;; -----------------------------------------------------------------
+   
    (func $bgl_file_size (export "bgl_file_size")
       (param $path (ref $bstring))
       (result i64)
@@ -2498,6 +2499,22 @@
 	    (call $js_last_modification_time
 	       (i32.const 128) (array.len (local.get $path))))))
    
-
+   ;; -----------------------------------------------------------------
+   ;; password 
+   ;; -----------------------------------------------------------------
+   
+   (func $bgl_password (export "bgl_password")
+      (param $prompt (ref $bstring))
+      (result (ref $bstring))
+      (local $nb i32)
+      
+      (call $store_string (local.get $prompt) (i32.const 128))
+      
+      (return_call $load_string (i32.const 128)
+	 (call $js_password
+	    (i32.const 128)
+	    (array.len (local.get $prompt))
+	    (i32.const 128))))
+   
    )
    
