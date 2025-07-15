@@ -2051,7 +2051,7 @@ case $hostos in
         sharedcompiler=yes
       fi
       sharedbde=yes
-      ldflags="$ldflags -dynamiclib -single_module -Wlsuppress"
+      ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress"
       #customgmp=yes
       #customgmpmakefile=Makefile.macosx
       #customunistring=yes

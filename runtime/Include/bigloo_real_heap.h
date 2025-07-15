@@ -54,7 +54,7 @@ struct bgl_real {
 #   define BGL_CREATE_REAL(aux, flonum) \
       static struct { double real; } aux = { flonum }
       
-#   define FLONUMP(c) ((c && ((((long)c) & TAG_MASK) == TAG_REAL)))
+#   define FLONUMP(c) BGL_TAGGED_PTRP(c, TAG_REAL, TAG_MASK)
 #   define REALP(c) FLONUMP(c)
 
 #   define BGL_REAL_SET(o, v) ((REAL(o).val = v), o)
