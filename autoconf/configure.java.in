@@ -72,6 +72,7 @@ public class configure {
   public static final boolean C_STRING_SPLIT = (@C_STRING_SPLIT@ == 1);
   public static final byte[] LD_LIBRARY_DIR = "@BGL_LD_LIBRARY_DIR@".getBytes();
   public static final byte[] LIBRARY_DIRECTORY = "@LIBRARY_DIRECTORY@".getBytes();
+  public static final byte[] BINARY_DIRECTORY = "@BINARY_DIRECTORY@".getBytes();
   public static final byte[] BGL_NON_CUSTOM_GC_DIR = "@BGL_NON_CUSTOM_GC_DIR@".getBytes();
   public static final byte[] BGL_GC_LIBRARY = "@BGL_GC_LIBRARY@".getBytes();
   public static final boolean BGL_GC_CUSTOM = (@BGL_GC_CUSTOM@ == 1);

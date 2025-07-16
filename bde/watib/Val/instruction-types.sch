@@ -371,10 +371,41 @@
        `((,(-> x type)) ())))
 
   ;; section 3.4.10 - we only support these partially, in particular, we do not
-  ;; support offsets yet
-  (i32.load8_s () ((i32) (i32)))
-  (i32.load8_u () ((i32) (i32)))
-  (i32.store8  () ((i32 i32) ()))
+  ;; support offsets nor explicit memory indices yet
+  ;; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsection.3.4.10
+  ;;
+  ;; We use the defaults descibed in:
+  ;; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsection.6.5.7
+  ;; The only thing to do is, then, to check that we have declared a memory
+  ;; because the other validation preconditions are always satisfied with the
+  ;; default values.
+  (i32.store
+   ()
+   ,(lambda (env::env)
+       (unless (>=fx (-> env nmem) 1)
+          (raise 'no-declared-memory))
+       '((i32 i32) ())))
+
+  (i32.load8_s
+   ()
+   ,(lambda (env::env)
+       (unless (>=fx (-> env nmem) 1)
+          (raise 'no-declared-memory))
+       '((i32) (i32))))
+
+  (i32.load8_u
+   ()
+   ,(lambda (env::env)
+       (unless (>=fx (-> env nmem) 1)
+          (raise 'no-declared-memory))
+       '((i32) (i32))))
+
+  (i32.store8
+   ()
+   ,(lambda (env::env)
+       (unless (>=fx (-> env nmem) 1)
+          (raise 'no-declared-memory))
+       '((i32 i32) ())))
 
   ;; section 3.4.11
   (nop () (() ()))

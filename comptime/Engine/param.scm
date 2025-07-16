@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Engine/param.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Engine/param.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Jun 30 17:09:41 2025 (serrano)                */
+;*    Last change :  Wed Jul 16 07:55:56 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -1259,14 +1259,14 @@
 ;*---------------------------------------------------------------------*/
 (param-define *wasmas*
    "wasm assembler"
-   "wasm-as")
+   (make-file-name (bigloo-config 'binary-directory) "bglwatib"))
 		 
 ;*---------------------------------------------------------------------*/
 ;*    *wasmas-options* ...                                             */
 ;*---------------------------------------------------------------------*/
 (param-define *wasmas-options*
    "wasmas options"
-   '("-all"))
+   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    *wasm-unsafe-options* ...                                        */

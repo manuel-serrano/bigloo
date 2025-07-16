@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Llib/bconfigure.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/bconfigure.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Wed Jun 25 09:52:26 2025 (serrano)                */
+;*    Last change :  Wed Jul 16 08:11:39 2025 (serrano)                */
 ;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -81,6 +81,7 @@
 	   (macro $configure-c-linker-shared-option::string "C_LINKER_SHARED_OPTION")
 	   (macro $configure-ld-library-dir::string "BGL_LD_LIBRARY_DIR")
 	   (macro $configure-library-directory::string "LIBRARY_DIRECTORY")
+	   (macro $configure-binary-directory::string "BINARY_DIRECTORY")
 	   (macro $configure-non-custom-gc-directory::string "BGL_NON_CUSTOM_GC_DIR")
  	   (macro $configure-zip-directory::string "ZIP_DIRECTORY")
  	   (macro $configure-dll-directory::string "DLL_DIRECTORY")
@@ -167,6 +168,7 @@
 	      (field static c-linker-shared-option::string "C_LINKER_SHARED_OPTION")
 	      (field static ld-library-dir::string "LD_LIBRARY_DIR")
 	      (field static library-directory::string "LIBRARY_DIRECTORY")
+	      (field static binary-directory::string "BINARY_DIRECTORY")
 	      (field static non-custom-gc-directory::string "BGL_NON_CUSTOM_GC_DIR")
 	      (field static zip-directory::string "ZIP_DIRECTORY")
 	      (field static dll-directory::string "DLL_DIRECTORY")
@@ -263,6 +265,7 @@
      (c-linker-shared-option . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-linker-shared-option) (else $$configure-c-linker-shared-option)))
      (ld-library-dir . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-ld-library-dir) (else $$configure-ld-library-dir)))
      (library-directory . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-library-directory) (else $$configure-library-directory)))
+     (binary-directory . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-binary-directory) (else $$configure-binary-directory)))
      (non-custom-gc-directory . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-non-custom-gc-directory) (else $$configure-non-custom-gc-directory)))
      (zip-directory . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-zip-directory) (else $$configure-zip-directory)))
      (dll-directory . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-dll-directory) (else $$configure-dll-directory)))

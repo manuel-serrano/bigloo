@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Jul 10 07:57:54 2025 (serrano)                */
+#*    Last change :  Wed Jul 16 08:00:55 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -1261,7 +1261,7 @@ objs/wasm_u/Llib/unicode.wat: Llib/unicode-generic.sch
 objs/wasm_s/Llib/hash.wat: Llib/hash.sch
 objs/wasm_u/Llib/hash.wat: Llib/hash.sch
 
-Wlib/wfixnum.wat: Wlib/wfixnum$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
+Wlib/wfixnum.wat: Wlib/wfixnum$(WASMFIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
 	preallocs=`$(WASM_BINTS_PREALLOC)`; \
 	cat $< \
            | sed -e "s/-[*]- eval: (bee-mode) -[*]-/!!! GENERATED FILE, DON'T EDIT !!!/" \
@@ -1271,7 +1271,7 @@ Wlib/wfixnum.wat: Wlib/wfixnum$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.
            | sed -e "s/@DOLLAR@/$$/g" \
            > $@
 
-Wlib/wcnst.wat: Wlib/wcnst$(WASM_FIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
+Wlib/wcnst.wat: Wlib/wcnst$(WASMFIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
 	preallocs=`$(WASM_BCHARS_PREALLOC)`; \
 	cat $< \
            | sed -e "s/@BCHARS_PREALLOC_SIZE@/$(WASM_BCHARS_PREALLOC_SIZE)/g" \

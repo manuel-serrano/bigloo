@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Jul  4 10:30:41 2025 (serrano)                */
+;*    Last change :  Wed Jul 16 08:16:33 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -951,7 +951,7 @@
       (("-wasm-unsafe-opt" ?string (help "Wasm options for unsafe executions"))
        (set! *wasm-unsafe-options* (cons string *wasm-unsafe-options*)))
       (("-wasmas" ?string (help "Wasm assembler"))
-       (set! *wasmas* (cons string *wasmas*)))
+       (set! *wasmas* string))
       (("-wopt" ?string (help "Invoke wasmas with STRING"))
        (set! *wasmas-options* (cons string *wasmas-options*)))
       (("-fwasm-relooper" (help "Better compilation of structured conflow flow for WASM"))

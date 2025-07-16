@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jul 14 07:22:32 2025 (serrano)                */
+#*    Last change :  Wed Jul 16 07:47:36 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -132,8 +132,7 @@ jshell=sh
 
 #*--- Java back-end user configuration --------------------------------*/
 wasmbackend=no # set to "no" not to install the Wasm back-end
-wasmas=wasm-as
-wasmopt=wasm-opt
+wasmas=
 wasmjs=nodejs
 wasmfixnum=31
 
@@ -1347,7 +1346,6 @@ while : ; do
       echo "" >&2;
       echo "WASM configuration:"  >&2;
       echo "   --wasmas=file [wasm assembler]" >&2;
-      echo "   --wasmopt=file [wasm optimizer]" >&2;
       echo "   --wasmjs=file [wasm implementation (default nodejs)]" >&2;
       echo "   --wasm-fixnum64 [wasm fixnum 64bit]" >&2;
       echo "   --wasm-fixnum31 [wasm fixnum 31bit]" >&2;
@@ -3774,10 +3772,12 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # wasm configuration
   if [ "$wasmbackend" = "yes" -o "$wasmbackend" = "force" ]; then
     # checking wasmas
-    $wasmas --help 2> /dev/null > /dev/null
-    if [ $? != 0 ]; then
-      echo "*** ERROR:configure:$wasm-as (wasm assembler) not properly working!"
-      exit 1
+    if [ " $wasmas" != " " ]; then
+      $wasmas --help 2> /dev/null > /dev/null
+      if [ $? != 0 ]; then
+        echo "*** ERROR:configure:$wasm-as (wasm assembler) not properly working!"
+        exit 1
+      fi
     fi
   fi
   
@@ -3970,6 +3970,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_LD_LIBRARY_DIR@|$libdir|" \
               -e "s|@BGL_NON_CUSTOM_GC_DIR@|$gclibdir|" \
               -e "s|@LIBRARY_DIRECTORY@|$libdir$dirsep$fildir|" \
+              -e "s|@BINARY_DIRECTORY@|$bindir|" \
               -e "s|@BGL_GC_LIBRARY@|$gclib|" \
               -e "s|@BGL_GC_CUSTOM@|$isgccustom|" \
               -e "s|@ZIP_DIRECTORY@|$syszipdirstr|" \
@@ -5296,9 +5297,12 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$wasmbackend" = "yes" -o "$wasmbackend" = "force" ]; then
     $echo "" >> $makefile_cfg
     $echo "WASMBACKEND=yes" >> $makefile_cfg
-    $echo "WASM_AS=$wasmas" >> $makefile_cfg
-    $echo "WASM_OPT=$wasmopt" >> $makefile_cfg
-    $echo "WASM_FIXNUM=$wasmfixnum" >> $makefile_cfg
+    if [ " $wasmas" = " " ]; then
+      $echo "WASMAS="'$'"(BGLWATIB)" >> $makefile_cfg
+    else
+      $echo "WASMAS=$wasmas" >> $makefile_cfg
+    fi
+    $echo "WASMFIXNUM=$wasmfixnum" >> $makefile_cfg
   else
     $echo "" >> $makefile_cfg
     $echo "WASMBACKEND=no" >> $makefile_cfg

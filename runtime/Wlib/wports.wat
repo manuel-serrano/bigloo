@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Tue Jul 15 09:15:44 2025 (serrano)                */
+;*    Last change :  Wed Jul 16 08:38:32 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -73,6 +73,9 @@
 
    (import "__js_io" "file_separator" (global $js_file_separator i32))
    (import "__js_io" "password" (func $js_password (param i32 i32 i32) (result i32)))
+   (import "__js_io" "ftruncate" (func $js_ftruncate (param i32 i32) (result i32)))
+   (import "__js_io" "truncate" (func $js_truncate (param i32 i32 i32) (result i32)))
+   (import "__js_io" "rename" (func $js_rename (param i32 i32 i32 i32) (result i32)))
 
    (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
@@ -101,6 +104,7 @@
    (import "__bigloo" "INTEGERP" (func $INTEGERP (param (ref eq)) (result i32)))
    (import "__bigloo" "OBJ_TO_INT" (func $OBJ_TO_INT (param (ref eq)) (result i64)))
    (import "__bigloo" "BGL_CURRENT_DYNAMIC_ENV" (func $BGL_CURRENT_DYNAMIC_ENV (result (ref $dynamic-env))))
+   (import "__bigloo" "RGC_BUFFER_AVAILABLE" (func $RGC_BUFFER_AVAILABLE (param (ref $input-port)) (result i32)))
    
    ;; -----------------------------------------------------------------
    ;; Type declarations 
@@ -571,6 +575,12 @@
 	 (i32.sub (array.len (struct.get $output-port $buf (local.get $op)))
 	    (struct.get $output-port $index (local.get $op)))))
 
+   (func $BGL_OUTPUT_PORT_BUFFER (export "BGL_OUTPUT_PORT_BUFFER")
+      (param $op (ref $output-port))
+      (result (ref $bstring))
+
+      (return (struct.get $output-port $buf (local.get $op))))
+   
    (func $BGL_OUTPUT_PORT_FLUSHBUF
       (param $op (ref $output-port))
       (result (ref eq))
@@ -623,6 +633,21 @@
       (return (i64.extend_i32_u
 		 (struct.get $rgc $filepos
 		    (struct.get $input-port $rgc (local.get $ip))))))
+   
+   (func $INPUT_PORT_FILLBARRIER (export "INPUT_PORT_FILLBARRIER")
+      (param $ip (ref $input-port))
+      (result i64)
+      (return (i64.extend_i32_u
+		 (struct.get $rgc $fillbarrier
+		    (struct.get $input-port $rgc (local.get $ip))))))
+   
+   (func $INPUT_PORT_FILLBARRIER_SET (export "INPUT_PORT_FILLBARRIER_SET")
+      (param $ip (ref $input-port))
+      (param $v i64)
+      (return (struct.set $rgc $fillbarrier
+		 (struct.get $input-port $rgc (local.get $ip))
+		 (i32.sub (i32.wrap_i64 (local.get $v))
+		    (call $RGC_BUFFER_AVAILABLE (local.get $ip))))))
    
    (func $INPUT_PORT_TOKENPOS (export "INPUT_PORT_TOKENPOS")
       (param $ip (ref $input-port))
@@ -1661,6 +1686,13 @@
 	 ;; position
 	 (i32.const 0)))
 
+   ;; bgl_open_input_resource
+   (func $bgl_open_input_resource (export "bgl_open_input_resource")
+      (param $path (ref $bstring))
+      (param $buffer (ref $bstring))
+      (result (ref eq))
+      (return (global.get $BFALSE)))
+
    ;; bgl_open_input_descriptor
    (func $bgl_open_input_descriptor (export "bgl_open_input_descriptor")
       (param $fd i32)
@@ -2243,6 +2275,70 @@
 	 (struct.get $output-port $buf (local.get $op)))
 
       (return (local.get $res)))
+
+   ;; bgl_output_port_seek
+   (func $bgl_output_port_seek (export "bgl_output_port_seek")
+      (param $port (ref $output-port))
+      (param $pos i64)
+      (result (ref eq))
+   
+      (local $sysseek (ref null $sysseek_t))
+      (local.set $sysseek (struct.get $output-port $sysseek (local.get $port)))
+
+      (if (ref.is_null (local.get $sysseek))
+	  (then
+	     (return (global.get $BFALSE)))
+	  (else
+	   (call_ref $sysseek_t (local.get $port)
+	      (i32.wrap_i64 (local.get $pos))
+	      (global.get $WHENCE_SEEK_SET)
+	      (local.get $sysseek))
+	   (return (local.get $port))))
+      (unreachable))
+
+   ;; bgl_output_port_truncate
+   (func $bgl_output_port_truncate (export "bgl_output_port_truncate")
+      (param $port (ref $output-port))
+      (param $pos i64)
+      (result i32)
+
+      (if (ref.test (ref $fd-output-port) (local.get $port))
+	  (then
+	     (return
+		(i32.eq (i32.const 0)
+		   (call $js_ftruncate
+		      (struct.get $fd-output-port $fd
+			 (ref.cast (ref $fd-output-port) (local.get $port)))
+		      (i32.wrap_i64 (local.get $pos))))))
+	  (else
+	   (return (i32.const 0))))
+      (unreachable))
+
+   ;; truncate
+   (func $truncate (export "truncate")
+      (param $path (ref $bstring))
+      (param $len i64)
+      (result i32)
+      
+      (call $store_string (local.get $path) (i32.const 128))
+      (return_call $js_truncate (i32.const 128)
+	 (array.len (local.get $path))
+	 (i32.wrap_i64 (local.get $len))))
+
+   ;; rename
+   (func $rename (export "rename")
+      (param $old (ref $bstring))
+      (param $new (ref $bstring))
+      (result i32)
+      (local $len i32)
+      (local $len2 i32)
+
+      (local.set $len (array.len (local.get $old)))
+      (local.set $len2 (array.len (local.get $new)))
+      (call $store_string (local.get $old) (i32.const 128))
+      (call $store_string (local.get $new) (i32.add (local.get $len) (i32.const 128)))
+      (return_call $js_rename (i32.const 128) (local.get $len)
+	 (i32.add (local.get $len) (i32.const 128)) (local.get $len2)))
 
    ;; bgl_reset_output_port_error
    (func $bgl_reset_output_port_error (export "bgl_reset_output_port_error")

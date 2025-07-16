@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Tue Jul 15 16:14:19 2025 (serrano)                */
+;*    Last change :  Wed Jul 16 08:13:38 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -224,7 +224,7 @@
 	   (infix macro $remainderu32::uint32 (::uint32 ::int32) "%")
 	   (infix macro $remainders64::int64 (::int64 ::int64) "%")
 	   (infix macro $remainderu64::uint64 (::uint64 ::int64) "%")
-	   ;;(macro $strtol::long (::string ::long ::long) "BGL_STRTOL")
+	   (macro $strtol::long (::string ::long ::long) "BGL_STRTOL")
 	   (macro $strtoul::long (::string ::long ::long) "BGL_STRTOUL")
 	   (macro $strtoel::elong (::string ::long ::long) "BGL_STRTOEL")
 	   (macro $strtoeul::elong (::string ::long ::long) "BGL_STRTOUL")
@@ -766,8 +766,8 @@
 		  "REMAINDER_S64")
 	       (method static $remainderu64::uint64 (::uint64 ::uint64)
 		  "REMAINDER_S64")
-;* 	       (method static $strtol::long (::string ::long ::long)   */
-;* 		  "strtol")                                            */
+	       (method static $strtol::long (::string ::long ::long)
+		  "strtol")
 	       (method static $strtoul::long (::string ::long ::long)
 		  "strtoul")
 	       (method static $strtoel::elong (::string ::long ::long)
@@ -776,7 +776,7 @@
 		  "strtoll")
 	       (method static strtouel::elong (::string ::long ::long)
 		  "strtoull")
-	       (method static $strtoll::llong (::string ::long ::long)
+q	       (method static $strtoll::llong (::string ::long ::long)
 		  "strtoll")
 	       (method static $strtoull::llong (::string ::long ::long)
 		  "strtoull")

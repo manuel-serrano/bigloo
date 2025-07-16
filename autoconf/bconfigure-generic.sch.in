@@ -45,6 +45,7 @@
       $$configure-c-linker-soname-option
       $$configure-c-linker-shared-option
       $$configure-ld-library-dir
+      $$configure-binary-directory
       $$configure-library-directory
       $$configure-non-custom-gc-directory
       $$configure-zip-directory
@@ -131,6 +132,7 @@
 (define $$configure-c-linker-soname-option "@C_LINKER_SONAME_OPTION@")
 (define $$configure-c-linker-shared-option "@C_LINKER_SHARED_OPTION@")
 (define $$configure-ld-library-dir "@BGL_LD_LIBRARY_DIR@")
+(define $$configure-binary-directory "@BINARY_DIRECTORY@")
 (define $$configure-library-directory "@LIBRARY_DIRECTORY@")
 (define $$configure-non-custom-gc-directory "@BGL_NON_CUSTOM_GC_DIR@")
 (define $$configure-zip-directory "@ZIP_DIRECTORY@")

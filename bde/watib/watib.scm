@@ -71,7 +71,8 @@
         (else
          (when opt?
             (opt-file! p nthreads))
-         (bin-file! p output-file)))))
+         (call-with-output-file output-file
+            (lambda (op) (asm-file! p op)))))))
 
    (parse-args (cdr argv))
 

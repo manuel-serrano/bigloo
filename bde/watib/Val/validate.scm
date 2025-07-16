@@ -1090,11 +1090,13 @@
          (lambda (m)
             (let ((clean-m (with-handler (lambda (e) (format-exn env e))
                                          (f env m))))
-               (unless (null? (-> env error-list))
-                 (format-exn env `(in-module ,m ""))
+              (unless (null? (-> env error-list))
+                 (if (epair? m)
+                     (format-exn env `(in-module ,m ""))
+                     (format-exn env `(at-pos ,(cdr m) "")))
                  (for-each (lambda (e) (format-exn env e)) (-> env error-list))
                  (set! (-> env error-list) '()))
-               clean-m)))
+              clean-m)))
 
       (match-case f
          ((or (module (? ident?) . ?mfs) (module . ?mfs))

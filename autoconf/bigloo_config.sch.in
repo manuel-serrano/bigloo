@@ -34,6 +34,7 @@
   (c-ld . "@LD@")
   (c-ld-option . "@LDOPT@")
   (library-directory . "@LIBRARY_DIRECTORY@")
+  (binary-directory . "@BINARY_DIRECTORY@")
   (dll-directory . "@DLL_DIRECTORY@")
   (user-libraries . "@USER_LIBRARIES@")
   (default-back-end . "native")

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jul 15 10:11:55 2025 (serrano)                */
+/*    Last change :  Wed Jul 16 09:01:44 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync, lstatSync, mkdirSync, readdirSync } from "node:fs";
+import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync, lstatSync, mkdirSync, readdirSync, ftruncateSync, truncateSync } from "node:fs";
 import { isatty } from "node:tty";
 import { extname, sep as file_sep } from "node:path";
 import { format } from "node:util";
@@ -444,6 +444,25 @@ function __js_io() {
 	 return nbread;
       },
 
+      ftruncate: (fd, pos) => {
+	 ftruncateSync(fd, pos);
+	 return 0;
+      }, 
+      
+      truncate: (path_addr, path_length, pos) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
+	 truncateSync(path, pos);
+	 return 0;
+      }, 
+
+      rename: (old_addr, old_length, new_addr, new_length) => {
+	 const old = new Uint8Array(self.instance.exports.memory.buffer, old_addr, old_length);
+	 const new = new Uint8Array(self.instance.exports.memory.buffer, new_addr, old_length);
+	 renameSync(old, new);
+	 return 0;
+      }
+	 
       password: (prompt_addr, prompt_length, res_addr) => {
 	 const memory = new Uint8Array(self.instance.exports.memory.buffer, offset, length, position);
 	 const buf = "toto";

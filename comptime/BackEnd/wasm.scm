@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Jul 10 08:00:04 2025 (serrano)                */
+;*    Last change :  Wed Jul 16 08:25:38 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -129,7 +129,9 @@
 ;*    backend-link-objects ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link-objects me::wasm sources)
-   (let ((wasmas (format "~a ~( )" *wasmas* *wasmas-options*)))
+   (let ((wasmas (if (pair? *wasmas-options*)
+		     (format "~a ~( )" *wasmas* *wasmas-options*)
+		     *wasmas*)))
       (verbose 1 "   . Wasm" #\Newline)
       (cond
 	 ((and (null? *o-files*) (eq? *pass* 'so))
