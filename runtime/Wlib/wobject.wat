@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:02:42 2024                          */
-;*    Last change :  Wed Jul  9 07:54:36 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:45:56 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM objects and classes                                         */
@@ -138,6 +138,12 @@
    ;; Library functions
    ;; --------------------------------------------------------
 
+   ;; BGL_OBJECTP
+   (func $BGL_OBJECTP (export "BGL_OBJECTP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $BgL_objectz00_bglt) (local.get $o)))
+      
    ;; bgl_make_class
    (func $bgl_make_class (export "bgl_make_class")
       (param $name (ref $symbol))

@@ -47,4 +47,13 @@
 	 (global.get $symbol-default-value)
 	 (i32.const 0)))
    
+   ;; -----------------------------------------------------------------
+   ;; Predicates
+   ;; -----------------------------------------------------------------
+   
+   (func $FOREIGNP (export "FOREIGNP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $foreign) (local.get $o)))
+   
    )

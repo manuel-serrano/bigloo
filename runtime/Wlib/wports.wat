@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Thu Jul 17 14:31:37 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:46:54 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -527,6 +527,7 @@
    ;; -----------------------------------------------------------------
    ;; Predicates
    ;; -----------------------------------------------------------------
+   
    (func $INPUT_PORTP (export "INPUT_PORTP")
       (param $o (ref eq))
       (result i32)

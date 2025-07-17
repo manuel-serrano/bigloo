@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sat Feb  1 18:47:12 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:45:21 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -68,6 +68,8 @@
 	    (macro %object-type-number::long
 		   "OBJECT_TYPE")
 	    (macro %object?::bool (::obj)
+		   "BGL_OBJECTP")
+	    (macro $object?::bool (::obj)
 		   "BGL_OBJECTP")
 	    (macro $nanobject?::bool (::obj)
 		   "BGL_NANOBJECTP")
@@ -151,7 +153,6 @@
 	   ($as-object "(ref.cast (ref $BgL_objectz00_bglt) ~0)")
 	   ($object-widening "(struct.get $BgL_objectz00_bglt $widening ~0)")
 	   (%object-class-num "(struct.get $BgL_objectz00_bglt $header ~0)")
-	   (%object? "(ref.test (ref $BgL_objectz00_bglt) ~0)")
 	   (%object-type-number "(i64.const 0)")
 
 	   ($class-nil "(struct.get $class $nil ~0)")
@@ -199,7 +200,7 @@
 		  "BGL_OBJECT_WIDENING")
 	       (method static $object-widening-set!::obj (::object ::obj)
 		  "BGL_OBJECT_WIDENING_SET")
-	       (method static %object?::bool (::obj)
+	       (method static $object?::bool (::obj)
 		  "BGL_OBJECTP")
 	       (method static %object-class-num::long (::object)
 		  "BGL_OBJECT_CLASS_NUM")
@@ -431,7 +432,7 @@
 	    (%isa64-object/cdepth? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
 	    (%isa/final? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
 	    (%isa-object/final? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
-	    (%object? (predicate-of object) no-cfa-top nesting)
+	    ($object? (predicate-of object) no-cfa-top nesting)
 	    (wide-object? side-effect-free no-cfa-top no-trace nesting)
 	    (object-widening side-effect-free no-cfa-top nesting)
 	    (register-class! no-init-flow)))
@@ -910,7 +911,7 @@
 ;*    object? ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (object? obj)
-   (%object? obj))
+   ($object? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-class-num ...                                             */

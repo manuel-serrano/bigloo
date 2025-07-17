@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Llib/foreign.scm              */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/foreign.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  5 16:50:26 1995                          */
-;*    Last change :  Mon Sep 16 15:04:55 2024 (serrano)                */
+;*    Last change :  Thu Jul 17 14:36:25 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign object management.                                   */
 ;*    -------------------------------------------------------------    */
@@ -37,18 +37,17 @@
 	    
 	    __evenv)
    
-   (extern  (macro c-foreign?::bool (::obj) "FOREIGNP")
-	    (macro c-foreign-null?::bool (::obj) "FOREIGN_NULLP")
-	    (macro c-foreign-eq?::bool (::foreign ::foreign) "FOREIGN_EQP")
+   (extern  (macro $foreign?::bool (::obj) "FOREIGNP")
+	    (macro $foreign-null?::bool (::obj) "FOREIGN_NULLP")
+	    (macro $foreign-eq?::bool (::foreign ::foreign) "FOREIGN_EQP")
 	    (macro foreign-id::symbol (::foreign) "FOREIGN_ID")
 	    (macro %string-ptr-null?::bool (::string) "STRING_PTR_NULL")
 	    (macro %void*-ptr-null?::bool (::void*) "FOREIGN_PTR_NULL")
 	    (infix macro $make-string-ptr-null::string () "0L")
 	    (infix macro $make-void*-null::void* () "0L"))
 
-   (wasm    (c-foreign? "(ref.test (ref $foreign) ~0)")
-	    (c-foreign-null? "(ref.is_null ~0)")
-	    (c-foreign-eq? "(ref.eq ~0 ~1)")
+   (wasm    ($foreign-null? "(ref.is_null ~0)")
+	    ($foreign-eq? "(ref.eq ~0 ~1)")
 	    (foreign-id "(struct.get $foreign $id ~0)")
 	    (%string-ptr-null? "(i32.eqz (array.len ~0))")
 	    (%void*-ptr-null? "(i32.eqz ~0)")
@@ -56,11 +55,11 @@
 	    ($make-void*-null "(i32.const 0)"))
    
    (java    (class foreign
-	       (method static c-foreign?::bool (::obj)
+	       (method static $foreign?::bool (::obj)
 		       "FOREIGNP")
- 	       (method static c-foreign-null?::bool (::obj)
+ 	       (method static $foreign-null?::bool (::obj)
 		       "FOREIGN_NULLP")
-	       (method static c-foreign-eq?::bool (::obj ::obj)
+	       (method static $foreign-eq?::bool (::obj ::obj)
 		       "FOREIGN_EQP")
 	       (method static foreign-id::symbol (::obj)
 		       "FOREIGN_ID")
@@ -84,11 +83,11 @@
 	    (inline make-string-ptr-null::string)
 	    (inline make-void*-null::void*))
    
-   (pragma  (c-foreign? (predicate-of foreign) no-cfa-top nesting)
+   (pragma  ($foreign? (predicate-of foreign) no-cfa-top nesting)
 	    (foreign? (predicate-of foreign) no-cfa-top nesting)
-	    (c-foreign-null? side-effect-free no-cfa-top nesting)
+	    ($foreign-null? side-effect-free no-cfa-top nesting)
 	    (foreign-null? side-effect-free no-cfa-top nesting)
-	    (c-foreign-eq? side-effect-free no-cfa-top nesting)
+	    ($foreign-eq? side-effect-free no-cfa-top nesting)
 	    (foreign-eq? side-effect-free no-cfa-top nesting)
 	    (string-ptr-null? side-effect-free no-cfa-top nesting)
 	    (void*-null? side-effect-free no-cfa-top nesting)
@@ -98,20 +97,20 @@
 ;*    foreign? ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (foreign? obj)
-   (c-foreign? obj))
+   ($foreign? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    foreign-eq? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (foreign-eq? o1 o2)
-   (c-foreign-eq? o1 o2))
+   ($foreign-eq? o1 o2))
 
 ;*---------------------------------------------------------------------*/
 ;*    foreign-null? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (foreign-null? obj)
    (if (foreign? obj)
-       (c-foreign-null? obj)
+       ($foreign-null? obj)
        (error "foreign-null?" "not a foreign object" obj)))
 
 ;*---------------------------------------------------------------------*/

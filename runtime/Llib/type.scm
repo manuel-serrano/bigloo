@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Jul 17 14:30:04 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:36:23 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -216,8 +216,8 @@
     (coerce obj input-port ($input-port?) ())
     (coerce obj output-port ($output-port?) ())
     (coerce obj binary-port ($binary-port?) ())
-    (coerce obj void* (c-foreign?) ($obj->void*))
-    (coerce obj foreign (c-foreign?) ())
+    (coerce obj void* ($foreign?) ($obj->void*))
+    (coerce obj foreign ($foreign?) ())
     (coerce obj process (c-process?) ())
     (coerce obj socket (c-socket?) ())
     (coerce obj datagram-socket ($datagram-socket?) ())
