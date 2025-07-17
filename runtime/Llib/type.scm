@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Jul 17 09:17:41 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 13:50:15 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -230,7 +230,7 @@
     (coerce obj semaphore ($semaphore?) ())
     (coerce obj class ((@ class? __object)) ())
     (coerce obj class-field ((@ class-field? __object)) ())
-    (coerce obj opaque (c-opaque?) ())
+    (coerce obj opaque ($opaque?) ())
     
     ;; cobj
     (coerce cobj obj () ($cobj->obj))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 22 07:27:20 2024                          */
-;*    Last change :  Sat Jul  5 07:54:25 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 13:43:00 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM vectors                                                     */
@@ -94,6 +94,15 @@
       (export "BGL_F64VECTOR_DEFAULT_VALUE") (ref $f64vector)
       (array.new_fixed $f64vector 0))
    
+   ;; -----------------------------------------------------------------
+   ;; Predicates
+   ;; -----------------------------------------------------------------
+
+   (func $VECTORP (export "VECTORP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $vector) (local.get $o)))
+  
    ;; -----------------------------------------------------------------
    ;; Library functions
    ;; -----------------------------------------------------------------

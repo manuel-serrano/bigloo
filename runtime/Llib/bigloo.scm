@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Thu Jun 12 09:00:24 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 13:45:58 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -117,12 +117,12 @@
 	    (macro $cell?::bool (::obj)
 		   "CELLP")
 	    
-	    (macro c-cnst?::bool (::obj)
+	    (macro $cnst?::bool (::obj)
 		   "CNSTP")
 	    
-	    (macro c-opaque?::bool (::obj)
+	    (macro $opaque?::bool (::obj)
 		   "OPAQUEP")
-	    (macro c-opaque-nil::obj ()
+	    (macro $opaque-nil::obj ()
 		   "BGL_OPAQUE_NIL")
 	    
 	    (macro __unspec__::obj "BUNSPEC")
@@ -172,13 +172,9 @@
 	    ($make-cell "(struct.new $cell ~0)")
 	    ($make-stack-cell "(struct.new $cell ~0)")
 	    ($cell-ref "(struct.get $cell $val ~0)")
-	    ($cell? "(ref.test (ref $cell) ~0)")
-      
-	    (c-cnst? "(ref.test (ref i31) ~0)")
       
 	    ;; Opaque types not supported in WASM backend
-	    (c-opaque? "(ref.test (ref $opaque) ~0)")
-	    (c-opaque-nil "(global.get $opaque-default-value)")
+	    ($opaque-nil "(global.get $opaque-default-value)")
       
 	    ($procedure-arity "(struct.get $procedure $arity ~0)")
 	    ($procedure-attr "(struct.get $procedure $attr ~0)")
@@ -269,11 +265,11 @@
 	       (method static $unsafe-cell-ref::obj (::unsafe-cell)
 		       "BGL_UNSAFE_CELL_REF")
 	       
-	       (method static c-cnst?::bool (::obj)
+	       (method static $cnst?::bool (::obj)
 		       "CNSTP")
-	       (method static c-opaque?::bool (::obj)
+	       (method static $opaque?::bool (::obj)
 		       "OPAQUEP")
-	       (method static c-opaque-nil::obj ()
+	       (method static $opaque-nil::obj ()
 		       "BGL_OPAQUE_NIL")
 	       
 	       (method static declare-cnst-table::obj (::obj)
@@ -366,8 +362,8 @@
 	    (cell? (predicate-of cell) nesting fail-safe)
 	    (cell-set! nesting args-safe fail-safe (args-noescape 1))
 	    (cell-ref nesting  args-safe fail-safe (args-noescape))
-	    (c-cnst? (predicate-of cnst) nesting fail-safe)
-	    (c-opaque? (predicate-of opaque) nesting fail-safe))
+	    ($cnst? (predicate-of cnst) nesting fail-safe)
+	    ($opaque? (predicate-of opaque) nesting fail-safe))
 
    (option  (set! *unsafe-version* #t)))
 
@@ -458,19 +454,19 @@
 ;*    cnst? ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (cnst? obj)
-   (c-cnst? obj))
+   ($cnst? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    opaque? ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (opaque? obj)
-   (c-opaque? obj))
+   ($opaque? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    opaque-nil ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (opaque-nil)
-   (c-opaque-nil))
+   ($opaque-nil))
 
 ;*---------------------------------------------------------------------*/
 ;*    4bits->char ...                                                  */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Thu Jul 17 09:12:39 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 13:34:24 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -43,8 +43,7 @@
 	    __evenv
 	    __bignum)
 
-   (extern  (macro c-symbol?::bool (::obj) "SYMBOLP")
-	    (macro $symbol?::bool (::obj) "SYMBOLP")
+   (extern  (macro $symbol?::bool (::obj) "SYMBOLP")
 	    (macro $make-symbol::symbol (::bstring) "")
 	    (c-string->symbol::symbol (::string) "string_to_symbol")
 	    ($string->symbol::symbol (::string) "string_to_symbol")
@@ -57,7 +56,6 @@
 	    (macro $set-symbol-plist::obj (::obj ::obj) "SET_SYMBOL_PLIST")
 	    ($symbol-exists?::bool (::string) "symbol_exists_p")
 	    
-	    (macro c-keyword?::bool (::obj) "KEYWORDP")
 	    (macro $keyword?::bool (::obj) "KEYWORDP")
 	    (macro $make-keyword::keyword (::bstring) "")
 	    (c-string->keyword::keyword (::string) "string_to_keyword")
@@ -70,7 +68,7 @@
 	    (macro $set-keyword-plist::obj (::obj ::obj) "SET_KEYWORD_PLIST")
 	    (macro cnst->integer::long (::obj) "CCNST"))
 
-   (wasm    (c-symbol? "(ref.test (ref $symbol) ~0)")
+   (wasm    ($symbol? "(ref.test (ref $symbol) ~0)")
 	    ($make-symbol "(call $make-symbol ~0 (global.get $BNIL))")
 	    ($symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
 	    (c-symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
@@ -80,7 +78,6 @@
 	    ($symbol->string "(struct.get $symbol $str (ref.cast (ref $symbol) ~0))")
 	    (c-symbol->string "(struct.get $symbol $str (ref.cast (ref $symbol) ~0))")
 
-	    (c-keyword? "(ref.test (ref $keyword) ~0)")
 	    ($keyword? "(ref.test (ref $keyword) ~0)")
 	    ($make-keyword "(call $make-keyword ~0 (global.get $BNIL))")
 	    ($keyword-plist "(struct.get $keyword $cval (ref.cast (ref $keyword) ~0))")
@@ -92,8 +89,6 @@
 	    (c-keyword->string "(struct.get $keyword $str (ref.cast (ref $keyword) ~0))"))
    
    (java    (class foreign
-	       (method static c-symbol?::bool (::obj)
-		       "SYMBOLP")
 	       (method static $symbol?::bool (::obj)
 		       "SYMBOLP")
 	       (method static c-string->symbol::symbol (::string)
@@ -117,8 +112,6 @@
 	       (method static $symbol-exists?::bool (::string)
 		       "symbol_exists_p")
 	       
-	       (method static c-keyword?::bool (::obj)
-		       "KEYWORDP")
 	       (method static $keyword?::bool (::obj)
 		       "KEYWORDP")
 	       (method static c-string->keyword::keyword (::string)
@@ -186,7 +179,7 @@
 ;*    symbol? ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (symbol? obj)
-   (c-symbol? obj))
+   ($symbol? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol->string ...                                               */
@@ -347,7 +340,7 @@
 ;*    keyword? ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (keyword? obj)
-   (c-keyword? obj))
+   ($keyword? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    keyword->string ...                                              */

@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Fri Jul  4 14:28:25 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 13:40:32 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -79,9 +79,7 @@
    ;; (type $bbool (struct (field $v i8)))
    ;; (type $bchar (struct (field $v i8)))
 
-   (type $real (struct (field $v f64)))
-
-   
+   (@include "./wreal.wat" type)
    
    (type $struct (struct
 		    (field $key (ref eq))

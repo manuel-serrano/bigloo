@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Jul 15 10:24:11 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 13:46:38 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -12,7 +12,10 @@
 
 (module $__bigloo
    
-   ;; General bigloo memory
+   ;; -----------------------------------------------------------------
+   ;; Memory
+   ;; -----------------------------------------------------------------
+
    (memory 1)
    (export "memory" (memory 0))
    
@@ -70,7 +73,22 @@
       (result (ref eq))
       (call $js_internal_error (local.get $errno) (local.get $val))
       (return (global.get $BUNSPEC)))
-   
+
+   (func $CELLP (export "CELLP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $cell) (local.get $o)))
+
+   (func $CNSTP (export "CNSTP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref i31) (local.get $o)))
+
+   (func $OPAQUEP (export "OPAQUEP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $opaque) (local.get $o)))
+      
    (func $CNST_TABLE_SET (export "CNST_TABLE_SET")
       (param $offset i32)
       (param $val (ref eq))

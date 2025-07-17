@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Tue Dec 24 10:16:42 2024 (serrano)                */
+;*    Last change :  Thu Jul 17 13:43:12 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -64,7 +64,6 @@
 	    ($make-vector-uncollectable "(array.new $vector ~1 (i32.wrap_i64 ~0))")
 	    ($create-vector "(array.new $vector (global.get $BUNSPEC) (i32.wrap_i64 ~0))")
 	    ($create-vector-uncollectable "(array.new $vector (global.get $BUNSPEC) (i32.wrap_i64 ~0))")
-	    ($vector? "(ref.test (ref $vector) ~0)")
 	    ($vector-length "(i64.extend_i32_u (array.len ~0))")
 	    ($vector-ref "(array.get $vector ~0 ~1)")
 	    ($vector-ref-ur "(array.get $vector ~0 ~1)")

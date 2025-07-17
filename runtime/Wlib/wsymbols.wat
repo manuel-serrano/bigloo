@@ -61,6 +61,11 @@
       (result i32)
       (ref.test (ref $symbol) (local.get $o)))
 
+   (func $KEYWORDP (export "KEYWORDP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $keyword) (local.get $o)))
+
    ;; --------------------------------------------------------
    ;; Library functions 
    ;; --------------------------------------------------------

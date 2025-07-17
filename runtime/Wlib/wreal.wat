@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  1 09:40:49 2024                          */
-;*    Last change :  Tue Jul  8 08:01:10 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 13:39:39 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM reals                                                       */
@@ -15,6 +15,8 @@
    ;; Type declarations 
    ;; -----------------------------------------------------------------
    
+   (type $real (struct (field $v f64)))
+
    ;; -----------------------------------------------------------------
    ;; Imports 
    ;; -----------------------------------------------------------------
@@ -24,6 +26,20 @@
    (import "__js_math" "strtod" (func $js_strtod (param i32) (param i32) (result f64)))
 
 
+   ;; -----------------------------------------------------------------
+   ;; Macros 
+   ;; -----------------------------------------------------------------
+   
+   (func $REALP (export "REALP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $real) (local.get $o)))
+  
+   (func $BGL_FAST_REALP (export "BGL_FAST_REALP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $real) (local.get $o)))
+  
    ;; -----------------------------------------------------------------
    ;; Library functions 
    ;; -----------------------------------------------------------------

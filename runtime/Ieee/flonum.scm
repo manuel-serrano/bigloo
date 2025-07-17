@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/flonum.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/flonum.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Tue Jul  1 09:48:28 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 13:39:32 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -88,9 +88,7 @@
 	    (macro %int-bits->float::float (::int) "INT_BITS_TO_FLOAT")
 	    (macro $randomfl::double () "RANDOMFL"))
 
-   (wasm    ($flonum? "(ref.test (ref $real) ~0)")
-            ($fast-flonum? "(ref.test (ref $real) ~0)")
-	    ($fast-real->double "(struct.get $real $v (ref.cast (ref $real) ~0))")
+   (wasm    ($fast-real->double "(struct.get $real $v (ref.cast (ref $real) ~0))")
 	    ($=fl "(f64.eq ~0 ~1)")
 	    ($<fl "(f64.lt ~0 ~1)")
 	    ($<=fl "(f64.le ~0 ~1)")
