@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Wed Feb  5 07:13:45 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:12:13 2025 (serrano)                */
 ;*    Copyright   :  2004-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -100,8 +100,7 @@
 	    (macro $thread-backend-set!::void (::obj)
 		   "BGL_THREAD_BACKEND_SET"))
 
-   (wasm    ($dynamic-env? "(ref.test (ref $dynamic-env) ~0)")
-	    ;; TODO
+   (wasm    ;; TODO
 	    ($mutex-lock "(i32.const 1)")
 	    ($mutex-lock-prelock "(i32.const 1)")
 	    ($mutex-timed-lock "(i32.const 1)")

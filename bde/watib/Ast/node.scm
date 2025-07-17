@@ -1,6 +1,6 @@
 ;; Copyright (c) 2025 Aghilas Y. Boussaa, see COPYING file
 
-;; Definitions of the data structures representing wasm code.
+;; Definitions of the data structures representing Wasm code.
 
 (module ast_node
    (export (class modulefield::object)
@@ -79,7 +79,7 @@
            (abstract-class parameter)
 
            (class idxp::parameter
-              idx::bint)
+              idx::long)
 
            (class labelidxp::idxp
               type::pair-nil)
@@ -168,42 +168,42 @@
 
            ;; section 3.1.6
            (class env::object
-              (ntype::bint (default 0))
+              (ntype::long (default 0))
               (type-table (default (create-hashtable eqtest: eq?)))
               (types::vector (default (make-vector 100000)))
               (type-names::vector (default (make-vector 100000)))
 
               (field-names::vector (default (make-vector 100000)))
 
-              (nlocal::bint (default 0))
+              (nlocal::long (default 0))
               (local-names::pair-nil (default '()))
               (local-types::vector (default (make-vector 0)))
 
-              (nlabel::bint (default 0))
+              (nlabel::long (default 0))
               (label-names::pair-nil (default '()))
               (label-types::vector (default (make-vector 10000)))
 
               (refs (default (create-hashtable eqtest: eq?)))
 
-              (ndata::bint (default 0))
+              (ndata::long (default 0))
               (data-table (default (create-hashtable eqtest: eq?)))
 
-              (nglobal::bint (default 0))
+              (nglobal::long (default 0))
               (global-table (default (create-hashtable eqtest: eq?)))
               (global-types::vector (default (make-vector 1000000)))
               (global-names::vector (default (make-vector 1000000)))
 
-              (nfunc::bint (default 0))
+              (nfunc::long (default 0))
               (func-table (default (create-hashtable eqtest: eq?)))
               (func-types::vector (default (make-vector 1000000)))
               (func-names::vector (default (make-vector 1000000)))
 
-              (ntag::bint (default 0))
+              (ntag::long (default 0))
               (tag-table (default (create-hashtable eqtest: eq?)))
               (tag-types::vector (default (make-vector 10000)))
               (tag-names::vector (default (make-vector 10000)))
 
-              (nmem::bint (default 0))
+              (nmem::long (default 0))
               (mem-table (default (create-hashtable eqtest: eq?)))
               (mem-types::vector (default (make-vector 10000)))
               (mem-names::vector (default (make-vector 10000)))

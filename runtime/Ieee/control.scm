@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:48:44 1995                          */
-;*    Last change :  Mon Jan 13 07:46:24 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:00:21 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.9. Control features (page 27, r4)                              */
 ;*=====================================================================*/
@@ -43,18 +43,17 @@
        (use __object __bit __thread)))
    
    (extern  (macro c-procedure?::bool (::obj) "PROCEDUREP")
+	    (macro $procedure?::bool (::obj) "PROCEDUREP")
 	    (call-cc::obj (::procedure) "call_cc")
 	    
 	    (macro push-before!::obj (::procedure) "PUSH_BEFORE")
 	    (macro pop-before!::obj () "POP_BEFORE"))
 
-   (wasm    (c-procedure? "(ref.test (ref $procedure) ~0)")
-            ;; TODO: is really needed to implement push-before and pop-before?
-            (push-before! "(global.get $BUNSPEC)")
+   (wasm    (push-before! "(global.get $BUNSPEC)")
             (pop-before! "(global.get $BUNSPEC)"))
    
    (java    (class foreign
-	       (method static c-procedure?::bool (::obj) "PROCEDUREP")
+	       (method static $procedure?::bool (::obj) "PROCEDUREP")
 	       ;(method static call-cc::obj (::procedure) "call_cc")
 	       
 	       (method static push-before!::obj (::procedure) "PUSH_BEFORE")
@@ -78,14 +77,14 @@
 	    (inline call-with-current-continuation ::procedure)
 	    (dynamic-wind ::procedure ::procedure ::procedure))
    
-   (pragma  (c-procedure? (predicate-of procedure) no-cfa-top nesting)
+   (pragma  ($procedure? (predicate-of procedure) no-cfa-top nesting)
 	    (procedure? side-effect-free no-cfa-top nesting)))
 
 ;*---------------------------------------------------------------------*/
 ;*    procedure? ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (procedure? obj)
-   (c-procedure? obj))
+   ($procedure? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    apply ...                                                        */

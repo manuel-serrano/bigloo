@@ -639,7 +639,7 @@
         (multiple-value-bind (tl st) (valid-instrs env (cdr l) st)
            (values (append is tl) st))))
     ((symbol? (car l))
-     (multiple-value-bind (is st) (valid-instr (list (car l)) st)
+     (multiple-value-bind (is st) (valid-instr (econs (car l) '() (cer l)) st)
         (multiple-value-bind (tl st) (valid-instrs env (cdr l) st)
            (values (append is tl) st))))
     (else (raise `(at-pos ,(cer l) expected-instruction ,(car l))))))
@@ -997,6 +997,7 @@
         (unless silent
           (when (epair? obj)
             (error/location "watib" "" msg (cadr (cer obj)) (caddr (cer obj)))))))
+
    (define (rep/pos msg pos)
      (with-handler error-notify
         (unless silent
@@ -1022,6 +1023,7 @@
        (display "***ERROR: " (current-error-port))
        (display e (current-error-port))
        (newline (current-error-port))))
+
 
    (unless keep-going
       (raise

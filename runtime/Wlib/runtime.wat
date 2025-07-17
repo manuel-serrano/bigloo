@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Thu Jul 17 13:46:38 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:18:49 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -175,7 +175,30 @@
    ;; --------------------------------------------------------
    ;; Struct functions
    ;; --------------------------------------------------------
-   
+
+   (func $STRUCTP (export "STRUCTP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $struct) (local.get $o)))
+
+   (func $STRUCT_KEY (export "STRUCT_KEY")
+      (param $struct (ref $struct))
+      (result (ref eq))
+      (struct.get $struct $key (local.get $struct)))
+
+   (func $STRUCT_LENGTH (export "STRUCT_LENGTH")
+      (param $struct (ref $struct))
+      (result i32)
+      (array.len (struct.get $struct $values (local.get $struct))))
+
+   (func $STRUCT_REF (export "STRUCT_REF")
+      (param $struct (ref $struct))
+      (param $index i32)
+      (result (ref eq))
+      (array.get $vector
+	 (struct.get $struct $values (local.get $struct))
+	 (local.get $index)))
+
    (func $STRUCT_SET (export "STRUCT_SET")
       (param $struct (ref $struct))
       (param $index i32)

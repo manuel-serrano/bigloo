@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Thu Jul 10 07:49:06 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:12:07 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -90,6 +90,12 @@
    ;; -----------------------------------------------------------------
    ;; Global variables 
    ;; -----------------------------------------------------------------
+
+   (func $BGL_DYNAMIC_ENVP (export "BGL_DYNAMIC_ENVP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $dynamic-env) (local.get $o)))
+   
    (global $bgl_internal_error (mut (ref null eq))
       (ref.null none))
    

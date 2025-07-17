@@ -14,26 +14,36 @@
            (opt_puredrop "Opt/PureDrop/walk.scm")
            (opt_copyprop "Opt/CopyProp/walk.scm"))
    (import (misc_letif "Misc/let-if.scm"))
-   (export (opt-file! p::prog nthreads::bint)))
+   (export (class opt-flags::object
+                  (testbr::bool (default #t))
+                  (copyprop::bool (default #t))
+                  (uncast::bool (default #t))
+                  (unreachable::bool (default #t))
+                  (const::bool (default #t))
+                  (puredrop::bool (default #t)))
 
-(define (opt-func! f::func p::prog)
-   (testbr! f)
-   (copyprop! f)
-   (uncast! (-> p env) f)
-   (unreachable! f)
-   (const! f)
-   (puredrop! f)
-   )
+           (opt-file! p::prog nthreads::bint flags::opt-flags)))
+
+(define-macro (opt n . args)
+   `(if (-> flags ,n) (,(symbol-append n '!) ,@args)))
+
+(define (opt-func! f::func p::prog flags::opt-flags)
+   (opt testbr f)
+   (opt copyprop f)
+   (opt uncast (-> p env) f)
+   (opt unreachable f)
+   (opt const f)
+   (opt puredrop f))
 
 (cond-expand
  ((and multijob (library pthread))
-  (define (multijob p::prog nthreads::bint)
+  (define (multijob p::prog nthreads::bint flags::opt-flags)
     (define (opt! a::long b::long)
        (with-access::env (-> p env) (nfunc)
           (do ((i b (+fx i a)))
               ((>=fx i nfunc))
              (let-if (f (vector-ref (-> p funcs) i))
-                (opt-func! f p)))))
+                (opt-func! f p flags)))))
 
     (let ((ts (list-tabulate
                nthreads
@@ -43,12 +53,12 @@
        (map thread-start-joinable! ts)
        (map thread-join! ts)))))
 
-(define (opt-file! p::prog nthreads::bint)
+(define (opt-file! p::prog nthreads::bint flags::opt-flags)
    (cond-expand
     ((and multijob (library pthread))
-     (multijob p nthreads))
+     (multijob p nthreads flags))
     (else (with-access::env (-> p env) (nfunc)
        (do ((i 0 (+fx i 1)))
           ((>=fx i nfunc))
          (let-if (f (vector-ref (-> p funcs) i))
-            (opt-func! f p)))))))
+            (opt-func! f p flags)))))))

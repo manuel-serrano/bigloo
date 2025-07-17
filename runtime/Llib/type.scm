@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Jul 17 13:50:15 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:00:30 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -203,7 +203,7 @@
     (coerce obj tvector ($tvector?) ())
     (coerce obj weakptr ($weakptr?) ())
     (coerce obj dynamic-env ($dynamic-env?) ())
-    (coerce obj procedure (c-procedure?) ())
+    (coerce obj procedure ($procedure?) ())
     (coerce obj struct ($struct?) ())
     (coerce obj tstruct (c-tstruct?) ())
     (coerce obj pair ($pair?) ())

@@ -30,8 +30,8 @@
    (define keep-going #f)
    (define output-file "a.out.wasm")
    (define silent #f)
-   (define opt? #t)
    (define validate-only #f)
+   (define o-flags::opt-flags (instantiate::opt-flags))
 
    (define (parse-args args)
       (args-parse args
@@ -48,9 +48,54 @@
          ((("--validate-only" "-v") (help "Validate only"))
           (set! validate-only #t))
          (("-O0" (help "Disable optimisations"))
-          (set! opt? #f))
-         (("-O1" (help "Toggle optimisations (default)"))
-          (set! opt? #t))
+          (with-access::opt-flags o-flags (testbr copyprop uncast unreachable
+                                                  const puredrop)
+             (set! testbr #f)
+             (set! copyprop #f)
+             (set! uncast #f)
+             (set! unreachable #f)
+             (set! const #f)
+             (set! puredrop #f)))
+         (("-O1" (help "Enable all optimisations (default)"))
+          (with-access::opt-flags o-flags (testbr copyprop uncast unreachable
+                                                  const puredrop)
+             (set! testbr #t)
+             (set! copyprop #t)
+             (set! uncast #t)
+             (set! unreachable #t)
+             (set! const #t)
+             (set! puredrop #t)))
+
+         (("-fno-testbr" (help "Disable type based control flow rewriting"))
+           (set! (-> o-flags testbr) #f))
+         (("-ftestbr" (help "Enable type based control flow rewriting"))
+           (set! (-> o-flags testbr) #t))
+
+         (("-fno-copyprop" (help "Disable copy propagation"))
+           (set! (-> o-flags copyprop) #f))
+         (("-fcopyprop" (help "Enable copy propagation"))
+           (set! (-> o-flags copyprop) #t))
+
+         (("-fno-uncast" (help "Disable redundant type tests and casts elimination"))
+           (set! (-> o-flags uncast) #f))
+         (("-funcast" (help "Enable redundant type tests and casts elimination"))
+           (set! (-> o-flags uncast) #t))
+
+         (("-fno-unreachable" (help "Disable unreachable code elimination"))
+           (set! (-> o-flags unreachable) #f))
+         (("-funreachable" (help "Enable unreachable code elimination"))
+           (set! (-> o-flags unreachable) #t))
+
+         (("-fno-const" (help "Disable constant folding"))
+           (set! (-> o-flags const) #f))
+         (("-fconst" (help "Enable constant folding"))
+           (set! (-> o-flags const) #t))
+
+         (("-fno-puredrop" (help "Disable redundant drop elimination"))
+           (set! (-> o-flags puredrop) #f))
+         (("-fpuredrop" (help "Enable redundant drop elimination"))
+           (set! (-> o-flags puredrop) #t))
+
          (("-o" ?file (help "Output binary format to FILE"))
           (set! output-file file))
          (else
@@ -69,8 +114,7 @@
         (validate-only
          (exit 0))
         (else
-         (when opt?
-            (opt-file! p nthreads))
+         (opt-file! p nthreads o-flags)
          (call-with-output-file output-file
             (lambda (op) (asm-file! p op)))))))
 

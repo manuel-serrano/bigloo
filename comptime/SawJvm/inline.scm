@@ -541,7 +541,7 @@
 ;;;
 ;;; PROCEDURE
 ;;;
-(define-inline-call c-procedure? ; "PROCEDUREP"
+(define-inline-call $procedure? ; "PROCEDUREP"
    (code! me '(instanceof procedure)) )
 
 (define-inline-call-args procedure-set! ; "PROCEDURE_SET"

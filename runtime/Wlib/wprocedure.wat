@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  5 08:42:14 2025                          */
-;*    Last change :  Fri Jul 11 08:03:52 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:03:22 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM procedure and funcall                                       */
@@ -102,6 +102,11 @@
    ;; --------------------------------------------------------
    ;; Procedure functions
    ;; --------------------------------------------------------
+
+   (func $PROCEDUREP (export "PROCEDUREP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $procedure) (local.get $o)))
    
    (func $MAKE_FX_PROCEDURE (export "MAKE_FX_PROCEDURE")
       (param $entry (ref func))
