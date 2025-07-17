@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Sun Jul  6 10:27:05 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:52:31 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM boxed 64bit fixnum implementation                           */
@@ -62,6 +62,56 @@
       (param $o (ref eq))
       (result i32)
       (ref.test (ref $bint) (local.get $o)))
+  
+   (func $ELONGP (export "ELONGP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $belong) (local.get $o)))
+  
+   (func $LLONGP (export "LLONGP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $bllong) (local.get $o)))
+  
+   (func $BGL_INT8P (export "BGL_INT8P")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $bint8) (local.get $o)))
+  
+   (func $BGL_UINT8P (export "BGL_UINT8P")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $buint8) (local.get $o)))
+  
+   (func $BGL_INT16P (export "BGL_INT16P")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $bint16) (local.get $o)))
+  
+   (func $BGL_UINT16P (export "BGL_UINT16P")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $buint16) (local.get $o)))
+  
+   (func $BGL_INT32P (export "BGL_INT32P")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $bint32) (local.get $o)))
+  
+   (func $BGL_UINT32P (export "BGL_UINT32P")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $buint32) (local.get $o)))
+  
+   (func $BGL_INT64P (export "BGL_INT64P")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $bint64) (local.get $o)))
+  
+   (func $BGL_UINT64P (export "BGL_UINT64P")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $buint64) (local.get $o)))
   
    (func $CINT (export "CINT")
       (param $o (ref $bint))

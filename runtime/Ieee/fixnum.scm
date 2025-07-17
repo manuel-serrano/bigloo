@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Jul 17 07:43:08 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:52:42 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -249,17 +249,7 @@
 	    (macro $gefx::bint (::bint ::bint) "GEFX")
 	    (macro $egfx::bint (::bint ::bint) "EGFX"))
    
-   (wasm   ($elong? "(ref.test (ref $belong) ~0)")
-	   ($llong? "(ref.test (ref $bllong) ~0)")
-	   ($int8? "(ref.test (ref $bint8) ~0)")
-	   ($uint8? "(ref.test (ref $buint8) ~0)")
-	   ($int16? "(ref.test (ref $bint16) ~0)")
-	   ($uint16? "(ref.test (ref $buint16) ~0)")
-	   ($int32? "(ref.test (ref $bint32) ~0)")
-	   ($uint32? "(ref.test (ref $buint32) ~0)")
-	   ($int64? "(ref.test (ref $bint64) ~0)")
-	   ($uint64? "(ref.test (ref $buint64) ~0)")
-	   ($minvalelong "(i64.const -9223372036854775808)")
+   (wasm    ($minvalelong "(i64.const -9223372036854775808)")
 	   ($maxvalelong "(i64.const 9223372036854775807)")
 	   ($minvalllong "(i64.const -9223372036854775808)")
 	   ($maxvalllong "(i64.const 9223372036854775807)")
