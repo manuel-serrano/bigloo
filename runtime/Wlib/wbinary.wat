@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  8 08:38:25 2025                          */
-;*    Last change :  Wed Jul 16 09:52:26 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:32:07 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM Binary IO                                                   */
@@ -77,6 +77,15 @@
 	 (i32.const 0)
 	 ;; io
 	 (i32.const 0)))
+   
+   ;; -----------------------------------------------------------------
+   ;; Predicates
+   ;; -----------------------------------------------------------------
+   
+   (func $BINARY_PORTP (export "BINARY_PORTP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $binary-port) (local.get $o)))
    
    ;; -----------------------------------------------------------------
    ;; Library functions

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/input.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/input.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Sun Aug 25 09:19:22 2019 (serrano)                */
+;*    Last change :  Thu Jul 17 14:29:12 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -182,7 +182,7 @@
 ;*    read-line ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (read-line #!optional (ip (current-input-port)))
-   (if (>fx (c-input-port-bufsiz ip) 2)
+   (if (>fx ($input-port-bufsiz ip) 2)
        (let ((grammar (regular-grammar ((xall (or (out #\Newline #\Return)
 						  #a000)))
 			 ((: (+ xall) (or #\Newline #\Return))
@@ -233,7 +233,7 @@
 ;*    read-line-newline ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (read-line-newline #!optional (ip (current-input-port)))
-   (if (>fx (c-input-port-bufsiz ip) 2)
+   (if (>fx ($input-port-bufsiz ip) 2)
        (let ((grammar (regular-grammar ((xall (or (out #\Newline #\Return)
 						  #a000)))
 			 ((or (: (+ xall) (or #\Newline #\Return))
@@ -456,7 +456,7 @@
    (when (>=fx offset 0) (set-input-port-position! ip offset))
    (let* ((bufsize (cond
 		      ((=fx sz -1)
-		       (c-input-port-bufsiz ip))
+		       ($input-port-bufsiz ip))
 		      ((<fx c-default-io-bufsiz sz)
 		       c-default-io-bufsiz)
 		      (else

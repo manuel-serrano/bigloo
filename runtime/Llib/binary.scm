@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  7 10:38:25 1994                          */
-;*    Last change :  Tue Sep 17 14:53:50 2024 (serrano)                */
+;*    Last change :  Thu Jul 17 14:30:37 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Les entrees/sorties compactees des objets Scheme (eventuellement */
 ;*    circulaires).                                                    */
@@ -47,7 +47,7 @@
 	    __r4_output_6_10_3
 	    __evenv)
 
-   (extern  (macro c-binary-port?::bool (::obj) "BINARY_PORTP")
+   (extern  (macro $binary-port?::bool (::obj) "BINARY_PORTP")
 	    
 	    ($open-output-binary-file::obj (::bstring)
 					    "open_output_binary_file")
@@ -78,10 +78,8 @@
 	    (macro $int-eof?::bool (::int)
 		   "BGL_INT_EOFP"))
 
-   (wasm    (c-binary-port? "(ref.test (ref $binary-port) ~0)"))
-   
    (java    (class foreign
-	       (method static c-binary-port?::bool (::obj)
+	       (method static $binary-port?::bool (::obj)
 		       "BINARY_PORTP")
 	       (method static $open-output-binary-file::obj (::bstring)
 		       "open_output_binary_file")
@@ -127,7 +125,7 @@
 	    (inline input-string::bstring ::binary-port ::int)
 	    (inline input-fill-string!::int ::binary-port ::bstring))
    
-   (pragma  (c-binary-port? (predicate-of binary-port) nesting)
+   (pragma  ($binary-port? (predicate-of binary-port) nesting)
 	    ($output-char nesting args-safe)
 	    ($output-byte nesting args-safe)
 	    ($input-char nesting args-safe)
@@ -138,7 +136,7 @@
 ;*    binary-port? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (binary-port? obj)
-   (c-binary-port? obj))
+   ($binary-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-output-binary-file ...                                      */

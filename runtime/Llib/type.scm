@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Jul 17 14:00:30 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:30:04 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -213,9 +213,9 @@
     (coerce obj list (list?) ())
     (coerce obj cell () ())
     (coerce obj exit () ($obj->exit))
-    (coerce obj input-port (c-input-port?) ())
-    (coerce obj output-port (c-output-port?) ())
-    (coerce obj binary-port (c-binary-port?) ())
+    (coerce obj input-port ($input-port?) ())
+    (coerce obj output-port ($output-port?) ())
+    (coerce obj binary-port ($binary-port?) ())
     (coerce obj void* (c-foreign?) ($obj->void*))
     (coerce obj foreign (c-foreign?) ())
     (coerce obj process (c-process?) ())

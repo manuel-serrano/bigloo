@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Wed Jul 16 08:38:32 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:31:37 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -527,10 +527,10 @@
    ;; -----------------------------------------------------------------
    ;; Predicates
    ;; -----------------------------------------------------------------
-   (func $BGL_OUTPUT_PROCEDURE_PORTP (export "BGL_OUTPUT_PROCEDURE_PORTP")
-      (param $port (ref eq))
+   (func $INPUT_PORTP (export "INPUT_PORTP")
+      (param $o (ref eq))
       (result i32)
-      (ref.test (ref $procedure-output-port) (local.get $port)))
+      (ref.test (ref $input-port) (local.get $o)))
    
    (func $INPUT_STRING_PORTP (export "INPUT_STRING_PORTP")
       (param $port (ref eq))
@@ -553,6 +553,21 @@
       ;;(ref.test (ref $gzip-input-port) (local.get $port))
       (i32.const 0))
 
+   (func $OUTPUT_PORTP (export "OUTPUT_PORTP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $output-port) (local.get $o)))
+   
+   (func $BGL_OUTPUT_PROCEDURE_PORTP (export "BGL_OUTPUT_PROCEDURE_PORTP")
+      (param $port (ref eq))
+      (result i32)
+      (ref.test (ref $procedure-output-port) (local.get $port)))
+   
+   (func $BGL_OUTPUT_STRING_PORTP (export "BGL_OUTPUT_STRING_PORTP")
+      (param $port (ref eq))
+      (result i32)
+      (ref.test (ref $string-output-port) (local.get $port)))
+   
    ;; -----------------------------------------------------------------
    ;; Common macros
    ;; -----------------------------------------------------------------

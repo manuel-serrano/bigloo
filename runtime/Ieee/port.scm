@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Jun 17 11:16:10 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 14:28:41 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -57,7 +57,7 @@
 	    
 	    __evenv)
    
-   (extern  (macro c-input-port?::bool  (::obj)
+   (extern  (macro $input-port?::bool  (::obj)
 		   "INPUT_PORTP")
 	    (macro c-input-string-port?::bool  (::obj)
 		   "INPUT_STRING_PORTP")
@@ -67,11 +67,11 @@
 		   "INPUT_GZIP_PORTP")
 	    (macro $input-mmap-port?::bool (::obj)
 		   "INPUT_MMAP_PORTP")
-	    (macro c-output-port?::bool (::obj)
+	    (macro $output-port?::bool (::obj)
 		   "OUTPUT_PORTP")
-	    (macro c-output-string-port?::bool (::obj)
+	    (macro $output-string-port?::bool (::obj)
 		   "BGL_OUTPUT_STRING_PORTP")
-	    (macro c-output-procedure-port?::bool (::obj)
+	    (macro $output-procedure-port?::bool (::obj)
 		   "BGL_OUTPUT_PROCEDURE_PORTP")
 	    
 	    (macro c-current-output-port::output-port (::dynamic-env)
@@ -114,7 +114,7 @@
 	    ($input-port-reopen!::obj (::input-port) "bgl_input_port_reopen")
 	    ($input-port-clone!::input-port (::input-port ::input-port) "bgl_input_port_clone")
 	    ($set-input-port-position!::void (::input-port ::long) "bgl_input_port_seek")
-	    (macro c-input-port-position::long (::input-port)
+	    (macro $input-port-position::long (::input-port)
 		   "INPUT_PORT_FILEPOS")
 	    (macro $input-port-fill-barrier::long (::input-port)
 		   "INPUT_PORT_FILLBARRIER")
@@ -124,16 +124,16 @@
 		   "BGL_INPUT_PORT_LENGTH")
 	    (macro $input-port-length-set!::void (::input-port ::elong)
 		   "BGL_INPUT_PORT_LENGTH_SET")
-	    (macro c-input-port-last-token-position::elong (::input-port)
+	    (macro $input-port-last-token-position::elong (::input-port)
 		   "INPUT_PORT_TOKENPOS")
-	    (macro c-input-port-bufsiz::long (::input-port)
+	    (macro $input-port-bufsiz::long (::input-port)
 		   "BGL_INPUT_PORT_BUFSIZ")
 	    (macro c-closed-input-port?::bool (::obj)
 		   "INPUT_PORT_CLOSEP")
 	    (macro $closed-output-port?::bool (::obj)
 		   "OUTPUT_PORT_CLOSEP")
 
-	    (macro c-output-port-position::long (::output-port)
+	    (macro $output-port-position::long (::output-port)
 		   "BGL_OUTPUT_PORT_FILEPOS")
 	    (c-set-output-port-position!::obj (::output-port ::long) "bgl_output_port_seek")
 	    
@@ -162,9 +162,9 @@
  	    (macro $input-port-name::bstring (::input-port) "INPUT_PORT_NAME")
  	    (macro $input-port-name-set!::void (::input-port ::bstring) "INPUT_PORT_NAME_SET")
 
-	    (macro c-output-port-chook::obj (::output-port)
+	    (macro $output-port-chook::obj (::output-port)
 		   "PORT_CHOOK")
-	    (macro c-output-port-chook-set!::void (::output-port ::procedure)
+	    (macro $output-port-chook-set!::void (::output-port ::procedure)
 		   "PORT_CHOOK_SET")
 	    (macro $output-port-fhook::obj (::output-port)
 		   "BGL_OUTPUT_PORT_FHOOK")
@@ -222,11 +222,7 @@
 	    (macro $F_ULOCK::int "F_ULOCK")
 	    (macro $F_TEST::int "F_TEST"))
 
-   (wasm    (c-input-port? "(ref.test (ref $input-port) ~0)")
-            (c-output-port? "(ref.test (ref $output-port) ~0)")
-	    (c-output-string-port? "(ref.test (ref $string-output-port) ~0)")
-
-	    (c-default-io-bufsiz "(i64.const 4096)")
+   (wasm    (c-default-io-bufsiz "(i64.const 4096)")
 
 	    ($port-isatty? "(i32.const 1)") ;; FIXME: actually only terminal ports are supported
 	    ($output-port-name "(struct.get $port $name ~0)")
@@ -234,8 +230,8 @@
  	    ($input-port-name "(struct.get $port $name ~0)")
  	    ($input-port-name-set! "(struct.set $port $name ~0 ~1)")
 
-	    (c-output-port-chook "(struct.get $output-port $chook ~0)")
-	    (c-output-port-chook-set! "(struct.set $output-port $chook ~0 ~1)")
+	    ($output-port-chook "(struct.get $output-port $chook ~0)")
+	    ($output-port-chook-set! "(struct.set $output-port $chook ~0 ~1)")
 	    ($output-port-fhook "(struct.get $output-port $fhook ~0)")
 	    ($output-port-fhook-set! "(struct.set $output-port $fhook ~0 ~1)")
 	    ($output-port-flushbuf "(struct.get $output-port $flushbuf ~0)")
@@ -254,7 +250,7 @@
 	    ($output-port-timeout-set! "(i32.const 0)"))
 
    (java    (class foreign
-	       (method static c-input-port?::bool  (::obj)
+	       (method static $input-port?::bool  (::obj)
 		  "INPUT_PORTP")
 	       (method static c-input-string-port?::bool  (::obj)
 		  "INPUT_STRING_PORTP")
@@ -262,11 +258,11 @@
 		  "INPUT_PROCEDURE_PORTP")
 	       (method static c-input-gzip-port?::bool (::obj)
 		  "INPUT_GZIP_PORTP")
-	       (method static c-output-port?::bool (::obj)
+	       (method static $output-port?::bool (::obj)
 		  "OUTPUT_PORTP")
-	       (method static c-output-string-port?::bool (::obj)
+	       (method static $output-string-port?::bool (::obj)
 		  "OUTPUT_STRING_PORTP")
-	       (method static c-output-procedure-port?::bool (::obj)
+	       (method static $output-procedure-port?::bool (::obj)
 		  "OUTPUT_PROCEDURE_PORTP")
 	       
 	       (field static c-default-io-bufsiz::int
@@ -333,7 +329,7 @@
 		  "bgl_input_port_seek")
 	       (method static c-set-output-port-position!::obj (::output-port ::long)
 		  "bgl_output_port_seek")
-	       (method static c-input-port-bufsiz::int (::input-port)
+	       (method static $input-port-bufsiz::int (::input-port)
 		  "bgl_input_port_bufsiz")
 	       
 	       (method static c-closed-input-port?::bool (::input-port)
@@ -368,9 +364,9 @@
 	       (method static c-mkdir::bool (::string ::int)
 		  "mkdir")
 	       
-	       (method static c-output-port-position::long (::output-port)
+	       (method static $output-port-position::long (::output-port)
 		  "OUTPUT_PORT_FILEPOS")
-	       (method static c-input-port-position::long (::input-port)
+	       (method static $input-port-position::long (::input-port)
 		  "INPUT_PORT_FILEPOS")
 	       
 	       (method static $input-port-fill-barrier::long (::input-port)
@@ -383,7 +379,7 @@
 	       (method static $input-port-length-set!::void (::input-port ::elong)
 		  "BGL_INPUT_PORT_LENGTH_SET")
 	       
-	       (method static c-input-port-last-token-position::long (::input-port)
+	       (method static $input-port-last-token-position::long (::input-port)
 		  "INPUT_PORT_TOKENPOS")
 	       (method static $input-port-name-set!::void (::input-port ::bstring)
 		  "INPUT_PORT_NAME")
@@ -393,9 +389,9 @@
 		  "OUTPUT_PORT_NAME")
 	       (method static $output-port-name-set!::void (::output-port ::bstring)
 		  "OUTPUT_PORT_NAME_SET")
-	       (method static c-output-port-chook::obj (::output-port)
+	       (method static $output-port-chook::obj (::output-port)
 		  "OUTPUT_PORT_CHOOK")
-	       (method static c-output-port-chook-set!::void (::output-port ::procedure)
+	       (method static $output-port-chook-set!::void (::output-port ::procedure)
 		  "OUTPUT_PORT_CHOOK_SET")
 	       (method static $output-port-fhook::obj (::output-port)
 		  "OUTPUT_PORT_FHOOK")
@@ -589,9 +585,9 @@
 	    (get-port-buffer::bstring ::obj ::obj ::int)
 	    (lockf::bool ::output-port ::symbol #!optional (len 0)))
    
-   (pragma  (c-input-port? (predicate-of input-port) nesting)
-	    (c-output-port? (predicate-of output-port) nesting)
-	    (c-output-string-port? nesting)
+   (pragma  ($input-port? (predicate-of input-port) nesting)
+	    ($output-port? (predicate-of output-port) nesting)
+	    ($output-string-port? nesting)
 	    (c-input-string-port? nesting)
 	    (file-exists? side-effect-free nesting)))
 
@@ -653,7 +649,7 @@
 ;*    input-port? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-port? obj)
-   (c-input-port? obj))
+   ($input-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-string-port? ...                                           */
@@ -683,19 +679,19 @@
 ;*    output-port? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (output-port? obj)
-   (c-output-port? obj))
+   ($output-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-string-port? ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (output-string-port? obj)
-   (c-output-string-port? obj))
+   ($output-string-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-procedure-port? ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (output-procedure-port? obj)
-   (c-output-procedure-port? obj))
+   ($output-procedure-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    current-input-port ...                                           */
@@ -1329,7 +1325,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (reset-output-port port)
    ($reset-output-port-error port)
-   (if (c-output-string-port? port)
+   (if ($output-string-port? port)
        ($reset-output-string-port port)
        (flush-output-port port)))
 
@@ -1353,7 +1349,7 @@
 ;*    input-port-position ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-port-position port)
-   (c-input-port-position port))
+   ($input-port-position port))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port-fill-barrier ...                                      */
@@ -1372,7 +1368,7 @@
 ;*    input-port-last-token-position ...                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-port-last-token-position port)
-   (c-input-port-last-token-position port))
+   ($input-port-last-token-position port))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-port-name ...                                             */
@@ -1398,7 +1394,7 @@
 ;*    output-port-position ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (output-port-position port)
-   (c-output-port-position port))
+   ($output-port-position port))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-port-isatty? ...                                          */
@@ -1430,7 +1426,7 @@
 ;*    output-port-close-hook ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (output-port-close-hook port)
-   (c-output-port-chook port))
+   ($output-port-chook port))
 
 ;*---------------------------------------------------------------------*/
 ;*    closed-output-port? ...                                          */
@@ -1446,7 +1442,7 @@
        (error/errno $errno-io-port-error
 	  "output-port-close-hook-set!" "Illegal hook" proc)
        (begin
-	  (c-output-port-chook-set! port proc)
+	  ($output-port-chook-set! port proc)
 	  proc)))
 
 ;*---------------------------------------------------------------------*/
