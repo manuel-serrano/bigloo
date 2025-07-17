@@ -11,7 +11,7 @@
 
 (module $__bigloo_binary
 
-   (memory 0)
+   (memory 1)
    
    ;; -----------------------------------------------------------------
    ;; Global constants 

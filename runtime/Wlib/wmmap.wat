@@ -11,7 +11,7 @@
 
 (module $__bigloo_mmap
 
-   (memory 0)
+   (memory 1)
    
    ;; -----------------------------------------------------------------
    ;; Type declarations 

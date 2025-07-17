@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Jul 16 09:03:13 2025 (serrano)                */
+/*    Last change :  Thu Jul 17 15:08:00 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -527,8 +527,8 @@ function __js_io() {
       }, 
       
       rename: (old_addr, old_length, new_addr, new_length) => {
-	 const old = new Uint8Array(self.instance.exports.memory.buffer, old_addr, old_length);
-	 const new = new Uint8Array(self.instance.exports.memory.buffer, new_addr, old_length);
+	 const oldf = new Uint8Array(self.instance.exports.memory.buffer, old_addr, old_length);
+	 const newf = new Uint8Array(self.instance.exports.memory.buffer, new_addr, old_length);
 	 return 0;
       }
 	 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Jul 16 08:25:38 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 15:17:02 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -298,6 +298,11 @@ esac")
 			    #t)))
 		     (else #t)))
 	 modules))
+
+   (define (remove-duplicate-memories! memories)
+      (map! (lambda (i) `(memory ,i))
+	 (delete-duplicates!
+	    (map! cadr memories))))
    
    (define (remove-duplicate-tags! modules)
       (filter! (lambda (d)
@@ -534,7 +539,8 @@ esac")
 		   ,@(remove-duplicate-imports!
 			(collect-module modules 'import))
 		   (comment "memory")
-		   ,@(collect-module modules 'memory)
+		   ,@(remove-duplicate-memories!
+			(collect-module modules 'memory))
 		   (comment "elements")
 		   ,@(collect-module modules 'elem)
 		   (comment "types")

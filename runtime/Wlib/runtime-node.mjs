@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Jul 16 09:01:44 2025 (serrano)                */
+/*    Last change :  Thu Jul 17 15:07:54 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -71,10 +71,10 @@ function loadUCS2String(buffer) {
 }
 
 function storeJSStringToScheme(instance, string, addr) {
-    const memory = new Uint8Array(instance.exports.memory.buffer, addr);
-    const bytes = schemeStringEncoder.encode(string);
-    memory.set(bytes);
-    return bytes.length;
+   const memory = new Uint8Array(instance.exports.memory.buffer, addr);
+   const bytes = schemeStringEncoder.encode(string);
+   memory.set(bytes);
+   return bytes.length;
 }
 
 /*---------------------------------------------------------------------*/
@@ -457,11 +457,11 @@ function __js_io() {
       }, 
 
       rename: (old_addr, old_length, new_addr, new_length) => {
-	 const old = new Uint8Array(self.instance.exports.memory.buffer, old_addr, old_length);
-	 const new = new Uint8Array(self.instance.exports.memory.buffer, new_addr, old_length);
-	 renameSync(old, new);
+	 const oldf = new Uint8Array(self.instance.exports.memory.buffer, old_addr, old_length);
+	 const newf = new Uint8Array(self.instance.exports.memory.buffer, new_addr, old_length);
+	 renameSync(oldf, newf);
 	 return 0;
-      }
+      },
 	 
       password: (prompt_addr, prompt_length, res_addr) => {
 	 const memory = new Uint8Array(self.instance.exports.memory.buffer, offset, length, position);
