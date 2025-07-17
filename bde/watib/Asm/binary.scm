@@ -125,8 +125,8 @@
    (let* ((s (if (fixnum? (-> p num))
                  (float->ieee-string (fixnum->flonum (-> p num)))
                  (float->ieee-string (-> p num)))))
-     (do ((i 3 (- i 1)))
-         ((< i 0))
+     (do ((i 3 (-fx i 1)))
+         ((<fx i 0))
        (write-byte (char->integer (string-ref s i)) op))))
 
 (define-method (write-param p::typep op::output-port)
@@ -136,8 +136,8 @@
    (let ((s (if (fixnum? (-> p num))
                 (double->ieee-string (fixnum->flonum (-> p num)))
                 (double->ieee-string (-> p num)))))
-      (do ((i 7 (- i 1)))
-          ((< i 0))
+      (do ((i 7 (-fx i 1)))
+          ((<fx i 0))
         (write-byte (char->integer (string-ref s i)) op))))
 
 (define-generic (write-instruction i::instruction env::env op::output-port)
@@ -366,7 +366,7 @@
       (write-byte #x00 *elem-op*)
       (write-vec elems leb128-write-unsigned *elem-op*)))
 
-(define (write-sec N::bint len::bint ip::output-port op::output-port)
+(define (write-sec N::long len::long ip::output-port op::output-port)
    (unless (=fx 0 len)
       (let* ((slen (call-with-output-string
                      (lambda (p) (leb128-write-unsigned len p))))
@@ -377,7 +377,7 @@
          (display slen op)
          (display cont op))))
 
-(define (write-datacount n::bint op::output-port)
+(define (write-datacount n::long op::output-port)
    (unless (=fx n 0)
       (let ((sn (call-with-output-string
                      (lambda (p) (leb128-write-unsigned n p)))))

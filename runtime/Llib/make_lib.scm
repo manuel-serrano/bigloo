@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Fri Jul  4 10:32:19 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 07:40:19 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -12,6 +12,9 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __make_lib
+
+   (cond-expand
+      (bigloo-wasm (include "Llib/make_lib.wasm.sch")))
    
    (import  __configure
 	    __param

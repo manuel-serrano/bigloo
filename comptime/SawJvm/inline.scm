@@ -454,10 +454,10 @@
 ;;;
 ;;; SYMBOL
 ;;;
-(define-inline-call c-symbol? ; "SYMBOLP"
+(define-inline-call $symbol? ; "SYMBOLP"
    (code! me '(instanceof symbol)) )
 
-(define-inline-call c-symbol->string ; "SYMBOL_TO_STRING"
+(define-inline-call $symbol->string ; "SYMBOL_TO_STRING"
    (code! me '(getfield symbol_string)) )
 
 ;;;

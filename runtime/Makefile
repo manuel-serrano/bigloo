@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Jul 16 08:00:55 2025 (serrano)                */
+#*    Last change :  Thu Jul 17 08:03:17 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -509,7 +509,7 @@ heap-jvm: .afile .jfile includes lib-jvm_u
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
 	@ echo "\e[1;35m$(HEAPJVM_FILE)\e[0m done."
 
-heap-wasm: .afile includes
+heap-wasm: .afile includes Llib/make_lib.wasm.sch
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPWASM_FILE)
 	$(BIGLOO) -wasm -target wasm -L $(BOOTLIBDIR) $(BHEAPFLAGSWASM) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPWASM_FILE)
@@ -743,6 +743,12 @@ objs/wasm_s/%.wat: %.scm
 objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat
 	$(BIGLOO) -i ../tools/gen_dummy_wasm_imports.scm $(BOOTLIBDIR)/types.wat $< > $@ || (rm -f $@; exit 1)
+
+#*---------------------------------------------------------------------*/
+#*    Wasm heap specific                                               */
+#*---------------------------------------------------------------------*/
+Llib/make_lib.wasm.sch: $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_UNSAFE_SRC) $(W_WLIB)
+	$(BIGLOO) -i ../tools/gen_make_lib_wasm.scm -- $^ > $@
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */

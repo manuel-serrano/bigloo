@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/case.scm             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Expand/case.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  3 10:13:16 1992                          */
-;*    Last change :  Tue Dec 12 11:30:10 2017 (serrano)                */
-;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jul 17 09:16:39 2025 (serrano)                */
+;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On macro-expanse ce satane `case'                                */
 ;*=====================================================================*/
@@ -304,13 +304,13 @@
       ((eq? type 'symbol)
        `(labels ((,else-name () ,@else-body))
 	   (let ((,aux ,(e value e)))
-	      (if (c-symbol? ,aux)
+	      (if ($symbol? ,aux)
 		  ,case-form
 		  (,else-name)))))
       ((eq? type 'keyword)
        `(labels ((,else-name () ,@else-body))
 	   (let ((,aux ,(e value e)))
-	      (if (c-keyword? ,aux)
+	      (if ($keyword? ,aux)
 		  ,case-form
 		  (,else-name)))))
       (else

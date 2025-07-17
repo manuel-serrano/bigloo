@@ -13,7 +13,8 @@
            (type_match "Type/match.scm")
            (misc_list "Misc/list.scm")
            (misc_parse "Misc/parse.scm")
-           (ast_node "Ast/node.scm"))
+           (ast_node "Ast/node.scm")
+           (val_instructions "Val/instructions.scm"))
 
    (export (class &watib-validate-error::&error)
        (valid-file f::pair-nil nthreads::long keep-going::obj silent::bool)))
@@ -297,18 +298,6 @@
          rolled-sts)))
 
 ;; section 3.4
-
-(define (wnumber->number n)
-   (cond ((number? n) n)
-         ((eq? n 'inf) +inf.0)
-         ((eq? n '-inf) -inf.0)
-         ((eq? n 'nan) +nan.0)
-         ((symbol? n)
-          (let ((s (symbol->string n)))
-             (if (and (>= (string-length s) 2) (substring-at? s "0x" 0))
-                 (string->number (substring s 2) 16)
-                 (raise `(expected-number ,n)))))
-         (#t (raise `(expected-number ,n)))))
 
 (define (i32::i32p env::env n)
    (let ((n (wnumber->number n)))
@@ -993,6 +982,9 @@
       ((supertype-final ?t1 ?t2)
        (sprintf "~a can't be a supertype of ~a because the first is marked as final"
                 (type->string t2) (type->string t1)))
+
+      (no-declared-memory
+       "used a memory instruction while no memory was declared")
 
       (else (sdisplay e))))
 

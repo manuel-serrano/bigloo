@@ -106,6 +106,7 @@
               type)
 
            (class memidxp::idxp)
+
            (class dataidxp::idxp)
 
            (class i32p::parameter

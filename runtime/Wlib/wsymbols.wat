@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 09:56:44 2024                          */
-;*    Last change :  Sun Jul  6 10:27:33 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 09:12:27 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM Symbols and keywords                                        */
@@ -41,7 +41,7 @@
       (struct.new $keyword (i32.const 0) (global.get $bstring-default-value) (global.get $BNIL)))
    
    ;; --------------------------------------------------------
-   ;; Constructors 
+   ;; Constructors and Predicates
    ;; --------------------------------------------------------
    
    (func $make-symbol (export "bgl_make_symbol")
@@ -55,7 +55,12 @@
       (param $cval (ref eq))
       (result (ref $keyword))
       (return (struct.new $keyword (i32.const 0) (local.get $str) (local.get $cval))))
-   
+
+   (func $SYMBOLP (export "SYMBOLP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $symbol) (local.get $o)))
+
    ;; --------------------------------------------------------
    ;; Library functions 
    ;; --------------------------------------------------------

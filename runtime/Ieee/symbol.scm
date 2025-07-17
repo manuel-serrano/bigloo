@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Tue Feb  4 08:05:09 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 09:12:39 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -71,7 +71,6 @@
 	    (macro cnst->integer::long (::obj) "CCNST"))
 
    (wasm    (c-symbol? "(ref.test (ref $symbol) ~0)")
-            ($symbol? "(ref.test (ref $symbol) ~0)")
 	    ($make-symbol "(call $make-symbol ~0 (global.get $BNIL))")
 	    ($symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
 	    (c-symbol-plist "(struct.get $symbol $cval (ref.cast (ref $symbol) ~0))")
@@ -160,8 +159,7 @@
 	    (symbol->keyword::keyword ::symbol)
 	    (keyword->symbol::symbol ::keyword))
    
-   (pragma  (c-symbol? (predicate-of symbol) no-cfa-top nesting fail-safe)
-	    ($symbol? (predicate-of symbol) no-cfa-top nesting fail-safe)
+   (pragma  ($symbol? (predicate-of symbol) no-cfa-top nesting fail-safe)
 	    (symbol? side-effect-free nesting fail-safe)
 	    (c-symbol->string args-safe fail-safe)
 	    ($symbol->string args-safe fail-safe)
@@ -178,7 +176,6 @@
 	    (string->symbol no-cfa-top nesting fail-safe)
 	    (string->symbol-ci no-cfa-top nesting fail-safe)
 	    (getprop side-effect-free nesting fail-safe)
-	    (c-keyword? (predicate-of keyword) no-cfa-top nesting fail-safe)
 	    ($keyword? (predicate-of keyword) no-cfa-top nesting fail-safe)
 	    (keyword? side-effect-free nesting fail-safe)
 	    ($bstring->keyword no-cfa-top nesting fail-safe)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Jul 16 08:13:38 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 07:43:08 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -776,7 +776,7 @@
 		  "strtoll")
 	       (method static strtouel::elong (::string ::long ::long)
 		  "strtoull")
-q	       (method static $strtoll::llong (::string ::long ::long)
+	       (method static $strtoll::llong (::string ::long ::long)
 		  "strtoll")
 	       (method static $strtoull::llong (::string ::long ::long)
 		  "strtoull")

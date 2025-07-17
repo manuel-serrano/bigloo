@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jul 16 08:16:33 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 07:38:21 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -936,6 +936,9 @@
 ;*--- WASM specific options --------------------------------------------*/
       (section "WASM specific options")
       (("-wat" (help "Do not assemble the generated .wat file"))
+       (set! *heap-name* *heap-wasm-name*)
+       (set! *obj-suffix* '("wat"))
+       (set! *target-language* 'wasm)
        (set! *pass* 'wat))
       (("-wasm-engine" ?string (help "Wasm engine"))
        (set! *wasm-engine* string))

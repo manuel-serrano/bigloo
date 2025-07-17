@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Fri Jul 11 09:33:48 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 09:17:41 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -183,8 +183,8 @@
     (coerce obj buint32 ($uint32?) ())
     (coerce obj bint64 ($int64?) ())
     (coerce obj buint64 ($uint64?) ())
-    (coerce obj symbol (c-symbol?) ())
-    (coerce obj keyword (c-keyword?) ())
+    (coerce obj symbol ($symbol?) ())
+    (coerce obj keyword ($keyword?) ())
     (coerce obj bstring ($string?) ())
     (coerce obj ucs2string (c-ucs2-string?) ())
     (coerce obj real ($flonum?) ())

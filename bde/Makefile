@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Wed Jul 16 09:06:27 2025 (serrano)                */
+#*    Last change :  Thu Jul 17 07:45:59 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -83,7 +83,7 @@ JAS_LINKOBJ	= $(JAS_LINKFILE:%=jas/%.o)
 JAS_OBJ		= $(JAS_FILE:%=jas/%.o)
 
 #*--- walit -----------------------------------------------------------*/
-WATIB_LINKFILE  = Val/validate \
+WATIB_LINKFILE  = Val/validate Val/instructions \
                   Asm/binary  Asm/leb128 Opt/optimise  \
                   Opt/TestBr/walk Opt/UnCast/walk \
                   Opt/Unreachable/walk Opt/Const/walk Opt/PureDrop/walk \
