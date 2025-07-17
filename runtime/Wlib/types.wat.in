@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Thu Jul 17 13:40:32 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 16:58:31 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -82,7 +82,7 @@
    (@include "./wreal.wat" type)
    
    (type $struct (struct
-		    (field $key (ref eq))
+		    (field $key (mut (ref eq)))
 		    (field $values (ref $vector))))
    
    

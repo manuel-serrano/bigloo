@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Thu Jul 17 14:18:49 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 16:53:11 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -185,6 +185,13 @@
       (param $struct (ref $struct))
       (result (ref eq))
       (struct.get $struct $key (local.get $struct)))
+
+   (func $STRUCT_KEY_SET (export "STRUCT_KEY_SET")
+      (param $struct (ref $struct))
+      (param $key (ref eq))
+      (result (ref eq))
+      (struct.set $struct $key (local.get $struct) (local.get $key))
+      (return (local.get $struct)))
 
    (func $STRUCT_LENGTH (export "STRUCT_LENGTH")
       (param $struct (ref $struct))

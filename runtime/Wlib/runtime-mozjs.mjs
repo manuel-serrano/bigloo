@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 17 16:34:25 2025 (serrano)                */
+/*    Last change :  Thu Jul 17 17:16:47 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -580,7 +580,9 @@ function __js_io() {
 	 }
       },
 
-      file_mode: (fd) => {
+      path_mode: (path_addr, path_length) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
 	 try {
 	    return fstatSync(fd).mode;
 	 } catch (err) {
@@ -588,7 +590,9 @@ function __js_io() {
 	 }
       },
 
-      file_gid: (fd) => {
+      path_gid: (path_addr, path_length) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
 	 try {
 	    return fstatSync(fd).gid;
 	 } catch (err) {
@@ -596,12 +600,44 @@ function __js_io() {
 	 }
       },
 
-      file_uid: (fd) => {
+      path_uid: (path_addr, path_length) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
 	 try {
 	    return fstatSync(fd).uid;
 	 } catch (err) {
             return -1;
 	 }
+      },
+
+      path_type: (path_addr, path_length, addr) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
+	 let res;
+	 
+	 try {
+	    const s = lstatSync(path);
+
+	    if (s.isBlockDevice()) {
+	       res = "block";
+	    } else if (s.isCharacterDevice()) {
+	       res = "character";
+	    } else if (s.isDirectory()) {
+	       res = "directory";
+	    } else if (s.FIFO()) {
+	       res = "fifo";
+	    } else if (s.isFile()) {
+	       res = "regular";
+	    } else if (s.isSocket()) {
+	       res = "socket";
+	    } else if (s.isSymbolLink()) {
+	       res = "link";
+	    }
+	 } catch (err) {
+            res = "does-not-exist";
+	 }
+	 storeJSStringToScheme(self.instance, res, addr)
+	 return res.length;
       },
 
       isatty: (fd) => {

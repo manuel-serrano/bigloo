@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Thu Jul 17 16:22:45 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 17:04:19 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -54,13 +54,14 @@
    (import "__js_io" "close_file" (func $js_close_file (param i32)))
    (import "__js_io" "read_file" (func $js_read_file (param i32 i32 i32 i32) (result i32)))
    (import "__js_io" "path_size" (func $js_path_size (param i32) (param i32) (result i32)))
-   (import "__js_io" "last_modification_time" (func $js_last_modification_time (param i32) (param i32) (result f64)))
-   (import "__js_io" "last_access_time" (func $js_last_access_time (param i32) (param i32) (result f64)))
-   (import "__js_io" "last_change_time" (func $js_last_change_time (param i32) (param i32) (result f64)))
+   (import "__js_io" "last_modification_time" (func $js_last_modification_time (param i32 i32) (result f64)))
+   (import "__js_io" "last_access_time" (func $js_last_access_time (param i32 i32) (result f64)))
+   (import "__js_io" "last_change_time" (func $js_last_change_time (param i32 i32) (result f64)))
    (import "__js_io" "file_size" (func $js_file_size (param i32) (result i32)))
-   (import "__js_io" "file_mode" (func $js_file_mode (param i32) (result i32)))
-   (import "__js_io" "file_gid" (func $js_file_gid (param i32) (result i32)))
-   (import "__js_io" "file_uid" (func $js_file_uid (param i32) (result i32)))
+   (import "__js_io" "path_mode" (func $js_path_mode (param i32 i32) (result i32)))
+   (import "__js_io" "path_gid" (func $js_path_gid (param i32 i32) (result i32)))
+   (import "__js_io" "path_uid" (func $js_path_uid (param i32 i32) (result i32)))
+   (import "__js_io" "path_type" (func $js_path_type (param i32 i32 i32) (result i32)))
    (import "__js_io" "isatty" (func $js_isatty (param i32) (result i32)))
    (import "__js_io" "file_exists" (func $js_file_exists (param i32) (param i32) (result i32)))
    (import "__js_io" "append_file" (func $js_append_file (param i32 i32 i32) (result i32)))
@@ -110,6 +111,7 @@
    (import "__bigloo" "OBJ_TO_INT" (func $OBJ_TO_INT (param (ref eq)) (result i64)))
    (import "__bigloo" "BGL_CURRENT_DYNAMIC_ENV" (func $BGL_CURRENT_DYNAMIC_ENV (result (ref $dynamic-env))))
    (import "__bigloo" "RGC_BUFFER_AVAILABLE" (func $RGC_BUFFER_AVAILABLE (param (ref $input-port)) (result i32)))
+   (import "__bigloo" "bgl_make_symbol" (func $make-symbol (param (ref $bstring)) (param (ref eq)) (result (ref $symbol))))
    
    ;; -----------------------------------------------------------------
    ;; Type declarations 
@@ -2703,43 +2705,49 @@
 	    (call $js_path_size
 	       (i32.const 128) (array.len (local.get $path))))))
    
+   (func $bgl_file_type (export "bgl_file_type")
+      (param $path (ref $bstring))
+      (result (ref $symbol))
+      (local $buf (ref $bstring))
+      (call $store_string (local.get $path) (i32.const 128))
+      
+      (local.set $buf
+	 (call $load_string (i32.const 128)
+	    (call $js_path_type
+	       (i32.const 128) (array.len (local.get $path)) (i32.const 128))))
+      (return_call $make-symbol (local.get $buf) (global.get $BUNSPEC)))
+   
    (func $bgl_file_mode (export "bgl_file_mode")
       (param $path (ref $bstring))
       (result i64)
       
-      (call $store_string
-	 (local.get $path)
-	 (i32.const 128))
+      (call $store_string (local.get $path) (i32.const 128))
       
       (return
 	 (i64.extend_i32_u
-	    (call $js_file_mode
+	    (call $js_path_mode
 	       (i32.const 128) (array.len (local.get $path))))))
    
    (func $bgl_file_gid (export "bgl_file_gid")
       (param $path (ref $bstring))
       (result i64)
       
-      (call $store_string
-	 (local.get $path)
-	 (i32.const 128))
+      (call $store_string (local.get $path) (i32.const 128))
       
       (return
 	 (i64.extend_i32_u
-	    (call $js_file_gid
+	    (call $js_path_gid
 	       (i32.const 128) (array.len (local.get $path))))))
    
    (func $bgl_file_uid (export "bgl_file_uid")
       (param $path (ref $bstring))
       (result i64)
       
-      (call $store_string
-	 (local.get $path)
-	 (i32.const 128))
+      (call $store_string (local.get $path) (i32.const 128))
       
       (return
 	 (i64.extend_i32_u
-	    (call $js_file_uid
+	    (call $js_path_uid
 	       (i32.const 128) (array.len (local.get $path))))))
    
    (func $bgl_last_modification_time (export "bgl_last_modification_time")

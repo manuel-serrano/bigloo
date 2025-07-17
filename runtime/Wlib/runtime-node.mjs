@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 17 16:33:59 2025 (serrano)                */
+/*    Last change :  Thu Jul 17 17:05:45 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -519,28 +519,64 @@ function __js_io() {
 	 }
       },
 
-      file_mode: (fd) => {
+      path_mode: (path_addr, path_length) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
 	 try {
-	    return fstatSync(fd).mode;
+	    return lstatSync(path).mode;
 	 } catch (err) {
             return -1;
 	 }
       },
 
-      file_gid: (fd) => {
+      file_gid: (path_addr, path_length) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
 	 try {
-	    return fstatSync(fd).gid;
+	    return lstatSync(path).gid;
 	 } catch (err) {
             return -1;
 	 }
       },
 
-      file_uid: (fd) => {
+      file_uid: (path_addr, path_length) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
 	 try {
-	    return fstatSync(fd).uid;
+	    return lstatSync(path).uid;
 	 } catch (err) {
             return -1;
 	 }
+      },
+
+      path_type: (path_addr, path_length, addr) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
+	 let res;
+	 
+	 try {
+	    const s = lstatSync(path);
+
+	    if (s.isBlockDevice()) {
+	       res = "block";
+	    } else if (s.isCharacterDevice()) {
+	       res = "character";
+	    } else if (s.isDirectory()) {
+	       res = "directory";
+	    } else if (s.FIFO()) {
+	       res = "fifo";
+	    } else if (s.isFile()) {
+	       res = "regular";
+	    } else if (s.isSocket()) {
+	       res = "socket";
+	    } else if (s.isSymbolLink()) {
+	       res = "link";
+	    }
+	 } catch (err) {
+            res = "does-not-exist";
+	 }
+	 storeJSStringToScheme(self.instance, res, addr)
+	 return res.length;
       },
 
       isatty: (fd) => {
