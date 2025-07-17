@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 17 15:08:00 2025 (serrano)                */
+/*    Last change :  Thu Jul 17 16:34:25 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -552,9 +552,53 @@ function __js_io() {
 	 }
       },
 
+      last_access_time: (path_addr, path_length) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
+	 try {
+	    return lstatSync(path).atime;
+	 } catch (err) {
+            return -1;
+	 }
+      },
+
+      last_change_time: (path_addr, path_length) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
+	 try {
+	    return lstatSync(path).ctime;
+	 } catch (err) {
+            return -1;
+	 }
+      },
+
       file_size: (fd) => {
 	 try {
 	    return fstatSync(fd).size;
+	 } catch (err) {
+            return -1;
+	 }
+      },
+
+      file_mode: (fd) => {
+	 try {
+	    return fstatSync(fd).mode;
+	 } catch (err) {
+            return -1;
+	 }
+      },
+
+      file_gid: (fd) => {
+	 try {
+	    return fstatSync(fd).gid;
+	 } catch (err) {
+            return -1;
+	 }
+      },
+
+      file_uid: (fd) => {
+	 try {
+	    return fstatSync(fd).uid;
 	 } catch (err) {
             return -1;
 	 }

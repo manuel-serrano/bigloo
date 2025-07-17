@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Jul 15 11:30:53 2025 (serrano)                */
+#*    Last change :  Thu Jul 17 16:12:31 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -167,11 +167,15 @@ cross:
 
 # boot from a bare platform
 source:
-	if [ ! -x download/bin/bigloo ]; then \
-	  (cd download; tar xvfz bigloo-$(BOOTBUILDRELEASE).tar.gz); \
-	  (pwd=`pwd`; cd download/bigloo-$(BOOTBUILDRELEASE); ./configure --prefix=$$pwd/download --disable-libunistring --disable-pcre2 --disable-pcre --disable-libuv --disable-thread --disable-gmp --disable-libbacktrace --cc=$(CC) && make && make install); \
+	if [ ! -x $(BGLBUILDBINDIR)/bigloo ]; then \
+	  if [ ! -x download/bin/bigloo ]; then \
+	    (cd download; tar xvfz bigloo-$(BOOTBUILDRELEASE).tar.gz); \
+	    (pwd=`pwd`; cd download/bigloo-$(BOOTBUILDRELEASE); ./configure --prefix=$$pwd/download --disable-libunistring --disable-pcre2 --disable-pcre --disable-libuv --disable-thread --disable-gmp --disable-libbacktrace --cc=$(CC) && make && make install); \
+          fi; \
+	  $(MAKE) hostboot BGLBUILDBINDIR=$$PWD/download/bin; \
+        else \
+	  $(MAKE) hostboot; \
         fi
-	$(MAKE) cross BOOTBIGLOOBINDIR=$$PWD/download/bin
 
 checkconf:
 	@ if ! [ -f "lib/bigloo/$(RELEASE)/bigloo.h" ]; then \

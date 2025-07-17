@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Thu Jul 17 14:46:54 2025 (serrano)                */
+;*    Last change :  Thu Jul 17 16:22:45 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -55,7 +55,12 @@
    (import "__js_io" "read_file" (func $js_read_file (param i32 i32 i32 i32) (result i32)))
    (import "__js_io" "path_size" (func $js_path_size (param i32) (param i32) (result i32)))
    (import "__js_io" "last_modification_time" (func $js_last_modification_time (param i32) (param i32) (result f64)))
+   (import "__js_io" "last_access_time" (func $js_last_access_time (param i32) (param i32) (result f64)))
+   (import "__js_io" "last_change_time" (func $js_last_change_time (param i32) (param i32) (result f64)))
    (import "__js_io" "file_size" (func $js_file_size (param i32) (result i32)))
+   (import "__js_io" "file_mode" (func $js_file_mode (param i32) (result i32)))
+   (import "__js_io" "file_gid" (func $js_file_gid (param i32) (result i32)))
+   (import "__js_io" "file_uid" (func $js_file_uid (param i32) (result i32)))
    (import "__js_io" "isatty" (func $js_isatty (param i32) (result i32)))
    (import "__js_io" "file_exists" (func $js_file_exists (param i32) (param i32) (result i32)))
    (import "__js_io" "append_file" (func $js_append_file (param i32 i32 i32) (result i32)))
@@ -700,6 +705,18 @@
       (param $port (ref eq))
       (result i32)
       (return (ref.test (ref $file-input-port) (local.get $port))))
+
+   (func $bgl_input_port_buffer_set (export "bgl_input_port_buffer_set")
+      (param $port (ref $input-port))
+      (param $buffer (ref $bstring))
+      (local $rgc (ref $rgc))
+      (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
+      (struct.set $rgc $matchstart (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $matchstop (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $forward (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $bufpos (local.get $rgc) (i32.const 0))
+      (struct.set $rgc $lastchar (local.get $rgc) (i32.const 13))
+      (struct.set $rgc $buf (local.get $rgc) (local.get $buffer)))
    
    ;; -----------------------------------------------------------------
    ;; Global variables 
@@ -1022,7 +1039,7 @@
 	   (return (i32.const 0))))
       (unreachable))
 
-      ;; bgl_input_mmap_seek
+   ;; bgl_input_mmap_seek
    (func $bgl_input_mmap_seek
       (param $p (ref eq))
       (param $pos i32)
@@ -2650,7 +2667,25 @@
 		   (local.set $size (i32.sub (local.get $size) (i32.const 1)))
 		   (br $while))))))
       (unreachable))
+
    
+   (func $bgl_directory_length (export "bgl_directory_length")
+      (param $name (ref $bstring))
+      (result i64)
+      (local $arr externref)
+
+      (call $store_string (local.get $name) (i32.const 128))
+      (local.set $arr
+	 (call $js_read_dir_init (i32.const 128) (array.len (local.get $name))))
+
+      (if (ref.is_null (local.get $arr))
+	  (then
+	     (return (i64.const -1)))
+	  (else
+	   (return (i64.extend_i32_u (call $js_read_dir_size (local.get $arr))))))
+      (unreachable))
+   
+
    ;; -----------------------------------------------------------------
    ;; files 
    ;; -----------------------------------------------------------------
@@ -2668,6 +2703,45 @@
 	    (call $js_path_size
 	       (i32.const 128) (array.len (local.get $path))))))
    
+   (func $bgl_file_mode (export "bgl_file_mode")
+      (param $path (ref $bstring))
+      (result i64)
+      
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      
+      (return
+	 (i64.extend_i32_u
+	    (call $js_file_mode
+	       (i32.const 128) (array.len (local.get $path))))))
+   
+   (func $bgl_file_gid (export "bgl_file_gid")
+      (param $path (ref $bstring))
+      (result i64)
+      
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      
+      (return
+	 (i64.extend_i32_u
+	    (call $js_file_gid
+	       (i32.const 128) (array.len (local.get $path))))))
+   
+   (func $bgl_file_uid (export "bgl_file_uid")
+      (param $path (ref $bstring))
+      (result i64)
+      
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      
+      (return
+	 (i64.extend_i32_u
+	    (call $js_file_uid
+	       (i32.const 128) (array.len (local.get $path))))))
+   
    (func $bgl_last_modification_time (export "bgl_last_modification_time")
       (param $path (ref $bstring))
       (result i64)
@@ -2679,6 +2753,32 @@
       (return
 	 (i64.trunc_f64_s
 	    (call $js_last_modification_time
+	       (i32.const 128) (array.len (local.get $path))))))
+   
+   (func $bgl_last_access_time (export "bgl_last_access_time")
+      (param $path (ref $bstring))
+      (result i64)
+      
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      
+      (return
+	 (i64.trunc_f64_s
+	    (call $js_last_access_time
+	       (i32.const 128) (array.len (local.get $path))))))
+   
+   (func $bgl_last_change_time (export "bgl_last_change_time")
+      (param $path (ref $bstring))
+      (result i64)
+      
+      (call $store_string
+	 (local.get $path)
+	 (i32.const 128))
+      
+      (return
+	 (i64.trunc_f64_s
+	    (call $js_last_change_time
 	       (i32.const 128) (array.len (local.get $path))))))
    
    ;; -----------------------------------------------------------------
