@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Fri Jul 18 10:55:29 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 16:06:27 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -433,12 +433,18 @@
       (i64.rem_u
 	 (call $bgl_obj_hash_number (local.get $obj))
 	 (local.get $power)))
+
+   (func $bgl_pointer_hashnumber (export "bgl_pointer_hashnumber")
+      (param $obj (ref eq))
+      (param $power i64)
+      (result i64)
+      (return (i64.rem_u (i64.const 933204) (local.get $power))))
    
    (func $bgl_foreign_hash_number (export "bgl_foreign_hash_number")
       (param $obj (ref $foreign))
       (result i64)
       (return_call $bgl_pointer_hash_number (local.get $obj) (i64.const 1)))
-   
+
    (func $FOREIGN_TYPE_NAME (export "FOREIGN_TYPE_NAME")
       (param (ref eq))
       (result (ref $bstring))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Fri Jun 13 16:02:32 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 15:59:15 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -60,10 +60,7 @@
 	    (export remv "bgl_remv")
 	    (export remv! "bgl_remv_bang"))
 
-   (wasm    ($cons "(struct.new $pair ~0 ~1)")
-	    ($acons "(struct.new $pair ~0 ~1)")
-	    ($econs "(struct.new $epair ~0 ~1 ~2)")
-	    ($car "(struct.get $pair $car ~0)")
+   (wasm    ($car "(struct.get $pair $car ~0)")
 	    ($cdr "(struct.get $pair $cdr ~0)")
 	    ($cer "(struct.get $epair $cer ~0)"))
    

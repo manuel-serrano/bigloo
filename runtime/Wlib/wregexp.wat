@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 19 09:18:29 2024                          */
-;*    Last change :  Thu Dec 19 09:36:04 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Fri Jul 18 16:01:47 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM regexp                                                      */
 ;*=====================================================================*/
@@ -72,10 +72,10 @@
       (struct.set $regexp $preg (local.get $rx) (local.get $preg))
       (local.get $rx))
 
-   (func $BGL_REGEXP_CAPTURECOUNT (export "BGL_REGEXP_CAPTURECOUNT")
+   (func $BGL_REGEXP_CAPTURE_COUNT (export "BGL_REGEXP_CAPTURE_COUNT")
       (param $rx (ref $regexp))
-      (result i32)
-      (struct.get $regexp $capturecount (local.get $rx))))
+      (result i64)
+      (i64.extend_i32_u (struct.get $regexp $capturecount (local.get $rx)))))
 
 
 

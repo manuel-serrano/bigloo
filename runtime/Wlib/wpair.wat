@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 28 06:41:16 2024                          */
-;*    Last change :  Sun Jul  6 10:28:18 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 15:57:43 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM pairs                                                       */
@@ -59,5 +59,26 @@
    (func $NULLP (export "NULLP")
       (param $o (ref eq))
       (result i32)
-      (ref.eq (global.get $BNIL) (local.get $o))))
+      (ref.eq (global.get $BNIL) (local.get $o)))
+
+   (func $MAKE_YOUNG_PAIR (export "MAKE_YOUNG_PAIR")
+      (param $a (ref eq))
+      (param $d (ref eq))
+      (result (ref $pair))
+      (struct.new $pair (local.get $a) (local.get $d)))
+
+   (func $MAKE_STACK_PAIR (export "MAKE_STACK_PAIR")
+      (param $a (ref eq))
+      (param $d (ref eq))
+      (result (ref $pair))
+      (struct.new $pair (local.get $a) (local.get $d)))
+
+   (func $MAKE_YOUNG_EPAIR (export "MAKE_YOUNG_EPAIR")
+      (param $a (ref eq))
+      (param $d (ref eq))
+      (param $e (ref eq))
+      (result (ref $epair))
+      (struct.new $epair (local.get $a) (local.get $d) (local.get $e)))
+
+   )
    

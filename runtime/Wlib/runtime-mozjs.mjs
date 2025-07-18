@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 18 08:20:19 2025 (serrano)                */
+/*    Last change :  Fri Jul 18 15:54:41 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -451,6 +451,16 @@ function __js_system() {
 	 } 
       },
 
+      getenv_length: () => {
+	 return Object.keys(process.env).length;
+      }
+      
+      getenv_var: (i, addr) => {
+	 const val = process.env[Object.keys(process.env)];
+	 storeJSStringToScheme(self.instance, val, addr);
+	 return val.length;
+      },
+      
       setenv: (addr_id, len_id, addr_val, len_val, addr) => {
 	 const id = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, id_addr, id_length));
 	 const val = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, val_addr, val_length));

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Fri Jul 18 08:17:37 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 15:43:47 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM system ops                                                  */
@@ -20,6 +20,8 @@
    (import "__js_system" "executable_name" (func $js_executable_name (param i32) (result i32)))
    (import "__js_system" "getcwd" (func $js_getcwd (param i32) (result i32)))
    (import "__js_system" "getenv" (func $js_getenv (param i32) (param i32) (result i32)))
+   (import "__js_system" "getenv_len" (func $js_getenv_len (result i32)))
+   (import "__js_system" "getenv_var" (func $js_getenv_var (param i32 i32) (result i32)))
    (import "__js_system" "setenv" (func $js_setenv (param i32 i32 i32 i32) (result i32)))
    (import "__js_system" "date" (func $js_date (param i32) (result i32)))
    (import "__js_system" "umask" (func $js_umask (param i32) (result i32)))
@@ -33,6 +35,7 @@
    (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
    (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
    (import "__bigloo" "bgl_store_substring" (func $store_substring (param (ref $bstring)) (param i64) (param i64) (param i32)))
+   (import "__bigloo" "MAKE_YOUNG_PAIR" (func $MAKE_YOUNG_PAIR (param (ref eq) (ref eq)) (result (ref $pair))))
 
    
    ;; -----------------------------------------------------------------
@@ -110,6 +113,32 @@
 	  (then (return_call $load_string (i32.const 128) (local.get $sz)))
 	  (else (return (array.new_fixed $bstring 0))))
       (unreachable))
+
+   (func $bgl_getenv_all (export "bgl_getenv_all")
+      (result (ref eq))
+      (local $sz i32)
+      (local $res (ref eq))
+      (local $var (ref $bstring))
+      (local $val (ref eq))
+
+      (local.set $sz (call $js_getenv_len))
+      (local.set $res (global.get $BNIL))
+
+      (loop $while
+	 (local.set $sz (i32.sub (local.get $sz) (i32.const 1)))
+	 (if (i32.ge_s (local.get $sz) (i32.const 0))
+	     (then
+		(local.set $var
+		   (call $load_string (i32.const 128)
+		      (call $js_getenv_var (local.get $sz) (i32.const 128))))
+		(local.set $val (call $bgl_getenv (local.get $var)))
+		(local.set $res (call $MAKE_YOUNG_PAIR
+				   (call $MAKE_YOUNG_PAIR
+				      (local.get $var)
+				      (local.get $val))
+				   (local.get $res))))))
+
+      (return (local.get $res)))
 
    (func $bgl_setenv (export "bgl_setenv")
       (param $id (ref $bstring))
