@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 28 06:41:16 2024                          */
-;*    Last change :  Fri Jul  4 11:26:49 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 10:38:40 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM strings                                                     */
@@ -38,6 +38,16 @@
       (param $s (ref $bstring))
       (result i64)
       (i64.extend_i32_u (array.len (local.get $s))))
+
+   (func $BSTRING_TO_STRING (export "BSTRING_TO_STRING")
+      (param $s (ref $bstring))
+      (result (ref $bstring))
+      (return (local.get $s)))
+   
+   (func $string_to_bstring (export "string_to_bstring")
+      (param $s (ref $bstring))
+      (result (ref $bstring))
+      (return (local.get $s)))
    
    ;; -----------------------------------------------------------------
    ;; Library functions

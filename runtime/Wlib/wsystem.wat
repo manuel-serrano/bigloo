@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Fri Jul 18 07:51:56 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 08:17:37 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM system ops                                                  */
@@ -20,8 +20,10 @@
    (import "__js_system" "executable_name" (func $js_executable_name (param i32) (result i32)))
    (import "__js_system" "getcwd" (func $js_getcwd (param i32) (result i32)))
    (import "__js_system" "getenv" (func $js_getenv (param i32) (param i32) (result i32)))
+   (import "__js_system" "setenv" (func $js_setenv (param i32 i32 i32 i32) (result i32)))
    (import "__js_system" "date" (func $js_date (param i32) (result i32)))
    (import "__js_system" "umask" (func $js_umask (param i32) (result i32)))
+   (import "__js_system" "chdir" (func $js_chdir (param i32 i32) (result i32)))
 
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
    (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
@@ -109,6 +111,20 @@
 	  (else (return (array.new_fixed $bstring 0))))
       (unreachable))
 
+   (func $bgl_setenv (export "bgl_setenv")
+      (param $id (ref $bstring))
+      (param $val (ref $bstring))
+      (result i32)
+      (local $len i32)
+      (local $len2 i32)
+
+      (local.set $len (array.len (local.get $id)))
+      (local.set $len2 (array.len (local.get $val)))
+      (call $store_string (local.get $id) (i32.const 128))
+      (call $store_string (local.get $val) (i32.add (local.get $len) (i32.const 128)))
+      (return_call $js_setenv (i32.const 128) (local.get $len)
+	 (i32.add (local.get $len) (i32.const 128)) (local.get $len2)))
+
    (func $bgl_get_trace_stack (export "bgl_get_trace_stack")
       (param $depth i32)
       (result (ref eq))
@@ -128,5 +144,13 @@
       (return
 	 (i64.extend_i32_u
 	    (call $js_umask (i32.wrap_i64 (local.get $mask))))))
+
+   (func $chdir (export "chdir")
+      (param $dir (ref $bstring)) 
+      (result i32)
+      
+      (local $sz i32)
+      (call $store_string (local.get $dir) (i32.const 128))
+      (return_call $js_chdir (i32.const 128) (array.len (local.get $dir))))
 
    )

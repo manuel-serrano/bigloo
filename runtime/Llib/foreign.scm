@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  5 16:50:26 1995                          */
-;*    Last change :  Thu Jul 17 14:36:25 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 15:01:24 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign object management.                                   */
 ;*    -------------------------------------------------------------    */
@@ -78,10 +78,13 @@
 	    (inline foreign-eq?::bool ::obj ::obj)
 	    (inline foreign-null?::bool ::obj)
 	    (inline string-ptr-null?::bool ::string)
-	    (inline obj->cobj::cobj ::obj)
 	    (inline void*-null?::bool ::void*)
 	    (inline make-string-ptr-null::string)
 	    (inline make-void*-null::void*))
+
+   (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       (export (inline obj->cobj::cobj ::obj))))
    
    (pragma  ($foreign? (predicate-of foreign) no-cfa-top nesting)
 	    (foreign? (predicate-of foreign) no-cfa-top nesting)

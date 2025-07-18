@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Jul 17 14:36:23 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 10:39:31 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1349,10 +1349,6 @@
       ($uint32->ulong "(i64.extend_i32_u ~0)")
       ($uint32->long "(i64.extend_i32_u ~0)")
       
-      ;; Same types for string and bstring in WASM
-      ($string->bstring "~0")
-      ($bstring->string "~0")
-
       ($bucs2->ucs2 "(struct.get_u $bucs2 $v ~0)")
 
       ($cobj->obj "~0")

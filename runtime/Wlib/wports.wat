@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Fri Jul 18 07:47:14 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 08:25:30 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -57,6 +57,7 @@
    (import "__js_io" "last_modification_time" (func $js_last_modification_time (param i32 i32) (result f64)))
    (import "__js_io" "last_access_time" (func $js_last_access_time (param i32 i32) (result f64)))
    (import "__js_io" "last_change_time" (func $js_last_change_time (param i32 i32) (result f64)))
+   (import "__is_io" "utime" (func $js_utime (param i32 i32 f64 f64) (result i32)))
    (import "__js_io" "file_size" (func $js_file_size (param i32) (result i32)))
    (import "__js_io" "path_mode" (func $js_path_mode (param i32 i32) (result i32)))
    (import "__js_io" "path_gid" (func $js_path_gid (param i32 i32) (result i32)))
@@ -83,6 +84,8 @@
    (import "__js_io" "truncate" (func $js_truncate (param i32 i32 i32) (result i32)))
    (import "__js_io" "rename" (func $js_rename (param i32 i32 i32 i32) (result i32)))
    (import "__js_io" "symlink" (func $js_symlink (param i32 i32 i32 i32) (result i32)))
+   (import "__js_io" "bgl_chmod" (func $js_bgl_chmod (param i32 i32 i32 i32 i32) (result i32)))
+   (import "__js_io" "chmod" (func $js_chmod (param i32 i32 i32) (result i32)))
 
    (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
@@ -2736,13 +2739,32 @@
    (func $bgl_file_mode (export "bgl_file_mode")
       (param $path (ref $bstring))
       (result i64)
-      
       (call $store_string (local.get $path) (i32.const 128))
-      
       (return
 	 (i64.extend_i32_u
 	    (call $js_path_mode
 	       (i32.const 128) (array.len (local.get $path))))))
+
+   (func $bgl_chmod (export "bgl_chmod")
+      (param $path (ref $bstring))
+      (param $read i32)
+      (param $write i32)
+      (param $exec i32)
+      (result i32)
+      (call $store_string (local.get $path) (i32.const 128))
+      (return
+	 (call $js_bgl_chmod
+	    (i32.const 128) (array.len (local.get $path))
+	    (local.get $read) (local.get $write) (local.get $exec))))
+   
+   (func $chmod (export "chmod")
+      (param $path (ref $bstring))
+      (param $mod i32)
+      (result i32)
+      (call $store_string (local.get $path) (i32.const 128))
+      (return
+	 (call $js_chmod
+	    (i32.const 128) (array.len (local.get $path)) (local.get $mod))))
    
    (func $bgl_file_gid (export "bgl_file_gid")
       (param $path (ref $bstring))
@@ -2804,6 +2826,20 @@
 	 (i64.trunc_f64_s
 	    (call $js_last_change_time
 	       (i32.const 128) (array.len (local.get $path))))))
+
+   (func $bgl_utime (export "bgl_utime")
+      (param $path (ref $bstring))
+      (param $atime i64)
+      (param $mtime i64)
+      (result i32)
+      
+      (call $store_string (local.get $path) (i32.const 128))
+      
+      (return
+	 (call $js_utime
+	    (i32.const 128) (array.len (local.get $path))
+	    (f64.convert_i64_u (local.get $atime))
+	    (f64.convert_i64_u (local.get $mtime)))))
    
    ;; -----------------------------------------------------------------
    ;; password 

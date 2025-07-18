@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Jul 17 15:17:02 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 14:27:39 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1750,7 +1750,7 @@ esac")
    (let ((name (global-name variable)))
       `(import ,(wasm-module variable) ,name
 	  (global ,(wasm-sym name)
-	     (mut ,(wasm-js-type (global-type variable)))))))
+	     (mut ,(wasm-type (global-type variable)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-js-import ::cvar ...                                        */
@@ -1788,7 +1788,7 @@ esac")
 ;*---------------------------------------------------------------------*/
 (define (emit-js-func-signature args-type variable)
    `(func ,(wasm-sym (global-name variable))
-       ,@(map (lambda (type) `(param ,(wasm-js-type type))) args-type)
+       ,@(map (lambda (type) `(param ,(wasm-type type))) args-type)
        ,@(emit-js-result (variable-type variable))))
 
 ;*---------------------------------------------------------------------*/
@@ -1798,88 +1798,3 @@ esac")
    (if (eq? (type-id t) 'void)
        '()
        `((result ,(wasm-type t)))))
-
-;*---------------------------------------------------------------------*/
-;*    wasm-js-type ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (wasm-js-type t::type #!key nullable)
-   (let ((id (type-id t)))
-      (case id
-	 ((bint)
-	  (if (=fx *wasm-fixnum* 64)
-	      (if nullable '(ref null $bint) '(ref $bint))
-	      (if nullable '(ref null i31) '(ref i31))))
-	 ((void*) 'i32)
-	 ((obj) (if nullable '(ref null eq) '(ref eq)))
-	 ((nil)
-	  (if (=fx *wasm-fixnum* 64)
-	      (if nullable '(ref null i31) '(ref i31))
-	      (if nullable '(ref null $bnil) '(ref $bnil))))
-	 ((magic) (if nullable '(ref null eq) '(ref eq)))
-	 ((unspecified) (if nullable '(ref null eq) '(ref eq)))
-	 ((bbool)
-	  (if (=fx *wasm-fixnum* 64)
-	      (if nullable '(ref null i31) '(ref i31))
-	      (if nullable '(ref null $bbool) '(ref $bbool))))
-	 ((bchar)
-	  (if (=fx *wasm-fixnum* 64)
-	      (if nullable '(ref null i31) '(ref i31))
-	      (if nullable '(ref null $bchar) '(ref $bchar))))
-	 ((class-field) (if nullable '(ref null eq) '(ref eq)))
-	 ((pair-nil) (if nullable '(ref null eq) '(ref eq)))
-	 ((cobj) (if nullable '(ref null eq) '(ref eq)))
-	 ((tvector) (if nullable '(ref null array) '(ref array)))
-	 ((cnst)
-	  (if (=fx *wasm-fixnum* 64)
-	      (if nullable '(ref null i31) '(ref i31))
-	      (if nullable '(ref null $bcnst) '(ref $bcnst))))
-	 ((funptr) (if nullable '(ref null func) '(ref func)))
-	 ((bool) 'i32)
-	 ((byte) 'i32)
-	 ((ubyte) 'i32)
-	 ((char) 'i32)
-	 ((uchar) 'i32)
-	 ((ucs2) 'i32)
-	 ((int8) 'i32)
-	 ((uint8) 'i32)
-	 ((int16) 'i32)
-	 ((uint16) 'i32)
-	 ((int32) 'i32)
-	 ((uint32) 'i32)
-	 ((int64) 'i64)
-	 ((uint64) 'i64)
-	 ((int) 'i32)
-	 ((uint) 'i32)
-	 ((long) 'i64)
-	 ((ulong) 'i64)
-	 ((elong) 'i64)
-	 ((uelong) 'i64)
-	 ((llong) 'i64)
-	 ((ullong) 'i64)
-	 ((float) 'f32)
-	 ((double) 'f64)
-	 ((vector) (if nullable '(ref null $vector) '(ref $vector)))
-	 ((string bstring) (if nullable '(ref null $bstring) '(ref $bstring)))
-	 ((hvector) '(ref array))
-	 ;;	 ((exit) '(ref null $exit))
-	 (else
-	  (let ((name (type-name t)))
-	     (cond 
-		((foreign-type? t)
-		 (error "wasm-gen" "unimplemented foreign type in WASM" id))
-		;; Classes
-		((or (tclass? t) (wclass? t))
-		 (if nullable
-		     `(ref null ,(wasm-sym name))
-		     `(ref ,(wasm-sym name))))
-		((string-suffix? "_bglt" name)
-		 (error "wasm-type" (format "expected be a tclass ~s" name)
-		    (typeof t)))
-		((tvec? t)
-		 (if nullable
-		     `(ref null ,(wasm-vector-type t))
-		     `(ref ,(wasm-vector-type t))))
-		(else
-		 (if nullable
-		     `(ref null ,(wasm-sym (symbol->string id)))
-		     `(ref ,(wasm-sym (symbol->string id)))))))))))

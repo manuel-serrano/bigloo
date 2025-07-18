@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 18 07:49:05 2025 (serrano)                */
+/*    Last change :  Fri Jul 18 08:20:19 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -451,6 +451,13 @@ function __js_system() {
 	 } 
       },
 
+      setenv: (addr_id, len_id, addr_val, len_val, addr) => {
+	 const id = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, id_addr, id_length));
+	 const val = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, val_addr, val_length));
+	 process.env[id] = val;
+	 return 0;
+      },
+
       date: (addr) => {
 	 const d = Date();
 	 const a = Days[d.getDay()];
@@ -461,6 +468,13 @@ function __js_system() {
       },
 
       umask: (mask) => {
+	 return 0;
+      }
+      
+      chdir: (mask) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, addr, len);
+	 const v = loadSchemeString(buffer);
+
 	 return 0;
       }
       
@@ -546,14 +560,14 @@ function __js_io() {
       }, 
       
       rename: (old_addr, old_length, new_addr, new_length) => {
-	 const oldf = new Uint8Array(self.instance.exports.memory.buffer, old_addr, old_length);
-	 const newf = new Uint8Array(self.instance.exports.memory.buffer, new_addr, old_length);
+	 const oldf = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, old_addr, old_length));
+	 const newf = loadSchemeSring(new Uint8Array(self.instance.exports.memory.buffer, new_addr, new_length));
 	 return 0;
       }
 	 
-      symlink: (target_addr, target_length, new_addr, new_length) => {
-	 const target = new Uint8Array(self.instance.exports.memory.buffer, target_addr, target_length);
-	 const path = new Uint8Array(self.instance.exports.memory.buffer, path_addr, target_length);
+      symlink: (target_addr, target_length, path_addr, path_length) => {
+	 const target = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, target_addr, target_length));
+	 const path = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length));
 	 return 0;
       },
 	 
@@ -597,6 +611,13 @@ function __js_io() {
 	 }
       },
 
+      utime: path_addr, path_length, atime, mtime) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
+
+	 return 0;
+      }
+
       file_size: (fd) => {
 	 try {
 	    return fstatSync(fd).size;
@@ -613,6 +634,20 @@ function __js_io() {
 	 } catch (err) {
             return -1;
 	 }
+      },
+
+      bgl_chmod: (path_addr, path_length, read, write, exec) => {
+	 const path = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
+
+	 return 0;
+      },
+
+      chmod: (path_addr, path_length, mod) => {
+	 const path = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const path = loadSchemeString(buffer);
+
+	 return 0;
       },
 
       path_gid: (path_addr, path_length) => {

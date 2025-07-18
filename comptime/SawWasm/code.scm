@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Fri Jul 11 08:53:27 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 14:51:56 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -330,7 +330,7 @@
 	      (if nullable '(ref null $bchar) '(ref $bchar))))
 	 ((class-field) (if nullable '(ref null eq) '(ref eq)))
 	 ((pair-nil) (if nullable '(ref null eq) '(ref eq)))
-	 ((cobj) (if nullable '(ref null eq) '(ref eq)))
+	 ((cobj) 'i32)
 	 ((tvector) (if nullable '(ref null array) '(ref array)))
 	 ((cnst)
 	  (if (=fx *wasm-fixnum* 64)

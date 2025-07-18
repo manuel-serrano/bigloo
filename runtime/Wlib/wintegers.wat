@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 09:16:42 2024                          */
-;*    Last change :  Wed Dec 25 07:15:43 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Last change :  Fri Jul 18 15:20:32 2025 (serrano)                */
+;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM integers implementation independent (i.e., not fixnum).     */
 ;*=====================================================================*/
@@ -104,6 +104,11 @@
       (param $x i64)
       (result (ref $bllong))
       (struct.new $bllong (local.get $x)))
-   
+
+   ;; LONG_TO_BLLONG
+   (func $LONG_TO_BLLONG (export "LONG_TO_BLLONG")
+      (param $x i64)
+      (result (ref $bllong))
+      (return_call $make_bllong (local.get $x)))
    )
 
