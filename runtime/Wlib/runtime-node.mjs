@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 17 17:05:45 2025 (serrano)                */
+/*    Last change :  Fri Jul 18 07:48:44 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync, lstatSync, mkdirSync, readdirSync, ftruncateSync, truncateSync } from "node:fs";
+import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync, lstatSync, mkdirSync, readdirSync, ftruncateSync, truncateSync, renameSync, symlinkSync } from "node:fs";
 import { isatty } from "node:tty";
 import { extname, sep as file_sep } from "node:path";
 import { format } from "node:util";
@@ -380,6 +380,19 @@ function __js_system() {
 	 return s.length;
       },
 
+      date: (addr) => {
+	 const d = Date();
+	 const a = Days[d.getDay()];
+	 const m = Months[d.getMonth()];
+	 const b = `${a} ${m} ${d.getDay()} ${d.getHours()}:${d.getMinutes()}:${d.getSeconds()} ${d.getYear()}`
+	 storeJSStringToScheme(self.instance, b, addr);
+	 return b.length;
+      },
+
+      umask: (mask) => {
+	 return process.umask(mask);
+      }
+      
       exit: function (val) {
 	 process.exit(val);
       },
@@ -460,6 +473,13 @@ function __js_io() {
 	 const oldf = new Uint8Array(self.instance.exports.memory.buffer, old_addr, old_length);
 	 const newf = new Uint8Array(self.instance.exports.memory.buffer, new_addr, old_length);
 	 renameSync(oldf, newf);
+	 return 0;
+      },
+	 
+      symlink: (target_addr, target_length, new_addr, new_length) => {
+	 const target = new Uint8Array(self.instance.exports.memory.buffer, target_addr, target_length);
+	 const path = new Uint8Array(self.instance.exports.memory.buffer, path_addr, target_length);
+	 symlinkSync(target, path);
 	 return 0;
       },
 	 

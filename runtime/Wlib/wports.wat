@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Thu Jul 17 17:04:19 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 07:47:14 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -82,6 +82,7 @@
    (import "__js_io" "ftruncate" (func $js_ftruncate (param i32 i32) (result i32)))
    (import "__js_io" "truncate" (func $js_truncate (param i32 i32 i32) (result i32)))
    (import "__js_io" "rename" (func $js_rename (param i32 i32 i32 i32) (result i32)))
+   (import "__js_io" "symlink" (func $js_symlink (param i32 i32 i32 i32) (result i32)))
 
    (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
@@ -2373,6 +2374,21 @@
       (call $store_string (local.get $old) (i32.const 128))
       (call $store_string (local.get $new) (i32.add (local.get $len) (i32.const 128)))
       (return_call $js_rename (i32.const 128) (local.get $len)
+	 (i32.add (local.get $len) (i32.const 128)) (local.get $len2)))
+
+   ;; bgl_symlink
+   (func $bgl_symlink (export "bgl_symlink")
+      (param $target (ref $bstring))
+      (param $path (ref $bstring))
+      (result i32)
+      (local $len i32)
+      (local $len2 i32)
+
+      (local.set $len (array.len (local.get $target)))
+      (local.set $len2 (array.len (local.get $path)))
+      (call $store_string (local.get $target) (i32.const 128))
+      (call $store_string (local.get $path) (i32.add (local.get $len) (i32.const 128)))
+      (return_call $js_symlink (i32.const 128) (local.get $len)
 	 (i32.add (local.get $len) (i32.const 128)) (local.get $len2)))
 
    ;; bgl_reset_output_port_error

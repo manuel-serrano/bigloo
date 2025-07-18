@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Tue Jul  8 07:57:38 2025 (serrano)                */
+;*    Last change :  Fri Jul 18 07:51:56 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM system ops                                                  */
@@ -20,6 +20,8 @@
    (import "__js_system" "executable_name" (func $js_executable_name (param i32) (result i32)))
    (import "__js_system" "getcwd" (func $js_getcwd (param i32) (result i32)))
    (import "__js_system" "getenv" (func $js_getenv (param i32) (param i32) (result i32)))
+   (import "__js_system" "date" (func $js_date (param i32) (result i32)))
+   (import "__js_system" "umask" (func $js_umask (param i32) (result i32)))
 
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
    (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
@@ -112,5 +114,19 @@
       (result (ref eq))
 
       (return (global.get $BNIL)))
+
+   (func $c_date (export "c_date")
+      (result (ref $bstring))
+      (return_call $load_string
+	 (i32.const 128)
+	 (call $js_date (i32.const 128))))
+
+   (func $umask (export "umask")
+      (param $mask i64)
+      (result i64)
+
+      (return
+	 (i64.extend_i32_u
+	    (call $js_umask (i32.wrap_i64 (local.get $mask))))))
 
    )

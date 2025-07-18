@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 17 17:16:47 2025 (serrano)                */
+/*    Last change :  Fri Jul 18 07:49:05 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -405,6 +405,12 @@ function __js_bignum() {
 // when reading, so we can't import it. However, in Deno, process is not
 // a global variable and therefore we need to explicitly import 'process'.
 
+/*---------------------------------------------------------------------*/
+/*    dates                                                            */
+/*---------------------------------------------------------------------*/
+const Days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const Months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+		 "Sep", "Oct", "Nov", "Dec"];
 
 /*---------------------------------------------------------------------*/
 /*    __js_system                                                      */
@@ -444,6 +450,19 @@ function __js_system() {
 	    return -1;
 	 } 
       },
+
+      date: (addr) => {
+	 const d = Date();
+	 const a = Days[d.getDay()];
+	 const m = Months[d.getMonth()];
+	 const b = `${a} ${m} ${d.getDay()} ${d.getHours()}:${d.getMinutes()}:${d.getSeconds()} ${d.getYear()}`
+	 storeJSStringToScheme(self.instance, b, addr);
+	 return b.length;
+      },
+
+      umask: (mask) => {
+	 return 0;
+      }
       
       exit: function (val) {
  	 process.exit(val);
@@ -531,6 +550,12 @@ function __js_io() {
 	 const newf = new Uint8Array(self.instance.exports.memory.buffer, new_addr, old_length);
 	 return 0;
       }
+	 
+      symlink: (target_addr, target_length, new_addr, new_length) => {
+	 const target = new Uint8Array(self.instance.exports.memory.buffer, target_addr, target_length);
+	 const path = new Uint8Array(self.instance.exports.memory.buffer, path_addr, target_length);
+	 return 0;
+      },
 	 
       path_size: (path_addr, path_length) => {
 	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
