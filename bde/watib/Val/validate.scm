@@ -852,7 +852,10 @@
          ; section 6.6.11
          ((elem declare func . ?funcs)
           (set! *declared-funcrefs* (append funcs *declared-funcrefs*))
-          (for-each (lambda (x) (hashtable-put! (-> env refs) x #t)) funcs))
+          (for-each (lambda (x)
+		       (let ((t (-> env refs)))
+			  (hashtable-put! t x #t)))
+	     funcs))
 
          (else
           (raise 'expected-modulefield)))))

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Jul 17 13:41:01 2025 (serrano)                */
+#*    Last change :  Mon Jul 21 13:04:02 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -417,6 +417,7 @@ WASMS = \
 	$(LALR:%=objs/$(WASMDIR_SYS)/Lalr/%.wasm) \
 	# objs/$(WASMDIR_SYS)/Unsafe/pregexp.wasm \
 	# objs/$(WASMDIR_SYS)/Unsafe/pcre.wasm objs/$(WASMDIR_SYS)/Unsafe/regex.wasm
+
 #*---------------------------------------------------------------------*/
 #*    C Object files for the distribution                              */
 #*---------------------------------------------------------------------*/
@@ -713,7 +714,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
   $(BOOTLIBDIR)/types.wat \
   $(W_WLIB) $(WASMS:%.wasm=%.wat)
-	$(BIGLOO) -wasm -y -w \
+	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w \
 		objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
 		objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
 		-o $@
@@ -722,7 +723,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
 objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   $(BOOTLIBDIR)/types.wat \
   $(W_WLIB) $(WASMS:%.wasm=%.wat)
-	$(BIGLOO) -wasm -y -w $^ -o $@
+	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w $^ -o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
 objs/wasm_s/%.v: Wlib/%.wat $(BOOTLIBDIR)/types.wat

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Wed Feb  5 07:20:21 2025 (serrano)                */
+;*    Last change :  Mon Jul 21 08:11:14 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM threads                                                     */
@@ -31,6 +31,8 @@
    ;; Imports 
    ;; -----------------------------------------------------------------
 
+   (import "__js" "unsupported" (func $js_unsupported (param i32)))
+   
    (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
    (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
@@ -101,6 +103,37 @@
       (param $o (ref $condvar))
       (result (ref eq))
       (return (struct.get $condvar $name (local.get $o))))
+
+   (func $BGL_CONDVAR_BROADCAST
+      (export "BGL_CONDVAR_BROADCAST")
+      (param (ref $condvar))
+      (result i32)
+      (call $js_unsupported (i32.const 1))
+      (i32.const 0))
+   
+   (func $BGL_CONDVAR_TIMED_WAIT
+      (export "BGL_CONDVAR_TIMED_WAIT")
+      (param (ref $condvar))
+      (param (ref $mutex))
+      (param i64)
+      (result i32)
+      (call $js_unsupported (i32.const 2))
+      (i32.const 0))
+   
+   (func $BGL_CONDVAR_WAIT
+      (export "BGL_CONDVAR_WAIT")
+      (param (ref $condvar))
+      (param (ref $mutex))
+      (result i32)
+      (call $js_unsupported (i32.const 3))
+      (i32.const 0))
+   
+   (func $BGL_CONDVAR_SIGNAL
+      (export "BGL_CONDVAR_SIGNAL")
+      (param (ref $condvar))
+      (result i32)
+      (call $js_unsupported (i32.const 4))
+      (i32.const 0))
    
    ;; -----------------------------------------------------------------
    ;; Library functions
@@ -131,6 +164,11 @@
       (struct.new $condvar
 	 ;; name
 	 (local.get $name)))
+   
+   ;; -----------------------------------------------------------------
+   ;; Library functions
+   ;; -----------------------------------------------------------------
+   
    )
   
 

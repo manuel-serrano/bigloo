@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Fri Jul 18 14:51:56 2025 (serrano)                */
+;*    Last change :  Mon Jul 21 17:22:32 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -48,6 +48,7 @@
    
    (export (wasm-gen b::wasm v::global)
 	   (wasm-type t::type #!key nullable)
+	   (wasm-slot-type ::type)
 	   (wasm-default-value t::type)
 	   (wasm-vector-type t::type)
 	   (wasm-sym t::bstring)
@@ -389,6 +390,14 @@
 		 (if nullable
 		     `(ref null ,(wasm-sym (symbol->string id)))
 		     `(ref ,(wasm-sym (symbol->string id)))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    wasm-slot-type ...                                               */
+;*---------------------------------------------------------------------*/
+(define (wasm-slot-type t::type)
+   (if (or (tclass? t) (wclass? t))
+       (get-object-type)
+       t))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-default-value ...                                           */

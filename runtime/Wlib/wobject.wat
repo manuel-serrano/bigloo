@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:02:42 2024                          */
-;*    Last change :  Thu Jul 17 14:45:56 2025 (serrano)                */
+;*    Last change :  Mon Jul 21 14:20:24 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM objects and classes                                         */
@@ -22,7 +22,6 @@
    (elem declare func $generic_entry4)
    (elem declare func $generic_entry5)
 
-   
    ;; -----------------------------------------------------------------
    ;; Type declarations 
    ;; -----------------------------------------------------------------
@@ -53,7 +52,7 @@
       (sub (struct
 	      (field $header (mut i64))
 	      (field $widening (mut (ref eq))))))
-   
+
    ;; -----------------------------------------------------------------
    ;; Imports 
    ;; -----------------------------------------------------------------

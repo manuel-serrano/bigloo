@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/hash.scm         */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/hash.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Mon Sep 16 16:40:00 2024 (serrano)                */
+;*    Last change :  Mon Jul 21 09:10:31 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -113,7 +113,7 @@
 	       (hash #f)
 	       (weak 'none)
 	       (max-length 16384)
-	       (bucket-expansion 1.2)
+	       (bucket-expansion 1.9)
 	       (persistent #f))
 	    (create-hashtable-open-string)
 	    (get-hashnumber::long ::obj)
@@ -249,7 +249,7 @@
 	   (hash #f)
 	   (weak 'none)
 	   (max-length 16384)
-	   (bucket-expansion 1.2)
+	   (bucket-expansion 1.9)
 	   (persistent #f))
    (let ((wk::long (case weak
 		      ;; integers are also used in the case construct
@@ -1114,7 +1114,7 @@
 (define (plain-hashtable-expand! table)
    (let* ((old-bucks (%hashtable-buckets table))
 	  (len (vector-length old-bucks))
-	  (new-len (*fx 2 len))
+	  (new-len (+ 1 (*fx 2 len)))
 	  (max-len (%hashtable-max-length table)))
       ;; enlarge the max-bucket-len
       (let ((nmax (* (%hashtable-max-bucket-len table)
@@ -1334,6 +1334,6 @@
 ;*---------------------------------------------------------------------*/
 (define (open-string-hashtable-size-inc! t)
    (let ((n (%hashtable-size t)))
-      (if (>fx (*fx n 3) (*fx 2 (%hashtable-max-bucket-len t)))
+      (if (>fx (*fx n 3) (+fx 1 (*fx 2 (%hashtable-max-bucket-len t))))
 	  (open-string-hashtable-rehash! t)
 	  (%hashtable-size-set! t (+fx n 1)))))

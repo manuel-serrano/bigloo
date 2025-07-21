@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Thu Jul 17 14:12:07 2025 (serrano)                */
+;*    Last change :  Mon Jul 21 08:26:52 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -43,6 +43,7 @@
 	    (field $error-handler (mut (ref eq)))
 	    (field $error-notifiers (mut (ref eq)))
 	    (field $interrupt-notifier (mut (ref eq)))
+	    (field $debug-alist (mut (ref eq)))
 	    
 	    (field $current-output-port (mut (ref null $output-port)))
 	    (field $current-error-port (mut (ref null $output-port)))
@@ -51,13 +52,15 @@
 	    (field $evstate (mut (ref eq)))
 	    (field $module (mut (ref eq)))
 	    (field $abase (mut (ref eq)))
-	    
+
+	    (field $parameters (mut (ref eq)))
+	       
 	    (field $lexical-stack (mut (ref eq)))
 	    (field $top-of-frame (mut (ref $bgl_dframe)))
 	    (field $exit-traces (mut (ref null $bgl_exit_trace_list)))
 
 	    (field $thread-backend (mut (ref eq))))))
-   
+	    
    (rec
       (type $bexception
 	 (struct
@@ -128,6 +131,8 @@
 	 (global.get $BNIL)
 	 ;; interrupt-notifier
 	 (global.get $BNIL)
+	 ;; debug-alist
+	 (global.get $BNIL)
 	 ;; current-output-port
 	 (ref.null none)
 	 ;; current-error-port
@@ -140,6 +145,8 @@
 	 (global.get $BUNSPEC)
 	 ;; abase
 	 (global.get $BUNSPEC)
+	 ;; parameters
+	 (global.get $BNIL)
 	 ;; lexical-stack
 	 (global.get $BNIL)
 	 ;; top-of-frame
@@ -183,6 +190,8 @@
 	 (global.get $BNIL)
 	 ;; interrupt-notifier
 	 (global.get $BNIL)
+	 ;; debug-alist
+	 (global.get $BNIL)
 	 ;; current-output-port
 	 (ref.null none)
 	 ;; current-error-port
@@ -195,6 +204,8 @@
 	 (global.get $BUNSPEC)
 	 ;; abase
 	 (global.get $BUNSPEC)
+	 ;; parameters
+	 (global.get $BNIL)
 	 ;; lexical-stack
 	 (global.get $BNIL)
 	 ;; top-of-frame
@@ -458,6 +469,37 @@
 	 (global.get $current-dynamic-env)
 	 (local.get $be)))
    
+   (func $BGL_ENV_PARAMETERS
+      (export "BGL_ENV_PARAMETERS")
+      (param $env (ref $dynamic-env))
+      (result (ref eq))
+      (struct.get $dynamic-env $thread-backend (local.get $env)))
+   
+   (func $BGL_ENV_PARAMETERS_SET
+      (export "BGL_ENV_PARAMETERS_SET")
+      (param $env (ref $dynamic-env))
+      (param $pa (ref eq))
+      (result (ref eq))
+      
+      (struct.set $dynamic-env $thread-backend (local.get $env)  (local.get $pa))
+      (return (global.get $BUNSPEC)))
+   
+   (func $BGL_PARAMETERS
+      (export "BGL_PARAMETERS")
+      (result (ref eq))
+      
+      (return_call $BGL_ENV_PARAMETERS
+	 (global.get $current-dynamic-env)))
+   
+   (func $BGL_PARAMETERS_SET
+      (export "BGL_PARAMETERS_SET")
+      (param $pa (ref eq))
+      (result (ref eq))
+      
+      (return_call $BGL_ENV_PARAMETERS_SET
+	 (global.get $current-dynamic-env)
+	 (local.get $pa)))
+   
    (func $BGL_ENV_EVSTATE
       (export "BGL_ENV_EVSTATE")
       (param $env (ref $dynamic-env))
@@ -683,6 +725,28 @@
       (param $hdl (ref eq))
       (return_call $BGL_ENV_INTERRUPT_NOTIFIER_SET
 	 (global.get $current-dynamic-env) (local.get $hdl)))
+   
+   (func $BGL_ENV_DEBUG_ALIST_GET
+      (export "BGL_ENV_DEBUG_ALIST_GET")
+      (param $env (ref $dynamic-env))
+      (result (ref eq))
+      (struct.get $dynamic-env $interrupt-notifier (local.get $env)))
+   
+   (func $BGL_DEBUG_ALIST_GET (export "BGL_DEBUG_ALIST_GET")
+      (result (ref eq))
+      (struct.get $dynamic-env $interrupt-notifier (global.get $current-dynamic-env)))
+   
+   (func $BGL_ENV_DEBUG_ALIST_SET
+      (export "BGL_ENV_DEBUG_ALIST_SET") 
+      (param $env (ref $dynamic-env))
+      (param $al (ref eq)) 
+      (struct.set $dynamic-env $interrupt-notifier (local.get $env) (local.get $al)))
+   
+   (func $BGL_DEBUG_ALIST_SET
+      (export "BGL_DEBUG_ALIST_SET") 
+      (param $al (ref eq))
+      (return_call $BGL_ENV_DEBUG_ALIST_SET
+	 (global.get $current-dynamic-env) (local.get $al)))
    
    ;; -----------------------------------------------------------------
    ;; Exit

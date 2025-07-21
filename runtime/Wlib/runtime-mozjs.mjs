@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 18 15:54:41 2025 (serrano)                */
+/*    Last change :  Mon Jul 21 08:04:25 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -451,9 +451,9 @@ function __js_system() {
 	 } 
       },
 
-      getenv_length: () => {
+      getenv_len: () => {
 	 return Object.keys(process.env).length;
-      }
+      },
       
       getenv_var: (i, addr) => {
 	 const val = process.env[Object.keys(process.env)];
@@ -479,7 +479,7 @@ function __js_system() {
 
       umask: (mask) => {
 	 return 0;
-      }
+      },
       
       chdir: (mask) => {
 	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, addr, len);
@@ -487,6 +487,12 @@ function __js_system() {
 
 	 return 0;
       }
+      
+      system: (addr, len) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, addr, len);
+	 const v = loadSchemeString(buffer);
+	 return 1;
+      },
       
       exit: function (val) {
  	 process.exit(val);
@@ -621,12 +627,12 @@ function __js_io() {
 	 }
       },
 
-      utime: path_addr, path_length, atime, mtime) => {
+      utime: (path_addr, path_length, atime, mtime) => {
 	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
 	 const path = loadSchemeString(buffer);
 
 	 return 0;
-      }
+      },
 
       file_size: (fd) => {
 	 try {
@@ -647,14 +653,14 @@ function __js_io() {
       },
 
       bgl_chmod: (path_addr, path_length, read, write, exec) => {
-	 const path = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
 	 const path = loadSchemeString(buffer);
 
 	 return 0;
       },
 
       chmod: (path_addr, path_length, mod) => {
-	 const path = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
 	 const path = loadSchemeString(buffer);
 
 	 return 0;
@@ -855,6 +861,10 @@ function __js() {
       
       not_implemented: x => {
 	 console.error("*** WASM WARNING: function not implemented", x);
+      },
+      
+      unsupported: x => {
+	 console.error("*** WASM WARNING: function unsupported", x);
       },
       
       trace: function (x) {

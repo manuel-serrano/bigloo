@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Jul 18 14:27:39 2025 (serrano)                */
+;*    Last change :  Mon Jul 21 08:45:25 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -517,13 +517,16 @@ esac")
 	    ((null? types)
 	     (if (null? klass)
 		 (reverse! noklass)
-		 (reverse! (cons `(rec ,@(sort-classes klass)) noklass))))
+		 ;;(reverse! (cons `(rec ,@(sort-classes klass)) noklass))))
+		 (append (reverse! noklass)
+		    (map (lambda (c) `(rec ,c))
+		       (sort-classes klass)))))
 	    ((class-declaration? (car types))
 	     (loop (cdr types) noklass (cons (car types) klass)))
 	    (else
 	     (loop (cdr types) (cons (car types) noklass) klass)))))
 
-   (verbose 2 "      merging [" (format "~( )" files) " -> " target #\] #\Newline)
+   (verbose 2 "      merging [" (format "~( )" files) " -> " target "]\n")
    
    (let* ((modules (append-map read-module files))
 	  ;; tags must be collected before the imports
@@ -658,8 +661,8 @@ esac")
       (cvm-functions me))
    
    (let ((compiled-funcs (backend-compile-functions me))
-	 (classes (filter (lambda (t) (>fx (type-occurrence t) 0)) (get-class-list))))
-      
+	 (classes (filter class-used? (get-class-list))))
+
       (with-output-to-port *wasm-port*
 	 (lambda ()
 	    (wasm-pp
@@ -679,6 +682,14 @@ esac")
 		   (comment "Functions" ,@compiled-funcs))))))
    
    (stop-emission!))
+
+;*---------------------------------------------------------------------*/
+;*    class-used? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (class-used? t)
+   (or (>fx (type-occurrence t) 0)
+       (and (isa? t tclass)
+	    (any class-used? (tclass-subclasses t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-types-and-tags ...                                          */
@@ -1065,7 +1076,7 @@ esac")
    
    (define (emit-slot slot)
       (with-access::slot slot (type virtual-num name read-only?)
-	 (let ((cname (slot-type slot)))
+	 (let ((cname (wasm-slot-type type)))
 	    (if (>=fx virtual-num 0)
 		;; TODO: what to do with virtual-num >= 0
 		#f 
@@ -1489,15 +1500,15 @@ esac")
 	      (param (ref $bgl_evmeaning_getter))
 	      (param (ref $bgl_evmeaning_setter))
 	      (result (ref eq))))
-;* 	(import ,($bigloo) "bgl_long_to_bignum"                        */
-;* 	   (func $bgl_long_to_bignum                                   */
-;* 	      (param i64)                                              */
-;* 	      (result (ref $bignum))))                                 */
-;* 	(import ,($bigloo) "bgl_string_to_bignum"                      */
-;* 	   (func $bgl_string_to_bignum                                 */
-;* 	      (param (ref $bstring))                                   */
-;* 	      (param i32)                                              */
-;* 	      (result (ref $bignum))))                                 */
+	(import ,($bigloo) "bgl_long_to_bignum"
+	   (func $bgl_long_to_bignum
+	      (param i64)
+	      (result (ref $bignum))))
+	(import ,($bigloo) "bgl_string_to_bignum"
+	   (func $bgl_string_to_bignum
+	      (param (ref $bstring))
+	      (param i32)
+	      (result (ref $bignum))))
 	(import ,($bigloo) "the_failure"
 	   (func $the_failure
 	      (param (ref eq))

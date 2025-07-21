@@ -20,11 +20,10 @@
    ;; -----------------------------------------------------------------
 
    (import "__js" "not_implemented" (func $not_implemented (param i32)))
+   (import "__js" "unsupported" (func $js_unsupported (param i32)))
    (import "__js" "trace" (func $js_trace (param i32)))
    (import "__js" "internalError" (func $js_internal_error (param i32) (param i32)))
    
-   (import "$__object" "BGl_classzd2nilzd2initz12z12zz__objectz00" (func $BGl_z62classzd2nilzd2initz12z70zz__objectz00 (param (ref $class)) (result (ref eq))))
-
    ;; load_string_in_buffer
    (func $load_string_in_buffer (export "bgl_load_string_in_buffer")
       (param $addr i32)

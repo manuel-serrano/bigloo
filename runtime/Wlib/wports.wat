@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Fri Jul 18 08:25:30 2025 (serrano)                */
+;*    Last change :  Mon Jul 21 07:59:43 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -57,14 +57,14 @@
    (import "__js_io" "last_modification_time" (func $js_last_modification_time (param i32 i32) (result f64)))
    (import "__js_io" "last_access_time" (func $js_last_access_time (param i32 i32) (result f64)))
    (import "__js_io" "last_change_time" (func $js_last_change_time (param i32 i32) (result f64)))
-   (import "__is_io" "utime" (func $js_utime (param i32 i32 f64 f64) (result i32)))
+   (import "__js_io" "utime" (func $js_utime (param i32 i32 f64 f64) (result i32)))
    (import "__js_io" "file_size" (func $js_file_size (param i32) (result i32)))
    (import "__js_io" "path_mode" (func $js_path_mode (param i32 i32) (result i32)))
    (import "__js_io" "path_gid" (func $js_path_gid (param i32 i32) (result i32)))
    (import "__js_io" "path_uid" (func $js_path_uid (param i32 i32) (result i32)))
    (import "__js_io" "path_type" (func $js_path_type (param i32 i32 i32) (result i32)))
    (import "__js_io" "isatty" (func $js_isatty (param i32) (result i32)))
-   (import "__js_io" "file_exists" (func $js_file_exists (param i32) (param i32) (result i32)))
+   (import "__js_io" "file_exists" (func $js_file_exists (param i32 i32) (result i32)))
    (import "__js_io" "append_file" (func $js_append_file (param i32 i32 i32) (result i32)))
    (import "__js_io" "write_file" (func $js_write_file (param i32 i32 i32 i32) (result i32)))
    (import "__js_io" "append_char" (func $js_append_char (param i32 i32) (result i32)))

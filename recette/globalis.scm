@@ -1,5 +1,5 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/globalis.scm                 */
+;*    serrano/prgm/project/bigloo/wasm/recette/globalis.scm            */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 11:30:18 1992                          */

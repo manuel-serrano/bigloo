@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 18 15:51:31 2025 (serrano)                */
+/*    Last change :  Mon Jul 21 08:04:14 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -16,6 +16,7 @@ import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync
 import { isatty } from "node:tty";
 import { extname, sep as file_sep } from "node:path";
 import { format } from "node:util";
+import { execSync } from "node:child_process";
 
 /*---------------------------------------------------------------------*/
 /*    Wasm instances                                                   */
@@ -374,9 +375,9 @@ function __js_system() {
 	 } 
       },
 
-      getenv_length: () => {
+      getenv_len: () => {
 	 return Object.keys(process.env).length;
-      }
+      },
       
       getenv_var: (i, addr) => {
 	 const val = process.env[Object.keys(process.env)];
@@ -408,13 +409,25 @@ function __js_system() {
 
       umask: (mask) => {
 	 return process.umask(mask);
-      }
+      },
       
       chdir: (addr, len) => {
 	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, addr, len);
 	 const v = loadSchemeString(buffer);
 
 	 return Process.chdir(v);
+      },
+      
+      system: (addr, len) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, addr, len);
+	 const v = loadSchemeString(buffer);
+
+	 try {
+	    execSync(v);
+	    return 0;
+	 } catch (e) {
+	    return 1;
+	 }
       },
       
       exit: function (val) {
@@ -555,12 +568,20 @@ function __js_io() {
 	 }
       },
 
-      utime: path_addr, path_length, atime, mtime) => {
+      utime: (path_addr, path_length, atime, mtime) => {
 	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
 	 const path = loadSchemeString(buffer);
 
 	 return utime(path, atime, mtime);
-      }
+      },
+
+      file_size: (fd) => {
+	 try {
+	    return fstatSync(fd).size;
+	 } catch (err) {
+            return -1;
+	 }
+      },
 
       path_mode: (path_addr, path_length) => {
 	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
@@ -573,7 +594,7 @@ function __js_io() {
       },
 
       bgl_chmod: (path_addr, path_length, read, write, exec) => {
-	 const path = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
 	 const path = loadSchemeString(buffer);
 	 const mod = (read ? constants.S_IRUSR : 0)
 	    | (write ? constants.S_IWUSR : 0)
@@ -583,13 +604,13 @@ function __js_io() {
       },
 
       chmod: (path_addr, path_length, mod) => {
-	 const path = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
 	 const path = loadSchemeString(buffer);
 
 	 return chmodSync(path, mod);
       },
 
-      file_gid: (path_addr, path_length) => {
+      path_gid: (path_addr, path_length) => {
 	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
 	 const path = loadSchemeString(buffer);
 	 try {
@@ -599,7 +620,7 @@ function __js_io() {
 	 }
       },
 
-      file_uid: (path_addr, path_length) => {
+      path_uid: (path_addr, path_length) => {
 	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
 	 const path = loadSchemeString(buffer);
 	 try {
@@ -648,9 +669,9 @@ function __js_io() {
 	 const path = loadSchemeString(buffer);
 	 try {
             accessSync(path, constants.F_OK);
-            return true;
+            return 1;
 	 } catch (err) {
-            return false;
+            return 0;
 	 }
       },
 
@@ -783,6 +804,10 @@ function __js() {
       
       not_implemented: x => {
 	 console.error("*** WASM WARNING: function not implemented", x);
+      },
+      
+      unsupported: x => {
+	 console.error("*** WASM WARNING: function unsupported", x);
       },
       
       trace: function (x) {
