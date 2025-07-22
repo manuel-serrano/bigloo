@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Mon Jul 21 08:26:52 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 09:17:44 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -75,6 +75,8 @@
    ;; -----------------------------------------------------------------
    ;; Imports 
    ;; -----------------------------------------------------------------
+
+   (import "__js" "trace" (func $js_trace (param i32)))
 
    (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
@@ -573,49 +575,6 @@
 	 (global.get $BNIL)
 	 (ref.null none)))
 
-   (func $bgl_internal_error_get
-      (result (ref eq))
-      (local $tmp (ref eq))
-      (return
-	 (if (result (ref eq)) (ref.is_null (global.get $bgl_internal_error))
-	     (then
-		(array.new_data $bstring $default_internal_error
-		   (i32.const 0)
-		   (i32.const 19)))
-	     (else
-	      (local.set $tmp
-		 (ref.cast (ref eq) (global.get $bgl_internal_error)))
-	      (global.set $bgl_internal_error (ref.null none))
-	      (local.get $tmp)))))
-
-   (func $bgl_internal_error_set (export "bgl_internal_error_set")
-      (param $e (ref eq))
-      (global.set $bgl_internal_error (local.get $e)))
-
-   (func $bgl_internal_handler
-      (export "bgl_internal_handler")
-      (param $exn (ref null exn))
-      (param $exit (ref $exit))
-      (result (ref eq))
-      (local $cell (ref $cell))
-      (if (i32.eqz (struct.get $exit $userp (local.get $exit)))
-	  (then
-	     (return (global.get $BUNSPEC)))
-	  (else
-	   (if (struct.get $exit $stamp (local.get $exit))
-	       (then
-		  (throw_ref (local.get $exn)))
-	       (else
-		(local.set $cell
-		   (ref.cast (ref $cell)
-		      (struct.get $pair $cdr
-			 (ref.cast (ref $pair)
-			    (call $BGL_ERROR_HANDLER_GET)))))
-		(struct.set $cell $val (local.get $cell)
-		   (call $bgl_internal_error_get))
-		(return (local.get $cell))))))
-      (unreachable))
-   
    (func $bgl_exception_handler
       (export "bgl_exception_handler")
       (param $exn (ref $bexception))
