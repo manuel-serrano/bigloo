@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:14:39 2024                          */
-;*    Last change :  Fri Jul 18 08:49:45 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 13:04:24 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM foreign objects                                             */
@@ -45,15 +45,15 @@
    (import "__bigloo" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
    (import "__bigloo" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
    (import "__bigloo" "BOOLEANP" (func $BOOLEANP (param (ref eq)) (result i32)))
-   (import "__bigloo" "CBOOL" (func $CBOOL (param (ref $bbool)) (result i32)))
    (import "__bigloo" "INTEGERP" (func $INTEGERP (param (ref eq)) (result i32)))
    (import "__bigloo" "BINT" (func $BINT (param i64) (result (ref eq))))
    (import "__bigloo" "OBJ_TO_INT" (func $OBJ_TO_INT (param (ref eq)) (result i64)))
+   (import "__bigloo" "OBJ_TO_BOOL" (func $OBJ_TO_BOOL (param (ref eq)) (result i32)))
+   (import "__bigloo" "OBJ_TO_CHAR" (func $OBJ_TO_CHAR (param (ref eq)) (result i32)))
    (import "__bigloo" "STRINGP" (func $STRINGP (param (ref eq)) (result i32)))
    (import "__bigloo" "BSTRING_TO_STRING" (func $BSTRING_TO_STRING (param (ref $bstring)) (result (ref $bstring))))
    (import "__bigloo" "string_to_bstring" (func $string_to_bstring (param (ref $bstring)) (result (ref $bstring))))
    (import "__bigloo" "CHARP" (func $CHARP (param (ref eq)) (result i32)))
-   (import "__bigloo" "CCHAR" (func $CCHAR (param (ref $bchar)) (result i32)))
    
    (import "__bigloo" "the_failure" (func $the_failure (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
    
@@ -92,9 +92,9 @@
       (if (call $INTEGERP (local.get $o))
 	  (then (return (i32.wrap_i64 (call $OBJ_TO_INT (local.get $o))))))
       (if (call $BOOLEANP (local.get $o))
-	  (then (return_call $CBOOL (ref.cast (ref $bbool) (local.get $o)))))
+	  (then (return_call $OBJ_TO_BOOL (local.get $o))))
       (if (call $CHARP (local.get $o))
-	  (then (return_call $CCHAR (ref.cast (ref $bchar) (local.get $o)))))
+	  (then (return_call $OBJ_TO_CHAR (local.get $o))))
       (if (call $FOREIGNP (local.get $o))
 	  (then (return_call $FOREIGN_TO_OBJ (ref.cast (ref $foreign) (local.get $o)))))
       (call $the_failure

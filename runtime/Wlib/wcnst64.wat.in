@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:56:25 2024                          */
-;*    Last change :  Tue Jul 22 08:07:05 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 13:02:01 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM implementation of constants with 64-bit boxed fixnums.      */
@@ -52,13 +52,17 @@
 	 (ref.eq (local.get $o) (global.get $BTRUE))))
 
    ;; BBOOL
-   (func $BBOOL (export "BBOOL") (param $v i32) (result (ref i31))
+   (func $BBOOL (export "BBOOL")
+      (param $v i32)
+      (result (ref i31))
       (if (result (ref i31)) (local.get $v)
 	  (then (global.get $BTRUE))
 	  (else (global.get $BFALSE))))
 
    ;; CBOOL
-   (func $CBOOL (export "CBOOL") (param $v (ref i31)) (result i32)
+   (func $CBOOL (export "CBOOL")
+      (param $v (ref i31))
+      (result i32)
       (i31.get_u (local.get $v)))
 
    ;; OBJ_TO_BOOL
@@ -98,6 +102,12 @@
       (result i32)
       (i32.sub (i31.get_u (local.get $o)) (global.get $BCHAR_OFFSET)))
 
+   ;; OBJ_TO_CHAR
+   (func $OBJ_TO_CHAR (export "OBJ_TO_CHAR")
+      (param $o (ref eq))
+      (result i32)
+      (return_call $CCHAR (ref.cast i31 (local.get $o))))
+   
    ;; toupper
    (func $toupper (export "toupper")
       (param $c i32)

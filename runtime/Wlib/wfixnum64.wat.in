@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Fri Jul 18 08:43:09 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 12:53:08 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM boxed 64bit fixnum implementation                           */
@@ -124,9 +124,9 @@
       (call $CINT (ref.cast (ref $bint) (local.get $o))))
 
    (func $BGL_CINT_AS_ULONG (export "BGL_CINT_AS_ULONG")
-      (param $i (ref i31))
+      (param $i (ref $bint))
       (result i64)
-      (return_call $CINT (local.get $i)))
+      (struct.get $bint $v (local.get $o)))
       
    (global $MAXVALFX (export "MAXVALFX") i64
       (i64.const 9223372036854775807))

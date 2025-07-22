@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/i18n.scm                */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/i18n.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 18 17:02:42 2013                          */
-;*    Last change :  Tue Dec 24 13:51:10 2013 (serrano)                */
-;*    Copyright   :  2013 Manuel Serrano                               */
+;*    Last change :  Tue Jul 22 12:47:41 2025 (serrano)                */
+;*    Copyright   :  2013-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    i18n support                                                     */
 ;*=====================================================================*/
@@ -52,20 +52,6 @@
 	    ($utf8-string-locale-capitalize::bstring (::bstring)
 	       "bgl_utf8_string_locale_capitalize"))
 
-   (java    (class foreign
-	       (method static $utf8-string-locale-compare3::int
-		  (::bstring ::bstring)
-		  "bgl_utf8_string_locale_compare3")
-	       (method static $utf8-string-locale-upcase::bstring
-		  (::bstring)
-		  "bgl_utf8_string_locale_upcase")
-	       (method static $utf8-string-locale-downcase::bstring
-		  (::bstring)
-		  "bgl_utf8_string_locale-downcase")
-	       (method static $utf8-string-locale-capitalize::bstring
-		  (::bstring)
-		  "bgl_utf8_string_locale_capitalize")))
-   
    (export  (inline utf8-string-locale-compare3::int ::bstring ::bstring)
 	    (inline utf8-string-locale-upcase::bstring ::bstring)
 	    (inline utf8-string-locale-downcase::bstring ::bstring)
@@ -75,14 +61,16 @@
 ;*    utf8-string-locale-compare3 ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (utf8-string-locale-compare3 left right)
-   ($utf8-string-locale-compare3 left right))
+   (cond-expand
+      ((not bigloo-c) (string-compare3 left right))
+      (else ($utf8-string-locale-compare3 left right))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-locale-upcase ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (utf8-string-locale-upcase str)
    (cond-expand
-      (bigloo-jvm (string-upcase str))
+      ((not bigloo-c) (string-upcase str))
       (else ($utf8-string-locale-upcase str))))
 
 ;*---------------------------------------------------------------------*/
@@ -90,7 +78,7 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (utf8-string-locale-downcase str)
    (cond-expand
-      (bigloo-jvm (string-downcase str))
+      ((not bigloo-c) (string-downcase str))
       (else ($utf8-string-locale-downcase str))))
 
 ;*---------------------------------------------------------------------*/
@@ -98,5 +86,5 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (utf8-string-locale-capitalize str)
    (cond-expand
-      (bigloo-jvm (string-capitalize str))
+      ((not bigloo-c) (string-capitalize str))
       (else ($utf8-string-locale-capitalize str))))

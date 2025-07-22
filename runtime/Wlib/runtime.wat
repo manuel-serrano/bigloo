@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Jul 22 12:29:17 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 12:54:32 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -56,7 +56,7 @@
    (import "__bigloo" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value (ref $input-port)))
    (import "__bigloo" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
    (import "__bigloo" "bgl_flush_output_port" (func $bgl_flush_output_port (param (ref $output-port)) (result (ref eq))))
-   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref eq)))
    (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
    (import "__bigloo" "bgl_init_io" (func $bgl_init_io))
    (import "__bigloo" "bgl_init_trace" (func $bgl_init_trace (param (ref $dynamic-env))))

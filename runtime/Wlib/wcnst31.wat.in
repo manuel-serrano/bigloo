@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:56:25 2024                          */
-;*    Last change :  Tue Jul 22 08:06:32 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 13:04:45 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM implementation of constants with 31-bit unboxed fixnums.    */
@@ -118,6 +118,12 @@
       (param $o (ref $bchar))
       (result i32)
       (struct.get_u $bchar $val (local.get $o)))
+   
+   ;; OBJ_TO_CHAR
+   (func $OBJ_TO_CHAR (export "OBJ_TO_CHAR")
+      (param $o (ref eq))
+      (result i32)
+      (return_call $CCHAR (ref.cast (ref $bchar) (local.get $o))))
    
    ;; toupper
    (func $toupper (export "toupper")

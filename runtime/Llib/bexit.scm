@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Wed Oct  2 14:37:37 2024 (serrano)                */
+;*    Last change :  Tue Jul 22 12:51:37 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -85,7 +85,8 @@
 		    ($failsafe-mutex-profile))))
 
    (wasm    ($exitd->exit "(ref.cast (ref $exit) ~0)")
-	    ($env-get-exitd-val "(struct.get $dynamic-env $exitd_val ~0)"))
+	    ($env-get-exitd-val "(struct.get $dynamic-env $exitd_val ~0)")
+	    (call/cc-jump-exit "(block (result (ref eq)) (drop ~0) (drop ~1) (global.get $BUNSPEC))"))
 	    
    (java    (class foreign
 	       (method static push-exit!::obj (::exit ::long)
