@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/wind.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/wind.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  8 19:31:00 1998                          */
-;*    Last change :  Thu Sep 29 06:04:45 2016 (serrano)                */
+;*    Last change :  Tue Jul 22 10:01:23 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Wind test (dynamic-wind and unwind-protect).                     */
 ;*=====================================================================*/
@@ -27,7 +27,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    test-wind-sans-handler ...                                       */
 ;*    -------------------------------------------------------------    */
-;*    This test is the last to be executed by the recette as it exit   */
+;*    This test is the last to be executed by the recette as it exits  */
 ;*    the main process.                                                */
 ;*---------------------------------------------------------------------*/
 (define (test-wind-sans-handler end)

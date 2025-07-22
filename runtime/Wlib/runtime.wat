@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Jul 22 08:07:55 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 10:06:59 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -66,6 +66,7 @@
    (import "__bigloo" "BGL_ENV_CURRENT_INPUT_PORT" (func $BGL_ENV_CURRENT_INPUT_PORT (param (ref $dynamic-env)) (result (ref $input-port))))
    (import "__bigloo" "OBJ_TO_INT" (func $OBJ_TO_INT (param (ref eq)) (result i64)))
    (import "__bigloo" "INTEGERP" (func $INTEGERP (param (ref eq)) (result i32)))
+   (import "__bigloo" "bigloo_exit_apply" (func $bigloo_exit_apply (param (ref eq)) (result (ref eq))))
    
    (func $bgl_internal_error (export "bgl_internal_error")
       (param $errno i32)
@@ -580,10 +581,12 @@
       (drop
 	 (call $__main (ref.cast (ref $pair) (local.get $argv)))))
    
-   (func $BIGLOO_EXIT
-      (export "BIGLOO_EXIT")
-      (param (ref eq))
+   (func $BIGLOO_EXIT (export "BIGLOO_EXIT")
+      (param $val (ref eq))
       (result (ref eq))
+
+      (local.set $val (call $bigloo_exit_apply (local.get $val)))
+      
       (drop
 	 (call $bgl_flush_output_port
 	    (call $BGL_ENV_CURRENT_OUTPUT_PORT
@@ -597,5 +600,6 @@
 	     (call $INTEGERP (local.get 0))
 	     (then (i32.wrap_i64 (call $OBJ_TO_INT (local.get 0))))
 	     (else (i32.const 0))))
-      (global.get $BUNSPEC))
+      
+      (return (local.get $val)))
    )

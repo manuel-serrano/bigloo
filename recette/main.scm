@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Wed Jun 18 15:46:46 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 10:11:52 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -76,7 +76,7 @@
 	   peek
 	   unicode
 	   optim
-;* 	   pregexp                                                     */
+	   pregexp
 	   system
 	   date
            process
@@ -330,7 +330,7 @@
 	  (if-module 'hygiene test-hygiene)
 	  (if-module 'peek test-peek)
 	  (if-module 'optim test-optim)
-;* 	  (if-module 'pregexp test-pregexp)                            */
+	  (if-module 'pregexp test-pregexp)
 	  (if-module 'system test-system)
 	  (if-module 'date test-date)
 	  (if-module 'weakptr test-weakptr)
