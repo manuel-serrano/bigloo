@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Tue Jul 22 13:34:43 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 14:37:22 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM boxed 64bit fixnum implementation                           */
@@ -187,7 +187,8 @@
 		(array.new_data $bstring $div0_internal_error
 		   (i32.const 0)
 		   (i32.const 13))
-		(call $BINT (i64.const 0))))
+		(call $BINT (i64.const 0)))
+	     (unreachable))
 	  (else (return (local.get $x))))
       (unreachable))
       
