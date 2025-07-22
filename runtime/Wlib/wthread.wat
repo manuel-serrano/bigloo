@@ -49,7 +49,7 @@
    (import "__bigloo" "BINT" (func $BINT (param i64) (result (ref eq))))
    (import "__bigloo" "the_failure" (func $the_failure (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
 
-;; -----------------------------------------------------------------
+   ;; -----------------------------------------------------------------
    ;; Global variables 
    ;; -----------------------------------------------------------------
    

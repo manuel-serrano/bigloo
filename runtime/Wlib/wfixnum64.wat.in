@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Tue Jul 22 13:14:29 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 13:24:00 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM boxed 64bit fixnum implementation                           */
@@ -153,7 +153,8 @@
 		   (i32.wrap_i64 (local.get $tmp)))))
 	  (else
 	   (return 
-	      (struct.new $bint (local.get $x))))))
+	      (struct.new $bint (local.get $x)))))
+      (unreachable))
 
    (func $check_zero64 (export "check_zero64")
       (param $x i64)

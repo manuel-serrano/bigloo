@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Thu Jul 17 16:58:31 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 13:18:42 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -56,9 +56,6 @@
    (@include "./wsymbols.wat" type)
    (@include "./wweakptr.wat" type)
    
-   ;; TODO
-   (type $pair-nil (struct))
-   
    ;; cells
    (type $cell (struct (field $val (mut (ref eq)))))
    
@@ -74,21 +71,20 @@
 
    ;; unicode
    (@include "./wunicode.wat" type)
-   
-   ;; Boxed numeric types
-   ;; (type $bbool (struct (field $v i8)))
-   ;; (type $bchar (struct (field $v i8)))
 
+   ;; real
    (@include "./wreal.wat" type)
-   
+
+   ;; struct
    (type $struct (struct
 		    (field $key (mut (ref eq)))
 		    (field $values (ref $vector))))
    
+
+   ;; socket
+   (@include "./wsocket.wat" type)
    
-   ;; Network
-   (type $socket (struct))
-   (type $datagram-socket (struct))
+   ;; misc
    
    (type $process (struct))
    

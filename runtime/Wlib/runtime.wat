@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Jul 22 12:54:32 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 13:17:57 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -116,13 +116,6 @@
    (global $struct-default-value
       (export "BGL_STRUCT_DEFAULT_VALUE") (ref $struct)
       (struct.new $struct (global.get $BUNSPEC) (global.get $vector-default-value)))
-   
-   (global $socket-default-value
-      (export "BGL_SOCKET_DEFAULT_VALUE") (ref $socket)
-      (struct.new $socket))
-   (global $datagram-socket-default-value
-      (export "BGL_DATAGRAM_SOCKET_DEFAULT_VALUE") (ref $datagram-socket)
-      (struct.new $datagram-socket))
    
    (global $semaphore-default-value
       (export "BGL_SEMAPHOE_DEFAULT_VALUE") (ref $semaphore)
@@ -496,19 +489,6 @@
       (result (ref $bstring))
       ;; CARE MS 16sep2024: TODO
       (global.get $bstring-default-value))
-   
-   ;; --------------------------------------------------------
-   ;; Sockets
-   ;; --------------------------------------------------------
-   (func $SOCKET_INPUT (export "SOCKET_INPUT")
-      (param $socket (ref $socket))
-      (result (ref $input-port))
-      (global.get $input-port-default-value))
-   
-   (func $SOCKET_OUTPUT (export "SOCKET_OUTPUT")
-      (param $socket (ref $socket))
-      (result (ref $output-port))
-      (global.get $output-port-default-value))
    
    ;; --------------------------------------------------------
    ;; OS

@@ -14,6 +14,8 @@
    ;; -----------------------------------------------------------------
    ;; Type declarations 
    ;; -----------------------------------------------------------------
+   (type $pair-nil (struct))
+   
    (type $pair (sub (struct
 		       (field $car (mut (ref eq)))
 		       (field $cdr (mut (ref eq))))))
