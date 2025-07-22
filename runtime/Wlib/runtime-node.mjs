@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jul 22 14:19:34 2025 (serrano)                */
+/*    Last change :  Tue Jul 22 14:43:22 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -17,6 +17,7 @@ import { isatty } from "node:tty";
 import { extname, sep as file_sep } from "node:path";
 import { format } from "node:util";
 import { execSync } from "node:child_process";
+import { createServer } from "node:net";
 
 /*---------------------------------------------------------------------*/
 /*    Wasm instances                                                   */
@@ -801,6 +802,20 @@ function __js_socket() {
 
    nullsocket: () => {
       return undefined;
+   },
+
+   make_server: (hostname_addr, hostname_len, portnum, backlog, family) => {
+      const server = createServer((socket) => {
+	 socket.on('data', (data) => {
+	    console.log('Received:', data.toString());
+	 });
+	 
+	 socket.on('end', () => {
+	    console.log('Client disconnected');
+	 });
+      });
+      server.listen(portnum, () => { console.log("server listening"); });
+      return server;
    }
 }
 

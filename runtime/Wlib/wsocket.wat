@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Tue Jul 22 13:29:08 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 14:46:29 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM threads                                                     */
@@ -77,6 +77,7 @@
    
    (import "__js" "unsupported" (func $js_unsupported (param i32)))
    (import "__js_socket" "nullsocket" (global $nullsocket externref))
+   (import "__js_socket" "make_server" (func $js_make_server (param i32 i32 i32 i32 i32) (result externref)))
    
    (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
@@ -197,10 +198,16 @@
       (param $backlog i32)
       (param $family (ref eq))
       (result (ref $socket))
-
+      
+      ;;(call $store_string (local.get $path) (i32.const 128))
+      
       (struct.new $socket-server
 	 ;; sock
-	 (global.get $nullsocket)
+	 (call $js_make_server
+	    (i32.const 0) (i32.const 0)
+	    (local.get $portnum)
+	    (local.get $backlog)
+	    (i32.const 0))
 	 ;; portnum
 	 (local.get $portnum)
 	 ;; hostname

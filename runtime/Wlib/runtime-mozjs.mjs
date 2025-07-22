@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jul 22 14:20:51 2025 (serrano)                */
+/*    Last change :  Tue Jul 22 14:49:37 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -857,6 +857,10 @@ function __js_socket() {
    },
 
    nullsocket: () => {
+      return undefined;
+   },
+   
+   make_server: (hostname_addr, hostname_len, portnum, backlog, family) => {
       return undefined;
    }
 }
