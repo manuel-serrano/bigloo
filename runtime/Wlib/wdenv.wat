@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:08:48 2025                          */
-;*    Last change :  Tue Jul 22 09:17:44 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 11:29:30 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dynamic env                                                 */
@@ -79,10 +79,10 @@
    (import "__js" "trace" (func $js_trace (param i32)))
 
    (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
-   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
-   (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
-   (import "__bigloo" "BTRUE" (global $BTRUE (ref $bbool)))
-   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
+   (import "__bigloo" "BFALSE" (global $BFALSE (ref eq)))
+   (import "__bigloo" "BTRUE" (global $BTRUE (ref eq)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref eq)))
    (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
    (import "__bigloo" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
    (import "__bigloo" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))
@@ -282,15 +282,13 @@
       (result (ref eq))
       (struct.get $dynamic-env $abase (global.get $current-dynamic-env)))
    
-   (func $BGL_ABASE_SET
-      (export "BGL_ABASE_SET")
+   (func $BGL_ABASE_SET (export "BGL_ABASE_SET")
       (param $abase (ref eq))
       (result (ref eq))
       (struct.set $dynamic-env $abase (global.get $current-dynamic-env) (local.get $abase))
       (local.get $abase))
    
-   (func $bgl_init_trace
-      (export "bgl_init_trace")
+   (func $bgl_init_trace (export "bgl_init_trace")
       (param $env (ref $dynamic-env))
       (local $top (ref $bgl_dframe))
 
@@ -307,6 +305,25 @@
       (result (ref $bgl_dframe))
       (struct.get $dynamic-env $top-of-frame (local.get $env)))
 
+   (func $BGL_ENV_SET_TOP_OF_FRAME
+      (param $env (ref $dynamic-env))
+      (param $tof (ref $bgl_dframe))
+      (struct.set $dynamic-env $top-of-frame
+	 (local.get $env) (local.get $tof)))
+
+   (func $BGL_GET_TRACE_STACKSP (export "BGL_GET_TRACE_STACKSP")
+      (result (ref $bgl_dframe))
+      (return
+	 (call $BGL_ENV_GET_TOP_OF_FRAME (global.get $current-dynamic-env))))
+
+   (func $BGL_SET_TRACE_STACKSP (export "BGL_SET_TRACE_STACKSP")
+      (param $v (ref eq))
+      (result (ref eq))
+      (call $BGL_ENV_SET_TOP_OF_FRAME
+	 (global.get $current-dynamic-env)
+	 (ref.cast (ref $bgl_dframe) (local.get $v)))
+      (return (global.get $BUNSPEC)))
+      
    (func $bgl_dframe_length
       ;; debug
       (param $l (ref null $bgl_dframe))
@@ -319,14 +336,6 @@
 	      (call $bgl_dframe_length
 		 (struct.get $bgl_dframe $link (local.get $l)))))))
 		
-   (func $BGL_ENV_SET_TOP_OF_FRAME
-      (param $env (ref $dynamic-env))
-      (param $tof (ref $bgl_dframe))
-;*       (call $js_trace (i32.const 11110))                            */
-;*       (call $js_trace (call $bgl_dframe_length (local.get $tof)))   */
-      (struct.set $dynamic-env $top-of-frame
-	 (local.get $env) (local.get $tof)))
-   
    (func $BGL_ENV_EXIT_TRACES
       (param $env (ref $dynamic-env))
       (result (ref null $bgl_exit_trace_list))
@@ -785,6 +794,14 @@
    (func $BGL_EXITD_BOTTOMP (export "BGL_EXITD_BOTTOMP") (param $o (ref eq)) (result i32)
       (ref.is_null
 	 (struct.get $exit $prev (ref.cast (ref $exit) (local.get $o)))))
+   
+   (func $BGL_ENV_EXITD_VAL (export "BGL_ENV_EXITD_VAL") 
+      (param $env (ref $dynamic-env)) 
+      (result (ref eq))
+      (return (struct.get $dynamic-env $exitd_val (local.get $env))))
+   
+   (func $BGL_EXITD_VAL (export "BGL_EXITD_VAL") (result (ref eq))
+      (call $BGL_ENV_EXITD_VAL (global.get $current-dynamic-env)))
    
    (func $BGL_ENV_EXITD_VAL_SET (export "BGL_ENV_EXITD_VAL_SET") 
       (param $env (ref $dynamic-env)) 

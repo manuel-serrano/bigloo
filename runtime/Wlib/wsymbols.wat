@@ -25,8 +25,8 @@
    ;; -----------------------------------------------------------------
    
    (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
-   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
-   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref eq)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
 
    
    ;; -----------------------------------------------------------------

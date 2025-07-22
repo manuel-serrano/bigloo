@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:14:39 2024                          */
-;*    Last change :  Thu Jul 10 07:42:35 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 12:29:55 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM custom objects                                              */
@@ -22,10 +22,10 @@
    ;; -----------------------------------------------------------------
    
    (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
-   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
-   (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
-   (import "__bigloo" "BTRUE" (global $BTRUE (ref $bbool)))
-   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
+   (import "__bigloo" "BFALSE" (global $BFALSE (ref eq)))
+   (import "__bigloo" "BTRUE" (global $BTRUE (ref eq)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref eq)))
    (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
    (import "__bigloo" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
    (import "__bigloo" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))

@@ -46,11 +46,11 @@
    ;; Imports 
    ;; -----------------------------------------------------------------
 
-   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
-   (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
-   (import "__bigloo" "BTRUE" (global $BTRUE (ref $bbool)))
-   (import "__bigloo" "BEOF" (global $BEOF (ref $bcnst)))
-   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
+   (import "__bigloo" "BFALSE" (global $BFALSE (ref eq)))
+   (import "__bigloo" "BTRUE" (global $BTRUE (ref eq)))
+   (import "__bigloo" "BEOF" (global $BEOF (ref eq)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref eq)))
    (import "__bigloo" "BOOLEANP" (func $BOOLEANP (param (ref eq)) (result i32)))
 
    ;; -----------------------------------------------------------------

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  8 08:38:25 2025                          */
-;*    Last change :  Thu Jul 17 14:32:07 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 12:29:36 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WASM Binary IO                                                   */
@@ -39,11 +39,11 @@
    (import "__js_io" "append_char" (func $js_append_char (param i32 i32) (result i32)))
 
    (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
-   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
-   (import "__bigloo" "BFALSE" (global $BFALSE (ref $bbool)))
-   (import "__bigloo" "BTRUE" (global $BTRUE (ref $bbool)))
-   (import "__bigloo" "BNIL" (global $BNIL (ref $bnil)))
-   (import "__bigloo" "BEOF" (global $BEOF (ref $bcnst)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
+   (import "__bigloo" "BFALSE" (global $BFALSE (ref eq)))
+   (import "__bigloo" "BTRUE" (global $BTRUE (ref eq)))
+   (import "__bigloo" "BNIL" (global $BNIL (ref eq)))
+   (import "__bigloo" "BEOF" (global $BEOF (ref eq)))
    (import "__bigloo" "BGL_BSTRING_DEFAULT_VALUE" (global $bstring-default-value (ref $bstring)))
    (import "__bigloo" "BGL_PROCEDURE_DEFAULT_VALUE" (global $procedure-default-value (ref $procedure)))
    (import "__bigloo" "BGL_PAIR_DEFAULT_VALUE" (global $pair-default-value (ref $pair)))

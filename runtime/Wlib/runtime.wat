@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Jul 22 10:06:59 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 12:29:17 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -46,7 +46,7 @@
    (import "__js_system" "get_arg" (func $js_get_arg (param i32 i32) (result i32)))
    (import "__js_system" "exit" (func $js_exit (param i32)))
    
-   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref $bunspecified)))
+   (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
    (import "__bigloo" "BOOLEANP" (func $BOOLEANP (param (ref eq)) (result i32)))
    (import "__bigloo" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
    (import "__bigloo" "BGL_MUTEX_DEFAULT_VALUE" (global $mutex-default-value (ref $mutex)))
