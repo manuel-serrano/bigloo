@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Tue Jul 22 13:24:00 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 13:34:43 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM boxed 64bit fixnum implementation                           */
@@ -17,12 +17,14 @@
    ;; -----------------------------------------------------------------
 
    (data $div0_internal_error "division by 0")
+   (data $div "/")
+
    
    ;; -----------------------------------------------------------------
    ;; Imports
    ;; -----------------------------------------------------------------
    
-   (import "__bigloo" "bgl_internal_error_set" (func $bgl_internal_error_set (param (ref eq))))
+   (import "__bigloo" "the_failure" (func $the_failure (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
    
 
    ;; -----------------------------------------------------------------
@@ -161,11 +163,15 @@
       (result i64)
       (if (i64.eqz (local.get $x))
 	  (then
-	     (call $bgl_internal_error_set
+	     (call $the_failure
+		(array.new_data $bstring $div
+		   (i32.const 0)
+		   (i32.const 1))
 		(array.new_data $bstring $div0_internal_error
 		   (i32.const 0)
-		   (i32.const 13)))
-	     (throw $fail))
+		   (i32.const 13))
+		(call $BINT (i64.const 0)))
+	     (unreachable))
 	  (else (return (local.get $x))))
       (unreachable))
 
@@ -174,11 +180,14 @@
       (result i32)
       (if (i32.eqz (local.get $x))
 	  (then
-	     (call $bgl_internal_error_set
+	     (call $the_failure
+		(array.new_data $bstring $div
+		   (i32.const 0)
+		   (i32.const 1))
 		(array.new_data $bstring $div0_internal_error
 		   (i32.const 0)
-		   (i32.const 13)))
-	     (throw $fail))
+		   (i32.const 13))
+		(call $BINT (i64.const 0))))
 	  (else (return (local.get $x))))
       (unreachable))
       

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Jul 21 08:04:14 2025 (serrano)                */
+/*    Last change :  Tue Jul 22 14:19:34 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -792,6 +792,19 @@ function __js_io() {
 }
 
 /*---------------------------------------------------------------------*/
+/*    __js_socket ...                                                  */
+/*---------------------------------------------------------------------*/
+function __js_socket() {
+   const self = {
+      self: undefined,
+   },
+
+   nullsocket: () => {
+      return undefined;
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    __js ...                                                         */
 /*---------------------------------------------------------------------*/
 function __js() {
@@ -833,6 +846,7 @@ function __js_all() {
    return {
       __js: __js(),
       __js_io: __js_io(),
+      __js_socket: __js_socket(),
       __js_system: __js_system(),
       __js_unicode: __js_unicode(),
       __js_bignum: __js_bignum(),

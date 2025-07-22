@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Jul 22 13:17:25 2025 (serrano)                */
+#*    Last change :  Tue Jul 22 14:04:47 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -1294,7 +1294,7 @@ $(BOOTLIBDIR)/types.wat: Wlib/wports.wat \
   Wlib/wstring.wat Wlib/wfixnum.wat \
   Wlib/wintegers.wat Wlib/wbignum.wat Wlib/wcnst.wat Wlib/wdate.wat \
   Wlib/wvector.wat Wlib/wmmap.wat Wlib/wdenv.wat Wlib/wprocedure.wat \
-  Wlib/wbinary.wat Wlib/wunicode.wat Wlib/wreal.wat
+  Wlib/wbinary.wat Wlib/wunicode.wat Wlib/wreal.wat Wlib/wsocket.wat
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */
