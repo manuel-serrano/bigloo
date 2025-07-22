@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:56:25 2024                          */
-;*    Last change :  Fri Jul  4 11:09:31 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 08:07:05 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM implementation of constants with 64-bit boxed fixnums.      */
@@ -37,6 +37,12 @@
       (export "BGL_BCHAR_DEFAULT_VALUE") (ref i31)
       (ref.i31 (global.get $BCHAR_OFFSET)))
    
+   ;; CNSTP
+   (func $CNSTP (export "CNSTP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref i31) (local.get $o)))
+
    ;; BOOLEANP
    (func $BOOLEANP (export "BOOLEANP")
       (param $o (ref eq))

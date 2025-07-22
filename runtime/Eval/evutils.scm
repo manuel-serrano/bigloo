@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/evutils.scm      */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evutils.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 30 08:07:53 2010                          */
-;*    Last change :  Sun Aug 25 09:16:17 2019 (serrano)                */
-;*    Copyright   :  2010-19 Manuel Serrano                            */
+;*    Last change :  Tue Jul 22 07:42:40 2025 (serrano)                */
+;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Utility functions for eval                                       */
 ;*=====================================================================*/
@@ -79,7 +79,7 @@
 		       (string->symbol (substring str (+fx i 2) len))))))
 	       (else
 		(loop (+fx i 1)))))))
-   
+
    (cond
       ((dsssl-named-constant? ident)
        (cons (gensym 'dsssl) '()))

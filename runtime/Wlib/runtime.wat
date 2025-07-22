@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Fri Jul 18 16:06:27 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 08:07:55 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -78,11 +78,6 @@
       (param $o (ref eq))
       (result i32)
       (ref.test (ref $cell) (local.get $o)))
-
-   (func $CNSTP (export "CNSTP")
-      (param $o (ref eq))
-      (result i32)
-      (ref.test (ref i31) (local.get $o)))
 
    (func $OPAQUEP (export "OPAQUEP")
       (param $o (ref eq))

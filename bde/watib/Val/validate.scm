@@ -61,7 +61,7 @@
 (define-macro (replace-exception e e' . body)
    `(with-handler
        (lambda (exn)
-          (if (and (pair? exn) (eq? (car exn) ,e))
+          (if (and (pair? exn) (equal? (car exn) ,e))
               (raise (cons ,e' (cdr exn)))
               (raise exn)))
        ,@body))
@@ -123,7 +123,7 @@
 ;; section 3.2.9 and 6.4.6
 (define (valid-names/param/result/get-tl env::env l::pair-nil)
    (define (valid-vt-at pos::epair t)
-      (with-default-value env 'error `(at ,(cer pos))
+      (with-default-value env 'error `(at-pos ,(cer pos))
          (valid-vt env t)))
 
    (match-case l
@@ -277,7 +277,7 @@
                      (raise `((expected ident) ,x)))
                     (?x (raise `(expected-typedef ,x)))) l)))
       (define (valid-st st x)
-         (with-default-value env '(sub final (error)) `(at-subtype ,st)
+         (with-default-value env '(sub final (error)) `(at-pos ,(cer st))
                (match-case st
                   ((sub final ?ct) `(sub final ,(valid-ct env ct x)))
                   ((sub final (and ?y (? idx?)) ?ct)
@@ -770,7 +770,8 @@
                            (body tl)
                            (locals '())
                            (pos (cdr m))))
-             (func-add! env (econs 'deftype (list `((sub final (func ,@f))) 0) -1))))
+             (func-add! env (econs 'deftype (list `((sub final (func ,@f))) 0)
+                                   -1))))
 
          ((data (and (? ident?) ?id) (memory ?memidx) (offset . ?expr) . ?-)
           (raise 'todo))
@@ -831,9 +832,11 @@
          ((tag . ?tu)
           (multiple-value-bind (p r) (valid-param/result env tu)
              (unless (null? r)
-                (tag-add! env (econs 'deftype (list '((sub final (error))) 0) -1))
+                (tag-add! env (econs 'deftype (list '((sub final (error))) 0)
+                                     -1))
                 (raise `(non-empty-tag-result ,r)))
-             (tag-add! env (econs 'deftype (list `((sub final (func ,p ,r))) 0) -1))))
+             (tag-add! env (econs 'deftype (list `((sub final (func ,p ,r))) 0)
+                                  -1))))
 
          ; section 6.6.6
          ((memory (and (? ident?) ?id) . ?rst)
@@ -852,10 +855,7 @@
          ; section 6.6.11
          ((elem declare func . ?funcs)
           (set! *declared-funcrefs* (append funcs *declared-funcrefs*))
-          (for-each (lambda (x)
-		       (let ((t (-> env refs)))
-			  (hashtable-put! t x #t)))
-	     funcs))
+          (for-each (lambda (x) (hashtable-put! (-> env refs) x #t)) funcs))
 
          (else
           (raise 'expected-modulefield)))))
@@ -975,6 +975,12 @@
       (((expected ?x) ?s)
        (sprintf "expected ~a, got ~a" x s))
 
+      ((expected-valtype ?s)
+       (sprintf "expected a value type, got ~a" s))
+
+      ((expected-reftype ?s)
+       (sprintf "expected a value type, got ~a" s))
+
       ((empty-stack ?t)
        (sprintf "expected ~a on stack but got nothing" (type->string (car t))))
 
@@ -999,7 +1005,8 @@
      (with-handler error-notify
         (unless silent
           (when (epair? obj)
-            (error/location "watib" "" msg (cadr (cer obj)) (caddr (cer obj)))))))
+            (error/location "watib" "" msg (cadr (cer obj))
+                            (caddr (cer obj)))))))
 
    (define (rep/pos msg pos)
      (with-handler error-notify
@@ -1007,9 +1014,11 @@
           (error/location "watib" "" msg (cadr pos) (caddr pos)))))
 
    (match-case e
+      ((in-module ?m (at-pos . ?-))
+       (format-exn env (caddr e)))
       ((in-module ?m ?e)
        (rep/pos (error->string env e) (cer m)))
-      ((at-pos ?i (at-instruction . ?-))
+      ((at-pos ?i (or (at-instruction . ?-) (at-pos . ?-)))
        (format-exn env (caddr e)))
       ((at-pos ?p ?e)
        (rep/pos (error->string env e) p))

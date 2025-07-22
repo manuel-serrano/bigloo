@@ -9,7 +9,11 @@
            (misc_list    "Misc/list.scm")
            (val_validate "Val/validate.scm")
            (opt_optimise "Opt/optimise.scm")
-           (asm_binary   "Asm/binary.scm")))
+           (asm_binary   "Asm/binary.scm")
+           (cfg_dump     "Opt/CFG/dump.scm")
+           (cfg_walk     "Opt/CFG/walk.scm")
+           (env_env      "Env/env.scm")
+           ))
 
 ;; the following is a hack as indices taken as number are not replaced with
 ;; their new index
@@ -32,6 +36,7 @@
    (define silent #f)
    (define validate-only #f)
    (define o-flags::opt-flags (instantiate::opt-flags))
+   (define dump-cfg #f)
 
    (define (parse-args args)
       (args-parse args
@@ -98,6 +103,10 @@
 
          (("-o" ?file (help "Output binary format to FILE"))
           (set! output-file file))
+
+         (("--dump-cfg" ?func (help "Prints the CFG on FUNC in graphviz DOT format"))
+          (set! dump-cfg (string->symbol func)))
+
          (else
           (set! input-files (cons else input-files)))))
 
@@ -113,6 +122,10 @@
          (exit 1))
         (validate-only
          (exit 0))
+        (dump-cfg
+         (with-access::prog p (funcs env)
+            (print-cfg-as-dot
+             (func->cfg (vector-ref funcs (func-get-index env dump-cfg))))))
         (else
          (opt-file! p nthreads o-flags)
          (call-with-output-file output-file
