@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:56:25 2024                          */
-;*    Last change :  Tue Jul 22 13:02:01 2025 (serrano)                */
+;*    Last change :  Tue Jul 22 13:15:01 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM implementation of constants with 64-bit boxed fixnums.      */
@@ -106,7 +106,7 @@
    (func $OBJ_TO_CHAR (export "OBJ_TO_CHAR")
       (param $o (ref eq))
       (result i32)
-      (return_call $CCHAR (ref.cast i31 (local.get $o))))
+      (return_call $CCHAR (ref.cast (ref i31) (local.get $o))))
    
    ;; toupper
    (func $toupper (export "toupper")
