@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Jul  8 15:15:11 2025 (serrano)                */
+/*    Last change :  Tue Jul 22 13:52:08 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
@@ -211,7 +211,7 @@ INLINE bool BGL_TAGGED_REALP(obj_t _o) {
 // ---
 
 #define REALP(o) FLONUMP(o)
-#define REALSP(o, p) (FLONUMP(o) && FLONUMP(p))
+#define BGL_REALSP(o, p) (FLONUMP(o) && FLONUMP(p))
 
 #define BGL_REAL_CNST(name) name
 
