@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jul 22 14:43:22 2025 (serrano)                */
+/*    Last change :  Wed Jul 23 08:08:47 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -798,25 +798,39 @@ function __js_io() {
 function __js_socket() {
    const self = {
       self: undefined,
-   },
 
-   nullsocket: () => {
-      return undefined;
-   },
+      nullsocket: () => {
+	 return undefined;
+      },
 
-   make_server: (hostname_addr, hostname_len, portnum, backlog, family) => {
-      const server = createServer((socket) => {
-	 socket.on('data', (data) => {
-	    console.log('Received:', data.toString());
+      make_server: (hostname_addr, hostname_len, portnum, backlog, family) => {
+	 const server = createServer((socket) => {
+	    socket.on('data', (data) => {
+	       console.log('Received:', data.toString());
+	    });
+	    
+	    socket.on('end', () => {
+	       console.log('Client disconnected');
+	    });
 	 });
-	 
-	 socket.on('end', () => {
-	    console.log('Client disconnected');
+	 server.listen(portnum, () => { console.log("server listening"); });
+	 return server;
+      },
+
+      accept: async (srv) => {
+	 console.error("in accept");
+	 const r = await new Promise((res, rev) => {
+	    setTimeout(() => {
+	       console.error("in accept promise");
+	       res(343);
+	    }, 2000);
 	 });
-      });
-      server.listen(portnum, () => { console.log("server listening"); });
-      return server;
-   }
+	 console.log("r=", r);
+	 return r;
+      }
+   };
+
+   return self;
 }
 
 /*---------------------------------------------------------------------*/
