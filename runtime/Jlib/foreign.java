@@ -1891,7 +1891,7 @@ public final class foreign
 	 return (o instanceof real);
       }
 
-   public static boolean BGL_FAST_REALP(Object o, Object p)
+   public static boolean BGL_FAST_REALSP(Object o, Object p)
       {
 	 return (o instanceof real) && (p instanceof real);
       }
