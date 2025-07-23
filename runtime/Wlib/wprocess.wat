@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Wed Jul 23 11:50:35 2025 (serrano)                */
+;*    Last change :  Wed Jul 23 13:49:39 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM processes                                                   */
@@ -69,9 +69,9 @@
    (func $PROCESSP (export "PROCESSP")
       (param $o (ref eq))
       (result i32)
-      (return (ref.rest (ref $process) (local.get $o))))
+      (return (ref.test (ref $process) (local.get $o))))
 
-   (func $process-nil (export "bgl_process_nil")
+   (func $bgl_process_nil (export "bgl_process_nil")
       (result (ref $process))
       (return (global.get $process-default-value)))
    
@@ -85,12 +85,12 @@
       (result (ref eq))
       (return (global.get $BUNSPEC)))
 
-   (func $PROCESS_INPUT_PORT (export "PROCESS_OUTPUT_PORT")
+   (func $PROCESS_OUTPUT_PORT (export "PROCESS_OUTPUT_PORT")
       (param $process (ref $process))
       (result (ref eq))
       (return (global.get $BUNSPEC)))
 
-   (func $PROCESS_INPUT_PORT (export "PROCESS_ERROR_PORT")
+   (func $PROCESS_ERROR_PORT (export "PROCESS_ERROR_PORT")
       (param $process (ref $process))
       (result (ref eq))
       (return (global.get $BUNSPEC)))
@@ -109,9 +109,7 @@
       (param $args (ref eq))
       (param $env (ref eq))
       (result (ref eq))
-
-      (return $process-default-value))
-			   
+      (return (global.get $process-default-value)))
    
    (func $c_process_alivep (export "c_process_alivep")
       (param $process (ref $process))
@@ -130,7 +128,7 @@
 
    (func $c_process_send_signal (export "c_process_send_signal")
       (param $process (ref $process))
-      (param %sig i32)
+      (param $sig i32)
       (result (ref eq))
       (return (global.get $BUNSPEC)))
 
