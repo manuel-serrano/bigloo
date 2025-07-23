@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Llib/process.scm              */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/process.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Wed Sep 25 09:09:05 2024 (serrano)                */
+;*    Last change :  Wed Jul 23 11:22:28 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Process handling. This part is mostly compatible with            */
 ;*    STk. This code is extracted from STk by Erick Gallesio.          */
@@ -41,76 +41,56 @@
 
 	    __evenv)
 
-   (extern  (macro c-process?::bool (::obj) "PROCESSP")
-	    (macro c-process-pid::int (::process) "PROCESS_PID")
-	    (macro c-process-input-port::obj (::process) "PROCESS_INPUT_PORT")
-	    (macro c-process-output-port::obj (::process) "PROCESS_OUTPUT_PORT")
-	    (macro c-process-error-port::obj (::process) "PROCESS_ERROR_PORT")
-	    (c-process-alive?::bool (::process) "c_process_alivep")
-	    (c-process-wait::obj (::process) "c_process_wait")
-	    (c-process-exit-status::obj (::process) "c_process_xstatus")
-	    (c-process-send-signal::obj (::process ::int) "c_process_send_signal")
-	    (c-process-kill::obj (::process) "c_process_kill")
-	    (c-process-stop::obj (::process) "c_process_stop")
-	    (c-process-continue::obj (::process) "c_process_continue")
-	    (c-run-process::process (::obj ::obj ::obj ::obj ::obj ::obj ::bstring ::obj ::obj)
+   (extern  (macro $process?::bool (::obj) "PROCESSP")
+	    (macro $process-pid::int (::process) "PROCESS_PID")
+	    (macro $process-input-port::obj (::process) "PROCESS_INPUT_PORT")
+	    (macro $process-output-port::obj (::process) "PROCESS_OUTPUT_PORT")
+	    (macro $process-error-port::obj (::process) "PROCESS_ERROR_PORT")
+	    ($process-alive?::bool (::process) "c_process_alivep")
+	    ($process-wait::obj (::process) "c_process_wait")
+	    ($process-exit-status::obj (::process) "c_process_xstatus")
+	    ($process-send-signal::obj (::process ::int) "c_process_send_signal")
+	    ($process-kill::obj (::process) "c_process_kill")
+	    ($process-stop::obj (::process) "c_process_stop")
+	    ($process-continue::obj (::process) "c_process_continue")
+	    ($run-process::process (::obj ::obj ::obj ::obj ::obj ::obj ::bstring ::obj ::obj)
 				    "c_run_process")
-	    (c-unregister-process::obj (::process) "c_unregister_process")
-	    (c-process-list::obj () "c_process_list")
-	    (c-process-nil::process () "bgl_process_nil"))
-
-	(wasm
-		;; TODO: implement WASM processes
-		(c-process? "(ref.test (ref $process) ~0)")
-		(c-process-pid "(i32.const 0)")
-		(c-process-input-port "(global.get $BUNSPEC)")
-		(c-process-output-port "(global.get $BUNSPEC)")
-		(c-process-error-port "(global.get $BUNSPEC)")
-		(c-process-alive? "(i32.const 0)")
-		(c-process-wait "(global.get $BUNSPEC)")
-		(c-process-exit-status "(global.get $BUNSPEC)")
-		(c-process-send-signal "(global.get $BUNSPEC)")
-		(c-process-kill "(global.get $BUNSPEC)")
-		(c-process-stop "(global.get $BUNSPEC)")
-		(c-process-continue "(global.get $BUNSPEC)")
-		(c-run-process "(global.get $BUNSPEC)")
-		(c-unregister-process "(global.get $BUNSPEC)")
-		(c-process-list "(global.get $BUNSPEC)")
-		(c-process-nil "(struct.new $process)")
-		)
+	    ($unregister-process::obj (::process) "c_unregister_process")
+	    ($process-list::obj () "c_process_list")
+	    ($process-nil::process () "bgl_process_nil"))
 
    (java    (class foreign
-	       (method static c-process?::bool (::obj)
+	       (method static $process?::bool (::obj)
 		       "PROCESSP")
-	       (method static c-process-nil::process ()
+	       (method static $process-nil::process ()
 		       "bgl_process_nil")
-	       (method static c-process-pid::int (::process)
+	       (method static $process-pid::int (::process)
 		       "PROCESS_PID")
-	       (method static c-process-input-port::obj (::process)
+	       (method static $process-input-port::obj (::process)
 		       "PROCESS_INPUT_PORT")
-	       (method static c-process-output-port::obj (::process)
+	       (method static $process-output-port::obj (::process)
 		       "PROCESS_OUTPUT_PORT")
-	       (method static c-process-error-port::obj (::process)
+	       (method static $process-error-port::obj (::process)
 		       "PROCESS_ERROR_PORT")
-	       (method static c-process-alive?::bool (::process)
+	       (method static $process-alive?::bool (::process)
 		       "c_process_alivep")
-	       (method static c-process-wait::obj (::process)
+	       (method static $process-wait::obj (::process)
 		       "c_process_wait")
-	       (method static c-process-exit-status::obj (::process)
+	       (method static $process-exit-status::obj (::process)
 		       "c_process_xstatus")
-	       (method static c-process-send-signal::obj (::process ::int)
+	       (method static $process-send-signal::obj (::process ::int)
 		       "c_process_send_signal")
-	       (method static c-process-kill::obj (::process)
+	       (method static $process-kill::obj (::process)
 		       "c_process_kill")
-	       (method static c-process-stop::obj (::process)
+	       (method static $process-stop::obj (::process)
 		       "c_process_stop")
-	       (method static c-process-continue::obj (::process)
+	       (method static $process-continue::obj (::process)
 		       "c_process_continue")
-	       (method static c-run-process::process (::obj ::obj ::obj ::obj ::obj ::obj ::bstring ::obj ::obj)
+	       (method static $run-process::process (::obj ::obj ::obj ::obj ::obj ::obj ::bstring ::obj ::obj)
 		       "c_run_process")
-	       (method static c-unregister-process::obj (::process)
+	       (method static $unregister-process::obj (::process)
 		       "c_unregister_process")
-	       (method static c-process-list::obj ()
+	       (method static $process-list::obj ()
 		       "c_process_list")))
    
    (export  (inline process?::bool ::obj)
@@ -131,97 +111,97 @@
 	    (close-process-ports ::process)
 	    (inline unregister-process ::process))
 
-   (pragma  (c-process? nesting)
-	    (c-process-pid nesting args-safe)
-	    (c-process-input-port nesting args-safe)
-	    (c-process-output-port nesting args-safe)
-	    (c-process-error-port nesting args-safe)))
+   (pragma  ($process? nesting)
+	    ($process-pid nesting args-safe)
+	    ($process-input-port nesting args-safe)
+	    ($process-output-port nesting args-safe)
+	    ($process-error-port nesting args-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    process? ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (process? obj)
-   (c-process? obj))
+   ($process? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-nil ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-nil)
-   (c-process-nil))
+   ($process-nil))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-pid ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-pid proc)
-   (c-process-pid proc))
+   ($process-pid proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-output-port ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-output-port proc)
-   (c-process-output-port proc))
+   ($process-output-port proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-input-port ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-input-port proc)
-   (c-process-input-port proc))
+   ($process-input-port proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-error-port ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-error-port proc)
-   (c-process-error-port proc))
+   ($process-error-port proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-alive? ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-alive? proc)
-   (c-process-alive? proc))
+   ($process-alive? proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-wait ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-wait proc)
    (if (process-alive? proc)
-       (c-process-wait proc)))
+       ($process-wait proc)))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-exit-status ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-exit-status proc)
-   (c-process-exit-status proc))
+   ($process-exit-status proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-send-signal ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-send-signal proc signal)
-   (c-process-send-signal proc signal))
+   ($process-send-signal proc signal))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-kill ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-kill proc)
-   (c-process-kill proc)
+   ($process-kill proc)
    (close-process-ports proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-stop ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-stop proc)
-   (c-process-stop proc))
+   ($process-stop proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-continue ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-continue proc)
-   (c-process-continue proc))
+   ($process-continue proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-list ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (process-list)
-   (c-process-list))
+   ($process-list))
 
 ;*---------------------------------------------------------------------*/
 ;*    run-process ...                                                  */
@@ -244,7 +224,7 @@
       (let loop ((rest rest))
 	 (cond
 	    ((null? rest)
-	     (c-run-process host fork wait
+	     ($run-process host fork wait
 			    input output error
 			    command (reverse! args) env))
 	    ((and (keyword? (car rest)) (pair? (cdr rest)))
@@ -302,4 +282,4 @@
 ;*    unregister-process ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (unregister-process proc)
-   (c-unregister-process proc))
+   ($unregister-process proc))

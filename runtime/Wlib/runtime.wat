@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Jul 22 13:17:57 2025 (serrano)                */
+;*    Last change :  Wed Jul 23 11:15:53 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -120,10 +120,6 @@
    (global $semaphore-default-value
       (export "BGL_SEMAPHOE_DEFAULT_VALUE") (ref $semaphore)
       (struct.new $semaphore))
-   
-   (global $process-default-value
-      (export "BGL_PROCESS_DEFAULT_VALUE") (ref $process)
-      (struct.new $process))
    
    (global $object-default-value
       (export "BGL_OBJECT_DEFAULT_VALUE") (ref $BgL_objectz00_bglt)

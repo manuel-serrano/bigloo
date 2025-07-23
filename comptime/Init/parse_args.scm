@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Jul 17 07:38:21 2025 (serrano)                */
+;*    Last change :  Wed Jul 23 10:11:35 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -950,9 +950,9 @@
 	  ((string=? size "64") (set! *wasm-fixnum* 64))
 	  (else (error "-wasm-fixnum" "wrong size" size))))
       (("-wasm-opt" ?string (help "Wasm engine options"))
-       (set! *wasm-options* (cons string *wasm-options*)))
+       (set! *wasm-options* string))
       (("-wasm-unsafe-opt" ?string (help "Wasm options for unsafe executions"))
-       (set! *wasm-unsafe-options* (cons string *wasm-unsafe-options*)))
+       (set! *wasm-unsafe-options* string))
       (("-wasmas" ?string (help "Wasm assembler"))
        (set! *wasmas* string))
       (("-wopt" ?string (help "Invoke wasmas with STRING"))

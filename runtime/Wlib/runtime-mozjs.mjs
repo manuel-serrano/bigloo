@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jul 22 14:49:37 2025 (serrano)                */
+/*    Last change :  Wed Jul 23 11:20:51 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -866,6 +866,21 @@ function __js_socket() {
 }
 
 /*---------------------------------------------------------------------*/
+/*    __js_process ...                                                 */
+/*---------------------------------------------------------------------*/
+function __js_process() {
+   const self = {
+      self: undefined,
+
+      nullprocess: () => {
+	 return undefined;
+      }
+   };
+
+   return self;
+}
+
+/*---------------------------------------------------------------------*/
 /*    __js ...                                                         */
 /*---------------------------------------------------------------------*/
 function __js() {
@@ -889,7 +904,7 @@ function __js() {
       },
 
       internalError: function (errno, val) {
-	 console.error("*** INTERNAL-ERROR(" + errno +"):",
+	 console.error("*** INTERNAL-ERROR(" + errno + "):",
 		       format(internalErrors[errno], val));
       },
 
@@ -908,6 +923,7 @@ function __js_all() {
       __js: __js(),
       __js_io: __js_io(),
       __js_socket: __js_socket(),
+      __js_process: __js_process(),
       __js_system: __js_system(),
       __js_unicode: __js_unicode(),
       __js_bignum: __js_bignum(),

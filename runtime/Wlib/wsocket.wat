@@ -3,13 +3,13 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Wed Jul 23 08:27:36 2025 (serrano)                */
+;*    Last change :  Wed Jul 23 11:00:15 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    WASM threads                                                     */
+;*    WASM sockets                                                     */
 ;*=====================================================================*/
 
-(module $__bigloo_thread
+(module $__bigloo_socket
    
    ;; -----------------------------------------------------------------
    ;; Data 
@@ -185,6 +185,16 @@
 	   (unreachable)))
       (unreachable))
 
+   (func $SOCKET_PORT (export "SOCKET_PORT")
+      (param $sock (ref $socket))
+      (result i32)
+      (return (struct.get $socket $portnum (local.get $sock))))
+   
+   (func $SOCKET_HOSTNAME (export "SOCKET_HOSTNAME")
+      (param $sock (ref $socket))
+      (result (ref eq))
+      (return (struct.get $socket $hostname (local.get $sock))))
+   
    (func $BGL_SOCKET_SERVERP (export "BGL_SOCKET_SERVERP")
       (param $o (ref eq))
       (result i32)

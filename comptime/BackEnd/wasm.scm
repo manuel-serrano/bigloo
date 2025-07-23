@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Jul 21 08:45:25 2025 (serrano)                */
+;*    Last change :  Wed Jul 23 10:02:13 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -171,7 +171,8 @@
 			 (lambda ()
 			    (display 
 			       (sed wasm-script
-				  `(("@NODEOPTMUNSAFE@" . ,(if *wasm-unsafe* *wasm-unsafe-options* ""))
+				  `(("@WASMOPT@" . ,*wasm-options*)
+				    ("@NODEOPTMUNSAFE@" . ,(if *wasm-unsafe* *wasm-unsafe-options* ""))
 				    ("@LIBDIR@" . ,(bigloo-config 'library-directory))
 				    ("@WASM@" . ,wasm)
 				    ("@STATIC@" . ""))))
@@ -199,7 +200,8 @@
 			 (lambda ()
 			    (display 
 			       (sed wasm-script
-				  `(("@NODEOPTMUNSAFE@" . ,(if *wasm-unsafe* *wasm-unsafe-options* ""))
+				  `(("@WASMOPT@" . ,*wasm-options*)
+				    ("@NODEOPTMUNSAFE@" . ,(if *wasm-unsafe* *wasm-unsafe-options* ""))
 				    ("@LIBDIR@" . ,(bigloo-config 'library-directory))
 				    ("@WASM@" . ,wasm)
 				    ("@STATIC@" . ,(if *unsafe-library* "-s $BIGLOOLIBDIR/bigloo_u.wasm" "-s $BIGLOOLIBDIR/bigloo_s.wasm")))))
@@ -229,18 +231,20 @@ JS=${JS:-node}
 
 BIGLOOLIBDIR=@LIBDIR@
 
+WASMOPT=${WASMOPT:-@WASMOPT@}
+
 NODE=${NODE:-node}
-NODEOPT=${NODEOPT:- --stack-size=8192 --experimental-wasm-exnref @NODEOPTMUNSAFE@}
+NODEOPT=${NODEOPT:- --stack-size=8192 --experimental-wasm-exnref --experimental-wasm-jspi @NODEOPTMUNSAFE@}
 
 MOZJS=${MOJZ:-js128}
 MOZJSOPT=${MOZJSOPT:- -P wasm_gc -P wasm_exnref -P wasm_tail_calls --wasm-compiler=optimizing}
 
 case $JS in
   \"node\")
-     $NODE $NODEOPT $NODEOPTEXTRA $BIGLOOLIBDIR/runtime-node.mjs @STATIC@ @WASM@ $*;;
+     $NODE $NODEOPT $NODEOPTEXTRA $BIGLOOLIBDIR/runtime-node.mjs @STATIC@ $WASMOPT @WASM@ $*;;
 
   \"mozjs\")
-     $MOZJS $MOZJSOPT $MOZJSOPTEXTRA -m $BIGLOOLIBDIR/runtime-mozjs.mjs - @STATIC@ @WASM@ $*;;
+     $MOZJS $MOZJSOPT $MOZJSOPTEXTRA $WASMOPT -m $BIGLOOLIBDIR/runtime-mozjs.mjs - @STATIC@ @WASM@ $*;;
 
   *)
      echo \"*** ERROR: unsupported JS engine: $JS\" >&2

@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 15:08:01 2024                          */
-;*    Last change :  Tue Jul 22 13:18:42 2025 (serrano)                */
+;*    Last change :  Wed Jul 23 11:13:47 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo type declarations                                         */
@@ -83,11 +83,11 @@
 
    ;; socket
    (@include "./wsocket.wat" type)
+
+   ;; process
+   (@include "./wprocess.wat" type)
    
    ;; misc
-   
-   (type $process (struct))
-   
    (type $tvector (struct (field $descr (ref eq))))
    
    (@include "./wrgc.wat" type)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Jul 16 07:55:56 2025 (serrano)                */
+;*    Last change :  Wed Jul 23 09:57:35 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -1322,5 +1322,5 @@
 ;*---------------------------------------------------------------------*/
 (param-define *wasm-options*
    "wasm engine options"
-   '("--experimental-wasm-exnref"))
+   "")
 		 

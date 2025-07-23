@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Jul 23 08:08:47 2025 (serrano)                */
+/*    Last change :  Wed Jul 23 10:40:44 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -16,7 +16,7 @@ import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync
 import { isatty } from "node:tty";
 import { extname, sep as file_sep } from "node:path";
 import { format } from "node:util";
-import { execSync } from "node:child_process";
+import { execSync, execFileSync, execFile } from "node:child_process";
 import { createServer } from "node:net";
 
 /*---------------------------------------------------------------------*/
@@ -792,6 +792,7 @@ function __js_io() {
    return self;
 }
 
+
 /*---------------------------------------------------------------------*/
 /*    __js_socket ...                                                  */
 /*---------------------------------------------------------------------*/
@@ -818,14 +819,49 @@ function __js_socket() {
       },
 
       accept: async (srv) => {
-	 console.error("in accept");
-	 const r = await new Promise((res, rev) => {
-	    setTimeout(() => {
-	       console.error("in accept promise");
-	       res(343);
-	    }, 2000);
+	 console.error("XXX in accept");
+	 const r = await new Promise((res, rej) => {
+	    console.error("in promise...");
+	    res(343);
 	 });
-	 console.log("r=", r);
+	 return r;
+      }
+   };
+
+   return self;
+}
+
+/*---------------------------------------------------------------------*/
+/*    __js_process ...                                                 */
+/*---------------------------------------------------------------------*/
+function __js_process() {
+   const self = {
+      self: undefined,
+
+      nullprocess: () => {
+	 return undefined;
+      },
+
+      make_server: (hostname_addr, hostname_len, portnum, backlog, family) => {
+	 const server = createServer((process) => {
+	    process.on('data', (data) => {
+	       console.log('Received:', data.toString());
+	    });
+	    
+	    process.on('end', () => {
+	       console.log('Client disconnected');
+	    });
+	 });
+	 server.listen(portnum, () => { console.log("server listening"); });
+	 return server;
+      },
+
+      accept: async (srv) => {
+	 console.error("XXX in accept");
+	 const r = await new Promise((res, rej) => {
+	    console.error("in promise...");
+	    res(343);
+	 });
 	 return r;
       }
    };
@@ -876,6 +912,7 @@ function __js_all() {
       __js: __js(),
       __js_io: __js_io(),
       __js_socket: __js_socket(),
+      __js_process: __js_process(),
       __js_system: __js_system(),
       __js_unicode: __js_unicode(),
       __js_bignum: __js_bignum(),
