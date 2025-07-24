@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Jul 23 10:40:44 2025 (serrano)                */
+/*    Last change :  Wed Jul 23 14:47:45 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -22,7 +22,7 @@ import { createServer } from "node:net";
 /*---------------------------------------------------------------------*/
 /*    Wasm instances                                                   */
 /*---------------------------------------------------------------------*/
-let client, rts;
+let client, libs;
 
 /*---------------------------------------------------------------------*/
 /*    Minimalist command line parsing                                  */
@@ -36,21 +36,17 @@ const argv = (globalThis.window && "Deno" in window)
    : process.argv;
 
 if (argv[2] === "-s") {
-   rts = argv[3];
    argv.splice(1, 2);
-}
+   libs = argv.filter(s => /[.]wasm$/.test(s));
+   client = libs.pop();
 
-if (argv.length < 3) {
-   console.error("ERROR: missing input WASM module file.");
-   process.exit(1);
-} else if (!existsSync(argv[2])) {
-    console.error(`ERROR: file '${argv[2]}' doesn't exist.`);
-    process.exit(1);
-} else if (extname(argv[2]) != ".wasm") {
-    console.error(`ERROR: input file '${argv[2]}' is not a WASM module.`);
-    process.exit(1);
 } else {
    client = argv[2];
+}
+
+if (!client) {
+   console.error("ERROR: missing input WASM module file.");
+   process.exit(1);
 }
 
 /*---------------------------------------------------------------------*/
@@ -936,11 +932,11 @@ function __js_link_instance(__js, instance, client) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    runSingle ...                                                    */
+/*    runStatic ...                                                    */
 /*    -------------------------------------------------------------    */
 /*    Run a whole wasm program in a single self.instance.              */
 /*---------------------------------------------------------------------*/
-async function runSingle(client) {
+async function runStatic(client) {
    const __js = __js_all();
    const wasmClient = await WebAssembly.compile(readFileSync(client));
    const instanceClient = await WebAssembly.instantiate(wasmClient, __js);
@@ -961,13 +957,14 @@ async function runSingle(client) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    runDouble ...                                                    */
+/*    runDynamic ...                                                   */
 /*    -------------------------------------------------------------    */
-/*    Run a wasm in two instances, one for client, one the runtime.    */
+/*    Run a wasm in several instances, one for client, and one by libs */
 /*---------------------------------------------------------------------*/
-async function runDouble(client, rts) {
-   const __jsClient = __js_all();
+async function runDynamic(client, [rts, libs]) {
    const __jsRts = __js_all();
+   const __jsClient = __js_all();
+
    const wasmRts = await WebAssembly.compile(readFileSync(rts));
    const wasmClient = await WebAssembly.compile(readFileSync(client));
 
@@ -975,7 +972,7 @@ async function runDouble(client, rts) {
    __jsClient.__bigloo = instanceRts.exports;
 
    const instanceClient = await WebAssembly.instantiate(wasmClient, __jsClient);
-
+   
    __js_link_instance(__jsClient, instanceClient, instanceClient);
    __js_link_instance(__jsRts, instanceRts, instanceClient);
    
@@ -996,10 +993,10 @@ async function runDouble(client, rts) {
 /*    top-level                                                        */
 /*---------------------------------------------------------------------*/
 try {
-   if (rts) {
-      runDouble(client, rts);
+   if (libs.length) {
+      runDynamic(client, libs);
    } else {
-      runSingle(client);
+      runStatic(client);
    }
 } catch(e) {
    console.error("*** ERROR", e);

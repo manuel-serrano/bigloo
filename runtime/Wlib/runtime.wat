@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Wed Jul 23 11:15:53 2025 (serrano)                */
+;*    Last change :  Wed Jul 23 16:40:36 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -540,6 +540,7 @@
       (local $argv (ref eq))
       (local.set $i (i32.sub (global.get $js_argc) (i32.const 1)))
       (local.set $argv (global.get $BNIL))
+
       (loop $loop
 	 (if (i32.ge_s (local.get $i) (i32.const 0))
 	     (then
@@ -571,6 +572,7 @@
 	 (call $bgl_flush_output_port
 	    (call $BGL_ENV_CURRENT_ERROR_PORT
 	       (call $BGL_CURRENT_DYNAMIC_ENV))))
+
       (call $js_exit
 	 (if (result i32)
 	     (call $INTEGERP (local.get 0))

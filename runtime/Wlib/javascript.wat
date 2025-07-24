@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Wed Jul 16 09:49:37 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 08:04:43 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
@@ -37,7 +37,7 @@
       
       (loop $loop
 	 (if (i32.lt_u (local.get $i) (local.get $length))
-	     (then 
+	     (then
 		(array.set $bstring 
 		   (local.get $buffer)
 		   (i32.add (local.get $offset) (local.get $i))
@@ -50,13 +50,13 @@
       (param $addr i32)
       (param $length i32)
       (result (ref $bstring))
-      
       (local $buffer (ref $bstring))
+
       (local.set $buffer (array.new_default $bstring (local.get $length)))
       
       (call $load_string_in_buffer (local.get $addr) (local.get $length)
 	 (local.get $buffer) (i32.const 0))
-      
+
       (local.get $buffer))
 
    ;; store_substring

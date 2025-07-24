@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Mon Jul 21 07:59:43 2025 (serrano)                */
+;*    Last change :  Wed Jul 23 16:55:24 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -49,6 +49,8 @@
    ;; Imports 
    ;; -----------------------------------------------------------------
 
+   (import "__js" "trace" (func $js_trace (param i32)))
+   
    (import "__js_io" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
    (import "__js_io" "open_fd" (func $js_open_fd (param i32 i32 i32) (result i32)))
    (import "__js_io" "close_file" (func $js_close_file (param i32)))
@@ -1399,7 +1401,7 @@
       (local $cnt i32)
       (local $use i32)
       (local $n i32)
-      
+
       (if (call $BGL_PORT_CLOSED_P (local.get $op))
 	  ;; closed output-port
 	  (then
@@ -1424,6 +1426,7 @@
 		    (local.set $use
 		       (i32.sub (local.get $use)
 			  (global.get $stdout_from)))))
+
 	     
 	     ;; invoke the flush hook
 	     (call $invoke_flush_hook
@@ -1531,7 +1534,7 @@
    (func $bgl_flush_output_port (export "bgl_flush_output_port")
       (param $op (ref $output-port))
       (result (ref eq))
-      
+
       (drop
 	 (call $bgl_output_flush (local.get $op)
 	    (ref.null none) (i32.const 0) (i32.const 0)))
@@ -1544,6 +1547,7 @@
 		(struct.get $output-port $sysflush (local.get $op))))
 	  (else
 	   (return (global.get $BTRUE))))
+
       (unreachable))
 
    ;; bgl_write

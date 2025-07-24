@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/Makefile.api              */
+#*    serrano/prgm/project/bigloo/wasm/api/Makefile.api                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Jun 25 17:29:46 2025 (serrano)                */
+#*    Last change :  Wed Jul 23 13:54:59 2025 (serrano)                */
 #*    Copyright   :  2010-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -12,8 +12,8 @@
 #*---------------------------------------------------------------------*/
 #*    Installation                                                     */
 #*---------------------------------------------------------------------*/
-.PHONY: api-install-init api-install-c api-install-jvm \
-  api-uninstall-init api-uninstall-c api-uninstall-jvm 
+.PHONY: api-install-init api-install-c api-install-jvm api-install-wasm \
+  api-uninstall-init api-uninstall-c api-uninstall-jvm api-uninstall-wasm
 
 # init files
 api-install-init:
@@ -86,6 +86,49 @@ api-uninstall-jvm:
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).zip
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).zip
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).zip
+
+# WASM installation
+api-install-wasm:
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  cp $(BOOTLIBDIR)/$(API).jheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).wheap && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).wheap && \
+	  cp $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).wat \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).wat && \
+	  cp $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).wat \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).wat; \
+	  cp $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).wasm \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).wasm && \
+	  cp $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).wasm \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).wasm; \
+        fi
+	(cd $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+           $(RM) -f bigloo$(API)_u-$(RELEASE).wat && \
+           $(LN_S) bigloo$(API)_s-$(RELEASE).wat bigloo$(API)_u-$(RELEASE).wat)
+	(cd $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+           $(RM) -f bigloo$(API)_eu-$(RELEASE).wat && \
+           $(LN_S) bigloo$(API)_es-$(RELEASE).wat bigloo$(API)_eu-$(RELEASE).wat)
+	(cd $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+           $(RM) -f bigloo$(API)_u-$(RELEASE).wasm && \
+           $(LN_S) bigloo$(API)_s-$(RELEASE).wasm bigloo$(API)_u-$(RELEASE).wasm)
+	(cd $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+           $(RM) -f bigloo$(API)_eu-$(RELEASE).wasm && \
+           $(LN_S) bigloo$(API)_es-$(RELEASE).wasm bigloo$(API)_eu-$(RELEASE).wasm)
+
+# WASM uninstallation
+api-uninstall-wasm:
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(API).wheap
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).wat
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).wat
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).wat
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).wat
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).wasm
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).wasm
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).wasm
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).wasm
 
 #*---------------------------------------------------------------------*/
 #*    Init build                                                       */
@@ -266,6 +309,42 @@ api-clean-jvm:
 	$(RM) -rf $(CLASS_DIR)
 
 #*---------------------------------------------------------------------*/
+#*    WASM build                                                       */
+#*---------------------------------------------------------------------*/
+.PHONY: api-wasm heap-wasm api.zip api-clean-wasm
+
+api-wasm: api-init heap-wasm
+	$(MAKE) api.wasm
+
+heap-wasm: $(BOOTLIBDIR)/$(API).wheap
+$(BOOTLIBDIR)/$(API).wheap: .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
+	@ $(RM) -f $(BOOTLIBDIR)/$(API).wheap
+	@ $(BIGLOO) -wasm  $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+            $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).wheap
+
+api.wasm: $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).wasm \
+         $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).wasm \
+
+$(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).wasm: $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).wat
+	$(WASMAS) $< -o $@
+
+$(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).wasm: $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).wat
+	$(WASMAS) $< -o $@
+
+$(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).wat: $(WOBJECTS)
+	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w $^ -o $@
+
+$(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).wat: $(WEOBJECTS)
+	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w $^ -o $@
+
+api-clean-wasm:
+	$(RM) -f $(BOOTLIBDIR)/$(API).wheap
+	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).wat
+	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).wat
+	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).wat
+	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).wat
+
+#*---------------------------------------------------------------------*/
 #*    Compilation rules                                                */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
@@ -288,6 +367,13 @@ $(CLASS_DIR)/%.java: $(JAVA_SRC_DIR)/%.java
 
 $(CLASS_EDIR)/%.class: $(MISC_SRC_DIR)/%.scm
 	$(BIGLOO) -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
+
+objs/%.wat: $(BIGLOO_SRC_DIR)/%.scm
+	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
+
+objs/%.wat: $(MISC_SRC_DIR)/%.scm
+	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
+
 
 #*---------------------------------------------------------------------*/
 #*    ude                                                              */

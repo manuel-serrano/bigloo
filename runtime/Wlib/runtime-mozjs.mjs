@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Jul 23 11:20:51 2025 (serrano)                */
+/*    Last change :  Wed Jul 23 16:32:22 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -18,6 +18,8 @@ const process = {
    exit: n => quit(n > 127 ? 1 : n)
 }
 
+console.error = console.log;
+
 function readFileSync(o) {
    return os.file.readFile(o, "binary");
 }
@@ -25,7 +27,7 @@ function readFileSync(o) {
 function writeSync(fd, buffer, offset, length) {
    if (fd === 1) {
       const buf = buffer.subarray(offset, length);
-      print(Array.from(buf, byte => String.fromCharCode(byte)).join(''));
+      putstr(Array.from(buf, byte => String.fromCharCode(byte)).join(''));
    }
 }
 
@@ -53,6 +55,27 @@ function extname(path) {
    if (lastDot === path.length - 1) return '.';
 
    return path.slice(lastDot);
+}
+
+if (!globalThis.TextEncoder) {
+   globalThis.TextEncoder = function(encoding) {
+      return {
+	 encode(str) {
+	    const buf = new Uint8Array(str.length);
+	    for (let i = 0; i < str.length; i++) {
+	       buf[i] = str.charCodeAt(i);
+	    }
+	    return buf;
+	 }
+      }
+   }
+   globalThis.TextDecoder = function(encoding) {
+      return {
+	 decode(buf) {
+	    return buf;
+	 }
+      }
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -94,38 +117,23 @@ if (argv.length < 3) {
 /*---------------------------------------------------------------------*/
 const currentLocale = "en-US";
 
-/* const schemeStringDecoder = new TextDecoder();                      */
-/* const schemeStringEncoder = new TextEncoder();                      */
-/*                                                                     */
-/* const ucs2StringDecoder = new TextDecoder("ucs-2");                 */
-/* const ucs2StringEncoder = new TextEncoder("ucs-2");                 */
-/*                                                                     */
-/* function loadSchemeString(buffer) {                                 */
-/*    return schemeStringDecoder.decode(buffer);                       */
-/* }                                                                   */
-/*                                                                     */
-/* function loadUCS2String(buffer) {                                   */
-/*    return ucs2StringDecoder.decode(buffer);                         */
-/* }                                                                   */
-/*                                                                     */
-/* function storeJSStringToScheme(string, addr) {                      */
-/*     const memory = new Uint8Array(instance.exports.memory.buffer, addr); */
-/*     const bytes = schemeStringEncoder.encode(string);               */
-/*     memory.set(bytes);                                              */
-/*     return bytes.length;                                            */
-/* }                                                                   */
+const schemeStringDecoder = new TextDecoder();
+const schemeStringEncoder = new TextEncoder();
+
+const ucs2StringDecoder = new TextDecoder("ucs-2");
+const ucs2StringEncoder = new TextEncoder("ucs-2");
 
 function loadSchemeString(buffer) {
-   Array.from(buffer, byte => String.fromCharCode(byte)).join('');
+   return schemeStringDecoder.decode(buffer);
 }
 
 function loadUCS2String(buffer) {
-   Array.from(buffer, byte => String.fromCharCode(byte)).join('');
+   return ucs2StringDecoder.decode(buffer);
 }
 
 function storeJSStringToScheme(instance, string, addr) {
    const memory = new Uint8Array(instance.exports.memory.buffer, addr);
-   const bytes = string;
+   const bytes = schemeStringEncoder.encode(string);
    memory.set(bytes);
    return bytes.length;
 }
@@ -428,8 +436,7 @@ function __js_system() {
       executable_name: (addr) => storeJSStringToScheme(self.instance, process.argv[0], addr),
       
       get_arg: function (idx, addr) {
-         let real_idx = idx + 2 /* ignore the path of NodeJS and of runtime.mjs. */;
-         let arg = argv[real_idx];
+         let arg = argv[idx + 2];
          return storeJSStringToScheme(self.instance, arg, addr);
       },
 
@@ -486,7 +493,7 @@ function __js_system() {
 	 const v = loadSchemeString(buffer);
 
 	 return 0;
-      }
+      },
       
       system: (addr, len) => {
 	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, addr, len);
@@ -579,7 +586,7 @@ function __js_io() {
 	 const oldf = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, old_addr, old_length));
 	 const newf = loadSchemeSring(new Uint8Array(self.instance.exports.memory.buffer, new_addr, new_length));
 	 return 0;
-      }
+      },
 	 
       symlink: (target_addr, target_length, path_addr, path_length) => {
 	 const target = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, target_addr, target_length));
@@ -806,7 +813,6 @@ function __js_io() {
       },
 
       write_char: (fd, c, position) => {
-	 print("ICI");
 	 if (fd < 0) {
             throw WebAssembly.RuntimeError("invalid file descriptor");
 	 }
@@ -854,15 +860,20 @@ function __js_io() {
 function __js_socket() {
    const self = {
       self: undefined,
-   },
 
-   nullsocket: () => {
-      return undefined;
-   },
-   
-   make_server: (hostname_addr, hostname_len, portnum, backlog, family) => {
-      return undefined;
-   }
+      nullsocket: () => {
+	 return undefined;
+      },
+      
+      make_server: (hostname_addr, hostname_len, portnum, backlog, family) => {
+	 return undefined;
+      },
+
+      accept: (srv) => {
+	 return 0;
+      }
+   };
+   return self;
 }
 
 /*---------------------------------------------------------------------*/
@@ -1004,72 +1015,16 @@ async function runDouble(client, rts) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    wasm ...                                                         */
-/*---------------------------------------------------------------------*/
-//const wasm = await WebAssembly.compile(await readFile(argv[2]));
-async function run(argv) {
-   const bytes = readFileSync(argv[2]);
-   const wasm = new WebAssembly.Module(bytes);
-
-   instance = new  WebAssembly.Instance(wasm, {
-      __js: {
-	 glup: () => { console.log("in glup"); return Date.now()},
-	 not_implemented: x => {
-	    console.error("*** WASM WARNING: function not implemented", x);
-	 },
-	 
-	 trace: function (x) {
-            console.log("TRACE: " + x);
-	 },
-
-	 internalError: function (errno, val) {
-            console.error("*** INTERNAL-ERROR(" + errno +"):",
-			  format(internalErrors[errno], val));
-	 },
-
-	 number_to_string: (x, addr) => {
-            return storeJSStringToScheme(self.instance, x.toString(), addr);
-	 },
-
-      },
-
-      __js_io,
-      __js_system,
-      __js_unicode,
-      __js_bignum,
-      __js_math,
-      __js_date
-   });
-
-   if (!instance.exports.bigloo_main) {
-      console.error("ERROR: missing 'bigloo_main' symbol in WASM module file.");
-      process.exit(1);
-   }
-
-   if (!instance.exports.__js_bigloo_main) {
-      console.error("ERROR: missing '__js_bigloo_main' symbol in WASM module file.");
-      process.exit(1);
-   }
-
-   // Call the Bigloo Scheme program!
-   try {
-      instance.exports.__js_bigloo_main();
-   } catch(e) {
-      print("*** ERROR", e);
-      print(e.stack);
-      quit(3);
-   }
-}
-
-/*---------------------------------------------------------------------*/
 /*    top-level                                                        */
 /*---------------------------------------------------------------------*/
 try {
    if (rts) {
-      runDouble(client, rts);
+      await runDouble(client, rts);
+      print("----");
    } else {
-      runSingle(client);
+      await runSingle(client);
    }
+      
 } catch(e) {
    print("*** ERROR", e);
    print(e.stack);

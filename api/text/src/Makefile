@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Jul 23 13:53:20 2025 (serrano)                */
+#*    Last change :  Wed Jul 23 14:05:05 2025 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -42,6 +42,8 @@ BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) \
 BHEAPFLAGS	= -unsafe -q \
                   -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
+# wasm as
+WASMAS		= $(BGLWATIB)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
@@ -54,6 +56,9 @@ EOBJECTS	= objs/make_lib.o
 
 BGL_CLASSES	= $(_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
+
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat)
+WEOBJECTS	= $(EOBJECTS:%.o=%.wat)
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
 
@@ -88,6 +93,8 @@ build-c: api-c
 
 jvm: build-jvm
 build-jvm: api-jvm
+
+wasm: build-wasm
 build-wasm: api-wasm
 
 #*---------------------------------------------------------------------*/
