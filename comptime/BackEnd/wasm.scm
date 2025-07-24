@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Jul 23 10:02:13 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 10:37:32 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1466,13 +1466,13 @@ esac")
       `((import "__js" "trace"
 	   (func $js_trace (param i32)))
 	(import ,($bigloo) "BNIL"
-	   (global $BNIL (ref $bnil)))
+	   (global $BNIL (ref ,(if (=fx *wasm-fixnum* 64) 'i31 '$bnil))))
 	(import ,($bigloo) "BOPTIONAL"
-	   (global $BOPTIONAL (ref $bcnst)))
+	   (global $BOPTIONAL (ref ,(if (=fx *wasm-fixnum* 64) 'i31 '$bcnst))))
 	(import ,($bigloo) "BREST"
-	   (global $BREST (ref $bcnst)))
+	   (global $BREST (ref ,(if (=fx *wasm-fixnum* 64) 'i31 '$bcnst))))
 	(import ,($bigloo) "BKEY"
-	   (global $BKEY (ref $bcnst)))
+	   (global $BKEY (ref ,(if (=fx *wasm-fixnum* 64) 'i31 '$bcnst))))
 	(import ,($bigloo) "OBJ_TO_BOOL"
 	   (func $OBJ_TO_BOOL
 	      (param (ref eq))

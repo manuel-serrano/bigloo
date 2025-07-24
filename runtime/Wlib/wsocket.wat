@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Wed Jul 23 11:00:15 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 09:35:21 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM sockets                                                     */
@@ -76,11 +76,7 @@
    ;; -----------------------------------------------------------------
    
    (import "__js" "trace" (func $js_trace (param i32)))
-   
    (import "__js" "unsupported" (func $js_unsupported (param i32)))
-   (import "__js_socket" "nullsocket" (global $nullsocket externref))
-   (import "__js_socket" "make_server" (func $js_make_server (param i32 i32 i32 i32 i32) (result externref)))
-   (import "__js_socket" "accept" (func $js_accept (param externref) (result i32)))
    
    (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
@@ -100,6 +96,9 @@
    (import "__bigloo" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value (ref $input-port)))
    (import "__bigloo" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
 
+   (import "__js_socket" "nullsocket" (global $nullsocket externref))
+   (import "__js_socket" "make_server" (func $js_make_server (param i32 i32 i32 i32 i32) (result externref)))
+   (import "__js_socket" "accept" (func $js_accept (param externref) (result i32)))
    
    ;; -----------------------------------------------------------------
    ;; Global variables 

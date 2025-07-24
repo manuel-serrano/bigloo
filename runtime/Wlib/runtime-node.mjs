@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Jul 23 14:47:45 2025 (serrano)                */
+/*    Last change :  Thu Jul 24 09:32:23 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -838,28 +838,11 @@ function __js_process() {
 	 return undefined;
       },
 
-      make_server: (hostname_addr, hostname_len, portnum, backlog, family) => {
-	 const server = createServer((process) => {
-	    process.on('data', (data) => {
-	       console.log('Received:', data.toString());
-	    });
-	    
-	    process.on('end', () => {
-	       console.log('Client disconnected');
-	    });
-	 });
-	 server.listen(portnum, () => { console.log("server listening"); });
-	 return server;
-      },
-
-      accept: async (srv) => {
-	 console.error("XXX in accept");
-	 const r = await new Promise((res, rej) => {
-	    console.error("in promise...");
-	    res(343);
-	 });
-	 return r;
+      run: (nbargs, args_addr) => {
+	 console.log("nbargs=", nbargs);
+	 return undefined;
       }
+
    };
 
    return self;

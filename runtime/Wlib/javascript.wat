@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Thu Jul 24 08:04:43 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 09:40:37 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
@@ -88,6 +88,21 @@
 	 (i64.const 0)
 	 (i64.extend_i32_u (array.len (local.get $text)))
 	 (local.get $addr)))
+
+   ;; store_string_len2 (as store_string but also stores the string-length
+   ;; endoed as a two bytes integer).
+   (func $store_string_len2 (export "bgl_store_string_len2")
+      (param $text (ref $bstring))
+      (param $addr i32)
+      (result i32)
+      (local $len i32)
+      
+      (local.set $len (array.len (local.get $text)))
+      (i32.store8 (local.get $addr) (i32.div_s (local.get $len) (i32.const 256)))
+      (i32.store8 (i32.add (local.get $addr) (i32.const 1)) (i32.rem_s (local.get $len) (i32.const 256)))
+      (call $store_string (local.get $text)
+	 (i32.add (local.get $addr) (i32.const 2)))
+      (return (i32.add (i32.const 2) (local.get $len))))
 
    ;; store_ucs2string
    (func $store_ucs2string

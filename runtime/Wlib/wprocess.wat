@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Wed Jul 23 13:49:39 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 09:33:23 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM processes                                                   */
@@ -31,7 +31,6 @@
    (import "__js" "trace" (func $js_trace (param i32)))
    
    (import "__js" "unsupported" (func $js_unsupported (param i32)))
-   (import "__js_process" "nullprocess" (global $nullprocess externref))
    
    (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
@@ -46,11 +45,15 @@
    (import "__bigloo" "STRING_LENGTH" (func $STRING_LENGTH (param (ref $bstring)) (result i64)))
    (import "__bigloo" "bgl_load_string_in_buffer" (func $load_string_in_buffer (param i32) (param i32) (param (ref $bstring)) (param i32)))
    (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "bgl_store_string_len2" (func $store_string_len2 (param (ref $bstring) i32) (result i32)))
    (import "__bigloo" "BINT" (func $BINT (param i64) (result (ref eq))))
    (import "__bigloo" "the_failure" (func $the_failure (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
    (import "__bigloo" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value (ref $input-port)))
    (import "__bigloo" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
 
+   (import "__js_process" "nullprocess" (global $nullprocess externref))
+   (import "__js_process" "run" (func $run (param i32 i32) (result externref)))
+   
    
    ;; -----------------------------------------------------------------
    ;; Global variables 
@@ -109,7 +112,31 @@
       (param $args (ref eq))
       (param $env (ref eq))
       (result (ref eq))
-      (return (global.get $process-default-value)))
+      (local $idx i32)
+      (local $len i32)
+      (local.set $idx (i32.const 128))
+      (local.set $len (i32.const 1))
+      
+      (local.set $idx
+	 (call $store_string_len2 (ref.cast (ref $bstring) (local.get $command))
+	    (local.get $idx)))
+
+      (call $js_trace (i32.const 11111))
+      
+      (loop $loop
+	 (if (ref.test (ref $pair) (local.get $command))
+	     (then
+		(local.set $len (i32.add (i32.const 1) (local.get $len)))
+		(local.set $idx
+		   (call $store_string_len2
+		      (ref.cast (ref $bstring)
+			 (struct.get $pair $car
+			    (ref.cast (ref $pair) (local.get $command))))
+		      (local.get $idx)))
+		(br $loop))))
+      
+      (return (struct.new $process
+		 (call $run (local.get $len) (i32.const 128)))))
    
    (func $c_process_alivep (export "c_process_alivep")
       (param $process (ref $process))
