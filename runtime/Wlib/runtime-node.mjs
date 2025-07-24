@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 24 10:48:29 2025 (serrano)                */
+/*    Last change :  Thu Jul 24 13:19:11 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -42,6 +42,7 @@ if (argv[2] === "-s") {
 
 } else {
    client = argv[2];
+   libs = [];
 }
 
 if (!client) {
@@ -992,7 +993,7 @@ async function runDynamic(client, [rts, libs]) {
    if (!instanceClient.exports.bigloo_main) {
       console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`);
       process.exit(1);
-}
+   }
 
    if (!instanceRts.exports.__bigloo_main) {
       console.error(`*** ERROR: missing '__bigloo_main' export in "${rts}".`);
