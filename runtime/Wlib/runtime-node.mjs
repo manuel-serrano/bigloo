@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 24 09:32:23 2025 (serrano)                */
+/*    Last change :  Thu Jul 24 10:48:29 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -62,6 +62,14 @@ const ucs2StringEncoder = new TextEncoder("ucs-2");
 
 function loadSchemeString(buffer) {
    return schemeStringDecoder.decode(buffer);
+}
+
+function loadSchemeStringLen2(memory, addr) {
+   const lenbuf = new Uint8Array(memory, addr, 2);
+   const len = lenbuf[0] * 256 + lenbuf[1];
+   const buffer = new Uint8Array(memory, addr + 2, len);
+
+   return { addr: addr + 2 + len, str: schemeStringDecoder.decode(buffer) };
 }
 
 function loadUCS2String(buffer) {
@@ -838,11 +846,33 @@ function __js_process() {
 	 return undefined;
       },
 
-      run: (nbargs, args_addr) => {
-	 console.log("nbargs=", nbargs);
-	 return undefined;
-      }
+      run: (nbargs, addr, fork, wait) => {
+	 const membuf = self.instance.exports.memory.buffer;
+	 const args = new Array(nbargs);
+	 let { addr: naddr, str: cmd } = loadSchemeStringLen2(membuf, addr);
+	 const opt = {
+	    stdio: 'inherit'
+	 };
 
+	 for (let i = 0; i < nbargs; i++) {
+	    const { addr: a, str } = loadSchemeStringLen2(membuf, naddr);
+	    args[i] = str;
+	    naddr = a;
+	 }
+
+	 if (wait) {
+	    execFileSync(cmd, args, opt);
+	    if (!fork) {
+	       process.exit(0);
+	    }
+	 } else {
+	    return execFile(cmd, args, opt);
+	 }
+      },
+
+      pid: proc => proc.pid,
+
+      kill: proc => proc.kill(),
    };
 
    return self;

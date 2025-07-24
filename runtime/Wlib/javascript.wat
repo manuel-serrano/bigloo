@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Thu Jul 24 09:40:37 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 11:10:20 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
@@ -102,7 +102,8 @@
       (i32.store8 (i32.add (local.get $addr) (i32.const 1)) (i32.rem_s (local.get $len) (i32.const 256)))
       (call $store_string (local.get $text)
 	 (i32.add (local.get $addr) (i32.const 2)))
-      (return (i32.add (i32.const 2) (local.get $len))))
+      (return (i32.add (local.get $addr)
+		 (i32.add (i32.const 2) (local.get $len)))))
 
    ;; store_ucs2string
    (func $store_ucs2string

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Thu Jul 24 09:33:23 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 10:43:20 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM processes                                                   */
@@ -52,7 +52,9 @@
    (import "__bigloo" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
 
    (import "__js_process" "nullprocess" (global $nullprocess externref))
-   (import "__js_process" "run" (func $run (param i32 i32) (result externref)))
+   (import "__js_process" "run" (func $run (param i32 i32 i32 i32) (result externref)))
+   (import "__js_process" "pid" (func $pid (param externref) (result i32)))
+   (import "__js_process" "kill" (func $kill (param externref) (result i32)))
    
    
    ;; -----------------------------------------------------------------
@@ -81,7 +83,7 @@
    (func $PROCESS_PID (export "PROCESS_PID")
       (param $process (ref $process))
       (result i32)
-      (return (i32.const 0)))
+      (return_call $pid (struct.get $process $proc (local.get $process))))
 
    (func $PROCESS_INPUT_PORT (export "PROCESS_INPUT_PORT")
       (param $process (ref $process))
@@ -104,7 +106,7 @@
    (func $c_run_process (export "c_run_process")
       (param $host (ref eq))
       (param $fork (ref eq))
-      (param $waiting (ref eq))
+      (param $wait (ref eq))
       (param $input (ref eq))
       (param $output (ref eq))
       (param $error (ref eq))
@@ -115,28 +117,37 @@
       (local $idx i32)
       (local $len i32)
       (local.set $idx (i32.const 128))
-      (local.set $len (i32.const 1))
-      
+      (local.set $len (i32.const 0))
+
+      ;; store the command
       (local.set $idx
 	 (call $store_string_len2 (ref.cast (ref $bstring) (local.get $command))
 	    (local.get $idx)))
 
-      (call $js_trace (i32.const 11111))
-      
+      ;; store the command arguments
       (loop $loop
-	 (if (ref.test (ref $pair) (local.get $command))
+	 (if (ref.test (ref $pair) (local.get $args))
 	     (then
-		(local.set $len (i32.add (i32.const 1) (local.get $len)))
 		(local.set $idx
 		   (call $store_string_len2
 		      (ref.cast (ref $bstring)
 			 (struct.get $pair $car
-			    (ref.cast (ref $pair) (local.get $command))))
+			    (ref.cast (ref $pair) (local.get $args))))
+		      (local.set $args
+			 (struct.get $pair $cdr
+			    (ref.cast (ref $pair) (local.get $args))))
 		      (local.get $idx)))
+		(local.set $len (i32.add (i32.const 1) (local.get $len)))
 		(br $loop))))
-      
+
       (return (struct.new $process
-		 (call $run (local.get $len) (i32.const 128)))))
+		 (call $run
+		    ;; command and arguments
+		    (local.get $len) (i32.const 128)
+		    ;; fork
+		    (ref.eq (local.get $fork) (global.get $BTRUE))
+		    ;; wait
+		    (ref.eq (local.get $wait) (global.get $BTRUE))))))
    
    (func $c_process_alivep (export "c_process_alivep")
       (param $process (ref $process))
@@ -162,6 +173,7 @@
    (func $c_process_kill (export "c_process_kill")
       (param $process (ref $process))
       (result (ref eq))
+      (call $kill (struct.get $process $proc (local.get $process)))
       (return (global.get $BUNSPEC)))
 
    (func $c_process_stop (export "c_process_stop")
