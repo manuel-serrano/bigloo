@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Jul 23 16:32:22 2025 (serrano)                */
+/*    Last change :  Thu Jul 24 14:37:18 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -885,7 +885,14 @@ function __js_process() {
 
       nullprocess: () => {
 	 return undefined;
-      }
+      },
+      
+      run: (nbargs, addr, fork, wait, out_addr, out_len) => {
+      },
+      
+      pid: proc => proc.pid,
+
+      kill: proc => proc.kill()
    };
 
    return self;

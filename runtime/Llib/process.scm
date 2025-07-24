@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Wed Jul 23 11:22:28 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 13:32:52 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Process handling. This part is mostly compatible with            */
 ;*    STk. This code is extracted from STk by Erick Gallesio.          */
@@ -216,7 +216,6 @@
 	 (output #unspecified)
 	 (error  #unspecified)
 	 (host   #unspecified)
-	 (pipes  '(pipe:))
 	 (args   '())
 	 (env    '())
 	 (arg-error (lambda (rest)
@@ -239,15 +238,15 @@
 			(set! fork val)
 			(arg-error rest)))
 		   ((input:)
-		    (if (or (string? val) (memq val pipes))
+		    (if (or (string? val) (eq? val pipe:))
 			(set! input val)
 			(arg-error rest)))
 		   ((output:)
-		    (if (or (string? val) (memq val pipes) (eq? val null:))
+		    (if (or (string? val) (eq? val pipe:) (eq? val null:))
 			(set! output val)
 			(arg-error rest)))
 		   ((error:)
-		    (if (or (string? val) (memq val pipes) (eq? val null:))
+		    (if (or (string? val) (eq? val pipe:) (eq? val null:))
 			(set! error val)
 			(arg-error rest)))
 		   ((host:)

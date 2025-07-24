@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  1 09:40:49 2024                          */
-;*    Last change :  Thu Jul 17 13:39:39 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 14:28:54 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM reals                                                       */
@@ -38,7 +38,22 @@
    (func $BGL_FAST_REALP (export "BGL_FAST_REALP")
       (param $o (ref eq))
       (result i32)
-      (ref.test (ref $real) (local.get $o)))
+      (return_call $REALP (local.get $o)))
+  
+   (func $BGL_REALSP (export "BGL_REALSP")
+      (param $x (ref eq))
+      (param $y (ref eq))
+      (result i32)
+      (return
+	 (if (result i32) (ref.test (ref $real) (local.get $x))
+	     (then (ref.test (ref $real) (local.get $y)))
+	     (else (i32.const 0)))))
+
+   (func $BGL_FAST_REALSP (export "BGL_FAST_REALSP")
+      (param $x (ref eq))
+      (param $y (ref eq))
+      (result i32)
+      (return_call $BGL_REALSP (local.get $x) (local.get $y)))
   
    ;; -----------------------------------------------------------------
    ;; Library functions 

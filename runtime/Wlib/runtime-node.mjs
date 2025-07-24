@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 24 13:19:11 2025 (serrano)                */
+/*    Last change :  Thu Jul 24 14:03:24 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -61,7 +61,8 @@ const schemeStringEncoder = new TextEncoder();
 const ucs2StringDecoder = new TextDecoder("ucs-2");
 const ucs2StringEncoder = new TextEncoder("ucs-2");
 
-function loadSchemeString(buffer) {
+function loadSchemeString(memory, addr, len) {
+   const buffer = new Uint8Array(memory, addr, len);
    return schemeStringDecoder.decode(buffer);
 }
 
@@ -190,8 +191,7 @@ function __js_math() {
       pow: Math.pow,
       randomf: Math.random,
       strtod: (addr, len) => {
-         const buffer = new Uint8Array(self.instance.exports.memory.buffer, addr, len);
-	 return Number.parseFloat(loadSchemeString(buffer));
+	 return Number.parseFloat(loadSchemeString(self.instance.exports.memory.buffer, addr, len));
       }
    };
    return self;
@@ -308,8 +308,7 @@ function __js_bignum() {
 	 return storeJSStringToScheme(self.instance, value.toString(), addr);
       },
       string_to_bignum: (offset, len, radix) => {
-	 const buf = new Uint8Array(self.instance.exports.memory.buffer, offset, len);
-	 const str = loadSchemeString(buf);
+	 const str = loadSchemeString(self.instance.exports.memory.buffer, offset, len);
 	 switch(radix) {
 	    case 2: return string_to_bignum_radix(str, 2);
 	    case 8: return string_to_bignum_radix(str, 8);
@@ -370,8 +369,7 @@ function __js_system() {
       },
       
       getenv: (addr, len) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, addr, len);
-	 const v = loadSchemeString(buffer);
+	 const v = loadSchemeString(self.instance.exports.memory.buffer, addr, len);
 
 	 if (v in process.env) {
 	    storeJSStringToScheme(self.instance, process.env[v], addr);
@@ -392,8 +390,8 @@ function __js_system() {
       },
       
       setenv: (addr_id, len_id, addr_val, len_val, addr) => {
-	 const id = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, id_addr, id_length));
-	 const val = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, val_addr, val_length));
+	 const id = loadSchemeString(self.instance.exports.memory.buffer, id_addr, id_length);
+	 const val = loadSchemeString(self.instance.exports.memory.buffer, val_addr, val_length);
 	 process.env[id] = val;
 	 return 0;
       },
@@ -418,15 +416,12 @@ function __js_system() {
       },
       
       chdir: (addr, len) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, addr, len);
-	 const v = loadSchemeString(buffer);
-
+	 const v = loadSchemeString(self.instance.exports.memory.buffer, addr, len);
 	 return Process.chdir(v);
       },
       
       system: (addr, len) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, addr, len);
-	 const v = loadSchemeString(buffer);
+	 const v = loadSchemeString(self.instance.exports.memory.buffer, addr, len);
 
 	 try {
 	    execSync(v);
@@ -456,8 +451,7 @@ function __js_io() {
       file_separator: file_sep.charCodeAt(0),
       
       open_file: (path_addr, path_length, flags) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 
 	 let fs_flags;
 	 switch (flags) {
@@ -506,28 +500,27 @@ function __js_io() {
       }, 
       
       truncate: (path_addr, path_length, pos) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 truncateSync(path, pos);
 	 return 0;
       }, 
 
       rename: (old_addr, old_length, new_addr, new_length) => {
-	 const oldf = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, old_addr, old_length));
-	 const newf = loadSchemeSring(new Uint8Array(self.instance.exports.memory.buffer, new_addr, new_length));
+	 const oldf = loadSchemeString(self.instance.exports.memory.buffer, old_addr, old_length);
+	 const newf = loadSchemeSring(self.instance.exports.memory.buffer, new_addr, new_length);
 	 renameSync(oldf, newf);
 	 return 0;
       },
 	 
       symlink: (target_addr, target_length, path_addr, path_length) => {
-	 const target = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, target_addr, target_length));
-	 const path = loadSchemeString(new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length));
+	 const target = loadSchemeString(self.instance.exports.memory.buffer, target_addr, target_length);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 symlinkSync(target, path);
 	 return 0;
       },
 	 
       password: (prompt_addr, prompt_length, res_addr) => {
-	 const memory = new Uint8Array(self.instance.exports.memory.buffer, offset, length, position);
+	 const prompt = loadSchemeString(self.instance.exports.memory.buffer, prompt_addr, prompt_length);
 	 const buf = "toto";
 
 	 storeJSStringToScheme(self.instance, buf, addr);
@@ -535,8 +528,7 @@ function __js_io() {
       },
       
       path_size: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
 	    return lstatSync(path).size;
 	 } catch (err) {
@@ -545,8 +537,7 @@ function __js_io() {
       },
 
       last_modification_time: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
 	    return lstatSync(path).mtime;
 	 } catch (err) {
@@ -555,8 +546,7 @@ function __js_io() {
       },
 
       last_access_time: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
 	    return lstatSync(path).atime;
 	 } catch (err) {
@@ -565,8 +555,7 @@ function __js_io() {
       },
 
       last_change_time: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
 	    return lstatSync(path).ctime;
 	 } catch (err) {
@@ -575,8 +564,7 @@ function __js_io() {
       },
 
       utime: (path_addr, path_length, atime, mtime) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 
 	 return utime(path, atime, mtime);
       },
@@ -590,8 +578,7 @@ function __js_io() {
       },
 
       path_mode: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
 	    return lstatSync(path).mode;
 	 } catch (err) {
@@ -600,8 +587,7 @@ function __js_io() {
       },
 
       bgl_chmod: (path_addr, path_length, read, write, exec) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 const mod = (read ? constants.S_IRUSR : 0)
 	    | (write ? constants.S_IWUSR : 0)
 	    | (exec ? constants.S_IXUSR : 0);
@@ -610,15 +596,13 @@ function __js_io() {
       },
 
       chmod: (path_addr, path_length, mod) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 
 	 return chmodSync(path, mod);
       },
 
       path_gid: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
 	    return lstatSync(path).gid;
 	 } catch (err) {
@@ -627,8 +611,7 @@ function __js_io() {
       },
 
       path_uid: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
 	    return lstatSync(path).uid;
 	 } catch (err) {
@@ -637,8 +620,7 @@ function __js_io() {
       },
 
       path_type: (path_addr, path_length, addr) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 let res;
 	 
 	 try {
@@ -671,8 +653,7 @@ function __js_io() {
       },
       
       file_exists: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
             accessSync(path, constants.F_OK);
             return 1;
@@ -682,8 +663,7 @@ function __js_io() {
       },
 
       file_delete: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
 	    if (existsSync(path)) {
                unlinkSync(path);
@@ -697,8 +677,7 @@ function __js_io() {
       },
 
       dir_remove: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
             rmdirSync(path);
             return false;
@@ -708,8 +687,7 @@ function __js_io() {
       },
 
       is_dir: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 
 	 try {
             return lstatSync(path).isDirectory();
@@ -719,8 +697,7 @@ function __js_io() {
       },
 
       make_dir: (path_addr, path_length, mod) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
 	    mkdirSync(path, {mod: mod});
 	    return true;
@@ -771,8 +748,7 @@ function __js_io() {
       },
 
       read_dir_init: (path_addr, path_length) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
 	    return readdirSync(path);
 	 } catch(e) {
@@ -785,8 +761,7 @@ function __js_io() {
       },
 
       mmap_init: (path_addr, path_length, read, write) => {
-	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, path_addr, path_length);
-	 const path = loadSchemeString(buffer);
+	 const path = loadSchemeString(self.instance.exports.memory.buffer, path_addr, path_length);
 	 try {
 	    return readFile(path);
 	 } catch(e) {
@@ -847,22 +822,36 @@ function __js_process() {
 	 return undefined;
       },
 
-      run: (nbargs, addr, fork, wait) => {
+      run: (nbargs, addr, fork, wait, out_addr, out_len) => {
 	 const membuf = self.instance.exports.memory.buffer;
 	 const args = new Array(nbargs);
 	 let { addr: naddr, str: cmd } = loadSchemeStringLen2(membuf, addr);
+	 let stdout = -1;
 	 const opt = {
-	    stdio: 'inherit'
+	    stdio: ['inherit', 'inherit', 'inherit']
 	 };
 
+	 // arguments
 	 for (let i = 0; i < nbargs; i++) {
 	    const { addr: a, str } = loadSchemeStringLen2(membuf, naddr);
 	    args[i] = str;
 	    naddr = a;
 	 }
 
+	 // stdio
+	 if (out_addr > 0) {
+	    const path = loadSchemeString(membuf, out_addr, out_len);
+	    stdout = openSync(path, "w");
+	    opt.stdio[1] = stdout;
+	 }
+
+	 console.log("CMD=", cmd, " args=", args);
 	 if (wait) {
 	    execFileSync(cmd, args, opt);
+
+	    if (stdout > 0) {
+	       closeSync(stdout);
+	    }
 	    if (!fork) {
 	       process.exit(0);
 	    }

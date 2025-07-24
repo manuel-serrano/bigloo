@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Tue Jul 22 13:35:23 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 14:26:57 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM unboxed 31bit fixnum implementation                         */
@@ -51,6 +51,15 @@
       (param $o (ref eq))
       (result i32)
       (ref.test (ref i31) (local.get $o)))
+  
+   (func $INTEGERSP (export "INTEGERSP")
+      (param $x (ref eq))
+      (param $y (ref eq))
+      (result i32)
+      (return 
+	 (if (result i32) (ref.test (ref i31) (local.get $x))
+	     (then (ref.test (ref i31) (local.get $y)))
+	     (else (i32.const 0)))))
   
    (func $ELONGP (export "ELONGP")
       (param $o (ref eq))
