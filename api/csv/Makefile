@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/csv/Makefile                     */
+#*    serrano/prgm/project/bigloo/wasm/api/csv/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jul  9 10:07:01 2017 (serrano)                */
-#*    Copyright   :  2001-17 Manuel Serrano                            */
+#*    Last change :  Fri Jul 25 13:52:03 2025 (serrano)                */
+#*    Copyright   :  2001-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -33,7 +33,8 @@ POPULATION = Makefile README
 all: build
 boot: build
 
-build: build-c build-jvm
+build:
+	@ $(MAKE) build-c && $(MAKE) build-jvm
 
 c: build-c
 jvm: build-jvm

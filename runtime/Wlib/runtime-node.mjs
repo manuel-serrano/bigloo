@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 25 13:31:14 2025 (serrano)                */
+/*    Last change :  Fri Jul 25 13:45:33 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -827,7 +827,7 @@ function __js_process() {
 	 const membuf = self.instance.exports.memory.buffer;
 	 const args = new Array(nbargs);
 	 let { addr: naddr, str: cmd } = loadSchemeStringLen2(membuf, addr);
-	 let stdout = -1;
+	 let stdout = -1, stderr = -1;
 	 const opt = {
 	    stdio: ['inherit', 'inherit', 'inherit']
 	 };
@@ -884,8 +884,8 @@ function __js_process() {
       xstatus: proc => proc.status ? proc.status : -1,
       
       getport: (proc, fd, addr) => {
-	 if (fd === 1 && proc.output && proc.output[1] ) {
-	    const s = proc.output[1].toString();
+	 if (proc.output && proc.output[fd] ) {
+	    const s = proc.output[fd].toString();
 	    storeJSStringToScheme(self.instance, s, addr);
 	    return s.length;
 	 }
