@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Tue Jul 22 10:11:52 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 15:37:18 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -108,9 +108,9 @@
 (define *callcc?*       #t)
 (define *dumping*       #f)
 (define *modules*       '())
-(define *bigloo-path*   (if (string=? (os-class) "unix")
-                            "../bin/bigloo.sh"
-                            "..\\bin\\bigloo.exe"))
+(define *bigloo-path*   (if (member (os-class) '("win32" "mingw"))
+			    "..\\bin\\bigloo.exe"
+                            "../bin/bigloo.sh"))
 
 ;*---------------------------------------------------------------------*/
 ;*    tick ...                                                         */

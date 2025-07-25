@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Sun Jul  6 10:28:37 2025 (serrano)                */
+;*    Last change :  Fri Jul 25 10:17:38 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
@@ -63,6 +63,8 @@
    ;; Imports 
    ;; -----------------------------------------------------------------
 
+   (import "__js" "trace" (func $js_trace (param i32)))
+   
    (import "__js_math" "strtod" (func $js_strtod (param i32) (param i32) (result f64)))
    
    (import "__bigloo" "default_io_bufsize" (global $default_io_bufsize i64))
@@ -607,12 +609,13 @@
       (local $buf (ref $bstring))
       (local $stop i32)
       (local $start i32)
-      
+
       (local.set $rgc (struct.get $input-port $rgc (local.get $ip)))
       (local.set $buf (struct.get $rgc $buf (local.get $rgc)))
       (local.set $stop (struct.get $rgc $matchstop (local.get $rgc)))
       (local.set $start (struct.get $rgc $matchstart (local.get $rgc)))
       
+      ;(call $js_trace (i32.const 30))
       (call $store_substring (local.get $buf)
 	 (i64.extend_i32_u (local.get $start))
 	 (i64.extend_i32_u (local.get $stop))

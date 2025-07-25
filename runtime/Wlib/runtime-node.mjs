@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 24 14:03:24 2025 (serrano)                */
+/*    Last change :  Thu Jul 24 15:41:38 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -16,7 +16,7 @@ import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync
 import { isatty } from "node:tty";
 import { extname, sep as file_sep } from "node:path";
 import { format } from "node:util";
-import { execSync, execFileSync, execFile } from "node:child_process";
+import { execSync, spawnSync, spawn } from "node:child_process";
 import { createServer } from "node:net";
 
 /*---------------------------------------------------------------------*/
@@ -823,6 +823,7 @@ function __js_process() {
       },
 
       run: (nbargs, addr, fork, wait, out_addr, out_len) => {
+	 let res;
 	 const membuf = self.instance.exports.memory.buffer;
 	 const args = new Array(nbargs);
 	 let { addr: naddr, str: cmd } = loadSchemeStringLen2(membuf, addr);
@@ -840,14 +841,23 @@ function __js_process() {
 
 	 // stdio
 	 if (out_addr > 0) {
+	    // file
 	    const path = loadSchemeString(membuf, out_addr, out_len);
 	    stdout = openSync(path, "w");
 	    opt.stdio[1] = stdout;
+	 } else if (out_addr === -1) {
+	    // pipe
+	    opt.stdio[1] = 'pipe';
 	 }
 
 	 console.log("CMD=", cmd, " args=", args);
 	 if (wait) {
-	    execFileSync(cmd, args, opt);
+	    try {
+	       res = spawnSync(cmd, args, opt);
+	       console.log(new String(r.stdout));
+	    } catch(e) {
+	       procobj.status = e.status;
+	    }
 
 	    if (stdout > 0) {
 	       closeSync(stdout);
@@ -856,13 +866,15 @@ function __js_process() {
 	       process.exit(0);
 	    }
 	 } else {
-	    return execFile(cmd, args, opt);
+	    res = { proc: spawn(cmd, args, opt) };
 	 }
+	 
+	 return res;
       },
 
-      pid: proc => proc.pid,
+      pid: proc => proc.proc ? proc.proc.pid : -1,
 
-      kill: proc => proc.kill(),
+      kill: proc => proc.proc ? proc.proc.kill() : 0,
    };
 
    return self;

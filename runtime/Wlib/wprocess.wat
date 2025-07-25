@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Thu Jul 24 13:33:20 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 15:58:25 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM processes                                                   */
@@ -15,6 +15,8 @@
    ;; Data 
    ;; -----------------------------------------------------------------
 
+   (data $PIPE "pipe")
+   
    ;; -----------------------------------------------------------------
    ;; Type declarations 
    ;; -----------------------------------------------------------------
@@ -50,6 +52,7 @@
    (import "__bigloo" "the_failure" (func $the_failure (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
    (import "__bigloo" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value (ref $input-port)))
    (import "__bigloo" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
+   (import "__bigloo" "$$bstring->keyword@__r4_symbols_6_4" (func $$$bstring->keyword@__r4_symbols_6_4 (param (ref $bstring)) (result (ref $keyword))))
 
    (import "__js_process" "nullprocess" (global $nullprocess externref))
    (import "__js_process" "run" (func $run (param i32 i32 i32 i32 i32 i32) (result externref)))
@@ -66,7 +69,9 @@
       (struct.new $process
 	 ;; proc
 	 (global.get $nullprocess)))
-   
+
+   (global $pipe (mut (ref null $keyword)) (ref.null $keyword))
+      
    ;; --------------------------------------------------------
    ;; Macros
    ;; --------------------------------------------------------
@@ -103,6 +108,16 @@
    ;; --------------------------------------------------------
    ;; Library functions
    ;; --------------------------------------------------------
+   
+   (func $pipe-keyword 
+      (result (ref $keyword))
+      (if (ref.is_null (global.get $pipe))
+	  (then
+	     (global.set $pipe
+		(call $$$bstring->keyword@__r4_symbols_6_4
+		   (array.new_data $bstring $PIPE (i32.const 0) (i32.const 4))))))
+      (return (ref.cast (ref $keyword) (global.get $pipe))))
+	    
    (func $c_run_process (export "c_run_process")
       (param $host (ref eq))
       (param $fork (ref eq))
@@ -156,7 +171,9 @@
 	     (local.set $idx
 		(i32.add (local.get $idx) (local.get $output-len))))
 	  (else
-	   (local.set $output-idx (i32.const -1))))
+	   (if (ref.eq (local.get $output) (call $pipe-keyword))
+	       (then (local.set $output-idx (i32.const -1)))
+	       (else (local.set $output-idx (i32.const -2))))))
 
       (return (struct.new $process
 		 (call $run

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 11:07:11 2024                          */
-;*    Last change :  Thu Jul 24 11:10:20 2025 (serrano)                */
+;*    Last change :  Fri Jul 25 10:27:27 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript imports                                               */
@@ -74,6 +74,7 @@
 	     (then
 		(i32.store8 (local.get $addr)
 		   (array.get_u $bstring (local.get $text) (local.get $i)))
+		(call $js_trace (local.get $addr))
 		(local.set $i (i32.add (local.get $i) (i32.const 1)))
 		(local.set $addr (i32.add (local.get $addr) (i32.const 1)))
 		(br $loop)))))

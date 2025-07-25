@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Wed Jul 23 16:40:36 2025 (serrano)                */
+;*    Last change :  Thu Jul 24 14:59:43 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -295,9 +295,8 @@
    ;; --------------------------------------------------------
    
    (global $OS_CLASS (export "OS_CLASS") (ref $bstring)
-      ;; ASCII for 'wasm'
       (array.new_fixed $bstring 4 (i32.const 0x77) (i32.const 0x61) (i32.const 0x73) (i32.const 0x6D)))
-   
+
    (global $OS_NAME (export "OS_NAME") (ref $bstring)
       ;; ASCII for 'wasm'
       (array.new_fixed $bstring 4 (i32.const 0x77) (i32.const 0x61) (i32.const 0x73) (i32.const 0x6D)))
@@ -554,7 +553,7 @@
 
       (call $bgl_init_io)
       (call $bgl_init_trace (call $BGL_CURRENT_DYNAMIC_ENV))
-      
+
       (drop
 	 (call $__main (ref.cast (ref $pair) (local.get $argv)))))
    

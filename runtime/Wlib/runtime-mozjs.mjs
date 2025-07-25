@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 24 14:37:18 2025 (serrano)                */
+/*    Last change :  Fri Jul 25 07:37:08 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -15,7 +15,8 @@
 const process = {
    argv: ["js", "runtime-moz.mjs"].concat(scriptArgs),
    env: { HOME: os.getenv("HOME") },
-   exit: n => quit(n > 127 ? 1 : n)
+   exit: n => quit(n > 127 ? 1 : n),
+   cwd: () => os.getenv("PWD")
 }
 
 console.error = console.log;
@@ -25,9 +26,14 @@ function readFileSync(o) {
 }
 
 function writeSync(fd, buffer, offset, length) {
+   const buf = buffer.subarray(offset, length);
+   const str = Array.from(buf, byte => String.fromCharCode(byte)).join('')
+   
    if (fd === 1) {
-      const buf = buffer.subarray(offset, length);
-      putstr(Array.from(buf, byte => String.fromCharCode(byte)).join(''));
+      putstr(str);
+   } else {
+      os.file.writeTypedArrayToFile("/tmp/mozjs.out", buf);
+      os.system(`cat /tmp/mozjs.out 1>&${fd}`);
    }
 }
 
@@ -72,7 +78,7 @@ if (!globalThis.TextEncoder) {
    globalThis.TextDecoder = function(encoding) {
       return {
 	 decode(buf) {
-	    return buf;
+	    return Array.from(buf, byte => String.fromCharCode(byte)).join('');
 	 }
       }
    }
@@ -986,7 +992,13 @@ async function runSingle(client) {
       process.exit(1);
    }
 
-   instanceClient.exports.__bigloo_main();
+   try {
+      instanceClient.exports.__bigloo_main();
+   } catch(e) {
+      putstr("*** WASM ");
+      print(e.toString());
+      process.exit(1);
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -1017,8 +1029,14 @@ async function runDouble(client, rts) {
       console.error(`*** ERROR: missing '__bigloo_main' export in "${rts}".`);
       process.exit(1);
    }
-   
-   instanceRts.exports.__bigloo_main();
+
+   try {
+      instanceRts.exports.__bigloo_main();
+   } catch(e) {
+      putstr("*** WASM ");
+      print(e.toString());
+      process.exit(1);
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -1027,7 +1045,6 @@ async function runDouble(client, rts) {
 try {
    if (rts) {
       await runDouble(client, rts);
-      print("----");
    } else {
       await runSingle(client);
    }
