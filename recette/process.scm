@@ -1,5 +1,5 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/process.scm                  */
+;*    serrano/prgm/project/bigloo/wasm/recette/process.scm             */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */

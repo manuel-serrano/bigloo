@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Thu Jul 24 15:58:25 2025 (serrano)                */
+;*    Last change :  Fri Jul 25 11:26:13 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM processes                                                   */
@@ -24,7 +24,10 @@
    (type $process
       (sub
 	 (struct
-	    (field $proc (mut externref)))))
+	    (field $proc (mut externref))
+	    (field $input-port (mut (ref eq)))
+	    (field $output-port (mut (ref eq)))
+	    (field $error-port (mut (ref eq))))))
 
    ;; -----------------------------------------------------------------
    ;; Imports 
@@ -46,6 +49,7 @@
    (import "__bigloo" "BGL_VECTOR_DEFAULT_VALUE" (global $vector-default-value (ref $vector)))
    (import "__bigloo" "STRING_LENGTH" (func $STRING_LENGTH (param (ref $bstring)) (result i64)))
    (import "__bigloo" "bgl_load_string_in_buffer" (func $load_string_in_buffer (param i32) (param i32) (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
    (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
    (import "__bigloo" "bgl_store_string_len2" (func $store_string_len2 (param (ref $bstring) i32) (result i32)))
    (import "__bigloo" "BINT" (func $BINT (param i64) (result (ref eq))))
@@ -53,9 +57,12 @@
    (import "__bigloo" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value (ref $input-port)))
    (import "__bigloo" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
    (import "__bigloo" "$$bstring->keyword@__r4_symbols_6_4" (func $$$bstring->keyword@__r4_symbols_6_4 (param (ref $bstring)) (result (ref $keyword))))
+   (import "__bigloo" "bgl_open_input_string" (func $bgl_open_input_string (param (ref $bstring) i64) (result (ref $string-input-port))))
 
    (import "__js_process" "nullprocess" (global $nullprocess externref))
    (import "__js_process" "run" (func $run (param i32 i32 i32 i32 i32 i32) (result externref)))
+   (import "__js_process" "xstatus" (func $xstatus (param externref) (result i32)))
+   (import "__js_process" "getport" (func $getport (param externref i32 i32) (result i32)))
    (import "__js_process" "pid" (func $pid (param externref) (result i32)))
    (import "__js_process" "kill" (func $kill (param externref) (result i32)))
    
@@ -68,7 +75,13 @@
       (export "BGL_PROCESS_DEFAULT_VALUE") (ref $process)
       (struct.new $process
 	 ;; proc
-	 (global.get $nullprocess)))
+	 (global.get $nullprocess)
+	 ;; input-port
+	 (global.get $BUNSPEC)
+	 ;; output-port
+	 (global.get $BUNSPEC)
+	 ;; error-port
+	 (global.get $BUNSPEC)))
 
    (global $pipe (mut (ref null $keyword)) (ref.null $keyword))
       
@@ -93,17 +106,17 @@
    (func $PROCESS_INPUT_PORT (export "PROCESS_INPUT_PORT")
       (param $process (ref $process))
       (result (ref eq))
-      (return (global.get $BUNSPEC)))
+      (return (struct.get $process $input-port (local.get $process))))
 
    (func $PROCESS_OUTPUT_PORT (export "PROCESS_OUTPUT_PORT")
       (param $process (ref $process))
       (result (ref eq))
-      (return (global.get $BUNSPEC)))
+      (return (struct.get $process $output-port (local.get $process))))
 
    (func $PROCESS_ERROR_PORT (export "PROCESS_ERROR_PORT")
       (param $process (ref $process))
       (result (ref eq))
-      (return (global.get $BUNSPEC)))
+      (return (struct.get $process $error-port (local.get $process))))
 
    ;; --------------------------------------------------------
    ;; Library functions
@@ -134,7 +147,10 @@
       (local $output-len i32)
       (local $input-idx i32)
       (local $input-len i32)
+      (local $proc externref)
+      (local $res (ref $process))
       (local $len i32)
+      (local $porttmp i32)
       (local.set $idx (i32.const 128))
       (local.set $len (i32.const 0))
 
@@ -175,17 +191,51 @@
 	       (then (local.set $output-idx (i32.const -1)))
 	       (else (local.set $output-idx (i32.const -2))))))
 
-      (return (struct.new $process
-		 (call $run
-		    ;; command and arguments
-		    (local.get $len) (i32.const 128)
-		    ;; fork
-		    (ref.eq (local.get $fork) (global.get $BTRUE))
-		    ;; wait
-		    (ref.eq (local.get $wait) (global.get $BTRUE))
-		    ;; output
-		    (local.get $output-idx)
-		    (local.get $output-len)))))
+      (local.set $proc
+	 (call $run
+	    ;; command and arguments
+	    (local.get $len) (i32.const 128)
+	    ;; fork
+	    (ref.eq (local.get $fork) (global.get $BTRUE))
+	    ;; wait
+	    (ref.eq (local.get $wait) (global.get $BTRUE))
+	    ;; output
+	    (local.get $output-idx)
+	    (local.get $output-len)))
+      
+      (local.set $res
+	 (struct.new $process (local.get $proc)
+	    (global.get $BUNSPEC)
+	    (global.get $BUNSPEC)
+	    (global.get $BUNSPEC)))
+
+      ;; output-port
+      (local.set $porttmp
+	 (call $getport (local.get $proc) (i32.const 1) (i32.const 128)))
+
+      (if (i32.ge_s (local.get $porttmp) (i32.const 0))
+	  (then
+	     (struct.set $process $output-port (local.get $res)
+		(call $bgl_open_input_string
+		   (call $load_string (i32.const 128) (local.get $porttmp))
+		   (i64.const 0))))
+	  (else
+	   (call $js_trace (i32.const 88888))))
+      
+      ;; error-port
+      (local.set $porttmp
+	 (call $getport (local.get $proc) (i32.const 2) (i32.const 128)))
+
+      (if (i32.ge_s (local.get $porttmp) (i32.const 0))
+	  (then
+	     (struct.set $process $error-port (local.get $res)
+		(call $bgl_open_input_string
+		   (call $load_string (i32.const 128) (local.get $porttmp))
+		   (i64.const 0))))
+	  (else
+	   (call $js_trace (i32.const 88888))))
+      
+      (return (local.get $res)))
 		    
    
    (func $c_process_alivep (export "c_process_alivep")
@@ -201,7 +251,14 @@
    (func $c_process_xstatus (export "c_process_xstatus")
       (param $process (ref $process))
       (result (ref eq))
-      (return (global.get $BUNSPEC)))
+      (local $status i32)
+      (local.set $status
+	 (call $xstatus (struct.get $process $proc (local.get $process))))
+
+      (if (result (ref eq)) (i32.lt_s (local.get $status) (i32.const 0))
+	  (then (return (global.get $BFALSE)))
+	  (else (return (call $BINT (i64.extend_i32_u (local.get $status)))))))
+	     
 
    (func $c_process_send_signal (export "c_process_send_signal")
       (param $process (ref $process))

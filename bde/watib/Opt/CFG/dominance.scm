@@ -11,38 +11,40 @@
    (from (cfg_node "Opt/CFG/node.scm"))
    (import (cfg_order "Opt/CFG/order.scm"))
 
-   (export (dominance entry::cfg-node order::pair-nil n::long)))
+   (export (dominance::vector g::cfg)))
 
-(define (dominance entry::cfg-node order::pair-nil n::long)
-   (let ((doms (make-vector n #f)))
+(define (dominance::vector g::cfg)
+   (let* ((entry::cfg-node (-> g entry))
+          (doms (make-vector (-> g size) #f)))
       (vector-set! doms (-fx 0 (-> entry idx)) entry)
 
-      (define (intersect n1::cfg-node n2::cfg-node)
+      (define (intersect::cfg-node n1::cfg-node n2::cfg-node)
         (cond
-         ((=fx (-> n1 idx) (-> n2 idx)) (-> n1 idx))
-         ((<fx (-> n1 idx) (-> n2 idx)) (intersect (dom n1) n2))
+         ((=fx (-> n1 idx) (-> n2 idx)) n1)
+         ;; the algorithm from the paper uses postorder here, not reverse
+         ;; postorder
+         ((>fx (-> n1 idx) (-> n2 idx)) (intersect (dom n1) n2))
          (else (intersect n1 (dom n2)))))
 
       (define (dom n::cfg-node)
          (vector-ref doms (-fx 0 (-> n idx))))
-
-      (define (step n::cfg-node)
-         (fold (lambda (new_idom p)
-                 (if (dom p)
-                     (if new_idom
-                         (intersect new_idom p)
-                         p)
-                     new_idom)) #f (-> n preds)))
-
       (define (loop)
-         (let ((l (map step order))
-               (changed #f))
-            (for-each (lambda (n::cfg-node p::cfg-node)
-                        (unless (=fx (-> p idx)
-                                     (with-access::cfg-node (dom n) (idx) idx))
-                           (set! changed #t)
-                           (vector-set! doms (-fx 0 (-> entry idx)) p)))
-                      order l)
-            (if changed (loop))))
+         (define (step n::cfg-node)
+            (let ((new_idom (if (eq? n entry)
+                                entry
+                                (fold (lambda (p new_idom)
+                                        (if (dom p)
+                                            (if new_idom
+                                                (intersect new_idom p)
+                                                p)
+                                            new_idom)) #f (-> n preds)))))
+              (if (eq? new_idom (dom n))
+                  #f
+                  (begin
+                     (vector-set! doms (-fx 0 (-> n idx)) new_idom)
+                     #t))))
+
+         (when (any (lambda (x) x) (map-in-order step (-> g rpostorder)))
+            (loop)))
       (loop)
       doms))

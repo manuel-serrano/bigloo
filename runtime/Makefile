@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Jul 23 14:03:02 2025 (serrano)                */
+#*    Last change :  Fri Jul 25 11:06:26 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -709,7 +709,6 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wasm: \
 
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
   objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat \
-  objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).v \
   objs/wasm$(LIBSUFFIX)/dummy_runtime.wat \
   $(BOOTLIBDIR)/types.wat \
   $(W_WLIB) $(WASMS:%.wasm=%.wat)

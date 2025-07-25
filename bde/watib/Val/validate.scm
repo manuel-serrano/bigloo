@@ -17,7 +17,12 @@
            (val_instructions "Val/instructions.scm"))
 
    (export (class &watib-validate-error::&error)
-       (valid-file f::pair-nil nthreads::long keep-going::obj silent::bool)))
+       (valid-file f::pair-nil nthreads::long keep-going::obj silent::bool)
+       (valid-instrs env::env l::pair-nil st::pair-nil)
+       (valid-rt::pair env::env t)
+       (valid-vt env::env t)
+       (valid-tu/get-tl env::env l::pair-nil)
+       (valid-names/local/get-tl env::env l::pair-nil)))
 
 ;;; we force everywhere the number of type indices after sub final? to be one;
 ;;; even though forms with more than one type are syntactically correct, they
@@ -518,11 +523,11 @@
           (multiple-value-bind (giv-args tl) (split-at (cdr i) k)
              (let* ((args (map (lambda (f x) (f env x)) exp-args giv-args))
                     (t (if (procedure? t) (apply t env args) t))
-                    (i (instantiate::instruction
-                        (intype (car t))
-                        (outtype (cadr t))
-                        (parent (-> env parent))
-                        (opcode (car i)))))
+                    (i::instruction (instantiate::instruction
+                                     (intype (car t))
+                                     (outtype (cadr t))
+                                     (parent (-> env parent))
+                                     (opcode (car i)))))
                 (match-case args
                    (()
                     (values t i tl))

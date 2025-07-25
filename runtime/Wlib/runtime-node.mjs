@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 24 15:41:38 2025 (serrano)                */
+/*    Last change :  Fri Jul 25 11:25:05 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -850,13 +850,11 @@ function __js_process() {
 	    opt.stdio[1] = 'pipe';
 	 }
 
-	 console.log("CMD=", cmd, " args=", args);
-	 if (wait) {
+	 if (wait === 1) {
 	    try {
 	       res = spawnSync(cmd, args, opt);
-	       console.log(new String(r.stdout));
 	    } catch(e) {
-	       procobj.status = e.status;
+	       res.status = e.status;
 	    }
 
 	    if (stdout > 0) {
@@ -868,13 +866,24 @@ function __js_process() {
 	 } else {
 	    res = { proc: spawn(cmd, args, opt) };
 	 }
-	 
+
 	 return res;
       },
 
+      xstatus: proc => proc.status ? proc.status : -1,
+      
+      getport: (proc, fd, addr) => {
+	 if (fd === 1 && proc.output && proc.output[1] ) {
+	    const s = proc.output[1].toString();
+	    storeJSStringToScheme(self.instance, s, addr);
+	    return s.length;
+	 }
+	 return 0;
+      },
+      
       pid: proc => proc.proc ? proc.proc.pid : -1,
 
-      kill: proc => proc.proc ? proc.proc.kill() : 0,
+      kill: proc => proc.proc ? proc.proc.kill() : 0
    };
 
    return self;

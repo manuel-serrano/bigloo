@@ -72,8 +72,6 @@
                                       (-> p __actouttype))))
                           read-only)
               parent::modulefield
-              ; default will have to be removed
-              (sources::pair-nil (default '()))
               opcode::symbol)
 
            (abstract-class parameter)
@@ -175,7 +173,6 @@
 
               (field-names::vector (default (make-vector 100000)))
 
-              (nlocal::long (default 0))
               (local-names::pair-nil (default '()))
               (local-types::vector (default (make-vector 0)))
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 25 07:37:08 2025 (serrano)                */
+/*    Last change :  Fri Jul 25 11:29:06 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -895,6 +895,10 @@ function __js_process() {
       
       run: (nbargs, addr, fork, wait, out_addr, out_len) => {
       },
+      
+      xstatus: proc => -1,
+      
+      getport: (fd, addr) => 0,
       
       pid: proc => proc.pid,
 
