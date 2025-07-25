@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Fri Jul 25 11:26:13 2025 (serrano)                */
+;*    Last change :  Fri Jul 25 13:32:05 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM processes                                                   */
@@ -60,7 +60,7 @@
    (import "__bigloo" "bgl_open_input_string" (func $bgl_open_input_string (param (ref $bstring) i64) (result (ref $string-input-port))))
 
    (import "__js_process" "nullprocess" (global $nullprocess externref))
-   (import "__js_process" "run" (func $run (param i32 i32 i32 i32 i32 i32) (result externref)))
+   (import "__js_process" "run" (func $run (param i32 i32 i32 i32 i32 i32 i32 i32) (result externref)))
    (import "__js_process" "xstatus" (func $xstatus (param externref) (result i32)))
    (import "__js_process" "getport" (func $getport (param externref i32 i32) (result i32)))
    (import "__js_process" "pid" (func $pid (param externref) (result i32)))
@@ -145,6 +145,8 @@
       (local $idx i32)
       (local $output-idx i32)
       (local $output-len i32)
+      (local $error-idx i32)
+      (local $error-len i32)
       (local $input-idx i32)
       (local $input-len i32)
       (local $proc externref)
@@ -191,6 +193,22 @@
 	       (then (local.set $output-idx (i32.const -1)))
 	       (else (local.set $output-idx (i32.const -2))))))
 
+      ;; store the error name
+      (if (ref.test (ref $bstring) (local.get $error))
+	  (then
+	     (local.set $error-idx (local.get $idx))
+	     (local.set $error-len
+		(array.len (ref.cast (ref $bstring) (local.get $error))))
+	     (call $store_string
+		(ref.cast (ref $bstring) (local.get $error))
+		(local.get $error-idx))
+	     (local.set $idx
+		(i32.add (local.get $idx) (local.get $error-len))))
+	  (else
+	   (if (ref.eq (local.get $error) (call $pipe-keyword))
+	       (then (local.set $error-idx (i32.const -1)))
+	       (else (local.set $error-idx (i32.const -2))))))
+
       (local.set $proc
 	 (call $run
 	    ;; command and arguments
@@ -201,7 +219,10 @@
 	    (ref.eq (local.get $wait) (global.get $BTRUE))
 	    ;; output
 	    (local.get $output-idx)
-	    (local.get $output-len)))
+	    (local.get $output-len)
+	    ;; error
+	    (local.get $error-idx)
+	    (local.get $error-len)))
       
       (local.set $res
 	 (struct.new $process (local.get $proc)

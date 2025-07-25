@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 25 11:25:05 2025 (serrano)                */
+/*    Last change :  Fri Jul 25 13:31:14 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -822,7 +822,7 @@ function __js_process() {
 	 return undefined;
       },
 
-      run: (nbargs, addr, fork, wait, out_addr, out_len) => {
+      run: (nbargs, addr, fork, wait, out_addr, out_len, err_addr, err_len) => {
 	 let res;
 	 const membuf = self.instance.exports.memory.buffer;
 	 const args = new Array(nbargs);
@@ -848,6 +848,17 @@ function __js_process() {
 	 } else if (out_addr === -1) {
 	    // pipe
 	    opt.stdio[1] = 'pipe';
+	 }
+
+	 // stderr
+	 if (err_addr > 0) {
+	    // file
+	    const path = loadSchemeString(membuf, err_addr, err_len);
+	    stderr = openSync(path, "w");
+	    opt.stdio[2] = stderr;
+	 } else if (err_addr === -1) {
+	    // pipe
+	    opt.stdio[2] = 'pipe';
 	 }
 
 	 if (wait === 1) {

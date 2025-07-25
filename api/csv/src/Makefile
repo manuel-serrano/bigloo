@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/csv/src/Makefile                 */
+#*    serrano/prgm/project/bigloo/wasm/api/csv/src/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:07:31 2017 (serrano)                */
+#*    Last change :  Fri Jul 25 13:41:26 2025 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -103,7 +103,7 @@ all:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
              $(MAKE) build-c; \
 	  fi
-		@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
 	  fi
 
@@ -129,9 +129,6 @@ pop:
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean: api-clean
-	$(RM) -f $(C_SRC_DIR)/bglpcm.h
-	$(RM) -f $(C_SRC_DIR)/bglctl.h
-	$(RM) -f $(C_SRC_DIR)/bglmixer.h
 
 cleanall: api-cleanall
 
