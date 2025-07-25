@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Mon Jul 21 08:03:26 2025 (serrano)                */
+;*    Last change :  Fri Jul 25 14:36:08 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM system ops                                                  */
@@ -27,6 +27,7 @@
    (import "__js_system" "umask" (func $js_umask (param i32) (result i32)))
    (import "__js_system" "chdir" (func $js_chdir (param i32 i32) (result i32)))
    (import "__js_system" "system" (func $js_system (param i32 i32) (result i32)))
+   (import "__js_system" "sleep" (func $js_sleep (param i32)))
 
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
    (import "__bigloo" "BFALSE" (global $BFALSE (ref eq)))
@@ -190,5 +191,9 @@
       (local $sz i32)
       (call $store_string (local.get $cmd) (i32.const 128))
       (return_call $js_system (i32.const 128) (array.len (local.get $cmd))))
+
+   (func $bgl_sleep (export "bgl_sleep")
+      (param $tmt i64)
+      (call $js_sleep (i32.wrap_i64 (local.get $tmt))))
 
    )

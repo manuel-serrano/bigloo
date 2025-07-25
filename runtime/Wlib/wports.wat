@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Wed Jul 23 16:55:24 2025 (serrano)                */
+;*    Last change :  Fri Jul 25 15:12:54 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -43,7 +43,7 @@
    (elem declare func $_CLOSE $_LSEEK $strseek $strwrite
       $bgl_input_file_seek $bgl_sysread $bgl_proc_read
       $bgl_input_string_seek $bgl_input_mmap_seek $bgl_mmap_read $bgl_eof_read
-      $bgl_syswrite $get_output_string_as_refeq $procclose $procwrite $procflush)
+      $bgl_syswrite $bgl_syswrite_socket $sockclose $get_output_string_as_refeq $procclose $procwrite $procflush)
    
    ;; -----------------------------------------------------------------
    ;; Imports 
@@ -54,6 +54,7 @@
    (import "__js_io" "open_file" (func $js_open_file (param i32 i32 i32) (result i32)))
    (import "__js_io" "open_fd" (func $js_open_fd (param i32 i32 i32) (result i32)))
    (import "__js_io" "close_file" (func $js_close_file (param i32)))
+   (import "__js_io" "close_socket" (func $js_close_socket (param externref)))
    (import "__js_io" "read_file" (func $js_read_file (param i32 i32 i32 i32) (result i32)))
    (import "__js_io" "path_size" (func $js_path_size (param i32) (param i32) (result i32)))
    (import "__js_io" "last_modification_time" (func $js_last_modification_time (param i32 i32) (result f64)))
@@ -69,6 +70,7 @@
    (import "__js_io" "file_exists" (func $js_file_exists (param i32 i32) (result i32)))
    (import "__js_io" "append_file" (func $js_append_file (param i32 i32 i32) (result i32)))
    (import "__js_io" "write_file" (func $js_write_file (param i32 i32 i32 i32) (result i32)))
+   (import "__js_io" "write_socket" (func $js_write_socket (param externref i32 i32) (result i32)))
    (import "__js_io" "append_char" (func $js_append_char (param i32 i32) (result i32)))
    (import "__js_io" "write_char" (func $js_write_char (param i32 i32 i32) (result i32)))
    (import "__js_io" "write_bignum" (func $js_write_bignum (param i32 i32 i32) (result i32)))
@@ -365,6 +367,25 @@
 	    (field $proc (ref $procedure))
 	    (field $flush (ref $procedure))
 	    (field $close (ref $procedure)))))
+
+   ;; $socket-output-port
+   (type $socket-output-port
+      (sub final $output-port
+	 (struct
+	    (field $name (mut (ref $bstring)))
+	    (field $chook (mut (ref eq)))
+	    (field $isclosed (mut i32))
+	    (field $sysclose (mut (ref null $sysclose_t)))
+	    (field $sysseek (mut (ref null $sysseek_t)))
+	    (field $buf (mut (ref $bstring)))
+	    (field $index (mut i32))
+	    (field $bufmode (mut i32))
+	    (field $syswrite (mut (ref null $syswrite_t)))
+	    (field $fhook (mut (ref eq)))
+	    (field $sysflush (mut (ref null $sysflush_t)))
+	    (field $flushbuf (mut (ref eq)))
+	    (field $err (mut i32))
+	    (field $sock externref))))
 
    ;; input-port
    (type $input-port
@@ -835,6 +856,39 @@
 		 (local.get $count)))))
 
       (return (local.get $count)))
+
+   ;; bgl_syswrite_socket
+   (func $bgl_syswrite_socket
+      (param $p (ref eq))
+      (param $buf (ref $bstring))
+      (param $start i32)
+      (param $count i32)
+      (result i32)
+      
+      (local $op (ref $socket-output-port))
+      (local $nbwrite i32)
+      (local.set $op (ref.cast (ref $socket-output-port) (local.get $p)))
+      
+      (call $memcpy
+	 (i32.const 128)
+	 (local.get $buf)
+	 (local.get $start)
+	 (local.get $count))
+      
+      (local.set $nbwrite
+	 (call $js_write_socket
+	    (struct.get $socket-output-port $sock (local.get $op))
+	    (i32.const 128)
+	    (local.get $count)))
+      
+      (return (local.get $count)))
+
+   ;; sockclose
+   (func $sockclose
+      (param $p (ref eq))
+      (call $js_close_socket
+	 (struct.get $socket-output-port $sock
+	    (ref.cast (ref $socket-output-port) (local.get $p)))))
 
    ;; bgl_eof_read
    (func $bgl_eof_read
@@ -2039,7 +2093,7 @@
 	    (local.get $offset)
 	    ;; end
 	    (local.get $end))))
-   
+
    ;; open_output_file
    (func $open_output_file
       (param $name (ref $bstring))
@@ -2195,6 +2249,43 @@
 	 ;; close
 	 (local.get $close)))
 
+   ;; bgl_open_output_socket
+   (func $bgl_open_output_socket (export "bgl_open_output_socket")
+      (param $sock externref)
+      (param $buf (ref $bstring))
+      (result (ref $output-port))
+      
+      (return
+	 (struct.new $socket-output-port
+	    ;; name
+	    (global.get $bstring-default-value)
+	    ;; chook
+	    (global.get $BUNSPEC)
+	    ;; isclosed
+	    (i32.const 0)
+	    ;; sysclose
+	    (ref.func $sockclose)
+	    ;; sysseek
+	    (ref.null $sysseek_t)
+	    ;; buf
+	    (local.get $buf)
+	    ;; index
+	    (i32.const 0)
+	    ;; bufmode
+	    (global.get $BGL_IONB)
+	    ;; syswrite
+	    (ref.func $bgl_syswrite_socket)
+	    ;; fhook
+	    (global.get $BUNSPEC)
+	    ;; sysflush
+	    (ref.null $sysflush_t)
+	    ;; flushbuf
+	    (global.get $BUNSPEC)
+	    ;; err
+	    (i32.const 0)
+	    ;; socket
+	    (local.get $sock))))
+   
    (func $bgl_input_port_reopen (export "bgl_input_port_reopen")
       (param $port (ref $input-port))
       (result (ref eq))

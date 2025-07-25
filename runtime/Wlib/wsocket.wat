@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Thu Jul 24 09:35:21 2025 (serrano)                */
+;*    Last change :  Fri Jul 25 15:15:13 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM sockets                                                     */
@@ -247,4 +247,5 @@
       (call $js_trace
 	 (call $js_accept (struct.get $socket $sock (local.get $serv))))
       (return (global.get $BUNSPEC)))
+
    )

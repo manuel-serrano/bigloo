@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 25 11:29:06 2025 (serrano)                */
+/*    Last change :  Fri Jul 25 14:34:09 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -507,13 +507,14 @@ function __js_system() {
 	 return 1;
       },
       
-      exit: function (val) {
- 	 process.exit(val);
-      },
+      exit: process.exit,
 
-      signal: function (sig, hdl) {
+      sleep: async (tmt) => new Promise((res, rej) => setTimeout(res, tmt)),
+      
+      signal: (sig, hdl) => {
 	 // console.log("NOT IMPLEMENTED SIGNAL sig=", sig, "hdl=", hdl);
       }
+
    }
    return self;
 }
@@ -556,10 +557,10 @@ function __js_io() {
 	 return buf.length;
       },
       
-      close_file: (fd) => {
-	 closeSync(fd);
-      },
+      close_file: (fd) => closeSync(fd),
 
+      close_socket: (sock) => sock.end(),
+      
       read_file: (fd, offset, length, position) => {
 	 if (fd < 0) {
             throw WebAssembly.RuntimeError("invalid file descriptor");
@@ -898,7 +899,11 @@ function __js_process() {
       
       xstatus: proc => -1,
       
-      getport: (fd, addr) => 0,
+      getoutport: (proc, fd, addr) => 1,
+      
+      getinport: (proc, addr) => 0,
+
+      getportsock: (proc, fd) => undefined,
       
       pid: proc => proc.pid,
 

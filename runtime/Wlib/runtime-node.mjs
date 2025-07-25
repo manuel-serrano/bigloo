@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 25 13:45:33 2025 (serrano)                */
+/*    Last change :  Fri Jul 25 13:53:48 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -17,7 +17,7 @@ import { isatty } from "node:tty";
 import { extname, sep as file_sep } from "node:path";
 import { format } from "node:util";
 import { execSync, spawnSync, spawn } from "node:child_process";
-import { createServer } from "node:net";
+import { createServer, Socket } from "node:net";
 
 /*---------------------------------------------------------------------*/
 /*    Wasm instances                                                   */
@@ -431,11 +431,11 @@ function __js_system() {
 	 }
       },
       
-      exit: function (val) {
-	 process.exit(val);
-      },
+      exit: process.exit,
 
-      signal: function (sig, hdl) {
+      sleep: async (tmt) => new Promise((res, rej) => setTimeout(res, tmt)),
+      
+      signal: (sig, hdl) => {
 	 // console.log("NOT IMPLEMENTED SIGNAL sig=", sig, "hdl=", hdl);
       }
    };
@@ -480,10 +480,10 @@ function __js_io() {
 	 return buf.length;
       },
       
-      close_file: (fd) => {
-	 closeSync(fd);
-      },
+      close_file: (fd) => closeSync(fd),
 
+      close_socket: (sock) => sock.end(),
+      
       read_file: (fd, offset, length, position) => {
 	 if (fd < 0) {
             throw WebAssembly.RuntimeError("invalid file descriptor");
@@ -724,6 +724,11 @@ function __js_io() {
 	 return writeSync(fd, buffer, 0, length, position);
       },
       
+      write_socket: (socket, offset, length) => {
+	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, offset, length);
+	 return socket.write(buffer);
+      },
+      
       append_char: (fd, c) => {
 	 if (fd < 0) {
             throw WebAssembly.RuntimeError("invalid file descriptor");
@@ -822,12 +827,12 @@ function __js_process() {
 	 return undefined;
       },
 
-      run: (nbargs, addr, fork, wait, out_addr, out_len, err_addr, err_len) => {
+      run: (nbargs, addr, fork, wait, in_addr, in_len, out_addr, out_len, err_addr, err_len) => {
 	 let res;
 	 const membuf = self.instance.exports.memory.buffer;
 	 const args = new Array(nbargs);
 	 let { addr: naddr, str: cmd } = loadSchemeStringLen2(membuf, addr);
-	 let stdout = -1, stderr = -1;
+	 let stdin = -1, stdout = -1, stderr = -1;
 	 const opt = {
 	    stdio: ['inherit', 'inherit', 'inherit']
 	 };
@@ -839,6 +844,18 @@ function __js_process() {
 	    naddr = a;
 	 }
 
+	 // stdin
+	 if (in_addr > 0) {
+	    // file
+	    const path = loadSchemeString(membuf, in_addr, in_len);
+	    stdin = openSync(path, "r");
+	    opt.stdio[0] = stdin;
+	 } else if (in_addr === -1) {
+	    // pipe
+	    opt.stdio[0] = 'pipe';
+	 }
+
+	 
 	 // stdio
 	 if (out_addr > 0) {
 	    // file
@@ -866,6 +883,7 @@ function __js_process() {
 	       res = spawnSync(cmd, args, opt);
 	    } catch(e) {
 	       res.status = e.status;
+	       opt.stdio.forEach(v => { if (typeof v === "number") closeSync(v); });
 	    }
 
 	    if (stdout > 0) {
@@ -876,6 +894,7 @@ function __js_process() {
 	    }
 	 } else {
 	    res = { proc: spawn(cmd, args, opt) };
+	    res.proc.on('close', code => { console.log("C=", code); res.status = code});
 	 }
 
 	 return res;
@@ -883,15 +902,32 @@ function __js_process() {
 
       xstatus: proc => proc.status ? proc.status : -1,
       
-      getport: (proc, fd, addr) => {
+      getinport: (proc, addr) => {
+	 if (proc.output && proc.output[0]) {
+	    const s = proc.output[0].toString();
+	    storeJSStringToScheme(self.instance, s, addr);
+	    return s.length;
+	 } else if (proc.proc && proc.proc.stdin instanceof Socket) {
+	    return -1;
+	 } else {
+	    return -2;
+	 }
+      },
+      
+      getoutport: (proc, fd, addr) => {
 	 if (proc.output && proc.output[fd] ) {
 	    const s = proc.output[fd].toString();
 	    storeJSStringToScheme(self.instance, s, addr);
 	    return s.length;
+	 } else if (proc.proc && proc.proc.stdio[fd] instanceof Socket) {
+	    return -1;
+	 } else {
+	    return -2;
 	 }
-	 return 0;
       },
       
+      getportsock: (proc, fd) => proc.proc[["stdin", "stdout", "stderr"][fd]],
+	 
       pid: proc => proc.proc ? proc.proc.pid : -1,
 
       kill: proc => proc.proc ? proc.proc.kill() : 0
