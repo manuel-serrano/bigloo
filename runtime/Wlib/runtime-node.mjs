@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Jul 28 08:04:54 2025 (serrano)                */
+/*    Last change :  Mon Jul 28 11:31:50 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -17,12 +17,12 @@ import { isatty } from "node:tty";
 import { extname, sep as file_sep } from "node:path";
 import { format } from "node:util";
 import { execSync, spawnSync, spawn } from "node:child_process";
-import { createServer, Socket } from "node:net";
+import { createServer, createConnection, Socket } from "node:net";
 
 /*---------------------------------------------------------------------*/
 /*    Wasm instances                                                   */
 /*---------------------------------------------------------------------*/
-let client, libs;
+let client, rts, libs = [];
 
 /*---------------------------------------------------------------------*/
 /*    Minimalist command line parsing                                  */
@@ -37,16 +37,29 @@ const argv = (globalThis.window && "Deno" in window)
 
 if (argv[2] === "-s") {
    argv.splice(1, 2);
-   libs = argv.filter(s => /[.]wasm$/.test(s));
-   client = libs.pop();
-
+   for (let i = 0; i < argv.length; i++) {
+      if (argv[i] === "-l") {
+	 const lib = { exports: argv[i + 1], lib: argv[i + 2] };
+	 libs.push(lib);
+	 i += 2;
+      } else if (/[.]wasm$/.test(argv[i])) {
+	 if (!rts) {
+	    rts = argv[i];
+	 } else if (!client) {
+	    client = argv[i];
+	 } else {
+	    console.error("*** ERROR: duplicate wasm source", argv[i]);
+	    process.exit(1)
+	 }
+      }
+   }
 } else {
    client = argv[2];
    libs = [];
 }
 
 if (!client) {
-   console.error("ERROR: missing input WASM module file.");
+   console.error("*** ERROR: missing input WASM module file.");
    process.exit(1);
 }
 
@@ -798,7 +811,7 @@ function __js_socket() {
 	 return undefined;
       },
 
-      make_server: (hostname_addr, hostname_len, portnum, backlog, family) => {
+      make_server: (host_addr, host_len, portnum, backlog, family) => {
 	 const server = createServer((socket) => {
 	    socket.on('data', (data) => {
 	       console.log('Received:', data.toString());
@@ -819,6 +832,12 @@ function __js_socket() {
 	    res(343);
 	 });
 	 return r;
+      },
+
+      make_client: (host_addr, host_len, port, timeout) => {
+	 const host = loadSchemeString(self.instance.exports.memory.buffer, host_addr, host_len);
+	 console.log("host=[" + host + "] port=" + port);
+	 return createConnection({ host, port }, () => { console.log("connected"); });
       }
    };
 
@@ -1048,19 +1067,25 @@ async function runStatic(client) {
 /*    -------------------------------------------------------------    */
 /*    Run a wasm in several instances, one for client, and one by libs */
 /*---------------------------------------------------------------------*/
-async function runDynamic(client, [rts, libs]) {
+async function runDynamic(client, rts, libs) {
    const __jsRts = __js_all();
+   const __jsLibs = libs.map(l => __js_all());
    const __jsClient = __js_all();
 
    const wasmRts = await WebAssembly.compile(readFileSync(rts));
+   const wasmLibs = await Promise.all(libs.map(l => WebAssembly.compile(readFileSync(l.lib))));
    const wasmClient = await WebAssembly.compile(readFileSync(client));
 
    const instanceRts = await WebAssembly.instantiate(wasmRts, __jsRts);
+   __jsLibs.forEach(l => l.__bigloo = instanceRts.exports);
    __jsClient.__bigloo = instanceRts.exports;
 
+   const instanceLibs = await Promise.all(libs.map((l, i) => WebAssembly.instantiate(wasmLibs[i], __jsLibs[i])));
+   libs.forEach((l, i) => __jsClient[l.exports] = instanceLibs[i].exports);
    const instanceClient = await WebAssembly.instantiate(wasmClient, __jsClient);
    
    __js_link_instance(__jsClient, instanceClient, instanceClient);
+   libs.forEach((l, i) => __js_link_instance(__jsLibs[i], instanceClient, instanceClient));
    __js_link_instance(__jsRts, instanceRts, instanceClient);
    
    if (!instanceClient.exports.bigloo_main) {
@@ -1080,8 +1105,8 @@ async function runDynamic(client, [rts, libs]) {
 /*    top-level                                                        */
 /*---------------------------------------------------------------------*/
 try {
-   if (libs.length) {
-      runDynamic(client, libs);
+   if (rts) {
+      runDynamic(client, rts, libs);
    } else {
       runStatic(client);
    }

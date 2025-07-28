@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Fri Jul 25 15:15:13 2025 (serrano)                */
+;*    Last change :  Mon Jul 28 11:22:19 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM sockets                                                     */
@@ -64,12 +64,31 @@
 	    (field $user-data (mut (ref eq))))))
    
    (type $datagram-socket
-      (struct
-	 (field $portnum i32)
-	 (field $hostname (mut (ref eq)))
-	 (field $hostip (mut (ref eq)))
-	 (field $fd i32)
-	 (field $port (mut (ref eq)))))
+      (sub
+	 (struct
+	    (field $portnum i32)
+	    (field $hostname (mut (ref eq)))
+	    (field $hostip (mut (ref eq)))
+	    (field $fd i32)
+	    (field $port (mut (ref eq))))))
+   
+   (type $datagram-socket-server
+      (sub $datagram-socket
+	 (struct
+	    (field $portnum i32)
+	    (field $hostname (mut (ref eq)))
+	    (field $hostip (mut (ref eq)))
+	    (field $fd i32)
+	    (field $port (mut (ref eq))))))
+
+   (type $datagram-socket-client
+      (sub $datagram-socket
+	 (struct
+	    (field $portnum i32)
+	    (field $hostname (mut (ref eq)))
+	    (field $hostip (mut (ref eq)))
+	    (field $fd i32)
+	    (field $port (mut (ref eq))))))
    
    ;; -----------------------------------------------------------------
    ;; Imports 
@@ -95,9 +114,12 @@
    (import "__bigloo" "the_failure" (func $the_failure (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
    (import "__bigloo" "BGL_INPUT_PORT_DEFAULT_VALUE" (global $input-port-default-value (ref $input-port)))
    (import "__bigloo" "BGL_OUTPUT_PORT_DEFAULT_VALUE" (global $output-port-default-value (ref $output-port)))
+   (import "__bigloo" "bgl_open_output_socket" (func $bgl_open_output_socket (param externref (ref $bstring)) (result (ref $output-port))))
+   (import "__bigloo" "bgl_open_input_socket" (func $bgl_open_input_socket (param externref (ref $bstring)) (result (ref $input-port))))
 
    (import "__js_socket" "nullsocket" (global $nullsocket externref))
-   (import "__js_socket" "make_server" (func $js_make_server (param i32 i32 i32 i32 i32) (result externref)))
+   (import "__js_socket" "make_server" (func $js_make_server_socket (param i32 i32 i32 i32 i32) (result externref)))
+   (import "__js_socket" "make_client" (func $js_make_client_socket (param i32 i32 i32 i32) (result externref)))
    (import "__js_socket" "accept" (func $js_accept (param externref) (result i32)))
    
    ;; -----------------------------------------------------------------
@@ -143,7 +165,37 @@
    ;; --------------------------------------------------------
    ;; sockets
    ;; --------------------------------------------------------
+
+   (func $SOCKETP (export "SOCKETP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $socket) (local.get $o)))
    
+   (func $BGL_SOCKET_SERVERP (export "BGL_SOCKET_SERVERP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $socket-server) (local.get $o)))
+
+   (func $BGL_SOCKET_CLIENTP (export "BGL_SOCKET_CLIENTP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $socket-client) (local.get $o)))
+
+   (func $BGL_DATAGRAM_SOCKETP (export "BGL_DATAGRAM_SOCKETP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $datagram-socket) (local.get $o)))
+   
+   (func $BGL_DATAGRAM_SOCKET_SERVERP (export "BGL_DATAGRAM_SOCKET_SERVERP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $datagram-socket-server) (local.get $o)))
+
+   (func $BGL_DATAGRAM_SOCKET_CLIENTP (export "BGL_DATAGRAM_SOCKET_CLIENTP")
+      (param $o (ref eq))
+      (result i32)
+      (ref.test (ref $datagram-socket-client) (local.get $o)))
+
    (func $SOCKET_INPUT (export "SOCKET_INPUT")
       (param $socket (ref $socket))
       (result (ref $input-port))
@@ -194,16 +246,6 @@
       (result (ref eq))
       (return (struct.get $socket $hostname (local.get $sock))))
    
-   (func $BGL_SOCKET_SERVERP (export "BGL_SOCKET_SERVERP")
-      (param $o (ref eq))
-      (result i32)
-      (ref.test (ref $socket-server) (local.get $o)))
-
-   (func $BGL_SOCKET_CLIENTP (export "BGL_SOCKET_CLIENTP")
-      (param $o (ref eq))
-      (result i32)
-      (ref.test (ref $socket-client) (local.get $o)))
-
    (func $bgl_make_server_socket (export "bgl_make_server_socket")
       (param $hostname (ref eq))
       (param $portnum i32)
@@ -213,29 +255,30 @@
       
       ;;(call $store_string (local.get $path) (i32.const 128))
       
-      (struct.new $socket-server
-	 ;; sock
-	 (call $js_make_server
-	    (i32.const 0) (i32.const 0)
+      (return
+	 (struct.new $socket-server
+	    ;; sock
+	    (call $js_make_server_socket
+	       (i32.const 0) (i32.const 0)
+	       (local.get $portnum)
+	       (local.get $backlog)
+	       (i32.const 0))
+	    ;; portnum
 	    (local.get $portnum)
-	    (local.get $backlog)
-	    (i32.const 0))
-	 ;; portnum
-	 (local.get $portnum)
-	 ;; hostname
-	 (global.get $BUNSPEC)
-	 ;; hostip
-	 (global.get $BFALSE)
-	 ;; family
-	 (i32.const 01)
-	 ;; fd
-	 (i32.const -1)
-	 ;; input
-	 (global.get $BFALSE)
-	 ;; output
-	 (global.get $BFALSE)
-	 ;; user-data
-	 (global.get $BUNSPEC)))
+	    ;; hostname
+	    (global.get $BUNSPEC)
+	    ;; hostip
+	    (global.get $BFALSE)
+	    ;; family
+	    (i32.const 01)
+	    ;; fd
+	    (i32.const -1)
+	    ;; input
+	    (global.get $BFALSE)
+	    ;; output
+	    (global.get $BFALSE)
+	    ;; user-data
+	    (global.get $BUNSPEC))))
 
    (func $bgl_socket_accept (export "bgl_socket_accept")
       (param $serv (ref $socket))
@@ -248,4 +291,45 @@
 	 (call $js_accept (struct.get $socket $sock (local.get $serv))))
       (return (global.get $BUNSPEC)))
 
+   (func $bgl_make_client_socket (export "bgl_make_client_socket")
+      (param $host (ref $bstring))
+      (param $port i32)
+      (param $timeout i32)
+      (param $inbuf (ref $bstring))
+      (param $outbuf (ref $bstring))
+      (param $domain (ref $symbol))
+      (result (ref $socket))
+      (local $sock externref)
+      
+      (call $store_string (local.get $host) (i32.const 128))
+
+      (local.set $sock
+	 (call $js_make_client_socket
+	    (i32.const 128) (array.len (local.get $host))
+	    (local.get $port)
+	    (local.get $timeout)))
+      (return
+	 (struct.new $socket-client
+	    ;; sock
+	    (local.get $sock)
+	    ;; portnum
+	    (local.get $port)
+	    ;; hostname
+	    (local.get $host)
+	    ;; hostip
+	    (global.get $BFALSE)
+	    ;; family
+	    (i32.const 01)
+	    ;; fd
+	    (i32.const -1)
+	    ;; input
+	    (call $bgl_open_input_socket
+	       (local.get $sock)
+	       (array.new_default $bstring (i32.const 1024)))
+	    ;; output
+	    (call $bgl_open_output_socket
+	       (local.get $sock)
+	       (array.new_default $bstring (i32.const 1024)))
+	    ;; user-data
+	    (global.get $BUNSPEC))))
    )

@@ -12,6 +12,7 @@
            (opt_unreachable "Opt/Unreachable/walk.scm")
            (opt_const "Opt/Const/walk.scm")
            (opt_puredrop "Opt/PureDrop/walk.scm")
+           (opt_peephole "Opt/Peephole/walk.scm")
            (opt_copyprop "Opt/CopyProp/walk.scm"))
    (import (misc_letif "Misc/let-if.scm"))
    (export (class opt-flags::object
@@ -20,7 +21,8 @@
                   (uncast::bool (default #t))
                   (unreachable::bool (default #t))
                   (const::bool (default #t))
-                  (puredrop::bool (default #t)))
+                  (puredrop::bool (default #t))
+                  (peephole::bool (default #t)))
 
            (opt-file! p::prog nthreads::bint flags::opt-flags)))
 
@@ -33,7 +35,8 @@
    (opt uncast (-> p env) f)
    (opt unreachable f)
    (opt const f)
-   (opt puredrop f))
+   (opt puredrop f)
+   (opt peephole f))
 
 (cond-expand
  ((and multijob (library pthread))

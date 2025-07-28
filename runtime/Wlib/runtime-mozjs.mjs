@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Jul 28 08:25:51 2025 (serrano)                */
+/*    Last change :  Mon Jul 28 11:32:10 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding (mozjs).                          */
@@ -575,6 +575,10 @@ function __js_io() {
 	 return 0;
       },
       
+      write_socket: (socket, offset, length) => {
+	 return 0;
+      },
+      
       password: (prompt_addr, prompt_length, res_addr) => {
 	 const memory = new Uint8Array(self.instance.exports.memory.buffer, offset, length, position);
 	 const buf = "toto";
@@ -882,6 +886,10 @@ function __js_socket() {
 
       accept: (srv) => {
 	 return 0;
+      },
+
+      make_client: (hostname_addr, hostname_len, portnum, timeout) => {
+	 return undefined;
       }
    };
    return self;

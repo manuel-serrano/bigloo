@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Jul 23 11:29:12 2025 (serrano)                */
+;*    Last change :  Mon Jul 28 11:21:43 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -219,7 +219,7 @@
     (coerce obj void* ($foreign?) ($obj->void*))
     (coerce obj foreign ($foreign?) ())
     (coerce obj process ($process?) ())
-    (coerce obj socket (c-socket?) ())
+    (coerce obj socket ($socket?) ())
     (coerce obj datagram-socket ($datagram-socket?) ())
     (coerce obj regexp (regexp?) ())
     (coerce obj custom (c-custom?) ())

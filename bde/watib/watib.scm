@@ -104,6 +104,11 @@
          (("-fpuredrop" (help "Enable redundant drop elimination"))
            (set! (-> o-flags puredrop) #t))
 
+         (("-fno-peephole" (help "Disable peephole elimination"))
+           (set! (-> o-flags puredrop) #f))
+         (("-fpeephole" (help "Enable peephole elimination"))
+           (set! (-> o-flags puredrop) #t))
+
          (("-o" ?file (help "Output binary format to FILE"))
           (set! output-file file))
 

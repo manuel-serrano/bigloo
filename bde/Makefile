@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Fri Jul 25 13:21:12 2025 (serrano)                */
+#*    Last change :  Mon Jul 28 17:38:37 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -91,6 +91,7 @@ WATIB_LINKFILE  = Val/validate Val/instructions \
                   Opt/CFG/dominance Opt/CFG/dump Opt/CFG/node \
                   Opt/CFG/order Opt/CFG/walk Opt/CFG/read \
                   Opt/BBV/walk \
+                  Opt/Peephole/walk \
                   Env/env \
                   Ast/node \
                   Misc/list Misc/parse Misc/let-if \

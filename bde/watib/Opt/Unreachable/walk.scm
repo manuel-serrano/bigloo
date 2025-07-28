@@ -3,6 +3,7 @@
 ;; Removal of some unreachable code.
 
 (module opt_unreachable
+   (library srfi1)
    (static (class label-state::object
               (nlabel::bint (default 1))
               (jumped?::vector (default (make-vector 10000)))))
@@ -24,7 +25,7 @@
       (vector-ref jumped? nlabel)))
 
 (define (poly-result? i::instruction)
-   (and (not (null? (-> i outtype))) (eq? (car (-> i outtype)) 'poly)))
+   (and (not (null? (-> i outtype))) (eq? (last (-> i outtype)) 'poly)))
 
 (define (unreachable::pair-nil i::instruction)
    ; we can't always remove unreachable code, because it could be needed for

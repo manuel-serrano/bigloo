@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Wed Dec  4 15:12:54 2024 (serrano)                */
+;*    Last change :  Mon Jul 28 11:21:36 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -41,16 +41,16 @@
 	    
 	    __evenv)
    
-   (extern  (macro c-socket?::bool (::obj) "SOCKETP")
-            (macro c-socket-hostname::obj (::socket) "SOCKET_HOSTNAME")
-	    (macro c-socket-hostip::obj (::socket) "SOCKET_HOSTIP")
-	    (macro c-socket-down?::bool (::socket) "SOCKET_DOWNP")
-	    (macro c-socket-port-number::int (::socket) "SOCKET_PORT")
-	    (macro c-socket-input::input-port (::socket) "SOCKET_INPUT")
+   (extern  (macro $socket?::bool (::obj) "SOCKETP")
+            (macro $socket-hostname::obj (::socket) "SOCKET_HOSTNAME")
+	    (macro $socket-hostip::obj (::socket) "SOCKET_HOSTIP")
+	    (macro $socket-down?::bool (::socket) "SOCKET_DOWNP")
+	    (macro $socket-port-number::int (::socket) "SOCKET_PORT")
+	    (macro $socket-input::input-port (::socket) "SOCKET_INPUT")
 	    
-	    (macro c-socket-output::output-port (::socket) "SOCKET_OUTPUT")
-	    (c-socket-startup::void () "socket_startup")
-	    (c-socket-cleanup::void () "socket_cleanup")
+	    (macro $socket-output::output-port (::socket) "SOCKET_OUTPUT")
+	    ($socket-startup::void () "socket_startup")
+	    ($socket-cleanup::void () "socket_cleanup")
 	    ($make-client-socket::socket (::bstring ::int ::int ::bstring ::bstring ::symbol)
 					 "bgl_make_client_socket")
 	    ($make-client-unix-socket::socket (::bstring ::int ::bstring ::bstring)
@@ -69,8 +69,8 @@
 	    ($socket-host-addr=?::bool (::socket ::bstring) "bgl_socket_host_addr_cmp")
 	    ($socket-shutdown::int (::socket ::int) "socket_shutdown")
 	    ($socket-close::obj (::socket) "socket_close")
-	    (macro c-socket-server?::bool (::obj) "BGL_SOCKET_SERVERP")
-	    (macro c-socket-client?::bool (::obj) "BGL_SOCKET_CLIENTP")
+	    (macro $socket-server?::bool (::obj) "BGL_SOCKET_SERVERP")
+	    (macro $socket-client?::bool (::obj) "BGL_SOCKET_CLIENTP")
 	    
 	    ($host::bstring (::bstring) "bgl_host")
 	    ($hostinfo::pair-nil (::bstring) "bgl_hostinfo")
@@ -117,28 +117,25 @@
             ($datagram-socket-send::obj (::datagram-socket ::bstring ::bstring ::int)
 	       "bgl_datagram_socket_send"))
 
-   (wasm   (c-socket? "(ref.test (ref $socket) ~0)")
-           ($datagram-socket? "(ref.test (ref $datagram-socket) ~0)"))
-   
    (java    (class foreign
-	       (method static c-socket?::bool (::obj)
+	       (method static $socket?::bool (::obj)
 		  "SOCKETP")
 	       (method static $make-client-socket::socket (::bstring ::int ::int ::bstring ::bstring ::symbol)
 		  "bgl_make_client_socket")
 	       (method static $make-server-socket::socket (::obj ::int ::int ::symbol)
 		  "bgl_make_server_socket")
 	       
-	       (method static c-socket-hostname::obj (::socket)
+	       (method static $socket-hostname::obj (::socket)
 		  "SOCKET_HOSTNAME")
-	       (method static c-socket-hostip::obj (::socket)
+	       (method static $socket-hostip::obj (::socket)
 		  "SOCKET_HOSTIP")
-	       (method static c-socket-down?::bool (::socket)
+	       (method static $socket-down?::bool (::socket)
 		  "SOCKET_DOWNP")
-	       (method static c-socket-port-number::int (::socket)
+	       (method static $socket-port-number::int (::socket)
 		  "SOCKET_PORT")
-	       (method static c-socket-input::input-port (::socket)
+	       (method static $socket-input::input-port (::socket)
 		  "SOCKET_INPUT")
-	       (method static c-socket-output::output-port (::socket)
+	       (method static $socket-output::output-port (::socket)
 		  "SOCKET_OUTPUT")
 	       
 	       (method static $socket-accept::socket (::socket ::bool ::bstring ::bstring)
@@ -151,9 +148,9 @@
 		  "socket_shutdown")
 	       (method static $socket-close::obj (::socket)
 		  "socket_close")
-	       (method static c-socket-server?::bool (::obj)
+	       (method static $socket-server?::bool (::obj)
 		  "BGL_SOCKET_SERVERP")
-	       (method static c-socket-client?::bool (::obj)
+	       (method static $socket-client?::bool (::obj)
 		  "BGL_SOCKET_CLIENTP")
 	       
 	       (method static $host::bstring (::bstring)
@@ -261,13 +258,13 @@
 	    (inline datagram-socket-option ::datagram-socket ::keyword)
 	    (inline datagram-socket-option-set! ::datagram-socket ::keyword ::obj))
    
-   (pragma  (c-socket? nesting fail-safe)
-	    (c-socket-hostname nesting fail-safe)
-	    (c-socket-hostip nesting fail-safe)
-	    (c-socket-down? nesting fail-safe)
-	    (c-socket-port-number nesting fail-safe)
-	    (c-socket-input nesting fail-safe)
-	    (c-socket-output nesting fail-safe))
+   (pragma  ($socket? nesting fail-safe)
+	    ($socket-hostname nesting fail-safe)
+	    ($socket-hostip nesting fail-safe)
+	    ($socket-down? nesting fail-safe)
+	    ($socket-port-number nesting fail-safe)
+	    ($socket-input nesting fail-safe)
+	    ($socket-output nesting fail-safe))
    
    (cond-expand
       (bigloo-c
@@ -291,9 +288,9 @@
       (unless *socket-initialized*
 	 (set! *socket-initialized* #t)
 	 (cond-expand (bigloo-c 
-		       (c-socket-startup)
+		       ($socket-startup)
 		       (register-exit-function! (lambda (x) 
-						   (c-socket-cleanup)
+						   ($socket-cleanup)
 						   x))
 		       #unspecified)
 		      (else
@@ -303,25 +300,25 @@
 ;*    socket? ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket? obj)
-   (c-socket? obj))
+   ($socket? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-server? ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-server? obj)
-   (c-socket-server? obj))
+   ($socket-server? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-client? ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-client? obj)
-   (c-socket-client? obj))
+   ($socket-client? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-hostname ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-hostname socket)
-   (c-socket-hostname socket))
+   ($socket-hostname socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-host-address ...                                          */
@@ -359,25 +356,25 @@
 ;*    socket-down? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-down?::bool socket::socket)
-   (c-socket-down? socket))
+   ($socket-down? socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-port-number ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-port-number::bint socket::socket)
-   (c-socket-port-number socket))
+   ($socket-port-number socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-input ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-input socket::socket)
-   (c-socket-input socket))
+   ($socket-input socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-output ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-output socket::socket)
-   (c-socket-output socket))
+   ($socket-output socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-client-socket ...                                           */

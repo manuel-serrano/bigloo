@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Jul 24 10:37:32 2025 (serrano)                */
+;*    Last change :  Mon Jul 28 13:34:20 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -16,7 +16,8 @@
    
    (include "Engine/pass.sch"
 	    "Tools/location.sch"
-	    "Tvector/tvector.sch")
+	    "Tvector/tvector.sch"
+	    "Module/libinfo.sch")
    
    (import engine_param
 	   engine_configure
@@ -28,9 +29,9 @@
 	   backend_cvm
 	   cnst_alloc
 	   cc_exec
-	   
 	   backend_cplib
 	   module_module
+	   module_alibrary
 	   type_type
 	   type_cache
 	   type_tools
@@ -156,8 +157,8 @@
 		 (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
 		 (lib (if *unsafe-library* "bigloo_u.wat" "bigloo_s.wat"))
 		 (runtime-file (find-file-in-path lib *lib-dir*))
-		 (objects (delete-duplicates!
-			     (append srcobj *o-files*) string=?)))
+		 (libs (delete-duplicates *additional-bigloo-libraries*))
+		 (objects (delete-duplicates! (append srcobj *o-files*) string=?)))
 	     (wat-merge (cons runtime-file objects) tmp)
 	     (let* ((target (or *dest* "a.out"))
 		    (wasm (string-append target ".wasm"))
@@ -175,7 +176,8 @@
 				    ("@NODEOPTMUNSAFE@" . ,(if *wasm-unsafe* *wasm-unsafe-options* ""))
 				    ("@LIBDIR@" . ,(bigloo-config 'library-directory))
 				    ("@WASM@" . ,wasm)
-				    ("@STATIC@" . ""))))
+				    ("@STATIC@" . "")
+				    ("@LIBS@" . ""))))
 			    (newline)))
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*
@@ -183,8 +185,8 @@
 	 (else
 	  (let* ((srcobj (map (lambda (e) (if (pair? e) (cdr e) e)) sources))
 		 (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
-		 (objects (delete-duplicates!
-			     (append srcobj *o-files*) string=?)))
+		 (libs (delete-duplicates *additional-bigloo-libraries*))
+		 (objects (delete-duplicates! (append srcobj *o-files*) string=?)))
 	     (if (pair? (cdr objects))
 		 (wat-merge objects tmp)
 		 (set! tmp (car objects)))
@@ -204,11 +206,22 @@
 				    ("@NODEOPTMUNSAFE@" . ,(if *wasm-unsafe* *wasm-unsafe-options* ""))
 				    ("@LIBDIR@" . ,(bigloo-config 'library-directory))
 				    ("@WASM@" . ,wasm)
-				    ("@STATIC@" . ,(if *unsafe-library* "-s $BIGLOOLIBDIR/bigloo_u.wasm" "-s $BIGLOOLIBDIR/bigloo_s.wasm")))))
+				    ("@STATIC@" . ,(if *unsafe-library* "-s $BIGLOOLIBDIR/bigloo_u.wasm" "-s $BIGLOOLIBDIR/bigloo_s.wasm"))
+				    ("@LIBS@" . ,(additional-wasm-libraries)))))
 			    (newline)))
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*
 		      (delete-file tmp)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    additional-wasm-libraries ...                                    */
+;*---------------------------------------------------------------------*/
+(define (additional-wasm-libraries)
+   (format "~( )"
+      (map (lambda (l)
+	      (let ((i (library-info l)))
+		 (format "-l __~a $BIGLOOLIBDIR/~a_~a-~a.wasm" l (libinfo-basename i) (if *unsafe-library* "u" "s") (libinfo-version i))))
+	 *additional-bigloo-libraries*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    sed ...                                                          */
@@ -241,10 +254,10 @@ MOZJSOPT=${MOZJSOPT:- -P wasm_gc -P wasm_exnref -P wasm_tail_calls --wasm-compil
 
 case $JS in
   \"node\")
-     $NODE $NODEOPT $NODEOPTEXTRA $BIGLOOLIBDIR/runtime-node.mjs @STATIC@ $WASMOPT @WASM@ $*;;
+     $NODE $NODEOPT $NODEOPTEXTRA $BIGLOOLIBDIR/runtime-node.mjs @STATIC@ @LIBS@ $WASMOPT @WASM@ $*;;
 
   \"mozjs\")
-     $MOZJS $MOZJSOPT $MOZJSOPTEXTRA $WASMOPT -m $BIGLOOLIBDIR/runtime-mozjs.mjs - @STATIC@ @WASM@ $*;;
+     $MOZJS $MOZJSOPT $MOZJSOPTEXTRA $WASMOPT -m $BIGLOOLIBDIR/runtime-mozjs.mjs - @STATIC@ @LIBS@ @WASM@ $*;;
 
   *)
      echo \"*** ERROR: unsupported JS engine: $JS\" >&2

@@ -46,11 +46,12 @@
 
 (define-method (side-effect!?::bool i::sequence)
    (define (drops::pair-nil n::bint)
-      (list-tabulate n (lambda (-) (instantiate::instruction
-                                    (intype '(top))
-                                    (outtype '())
-                                    (opcode 'drop)
-                                    (parent (-> i parent))))))
+      (list-tabulate n (lambda (-) (cons #f
+                                         (instantiate::instruction
+                                          (intype '(top))
+                                          (outtype '())
+                                          (opcode 'drop)
+                                          (parent (-> i parent)))))))
 
    (define side-effect? #f)
 
@@ -59,8 +60,8 @@
        ((=fx 0 n) l)
        ((null? l) (drops n))
        (else
-        (with-access::instruction (car l) (outtype intype)
-           (let ((b (side-effect!? (car l))))
+        (with-access::instruction (cdr (car l)) (outtype intype)
+           (let ((b (car (car l))))
               (set! side-effect? (or b side-effect?))
               (let ((on (length outtype))
                     (in (length intype)))
@@ -74,13 +75,12 @@
 
    (define (walk-zipper::pair-nil left::pair-nil right::pair-nil)
       (if (null? right)
-          (reverse left)
+          (map cdr (reverse left))
           (multiple-value-bind (pre suf) (span isa-drop? right)
              (if (null? pre)
-                 (begin
-                   (set! side-effect? (or (side-effect!? (car right))
-                                          side-effect?))
-                   (walk-zipper (cons (car right) left) (cdr right)))
+                 (let ((se (side-effect!? (car right))))
+                    (set! side-effect? (or se side-effect?))
+                    (walk-zipper (cons (cons se (car right)) left) (cdr right)))
                  (walk-zipper (remove-pures left (length pre)) suf)))))
 
    (set! (-> i body) (walk-zipper '() (-> i body)))

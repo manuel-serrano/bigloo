@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Jul 23 13:54:59 2025 (serrano)                */
+#*    Last change :  Mon Jul 28 17:30:02 2025 (serrano)                */
 #*    Copyright   :  2010-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -319,7 +319,7 @@ api-wasm: api-init heap-wasm
 heap-wasm: $(BOOTLIBDIR)/$(API).wheap
 $(BOOTLIBDIR)/$(API).wheap: .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
 	@ $(RM) -f $(BOOTLIBDIR)/$(API).wheap
-	@ $(BIGLOO) -wasm  $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+	@ $(BIGLOO) -wasm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
             $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).wheap
 
 api.wasm: $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).wasm \
