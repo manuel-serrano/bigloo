@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Fri Jan  1 07:49:22 2016 (serrano)                */
+;*    Last change :  Mon Jul 28 08:44:11 2025 (serrano)                */
 ;*                                                                     */
 ;*    Process tests                                                    */
 ;*---------------------------------------------------------------------*/
@@ -105,7 +105,7 @@
    (test "input: pipe:"
 	 (let* ((proc (run-process *bigloo-path*
 				   "-eval" 
-				   "(begin (print (eval (read))) (exit 6))"
+				   "(let ((e (read))) (print (eval e)) (exit 6))"
 				   wait: #f
 				   input: pipe:
 				   output: pipe:))
@@ -122,7 +122,7 @@
 	 '(#f 6 "204"))
    (cond-expand
       ;; can't set timeout on regular Java ports
-      (bigloo-jvm #f)          
+      ((or bigloo-jvm bigloo-wasm) #f)
       (else (test "&io-timeout-error"
 	       (let* ((proc  (run-process *bigloo-path* "-eval" "(sleep 4)"
 				output: pipe:))
@@ -140,7 +140,7 @@
 	       #t)))
    (cond-expand
       ;; no access to environment variables in Java
-      (bigloo-jvm #f)          
+      ((or bigloo-jvm bigloo-wasm) #f)
       (else (test "env:"
 		  (let* ((proc (run-process *bigloo-path*
 					    "-eval"

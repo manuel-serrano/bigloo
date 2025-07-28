@@ -4,6 +4,16 @@
 ;;
 ;; The copy propagation is mostly local for now. When entering a loop we forget
 ;; everything we know because we could come from anywhere in the loop.
+;;
+;; We need to record the initialisation state of the local variables to treat
+;; examples such as:
+;; (block
+;;    (i32.const 0)
+;;    (local.tee $x)
+;;    (local.set $y))
+;; (local.get $y)
+;; Here $x can't replace the last $y even though $y <- $x dominates the last
+;; instruction.
 
 (module opt_copyprop
    (static (class acp-state::object
@@ -116,7 +126,8 @@
    (enter-frame lab-acp)
    (call-next-method)
    ; this information should probably stored to allow a global copy propagation
-   (exit-frame lab-acp))
+   (exit-frame lab-acp)
+   (clean-init! cur-acp lab-acp))
 
 (define-method (local-copyprop! i::try_table cur-acp::vector
                                 lab-acp::acp-state)

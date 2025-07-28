@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Fri Jul 25 13:53:55 2025 (serrano)                */
+;*    Last change :  Mon Jul 28 07:44:22 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM processes                                                   */
@@ -59,10 +59,12 @@
    (import "__bigloo" "$$bstring->keyword@__r4_symbols_6_4" (func $$$bstring->keyword@__r4_symbols_6_4 (param (ref $bstring)) (result (ref $keyword))))
    (import "__bigloo" "bgl_open_input_string" (func $bgl_open_input_string (param (ref $bstring) i64) (result (ref $string-input-port))))
    (import "__bigloo" "bgl_open_output_socket" (func $bgl_open_output_socket (param externref (ref $bstring)) (result (ref $output-port))))
+   (import "__bigloo" "bgl_open_input_socket" (func $bgl_open_input_socket (param externref (ref $bstring)) (result (ref $input-port))))
 
    (import "__js_process" "nullprocess" (global $nullprocess externref))
    (import "__js_process" "run" (func $run (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result externref)))
    (import "__js_process" "xstatus" (func $xstatus (param externref) (result i32)))
+   (import "__js_process" "alive" (func $alive (param externref) (result i32)))
    (import "__js_process" "getinport" (func $getinport (param externref i32) (result i32)))
    (import "__js_process" "getportsock" (func $getportsock (param externref i32) (result externref)))
    (import "__js_process" "getoutport" (func $getoutport (param externref i32 i32) (result i32)))
@@ -283,7 +285,10 @@
 	  (else
 	   (if (i32.ge_s (local.get $porttmp) (i32.const -1))
 	       (then
-		  (call $js_trace (i32.const 88888))))))
+		  (struct.set $process $output-port (local.get $res)
+		     (call $bgl_open_input_socket
+			(call $getportsock (local.get $proc) (i32.const 1))
+			(array.new_default $bstring (i32.const 1024))))))))
       
       ;; error-port
       (local.set $porttmp
@@ -305,7 +310,7 @@
    (func $c_process_alivep (export "c_process_alivep")
       (param $process (ref $process))
       (result i32)
-      (return (i32.const 0)))
+      (call $alive (struct.get $process $proc (local.get $process))))
 
    (func $c_process_wait (export "c_process_wait")
       (param $process (ref $process))

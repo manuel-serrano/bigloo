@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Fri Jul 25 15:12:54 2025 (serrano)                */
+;*    Last change :  Mon Jul 28 07:42:51 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -18,6 +18,7 @@
    (data $string-output-port-name "string")
    (data $procedure-output-port-name "procedure")
    (data $string-input-port-name "string")
+   (data $socket-port-name "socket")
    (data $stdout-name "stdout")
    (data $stderr-name "stderr")
    (data $stdin-name "stdin")
@@ -41,9 +42,10 @@
    (global $default_io_bufsize (export "default_io_bufsize") i64 (i64.const 8192))
 
    (elem declare func $_CLOSE $_LSEEK $strseek $strwrite
-      $bgl_input_file_seek $bgl_sysread $bgl_proc_read
-      $bgl_input_string_seek $bgl_input_mmap_seek $bgl_mmap_read $bgl_eof_read
-      $bgl_syswrite $bgl_syswrite_socket $sockclose $get_output_string_as_refeq $procclose $procwrite $procflush)
+      $bgl_input_file_seek $bgl_sysread $bgl_procread $bgl_sysread_socket
+      $bgl_input_string_seek $bgl_input_mmap_seek $isockclose
+      $bgl_mmap_read $bgl_eof_read $bgl_syswrite $bgl_syswrite_socket
+      $osockclose $get_output_string_as_refeq $procclose $procwrite $procflush)
    
    ;; -----------------------------------------------------------------
    ;; Imports 
@@ -56,6 +58,7 @@
    (import "__js_io" "close_file" (func $js_close_file (param i32)))
    (import "__js_io" "close_socket" (func $js_close_socket (param externref)))
    (import "__js_io" "read_file" (func $js_read_file (param i32 i32 i32 i32) (result i32)))
+   (import "__js_io" "read_socket" (func $js_read_socket (param externref i32 i32) (result i32)))
    (import "__js_io" "path_size" (func $js_path_size (param i32) (param i32) (result i32)))
    (import "__js_io" "last_modification_time" (func $js_last_modification_time (param i32 i32) (result f64)))
    (import "__js_io" "last_access_time" (func $js_last_access_time (param i32 i32) (result f64)))
@@ -557,7 +560,21 @@
 	    (field $offset (mut i64))
 	    (field $start i64)
 	    (field $end i64))))
-   
+
+      ;; procedure-input-port
+   (type $socket-input-port
+      (sub final $input-port
+	 (struct
+	    (field $name (mut (ref $bstring)))
+	    (field $chook (mut (ref eq)))
+	    (field $isclosed (mut i32))
+	    (field $sysclose (mut (ref null $sysclose_t)))
+	    (field $sysseek (mut (ref null $sysseek_t)))
+	    (field $userseek (mut (ref eq)))
+	    (field $sysread (mut (ref null $sysread_t)))
+	    (field $rgc (ref $rgc))
+	    (field $sock externref))))
+
    ;; -----------------------------------------------------------------
    ;; Predicates
    ;; -----------------------------------------------------------------
@@ -883,12 +900,19 @@
       
       (return (local.get $count)))
 
-   ;; sockclose
-   (func $sockclose
+   ;; osockclose
+   (func $osockclose
       (param $p (ref eq))
       (call $js_close_socket
 	 (struct.get $socket-output-port $sock
 	    (ref.cast (ref $socket-output-port) (local.get $p)))))
+
+   ;; isockclose
+   (func $isockclose
+      (param $p (ref eq))
+      (call $js_close_socket
+	 (struct.get $socket-input-port $sock
+	    (ref.cast (ref $socket-input-port) (local.get $p)))))
 
    ;; bgl_eof_read
    (func $bgl_eof_read
@@ -933,8 +957,8 @@
 
       (return (local.get $nbread)))
 
-   ;; bgl_proc_read_buf
-   (func $bgl_proc_read_buf
+   ;; bgl_procread_buf
+   (func $bgl_procread_buf
       (param $ip (ref $procedure-input-port))
       (param $buf (ref $bstring))
       (param $b (ref $bstring))
@@ -968,8 +992,8 @@
 	   (return (local.get $l))))
       (unreachable))
    
-   ;; bgl_proc_read
-   (func $bgl_proc_read
+   ;; bgl_procread
+   (func $bgl_procread
       (param $port (ref eq))
       (param $b (ref $bstring))
       (param $start i32)
@@ -984,14 +1008,14 @@
 
       (if (ref.test (ref $bstring) (local.get $buf))
 	  (then
-	     (return_call $bgl_proc_read_buf (local.get $ip) (ref.cast (ref $bstring) (local.get $buf))
+	     (return_call $bgl_procread_buf (local.get $ip) (ref.cast (ref $bstring) (local.get $buf))
 		(local.get $b) (local.get $start) (local.get $l)))
 	  (else
 	   (local.set $buf (call $funcall0 (struct.get $procedure-input-port $proc (local.get $ip))))
 	   
 	   (if (ref.test (ref $bstring) (local.get $buf))
 	       (then
-		  (return_call $bgl_proc_read_buf (local.get $ip) (ref.cast (ref $bstring) (local.get $buf))
+		  (return_call $bgl_procread_buf (local.get $ip) (ref.cast (ref $bstring) (local.get $buf))
 		     (local.get $b) (local.get $start) (local.get $l)))
 	       (else
 		(if (ref.eq (local.get $buf) (global.get $BFALSE))
@@ -1005,6 +1029,33 @@
 			      (local.get $port)))
 		     (unreachable)))))))
       (unreachable))
+
+   ;; bgl_sysread_socket
+   (func $bgl_sysread_socket
+      (param $p (ref eq))
+      (param $buf (ref $bstring))
+      (param $start i32)
+      (param $size i32)
+      (result i32)
+
+      (local $nbread i32)
+      (local $ip (ref $socket-input-port))
+      
+      (local.set $ip (ref.cast (ref $socket-input-port) (local.get $p)))
+
+      (local.set $nbread
+	 (call $js_read_socket
+	    (struct.get $socket-input-port $sock (local.get $ip))
+	    (i32.const 128)
+	    (local.get $size)))
+
+      (call $load_string_in_buffer
+	 (i32.const 128)
+	 (local.get $nbread)
+	 (local.get $buf)
+	 (local.get $start))
+
+      (return (local.get $nbread)))
 
    ;; bgl_input_string_seek
    (func $bgl_input_string_seek
@@ -2025,7 +2076,7 @@
 	    ;; userseek
 	    (global.get $BUNSPEC)
 	    ;; sysread
-	    (ref.func $bgl_proc_read)
+	    (ref.func $bgl_procread)
 	    ;; rgc
 	    (local.get $rgc)
 	    ;; proc
@@ -2093,6 +2144,57 @@
 	    (local.get $offset)
 	    ;; end
 	    (local.get $end))))
+
+   ;; bgl_open_input_socket
+   (func $bgl_open_input_socket
+      (export "bgl_open_input_socket")
+      (param $sock externref)
+      (param $buffer (ref $bstring))
+      (result (ref $input-port))
+      
+      (local $rgc (ref $rgc))
+      (local.set $rgc
+	 (struct.new $rgc
+	    ;; eof
+	    (i32.const 0)
+	    ;; filepos
+	    (i32.const 0)
+	    ;; fillbarrier
+	    (i32.const -1)
+	    ;; forward
+	    (i32.const 0)
+	    ;; bufpos
+	    (i32.const 0)
+	    ;; matchstart
+	    (i32.const 0)
+	    ;; matchstop
+	    (i32.const 0)
+	    ;; lastchar
+	    (i32.const 13)
+	    ;; buffer
+	    (local.get $buffer)))
+      
+      (return
+	 (struct.new $socket-input-port
+	    ;; name
+	    (array.new_data $bstring $socket-port-name
+	       (i32.const 0) (i32.const 6))
+	    ;; chook
+	    (global.get $BUNSPEC)
+	    ;; isclosed
+	    (i32.const 0)
+	    ;; sysclose
+	    (ref.func $isockclose)
+	    ;; sysseek
+	    (ref.null $sysseek_t)
+	    ;; userseek
+	    (global.get $BUNSPEC)
+	    ;; sysread
+	    (ref.func $bgl_sysread_socket)
+	    ;; rgc
+	    (local.get $rgc)
+	    ;; socket
+	    (local.get $sock))))
 
    ;; open_output_file
    (func $open_output_file
@@ -2258,13 +2360,14 @@
       (return
 	 (struct.new $socket-output-port
 	    ;; name
-	    (global.get $bstring-default-value)
+	    (array.new_data $bstring $socket-port-name
+	       (i32.const 0) (i32.const 6))
 	    ;; chook
 	    (global.get $BUNSPEC)
 	    ;; isclosed
 	    (i32.const 0)
 	    ;; sysclose
-	    (ref.func $sockclose)
+	    (ref.func $osockclose)
 	    ;; sysseek
 	    (ref.null $sysseek_t)
 	    ;; buf

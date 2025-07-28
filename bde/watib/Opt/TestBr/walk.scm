@@ -38,6 +38,31 @@
               (walk-list!? tl)))))
    (walk-list!? (-> i body)))
 
+(define-generic (replaces-x? i::instruction x::long)
+   #f)
+
+(define-method (replaces-x? i::one-arg x::long)
+   (if (or (eq? 'local.set (-> i opcode)) (eq? 'local.tee (-> i opcode)))
+       (with-access::localidxp (-> i x) (idx)
+                               (=fx x idx))
+       #f))
+
+(define-method (replaces-x? i::sequence x::long)
+   (any (lambda (i::instruction) (replaces-x? i x)) (-> i body)))
+
+(define-method (replaces-x? i::if-then x::long)
+   (replaces-x? (-> i then) x))
+
+(define-method (replaces-x? i::if-else x::long)
+   (or (replaces-x? (-> i then) x)
+       (replaces-x? (-> i else) x)))
+
+;; rough approximation
+(define-method (replace-var! i::loop x::long y::long t)
+   (if (replaces-x? i x)
+       #t
+       (call-next-method)))
+
 (define-method (replace-var! i::if-then x::long y::long t)
    (replace-var! (-> i then) x y t))
 

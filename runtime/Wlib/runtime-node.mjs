@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 25 13:53:48 2025 (serrano)                */
+/*    Last change :  Mon Jul 28 08:04:54 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -488,12 +488,21 @@ function __js_io() {
 	 if (fd < 0) {
             throw WebAssembly.RuntimeError("invalid file descriptor");
 	 }
-	 const memory = new Uint8Array(self.instance.exports.memory.buffer, offset, length, position);
-	 const nbread = readSync(fd, memory, 0, length, position);
-
-	 return nbread;
+	 const memory = new Uint8Array(self.instance.exports.memory.buffer, offset, length);
+	 return readSync(fd, memory, 0, length, position <= 0 ? -1 : position);
       },
 
+      read_socket: (socket, addr, size) => {
+	 console.log("read_socket socket=", socket.constructor.name, "size=", size);
+	 const buf = socket.read(size);
+	 console.log("buf=", buf);
+	 if (buf) {
+	    return storeJSStringToScheme(self.instance, buf, addr);
+	 } else {
+	    return 0;
+	 }
+      },
+      
       ftruncate: (fd, pos) => {
 	 ftruncateSync(fd, pos);
 	 return 0;
@@ -881,6 +890,7 @@ function __js_process() {
 	 if (wait === 1) {
 	    try {
 	       res = spawnSync(cmd, args, opt);
+	       res.alive = 0;
 	    } catch(e) {
 	       res.status = e.status;
 	       opt.stdio.forEach(v => { if (typeof v === "number") closeSync(v); });
@@ -893,14 +903,20 @@ function __js_process() {
 	       process.exit(0);
 	    }
 	 } else {
-	    res = { proc: spawn(cmd, args, opt) };
-	    res.proc.on('close', code => { console.log("C=", code); res.status = code});
+	    res = { proc: spawn(cmd, args, opt), alive: 1 };
+	    res.proc.on('close', code => {
+	       console.log("C=", code);
+	       res.alive = 0;
+	       res.status = code;
+	    });
 	 }
 
 	 return res;
       },
 
       xstatus: proc => proc.status ? proc.status : -1,
+
+      alive: proc => proc.alive,
       
       getinport: (proc, addr) => {
 	 if (proc.output && proc.output[0]) {

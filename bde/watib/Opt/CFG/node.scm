@@ -35,7 +35,7 @@
 
            (final-class cfg-node::object
               body::pair-nil
-              (idx::long (default 1)) ;; we take as indices integers smaller or
+              (idx (default 1)) ;; we take as indices integers smaller or
                                       ;; equal to 0, 1 thus means we don't have
                                       ;; one yet
               (preds::pair-nil (default '()))
@@ -73,6 +73,7 @@
 (define (make-dummy-node::cfg-node)
    (instantiate::cfg-node
     (body '())
+    (idx 'dummy)
     (outtype '())
     (intype '())
     (end (instantiate::switch (dsts '(#f))))))
