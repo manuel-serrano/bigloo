@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/sqlite/Makefile                  */
+#*    serrano/prgm/project/bigloo/wasm/api/sqlite/Makefile             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jul  9 10:16:22 2017 (serrano)                */
-#*    Copyright   :  2001-17 Manuel Serrano                            */
+#*    Last change :  Tue Jul 29 08:46:25 2025 (serrano)                */
+#*    Copyright   :  2001-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -33,16 +33,17 @@ POPULATION = Makefile README
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: build build build-c build-jvm
+.PHONY: build build build-c build-jvm build-wasm
 
 all: build
 boot: build
 
 build:
-	@ $(MAKE) build-c && $(MAKE) build-jvm
+	@ $(MAKE) build-c && $(MAKE) build-jvm && $(MAKE) build-wasm
 
 c: build-c
 jvm: build-jvm
+wasm: build-wasm
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -54,6 +55,12 @@ build-jvm:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> JVM[0m"; \
 	    $(MAKE) -C src build-jvm; \
+          fi
+
+build-wasm:
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;31m>>> WASM[0m"; \
+	    $(MAKE) -C src build-wasm; \
           fi
 
 #*---------------------------------------------------------------------*/
@@ -97,10 +104,14 @@ install: api-install-init
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-jvm; \
           fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+            $(MAKE) api-install-wasm; \
+          fi
 
 uninstall: api-uninstall-init \
            api-uninstall-c \
-           api-uninstall-jvm
+           api-uninstall-jvm \
+           api-uninstall-wasm
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

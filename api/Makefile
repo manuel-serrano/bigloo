@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/Makefile                  */
+#*    serrano/prgm/project/bigloo/wasm/api/Makefile                    */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Fri Mar 11 19:13:33 2022 (serrano)                */
-#*    Copyright   :  2005-22 Manuel Serrano                            */
+#*    Last change :  Tue Jul 29 08:32:51 2025 (serrano)                */
+#*    Copyright   :  2005-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
 #*=====================================================================*/
@@ -58,12 +58,12 @@ boot-jvm:
             fi; \
           done
 
-boot-dotnet:
+boot-wasm:
 	@ apis="$(APIS)"; \
           for d in $$apis; do \
-            if [ "$(DOTNETBACKEND)" = "yes" ]; then \
+            if [ "$(WASMBACKEND)" = "yes" ]; then \
 	      echo "[0m[1;33m$$d:[0m"; \
-              $(MAKE) -C $$d boot-dotnet || exit 1; \
+              $(MAKE) -C $$d boot-wasm || exit 1; \
             fi \
           done
 

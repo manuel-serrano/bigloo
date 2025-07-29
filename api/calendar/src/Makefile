@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/calendar/src/Makefile            */
+#*    serrano/prgm/project/bigloo/wasm/api/calendar/src/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:00:17 2017 (serrano)                */
+#*    Last change :  Tue Jul 29 08:32:05 2025 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -39,6 +39,8 @@ BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafev -safee
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
+# wasm as
+WASMAS		= $(BGLWATIB)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
@@ -51,6 +53,9 @@ EOBJECTS	= objs/make_lib.o
 
 BGL_CLASSES	= $(_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
+
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat)
+WEOBJECTS	= $(EOBJECTS:%.o=%.wat)
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
 
@@ -68,7 +73,7 @@ POPULATION	= $(SOURCES) \
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: c jvm build-c build-jvm
+.PHONY: c jvm build-c build-jvm build-wasm
 
 all:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -77,12 +82,18 @@ all:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
 	  fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+             $(MAKE) build-wasm; \
+	  fi
 
 c: build-c
 build-c: api-c
 
 jvm: build-jvm
 build-jvm: api-jvm
+
+wasm: build-wasm
+build-wasm: api-wasm
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

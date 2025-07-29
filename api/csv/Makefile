@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Fri Jul 25 13:52:03 2025 (serrano)                */
+#*    Last change :  Tue Jul 29 08:35:37 2025 (serrano)                */
 #*    Copyright   :  2001-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -28,7 +28,7 @@ POPULATION = Makefile README
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: build build build-c build-jvm build-dotnet
+.PHONY: build build build-c build-jvm build-wasm
 
 all: build
 boot: build
@@ -38,7 +38,7 @@ build:
 
 c: build-c
 jvm: build-jvm
-dotnet: build-dotnet
+wasm: build-wasm
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -52,8 +52,11 @@ build-jvm:
 	    (cd src && $(MAKE) build-jvm); \
           fi
 
-build-dotnet:
-	@ echo "CSV .net: Not implemented";
+build-wasm:
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;31m>>> WASM[0m";  \
+	    (cd src && $(MAKE) build-wasm); \
+          fi
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */
@@ -93,13 +96,17 @@ install: api-install-init
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
 	    $(MAKE) api-install-c; \
           fi
-
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    $(MAKE) api-install-jvm; \
           fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+	    $(MAKE) api-install-wasm; \
+          fi
+
 uninstall: api-uninstall-init \
            api-uninstall-c \
-	   api-uninstall-jvm
+	   api-uninstall-jvm \
+	   api-uninstall-wasm
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

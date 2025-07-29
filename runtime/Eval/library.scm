@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/library.scm      */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/library.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Thu Dec  9 09:15:40 2021 (serrano)                */
-;*    Copyright   :  2005-21 Manuel Serrano                            */
+;*    Last change :  Tue Jul 29 08:40:44 2025 (serrano)                */
+;*    Copyright   :  2005-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
 ;*=====================================================================*/
@@ -64,7 +64,9 @@
 	       class-init class-eval
 	       init
 	       eval
-	       (srfi '()))
+	       (srfi '())
+	       wasm_s
+	       wasm_e)
 	    (library-init-file::bstring ::symbol)
 	    (library-info::obj ::symbol)
 	    (library-translation-table-add! ::symbol ::bstring . ::obj)
@@ -109,7 +111,8 @@
    init_s init_e
    module_s module_e
    class_s class_e
-   init eval srfi)
+   init eval srfi
+   wasm_s wasm_e)
 
 ;*---------------------------------------------------------------------*/
 ;*    *libraries* ...                                                  */
@@ -145,7 +148,9 @@
 	   class-init class-eval
 	   init
 	   eval
-	   (srfi '()))
+	   (srfi '())
+	   wasm_s
+	   wasm_e)
    (synchronize *library-mutex*
       (unless (memq id *libraries*)
 	 (set! *libraries*
@@ -161,7 +166,7 @@
 			      (eval-library-suffix)))
 			module-init module-eval
 			class-init class-eval
-			init eval srfi))
+			init eval srfi wasm_s wasm_e))
 	       *libraries*))
 	 (for-each (lambda (s)
 		      (register-srfi! s)
@@ -220,7 +225,8 @@
 			      (eval-library-suffix)))
 			#f #f
 			#f #f
-			#f #f #f))
+			#f #f #f
+			#f #f))
 	       *libraries*)))))
 
 ;*---------------------------------------------------------------------*/

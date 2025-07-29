@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 18:35:10 2007                          */
 ;*    Last change :  Mon Dec 18 10:28:43 2023 (serrano)                */
-;*    Copyright   :  2007-23 Manuel Serrano                            */
+;*    Copyright   :  2007-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple SQLTINY evaluator                                         */
 ;*=====================================================================*/

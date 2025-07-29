@@ -371,7 +371,9 @@
 		    args) )
 	    (else
 	     ;; Forget fun which is always the first argument of args.
-	     (call* e (instantiate::rtl_funcall) args) )))))
+	     (call* e (instantiate::rtl_funcall
+			 (rettype (get-type e #f)))
+		args) )))))
 
 ;;
 (define-method (node->rtl::area e::pragma) ; ()

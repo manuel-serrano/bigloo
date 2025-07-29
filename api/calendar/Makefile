@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/calendar/Makefile                */
+#*    serrano/prgm/project/bigloo/wasm/api/calendar/Makefile           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jul  9 10:00:11 2017 (serrano)                */
-#*    Copyright   :  2001-17 Manuel Serrano                            */
+#*    Last change :  Tue Jul 29 08:33:46 2025 (serrano)                */
+#*    Copyright   :  2001-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -31,10 +31,11 @@ all: boot build
 
 boot: build
 build:
-	@ $(MAKE) build-c && $(MAKE) build-jvm
+	@ $(MAKE) build-c && $(MAKE) build-jvm && $(MAKE) build-wasm
 
 c: build-c
 jvm: build-jvm
+wasm: build-wasm
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -46,6 +47,12 @@ build-jvm:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> JVM[0m";  \
 	    (cd src && $(MAKE) build-jvm); \
+          fi
+
+build-wasm:
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;31m>>> WASM[0m";  \
+	    (cd src && $(MAKE) build-wasm); \
           fi
 
 #*---------------------------------------------------------------------*/
@@ -87,10 +94,14 @@ install: api-install-init
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-jvm; \
           fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+            $(MAKE) api-install-wasm; \
+          fi
 
 uninstall: api-uninstall-init \
            api-uninstall-c \
-           api-uninstall-jvm
+           api-uninstall-jvm \
+           api-uninstall-wasm
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

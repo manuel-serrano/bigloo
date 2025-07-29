@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Jul 28 11:31:50 2025 (serrano)                */
+/*    Last change :  Tue Jul 29 08:04:52 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -39,9 +39,9 @@ if (argv[2] === "-s") {
    argv.splice(1, 2);
    for (let i = 0; i < argv.length; i++) {
       if (argv[i] === "-l") {
-	 const lib = { exports: argv[i + 1], lib: argv[i + 2] };
+	 const lib = { exports: argv[i + 1], lib: argv[i + 2], js: argv[i + 3] };
 	 libs.push(lib);
-	 i += 2;
+	 i += 3;
       } else if (/[.]wasm$/.test(argv[i])) {
 	 if (!rts) {
 	    rts = argv[i];

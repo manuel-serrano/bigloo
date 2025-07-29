@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/text/Makefile             */
+#*    serrano/prgm/project/bigloo/wasm/api/text/Makefile               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Tue Mar 24 12:21:54 2020 (serrano)                */
-#*    Copyright   :  2001-20 Manuel Serrano                            */
+#*    Last change :  Tue Jul 29 08:35:26 2025 (serrano)                */
+#*    Copyright   :  2001-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -32,7 +32,7 @@ all: boot build
 
 boot: build
 build:
-	@ $(MAKE) build-c && $(MAKE) build-jvm
+	@ $(MAKE) build-c && $(MAKE) build-jvm && $(MAKE) build-wasm
 
 c: build-c
 jvm: build-jvm
@@ -47,6 +47,12 @@ build-jvm:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> JVM[0m";  \
 	    (cd src && $(MAKE) build-jvm); \
+          fi
+
+build-wasm:
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;31m>>> WASM[0m";  \
+	    (cd src && $(MAKE) build-wasm); \
           fi
 
 #*---------------------------------------------------------------------*/
@@ -88,6 +94,9 @@ install: api-install-init text-install-data
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-jvm; \
           fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+            $(MAKE) api-install-wasm; \
+          fi
 
 text-install-data:
 	if [ ! -d $(DESTDIR)$(LIBDIR)/$(FILDIR)/text ]; then \
@@ -107,6 +116,7 @@ text-install-data:
 uninstall: api-uninstall-init \
            api-uninstall-c \
            api-uninstall-jvm \
+           api-uninstall-wasm \
            text-uninstall-data
 
 text-uninstall-data:

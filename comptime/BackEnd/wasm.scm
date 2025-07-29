@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Jul 28 13:34:20 2025 (serrano)                */
+;*    Last change :  Tue Jul 29 08:04:00 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -220,7 +220,7 @@
    (format "~( )"
       (map (lambda (l)
 	      (let ((i (library-info l)))
-		 (format "-l __~a $BIGLOOLIBDIR/~a_~a-~a.wasm" l (libinfo-basename i) (if *unsafe-library* "u" "s") (libinfo-version i))))
+		 (format "-l __~a $BIGLOOLIBDIR/~a_~a-~a.wasm none" l (libinfo-basename i) (if *unsafe-library* "u" "s") (libinfo-version i))))
 	 *additional-bigloo-libraries*)))
 
 ;*---------------------------------------------------------------------*/

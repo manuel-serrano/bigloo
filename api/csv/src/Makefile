@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Jul 25 13:41:26 2025 (serrano)                */
+#*    Last change :  Tue Jul 29 08:26:26 2025 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -44,6 +44,8 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API) -srfi $(API)
 # C flags
 CEFLAGS		= $(CSVCFLAGS)
+# wasm as
+WASMAS		= $(BGLWATIB)
 
 # Additional pthread lib for C
 ifeq "$(CSVLIBS) " " "
@@ -74,6 +76,9 @@ BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class)
 JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
 
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat)
+WEOBJECTS	= $(EOBJECTS:%.o=%.wat)
+
 _WIN32_SRC	= 
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
@@ -97,7 +102,7 @@ POPULATION	= $(SOURCES) $(INCLUDES) $(_WIN32_SOURCES) \
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: c jvm build-c build-jvm
+.PHONY: c jvm build-c build-jvm build-wasm
 
 all: 
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -106,13 +111,18 @@ all:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
 	  fi
-
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+             $(MAKE) build-wasm; \
+	  fi
 
 c: build-c
 build-c: api-c
 
 jvm: build-jvm
 build-jvm: api-jvm
+
+wasm: build-wasm
+build-wasm: api-wasm
 
 $(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
 	@ echo "*** ERROR: $@ is out of date (older than $?)"

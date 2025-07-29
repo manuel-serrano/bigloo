@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/sqlite/src/Makefile              */
+#*    serrano/prgm/project/bigloo/wasm/api/sqlite/src/Makefile         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:16:36 2017 (serrano)                */
+#*    Last change :  Tue Jul 29 08:50:04 2025 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -43,6 +43,8 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API) -srfi $(SQLITESRFI)
 # C flags
 CEFLAGS		= 
+# wasm as
+WASMAS		= $(BGLWATIB)
 
 # Additional sqlite lib for C
 ifeq "$(SQLITELIBS) " " "
@@ -75,6 +77,9 @@ JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
 
 _WIN32_SRC	= 
 
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat)
+WEOBJECTS	= $(EOBJECTS:%.o=%.wat)
+
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
 _POSIX_SOURCES	= $(_POSIX_OBJECTS:%=$(C_SRC_DIR)/%.c)
 _JAVA_SOURCES	= $(_JAVA_CLASSES:%=$(JAVA_SRC_DIR)/%.java)
@@ -96,7 +101,7 @@ POPULATION	= $(SOURCES) $(INCLUDES) $(_WIN32_SOURCES) \
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: c jvm build-c build-jvm
+.PHONY: c jvm build-c build-jvm build-wasm
 
 all: 
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -105,12 +110,18 @@ all:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
 	  fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+             $(MAKE) build-wasm; \
+	  fi
 
 c: build-c
 build-c: api-c
 
 jvm: build-jvm
 build-jvm: api-jvm
+
+wasm: build-wasm
+build-wasm: api-wasm
 
 $(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
 	@ echo "*** ERROR: $@ is out of date (older than $?)"

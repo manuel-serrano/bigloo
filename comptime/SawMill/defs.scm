@@ -61,7 +61,7 @@
       (class rtl_call::rtl_fun var::global)
       (class rtl_apply::rtl_fun)
       (class rtl_lightfuncall::rtl_fun name::symbol funs::pair-nil rettype)
-      (class rtl_funcall::rtl_fun)
+      (class rtl_funcall::rtl_fun rettype)
       (class rtl_pragma::rtl_fun format::bstring srfi0::symbol)
       (class rtl_cast::rtl_fun totype::type fromtype::type)
       (class rtl_cast_null::rtl_fun type::type)

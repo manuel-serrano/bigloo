@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Jul 21 17:22:32 2025 (serrano)                */
+;*    Last change :  Tue Jul 29 09:18:58 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -925,10 +925,13 @@
    (with-fun-loc fun (wasm-cnst-unspec)))
 
 (define-method (gen-expr fun::rtl_getfield args)
-  (with-access::rtl_getfield fun (name objtype)
-    (with-fun-loc fun 
-      `(struct.get ,(wasm-sym (type-class-name objtype))
-	  ,(wasm-sym name) ,@(gen-args args)))))
+   (with-access::rtl_getfield fun (name objtype type)
+      (let ((x `(struct.get ,(wasm-sym (type-class-name objtype))
+		   ,(wasm-sym name) ,@(gen-args args))))
+	 (with-fun-loc fun
+	    (if (or (tclass? type) (wclass? type))
+		`(ref.cast ,(wasm-type type) ,x)
+		x)))))
 
 (define-method (gen-expr fun::rtl_setfield args)
   (with-access::rtl_setfield fun (name objtype)
@@ -1500,28 +1503,37 @@
 ;*    gen-expr ::rtl_funcall ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_funcall args)
-   (with-fun-loc fun (gen-expr-funcall/lightfuncall '(ref eq) args)))
+   (with-access::rtl_funcall fun (rettype)
+      (with-fun-loc fun (gen-expr-funcall rettype args))))
 
 ;*---------------------------------------------------------------------*/
-;*    gen-expr-funcall/lightfuncall ...                                */
+;*    gen-expr-funcall ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (gen-expr-funcall/lightfuncall type args)
+(define (gen-expr-funcall type args)
+   
+   (define (cast t x)
+      (if (eq? t *obj*)
+	  x
+	  `(ref.cast ,(wasm-type t) ,x)))
+   
    (let* ((arg_count (length args))
 	  (func_type (wasm-sym
 			(string-append "func"
 			   (fixnum->string (-fx arg_count 1)))))
 	  (proc `(ref.cast (ref $procedure) ,(gen-reg (car args)))))
-      `(if (result ,type)
+      `(if (result ,(wasm-type type))
 	   (i32.lt_s (struct.get $procedure $arity ,proc) (i32.const 0)) 
 	   (then ;; Is a variadic function!
-	      (call $generic_va_call ,proc 
-		 (array.new_fixed $vector ,(-fx arg_count 1)
-		    ,@(gen-args (cdr args)))))
+	      ,(cast type
+		  `(call $generic_va_call ,proc 
+		      (array.new_fixed $vector ,(-fx arg_count 1)
+			 ,@(gen-args (cdr args))))))
 	   (else
-	    (call_ref ,func_type ,proc
-	       ,@(gen-args (cdr args)) 
-	       (ref.cast (ref ,func_type) 
-		  (struct.get $procedure $entry ,proc)))))))
+	    ,(cast type
+		`(call_ref ,func_type ,proc
+		    ,@(gen-args (cdr args)) 
+		    (ref.cast (ref ,func_type) 
+		       (struct.get $procedure $entry ,proc))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-expr ::rtl_lightfuncall ...                                  */
