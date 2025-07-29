@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Jul 29 08:50:04 2025 (serrano)                */
+#*    Last change :  Tue Jul 29 12:58:08 2025 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -77,7 +77,7 @@ JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
 
 _WIN32_SRC	= 
 
-WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat)
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) Wlib/wsqlite.wat
 WEOBJECTS	= $(EOBJECTS:%.o=%.wat)
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)

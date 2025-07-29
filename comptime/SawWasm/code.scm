@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Tue Jul 29 09:18:58 2025 (serrano)                */
+;*    Last change :  Tue Jul 29 11:09:10 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -370,11 +370,8 @@
 	  (let ((name (type-name t)))
 	     (cond 
 		((foreign-type? t)
-		 (error "wasm-gen" "unimplemented foreign type in WASM" id))
+		 `(ref ,(symbol-append '$ (type-id t))))
 		;; Classes
-;* 		((wclass? t)                                           */
-;* 		 (with-access::wclass t (its-class)                    */
-;* 		    (wasm-type its-class :nullable nullable)))         */
 		((or (tclass? t) (wclass? t))
 		 (if nullable
 		     `(ref null ,(wasm-sym name))
@@ -515,7 +512,7 @@
 	  ((isa? ty tvec)
 	   `(array.new_fixed ,(wasm-vector-type ty) 0))
 	  ((foreign-type? ty)
-	   (error "wasm" "Unknown foreign type for default value" (type-id ty)))
+	   `(global.get (symbol-append '$ (type-id ty) '-default-value)))
 	  (else
 	   (error "wasm" "No default init value for builtin type" (type-id ty)))))))
 

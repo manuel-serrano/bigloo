@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Tue Jul 29 08:46:25 2025 (serrano)                */
+#*    Last change :  Tue Jul 29 14:34:51 2025 (serrano)                */
 #*    Copyright   :  2001-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -58,6 +58,8 @@ build-jvm:
           fi
 
 build-wasm:
+
+XXbuild-wasm:
 	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> WASM[0m"; \
 	    $(MAKE) -C src build-wasm; \
