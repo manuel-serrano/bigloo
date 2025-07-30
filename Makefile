@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Jul 17 16:12:31 2025 (serrano)                */
+#*    Last change :  Wed Jul 30 20:24:47 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -456,7 +456,7 @@ fullbootstrap-sans-configure:
         fi
 	$(MAKE) -C bde -i clean
 	$(MAKE) -C bde WASMBACKEND=no
-	$(MAKE) -C api fullbootstrap
+	$(MAKE) -C api fullbootstrap WASMBACKEND=no
 	$(MAKE) -C bde WASMBACKEND=yes
 	if [ "$(WASMBACKEND)" = "yes" ]; then \
 	  $(MAKE) -C runtime heap-wasm libs-wasm; \
@@ -466,6 +466,7 @@ fullbootstrap-sans-configure:
 	  $(MAKE) -C bglpkg -i clean; \
 	  $(MAKE) -C bglpkg; \
 	fi
+	$(MAKE) -C api boot
 
 # only used for continuous integration, as of 4may2021, fullboostrap
 # is became too long and travis stops the job before it completes!
@@ -473,7 +474,7 @@ cibootstrap:
 	(cd comptime && $(MAKE) -i touchall; $(MAKE))
 	(cd runtime && $(MAKE) -i touchall; $(MAKE) heap libs-c)
 	(cd comptime && $(MAKE) -i touchall; $(MAKE))
-	$(MAKE) -C api fullbootstrap
+	$(MAKE) -C api fullbootstrap WASMBACKEND=no
 	@ echo "Bigloo CI bootstrap done..."
 	@ echo "---------------------------"
 
