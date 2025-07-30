@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Jul 29 08:04:00 2025 (serrano)                */
+;*    Last change :  Wed Jul 30 11:03:27 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -147,7 +147,7 @@
 		 (let ((cmd (format "~a ~a -o ~a" wasmas tmp *dest*)))
 		    (verbose 2 "      [" cmd #\] #\Newline)
 		    (unwind-protect
-		       (exec cmd #f "wasm-as")
+		       (exec cmd #f "wasmas")
 		       (when *rm-tmp-files*
 			  (delete-file tmp)))))))
 	 ((null? sources)
@@ -164,7 +164,7 @@
 		    (wasm (string-append target ".wasm"))
 		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
 		(verbose 2 "      assembling [" cmd #\] #\Newline)
-		(exec cmd #t "wasm-as")
+		(exec cmd #t "wasmas")
 		(unwind-protect
 		   (begin
 		      (verbose 2 "      generating [" target #\] #\Newline)
@@ -172,9 +172,7 @@
 			 (lambda ()
 			    (display 
 			       (sed wasm-script
-				  `(("@WASMOPT@" . ,*wasm-options*)
-				    ("@NODEOPTMUNSAFE@" . ,(if *wasm-unsafe* *wasm-unsafe-options* ""))
-				    ("@LIBDIR@" . ,(bigloo-config 'library-directory))
+				  `(("@LIBDIR@" . ,(bigloo-config 'library-directory))
 				    ("@WASM@" . ,wasm)
 				    ("@STATIC@" . "")
 				    ("@LIBS@" . ""))))
@@ -194,7 +192,8 @@
 		    (wasm (string-append target ".wasm"))
 		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
 		(verbose 2 "      assembling [" cmd #\] #\Newline)
-		(exec cmd #t "wasm-as")
+		(exec cmd #t "wasmas")
+		(post-optimizations me sources)
 		(unwind-protect
 		   (begin
 		      (verbose 2 "      generating [" target #\] #\Newline)
@@ -202,9 +201,7 @@
 			 (lambda ()
 			    (display 
 			       (sed wasm-script
-				  `(("@WASMOPT@" . ,*wasm-options*)
-				    ("@NODEOPTMUNSAFE@" . ,(if *wasm-unsafe* *wasm-unsafe-options* ""))
-				    ("@LIBDIR@" . ,(bigloo-config 'library-directory))
+				  `(("@LIBDIR@" . ,(bigloo-config 'library-directory))
 				    ("@WASM@" . ,wasm)
 				    ("@STATIC@" . ,(if *unsafe-library* "-s $BIGLOOLIBDIR/bigloo_u.wasm" "-s $BIGLOOLIBDIR/bigloo_s.wasm"))
 				    ("@LIBS@" . ,(additional-wasm-libraries)))))
@@ -212,6 +209,22 @@
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*
 		      (delete-file tmp)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    post-optimizations ...                                           */
+;*---------------------------------------------------------------------*/
+(define (post-optimizations me::wasm sources)
+   (when (eq *wasm-post-optimizations* #t)
+      (let* ((wasmopt (if (string? *wasmopt-options*)
+			  (format "~a ~a" *wasmopt* *wasmopt-options*)
+			  *wasmopt*))
+	     (target (or *dest* "a.out"))
+	     (wasm (string-append target ".wasm"))
+	     (tmp (string-append wasm ".tmp"))
+	     (cmd (format "~a ~a ~a -o ~a" *wasmopt* *wasmopt-options* wasm tmp)))
+	 (verbose 2 "      optimizing [" cmd #\] #\Newline)
+	 (exec cmd #t "wasmopt")
+	 (rename-file tmp wasm))))
 
 ;*---------------------------------------------------------------------*/
 ;*    additional-wasm-libraries ...                                    */
@@ -244,10 +257,10 @@ JS=${JS:-node}
 
 BIGLOOLIBDIR=@LIBDIR@
 
-WASMOPT=${WASMOPT:-@WASMOPT@}
+WASMOPT=${WASMOPT:-}
 
 NODE=${NODE:-node}
-NODEOPT=${NODEOPT:- --stack-size=8192 --experimental-wasm-exnref --experimental-wasm-jspi @NODEOPTMUNSAFE@}
+NODEOPT=${NODEOPT:- --stack-size=8192 --experimental-wasm-exnref --experimental-wasm-jspi}
 
 MOZJS=${MOJZ:-js128}
 MOZJSOPT=${MOZJSOPT:- -P wasm_gc -P wasm_exnref -P wasm_tail_calls --wasm-compiler=optimizing}

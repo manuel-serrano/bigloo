@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Jul 23 09:57:35 2025 (serrano)                */
+;*    Last change :  Wed Jul 30 11:05:37 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -254,14 +254,13 @@
 	    *wasm-use-relooper*
 	    *wasmas*
 	    *wasmas-options*
-	    *wasm-options*
-	    *wasm-unsafe-options*
-	    *wasm-unsafe*
-	    *wasm-engine*
+	    *wasmopt*
+	    *wasmopt-options*
 	    *wasm-local-preinit*
 	    *wasm-tailcall*
 	    *wasm-peephole*
 	    *wasm-fixnum*
+	    *wasm-post-optimizations*
 	    (bigloo-variables-usage ::bool)
 	    (reinitialize-bigloo-variables!))
    (eval    (export-all)))
@@ -1269,25 +1268,18 @@
    '())
 
 ;*---------------------------------------------------------------------*/
-;*    *wasm-unsafe-options* ...                                        */
+;*    *wasmopt* ...                                                    */
 ;*---------------------------------------------------------------------*/
-(param-define *wasm-unsafe-options*
-   "wasm engine unsafe options"
-   "--nowasm-bounds-checks --nowasm-enforce-bounds-checks  --experimental-wasm-skip-bounds-checks  --experimental-wasm-skip-null-checks --experimental-wasm-assume-ref-cast-succeeds")
-
+(param-define *wasmopt*
+   "wasm optimizer"
+   "wasm-opt")
+		 
 ;*---------------------------------------------------------------------*/
-;*    *wasm-unsafe* ...                                                */
+;*    *wasmopt-options* ...                                            */
 ;*---------------------------------------------------------------------*/
-(param-define *wasm-unsafe*
-   "wasm unsafe execution"
-   #f)
-
-;*---------------------------------------------------------------------*/
-;*    *wasm-engine* ...                                                */
-;*---------------------------------------------------------------------*/
-(param-define *wasm-engine*
-   "wasm engine"
-   "node")
+(param-define *wasmopt-options*
+   "wasmopt options"
+   '"-all -O3")
 
 ;*---------------------------------------------------------------------*/
 ;*    *wasm-local-preinit* ...                                         */
@@ -1318,9 +1310,9 @@
    (or (bigloo-config 'wasm-fixnum) 64))
 
 ;*---------------------------------------------------------------------*/
-;*    *wasm-options* ...                                               */
+;*    *wasm-post-optimizations* ...                                    */
 ;*---------------------------------------------------------------------*/
-(param-define *wasm-options*
-   "wasm engine options"
-   "")
+(param-define *wasm-post-optimizations*
+   "wasm post optimizations"
+   #unspecified)
 		 

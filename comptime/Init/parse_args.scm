@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jul 23 10:11:35 2025 (serrano)                */
+;*    Last change :  Wed Jul 30 11:05:43 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -436,6 +436,7 @@
 			  "-freturn"
 			  "-freturn-goto"
 			  "-copt" ,*cflags-optim*
+			  "-fwasm-post-optimizations"
 			  "-static-all-bigloo"))) 
       ;; optimization
       (("-O?opt" (help "-O[0..6]" "Optimization modes"))
@@ -601,6 +602,10 @@
        (set! *saw-bbv-functions*
 	  (append (map string->symbol (string-split name " "))
 	     *saw-bbv-functions*)))
+      (("-fwatib-bbv" (help "Enable watib basic-blocks versionning"))
+       (set! *wasmas-options* (cons "-fbbv" *wasmas-options*)))
+      (("-fwatib-bbv-fun" ?name (help "Apply bbv on these wasm functions"))
+       (set! *wasmas-options* (cons* "-fbbv-fun" name *wasmas-options*)))
       (("-fsaw-regalloc-msize" ?size (help "Set the register allocation body size limit"))
        (set! *saw-register-allocation?* #t)
        (set! *saw-register-allocation-max-size* (string->integer size)))
@@ -940,23 +945,19 @@
        (set! *obj-suffix* '("wat"))
        (set! *target-language* 'wasm)
        (set! *pass* 'wat))
-      (("-wasm-engine" ?string (help "Wasm engine"))
-       (set! *wasm-engine* string))
-      (("-wasm-unsafe" (help "Wasm unsafe executions"))
-       (set! *wasm-unsafe* #t))
       (("-wasm-fixnum" ?size (help "Wasm fixnum size (private option, don't use)"))
        (cond
 	  ((string=? size "31") (set! *wasm-fixnum* 31))
 	  ((string=? size "64") (set! *wasm-fixnum* 64))
 	  (else (error "-wasm-fixnum" "wrong size" size))))
-      (("-wasm-opt" ?string (help "Wasm engine options"))
-       (set! *wasm-options* string))
-      (("-wasm-unsafe-opt" ?string (help "Wasm options for unsafe executions"))
-       (set! *wasm-unsafe-options* string))
       (("-wasmas" ?string (help "Wasm assembler"))
        (set! *wasmas* string))
-      (("-wopt" ?string (help "Invoke wasmas with STRING"))
+      (("-wasmas-opt" ?string (help "Invoke wasmas with STRING"))
        (set! *wasmas-options* (cons string *wasmas-options*)))
+      (("-wasmopt" ?string (help "Wasm optimizer"))
+       (set! *wasmopt* string))
+      (("-wasmopt-opt" ?string (help "Invoke wasmopt with STRING"))
+       (set! *wasmopt-options* string))
       (("-fwasm-relooper" (help "Better compilation of structured conflow flow for WASM"))
        (set! *wasm-use-relooper* #t))
       (("-fno-wasm-relooper" (help "Force use of the naive pattern for structured control flow in WASM"))
@@ -973,6 +974,10 @@
        (set! *wasm-peephole* #t))
       (("-fno-wasm-peephole" (help "Disable wasm peephole optimization"))
        (set! *wasm-peephole* #f))
+      (("-fwasm-post-optimizations" (help "Enable wasm post optimizations"))
+       (set! *wasm-post-optimizations* #t))
+      (("-fno-wasm-post-optimizations" (help "Disable wasm post optimizations"))
+       (set! *wasm-post-optimizations* #f))
       
 ;*--- trace options ---------------------------------------------------*/
       (section "Traces")
@@ -1413,6 +1418,8 @@
       (set! *optim-return?* #t)
       (set! *optim-return-goto?* #t)
       (set! *optim-uncell?* #t)
+      (when (eq? *wasm-post-optimizations* #unspecified)
+	 (set! *wasm-post-optimizations* #t))
       (unless (boolean? *optim-unroll-loop?*)
 	 (set! *optim-unroll-loop?* #t)))
    

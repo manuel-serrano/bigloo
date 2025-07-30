@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jul 16 07:47:36 2025 (serrano)                */
+#*    Last change :  Wed Jul 30 11:12:29 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -133,6 +133,7 @@ jshell=sh
 #*--- Java back-end user configuration --------------------------------*/
 wasmbackend=no # set to "no" not to install the Wasm back-end
 wasmas=
+wasmopt=wasm-opt
 wasmjs=nodejs
 wasmfixnum=31
 
@@ -1346,6 +1347,7 @@ while : ; do
       echo "" >&2;
       echo "WASM configuration:"  >&2;
       echo "   --wasmas=file [wasm assembler]" >&2;
+      echo "   --wasmopt=file [wasm optimizer]" >&2;
       echo "   --wasmjs=file [wasm implementation (default nodejs)]" >&2;
       echo "   --wasm-fixnum64 [wasm fixnum 64bit]" >&2;
       echo "   --wasm-fixnum31 [wasm fixnum 31bit]" >&2;
@@ -3775,7 +3777,15 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     if [ " $wasmas" != " " ]; then
       $wasmas --help 2> /dev/null > /dev/null
       if [ $? != 0 ]; then
-        echo "*** ERROR:configure:$wasm-as (wasm assembler) not properly working!"
+        echo "*** ERROR:configure:$wasmas (wasm assembler) not properly working!"
+        exit 1
+      fi
+    fi
+    # checking wasmopt
+    if [ " $wasmopt" != " " ]; then
+      $wasmopt -all -O3 --help 2> /dev/null > /dev/null
+      if [ $? != 0 ]; then
+        echo "*** ERROR:configure:$wasmopt (wasm optimizer) not properly working!"
         exit 1
       fi
     fi
@@ -5302,6 +5312,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     else
       $echo "WASMAS=$wasmas" >> $makefile_cfg
     fi
+    $echo "WASMOPT=$wasmopt" >> $makefile_cfg
     $echo "WASMFIXNUM=$wasmfixnum" >> $makefile_cfg
   else
     $echo "" >> $makefile_cfg
