@@ -1,28 +1,49 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/wasm/runtime/Wlib/runtime-mozjs.mjs      */
+/*    .../prgm/project/bigloo/wasm/runtime/Wlib/runtime-jsc.mjs        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jul 31 16:09:06 2025 (serrano)                */
+/*    Last change :  Thu Jul 31 16:08:57 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
-/*    Bigloo-wasm JavaScript binding (mozjs).                          */
+/*    Bigloo-wasm JavaScript binding (jsc).                            */
 /*=====================================================================*/
 
 /*---------------------------------------------------------------------*/
-/*    node jsCompatibility kit                                         */
+/*    JavaScriptCode Compatibility kit                                 */
 /*---------------------------------------------------------------------*/
 const process = {
-   argv: ["js", "runtime-mozjs.mjs"].concat(scriptArgs),
-   env: { HOME: os.getenv("HOME") },
+   argv: ["js", "runtime-jsc.mjs"].concat(arguments),
    exit: n => quit(n > 127 ? 1 : n),
-   cwd: () => os.getenv("PWD")
+   cwd: () => "/tmp",
+   env: { HOME: "@HOME" },
+   stdout: {
+      write: function( n ) {
+         if( n == "\n" ) {
+            print( buffer_stdout );
+            buffer_stdout = "";
+         } else {
+            buffer_stdout += n;
+         }
+      }
+   }
 }
 
-console.error = console.log;
+let exports = {};
+let buffer_stdout = "";
+
+const console = {
+   log: print,
+   error: print
+}
+
+const global = {
+   console: console,
+   process: process
+}
 
 function readFileSync(o) {
-   return os.file.readFile(o, "binary");
+   return readFile(o, "binary");
 }
 
 function writeSync(fd, buffer, offset, length) {
@@ -38,15 +59,11 @@ function writeSync(fd, buffer, offset, length) {
 }
 
 function existsSync(path) {
-   if (os?.file?.exists) {
-      return os.file.exists(path);
-   } else {
-      try {
-	 read(path);
-	 return true;
-      } catch (e) {
-	 return false;
-      }
+   try {
+      readFile(path);
+      return true;
+   } catch (e) {
+      return false;
    }
 }
 
@@ -507,14 +524,13 @@ function __js_system() {
 	 return 1;
       },
       
-      exit: process.exit,
+      exit: function (val) {
+ 	 process.exit(val);
+      },
 
-      sleep: async (tmt) => new Promise((res, rej) => setTimeout(res, tmt)),
-      
-      signal: (sig, hdl) => {
+      signal: function (sig, hdl) {
 	 // console.log("NOT IMPLEMENTED SIGNAL sig=", sig, "hdl=", hdl);
       }
-
    }
    return self;
 }
@@ -557,10 +573,10 @@ function __js_io() {
 	 return buf.length;
       },
       
-      close_file: (fd) => closeSync(fd),
+      close_file: (fd) => {
+	 closeSync(fd);
+      },
 
-      close_socket: (sock) => sock.end(),
-      
       read_file: (fd, offset, length, position) => {
 	 if (fd < 0) {
             throw WebAssembly.RuntimeError("invalid file descriptor");
@@ -571,14 +587,6 @@ function __js_io() {
 	 return nbread;
       },
 
-      read_socket: (socket, addr, size) => {
-	 return 0;
-      },
-      
-      write_socket: (socket, offset, length) => {
-	 return 0;
-      },
-      
       password: (prompt_addr, prompt_length, res_addr) => {
 	 const memory = new Uint8Array(self.instance.exports.memory.buffer, offset, length, position);
 	 const buf = "toto";
@@ -886,10 +894,6 @@ function __js_socket() {
 
       accept: (srv) => {
 	 return 0;
-      },
-
-      make_client: (hostname_addr, hostname_len, portnum, timeout) => {
-	 return undefined;
       }
    };
    return self;
@@ -910,14 +914,8 @@ function __js_process() {
       },
       
       xstatus: proc => -1,
-
-      alive: proc => 0,
       
-      getoutport: (proc, fd, addr) => 1,
-      
-      getinport: (proc, addr) => 0,
-
-      getportsock: (proc, fd) => undefined,
+      getport: (fd, addr) => 0,
       
       pid: proc => proc.pid,
 
