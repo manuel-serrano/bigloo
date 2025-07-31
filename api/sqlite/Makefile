@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Tue Jul 29 14:34:51 2025 (serrano)                */
+#*    Last change :  Thu Jul 31 06:05:11 2025 (serrano)                */
 #*    Copyright   :  2001-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -39,6 +39,8 @@ all: build
 boot: build
 
 build:
+	@ $(MAKE) build-c && $(MAKE) build-jvm
+build.bug:
 	@ $(MAKE) build-c && $(MAKE) build-jvm && $(MAKE) build-wasm
 
 c: build-c
@@ -100,6 +102,14 @@ cleanall: distclean
 .PHONY: install
 
 install: api-install-init
+	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
+	    $(MAKE) api-install-c; \
+          fi
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+            $(MAKE) api-install-jvm; \
+          fi
+
+install.bug: api-install-init
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
 	    $(MAKE) api-install-c; \
           fi
