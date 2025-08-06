@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Jul 31 16:08:00 2025 (serrano)                */
+;*    Last change :  Wed Aug  6 09:43:55 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -214,7 +214,7 @@
 ;*    post-optimizations ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (post-optimizations me::wasm sources)
-   (when (eq? *wasm-post-optimizations* #t)
+   (when (and #f (eq? *wasm-post-optimizations* #t))
       (let* ((wasmopt (if (string? *wasmopt-options*)
 			  (format "~a ~a" *wasmopt* *wasmopt-options*)
 			  *wasmopt*))
