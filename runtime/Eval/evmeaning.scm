@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Sat Dec  7 19:33:34 2024 (serrano)                */
+;*    Last change :  Fri Aug 15 17:01:48 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -93,7 +93,7 @@
    ;; Enabing JVM inlining is required for the same reason.
    (option (set! *user-inlining?* #f)
 	   ;;(set! *inlining-kfactor* (lambda (x) 1))
-	   (set! *saw-register-allocation?* #t)
+	   (set! *saw-register-allocation* #t)
 	   (set! *saw-register-allocation-max-size* 8000)))
 
 ;*---------------------------------------------------------------------*/

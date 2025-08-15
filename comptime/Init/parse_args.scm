@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jul 30 11:05:43 2025 (serrano)                */
+;*    Last change :  Fri Aug 15 16:50:40 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -590,9 +590,9 @@
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))
       (("-fsaw-regalloc" (help "Enable saw register allocation"))
-       (set! *saw-register-allocation?* #t))
+       (set! *saw-register-allocation* #t))
       (("-fno-saw-regalloc" (help "Disable saw register allocation"))
-       (set! *saw-register-allocation?* #f))
+       (set! *saw-register-allocation* #f))
       (("-fsaw-bbv" (help "Enable saw basic-blocks versionning"))
        (set! *saw-bbv?* #t))
       (("-fno-saw-bbv" (help "Disable saw basic-blocks versionning"))
@@ -607,14 +607,14 @@
       (("-fwatib-bbv-fun" ?name (help "Apply bbv on these wasm functions"))
        (set! *wasmas-options* (cons* "-fbbv-fun" name *wasmas-options*)))
       (("-fsaw-regalloc-msize" ?size (help "Set the register allocation body size limit"))
-       (set! *saw-register-allocation?* #t)
+       (set! *saw-register-allocation* #t)
        (set! *saw-register-allocation-max-size* (string->integer size)))
       (("-fsaw-regalloc-fun" ?name (help "Allocate registers on this very function"))
-       (set! *saw-register-allocation?* #t)
+       (set! *saw-register-allocation* #t)
        (set! *saw-register-allocation-functions*
 	  (cons (string->symbol name) *saw-register-allocation-functions*)))
       (("-fno-saw-regalloc-fun" ?name (help "Don't allocate registers on this very function"))
-       (set! *saw-register-allocation?* #t)
+       (set! *saw-register-allocation* #t)
        (set! *saw-no-register-allocation-functions*
 	  (cons (string->symbol name) *saw-no-register-allocation-functions*)))
       (("-fsaw-regalloc-onexpr" (help "Allocate registers on expressions"))
@@ -1421,7 +1421,10 @@
       (when (eq? *wasm-post-optimizations* #unspecified)
 	 (set! *wasm-post-optimizations* #t))
       (unless (boolean? *optim-unroll-loop?*)
-	 (set! *optim-unroll-loop?* #t)))
+	 (set! *optim-unroll-loop?* #t))
+      (when (and (eq? *target-language* 'wasm)
+		 (eq? *saw-register-allocation* #unspecified))
+	 (set! *saw-register-allocation* #t)))
    
    (set! *optim* 1)
    (set! *optim-sync-failsafe?* #t)

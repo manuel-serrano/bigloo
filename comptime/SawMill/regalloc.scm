@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/SawMill/regalloc.scm     */
+;*    .../prgm/project/bigloo/wasm/comptime/SawMill/regalloc.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 31 09:56:21 2005                          */
-;*    Last change :  Tue Jun 21 09:31:11 2022 (serrano)                */
-;*    Copyright   :  2005-22 Manuel Serrano                            */
+;*    Last change :  Fri Aug 15 16:54:09 2025 (serrano)                */
+;*    Copyright   :  2005-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the liveness analysis of the rtl instructions            */
 ;*=====================================================================*/
@@ -54,7 +54,7 @@
       (verbose 2 "        no reg. alloc. " msg "\n"))
    
    (let ((id (global-id global)))
-      (when *saw-register-allocation?*
+      (when (eq? *saw-register-allocation* #t)
 	 (cond
 	    ((memq id *saw-no-register-allocation-functions*)
 	     (cause "blacklist"))
