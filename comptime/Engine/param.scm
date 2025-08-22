@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Jun 30 17:09:41 2025 (serrano)                */
+;*    Last change :  Fri Aug 22 11:59:35 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -237,7 +237,7 @@
 	    *target-language*
 	    *saw*
 	    *saw-register-reallocation?*
-	    *saw-register-allocation?*
+	    *saw-register-allocation*
 	    *saw-register-allocation-onexpression?*
 	    *saw-register-allocation-max-size*
 	    *saw-register-allocation-functions*
@@ -1127,9 +1127,9 @@
    #f)
 
 ;*---------------------------------------------------------------------*/
-;*    *saw-register-allocation?* ...                                   */
+;*    *saw-register-allocation* ...                                    */
 ;*---------------------------------------------------------------------*/
-(param-define *saw-register-allocation?*
+(param-define *saw-register-allocation*
    "Enable/disable saw register allocation"
    #f)
 

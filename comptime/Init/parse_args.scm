@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Jul  1 15:54:11 2025 (serrano)                */
+;*    Last change :  Fri Aug 22 11:59:55 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -574,9 +574,9 @@
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))
       (("-fsaw-regalloc" (help "Enable saw register allocation"))
-       (set! *saw-register-allocation?* #t))
+       (set! *saw-register-allocation* #t))
       (("-fno-saw-regalloc" (help "Disable saw register allocation"))
-       (set! *saw-register-allocation?* #f))
+       (set! *saw-register-allocation* #f))
       (("-fsaw-bbv" (help "Enable saw basic-blocks versionning"))
        (set! *saw-bbv?* #t))
       (("-fno-saw-bbv" (help "Disable saw basic-blocks versionning"))
@@ -587,14 +587,14 @@
 	  (append (map string->symbol (string-split name " "))
 	     *saw-bbv-functions*)))
       (("-fsaw-regalloc-msize" ?size (help "Set the register allocation body size limit"))
-       (set! *saw-register-allocation?* #t)
+       (set! *saw-register-allocation* #t)
        (set! *saw-register-allocation-max-size* (string->integer size)))
       (("-fsaw-regalloc-fun" ?name (help "Allocate registers on this very function"))
-       (set! *saw-register-allocation?* #t)
+       (set! *saw-register-allocation* #t)
        (set! *saw-register-allocation-functions*
 	  (cons (string->symbol name) *saw-register-allocation-functions*)))
       (("-fno-saw-regalloc-fun" ?name (help "Don't allocate registers on this very function"))
-       (set! *saw-register-allocation?* #t)
+       (set! *saw-register-allocation* #t)
        (set! *saw-no-register-allocation-functions*
 	  (cons (string->symbol name) *saw-no-register-allocation-functions*)))
       (("-fsaw-regalloc-onexpr" (help "Allocate registers on expressions"))
