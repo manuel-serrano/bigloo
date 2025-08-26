@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Jun 25 17:18:53 2025 (serrano)                */
+#*    Last change :  Tue Aug 26 12:15:55 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -331,7 +331,7 @@ SRC_FILES	= $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_UNSAFE_SRC) \
 INCLUDE_FILE	= Include/bigloo.h Include/bigloo_saw.h \
                   Include/bigloo_pair.h Include/bigloo_real.h \
                   Include/bigloo_real_heap.h Include/bigloo_real_nan.h \
-                  Include/bigloo_real_nun.h Include/bigloo_real_flt.h \
+                  Include/bigloo_real_nun.h Include/bigloo_real_fst.h \
                   Include/bigloo_vector.h Include/bigloo_string.h \
                   Include/bigloo_struct.h Include/bigloo_cell.h \
                   Include/bigloo_int.h Include/bigloo_semaphore.h \

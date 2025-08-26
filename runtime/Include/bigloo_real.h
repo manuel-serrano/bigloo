@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Mon Mar 10 09:13:50 2025 (serrano)                */
+/*    Last change :  Tue Aug 26 09:05:14 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -31,7 +31,7 @@ extern "C" {
 #elif (BGL_TAGGING == BGL_TAGGING_NUN)
 #  include <bigloo_real_nun.h>
 #else
-#  include <bigloo_real_flt.h>
+#  include <bigloo_real_fst.h>
 #endif
 
 /*---------------------------------------------------------------------*/
