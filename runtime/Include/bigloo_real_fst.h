@@ -3,13 +3,13 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Jul 22 13:52:08 2025 (serrano)                */
+/*    Last change :  Tue Aug 26 09:04:47 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo FLOATING POINT TAGGING reals                              */
 /*=====================================================================*/
-#ifndef BIGLOO_REAL_FLT_H 
-#define BIGLOO_REAL_FLT_H
+#ifndef BIGLOO_REAL_FST_H 
+#define BIGLOO_REAL_FST_H
 
 #include <stdbool.h>
 

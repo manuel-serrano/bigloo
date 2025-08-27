@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Aug  6 09:43:55 2025 (serrano)                */
+;*    Last change :  Wed Aug 27 13:12:24 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -214,14 +214,13 @@
 ;*    post-optimizations ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (post-optimizations me::wasm sources)
-   (when (and #f (eq? *wasm-post-optimizations* #t))
-      (let* ((wasmopt (if (string? *wasmopt-options*)
-			  (format "~a ~a" *wasmopt* *wasmopt-options*)
-			  *wasmopt*))
-	     (target (or *dest* "a.out"))
+   (when *wasm-post-optimizer*
+      (let* ((target (or *dest* "a.out"))
 	     (wasm (string-append target ".wasm"))
 	     (tmp (string-append wasm ".tmp"))
-	     (cmd (format "~a ~a ~a -o ~a" *wasmopt* *wasmopt-options* wasm tmp)))
+	     (cmd (if (string-index *wasm-post-optimizer* #\~)
+		      (format *wasm-post-optimizer* wasm tmp)
+		      (format "~a ~a -o ~a" *wasm-post-optimizer* wasm tmp))))
 	 (verbose 2 "      optimizing [" cmd #\] #\Newline)
 	 (exec cmd #t "wasmopt")
 	 (rename-file tmp wasm))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Wed Jul 16 08:11:39 2025 (serrano)                */
+;*    Last change :  Tue Aug 26 13:33:48 2025 (serrano)                */
 ;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -67,7 +67,7 @@
 	   (macro $configure-c-strict-stdc::bool "BGL_STRICT_STDC")
 	   (macro $configure-c-pic-flag::string "C_PICFLAGS")
 	   (macro $configure-c-nan-flag::string "C_NANFLAGS")
-	   (macro $configure-c-flt-flag::string "C_FLTFLAGS")
+	   (macro $configure-c-fst-flag::string "C_FSTFLAGS")
 	   (macro $configure-c-strip-flag::string "C_STRIP_FLAGS")
 	   (macro $configure-c-prof-flag::string "C_PROFILE_FLAGS")
            (macro $configure-c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
@@ -154,7 +154,7 @@
 	      (field static c-strict-stdc::bool "STRICT_STDCC")
 	      (field static c-pic-flag::string "C_PICFLAGS")
 	      (field static c-nan-flag::string "C_NANFLAGS")
-	      (field static c-flt-flag::string "C_FLTFLAGS")
+	      (field static c-fst-flag::string "C_FSTFLAGS")
 	      (field static c-strip-flag::string "C_STRIP_FLAGS")
 	      (field static c-prof-flag::string "C_PROFILE_FLAGS")
               (field static c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
@@ -251,7 +251,7 @@
      (strict-stdc . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-strict-stdc) (else $$configure-c-strict-stdc)))
      (c-pic-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-pic-flag) (else $$configure-c-pic-flag)))
      (c-nan-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-nan-flag) (else $$configure-c-nan-flag)))
-     (c-flt-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-flt-flag) (else $$configure-c-flt-flag)))
+     (c-fst-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-fst-flag) (else $$configure-c-fst-flag)))
      (c-strip-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-strip-flag) (else $$configure-c-strip-flag)))
      (c-prof-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-prof-flag) (else $$configure-c-prof-flag)))
      (c-object-file-extension . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-object-file-extension) (else $$configure-c-object-file-extension)))

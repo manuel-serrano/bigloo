@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evmeaning.scm      */
+;*    .../prgm/project/bigloo/bigloo/runtime/Eval/evmeaning.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Fri Aug 15 17:01:48 2025 (serrano)                */
+;*    Last change :  Fri Aug 22 12:01:35 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/

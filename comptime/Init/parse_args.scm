@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Aug 15 16:50:40 2025 (serrano)                */
+;*    Last change :  Fri Aug 22 11:59:55 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -436,7 +436,6 @@
 			  "-freturn"
 			  "-freturn-goto"
 			  "-copt" ,*cflags-optim*
-			  "-fwasm-post-optimizations"
 			  "-static-all-bigloo"))) 
       ;; optimization
       (("-O?opt" (help "-O[0..6]" "Optimization modes"))
@@ -974,10 +973,8 @@
        (set! *wasm-peephole* #t))
       (("-fno-wasm-peephole" (help "Disable wasm peephole optimization"))
        (set! *wasm-peephole* #f))
-      (("-fwasm-post-optimizations" (help "Enable wasm post optimizations"))
-       (set! *wasm-post-optimizations* #t))
-      (("-fno-wasm-post-optimizations" (help "Disable wasm post optimizations"))
-       (set! *wasm-post-optimizations* #f))
+      (("-fwasm-post-optimizer" ?cmd (help "Wasm post optimizer"))
+       (set! *wasm-post-optimizer* cmd))
       
 ;*--- trace options ---------------------------------------------------*/
       (section "Traces")

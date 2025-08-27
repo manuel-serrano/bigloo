@@ -1,6 +1,6 @@
 /* @CONFIGURE@ */
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/flt/autoconf/bigloo_config.h.in      */
+/*    serrano/prgm/project/bigloo/fst/autoconf/bigloo_config.h.in      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
@@ -358,8 +358,8 @@
 #undef C_NANFLAGS
 #define C_NANFLAGS "@C_NANFLAGS@"
 
-#undef C_FLTFLAGS
-#define C_FLTFLAGS "@C_FLTFLAGS@"
+#undef C_FSTFLAGS
+#define C_FSTFLAGS "@C_FSTFLAGS@"
 
 #undef BGL_CNST_TWO_STEPS_INIT
 #define BGL_CNST_TWO_STEPS_INIT @BGL_CNST_TWO_STEPS_INIT@

@@ -119,7 +119,7 @@
 (define $$configure-c-strict-stdc "@BGL_STRICT_STDC@")
 (define $$configure-c-pic-flag "@C_PICFLAGS@")
 (define $$configure-c-nan-flag "@C_NANFLAGS@")
-(define $$configure-c-flt-flag "@C_FLTFLAGS@")
+(define $$configure-c-fst-flag::bstring "@C_FSTFLAGS@")
 (define $$configure-c-strip-flag "@C_STRIP_FLAGS@")
 (define $$configure-c-prof-flag "@C_PROFILE_FLAGS@")
 (define $$configure-c-object-file-extension "@C_OBJECT_FILE_EXTENSION@")

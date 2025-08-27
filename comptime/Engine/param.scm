@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Fri Aug 15 16:49:35 2025 (serrano)                */
+;*    Last change :  Fri Aug 22 11:59:35 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -261,6 +261,7 @@
 	    *wasm-peephole*
 	    *wasm-fixnum*
 	    *wasm-post-optimizations*
+	    *wasm-post-optimizer*
 	    (bigloo-variables-usage ::bool)
 	    (reinitialize-bigloo-variables!))
    (eval    (export-all)))
@@ -1315,4 +1316,11 @@
 (param-define *wasm-post-optimizations*
    "wasm post optimizations"
    #unspecified)
+		 
+;*---------------------------------------------------------------------*/
+;*    *wasm-post-optimizer* ...                                        */
+;*---------------------------------------------------------------------*/
+(param-define *wasm-post-optimizer*
+   "wasm post optimizer"
+   #f)
 		 

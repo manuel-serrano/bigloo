@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jul 30 11:12:29 2025 (serrano)                */
+#*    Last change :  Tue Aug 26 09:04:01 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -86,7 +86,7 @@ cpicflags="demanded" # Possible values for cpicflags are:
              #  - blank (uninitalized) for automatic configuration of the
 #    position independent code compiler option
 cnanflags=-DBGL_NAN_TAGGING=0
-cfltflags=$CFLTFLAGS
+cfstflags=$CFSTFLAGS
 as=          # left blank for autoconfiguration
 ar=          # left blank for autoconfiguration
 ranlib=      # left blank for autoconfiguration
@@ -111,8 +111,8 @@ belong_prealloc_max=100
 bgltagging=BGL_TAGGING_FL1
 bglnantagging=0
 bglnuntagging=0
-#bglfltagging=0
-bglfltagging=4
+#bglfstagging=0
+bglfstagging=4
 bglsmi=0
       
 # cnst double initialization (to workaround nan boxing cnst declarations)
@@ -560,7 +560,7 @@ while : ; do
       pthreadlocalstorage=;
       pthreadsetname=;
       bgltagging=BGL_TAGGING_FL1;
-      bglfltagging=4;
+      bglfstagging=4;
       action="all";;
 
     --bootdir=*)
@@ -994,19 +994,19 @@ while : ; do
 
     --heap-tagging)
       bgltagging=BGL_TAGGING_HEAP;
-      bglfltagging=0;
+      bglfstagging=0;
       bglnantagging=0;
       bglnuntagging=0;;
       
     --nan-tagging)
       bgltagging=BGL_TAGGING_NAN;
-      bglfltagging=0;
+      bglfstagging=0;
       bglnantagging=1;
       bglnuntagging=0;;
       
     --nun-tagging)
       bgltagging=BGL_TAGGING_NUN;
-      bglfltagging=0;
+      bglfstagging=0;
       bglnantagging=0;
       bglnuntagging=1;;
     
@@ -1014,25 +1014,25 @@ while : ; do
       bgltagging=BGL_TAGGING_FL;
       bglnantagging=0;
       bglnuntagging=0;
-      bglfltagging=1;;
+      bglfstagging=1;;
       
     --fl-tagging-lb)
       bgltagging=BGL_TAGGING_FLLB;
       bglnantagging=0;
       bglnuntagging=0;
-      bglfltagging=2;;
+      bglfstagging=2;;
       
     --fl-tagging-nz)
       bgltagging=BGL_TAGGING_FLNZ;
       bglnantagging=0;
       bglnuntagging=0;
-      bglfltagging=3;;
+      bglfstagging=3;;
       
     --fl-tagging-1)
       bgltagging=BGL_TAGGING_FL1;
       bglnantagging=0;
       bglnuntagging=0;
-      bglfltagging=4;;
+      bglfstagging=4;;
       
     --smi)
       bglsmi=1;;
@@ -1403,7 +1403,7 @@ while : ; do
       echo "   --nan-tagging (nan-tagging schema)" >&2;
       echo "   --nun-tagging (nun-tagging schema)" >&2;
       echo "   --heap-tagging (heap-tagging schema)" >&2;
-      echo "   --fl-tagging (default $bglfltagging)" >&2;
+      echo "   --fl-tagging (default $bglfstagging)" >&2;
       echo "   --fl-tagging-1 (for experiment only, don't use because slow)" >&2;
       echo "   --fl-tagging-lb (for experiment only, don't use because slow)" >&2;
       echo "   --fl-tagging-nz (for experiment only, don't use because slow)" >&2;
@@ -1455,7 +1455,7 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_pair_h=lib/bigloo/$release/bigloo_pair.h
   bigloo_real_h=lib/bigloo/$release/bigloo_real.h
   bigloo_real_heap_h=lib/bigloo/$release/bigloo_real_heap.h
-  bigloo_real_flt_h=lib/bigloo/$release/bigloo_real_flt.h
+  bigloo_real_fst_h=lib/bigloo/$release/bigloo_real_fst.h
   bigloo_real_nan_h=lib/bigloo/$release/bigloo_real_nan.h
   bigloo_real_nun_h=lib/bigloo/$release/bigloo_real_nun.h
   bigloo_bignum_h=lib/bigloo/$release/bigloo_bignum.h
@@ -1978,7 +1978,7 @@ else
   elongsize=32
   # force float heap tagging on 32-bit architectures
   bgltagging=BGL_TAGGING_HEAP
-  bglfltagging=0
+  bglfstagging=0
   bglnantagging=0
   bglnuntagging=0
 fi
@@ -2435,7 +2435,7 @@ if [ "$action" != "bigloo_config_el" ]; then
     fi
   fi
   
-  if [ "$bglfltagging " != "0 " ]; then
+  if [ "$bglfstagging " != "0 " ]; then
     if [ "$alignment" = "3" ]; then 
       customgc=yes;
     else
@@ -3785,7 +3785,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     if [ " $wasmopt" != " " ]; then
       $wasmopt -all -O3 --help 2> /dev/null > /dev/null
       if [ $? != 0 ]; then
-        echo "*** ERROR:configure:$wasmopt (wasm optimizer) not properly working!"
+	wasmopt=""
+        echo "*** WARNING:configure:$wasmopt (wasm optimizer) not found!"
         exit 1
       fi
     fi
@@ -3853,7 +3854,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_TAGGING@|$bgltagging|" \
               -e "s|@BGL_NAN_TAGGING@|$bglnantagging|" \
               -e "s|@BGL_NUN_TAGGING@|$bglnuntagging|" \
-              -e "s|@BGL_FL_TAGGING@|$bglfltagging|" \
+              -e "s|@BGL_FL_TAGGING@|$bglfstagging|" \
               -e "s|@BGL_SMI@|$bglsmi|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
               -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
@@ -3960,7 +3961,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_FLAGS@|$cflags|" \
               -e "s|@C_PICFLAGS@|$cpicflags|" \
               -e "s|@C_NANFLAGS@|$cnanflags|" \
-              -e "s|@C_FLTFLAGS@|$cfltflags|" \
+              -e "s|@C_FSTFLAGS@|$cfstflags|" \
 	      -e "s|@BGL_CNST_TWO_STEPS_INIT@|$cnsttwostepsinit|" \
               -e "s|@C_COMPILER_O_OPTION@|-o |" \
               -e "s|@C_COMPILER_FP_OPTION@|$cfpflags|" \
@@ -4095,7 +4096,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_pair_h` $bigloo_pair_h
   cp runtime/Include/`basename $bigloo_real_h` $bigloo_real_h
   cp runtime/Include/`basename $bigloo_real_heap_h` $bigloo_real_heap_h
-  cp runtime/Include/`basename $bigloo_real_flt_h` $bigloo_real_flt_h
+  cp runtime/Include/`basename $bigloo_real_fst_h` $bigloo_real_fst_h
   cp runtime/Include/`basename $bigloo_real_nan_h` $bigloo_real_nan_h
   cp runtime/Include/`basename $bigloo_real_nun_h` $bigloo_real_nun_h
   cp runtime/Include/`basename $bigloo_bignum_h` $bigloo_bignum_h
@@ -4439,7 +4440,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
   $echo "CBUILDFLAGS=$cbuildflags" >> $makefile_cfg
   $echo "CNANFLAGS=$cnanflags" >> $makefile_cfg
-  $echo "CFLTFLAGS=$cfltflags" >> $makefile_cfg
+  $echo "CFSTFLAGS=$cfstflags" >> $makefile_cfg
   $echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
   $echo "LDBUILDOPTS=$ldbuildopts" >> $makefile_cfg
   
@@ -5534,7 +5535,7 @@ $echo "  options for debugging/profiling....... $cfpflags" >> $configurelog
 $echo "  options for stripping................. $csflags" >> $configurelog
 $echo "  options for PIC code.................. $cpicflags" >> $configurelog
 $echo "  options for NAN code.................. $cnanflags" >> $configurelog
-$echo "  options for FLT code.................. $cfltflags" >> $configurelog
+$echo "  options for FST code.................. $cfstflags" >> $configurelog
 $echo "  options for profiling................. $cpflags" >> $configurelog
 $echo "  options for linking................... $extralibs" >> $configurelog
 $echo "  assembly.............................. $as" >> $configurelog
