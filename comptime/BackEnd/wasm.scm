@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Aug 27 13:12:24 2025 (serrano)                */
+;*    Last change :  Fri Aug 29 15:13:04 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -812,7 +812,7 @@ esac")
       (or (and (char>=? c #\0) (char<=? c #\9))
 	  (and (char>=? c #\a) (char<=? c #\f))
 	  (and (char>=? c #\A) (char<=? c #\F))))
-       
+
    (define (dump-scheme-string s)
       (let ((l (string-length s)))
 	 (let loop ((i 0))
@@ -824,19 +824,24 @@ esac")
 		      (display c)
 		      (loop (+fx i 1)))
 		     ((char=? c #\")
-		      (display "\\u{22}")
+		      (display "\\\"")
 		      (loop (+fx i 1)))
 		     ((char=? c #\\)
-		      (display "\\u{5c}")
+		      (display "\\\\")
 		      (loop (+fx i 1)))
 		     ((char=? c #\newline)
-		      (display "\\u{0a}")
+		      (display "\\r")
 		      (loop (+fx i 1)))
 		     (else
-		      (let ((n (char->integer c)))
+		      (let ((u (ucs2-string (char->ucs2 c))))
 			 (display "\\u{")
-			 (display (string-ref hex (bit-rsh n 4)))
-			 (display (string-ref hex (bit-and n #xf)))
+			 (for-each (lambda (c)
+				      (let ((n (char->integer c)))
+					 (display
+					    (string-ref hex (bit-rsh n 4)))
+					 (display
+					    (string-ref hex (bit-and n #xf)))))
+			    (string->list (ucs2-string->utf8-string u)))
 			 (display "}")
 			 (loop (+fx i 1))))))))))
 
@@ -1777,6 +1782,7 @@ esac")
        (import ,($bigloo) "BGL_DYNAMIC_ENV_DEFAULT_VALUE" (global $dynamic-env-default-value (ref $dynamic-env)))
        (import ,($bigloo) "BGL_EXIT_DEFAULT_VALUE" (global $exit-default-value (ref $exit)))
        (import ,($bigloo) "BGL_OBJECT_DEFAULT_VALUE" (global $object-default-value (ref $BgL_objectz00_bglt)))
+       (import ,($bigloo) "BGL_TVECTOR_DEFAULT_VALUE" (global $tvector-default-value (ref array)))
        
        (import ,($bigloo) "BGL_CLASS_INSTANCE_DEFAULT_VALUE" (func $BGL_CLASS_INSTANCE_DEFAULT_VALUE (param (ref $class)) (result (ref $BgL_objectz00_bglt))))))
 
