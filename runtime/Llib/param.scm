@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/param.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/param.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:29:58 2004                          */
-;*    Last change :  Mon Aug 26 11:18:51 2024 (serrano)                */
-;*    Copyright   :  2004-24 Manuel Serrano                            */
+;*    Last change :  Thu Sep  4 09:43:59 2025 (serrano)                */
+;*    Copyright   :  2004-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo global parameters                                         */
 ;*=====================================================================*/
@@ -42,6 +42,9 @@
    
    (export (bigloo-strict-r5rs-strings::bool)
 	   (bigloo-strict-r5rs-strings-set! ::bool)
+
+	   (bigloo-string-encoding::symbol)
+	   (bigloo-string-encoding-set! ::symbol)
 	   
 	   (bigloo-compiler-debug::int)
 	   (bigloo-compiler-debug-set! ::int)
@@ -133,6 +136,17 @@
 ;*    as C strings.                                                    */
 ;*---------------------------------------------------------------------*/
 (define-parameter bigloo-strict-r5rs-strings #f)
+
+;*---------------------------------------------------------------------*/
+;*    bigloo-string-encoding ...                                       */
+;*    -------------------------------------------------------------    */
+;*    Control how non ascii characters in string literals are          */
+;*    decoded/decoded. Possible values are                             */
+;*      - bigloo: compatible with old Bigloo versions.                 */
+;*      - r5rs: only support R%RS string escape sequences.             */
+;*      - wasm: support \hh as hexa raw ascii encoding.                */
+;*---------------------------------------------------------------------*/
+(define-parameter bigloo-string-encoding 'bigloo)
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-compiler-debug ...                                        */

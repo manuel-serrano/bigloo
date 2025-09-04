@@ -20,6 +20,7 @@
 ;; their new index
 (define (merge-files l)
    (define (get-mfs f)
+      (bigloo-string-encoding-set! 'wasm)
       (call-with-input-file f
          (lambda (ip)
             (match-case (read ip #t)

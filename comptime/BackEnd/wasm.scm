@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Aug 29 15:13:04 2025 (serrano)                */
+;*    Last change :  Thu Sep  4 11:38:49 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -283,6 +283,16 @@ case $JS in
 esac")
 
 ;*---------------------------------------------------------------------*/
+;*    read-wasm ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (read-wasm port::input-port)
+   (let ((encoding (bigloo-string-encoding)))
+      (bigloo-string-encoding-set! 'wasm)
+      (unwind-protect
+	 (read port)
+	 (bigloo-string-encoding-set! 'encoding))))
+   
+;*---------------------------------------------------------------------*/
 ;*    wat-merge ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (wat-merge files target)
@@ -466,12 +476,8 @@ esac")
    
    (define (read-module f)
       (if (file-exists? f)
-	  (let ((strict (bigloo-strict-r5rs-strings)))
-	     (bigloo-strict-r5rs-strings-set! #f)
-	     (unwind-protect
-		(let ((m (call-with-input-file f read)))
-		   (filter-map prehash (if (symbol? (cadr m)) (cddr m) (cdr m))))
-		(bigloo-strict-r5rs-strings-set! strict)))
+	  (let ((m (call-with-input-file f read-wasm)))
+	     (filter-map prehash (if (symbol? (cadr m)) (cddr m) (cdr m))))
 	  (error "wasm" "Cannot find wasm module" f)))
    
    (define (collect-module modules key)
@@ -741,7 +747,7 @@ esac")
 
    (let ((tname (find-file-in-path "types.wat" *lib-dir*)))
       (if tname
-	  (match-case (call-with-input-file tname read)
+	  (match-case (call-with-input-file tname read-wasm)
 	     ((module (? symbol?) . ?body)
 	      (filter-map (lambda (e)
 			     (match-case e
@@ -804,15 +810,10 @@ esac")
 
    (define (char-visible? c)
       (and (char>=? c #\x20) 
-	   (char<? c #\x7F) ;; exclude the DEL character (illegal in WASM text format)
+	   (char<? c #\x7F)
 	   (not (char=? c #\")) 
 	   (not (char=? c #\\))))
    
-   (define (xdigit? c)
-      (or (and (char>=? c #\0) (char<=? c #\9))
-	  (and (char>=? c #\a) (char<=? c #\f))
-	  (and (char>=? c #\A) (char<=? c #\F))))
-
    (define (dump-scheme-string s)
       (let ((l (string-length s)))
 	 (let loop ((i 0))
@@ -830,20 +831,14 @@ esac")
 		      (display "\\\\")
 		      (loop (+fx i 1)))
 		     ((char=? c #\newline)
-		      (display "\\r")
+		      (display "\\n")
 		      (loop (+fx i 1)))
 		     (else
-		      (let ((u (ucs2-string (char->ucs2 c))))
-			 (display "\\u{")
-			 (for-each (lambda (c)
-				      (let ((n (char->integer c)))
-					 (display
-					    (string-ref hex (bit-rsh n 4)))
-					 (display
-					    (string-ref hex (bit-and n #xf)))))
-			    (string->list (ucs2-string->utf8-string u)))
-			 (display "}")
-			 (loop (+fx i 1))))))))))
+		      (display "\\")
+		      (let ((n (char->integer c)))
+			 (display (string-ref hex (bit-rsh n 8)))
+			 (display (string-ref hex (bit-and n #xf))))
+		      (loop (+fx i 1)))))))))
 
    (define (dump-string s)
       (display "\"")
