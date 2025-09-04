@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Sep  4 09:56:49 2025 (serrano)                */
+;*    Last change :  Thu Sep  4 11:59:36 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -765,7 +765,7 @@
 		       ((eq? encoding 'wasm)
 			(let ((n (char->integer c)))
 			   (string-set-ur! dst (++ w) #\\)
-			   (string-set-ur! dst (++ w) (hexa (bit-rsh n 8)))
+			   (string-set-ur! dst (++ w) (hexa (bit-rsh n 4)))
 			   (string-set-ur! dst (++ w) (hexa (bit-and #xf n)))))
 		       (else
 			(let ((n (char->integer c)))

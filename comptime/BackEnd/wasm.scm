@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Sep  4 11:38:49 2025 (serrano)                */
+;*    Last change :  Thu Sep  4 11:59:23 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -836,7 +836,7 @@ esac")
 		     (else
 		      (display "\\")
 		      (let ((n (char->integer c)))
-			 (display (string-ref hex (bit-rsh n 8)))
+			 (display (string-ref hex (bit-rsh n 4)))
 			 (display (string-ref hex (bit-and n #xf))))
 		      (loop (+fx i 1)))))))))
 
