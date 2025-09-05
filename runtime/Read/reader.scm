@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Sun Jun 22 08:45:46 2025 (serrano)                */
+;*    Last change :  Thu Sep  4 10:12:15 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -64,10 +64,9 @@
 	   (macro $nan::double "BGL_NAN")
 	   (macro $infinity::double "BGL_INFINITY"))
 
-	(wasm
-		(make-cnst "(ref.i31 (i32.wrap_i64 ~0))")
-		($nan "(f64.const nan)")
-		($infinity "(f64.const inf)"))
+   (wasm   (make-cnst "(ref.i31 (i32.wrap_i64 ~0))")
+           ($nan "(f64.const nan)")
+	   ($infinity "(f64.const inf)"))
    
    (java   (class foreign
 	      (field static unspec::obj "BUNSPEC")
@@ -314,11 +313,15 @@
       
       ;; foreign strings of char
       ((: "\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
-       (the-escape-substring 1 (-fx (the-length) 1) #f))
+       (the-encoded-substring 1 (-fx (the-length) 1) 'bigloo))
+      
+      ;; wasm strings of char
+      ((: "w\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
+       (the-encoded-substring 1 (-fx (the-length) 1) 'wasm))
       
       ;; ucs2 strings
       ((: "u\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
-       (let ((str (the-escape-substring 2 (-fx (the-length) 1) #f)))
+       (let ((str (the-encoded-substring 2 (-fx (the-length) 1) 'bigloo)))
   	  (utf8-string->ucs2-string str)))
       ;; fixnums
       ((: "b" (? (in "-+")) (+ (in ("01"))))
@@ -547,7 +550,7 @@
       ;; the string, we have to count the number of newline
       ;; in order to increment the line-num variable strings
       ((: "\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
-       (the-escape-substring 1 (-fx (the-length) 1) (bigloo-strict-r5rs-strings)))
+       (the-encoded-substring 1 (-fx (the-length) 1) (bigloo-string-encoding)))
       
       ;; fixnums
       ((: (? (in "+-")) (+ digit))

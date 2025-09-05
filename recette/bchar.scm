@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/bchar.scm                    */
+;*    serrano/prgm/project/bigloo/wasm/recette/bchar.scm               */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  1 09:29:00 1992                          */
-;*    Last change :  Tue May  7 14:38:22 2002 (serrano)                */
+;*    Last change :  Thu Sep  4 11:55:26 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les caracteres                                           */
 ;*---------------------------------------------------------------------*/
@@ -21,39 +21,39 @@
 ;*---------------------------------------------------------------------*/
 (define (test-char)
    (test-module "char" "char.scm")
-   (test "char?" (char? #\a) #t)
-   (test "char?" (char? 1) #f)
-   (test "char=?" (let ((x #\a)) (char=? x #\a)) #t)
-   (test "char=?" (let ((x #\b)) (char=? x #\a)) #f)
-   (test "char<?" (let ((x #\b)) (char<? x #\a)) #f)
-   (test "char<?" (let ((x #\b)) (char<? #\a x)) #t)
-   (test "char>?" (let ((x #\b)) (char>? x #\a)) #t)
-   (test "char>?" (let ((x #\b)) (char>? #\a x)) #f)
-   (let ((s "été"))
-      (test "char>?" (char>? (string-ref s 0) #a127) #t))
-   (test "char-ci=?" (let ((x #\A)) (char-ci=? x #\a)) #t)
-   (test "char-ci=?" (let ((x #\B)) (char-ci=? x #\a)) #f)
-   (test "char-ci<?" (let ((x #\B)) (char-ci<? x #\a)) #f)
-   (test "char-ci<?" (let ((x #\B)) (char-ci<? #\a x)) #t)
-   (test "char-ci>?" (let ((x #\B)) (char-ci>? x #\a)) #t)
-   (test "char-ci>?" (let ((x #\B)) (char-ci>? #\a x)) #f)
-   (test "char-alphabetic?" (char-alphabetic? #\a) #t)
-   (test "char-alphabetic?" (char-alphabetic? #\0) #f)
-   (test "char-numeric?" (char-numeric? #\a) #f)
-   (test "char-numeric?" (char-numeric? #\0) #t)
-   (test "char-whitespace?" (char-whitespace? #\a) #f)
-   (test "char-whitespace?" (char-whitespace? #\space) #t)
-   (test "char-upper-case?" (char-upper-case? #\A) #t)
-   (test "char-upper-case?" (char-upper-case? #\a) #f)
-   (test "char-lower-case?" (char-lower-case? #\A) #f)
-   (test "char-lower-case?" (char-lower-case? #\a) #t)
-   (test "char->integer" (char->integer #\0) 48)
-   (test "char->integer" (char->integer #a200) 200)
+   (test "char?.1" (char? #\a) #t)
+   (test "char?.2" (char? 1) #f)
+   (test "char=?.1" (let ((x #\a)) (char=? x #\a)) #t)
+   (test "char=?.2" (let ((x #\b)) (char=? x #\a)) #f)
+   (test "char<?.1" (let ((x #\b)) (char<? x #\a)) #f)
+   (test "char<?.2" (let ((x #\b)) (char<? #\a x)) #t)
+   (test "char>?.1" (let ((x #\b)) (char>? x #\a)) #t)
+   (test "char>?.2" (let ((x #\b)) (char>? #\a x)) #f)
+   (let ((s "Ã©tÃ©"))
+      (test "char>?.3" (char>? (string-ref s 0) #a127) #t))
+   (test "char-ci=?.1" (let ((x #\A)) (char-ci=? x #\a)) #t)
+   (test "char-ci=?.2" (let ((x #\B)) (char-ci=? x #\a)) #f)
+   (test "char-ci<?.1" (let ((x #\B)) (char-ci<? x #\a)) #f)
+   (test "char-ci<?.2" (let ((x #\B)) (char-ci<? #\a x)) #t)
+   (test "char-ci>?.1" (let ((x #\B)) (char-ci>? x #\a)) #t)
+   (test "char-ci>?.2" (let ((x #\B)) (char-ci>? #\a x)) #f)
+   (test "char-alphabetic?.1" (char-alphabetic? #\a) #t)
+   (test "char-alphabetic?.2" (char-alphabetic? #\0) #f)
+   (test "char-numeric?.1" (char-numeric? #\a) #f)
+   (test "char-numeric?.2" (char-numeric? #\0) #t)
+   (test "char-whitespace?.1" (char-whitespace? #\a) #f)
+   (test "char-whitespace?.2" (char-whitespace? #\space) #t)
+   (test "char-upper-case?.1" (char-upper-case? #\A) #t)
+   (test "char-upper-case?.2" (char-upper-case? #\a) #f)
+   (test "char-lower-case?.1" (char-lower-case? #\A) #f)
+   (test "char-lower-case?.2" (char-lower-case? #\a) #t)
+   (test "char->integer.1" (char->integer #\0) 48)
+   (test "char->integer.2" (char->integer #a200) 200)
    (test "integer->char" (integer->char 48) #\0)
-   (test "char-upcase" (char-upcase #\a) #\A)
-   (test "char-upcase" (char-upcase #\A) #\A)
-   (test "char-downcase" (char-downcase #\a) #\a)
-   (test "char-downcase" (char-downcase #\A) #\a)
+   (test "char-upcase.1" (char-upcase #\a) #\A)
+   (test "char-upcase.2" (char-upcase #\A) #\A)
+   (test "char-downcase.1" (char-downcase #\a) #\a)
+   (test "char-downcase.2" (char-downcase #\A) #\a)
    (test "unsigned char" (char->integer (integer->char 128)) 128))
 			    
    

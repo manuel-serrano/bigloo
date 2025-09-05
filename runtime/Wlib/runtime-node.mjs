@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jul 29 08:04:52 2025 (serrano)                */
+/*    Last change :  Thu Sep  4 12:11:41 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -502,13 +502,11 @@ function __js_io() {
             throw WebAssembly.RuntimeError("invalid file descriptor");
 	 }
 	 const memory = new Uint8Array(self.instance.exports.memory.buffer, offset, length);
-	 return readSync(fd, memory, 0, length, position <= 0 ? -1 : position);
+	 return readSync(fd, memory, 0, length, position < 0 ? -1 : position);
       },
 
       read_socket: (socket, addr, size) => {
-	 console.log("read_socket socket=", socket.constructor.name, "size=", size);
-	 const buf = socket.read(size);
-	 console.log("buf=", buf);
+	 const buf = socket.read(size, () => console.error("in read..."));
 	 if (buf) {
 	    return storeJSStringToScheme(self.instance, buf, addr);
 	 } else {
@@ -748,7 +746,7 @@ function __js_io() {
       
       write_socket: (socket, offset, length) => {
 	 const buffer = new Uint8Array(self.instance.exports.memory.buffer, offset, length);
-	 return socket.write(buffer);
+	 return socket.write(buffer, () => console.error("*** written..."));
       },
       
       append_char: (fd, c) => {

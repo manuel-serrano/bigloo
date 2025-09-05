@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Sun Jun 22 08:42:50 2025 (serrano)                */
+;*    Last change :  Thu Sep  4 09:55:29 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -200,6 +200,7 @@
 	    (inline rgc-buffer-byte-ref::int ::input-port ::int)
 	    (inline rgc-buffer-substring::bstring ::input-port ::long ::long)
 	    (inline rgc-buffer-escape-substring::bstring ::input-port ::long ::long ::bool)
+	    (inline rgc-buffer-decode-substring::bstring ::input-port ::long ::long ::symbol)
 	    (inline rgc-buffer-length::long ::input-port)
 	    (inline rgc-buffer-fixnum::long ::input-port)
 	    (inline rgc-buffer-integer::obj ::input-port)
@@ -301,6 +302,19 @@
       (if strict
 	  (escape-scheme-string buf s l)
 	  (escape-C-string buf s l))))
+
+;*---------------------------------------------------------------------*/
+;*    rgc-buffer-decode-substring ...                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-decode-substring input-port start stop encoding)
+   (let ((buf (input-port-buffer input-port))
+	 (s (+fx start ($rgc-matchstart input-port)))
+	 (l (-fx stop start)))
+      (case encoding
+	 ((bigloo #f) (escape-C-string buf s l))
+	 ((r5rs #t) (escape-scheme-string buf s l))
+	 ((wasm) (decode-wasm-string buf s l))
+	 (else (escape-C-string buf s l)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-length ...                                            */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Rgc/rgcexpand.scm     */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Rgc/rgcexpand.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Sun Aug 25 09:12:02 2019 (serrano)                */
+;*    Last change :  Thu Sep  4 10:10:41 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -199,6 +199,15 @@
 	     (if (and (>=fx min 0) (>=fx max min) (<=fx max (the-length)))
 		 (rgc-buffer-escape-substring iport min max strict)
 		 (error "the-escape-substring"
+		    ((@ format __r4_output_6_10_3)
+		     "Illegal range `~a'" (the-string))
+		    (cons min max))))
+	  ;; @deffn the-escape-substring@
+	  (define (the-encoded-substring::bstring min::int max::int encoding::symbol)
+	     (when (<fx max 0) (set! max (+fx (the-length) max)))
+	     (if (and (>=fx min 0) (>=fx max min) (<=fx max (the-length)))
+		 (rgc-buffer-decode-substring iport min max encoding)
+		 (error "the-encoded-substring"
 		    ((@ format __r4_output_6_10_3)
 		     "Illegal range `~a'" (the-string))
 		    (cons min max))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep  4 07:43:45 2005                          */
-;*    Last change :  Mon Jan 13 07:53:18 2025 (serrano)                */
+;*    Last change :  Thu Sep  4 12:10:40 2025 (serrano)                */
 ;*    Copyright   :  2005-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MMAP testing                                                     */
@@ -37,6 +37,7 @@
       (test "mmap-read-position" (mmap-read-position mm) #e0)
       (test "mmap-write-position" (mmap-write-position mm) #e0)
       (test "mmap-ref.1" (mmap-ref mm 0) c)
+      (test "mmap-ref.2" (mmap-ref mm 0) c)
       (mmap-set! mm 0 #\a)
       (test "mmap-set.1!" (mmap-ref mm 0) #\a)
       (mmap-set! mm 0 c)
