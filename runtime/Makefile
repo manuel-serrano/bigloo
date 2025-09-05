@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Aug 26 12:15:55 2025 (serrano)                */
+#*    Last change :  Wed Sep  3 16:39:29 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -724,7 +724,7 @@ objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
 	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w $^ -o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
-objs/wasm_s/%.v: Wlib/%.wat $(BOOTLIBDIR)/types.wat
+objs/wasm_s/%.v: Wlib/%.wat
 	$(BGLWATIB) -v $< $(BOOTLIBDIR)/types.wat && date > $@
 
 objs/wasm_s/bigloo_s.v: objs/wasm_s/bigloo_s.wat
