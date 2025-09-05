@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Sep  4 11:59:23 2025 (serrano)                */
+;*    Last change :  Fri Sep  5 12:50:52 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -269,13 +269,13 @@ JSCOPT=${JSCOPT:-}
 
 case $JS in
   \"node\")
-     $NODE $NODEOPT $NODEOPTEXTRA $BIGLOOLIBDIR/runtime-node.mjs @STATIC@ @LIBS@ $WASMOPT @WASM@ $*;;
+     $NODE $NODEOPT $NODEOPTEXTRA $BIGLOOLIBDIR/bigloo-node.mjs @STATIC@ @LIBS@ $WASMOPT @WASM@ $*;;
 
   \"mozjs\")
-     $MOZJS $MOZJSOPT $MOZJSOPTEXTRA $WASMOPT -m $BIGLOOLIBDIR/runtime-mozjs.mjs - @STATIC@ @LIBS@ @WASM@ $*;;
+     $MOZJS $MOZJSOPT $MOZJSOPTEXTRA $WASMOPT -m $BIGLOOLIBDIR/bigloo-mozjs.mjs - @STATIC@ @LIBS@ @WASM@ $*;;
 
   \"jsc\")
-     $JSC $JSCOPT $JSCOPTEXTRA $WASMOPT $BIGLOOLIBDIR/runtime-jsc.mjs - @STATIC@ @LIBS@ @WASM@ $*;;
+     $JSC $JSCOPT $JSCOPTEXTRA $WASMOPT $BIGLOOLIBDIR/bigloo-jsc.mjs - @STATIC@ @LIBS@ @WASM@ $*;;
 
   *)
      echo \"*** ERROR: unsupported JS engine: $JS\" >&2
