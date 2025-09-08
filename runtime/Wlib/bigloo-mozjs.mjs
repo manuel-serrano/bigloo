@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Sep  5 13:57:30 2025 (serrano)                */
+/*    Last change :  Mon Sep  8 11:53:56 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -603,7 +603,7 @@ async function runStatic(client) {
       process.exit(1);
    }
 
-   instanceClient.exports.__bigloo_main();
+   instanceClient.exports.__bigloo_main(1);
 }
 
 /*---------------------------------------------------------------------*/
@@ -629,7 +629,7 @@ async function runSingle(client) {
    }
 
    try {
-      instanceClient.exports.__bigloo_main();
+      instanceClient.exports.__bigloo_main(1);
    } catch(e) {
       putstr("*** WASM ");
       print(e.toString());
@@ -667,7 +667,7 @@ async function runDouble(client, rts) {
    }
 
    try {
-      instanceRts.exports.__bigloo_main();
+      instanceRts.exports.__bigloo_main(1);
    } catch(e) {
       putstr("*** WASM ");
       print(e.toString());

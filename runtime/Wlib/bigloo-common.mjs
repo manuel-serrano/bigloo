@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Fri Sep  5 13:46:21 2025 (serrano)                */
+/*    Last change :  Mon Sep  8 15:31:02 2025 (serrano)                */
 /*    Copyright   :  2025 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -167,7 +167,9 @@ export class BglRuntime {
 	 internalError: (errno, val) => {
 	    console.error("*** INTERNAL-ERROR(" + errno +"):",
 			  format(internalErrors[errno], val));
-	 }
+	 },
+
+	 performanceNow: () => performance.now(),
       }
    }
 
@@ -347,13 +349,13 @@ export class BglRuntime {
 	 secondsToString: (sec, addr) => {
 	    const buf = new Date(sec * 1000).toString();
 
-	    storeJSStringToScheme(self.instance, buf, addr);
+	    self.storeString(buf, addr);
 	    return buf.length;
 	 },
 	 secondsToUTCString: (sec, addr) => {
 	    const buf = new Date(sec * 1000).toUTCString();
 
-	    storeJSStringToScheme(self.instance, buf, addr);
+	    self.storeString(buf, addr);
 	    return buf.length;
 	 },
 	 

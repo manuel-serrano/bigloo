@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Sep  5 13:41:24 2025 (serrano)                */
+/*    Last change :  Mon Sep  8 15:22:08 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -591,7 +591,7 @@ class BglNodeRuntime extends BglRuntime {
 
 	 getcwd: (addr) => {
 	    const s = process.cwd();
-	    storeJSStringToScheme(self.instance, s, addr);
+	    self.storeString(s, addr);
 	    return s.length;
 	 },
 
@@ -749,11 +749,10 @@ if (!client) {
 /*---------------------------------------------------------------------*/
 try {
    if (rts) {
-      runDynamic(client, rts, libs);
+      await runDynamic(client, rts, libs);
    } else {
       runStatic(client);
    }
 } catch(e) {
    console.error("*** ERROR", e);
 }
-

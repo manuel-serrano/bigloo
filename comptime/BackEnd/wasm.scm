@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Sep  5 12:50:52 2025 (serrano)                */
+;*    Last change :  Mon Sep  8 08:54:08 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -117,8 +117,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link me::wasm result)
    (when (string? result)
-      (if (or (eq? *pass* 'cc)
-	      (and (string? *dest*) (string=? (suffix *dest*) "wat")))
+      (if (and (string? *dest*) (string=? (suffix *dest*) "wat"))
 	  (when (string? *dest*) (rename-file result *dest*))
 	  (with-handler
 	     (lambda (e)
@@ -130,9 +129,17 @@
 ;*    backend-link-objects ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link-objects me::wasm sources)
-   (let ((wasmas (if (pair? *wasmas-options*)
-		     (format "~a ~( )" *wasmas* *wasmas-options*)
-		     *wasmas*)))
+   (let* ((srcobj (map (lambda (e) (if (pair? e) (cdr e) e)) sources))
+	  (wasmas (if (pair? *wasmas-options*)
+		      (format "~a ~( )" *wasmas* *wasmas-options*)
+		      *wasmas*))
+	  (target (or *dest* "a.out"))
+	  (wasmtgt (if (eq? *pass* 'cc)
+		       target
+		       (string-append target ".wasm")))
+	  
+	  (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
+	  (libs (delete-duplicates *additional-bigloo-libraries*)))
       (verbose 1 "   . Wasm" #\Newline)
       (cond
 	 ((and (null? *o-files*) (eq? *pass* 'so))
@@ -153,27 +160,22 @@
 	 ((null? sources)
 	  (error "wasm-link" "No source file provided" *dest*))
 	 (*static-bigloo?*
-	  (let* ((srcobj (map (lambda (e) (if (pair? e) (cdr e) e)) sources))
-		 (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
-		 (lib (if *unsafe-library* "bigloo_u.wat" "bigloo_s.wat"))
+	  (let* ((lib (if *unsafe-library* "bigloo_u.wat" "bigloo_s.wat"))
 		 (runtime-file (find-file-in-path lib *lib-dir*))
-		 (libs (delete-duplicates *additional-bigloo-libraries*))
 		 (objects (delete-duplicates! (append srcobj *o-files*) string=?)))
 	     (wat-merge (cons runtime-file objects) tmp)
-	     (let* ((target (or *dest* "a.out"))
-		    (wasm (string-append target ".wasm"))
-		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
+	     (let ((cmd (format "~a ~a -o ~a" wasmas tmp wasmtgt)))
 		(verbose 2 "      assembling [" cmd #\] #\Newline)
 		(exec cmd #t "wasmas")
 		(unwind-protect
-		   (begin
+		   (unless (eq? *pass* 'cc)
 		      (verbose 2 "      generating [" target #\] #\Newline)
 		      (with-output-to-file target
 			 (lambda ()
 			    (display 
 			       (sed wasm-script
 				  `(("@LIBDIR@" . ,(bigloo-config 'library-directory))
-				    ("@WASM@" . ,wasm)
+				    ("@WASM@" . ,wasmtgt)
 				    ("@STATIC@" . "")
 				    ("@LIBS@" . ""))))
 			    (newline)))
@@ -181,28 +183,23 @@
 		   (when *rm-tmp-files*
 		      (delete-file tmp))))))
 	 (else
-	  (let* ((srcobj (map (lambda (e) (if (pair? e) (cdr e) e)) sources))
-		 (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
-		 (libs (delete-duplicates *additional-bigloo-libraries*))
-		 (objects (delete-duplicates! (append srcobj *o-files*) string=?)))
+	  (let ((objects (delete-duplicates! (append srcobj *o-files*) string=?)))
 	     (if (pair? (cdr objects))
 		 (wat-merge objects tmp)
 		 (set! tmp (car objects)))
-	     (let* ((target (or *dest* "a.out"))
-		    (wasm (string-append target ".wasm"))
-		    (cmd (format "~a ~a -o ~a" wasmas tmp wasm)))
+	     (let ((cmd (format "~a ~a -o ~a" wasmas tmp wasmtgt)))
 		(verbose 2 "      assembling [" cmd #\] #\Newline)
 		(exec cmd #t "wasmas")
 		(post-optimizations me sources)
 		(unwind-protect
-		   (begin
+		   (unless (eq? *pass* 'cc)
 		      (verbose 2 "      generating [" target #\] #\Newline)
 		      (with-output-to-file target
 			 (lambda ()
 			    (display 
 			       (sed wasm-script
 				  `(("@LIBDIR@" . ,(bigloo-config 'library-directory))
-				    ("@WASM@" . ,wasm)
+				    ("@WASM@" . ,wasmtgt)
 				    ("@STATIC@" . ,(if *unsafe-library* "-s $BIGLOOLIBDIR/bigloo_u.wasm" "-s $BIGLOOLIBDIR/bigloo_s.wasm"))
 				    ("@LIBS@" . ,(additional-wasm-libraries)))))
 			    (newline)))

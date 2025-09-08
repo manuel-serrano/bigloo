@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Fri Jul 25 14:36:08 2025 (serrano)                */
+;*    Last change :  Mon Sep  8 15:46:47 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM system ops                                                  */
@@ -15,6 +15,8 @@
    ;; Imports 
    ;; -----------------------------------------------------------------
 
+   (import "__js" "performanceNow" (func $performanceNow (result f64)))
+   
    (import "__js_system" "command_line_size" (func $js_command_line_size (result i32)))
    (import "__js_system" "command_line_entry" (func $js_command_line_entry (param i32) (param i32) (result i32)))
    (import "__js_system" "executable_name" (func $js_executable_name (param i32) (result i32)))
@@ -28,16 +30,21 @@
    (import "__js_system" "chdir" (func $js_chdir (param i32 i32) (result i32)))
    (import "__js_system" "system" (func $js_system (param i32 i32) (result i32)))
    (import "__js_system" "sleep" (func $js_sleep (param i32)))
+   
 
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
    (import "__bigloo" "BFALSE" (global $BFALSE (ref eq)))
    (import "__bigloo" "BTRUE" (global $BTRUE (ref eq)))
    (import "__bigloo" "BEOF" (global $BEOF (ref eq)))
    (import "__bigloo" "BNIL" (global $BNIL (ref eq)))
+   (import "__bigloo" "BINT" (func $BINT (param i64) (result (ref eq))))
    (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
    (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
    (import "__bigloo" "bgl_store_substring" (func $store_substring (param (ref $bstring)) (param i64) (param i64) (param i32)))
    (import "__bigloo" "MAKE_YOUNG_PAIR" (func $MAKE_YOUNG_PAIR (param (ref eq) (ref eq)) (result (ref $pair))))
+   (import "__bigloo" "bgl_funcall0" (func $funcall0 (param (ref $procedure)) (result (ref eq))))
+   (import "__bigloo" "BGL_MVALUES_NUMBER_SET" (func $BGL_MVALUES_NUMBER_SET (param i32) (result i32)))
+   (import "__bigloo" "BGL_MVALUES_VAL_SET" (func $BGL_MVALUES_VAL_SET (param i32) (param (ref eq)) (result (ref eq))))
 
    
    ;; -----------------------------------------------------------------
@@ -196,4 +203,23 @@
       (param $tmt i64)
       (call $js_sleep (i32.wrap_i64 (local.get $tmt))))
 
+   (func $bgl_time (export "bgl_time")
+      (param $proc (ref $procedure))
+      (result (ref eq))
+      (local $res (ref eq))
+      (local $t0 f64)
+      (local $t1 f64)
+
+      (local.set $t0 (call $performanceNow))
+      (local.set $res (call $funcall0 (local.get $proc)))
+      (local.set $t1 (call $performanceNow))
+
+      (call $BGL_MVALUES_NUMBER_SET (i32.const 4))
+      (call $BGL_MVALUES_VAL_SET (i32.const 1) (call $BINT (i64.const -1)))
+      (call $BGL_MVALUES_VAL_SET (i32.const 2) (call $BINT (i64.const -1)))
+      (call $BGL_MVALUES_VAL_SET (i32.const 3)
+	 (call $BINT
+	    (i64.trunc_f64_u (f64.sub (local.get $t1) (local.get $t0)))))
+      
+      (return (local.get $res)))
    )
