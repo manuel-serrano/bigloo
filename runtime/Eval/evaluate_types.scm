@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/runtime/Eval/evaluate_types.scm        */
+;*    .../prgm/project/bigloo/wasm/runtime/Eval/evaluate_types.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:37:05 2011                          */
-;*    Last change :  Fri May 24 14:01:20 2024 (serrano)                */
-;*    Copyright   :  2011-24 Manuel Serrano                            */
+;*    Last change :  Tue Sep  9 17:10:15 2025 (serrano)                */
+;*    Copyright   :  2011-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private types of the lambda-based evaluator                      */
 ;*=====================================================================*/
@@ -118,7 +118,7 @@
 	      args )
 	   (class ev_app::ev_expr
 	      (loc read-only)
-	      fun args tail?)
+	      fun args::pair-nil tail?::bool)
 	   (class ev_abs::ev_expr
 	      (loc read-only)
 	      where

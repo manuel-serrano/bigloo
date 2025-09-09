@@ -271,29 +271,37 @@
 (define (clean-mod-rectype! env::env l x::long)
    ; the `(rec ...) in the environment assures rolling
    (let ((sts (map-in-order
-                 (match-lambda
-                    ((type (and (? ident?) ?id) ?st)
-                     (add-type! env id (econs 'rec (list (-fx (-> env ntype) x))
-                                              (-> env ntype))) st)
-                    ((type ?st)
-                     (add-type! env #f (econs 'rec (list (-fx (-> env ntype) x))
-                                              (-> env ntype))) st)
-                    ((type ?x ?-)
-                     (raise `((expected ident) ,x)))
-                    (?x (raise `(expected-typedef ,x)))) l)))
-      (define (valid-st st x)
-         (with-default-value env '(sub final (error)) `(at-pos ,(cer st))
-               (match-case st
-                  ((sub final ?ct) `(sub final ,(valid-ct env ct x)))
-                  ((sub final (and ?y (? idx?)) ?ct)
-                   `(sub final ,(type-get env y) ,(valid-ct env ct x)))
-                  ((sub (and ?y (? idx?)) ?ct)
-                   `(sub ,(type-get env y) ,(valid-ct env ct x)))
-                  ((sub ?ct)
-                   `(sub ,(valid-ct env ct x)))
-                  (else
-                   (replace-exception 'expected-comptype 'expected-subtype
-                      `(sub final ,(valid-ct env st x)))))))
+		 (lambda (t)
+		    (match-case t
+		       ((type (and (? ident?) ?id) ?st)
+			(add-type! env id
+			   (econs 'rec (list (-fx (-> env ntype) x))
+			      (-> env ntype)))
+			(cons st t))
+		       ((type ?st)
+			(add-type! env #f
+			   (econs 'rec (list (-fx (-> env ntype) x))
+			      (-> env ntype)))
+			(cons st t))
+		       ((type ?x ?-)
+			(raise `((expected ident) ,x)))
+		       (?x (raise `(expected-typedef ,x)))))
+		 l)))
+      (define (valid-st t x)
+	 (let ((st (car t)))
+	    (with-default-value env '(sub final (error))
+	       `(at-pos ,(if (epair? st) (cer st) (cer (cdddr t))))
+	       (match-case st
+		  ((sub final ?ct) `(sub final ,(valid-ct env ct x)))
+		  ((sub final (and ?y (? idx?)) ?ct)
+		   `(sub final ,(type-get env y) ,(valid-ct env ct x)))
+		  ((sub (and ?y (? idx?)) ?ct)
+		   `(sub ,(type-get env y) ,(valid-ct env ct x)))
+		  ((sub ?ct)
+		   `(sub ,(valid-ct env ct x)))
+		  (else
+		   (replace-exception 'expected-comptype 'expected-subtype
+		      `(sub final ,(valid-ct env st x))))))))
 
       (let ((rolled-sts (map valid-st sts (iota (length sts) x 1))))
          (for-each (lambda (i)
