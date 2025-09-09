@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evaluate_fsize.scm      */
+;*    .../prgm/project/bigloo/wasm/runtime/Eval/evaluate_fsize.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:42:27 2011                          */
-;*    Last change :  Wed May 11 18:31:40 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Tue Sep  9 14:57:48 2025 (serrano)                */
+;*    Copyright   :  2011-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the size of stack needed for an abstraction              */
 ;*    of the space for free variables is not included.                 */
@@ -196,6 +196,7 @@
 
 (define-method (search-letrec e::ev_list);
    (with-access::ev_list e (args)
+      (tprint "S1=" args)
       (search-letrec* args)
       e ))
 
@@ -254,6 +255,7 @@
 (define-method (search-letrec e::ev_app);
    (with-access::ev_app e (fun args)
       (set! fun (search-letrec fun))
+      (tprint "S4=" args)
       (search-letrec* args)
       e ))
 

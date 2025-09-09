@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/autoconf/Makefile             */
+#*    serrano/prgm/project/bigloo/wasm/autoconf/Makefile               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Fri Dec  8 08:15:24 2023 (serrano)                */
-#*    Copyright   :  1997-2023 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Sep  9 09:13:04 2025 (serrano)                */
+#*    Copyright   :  1997-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -63,7 +63,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   dbus gmp resolv resolvsym unistring limbs signbit rdynamic \
                   getuid getgid gecos getprotoent machdep arflags mixer \
                   config.guess ccfortify environ setenv symlink \
-                  androidmkdir bgl-pkg-config phidget phidgetlibdir \
+                  androidmkdir bgl-pkg-config \
                   gmtoff localtime_r gmtime_r timegm libuv getgroups ioctl \
                   pthreadkill syslog overflow semaphore lockf likely \
                   gccattrs getrlimit c99stackalloc tools bootmethod musttail \

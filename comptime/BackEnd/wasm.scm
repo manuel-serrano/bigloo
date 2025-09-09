@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Sep  9 08:01:53 2025 (serrano)                */
+;*    Last change :  Tue Sep  9 09:46:46 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -134,9 +134,6 @@
 		      (format "~a ~( )" *wasmas* *wasmas-options*)
 		      *wasmas*))
 	  (target (or *dest* "a.out"))
-	  (wasmtgt (if (eq? *pass* 'cc)
-		       target
-		       (string-append (prefix (car srcobj)) ".wasm")))
 	  (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
 	  (libs (delete-duplicates *additional-bigloo-libraries*)))
       (verbose 1 "   . Wasm" #\Newline)
@@ -161,7 +158,10 @@
 	 (*static-bigloo?*
 	  (let* ((lib (if *unsafe-library* "bigloo_u.wat" "bigloo_s.wat"))
 		 (runtime-file (find-file-in-path lib *lib-dir*))
-		 (objects (delete-duplicates! (append srcobj *o-files*) string=?)))
+		 (objects (delete-duplicates! (append srcobj *o-files*) string=?))
+		 (wasmtgt (if (eq? *pass* 'cc)
+			      target
+			      (string-append (prefix (car srcobj)) ".wasm"))))
 	     (wat-merge (cons runtime-file objects) tmp)
 	     (let ((cmd (format "~a ~a -o ~a" wasmas tmp wasmtgt)))
 		(verbose 2 "      assembling [" cmd #\] #\Newline)
@@ -182,7 +182,10 @@
 		   (when *rm-tmp-files*
 		      (delete-file tmp))))))
 	 (else
-	  (let ((objects (delete-duplicates! (append srcobj *o-files*) string=?)))
+	  (let ((objects (delete-duplicates! (append srcobj *o-files*) string=?))
+		(wasmtgt (if (eq? *pass* 'cc)
+			     target
+			     (string-append (prefix (car srcobj)) ".wasm"))))
 	     (if (pair? (cdr objects))
 		 (wat-merge objects tmp)
 		 (set! tmp (car objects)))

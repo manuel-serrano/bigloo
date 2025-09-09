@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Wed Jun 18 15:50:05 2025 (serrano)                */
+;*    Last change :  Tue Sep  9 14:55:36 2025 (serrano)                */
 ;*    Copyright   :  2002-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -745,15 +745,15 @@
 			    (and (>fx n n-1) (>fx n-1 n-2)))
 		#t)))
       (else #unspecified))
-   (test "cond-expand" (cond-expand
-			  (srfi-0 (* 1 2))
-			  (else (+ 3 4)))
-	 2)
+   (test "cond-expand.1" (cond-expand
+			    (srfi-0 (* 1 2))
+			    (else (+ 3 4)))
+      2)
    (test "cond-expand(eval)" (eval '(cond-expand
 				     (srfi-0 (* 1 2))
 				     (else (+ 3 4))))
-	 2)
-   (test "cond-expand" (cond-expand
+      2)
+   (test "cond-expand.2" (cond-expand
 			  (srfi-that-does-not-exists (* 1 2))
 			  (else (+ 3 4)))
 	 7)
@@ -773,21 +773,21 @@
 					   ((and bigloo bigloo-eval srfi-0) 4)
 					   (else -1)))
 	 4)
-   (test "cond-expand(or)" (cond-expand
+   (test "cond-expand(or.1)" (cond-expand
 			      ((or bigloo-eval bigloo) 2)
 			      (else -1))
 	 2)
-   (test "cond-expand(or)" (cond-expand
+   (test "cond-expand(or.2)" (cond-expand
 			      ((or bigloo-eval bigloo) 2)
 			      (else -1))
 	 2)
-   (test "cond-expand(or)" (let ((v 0))
+   (test "cond-expand(or.3)" (let ((v 0))
 			      (cond-expand
 				 ((or bigloo1.1 bigloo1.2) (set! v (+ 1 v)))
 				 (else (set! v (+ 1 v))))
 			      v)
 	 1)
-   (test "cond-expand(or)" (eval '(let ((v 0))
+   (test "cond-expand(or.4)" (eval '(let ((v 0))
 				     (cond-expand
 					((or bigloo1.1 bigloo1.2) (set! v (+ 1 v)))
 					(else (set! v (+ 1 v))))
@@ -797,31 +797,31 @@
 					  ((or bigloo-eval bigloo) 5)
 					  (else -1)))
 	 5)
-   (test "cond-expand(or)" (cond-expand
+   (test "cond-expand(or.5)" (cond-expand
 			      ((or bigloo bigloo-eval) 2)
 			      (else -1))
 	 2)
-   (test "cond-expand(or-eval)" (eval '(cond-expand
+   (test "cond-expand(or-eval.2)" (eval '(cond-expand
 					  ((or bigloo bigloo-eval) 5)
 					  (else -1)))
       5)
-   (test "cond-expand(or-empty)" (eval (cond-expand ((or chicken bigloo)) (else 3)))
+   (test "cond-expand(or-empty1)" (eval (cond-expand ((or chicken bigloo)) (else 3)))
       #unspecified)
    (test "cond-expand(or-empty2)" (eval (cond-expand ((or chicken gambit)) (else 3)))
       3)
    (test "cond-expand(or-empty3)" (eval (cond-expand ((or chicken gambit)) (else)))
       #unspecified)
-   (test "cond-expand(or)" (cond-expand-foo 3) 3)
-   (test "cond-expand" (cond-expand ((and bigloo bigloo) 1) (else 2)) 1)
-   (test "cond-expand" (cond-expand (xxx 1) (else 2)) 2)
-   (test "cond-expand" (cond-expand ((and bigloo xxx) 1) (else 2)) 2)
-   (test "cond-expand" (cond-expand ((and xxx bigloo) 1) (else 2)) 2)
-   (test "manling" (bigloo-demangle (bigloo-mangle "toto")) "toto")
-   (test "manling" (bigloo-demangle (bigloo-mangle "toto!")) "toto!")
+   (test "cond-expand(or.4)" (cond-expand-foo 3) 3)
+   (test "cond-expand.3" (cond-expand ((and bigloo bigloo) 1) (else 2)) 1)
+   (test "cond-expand.4" (cond-expand (xxx 1) (else 2)) 2)
+   (test "cond-expand.5" (cond-expand ((and bigloo xxx) 1) (else 2)) 2)
+   (test "cond-expand.6" (cond-expand ((and xxx bigloo) 1) (else 2)) 2)
+   (test "manling.1" (bigloo-demangle (bigloo-mangle "toto")) "toto")
+   (test "manling.2" (bigloo-demangle (bigloo-mangle "toto!")) "toto!")
    (let ((s "toto!&^%_23_2342234___"))
-      (test "manling" (bigloo-demangle (bigloo-mangle s)) s))
-   (test "mangling" (bigloo-mangled? "BgLtoto") #f)
-   (test "mangling" (bigloo-mangled? (bigloo-mangle "BgL_toto")) #t)
+      (test "manling.3" (bigloo-demangle (bigloo-mangle s)) s))
+   (test "mangling.4" (bigloo-mangled? "BgLtoto") #f)
+   (test "mangling.5" (bigloo-mangled? (bigloo-mangle "BgL_toto")) #t)
    (let* ((obj (list 1 2 3 4))
 	  (v   (vector 2 3 obj 5)))
       (set-car! obj v)

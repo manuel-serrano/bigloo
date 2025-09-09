@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Thu Nov 10 13:55:46 2005                          */
-;*    Last change :  Tue Jul 29 08:54:00 2025 (serrano)                */
+;*    Last change :  Tue Sep  9 13:26:07 2025 (serrano)                */
 ;*    Copyright   :  2005-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SQLITE Scheme binding                                            */
@@ -15,7 +15,7 @@
 (module __sqlite_sqlite
    
    (option (set! *dlopen-init-gc* #t))
-   
+
    (cond-expand
       ((and (or bigloo-c bigloo-wasm) (not sqltiny))
        (include "sqlite.sch")))

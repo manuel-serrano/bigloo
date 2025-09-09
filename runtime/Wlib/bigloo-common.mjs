@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Mon Sep  8 15:31:02 2025 (serrano)                */
+/*    Last change :  Tue Sep  9 08:33:54 2025 (serrano)                */
 /*    Copyright   :  2025 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -168,6 +168,8 @@ export class BglRuntime {
 	    console.error("*** INTERNAL-ERROR(" + errno +"):",
 			  format(internalErrors[errno], val));
 	 },
+
+	 nil: null,
 
 	 performanceNow: () => performance.now(),
       }
@@ -378,4 +380,41 @@ export class BglRuntime {
       };
    }
 
+}
+
+/*---------------------------------------------------------------------*/
+/*    bglParseArgs ...                                                 */
+/*---------------------------------------------------------------------*/
+export function bglParseArgs(argv) {
+   let client = undefined, rts = undefined , libs = [];
+
+   if (argv[2] === "-s") {
+      argv.splice(1, 2);
+      
+      for (let i = 0; i < argv.length; i++) {
+	 if (argv[i] === "-l") {
+	    const lib = { exports: argv[i + 1], lib: argv[i + 2], js: argv[i + 3] };
+	    libs.push(lib);
+	    i += 3;
+	 } else if (/[.]wasm$/.test(argv[i])) {
+	    if (!rts) {
+	       rts = argv[i];
+	    } else if (!client) {
+	       client = argv[i];
+	    } else {
+	       console.error("*** ERROR: duplicate wasm source", argv[i]);
+	       process.exit(1)
+	    }
+	 }
+      }
+      
+      if (!client) {
+	 console.error("*** ERROR: missing input WASM module file.");
+	 process.exit(1);
+      }
+	 
+      return {client, rts, libs};
+   } else {
+      return { client: argv[2], rts, libs };
+   }
 }

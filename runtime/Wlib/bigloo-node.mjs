@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Sep  8 15:22:08 2025 (serrano)                */
+/*    Last change :  Tue Sep  9 08:37:25 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -19,7 +19,7 @@ import { format } from "node:util";
 import { execSync, spawnSync, spawn } from "node:child_process";
 import { createServer, createConnection, Socket } from "node:net";
 
-import { BglRuntime } from "./bigloo-common.mjs";
+import { BglRuntime, bglParseArgs } from "./bigloo-common.mjs";
 
 /*---------------------------------------------------------------------*/
 /*    Text decoders                                                    */
@@ -637,11 +637,6 @@ class BglNodeRuntime extends BglRuntime {
 }
 
 /*---------------------------------------------------------------------*/
-/*    Wasm instances                                                   */
-/*---------------------------------------------------------------------*/
-let client, rts, libs = [];
-
-/*---------------------------------------------------------------------*/
 /*    runStatic ...                                                    */
 /*    -------------------------------------------------------------    */
 /*    Run a whole wasm program in a single self.instance.              */
@@ -665,6 +660,18 @@ async function runStatic(client) {
 
    instanceClient.exports.__bigloo_main();
 }
+/*---------------------------------------------------------------------*/
+/*    libRuntime ...                                                   */
+/*---------------------------------------------------------------------*/
+async function libRuntime(lib) {
+   const rts = new BglNodeRuntime();
+   if (lib.js) {
+      const mod = await import(lib.js);
+      mod.init(rts);
+   }
+
+   return rts;
+}
 
 /*---------------------------------------------------------------------*/
 /*    runDynamic ...                                                   */
@@ -673,7 +680,7 @@ async function runStatic(client) {
 /*---------------------------------------------------------------------*/
 async function runDynamic(client, rts, libs) {
    const __jsRts = new BglNodeRuntime();
-   const __jsLibs = libs.map(l => new BglNodeRuntime());
+   const __jsLibs = await Promise.all(libs.map(libRuntime));
    const __jsClient = new BglNodeRuntime();
 
    const wasmRts = await WebAssembly.compile(readFileSync(rts));
@@ -708,41 +715,12 @@ async function runDynamic(client, rts, libs) {
 /*---------------------------------------------------------------------*/
 /*    Minimalist command line parsing                                  */
 /*---------------------------------------------------------------------*/
-// This code is a bit strange but is required to support Deno and NodeJS.
-// If we import 'process' in NodeJS, readSync() will throw the error EAGAIN
-// when reading, so we can't import it. However, in Deno, process is not
-// a global variable and therefore we need to explicitly import 'process'.
 const argv = (globalThis.window && "Deno" in window)
    ? (await import('node:process')).argv
    : process.argv;
 
-if (argv[2] === "-s") {
-   argv.splice(1, 2);
-   for (let i = 0; i < argv.length; i++) {
-      if (argv[i] === "-l") {
-	 const lib = { exports: argv[i + 1], lib: argv[i + 2], js: argv[i + 3] };
-	 libs.push(lib);
-	 i += 3;
-      } else if (/[.]wasm$/.test(argv[i])) {
-	 if (!rts) {
-	    rts = argv[i];
-	 } else if (!client) {
-	    client = argv[i];
-	 } else {
-	    console.error("*** ERROR: duplicate wasm source", argv[i]);
-	    process.exit(1)
-	 }
-      }
-   }
-} else {
-   client = argv[2];
-   libs = [];
-}
+const { client, rts, libs } = bglParseArgs(argv);
 
-if (!client) {
-   console.error("*** ERROR: missing input WASM module file.");
-   process.exit(1);
-}
 
 /*---------------------------------------------------------------------*/
 /*    top-level                                                        */

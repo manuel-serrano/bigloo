@@ -83,6 +83,7 @@
       ((f32) '(f32.const 0))
       ((f64) '(f64.const 0))
       ((eqref) '(global.get $BUNSPEC))
+      ((externref) '(global.get $foreign-nil))
       (else
        (match-case type
 	  ((or (mut (ref ?type)) (ref ?type))
