@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Tue Jul  8 07:36:56 2025 (serrano)                */
+;*    Last change :  Tue Sep  9 09:28:03 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -48,7 +48,7 @@
    (import "__js_bignum" "bignum_or" (func $bignum_or (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_and" (func $bignum_and (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_not" (func $bignum_not (param externref) (result externref)))
-    (import "__js_bignum" "bignum_lsh" (func $bignum_lsh (param externref) (param f64) (result externref)))
+   (import "__js_bignum" "bignum_lsh" (func $bignum_lsh (param externref) (param f64) (result externref)))
    (import "__js_bignum" "bignum_rsh" (func $bignum_rsh (param externref) (param f64) (result externref)))
    (import "__js_bignum" "bignum_mask" (func $bignum_mask (param externref) (param f64) (result externref)))
    (import "__js_bignum" "bignum_quotient" (func $bignum_quotient (param externref externref) (result externref)))

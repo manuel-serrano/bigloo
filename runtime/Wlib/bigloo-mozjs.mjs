@@ -3,16 +3,16 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Sep  8 11:53:56 2025 (serrano)                */
+/*    Last change :  Tue Sep  9 08:38:49 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
-/*    Bigloo-wasm JavaScript binding, node specific                    */
+/*    Bigloo-wasm JavaScript binding, Mozilla specific                 */
 /*=====================================================================*/
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-import { BglRuntime } from "./bigloo-common.mjs";
+import { BglRuntime, bglParseArgs } from "./bigloo-common.mjs";
 
 /*---------------------------------------------------------------------*/
 /*    Compatibility kit                                                */
@@ -550,38 +550,6 @@ class BglMozRuntime extends BglRuntime {
 }
 
 /*---------------------------------------------------------------------*/
-/*    Wasm instances                                                   */
-/*---------------------------------------------------------------------*/
-let client, rts, libs = [];
-
-/*---------------------------------------------------------------------*/
-/*    Minimalist command line parsing                                  */
-/*---------------------------------------------------------------------*/
-// This code is a bit strange but is required to support Deno and NodeJS.
-// If we import 'process' in NodeJS, readSync() will throw the error EAGAIN
-// when reading, so we can't import it. However, in Deno, process is not
-// a global variable and therefore we need to explicitly import 'process'.
-const argv = process.argv;
-
-if (argv[2] === "-s") {
-   rts = argv[3];
-   argv.splice(1, 2);
-}
-
-if (argv.length < 3) {
-   console.error("ERROR: missing input WASM module file.");
-   process.exit(1);
-} else if (!existsSync(argv[2])) {
-    console.error(`ERROR: file '${argv[2]}' doesn't exist.`);
-    process.exit(1);
-} else if (extname(argv[2]) != ".wasm") {
-    console.error(`ERROR: input file '${argv[2]}' is not a WASM module.`);
-    process.exit(1);
-} else {
-   client = argv[2];
-}
-
-/*---------------------------------------------------------------------*/
 /*    runStatic ...                                                    */
 /*    -------------------------------------------------------------    */
 /*    Run a whole wasm program in a single self.instance.              */
@@ -607,53 +575,29 @@ async function runStatic(client) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    runSingle ...                                                    */
-/*    -------------------------------------------------------------    */
-/*    Run a whole wasm program in a single self.instance.              */
-/*---------------------------------------------------------------------*/
-async function runSingle(client) {
-   const __js = new BglMozRuntime();
-   const wasmClient = new WebAssembly.Module(readFileSync(client));
-   const instanceClient = new WebAssembly.Instance(wasmClient, __js);
-   
-   __js.link(instanceClient, instanceClient);
-
-   if (!instanceClient.exports.bigloo_main) {
-      console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`);
-      process.exit(1);
-   }
-
-   if (!instanceClient.exports.__bigloo_main) {
-      console.error(`*** ERROR: missing '__bigloo_main' export in "${client}".`);
-      process.exit(1);
-   }
-
-   try {
-      instanceClient.exports.__bigloo_main(1);
-   } catch(e) {
-      putstr("*** WASM ");
-      print(e.toString());
-      process.exit(1);
-   }
-}
-
-/*---------------------------------------------------------------------*/
-/*    runDouble ...                                                    */
+/*    runDynamic ...                                                   */
 /*    -------------------------------------------------------------    */
 /*    Run a wasm in two instances, one for client, one the runtime.    */
 /*---------------------------------------------------------------------*/
-async function runDouble(client, rts) {
+async function runDynamic(client, rts, libs) {
    const __jsClient = new BglMozRuntime();
+   const __jsLibs = libs.map(l => new BglMozRuntime());
    const __jsRts = new BglMozRuntime();
+   
    const wasmRts = new WebAssembly.Module(readFileSync(rts));
+   const wasmLibs = libs.map(l => new WebAssembly.Module(readFileSync(l.lib)));
    const wasmClient = new WebAssembly.Module(readFileSync(client));
 
    const instanceRts = new WebAssembly.Instance(wasmRts, __jsRts);
+   __jsLibs.forEach(l => l.__bigloo = instanceRts.exports);
    __jsClient.__bigloo = instanceRts.exports;
 
+   const instanceLibs = __jsLibs.map((l, i) => new WebAssembly.Instance(wasmLibs[i], __jsLibs[i]));
+   libs.forEach((l, i) => __jsClient[l.exports] = instanceLibs[i].exports);
    const instanceClient = new WebAssembly.Instance(wasmClient, __jsClient);
 
    __jsClient.link(instanceClient, instanceClient);
+   libs.forEach((l, i) => __jsLibs[i].link(instanceClient, instanceClient));
    __jsRts.link(instanceRts, instanceClient);
    
    if (!instanceClient.exports.bigloo_main) {
@@ -676,13 +620,20 @@ async function runDouble(client, rts) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    Minimalist command line parsing                                  */
+/*---------------------------------------------------------------------*/
+const argv = process.argv;
+
+const { client, rts, libs } = bglParseArgs(argv);
+
+/*---------------------------------------------------------------------*/
 /*    top-level                                                        */
 /*---------------------------------------------------------------------*/
 try {
    if (rts) {
-      await runDouble(client, rts);
+      await runDynamic(client, rts, libs);
    } else {
-      await runSingle(client);
+      await runStatic(client);
    }
       
 } catch(e) {

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Mon Jul 28 11:21:43 2025 (serrano)                */
+;*    Last change :  Tue Sep  9 13:33:06 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -216,7 +216,7 @@
     (coerce obj input-port ($input-port?) ())
     (coerce obj output-port ($output-port?) ())
     (coerce obj binary-port ($binary-port?) ())
-    (coerce obj void* ($foreign?) ($obj->void*))
+    (coerce obj void* ($foreign?) ($foreign->void*))
     (coerce obj foreign ($foreign?) ())
     (coerce obj process ($process?) ())
     (coerce obj socket ($socket?) ())
@@ -1090,7 +1090,8 @@
       (macro $uint32->long::long (::uint32) "(long)")
 
       (macro $obj->exit::exit (::obj) "(void *)")
-      (macro $obj->void*::void* (::foreign) "FOREIGN_TO_COBJ")
+      ;;(macro $obj->void*::void* (::obj) "BGL_OBJ_TO_VOID_STAR"
+      (macro $foreign->void*::void* (::foreign) "FOREIGN_TO_COBJ")
       ($void*->obj::foreign (::void*) "void_star_to_obj"))
       
 
@@ -1354,10 +1355,6 @@
       ($cobj->obj "~0")
 
       ($obj->exit "(ref.cast (ref $exit) ~0)")
-      
-      ;; FIXME: remove explicit cast to ref foreign
-      ($obj->void* "(struct.get $foreign $ptr (ref.cast (ref $foreign) ~0))")
-      ($void*->obj "(struct.new $foreign (global.get $symbol-default-value) ~0)")
       )
 
    (java
@@ -1572,7 +1569,8 @@
 	 (method static $uint32->long::long (::uint32) "BGL_INT32_ID")
 
 	 (method static $obj->exit::exit (::obj) "BGL_OBJ_TO_EXIT")
-	 (method static $obj->void*::cobj (::void*) "FOREIGN_TO_COBJ")
+	 ;;(method static $obj->void*::cobj (::obj) "obj_to_cobj")
+	 (method static $foreign->void*::cobj (::foreign) "FOREIGN_TO_COBJ")
 	 (method static $void*->obj::foreign (::void*) "void_star_to_obj")))
 
    (pragma
@@ -1676,6 +1674,6 @@
     ($llong->bllong side-effect-free nesting args-safe fail-safe (effect))
     ($bllong->llong side-effect-free nesting args-safe fail-safe (effect))
     ($bllong->ullong side-effect-free nesting args-safe fail-safe (effect))
-    ($obj->void* side-effect-free nesting args-safe fail-safe (effect))
+    ($foreign->void* side-effect-free nesting args-safe fail-safe (effect))
     ($void*->obj side-effect-free nesting args-safe fail-safe (effect))))
 

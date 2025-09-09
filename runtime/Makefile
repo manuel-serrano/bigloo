@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Sep  8 08:45:12 2025 (serrano)                */
+#*    Last change :  Tue Sep  9 17:57:24 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -907,7 +907,7 @@ install-wasm-runtime:
 	cp Wlib/bigloo-node.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo-node.mjs
 	cp Wlib/bigloo-mozjs.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo-mozjs.mjs
 	cp Wlib/bigloo-web.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo-web.mjs
-	cp Wlib/runtime-jsc.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtime-jsc.mjs
+	cp Wlib/bigloo-jsc.mjs $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo-jsc.mjs
 
 install-bee:
 	$(MAKE) install-lib LIB=libbigloo_p-$(RELEASE)

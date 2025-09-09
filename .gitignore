@@ -165,12 +165,6 @@ api/packrat/src/Misc/packrat.init
 # patch
 api/patch/src/Misc/patch.init
 
-# phidget
-api/phidget/src/Clib/bglphidget_config.h
-api/phidget/src/Clib/pdgmanager.h
-api/phidget/src/Clib/pdgtypes.h
-api/phidget/src/Misc/phidget.init
-
 # pkgcomp
 api/pkgcomp/src/Misc/pkgcomp.init
 

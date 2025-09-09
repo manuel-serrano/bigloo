@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Aug 26 09:04:01 2025 (serrano)                */
+#*    Last change :  Tue Sep  9 09:10:47 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -43,7 +43,7 @@ rpath=
 
 #*--- api -------------------------------------------------------------*/
 importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 crypto openpgp csv upnp libuv libbacktrace"
-apis="$importantapis gstreamer phidget alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat mqtt"
+apis="$importantapis gstreamer alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat mqtt"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -300,13 +300,6 @@ libuvconfigureopt=
 #* libuvversion=v1.48.0                                                */
 #* libuvversion=v1.49.2                                                */
 libuvversion=v1.51.0
-
-#*--- phidget (left blank for autoconfiguration) ----------------------*/
-phidget=
-phidgetlibs=
-phidgetlibdir=$PHIDGETLIBDIR
-phidgetcflags="$PHIDGETCFLAGS"
-phidgetversion=21
 
 #*--- regexp ----------------------------------------------------------*/
 regexp=
@@ -2134,8 +2127,6 @@ case $hostos in
       fi
     fi
 
-    phidgetcflags="-I/Library/Frameworks/Phidget21.framework/Headers"
-    
     syszipdir=$zipdir
     syszipdirstr=$zipdir
     ;;
@@ -3116,22 +3107,6 @@ if [ "$libuv_is_enabled " = "yes " -a "$libuv " = " " ]; then
 
      libuv=`$autoconf libuv --cflags="$libuvcflags" --libs="$libuvlibs"` || exit 1;
   fi
-fi
-
-#*---------------------------------------------------------------------*/
-#*    phidget                                                          */
-#*---------------------------------------------------------------------*/
-# find out the C library for phidget
-if [ "$phidget " = " " ]; then
-   phidgetlibs=`$autoconf phidget --cflags="$phidgetcflags" --version=$phidgetversion`
-
-   if [ "$phidgetlibs " = " " ]; then
-      phidget=no;
-   else
-      if [ "$phidgetlibdir " = " " ]; then
-        phidgetlibdir=`$autoconf phidgetlibdir --version=$phidgetversion`
-      fi
-   fi
 fi
 
 #*---------------------------------------------------------------------*/
@@ -5086,47 +5061,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo "LIBBACKTRACELIBS=" >> $makefile_cfg
     $echo "LIBBACKTRACECFLAGS=" >> $makefile_cfg
     $echo "LIBBACKTRACEBOOTINCDIR=." >> $makefile_cfg
-  fi
-
-  # PHIDGET
-  $echo "PHIDGET=$phidget" >> $makefile_cfg
-  if [ "$phidget " != "no " ]; then
-    $echo "PHIDGETLIBS=$phidgetlibs" >> $makefile_cfg
-    $echo "PHIDGETCFLAGS=$phidgetcflags" >> $makefile_cfg
-    $echo "PHIDGETLIBDIR=$phidgetlibdir" >> $makefile_cfg
-
-    # Patch the code of the PHIDGET init file
-    $echo ";; automatically generated. Don't edit" >  api/phidget/src/Misc/phidget.init
-    cat api/phidget/src/Misc/phidget.init.in \
-      | sed -e "s|@PHIDGETLIBS@|$phidgetlibs|g" \
-            -e "s|@PHIDGETCFLAGS@|$phidgetcflags|g" \
-            -e "s|@PHIDGETVERSION@|$phidgetversion|g" \
-            -e "s|@PHIDGETLIBDIR@|$phidgetlibdir|g" \
-      >>  api/phidget/src/Misc/phidget.init
-
-    # Patch the code of the bgphidget_config.h file
-    $echo "/* automatically generated. Don't edit */" >  api/phidget/src/Clib/bglphidget_config.h
-    cat api/phidget/src/Clib/bglphidget_config.h.in \
-      | sed -e "s|@PHIDGETLIBS@|$phidgetlibs|g" \
-            -e "s|@PHIDGETCFLAGS@|$phidgetcflags|g" \
-            -e "s|@PHIDGETVERSION@|$phidgetversion|g" \
-            -e "s|@PHIDGETLIBDIR@|$phidgetlibdir|g" \
-      >>  api/phidget/src/Clib/bglphidget_config.h
-  else
-    napis=;
-    for a in $apis; do
-       if [ "phidget" != $a ]; then
-         if [ "$napis " = " " ]; then
-           napis="$a";
-         else
-           napis="$napis $a";
-         fi
-       fi
-    done
-    apis=$napis;
-    $echo "PHIDGETLIBS=" >> $makefile_cfg
-    $echo "PHIDGETCFLAGS=" >> $makefile_cfg
-    $echo "PHIDGETLIBDIR=" >> $makefile_cfg
   fi
 
   # DBUS

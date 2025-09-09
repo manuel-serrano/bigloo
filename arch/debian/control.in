@@ -66,13 +66,6 @@ Description: Bigloo core Libraries
 @IFGSTREAMER@ Depends: libgstreamer0.10-0, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @GSTREAMERDEPEND@, @EXTRADEPEND@
 @IFGSTREAMER@ Description: Bigloo bindings for the GSTREAMER library
 
-@IFPHIDGET@ Package: libphidget-bigloo
-@IFPHIDGET@ Architecture: any
-@IFPHIDGET@ Depends: libphidget21-0, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @PHIDGETDEPEND@, @EXTRADEPEND@
-@IFPHIDGET@ Description: Bigloo bindings for the PHIDGET library
-@IFPHIDGET@  The Phidget debian packages repository is located at:
-@IFPHIDGET@  deb http://www.phidgets.com/debian squeeze main
-
 Package: bigloo
 Architecture: any
 Depends: bigloo-libs, ${shlibs:Depends}, ${misc:Depends}

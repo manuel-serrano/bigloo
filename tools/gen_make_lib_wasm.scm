@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jul 17 08:06:57 2025                          */
-;*    Last change :  Thu Jul 17 15:03:48 2025 (serrano)                */
+;*    Last change :  Tue Sep  9 14:54:30 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the wasm heap specific include.                         */
@@ -27,7 +27,7 @@
       ;; check unfound predicates
       (for-each (lambda (pred)
 		   (unless (assq (cdr pred) inl)
-		      (fprint (current-error-port) "predicate definition not found: " (cdr pred) " (" (car pred) ")")))
+		      (fprint (current-error-port) "*** WARNING: gen_make_lib_wasm: predicate definition not found: " (cdr pred) " (" (car pred) ")")))
 	 preds)
       (print ";; Automatically generated file (" (basename (car argv)) "), " (date))
       (pp `(directives (wasm ,@inl)))))

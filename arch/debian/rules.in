@@ -18,7 +18,7 @@ DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 CFLAGS = 
 LDFLAGS =
 
-LDLIBPATH = $(CURDIR)/debian/bigloo-libs@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libsqlite-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libpkglib-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libssl-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libalsa-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libpulseaudio-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libmultimedia-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libflac-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libwav-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libmpg123-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libavahi-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libgstreamer-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libphidget-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$$LD_LIBRARY_PATH
+LDLIBPATH = $(CURDIR)/debian/bigloo-libs@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libsqlite-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libpkglib-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libssl-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libalsa-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libpulseaudio-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libmultimedia-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libflac-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libwav-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libmpg123-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libavahi-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$(CURDIR)/debian/libgstreamer-bigloo@BGLPREFIX@/lib/bigloo/@BIGLOOVERSION@:$$LD_LIBRARY_PATH
 
 config.status: configure
 	dh_testdir
@@ -67,7 +67,7 @@ install: build
 	$(MAKE) install-libs DESTDIR=$(CURDIR)/debian/bigloo-libs
 	$(MAKE) install-devel DESTDIR=$(CURDIR)/debian/bigloo
 	$(MAKE) install-docs DESTDIR=$(CURDIR)/debian/bigloo-doc
-	$(MAKE) install-apis NOAPIS="sqlite pkglib ssl multimedia alsa pulseaudio flac wav mpg123 avahi gstreamer phidget" DESTDIR=$(CURDIR)/debian/bigloo-libs
+	$(MAKE) install-apis NOAPIS="sqlite pkglib ssl multimedia alsa pulseaudio flac wav mpg123 avahi gstreamer" DESTDIR=$(CURDIR)/debian/bigloo-libs
 	@IFSQLITE@ $(MAKE) install-api API=sqlite DESTDIR=$(CURDIR)/debian/libsqlite-bigloo
 	@IFPKGLIB@ $(MAKE) install-api API=pkglib DESTDIR=$(CURDIR)/debian/libpkglib-bigloo
 	@IFSSL@ $(MAKE) install-api API=ssl DESTDIR=$(CURDIR)/debian/libssl-bigloo
@@ -79,7 +79,6 @@ install: build
 	@IFMPG123@ $(MAKE) install-api API=mpg123 DESTDIR=$(CURDIR)/debian/libmpg123-bigloo
 	@IFAVAHI@ $(MAKE) install-api API=avahi DESTDIR=$(CURDIR)/debian/libavahi-bigloo
 	@IFGSTREAMER@ $(MAKE) install-api API=gstreamer DESTDIR=$(CURDIR)/debian/libgstreamer-bigloo
-	@IFPHIDGET@ $(MAKE) install-api API=phidget DESTDIR=$(CURDIR)/debian/libphidget-bigloo
 
 
 # Build architecture-independent files here.

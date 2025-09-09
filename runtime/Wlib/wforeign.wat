@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:14:39 2024                          */
-;*    Last change :  Tue Jul 22 13:04:24 2025 (serrano)                */
+;*    Last change :  Tue Sep  9 13:34:25 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM foreign objects                                             */
@@ -19,9 +19,9 @@
       (type $cobj
 	 (struct))
       (type $foreign
-	 (struct
-	    (field $id (ref $symbol))
-	    (field $ptr i32))))
+	 (sub (struct
+		 (field $id (ref $symbol))
+		 (field $obj externref)))))
    
    ;; -----------------------------------------------------------------
    ;; Global constants 
@@ -33,7 +33,8 @@
    ;; -----------------------------------------------------------------
    ;; Imports 
    ;; -----------------------------------------------------------------
-   
+
+   (import "__js" "nil" (global $foreign-nil externref))
    (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
    (import "__bigloo" "BGL_BINT_DEFAULT_VALUE" (global $bint-default-value (ref eq)))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
@@ -65,7 +66,7 @@
       (export "BGL_FOREIGN_DEFAULT_VALUE") (ref $foreign)
       (struct.new $foreign
 	 (global.get $symbol-default-value)
-	 (i32.const 0)))
+	 (global.get $foreign-nil)))
    
    ;; -----------------------------------------------------------------
    ;; Predicates
@@ -76,10 +77,39 @@
       (result i32)
       (ref.test (ref $foreign) (local.get $o)))
 
-   (func $FOREIGN_TO_OBJ
-      (param $o (ref $foreign))
+   (func $FOREIGN_NULLP (export "FOREIGN_NULLP")
+      (param $o (ref eq))
       (result i32)
-      (return (struct.get $foreign $ptr (local.get $o))))
+      (if (result i32) (ref.test (ref $foreign) (local.get $o))
+	  (then
+	     (if (result i32) (ref.is_null (struct.get $foreign $obj (ref.cast (ref $foreign) (local.get $o))))
+		 (then
+		    (i32.const 1))
+		 (else
+		  (i32.const 0))))
+	  (else
+	   (i32.const 0))))
+
+   (func $FOREIGN_EQ (export "FOREIGN_EQ")
+      (param $x (ref $foreign))
+      (param $y (ref $foreign))
+      (result i32)
+      (return (ref.eq (local.get $x) (local.get $y))))
+
+   (func $FOREIGN_ID (export "FOREIGN_ID")
+      (param $o (ref $foreign))
+      (result (ref $symbol))
+      (return (struct.get $foreign $id (local.get $o))))
+   
+   (func $FOREIGN_PTR_NULLP (export "FOREIGN_PTR_NULLP")
+      (param $o externref)
+      (result i32)
+      (ref.is_null (local.get $o)))
+
+   (func $FOREIGN_TO_COBJ (export "FOREIGN_TO_COBJ")
+      (param $o (ref $foreign))
+      (result externref)
+      (struct.get $foreign $obj (local.get $o)))
    
    ;; -----------------------------------------------------------------
    ;; Library functions
@@ -96,11 +126,20 @@
       (if (call $CHARP (local.get $o))
 	  (then (return_call $OBJ_TO_CHAR (local.get $o))))
       (if (call $FOREIGNP (local.get $o))
-	  (then (return_call $FOREIGN_TO_OBJ (ref.cast (ref $foreign) (local.get $o)))))
+	  (then (return (i32.const 666))))
       (call $the_failure
 	 (array.new_data $bstring $OBJ_TO_COBJ (i32.const 0) (i32.const 9))
 	 (array.new_data $bstring $ILL_OBJ_TYPE (i32.const 0) (i32.const 21))
 	 (local.get $o))
       (unreachable))
-   
+
+   (func $void_star_to_obj (export "void_star_to_obj")
+      (param $o externref)
+      (result (ref eq))
+      (return (struct.new $foreign (global.get $symbol-default-value) (local.get $o))))
+
+   (func $obj_to_void_star (export "obj_to_void_star")
+      (param $o (ref eq))
+      (result externref)
+      (return (struct.get $foreign $obj (ref.cast (ref $foreign) (local.get $o)))))
    )

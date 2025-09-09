@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  5 16:50:26 1995                          */
-;*    Last change :  Fri Jul 18 15:01:24 2025 (serrano)                */
+;*    Last change :  Tue Sep  9 14:12:54 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign object management.                                   */
 ;*    -------------------------------------------------------------    */
@@ -42,17 +42,13 @@
 	    (macro $foreign-eq?::bool (::foreign ::foreign) "FOREIGN_EQP")
 	    (macro foreign-id::symbol (::foreign) "FOREIGN_ID")
 	    (macro %string-ptr-null?::bool (::string) "STRING_PTR_NULL")
+	    (macro void*-null?::bool (::void*) "FOREIGN_PTR_NULL")
 	    (macro %void*-ptr-null?::bool (::void*) "FOREIGN_PTR_NULL")
 	    (infix macro $make-string-ptr-null::string () "0L")
 	    (infix macro $make-void*-null::void* () "0L"))
 
-   (wasm    ($foreign-null? "(ref.is_null ~0)")
-	    ($foreign-eq? "(ref.eq ~0 ~1)")
-	    (foreign-id "(struct.get $foreign $id ~0)")
-	    (%string-ptr-null? "(i32.eqz (array.len ~0))")
-	    (%void*-ptr-null? "(i32.eqz ~0)")
-	    ($make-string-ptr-null "(array.new_fixed $bstring 0)")
-	    ($make-void*-null "(i32.const 0)"))
+   (wasm    ($make-string-ptr-null "(array.new_fixed $bstring 0)")
+	    ($make-void*-null "(global.get $foreign-nil)"))
    
    (java    (class foreign
 	       (method static $foreign?::bool (::obj)
@@ -65,6 +61,8 @@
 		       "FOREIGN_ID")
 	       (method static %string-ptr-null?::bool (::string)
 		       "STRING_PTR_NULL")
+	       (method static void*-null?::bool (::void*)
+		       "OBJECT_PTR_NULL")
 	       (method static %void*-ptr-null?::bool (::void*)
 		       "OBJECT_PTR_NULL")
 	       (method static $make-string-ptr-null::string ()
@@ -78,7 +76,6 @@
 	    (inline foreign-eq?::bool ::obj ::obj)
 	    (inline foreign-null?::bool ::obj)
 	    (inline string-ptr-null?::bool ::string)
-	    (inline void*-null?::bool ::void*)
 	    (inline make-string-ptr-null::string)
 	    (inline make-void*-null::void*))
 
@@ -127,12 +124,6 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (obj->cobj obj)
    ($obj->cobj obj))
-
-;*---------------------------------------------------------------------*/
-;*    void*-null? ...                                                  */
-;*---------------------------------------------------------------------*/
-(define-inline (void*-null? obj::void*)
-   (%void*-ptr-null? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-string-ptr-null ...                                         */

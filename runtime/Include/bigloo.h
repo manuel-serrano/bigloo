@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Aug 26 09:04:16 2025 (serrano)                */
+/*    Last change :  Tue Sep  9 18:18:03 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1309,6 +1309,8 @@ union scmobj {
 #  define BGL_NULL_OR_UNSPECIFIEDP(obj) \
    ((obj) == BNIL || ((obj) == BUNSPEC))
 #endif
+
+#define BGL_OBJ_TO_VOID_STAR(o) ((void *)o)
 
 /*---------------------------------------------------------------------*/
 /*    Booleans                                                         */

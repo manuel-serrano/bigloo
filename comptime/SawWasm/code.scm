@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Fri Aug 15 16:55:20 2025 (serrano)                */
+;*    Last change :  Tue Sep  9 10:49:53 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -313,7 +313,7 @@
 	  (if (=fx *wasm-fixnum* 64)
 	      (if nullable '(ref null $bint) '(ref $bint))
 	      (if nullable '(ref null i31) '(ref i31))))
-	 ((void*) 'i32)
+	 ((void*) 'externref)
 	 ((obj) (if nullable '(ref null eq) '(ref eq)))
 	 ((nil)
 	  (if (=fx *wasm-fixnum* 64)
@@ -370,7 +370,9 @@
 	  (let ((name (type-name t)))
 	     (cond 
 		((foreign-type? t)
-		 `(ref ,(symbol-append '$ (type-id t))))
+		 (if (string=? name "void *")
+		     'externref
+		     `(ref ,(symbol-append '$ (type-id t)))))
 		;; Classes
 		((or (tclass? t) (wclass? t))
 		 (if nullable
