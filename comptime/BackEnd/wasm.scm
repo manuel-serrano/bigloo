@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Sep  8 08:54:08 2025 (serrano)                */
+;*    Last change :  Tue Sep  9 08:01:53 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -136,8 +136,7 @@
 	  (target (or *dest* "a.out"))
 	  (wasmtgt (if (eq? *pass* 'cc)
 		       target
-		       (string-append target ".wasm")))
-	  
+		       (string-append (prefix (car srcobj)) ".wasm")))
 	  (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
 	  (libs (delete-duplicates *additional-bigloo-libraries*)))
       (verbose 1 "   . Wasm" #\Newline)
