@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Sep  9 09:10:47 2025 (serrano)                */
+#*    Last change :  Wed Sep 10 10:03:17 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -136,6 +136,7 @@ wasmas=
 wasmopt=wasm-opt
 wasmjs=nodejs
 wasmfixnum=31
+wasmengines="node mozjs jsc web"
 
 #*--- Misc user configuration -----------------------------------------*/
 shell=/bin/sh
@@ -5253,6 +5254,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo "" >> $makefile_cfg
     $echo "WASMBACKEND=no" >> $makefile_cfg
   fi
+  $echo "WASMENGINES=$wasmengines" >> $makefile_cfg
 fi
 
 # Bigloo compilation flags

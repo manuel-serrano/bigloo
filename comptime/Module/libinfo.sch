@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Oct  3 13:29:11 2010                          */
-;*    Last change :  Tue Jul 29 08:36:52 2025 (serrano)                */
+;*    Last change :  Wed Sep 10 09:38:30 2025 (serrano)                */
 ;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    Lib info structure (see runtime/library.scm)                     */
+;*    Lib info structure (see runtime/Eval/library.scm)                */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -21,4 +21,4 @@
    module_s module_e
    class_s class_e
    init eval srfi
-   wasm_s wasm_e)
+   wasm-js wasm_s wasm_e)

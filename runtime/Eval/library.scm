@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Tue Jul 29 08:40:44 2025 (serrano)                */
+;*    Last change :  Wed Sep 10 09:49:19 2025 (serrano)                */
 ;*    Copyright   :  2005-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -65,8 +65,7 @@
 	       init
 	       eval
 	       (srfi '())
-	       wasm_s
-	       wasm_e)
+	       wasm-js wasm_s wasm_e)
 	    (library-init-file::bstring ::symbol)
 	    (library-info::obj ::symbol)
 	    (library-translation-table-add! ::symbol ::bstring . ::obj)
@@ -112,6 +111,7 @@
    module_s module_e
    class_s class_e
    init eval srfi
+   wasm-js
    wasm_s wasm_e)
 
 ;*---------------------------------------------------------------------*/
@@ -149,6 +149,7 @@
 	   init
 	   eval
 	   (srfi '())
+	   wasm-js
 	   wasm_s
 	   wasm_e)
    (synchronize *library-mutex*
@@ -166,7 +167,7 @@
 			      (eval-library-suffix)))
 			module-init module-eval
 			class-init class-eval
-			init eval srfi wasm_s wasm_e))
+			init eval srfi wasm-js wasm_s wasm_e))
 	       *libraries*))
 	 (for-each (lambda (s)
 		      (register-srfi! s)
@@ -226,7 +227,7 @@
 			#f #f
 			#f #f
 			#f #f #f
-			#f #f))
+			#f #f #f))
 	       *libraries*)))))
 
 ;*---------------------------------------------------------------------*/

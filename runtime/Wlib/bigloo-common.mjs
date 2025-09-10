@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Tue Sep  9 08:33:54 2025 (serrano)                */
+/*    Last change :  Wed Sep 10 10:53:32 2025 (serrano)                */
 /*    Copyright   :  2025 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -104,12 +104,13 @@ export class BglRuntime {
    link(instance, client = null) {
       this.instance = instance;
       this.memory = instance.exports.memory;
+
       if (client) this.bigloo_main = client.exports.bigloo_main;
    }
 
    notImplemented(fun) {
       console.error("*** BIGLOO WASM WARNING: function not implemented", fun);
-      throw new Error(`***BIGLOO ERROR: ${fun}: not implemented`);
+      throw new Error(`${fun}: not implemented`);
    }
 
    unsupported(x) {

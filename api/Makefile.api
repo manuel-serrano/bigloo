@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Sep 10 07:37:23 2025 (serrano)                */
+#*    Last change :  Wed Sep 10 10:01:24 2025 (serrano)                */
 #*    Copyright   :  2010-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -104,6 +104,13 @@ api-install-wasm:
 	  cp $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).wasm \
              $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
 	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).wasm; \
+	  for e in $(WASMENGINES); do \
+             if [ -f $(BOOTLIBDIR)/bigloo-$$e-$(API).mjs ]; then \
+               cp $(BOOTLIBDIR)/bigloo$(API)-$$e.mjs \
+                  $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+	       chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)-$$e.mjs; \
+             fi; \
+          done; \
         fi
 	(cd $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
            $(RM) -f bigloo$(API)_u-$(RELEASE).wat && \
@@ -129,6 +136,9 @@ api-uninstall-wasm:
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).wasm
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).wasm
 	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).wasm
+	-for e in $(WASMENGINES); do \
+	  $(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(API)-$$e.mjs; \
+        done
 
 #*---------------------------------------------------------------------*/
 #*    Init build                                                       */
@@ -324,7 +334,12 @@ $(BOOTLIBDIR)/$(API).wheap: .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
             $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).wheap
 
 api.wasm: $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).wasm \
-         $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).wasm \
+         $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).wasm
+	for e in $(WASMENGINES); do \
+	  if [ -f Wlib/bigloo$(API)-$$e.mjs ]; then \
+            cp Wlib/bigloo$(API)-$$e.mjs $(BOOTLIBDIR)/bigloo$(API)-$$e.mjs; \
+          fi; \
+        done
 
 $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).wasm: $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).wat
 	$(WASMAS) $< -o $@
@@ -344,6 +359,9 @@ api-clean-wasm:
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).wat
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).wat
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).wat
+	for e in $(WASMENGINES); do \
+	  $(RM) -f $(BOOTLIBDIR)/bigloo$(API)-$$e.mjs; \
+        done
 
 #*---------------------------------------------------------------------*/
 #*    Compilation rules                                                */

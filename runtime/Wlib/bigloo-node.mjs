@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Sep  9 16:43:37 2025 (serrano)                */
+/*    Last change :  Wed Sep 10 09:24:48 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------*/
 import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync, lstatSync, mkdirSync, readdirSync, ftruncateSync, truncateSync, renameSync, symlinkSync, chmodSync } from "node:fs";
 import { isatty } from "node:tty";
-import { extname, sep as file_sep } from "node:path";
+import { dirname, extname, sep as file_sep } from "node:path";
 import { format } from "node:util";
 import { execSync, spawnSync, spawn } from "node:child_process";
 import { createServer, createConnection, Socket } from "node:net";
@@ -666,13 +666,21 @@ async function runStatic(client) {
 /*    libRuntime ...                                                   */
 /*---------------------------------------------------------------------*/
 async function libRuntime(lib) {
-   const rts = new BglNodeRuntime();
-   if (lib.js) {
-      const mod = await import(lib.js);
-      mod.init(rts);
+   lib.rts = new BglNodeRuntime();
+   
+   if (lib.js !== "none") {
+      const path = `${dirname(lib.lib)}/${lib.js}-node.mjs`;
+      try {
+	 const mod = await import(path);
+	 mod.init(lib.rts);
+      } catch(e) {
+	 console.error(`*** ERROR:${process.argv[0]}:${path}`);
+	 console.error(e);
+	 process.exit(1);
+      }
    }
 
-   return rts;
+   return lib.rts;
 }
 
 /*---------------------------------------------------------------------*/
@@ -696,9 +704,9 @@ async function runDynamic(client, rts, libs) {
    const instanceLibs = await Promise.all(libs.map((l, i) => WebAssembly.instantiate(wasmLibs[i], __jsLibs[i])));
    libs.forEach((l, i) => __jsClient[l.exports] = instanceLibs[i].exports);
    const instanceClient = await WebAssembly.instantiate(wasmClient, __jsClient);
-   
+
    __jsClient.link(instanceClient, instanceClient);
-   libs.forEach((l, i) => __jsLibs[i].link(instanceClient, instanceClient));
+   libs.forEach((l, i) => __jsLibs[i].link(instanceRts, instanceClient));
    __jsRts.link(instanceRts, instanceClient);
    
    if (!instanceClient.exports.bigloo_main) {

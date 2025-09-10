@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:14:39 2024                          */
-;*    Last change :  Wed Sep 10 07:49:01 2025 (serrano)                */
+;*    Last change :  Wed Sep 10 10:50:16 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM foreign objects                                             */
@@ -139,7 +139,7 @@
 
    (func $void_star_to_obj (export "void_star_to_obj")
       (param $o externref)
-      (result (ref eq))
+      (result (ref $foreign))
       (return (struct.new $foreign (global.get $symbol-default-value) (local.get $o))))
 
    (func $obj_to_void_star (export "obj_to_void_star")
