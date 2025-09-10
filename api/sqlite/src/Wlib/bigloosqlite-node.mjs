@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Sep 10 11:28:58 2025 (serrano)                */
+/*    Last change :  Wed Sep 10 16:47:08 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm Node SQLITE binding                                  */
@@ -32,6 +32,10 @@ export function init(self) {
 
 	 close: (db) => {
 	    db.close();
+	 },
+
+	 exec: (db, offset, len) => {
+	    db.exec(self.loadString(offset, len));
 	 }
       }
    }

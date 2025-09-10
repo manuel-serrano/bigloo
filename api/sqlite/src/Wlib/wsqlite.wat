@@ -3,14 +3,14 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Jul 29 12:54:52 2025                          */
-;*    Last change :  Wed Sep 10 10:40:40 2025 (serrano)                */
+;*    Last change :  Wed Sep 10 16:42:55 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    SQLITE Wasm binding                                              */
 ;*=====================================================================*/
 
 (module $__sqlite
-
+   
    ;; -----------------------------------------------------------------
    ;; Type declarations 
    ;; -----------------------------------------------------------------
@@ -23,26 +23,20 @@
    (import "__js_sqlite" "nil" (func $sqlite_nil (result externref)))
    (import "__js_sqlite" "open" (func $sqlite_open (param i32 i32) (result externref)))
    (import "__js_sqlite" "close" (func $sqlite_close (param externref)))
-
+   (import "__js_sqlite" "exec" (func $sqlite_exec (param externref i32 i32)))
+   
    (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
    (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
    
    ;; -----------------------------------------------------------------
    ;; Unimplemented functions and variables
    ;; -----------------------------------------------------------------
-
+   
    (func $sqlite3_config (export "sqlite3_config")
       (param $i i32)
       (result i32)
       (return (local.get $i)))
-
-   (func $bgl_sqlite_exec (export "bgl_sqlite_exec")
-      (param $db externref)
-      (param $cmd (ref $bstring))
-      (param $arg (ref eq))
-      (result (ref eq))
-      (return (global.get $BUNSPEC)))
-
+   
    (func $bgl_sqlite_eval (export "bgl_sqlite_eval")
       (param $db externref)
       (param $proc (ref $procedure))
@@ -50,7 +44,7 @@
       (param $arg (ref eq))
       (result (ref eq))
       (return (global.get $BUNSPEC)))
-
+   
    (func $bgl_sqlite_get (export "bgl_sqlite_get")
       (param $db externref)
       (param $proc (ref $procedure))
@@ -58,7 +52,7 @@
       (param $arg (ref eq))
       (result (ref eq))
       (return (global.get $BUNSPEC)))
-
+   
    (func $bgl_sqlite_map (export "bgl_sqlite_map")
       (param $db externref)
       (param $proc (ref $procedure))
@@ -66,7 +60,7 @@
       (param $arg (ref eq))
       (result (ref eq))
       (return (global.get $BUNSPEC)))
-      
+   
    (func $bgl_sqlite_for_each (export "bgl_sqlite_for_each")
       (param $db externref)
       (param $proc (ref $procedure))
@@ -74,14 +68,14 @@
       (param $arg (ref eq))
       (result (ref eq))
       (return (global.get $BUNSPEC)))
-
+   
    (func $bgl_sqlite_run (export "bgl_sqlite_run")
       (param $db externref)
       (param $cmd (ref $bstring))
       (param $arg (ref eq))
       (result (ref eq))
       (return (global.get $BUNSPEC)))
-
+   
    (global $SQLITE_CONFIG_SINGLETHREAD (export "SQLITE_CONFIG_SINGLETHREAD")
       i32 (i32.const 0))
    (global $SQLITE_CONFIG_MULTITHREAD (export "SQLITE_CONFIG_MULTITHREAD")
@@ -138,11 +132,11 @@
       i32 (i32.const 0))
    (global $SQLITE_CONFIG_MEMDB_MAXSIZE (export "SQLITE_CONFIG_MEMDB_MAXSIZE")
       i32 (i32.const 0))
-      
+   
    ;; -----------------------------------------------------------------
    ;; Library functions 
    ;; -----------------------------------------------------------------
-
+   
    ;; bgl_sqlite_nil
    (func $bgl_sqlite_nil (export "bgl_sqlite_nil")
       (result externref)
@@ -154,11 +148,23 @@
       (result externref)
       (call $store_string (local.get $path) (i32.const 128))
       (return (call $sqlite_open (i32.const 128) (array.len (local.get $path)))))
-
+   
    ;; bgl_sqlite_close
    (func $bgl_sqlite_close (export "bgl_sqlite_close")
       (param $db externref)
       (param $odb (ref eq))
-      (call $sqlite_close (local.get $db))))
+      (call $sqlite_close (local.get $db)))
+   
+   ;; bgl_sqlite_exec
+   (func $bgl_sqlite_exec (export "bgl_sqlite_exec")
+      (param $db externref)
+      (param $cmd (ref $bstring))
+      (param $odb (ref eq))
+      (result (ref eq))
+      (call $store_string (local.get $cmd) (i32.const 128))
+      (call $sqlite_exec (local.get $db) (i32.const 128) (array.len (local.get $cmd)))
+      (return (global.get $BUNSPEC)))
+   )
+
       
 
