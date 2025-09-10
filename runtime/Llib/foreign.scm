@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  5 16:50:26 1995                          */
-;*    Last change :  Tue Sep  9 14:12:54 2025 (serrano)                */
+;*    Last change :  Wed Sep 10 07:51:07 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign object management.                                   */
 ;*    -------------------------------------------------------------    */
@@ -48,7 +48,7 @@
 	    (infix macro $make-void*-null::void* () "0L"))
 
    (wasm    ($make-string-ptr-null "(array.new_fixed $bstring 0)")
-	    ($make-void*-null "(global.get $foreign-nil)"))
+	    ($make-void*-null "(global.get $externref-default-value)"))
    
    (java    (class foreign
 	       (method static $foreign?::bool (::obj)

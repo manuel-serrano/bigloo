@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Mon Jul 28 17:30:02 2025 (serrano)                */
+#*    Last change :  Wed Sep 10 07:37:23 2025 (serrano)                */
 #*    Copyright   :  2010-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -314,6 +314,7 @@ api-clean-jvm:
 .PHONY: api-wasm heap-wasm api.zip api-clean-wasm
 
 api-wasm: api-init heap-wasm
+	mkdir -p objs
 	$(MAKE) api.wasm
 
 heap-wasm: $(BOOTLIBDIR)/$(API).wheap

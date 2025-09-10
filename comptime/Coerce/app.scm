@@ -170,28 +170,28 @@
       (trace-item "from=" (shape (node-type node)))
       (trace-item "callee=" (shape (variable-type callee)))
       (trace-item "node=" (shape node))
-      (let* ((fun   (variable-value callee))
-	  (arity (sfun-arity fun))
-	  (sh    (shape callee))
-	  (ntype (get-type node #f)))
-      (let loop ((actuals (app-args node))
-		 (formals (sfun-args fun)))
-	 (unless (=fx (length actuals) (length formals))
-	    (internal-error "app" "formals/actuals mismatch"
-	       (shape node))
-	    (exit -1))
-	 (assert (actuals formals sh) (=fx (length actuals) (length formals)))
-	 (if (null? actuals)
-	     (if (and (eq? caller callee) (not *unsafe-type*))
-		 ;; As suggested by J.G Malecki, there is no need to
-		 ;; type check the result of a self recursive call.
-		 ;; Local are always tail-called (otherwise they would have
-		 ;; been globalized).
-		 (convert! node ntype to #f)
-		 (convert! node ntype to safe))
-	     (let ((type (local-type (car formals))))
-		(set-car! actuals (coerce! (car actuals) caller type safe))
-		(loop (cdr actuals) (cdr formals))))))))
+      (let* ((fun (variable-value callee))
+	     (arity (sfun-arity fun))
+	     (sh (shape callee))
+	     (ntype (get-type node #f)))
+	 (let loop ((actuals (app-args node))
+		    (formals (sfun-args fun)))
+	    (unless (=fx (length actuals) (length formals))
+	       (internal-error "app" "formals/actuals mismatch"
+		  (shape node))
+	       (exit -1))
+	    (assert (actuals formals sh) (=fx (length actuals) (length formals)))
+	    (if (null? actuals)
+		(if (and (eq? caller callee) (not *unsafe-type*))
+		    ;; As suggested by J.G Malecki, there is no need to
+		    ;; type check the result of a self recursive call.
+		    ;; Local are always tail-called (otherwise they would have
+		    ;; been globalized).
+		    (convert! node ntype to #f)
+		    (convert! node ntype to safe))
+		(let ((type (local-type (car formals))))
+		   (set-car! actuals (coerce! (car actuals) caller type safe))
+		   (loop (cdr actuals) (cdr formals))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce-bigloo-extern-app! ...                                    */

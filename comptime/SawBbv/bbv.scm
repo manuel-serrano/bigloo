@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/SawBbv/bbv.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/SawBbv/bbv.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Jun 27 15:08:04 2024 (serrano)                */
-;*    Copyright   :  2017-24 Manuel Serrano                            */
+;*    Last change :  Wed Sep 10 07:27:39 2025 (serrano)                */
+;*    Copyright   :  2017-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks Versioning experiment.                              */
 ;*=====================================================================*/
@@ -367,6 +367,7 @@
 	       (let ((fail (instantiate::rtl_ins
 			      (dest #f)
 			      (fun (instantiate::rtl_pragma
+				      (type *int*)
 				      (srfi0 'bigloo-c)
 				      (loc (rtl_ins-loc last))
 				      (format "exit(0)")))

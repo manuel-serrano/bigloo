@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:14:39 2024                          */
-;*    Last change :  Tue Sep  9 13:34:25 2025 (serrano)                */
+;*    Last change :  Wed Sep 10 07:49:01 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM foreign objects                                             */
@@ -34,7 +34,7 @@
    ;; Imports 
    ;; -----------------------------------------------------------------
 
-   (import "__js" "nil" (global $foreign-nil externref))
+   (import "__js" "nil" (global $externref-nil externref))
    (import "__bigloo" "BGL_SYMBOL_DEFAULT_VALUE" (global $symbol-default-value (ref $symbol)))
    (import "__bigloo" "BGL_BINT_DEFAULT_VALUE" (global $bint-default-value (ref eq)))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
@@ -61,12 +61,16 @@
    ;; -----------------------------------------------------------------
    ;; Global variables 
    ;; -----------------------------------------------------------------
+
+   (global $externref-default-value
+      (export "BGL_EXTERNREF_DEFAULT_VALUE") externref
+	 (global.get $externref-nil))
    
    (global $foreign-default-value
       (export "BGL_FOREIGN_DEFAULT_VALUE") (ref $foreign)
       (struct.new $foreign
 	 (global.get $symbol-default-value)
-	 (global.get $foreign-nil)))
+	 (global.get $externref-default-value)))
    
    ;; -----------------------------------------------------------------
    ;; Predicates

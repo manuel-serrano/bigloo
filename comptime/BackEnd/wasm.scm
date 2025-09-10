@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Sep  9 09:46:46 2025 (serrano)                */
+;*    Last change :  Wed Sep 10 07:16:07 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -913,7 +913,7 @@ esac")
    (define (pp-location l depth)
       (match-case l
 	 ((@ ?loc ?node)
-          (display ";;@ ")
+          (display ";; ")
           (display* (location-fname loc) ":" (location-lnum loc) ":1\n")
           (pp node depth))
 	 (else
@@ -1718,6 +1718,7 @@ esac")
 ;*---------------------------------------------------------------------*/
 (define (emit-default-constants)
    `(comment "pre-init constants"
+       (import ,($bigloo) "BGL_EXTERNREF_DEFAULT_VALUE" (global $externref-default-value externref))
        (import ,($bigloo) "BGL_FUNPTR_DEFAULT_VALUE" (global $funptr-default-value (ref func)))
        (import ,($bigloo) "BGL_BINT_DEFAULT_VALUE" (global $bint-default-value ,(wasm-type *bint*)))
        (import ,($bigloo) "BGL_BINT8_DEFAULT_VALUE" (global $bint8-default-value (ref $bint8)))

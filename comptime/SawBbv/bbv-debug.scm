@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/SawBbv/bbv-debug.scm     */
+;*    .../prgm/project/bigloo/wasm/comptime/SawBbv/bbv-debug.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Thu Jun 27 17:48:54 2024 (serrano)                */
-;*    Copyright   :  2023-24 Manuel Serrano                            */
+;*    Last change :  Wed Sep 10 07:29:19 2025 (serrano)                */
+;*    Copyright   :  2023-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv debugging tools                                              */
 ;*=====================================================================*/
@@ -590,6 +590,7 @@
    
    (define (pragma-ins cexpr::bstring ctx loc)
       (let ((pr (instantiate::rtl_pragma
+		   (type *int*)
 		   (srfi0 'bigloo-c)
 		   (format cexpr)))
 	    (es (instantiate::regset (msize 0) (regv '#()) (regl '()))))
@@ -676,6 +677,7 @@
 			     debugname
 			     (assert-failure pred reg loc tag))))
 		(instantiate::rtl_pragma
+		   (type *int*)
 		   (srfi0 'bigloo-c)
 		   (format cexpr))))
 	  (begin
@@ -690,6 +692,7 @@
       (let ((cexpr (format "/* rtl-assert-expr-type */ ($1 || ~a)"
 		      (assert-failure (or (type-predicate type) "???") reg loc tag))))
 	 (instantiate::rtl_pragma
+	    (type *int*)
 	    (srfi0 'bigloo-c)
 	    (format cexpr)))))
 
@@ -740,6 +743,7 @@
 			 (if polarity "" "!")
 			 cx (if (eq? op '=) "==" op) cy (assert-fxcmp-failure loc tag))))
 	    (instantiate::rtl_pragma
+	       (type *int*)
 	       (srfi0 'bigloo-c)
 	       (format cexpr))))))
 

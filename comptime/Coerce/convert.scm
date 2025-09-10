@@ -260,6 +260,7 @@
 		 node
 		 (let ((coercer (find-coercer fro to))
 		       (loc (node-loc node)))
+		    
 		    (if (not (coercer? coercer))
 			;; There is no convertion between these types. 
 			;; Thus, it is a type error.
@@ -317,31 +318,30 @@
 ;*---------------------------------------------------------------------*/
 (define (make-one-type-conversion from to check-op coerce-op node)
    (trace (coerce 2) "make-one-type-conversion: " (shape node) " ("
-	  (shape from) " -> " (shape to) ")" #\Newline)
+      (shape from) " -> " (shape to) ")" #\Newline)
    (let* ((aux (mark-symbol-non-user! (gensym 'aux)))
 	  (loc (node-loc node))
 	  (lnode (top-level-sexp->node
-		  ;; we coerce all checked object into `obj' because
-		  ;; all the predicate are only defined under this
-		  ;; type and sometimes `super-class' object' have to
-		  ;; be checked and they are not of obj type (but of
-		  ;; a compatible type).
-		  `(let ((,(mark-symbol-non-user!
-			    (make-typed-ident aux (type-id from)))
-			  #unspecified))
-		      (if (,check-op ,aux)
-			  ,aux
-			  ,(runtime-type-error/id loc (type-id to) aux)))
-		  loc)))
+		    ;; we coerce all checked object into `obj' because
+		    ;; all the predicate are only defined under this
+		    ;; type and sometimes `super-class' object' have to
+		    ;; be checked and they are not of obj type (but of
+		    ;; a compatible type).
+		    `(let ((,(mark-symbol-non-user!
+				(make-typed-ident aux (type-id from)))
+			    #unspecified))
+			(if (,check-op ,aux)
+			    ,aux
+			    ,(runtime-type-error/id loc (type-id to) aux)))
+		    loc)))
       (increment-stat-check! from to loc)
       (spread-side-effect! lnode)
       (let* ((var (car (car (let-var-bindings lnode))))
-	     (coerce-app (do-convert coerce-op
-				     (instantiate::ref
-					(loc loc)
-					(type (strict-node-type to from))
-					(variable var))
-				     from to))
+	     (ref (instantiate::ref
+		     (loc loc)
+		     (type (strict-node-type to from))
+		     (variable var)))
+	     (coerce-app (do-convert coerce-op ref from to))
 	     (condn (skip-let-var lnode)))
 	 ;; we set the local variable type
 	 (local-type-set! var from)
@@ -350,10 +350,10 @@
 	 (node-type-set! node from)
 	 (conditional-true-set! condn coerce-app)
 	 (conditional-false-set! condn
-				 (coerce! (conditional-false condn)
-					  #unspecified
-					  from
-					  #f))
+	    (coerce! (conditional-false condn)
+	       #unspecified
+	       from
+	       #f))
 	 (lvtype-node! lnode)
 	 lnode)))
 
@@ -415,29 +415,46 @@
    (trace coerce "do-convert: " (shape coerce-op) " " (shape node)
 	  #\Newline)
    (if (eq? coerce-op #t)
-       (if (and (backend-strict-type-cast (the-backend))
-		(not (is-subtype? from to)))
-	   ;; The backend's strict-type-cast option has been added when
-	   ;; when working on the wasm backend. It ensures that the AST
-	   ;; no longer contains any implicit type cast after the coerce
-	   ;; pass. In theory, all backends should set the strict-type-cast
-	   ;; option to #t as an anti-reckless attitude, but only the wasm
-	   ;; backend will set it by default
-	   (instantiate::cast
-	      (loc (node-loc node))
-	      (type to)
-	      (arg node))
-	   node)
-       (let ((nnode (top-level-sexp->node `(,coerce-op ,node)
-		       (node-loc node))))
-	  (trace coerce
-	     "   app : " (shape nnode) #\Newline
-	     "   type: " (shape (node-type nnode)) #\Newline
-	     "   node: " (shape node) #\Newline
-	     "   type: " (shape (node-type node)) #\Newline
-	     "   from: " (shape from) #\Newline)
-	  ;; we have to mark that the node has been converted and is
-	  ;; now of the correct type...
-	  (lvtype-node! nnode)
-	  (spread-side-effect! nnode)
-	  nnode)))
+      (if (and (backend-strict-type-cast (the-backend))
+	       (not (is-subtype? from to)))
+	  ;; The backend's strict-type-cast option has been added when
+	  ;; when working on the wasm backend. It ensures that the AST
+	  ;; no longer contains any implicit type cast after the coerce
+	  ;; pass. In theory, all backends should set the strict-type-cast
+	  ;; option to #t as an anti-reckless attitude, but only the wasm
+	  ;; backend will set it by default
+	  (instantiate::cast
+	     (loc (node-loc node))
+	     (type to)
+	     (arg node))
+	  node)
+      (let ((nnode (top-level-sexp->node `(,coerce-op ,node)
+		      (node-loc node))))
+	 (trace coerce
+	    "   app : " (shape nnode) #\Newline
+	    "   type: " (shape (node-type nnode)) #\Newline
+	    "   node: " (shape node) #\Newline
+	    "   type: " (shape (node-type node)) #\Newline
+	    "   from: " (shape from) #\Newline)
+	 ;; we have to mark that the node has been converted and is
+	 ;; now of the correct type...
+	 (lvtype-node! nnode)
+	 (spread-side-effect! nnode)
+	 ;; explicit args type cast when the backend demands it
+	 (when (backend-strict-type-cast (the-backend))
+	    (when (isa? nnode app)
+	       (with-access::app nnode (fun args)
+		  (when (isa? fun ref)
+		     (let* ((proc (variable-value (var-variable fun)))
+			    (ta (node-type (car args)))
+			    (tf (cond
+				   ((sfun? proc) (car (sfun-args proc)))
+				   ((cfun? proc) (car (cfun-args-type proc)))
+				   (else *obj*))))
+			(unless (eq? ta tf)
+			   (set-car! args
+			      (instantiate::cast
+				 (type tf)
+				 (arg (car args))))))))))
+	 nnode)))
+

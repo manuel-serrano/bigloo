@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/comptime/SawBbv/bbv-profile.scm        */
+;*    .../prgm/project/bigloo/wasm/comptime/SawBbv/bbv-profile.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  6 09:30:19 2023                          */
-;*    Last change :  Wed Jun 26 16:43:39 2024 (serrano)                */
-;*    Copyright   :  2023-24 Manuel Serrano                            */
+;*    Last change :  Wed Sep 10 07:30:27 2025 (serrano)                */
+;*    Copyright   :  2023-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv profileging tools                                            */
 ;*=====================================================================*/
@@ -53,6 +53,7 @@
    
    (define (pragma-ins cexpr::bstring ctx loc)
       (let ((pr (instantiate::rtl_pragma
+		   (type *int*)
 		   (srfi0 'bigloo-c)
 		   (format cexpr)))
 	    (es (instantiate::regset (msize 0) (regv '#()) (regl '()))))

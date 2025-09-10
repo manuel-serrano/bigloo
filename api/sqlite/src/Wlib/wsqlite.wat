@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Jul 29 12:54:52 2025                          */
-;*    Last change :  Tue Sep  9 09:19:08 2025 (serrano)                */
+;*    Last change :  Wed Sep 10 09:10:28 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    SQLITE Wasm binding                                              */
@@ -46,6 +46,7 @@
    ;; bgl_sqlite_close
    (func $bgl_sqlite_close (export "bgl_sqlite_close")
       (param $db externref)
-      (call $sqlite_close $db)))
+      (param $odb (ref eq))
+      (call $sqlite_close (local.get $db))))
       
 
