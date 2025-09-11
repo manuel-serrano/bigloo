@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Mon Sep  8 11:47:41 2025 (serrano)                */
+;*    Last change :  Thu Sep 11 10:45:01 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -562,7 +562,7 @@
       (result (ref eq))
       
       (local.set $val (call $bigloo_exit_apply (local.get $val)))
-      
+;*                                                                     */
       (drop
 	 (call $bgl_flush_output_port
 	    (call $BGL_ENV_CURRENT_OUTPUT_PORT

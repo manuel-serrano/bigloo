@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Sep  8 13:21:35 2025 (serrano)                */
+/*    Last change :  Thu Sep 11 08:44:26 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -106,6 +106,14 @@ function extname(path) {
    return path.slice(lastDot);
 }
 
+function dirname(path) {
+   const i = path.lastIndexOf("/");
+   if (i < 0) {
+      return ".";
+   } else {
+      return path.substring(0, i);
+   }
+}
 /*---------------------------------------------------------------------*/
 /*    BglWebRuntime                                                    */
 /*---------------------------------------------------------------------*/
@@ -623,26 +631,50 @@ export async function runStatic(client) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    libRuntime ...                                                   */
+/*---------------------------------------------------------------------*/
+async function libRuntime(lib) {
+   lib.rts = new BglWebRuntime();
+   
+   if (lib.js !== "none") {
+      const path = `${dirname(lib.lib)}/${lib.js}-web.mjs`;
+      try {
+	 const mod = await import(path);
+	 mod.init(lib.rts);
+      } catch(e) {
+	 console.error(`*** ERROR:${process.argv[0]}:${path}`);
+	 console.error(e);
+	 process.exit(1);
+      }
+   }
+
+   return lib.rts;
+}
+
+/*---------------------------------------------------------------------*/
 /*    runDynamic ...                                                   */
 /*    -------------------------------------------------------------    */
 /*    Run a wasm in several instances, one for client, and one by libs */
 /*---------------------------------------------------------------------*/
 export async function runDynamic(client, rts, libs) {
    const __jsRts = new BglWebRuntime();
-   const __jsLibs = libs.map(l => new BglWebRuntime());
+   const __jsLibs = await Promise.all(libs.map(libRuntime));
    const __jsClient = new BglWebRuntime();
 
    const instanceRts = await WasmInstantiate(rts, __jsRts);
    __jsLibs.forEach(l => l.__bigloo = instanceRts.exports);
    __jsClient.__bigloo = instanceRts.exports;
 
-   const instanceLibs = await Promise.all(libs.map((l, i) => WasmInstantiate(l, __jsLibs[i])));
+   const instanceLibs = await Promise.all(libs.map((l, i) => WasmInstantiate(l.lib, __jsLibs[i])));
 
    libs.forEach((l, i) => __jsClient[l.exports] = instanceLibs[i].exports);
+
+   __jsClient.__dom = instanceLibs[0].exports;
+
    const instanceClient = await WasmInstantiate(client, __jsClient);
    
-   __jsClient.link(instanceClient, instanceClient);
-   libs.forEach((l, i) => __jsLibs[i].link(instanceClient, instanceClient));
+   __jsClient.link(instanceClient);
+   libs.forEach((l, i) => __jsLibs[i].link(instanceRts));
    __jsRts.link(instanceRts, instanceClient);
    
    if (!instanceClient.exports.bigloo_main) {

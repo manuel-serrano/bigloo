@@ -105,7 +105,7 @@
       (result (ref $symbol))
       (return (struct.get $foreign $id (local.get $o))))
    
-   (func $FOREIGN_PTR_NULLP (export "FOREIGN_PTR_NULLP")
+   (func $FOREIGN_PTR_NULL (export "FOREIGN_PTR_NULL")
       (param $o externref)
       (result i32)
       (ref.is_null (local.get $o)))

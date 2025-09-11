@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Wed Sep 10 09:46:29 2025 (serrano)                */
+;*    Last change :  Thu Sep 11 09:31:12 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -232,10 +232,9 @@
    (format "~( )"
       (map (lambda (l)
 	      (let* ((i (library-info l))
-		     (lib (format "~a_~a-~a.wasm"
+		     (lib (format "~a_~a.wasm"
 			     (libinfo-basename i)
-			     (if *unsafe-library* "u" "s")
-			     (libinfo-version i)))
+			     (if *unsafe-library* "u" "s")))
 		     (js (if (libinfo-wasm-js i) (libinfo-basename i) "none")))
 		 (format "-l __~a $BIGLOOLIBDIR/~a ~a" l lib js)))
 	 *additional-bigloo-libraries*)))
@@ -1607,9 +1606,12 @@ esac")
 	 (module (global-module variable)))
       (let ((is-macro (isa? variable cfun)))
 	 (cond
-	    (library (string-append "__" (symbol->string library)))
-	    ((not (eq? module 'foreign)) (string-append "$" (symbol->string module)))
-	    (else ($bigloo))))))
+	    (library
+	     (string-append "__" (symbol->string library)))
+	    ((not (eq? module 'foreign))
+	     (string-append "$" (symbol->string module)))
+	    (else
+	     ($bigloo))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-import ::value ...                                          */

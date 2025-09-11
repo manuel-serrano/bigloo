@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Wed Sep 10 09:24:48 2025 (serrano)                */
+/*    Last change :  Thu Sep 11 08:44:13 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -662,6 +662,7 @@ async function runStatic(client) {
 
    instanceClient.exports.__bigloo_main();
 }
+
 /*---------------------------------------------------------------------*/
 /*    libRuntime ...                                                   */
 /*---------------------------------------------------------------------*/
@@ -705,8 +706,8 @@ async function runDynamic(client, rts, libs) {
    libs.forEach((l, i) => __jsClient[l.exports] = instanceLibs[i].exports);
    const instanceClient = await WebAssembly.instantiate(wasmClient, __jsClient);
 
-   __jsClient.link(instanceClient, instanceClient);
-   libs.forEach((l, i) => __jsLibs[i].link(instanceRts, instanceClient));
+   __jsClient.link(instanceClient);
+   libs.forEach((l, i) => __jsLibs[i].link(instanceRts));
    __jsRts.link(instanceRts, instanceClient);
    
    if (!instanceClient.exports.bigloo_main) {

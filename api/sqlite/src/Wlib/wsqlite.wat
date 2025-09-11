@@ -12,21 +12,16 @@
 (module $__sqlite
    
    ;; -----------------------------------------------------------------
-   ;; Type declarations 
-   ;; -----------------------------------------------------------------
-   ;;(type $$sqlite (sub $foreign))
-   
-   ;; -----------------------------------------------------------------
    ;; Imports 
    ;; -----------------------------------------------------------------
+   
+   (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
+   (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
    
    (import "__js_sqlite" "nil" (func $sqlite_nil (result externref)))
    (import "__js_sqlite" "open" (func $sqlite_open (param i32 i32) (result externref)))
    (import "__js_sqlite" "close" (func $sqlite_close (param externref)))
    (import "__js_sqlite" "exec" (func $sqlite_exec (param externref i32 i32)))
-   
-   (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
-   (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
    
    ;; -----------------------------------------------------------------
    ;; Unimplemented functions and variables
