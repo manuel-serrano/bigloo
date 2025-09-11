@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Sep 11 08:44:26 2025 (serrano)                */
+/*    Last change :  Thu Sep 11 13:01:44 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -44,7 +44,7 @@ function flushStdio(fd, str) {
    let j = str.lastIndexOf("\n");
    if (j < 0) {
       if (stdioBuf[fd]) {
-	 stdioBuf[fd] = stdioBuf[fd].contact(str);
+	 stdioBuf[fd] = stdioBuf[fd].concat(str);
 	 return null;
       } else {
 	 stdioBuf[fd] = str;
