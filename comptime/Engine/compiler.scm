@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Jun 30 17:14:50 2025 (serrano)                */
+;*    Last change :  Fri Sep 12 11:22:36 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -104,14 +104,14 @@
 ;*    compiler ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (compiler)
-   ;; we catch signals
+   ;; initialize signal handlers for ending nicely even on compiler error
    (profile signal (install-compiler-signals!))
 
-   ;; we build the ad-hoc backend
+   ;; initialize the user selected compilation backend
    (set-backend! *target-language*)
 
-   ;; adjust the compilation parameters according to the backend specificities
-   ;; and various options
+   ;; adjust the compilation parameters according to the backend
+   ;; specificities and various options
    (unless (>fx (bigloo-compiler-debug) 0)
       (unless (backend-bound-check (the-backend))
 	 (set! *unsafe-range* #t))
@@ -121,11 +121,11 @@
       (set! *optim-cfa-unbox-closure-args* #f))
    (when (or (>=fx *compiler-debug-trace* 1)
 	     (>=fx *compiler-debug* 1))
-      ;; compiler introduced traces are imcompatible with the setjmp/longmp
-      ;; optimization
+      ;; compiler traces being imcompatible with the setjmp/longmp
+      ;; optimization, disable it in debug mode
       (set! *optim-return-goto?* #f))
    
-   ;; we read the source file
+   ;; read the source file
    (let ((src (*pre-processor* (profile read (read-src)))))
       ;; if src is false, we launch the interpreter because it means
       ;; that the reader has found a #!... expression instead of a
@@ -208,10 +208,10 @@
       
       ;; we compile the module clause which leads to the
       ;; complete source code.
-      (let* ((exp0     (comptime-expand/error (car src)))
-	     (module   (progn-first-expression exp0))
+      (let* ((exp0 (comptime-expand/error (car src)))
+	     (module (progn-first-expression exp0))
 	     (src-code (append (progn-tail-expressions exp0) (cdr src)))
-	     (units    (profile module (produce-module! module))))
+	     (units (profile module (produce-module! module))))
 
 	 (stop-on-pass 'dump-module (lambda () (dump-module module)))
 
@@ -220,8 +220,8 @@
 	    (set! units (cons (make-prof-unit) units)))
 	    
 	 ;; we produce the mco file
-	 (if *module-checksum-object?*
-	     (profile mco (module-checksum-object)))
+	 (when *module-checksum-object?*
+	    (profile mco (module-checksum-object)))
 	 (stop-on-pass 'mco (lambda () 0))
 
 	 ;; we now build the module body

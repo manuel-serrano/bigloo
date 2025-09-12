@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Aug 22 11:59:55 2025 (serrano)                */
+;*    Last change :  Fri Sep 12 16:46:26 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -372,18 +372,9 @@
       
 ;*--- Dialect options -------------------------------------------------*/
       (section "Dialect")
-      ;; snow
-      (("-snow" (help "Compiles a snow source code"))
-       (set! *src-suffix* (cons "snow" *src-suffix*))
-       (set! the-remaining-args (cons* "-extend" "snow"
-				   "-library" "snow"
-				   the-remaining-args)))
-      ;; scmpkg
-      ((("-scmpkg" "-spi") (help "Compiles a ScmPkg source code"))
-       (set! *src-suffix* (cons "spi" *src-suffix*))
-       (set! the-remaining-args (cons* "-extend" "pkgcomp"
-				   "-library" "pkgcomp"
-				   the-remaining-args)))
+      ;; module language version
+      (("-module?version" (help "Set the module language version (4 or 5)"))
+       (set! *module-version* (string->integer version)))
       ;; nil
       (("-nil" (help "Evaluate '() as #f in `if' expression"))
        (set! *nil* #f))
@@ -1180,8 +1171,6 @@
 	   (set! *target-language* 'jvm))
 	  ((wasm)
 	   (set! *target-language* 'wasm))
-	  ((.net)
-	   (set! *target-language* '.net))
 	  (else
 	   (error "parse-args" "Unknown target" lang))))
       

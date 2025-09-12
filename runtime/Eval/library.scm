@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Wed Sep 10 09:49:19 2025 (serrano)                */
+;*    Last change :  Fri Sep 12 11:40:05 2025 (serrano)                */
 ;*    Copyright   :  2005-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -514,7 +514,8 @@
 			   (cons "." (unix-path->list venv))))))
 	  (suffix (cond-expand
 		     (bigloo-c ".heap")
-		     (bigloo-jvm ".jheap")))
+		     (bigloo-jvm ".jheap")
+		     (bigloo-wasm ".wheap")))
 	  (heap (string-append (symbol->string lib) suffix))
 	  (init (string-append (symbol->string lib) ".init")))
       (string? (or (find-file/path heap path)

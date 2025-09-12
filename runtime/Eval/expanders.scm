@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expanders.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/expanders.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Sat Aug 27 16:45:39 2022 (serrano)                */
-;*    Copyright   :  2002-22 Manuel Serrano                            */
+;*    Last change :  Fri Sep 12 11:10:27 2025 (serrano)                */
+;*    Copyright   :  2002-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
 ;*=====================================================================*/
@@ -153,7 +153,18 @@
    (install-expander 'quasiquote (lambda (x e) (e (quasiquotation 1 x) e)))
    
    ;; module
-   (install-expander 'module (lambda (x e) x))
+   (install-expander 'module (lambda (x e)
+				(match-case x
+				   ((module (? symbol?) . ?-)
+				    ;; old modules
+				    x)
+				   ((module . ?rest)
+				    ;; module5 form
+				    (set-cdr! x
+				       (map (lambda (x) (e x e)) rest))
+				    x)
+				   (else
+				    x))))
    
    ;; define-macro  
    (install-expander 'define-macro (lambda (x e)

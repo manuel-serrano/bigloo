@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Thu Jun 19 09:37:24 2025 (serrano)                */
+;*    Last change :  Fri Sep 12 16:01:33 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -23,6 +23,7 @@
 	    __object
 	    __bigloo
 	    __module
+	    __module5
 	    __param
 	    __error
 	    __configure

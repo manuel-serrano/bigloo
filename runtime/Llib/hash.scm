@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Mon Jul 21 09:10:31 2025 (serrano)                */
+;*    Last change :  Fri Sep 12 15:18:07 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -281,7 +281,7 @@
 	      (error "create-hashtable"
 		 "Cannot provide hash for string hashtable" hash))
 	     ((=fx wk (weak-open-string))
-	      (%hashtable 0 size (make-vector (*fx 3 size) #f) eq? list wk 0 0))
+	      (%hashtable 0 size (make-vector (*fx 3 size) #f) #unspecified #unspecified wk 0 0))
 	     (else
 	      (%hashtable 0 max-bucket-length (make-vector size '())
 		 string=?
@@ -300,7 +300,7 @@
 (define (create-hashtable-open-string)
    (let ((size 128)
 	 (wk (weak-open-string)))
-      (%hashtable 0 size (make-vector (*fx 3 size) #f) eq? list wk 0 0)))
+      (%hashtable 0 size (make-vector (*fx 3 size) #f) #unspecified #unspecified wk 0 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    hashtable? ...                                                   */

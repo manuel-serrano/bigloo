@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Fri Aug 22 11:59:35 2025 (serrano)                */
+;*    Last change :  Fri Sep 12 16:46:31 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -132,7 +132,8 @@
 	    *bdb-debug-no-line-directives?*
 	    *profile-mode*
 	    *prof-table-name*
-	    *module-shape?*             
+	    *module-version*
+	    *module-shape?*
 	    *key-shape?*
 	    *type-shape?*
 	    *typenode-shape?*
@@ -828,6 +829,9 @@
 (param-define *profile-library*
    "Use the profiled library version"
    #f)
+(param-define *module-version*
+   "Version of the module language support"
+   4)
 (define *module-shape?* #f)
 (define *key-shape?* #f)
 (define *type-shape?* #f)
