@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Sep 12 11:22:36 2025 (serrano)                */
+;*    Last change :  Fri Sep 12 17:05:36 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -47,6 +47,7 @@
 	    type_env
 	    type_cache
 	    module_module
+	    module_module5
 	    module_include
 	    module_alibrary
 	    expand_eps
@@ -142,20 +143,20 @@
       ;; now (and only now) we can say hello
       (hello-world)
 
-      ;; we set bdb options up
+      ;; conifgure bdb when debugging
       (if (and (>fx *bdb-debug* 0)
 	       (memq 'bdb (backend-debug-support (the-backend))))
 	  (profile bdb (bdb-setting!)))
 
-      ;; we check now if we have parsed all argument
-      (if (not (null? *rest-args*))
-          (warning "Don't know what to do with arguments: " *rest-args*))
+      ;; check now if all arguments have been parsed
+      (unless (null? *rest-args*)
+	 (warning "Don't know what to do with arguments: " *rest-args*))
       
       ;; we read access file
       (profile afile (read-access-files))
       (profile package (read-jfile))
       
-      ;; we create (or restore) the compilation environment
+      ;; create (or restore) the compilation environment
       (if *lib-mode*
 	  (profile env
 		   (begin
@@ -163,21 +164,24 @@
 		      (initialize-Tenv!)))
 	  (profile heap (restore-heap)))
 
-      ;; we initialized the type caching system
+      ;; initialize the type caching system
       (profile itype (install-type-cache!))
       
-      ;; when the vector->tvector optimization is enabled we have to
-      ;; patch the types of vector-set! family functions.
+      ;; when the vector->tvector optimization is enabled the types
+      ;; of vector-set! family functions have to be patched
       (profile vect (patch-vector-set!))
 
-      ;; when the cfa pair tracking is enabled we have to
-      ;; patch the types of set-cxr! family functions.
+      ;; when the cfa pair tracking the types of set-cxr! family functions
+      ;; have to be patched
       (profile pair (patch-pair-set!))
 
-      ;; before parsing the modules, declare that we are currently compiling
+      ;; declare the compilation srfi1 keywords before parsing the module
       (register-srfi! 'bigloo-compile)
-      (when (eq? *pass* 'classgen) (register-srfi! 'bigloo-class-generate))
-      (when (>=fx (bigloo-compiler-debug) 1) (register-srfi! 'bigloo-debug))
+      (when (eq? *pass* 'classgen)
+	 (register-srfi! 'bigloo-class-generate))
+      (when (>=fx (bigloo-compiler-debug) 1)
+	 (register-srfi! 'bigloo-debug))
+      
       (let ((unsafe 0))
 	 (when *unsafe-type*
 	    (set! unsafe (+fx 1 unsafe))
@@ -200,22 +204,29 @@
 	 (when (=fx unsafe 6)
 	    (register-srfi! 'bigloo-unsafe)))
 
-      ;; we install macros ...
+      ;; install the compiler macros ...
       (install-initial-expander)
 
       ;; new bigloo class accessorless
       (register-srfi! 'bigloo-class-sans)
       
-      ;; we compile the module clause which leads to the
+      ;; compile the module clause which leads to the
       ;; complete source code.
       (let* ((exp0 (comptime-expand/error (car src)))
 	     (module (progn-first-expression exp0))
 	     (src-code (append (progn-tail-expressions exp0) (cdr src)))
-	     (units (profile module (produce-module! module))))
+	     (units (profile module
+		       (case *module-version*
+			  ((5) (produce-module5! module (car *src-files*)))
+			  (else (produce-module! module)))))
+	     (tu (find (lambda (u) (eq? (unit-id u) 'toplevel)) units)))
 
+	 (when (=fx *module-version* 5)
+	    (tprint "mod=" units))
+	 
 	 (stop-on-pass 'dump-module (lambda () (dump-module module)))
 
-	 ;; the prof initilization code
+	 ;; profiling initilization code
 	 (when (>=fx *profile-mode* 1)
 	    (set! units (cons (make-prof-unit) units)))
 	    
@@ -232,10 +243,9 @@
 				      *compiler-debug-trace*))
 			   c0)
 			c0)))
-	    (unit-sexp*-add! (get-toplevel-unit) c1)
+	    (unit-sexp*-add! tu c1)
 	    (when (>=fx *optim* 2)
-	       (unit-sexp*-add-head! (get-toplevel-unit)
-		  (list (%append-2-define)))))
+	       (unit-sexp*-add-head! tu (list (%append-2-define)))))
 			  
 	 ;; we check error occurred while building the ast
 	 (pass-postlude #unspecified)
@@ -257,7 +267,7 @@
 	 ;; we must restore again additional heaps
 	 (restore-additional-heaps)
 	 (additional-heap-restore-globals!)
-	 (unit-sexp*-add-head! (get-toplevel-unit) (get-alibrary-inits))
+	 (unit-sexp*-add-head! tu (get-alibrary-inits))
 
 	 ;; we perfom user pass
 	 (user-walk units)

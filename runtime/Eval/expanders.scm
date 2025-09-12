@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Sep 12 11:10:27 2025 (serrano)                */
+;*    Last change :  Fri Sep 12 17:26:28 2025 (serrano)                */
 ;*    Copyright   :  2002-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -125,168 +125,203 @@
 ;*    Expanders shared by the compiler and the interpreter             */
 ;*---------------------------------------------------------------------*/
    ;; quote
-   (install-expander 'quote (lambda (x e) (expand-quote x e)))
+   (install-expander 'quote
+      (lambda (x e) (expand-quote x e)))
 
    ;; @
-   (install-expander '@ (lambda (x e)
-			   (match-case x
-			      ((@ (? symbol?) (? symbol?))
-			       x)
-			      (else
-			       (expand-error "@" "Illegal form" x)))))
+   (install-expander '@
+      (lambda (x e)
+	 (match-case x
+	    ((@ (? symbol?) (? symbol?))
+	     x)
+	    (else
+	     (expand-error "@" "Illegal form" x)))))
    ;; ->
-   (install-expander '-> (lambda (x e)
-			    (if (every symbol? x)
-				(match-case x
-				   ((?- ?v . ?rest)
-				    (let ((nv (e v e)))
-				       (match-case nv
-					  ((-> . ?mv)
-					   (evepairify `(-> ,@mv ,@rest) x))
-					  (else
-					   (set-car! (cdr x) nv)
-					   x))))
-				   (else
-				    (expand-error "->" "Illegal form" x)))
-				(expand-error "->" "Illegal form" x))))
+   (install-expander '->
+      (lambda (x e)
+	 (if (every symbol? x)
+	     (match-case x
+		((?- ?v . ?rest)
+		 (let ((nv (e v e)))
+		    (match-case nv
+		       ((-> . ?mv)
+			(evepairify `(-> ,@mv ,@rest) x))
+		       (else
+			(set-car! (cdr x) nv)
+			x))))
+		(else
+		 (expand-error "->" "Illegal form" x)))
+	     (expand-error "->" "Illegal form" x))))
    ;; quasiquote
-   (install-expander 'quasiquote (lambda (x e) (e (quasiquotation 1 x) e)))
+   (install-expander 'quasiquote
+      (lambda (x e) (e (quasiquotation 1 x) e)))
    
    ;; module
-   (install-expander 'module (lambda (x e)
-				(match-case x
-				   ((module (? symbol?) . ?-)
-				    ;; old modules
-				    x)
-				   ((module . ?rest)
-				    ;; module5 form
-				    (set-cdr! x
-				       (map (lambda (x) (e x e)) rest))
-				    x)
-				   (else
-				    x))))
+   (install-expander 'module
+      (lambda (x e)
+	 (match-case x
+	    ((module (? symbol?) . ?-)
+	     ;; old modules
+	     x)
+	    ((module . ?rest)
+	     ;; module5 form
+	     (set-cdr! x
+		(map (lambda (x)
+			(match-case x
+			   ((import () ?from)
+			    ;; treat import specially for the syntax () that
+			    ;; would trigger a syntax error otherwise
+			    (set-car! (cddr x) (e from e))
+			    x)
+			   (else
+			    (e x e))))
+		   rest))
+	     x)
+	    (else
+	     x))))
    
    ;; define-macro  
-   (install-expander 'define-macro (lambda (x e)
-				      (expand-define-macro x e)))
+   (install-expander 'define-macro
+      (lambda (x e)
+	 (expand-define-macro x e)))
    
    ;; define-hygiene-macro  
-   (install-expander 'define-hygiene-macro (lambda (x e)
-					      (expand-define-hygiene-macro x e)))
+   (install-expander 'define-hygiene-macro
+      (lambda (x e)
+	 (expand-define-hygiene-macro x e)))
    
    ;; define-expander
-   (install-expander 'define-expander (lambda (x e)
-					 (expand-define-expander x e)))
+   (install-expander 'define-expander
+      (lambda (x e)
+	 (expand-define-expander x e)))
    
    ;; cond
-   (install-expander 'cond (lambda (x e) (e (expand-cond x) e)))
+   (install-expander 'cond
+      (lambda (x e) (e (expand-cond x) e)))
    
    ;; do
-   (install-expander 'do (lambda (x e) (expand-do x e)))
+   (install-expander 'do
+      (lambda (x e) (expand-do x e)))
    
    ;; try
-   (install-expander 'try (lambda (x e) (expand-try x e)))
+   (install-expander 'try
+      (lambda (x e) (expand-try x e)))
    
    ;; match-case
-   (install-expander 'match-case (lambda (x e) (e (expand-match-case x) e)))
+   (install-expander 'match-case
+      (lambda (x e) (e (expand-match-case x) e)))
    
    ;; match-lambda
-   (install-expander 'match-lambda (lambda (x e)
-				      (e (expand-match-lambda x) e)))
+   (install-expander 'match-lambda
+      (lambda (x e)
+	 (e (expand-match-lambda x) e)))
    
    ;; define-pattern
-   (install-expander 'define-pattern (lambda (x e)
-					(e (expand-define-pattern x) e)))
+   (install-expander 'define-pattern
+      (lambda (x e)
+	 (e (expand-define-pattern x) e)))
    
    ;; delay
-   (install-expander 'delay (lambda (x e)
-			       (match-case x
-				  ((?- ?exp)
-				   `(make-promise (lambda () ,(e exp e))))
-				  (else
-				   (expand-error "delay" "Illegal form" x)))))
+   (install-expander 'delay
+      (lambda (x e)
+	 (match-case x
+	    ((?- ?exp)
+	     `(make-promise (lambda () ,(e exp e))))
+	    (else
+	     (expand-error "delay" "Illegal form" x)))))
    ;; regular-grammar
-   (install-expander 'regular-grammar expand-regular-grammar)
+   (install-expander 'regular-grammar
+      expand-regular-grammar)
    
    ;; string-case
-   (install-expander 'string-case expand-string-case)
+   (install-expander 'string-case
+      expand-string-case)
    
    ;; lalr-grammar
-   (install-expander 'lalr-grammar expand-lalr-grammar)
+   (install-expander 'lalr-grammar
+      expand-lalr-grammar)
    
    ;; begin
-   (install-expander 'begin expand-begin)
+   (install-expander 'begin
+      expand-begin)
    
    ;; failure
-   (install-expander 'failure (lambda (x e)
-				 (match-case x
-				    ((?- ?proc ?msg ?obj)
-				     `(failure ,(e proc e)
-					       ,(e msg e)
-					       ,(e obj e)))
-				    (else
-				     (expand-error "failure"
-						   "Illegal `failure' form"
-						   x)))))
+   (install-expander 'failure
+      (lambda (x e)
+	 (match-case x
+	    ((?- ?proc ?msg ?obj)
+	     `(failure ,(e proc e)
+		 ,(e msg e)
+		 ,(e obj e)))
+	    (else
+	     (expand-error "failure" "Illegal `failure' form" x)))))
    
    ;; receive
    (install-expander 'receive
-		     (lambda (x e)
-			(match-case x
-			   ((?- ?vars ?call . ?exprs)
-			    (e `(multiple-value-bind  ,vars ,call ,@exprs) e))
-			   (else
-			    (expand-error "receive"
-					  "Illegal form"
-					  x)))))
+      (lambda (x e)
+	 (match-case x
+	    ((?- ?vars ?call . ?exprs)
+	     (e `(multiple-value-bind  ,vars ,call ,@exprs) e))
+	    (else
+	     (expand-error "receive" "Illegal form" x)))))
    
    ;; when
    (install-expander 'when
-		     (lambda (x e)
-			(match-case x
-			   ((?- ?si . ?body)
-			    (e `(if ,si
-				    (begin ,@body)
-				    #f)
-			       e))
-			   (else
-			    (expand-error "when" "Illegal form" x)))))
+      (lambda (x e)
+	 (match-case x
+	    ((?- ?si . ?body)
+	     (e `(if ,si
+		     (begin ,@body)
+		     #f)
+		e))
+	    (else
+	     (expand-error "when" "Illegal form" x)))))
    
    ;; unless
    (install-expander 'unless
-		     (lambda (x e)
-			(match-case x
-			   ((?- ?si . ?body)
-			    (e `(if ,si
-				    #f
-				    (begin ,@body))
-			       e))
-			   (else
-			    (expand-error "unless" "Illegal form" x)))))
+      (lambda (x e)
+	 (match-case x
+	    ((?- ?si . ?body)
+	     (e `(if ,si
+		     #f
+		     (begin ,@body))
+		e))
+	    (else
+	     (expand-error "unless" "Illegal form" x)))))
    ;; define-record-type
-   (install-expander 'define-record-type expand-define-record-type)
+   (install-expander 'define-record-type
+      expand-define-record-type)
    
    ;; args-parse
-   (install-expander 'args-parse expand-args-parse)
+   (install-expander 'args-parse
+      expand-args-parse)
    
    ;; tprint
-   (install-expander 'tprint expand-tprint)
+   (install-expander 'tprint
+      expand-tprint)
    
    ;; and-let*
-   (install-expander 'and-let* expand-and-let*)
+   (install-expander 'and-let*
+      expand-and-let*)
    
    ;; define-syntax
-   (install-expander 'define-syntax expand-define-syntax)
-   (install-expander 'letrec-syntax expand-letrec-syntax)
-   (install-expander 'let-syntax expand-let-syntax)
+   (install-expander 'define-syntax
+      expand-define-syntax)
+   (install-expander 'letrec-syntax
+      expand-letrec-syntax)
+   (install-expander 'let-syntax
+      expand-let-syntax)
 
 ;*---------------------------------------------------------------------*/
 ;*    Compiler macros                                                  */
 ;*---------------------------------------------------------------------*/
    ;; trace
-   (install-compiler-expander 'when-trace (make-expand-when-trace 'compiler))
-   (install-compiler-expander 'with-trace (make-expand-with-trace 'compiler))
-   (install-compiler-expander 'trace-item (make-expand-trace-item 'compiler))
+   (install-compiler-expander 'when-trace
+      (make-expand-when-trace 'compiler))
+   (install-compiler-expander 'with-trace
+      (make-expand-with-trace 'compiler))
+   (install-compiler-expander 'trace-item
+      (make-expand-trace-item 'compiler))
 
 ;*---------------------------------------------------------------------*/
 ;*    Interpreter macros                                               */

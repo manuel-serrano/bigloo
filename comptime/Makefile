@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Mon Jun 30 17:04:26 2025 (serrano)                */
+#*    Last change :  Fri Sep 12 17:15:36 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -107,7 +107,7 @@ READ_OBJ	= $(READ_FILE:%=Read/%.o)
 #*--- module ----------------------------------------------------------*/
 MODULE_FILE	= foreign impuse main prototype with class include \
                   module statexp eval load pragma type library checksum \
-                  option alibrary java wasm
+                  option alibrary java wasm module5
 
 MODULE_OBJ	= $(MODULE_FILE:%=Module/%.o)
 

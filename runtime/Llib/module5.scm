@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Sep 12 16:56:48 2025 (serrano)                */
+;*    Last change :  Fri Sep 12 17:02:38 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -79,14 +79,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (object-write m::Module . port)
    (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<Module id=~a path=~a>" (-> m id) (-> m path)))
+      "#<Module id=~a path=~s>" (-> m id) (-> m path)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ::Module ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (object-display m::Module . port)
    (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<Module id=~a path=~a>" (-> m id) (-> m path)))
+      "#<Module id=~a path=~s>" (-> m id) (-> m path)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-write ::Decl ...                                          */
@@ -94,7 +94,7 @@
 (define-method (object-write d::Decl . port)
    (let ((m::Module (-> d mod)))
       (fprintf (if (pair? port) (car port) (current-output-port))
-	 "#<Decl ~a,~a mod=~a scope=~a ronly=~a>"
+	 "#<Decl ~a/~a mod=~a scope=~a ronly=~a>"
 	 (-> d id) (-> d alias) (-> m id) (-> d scope) (-> d ronly))))
 
 ;*---------------------------------------------------------------------*/
@@ -103,7 +103,7 @@
 (define-method (object-display d::Decl . port)
    (let ((m::Module (-> d mod)))
       (fprintf (if (pair? port) (car port) (current-output-port))
-	 "#<Decl ~a,~a mod=~a scope=~a ronly=~a>"
+	 "#<Decl ~a/~a mod=~a scope=~a ronly=~a>"
 	 (-> d id) (-> d alias) (-> m id) (-> d scope) (-> d ronly))))
 
 ;*---------------------------------------------------------------------*/
@@ -154,7 +154,6 @@
 					      :lib-path lib-path
 					      :expand expand)))
 			  (set! (-> nmod body) (cdr exprs))
-			  (hashtable-put! *all-modules* path nmod)
 			  nmod))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -225,6 +224,7 @@
 	  (let ((mod (instantiate::Module
 			(path path)
 			(id (module5-id path)))))
+	     (hashtable-put! *all-modules* path mod)
 	     (for-each (lambda (c) (module5-parse-clause c expr mod lib-path expand))
 		clauses)
 	     mod))
