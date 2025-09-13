@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Sep 12 17:49:47 2025 (serrano)                */
+;*    Last change :  Sat Sep 13 06:38:01 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -30,7 +30,6 @@
    (pass-prelude "Module5")
    (let ((mod (module5-parse mod path :lib-path *lib-dir*)))
       (with-access::Module mod (id)
-	 (tprint "id=" id)
 	 (set! *module* id))
       (list (unit 'toplevel 100 '() #t #f))))
 

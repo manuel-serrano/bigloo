@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Type/tenv.scm               */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Type/tenv.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Wed May  7 08:42:35 2014 (serrano)                */
-;*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep 13 06:53:20 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
 ;*=====================================================================*/
@@ -106,9 +106,9 @@
 	 (type-alias-set! type (find-type (type-id (type-alias type)))))
       ;; fix subtypes
       (type-parents-set! type
-			 (map (lambda (parent)
-				 (find-type (type-id parent)))
-			      (type-parents type)))
+	 (map (lambda (parent)
+		 (find-type (type-id parent)))
+	    (type-parents type)))
       ;; fix coercers
       (for-each (lambda (coercer)
 		   (let ((from (coercer-from coercer))
@@ -117,11 +117,11 @@
 		      (coercer-to-set! coercer (find-type (type-id to)))
 		      (for-each (lambda (co)
 				   (set-cdr! co (find-type (type-id (cdr co)))))
-				(coercer-check-op coercer))
+			 (coercer-check-op coercer))
 		      (for-each (lambda (co)
 				   (set-cdr! co (find-type (type-id (cdr co)))))
-				(coercer-coerce-op coercer))))
-		(type-coerce-to type)))
+			 (coercer-coerce-op coercer))))
+	 (type-coerce-to type)))
    
    (define (find-coercer from to)
       (let loop ((coercer (type-coerce-to from)))
@@ -139,10 +139,10 @@
 		      (when (or (not tid-exists?)
 				(not (find-coercer old (find-type tid))))
 			 (type-coerce-to-set! old
-					      (cons coercer
-						    (type-coerce-to old))))))
-		(type-coerce-to new)))
-
+			    (cons coercer
+			       (type-coerce-to old))))))
+	 (type-coerce-to new)))
+   
    (define (find-new t)
       (if (isa? t type)
 	  (with-access::type t (id)
@@ -236,8 +236,8 @@
    ;; because old types may have coercion to new types (for instance, for
    ;; fresh classes).
    (hashtable-for-each *Tenv*
-		       (lambda (k new)
-			  (adjust-type-coercers! new))))
+      (lambda (k new)
+	 (adjust-type-coercers! new))))
 		 
 ;*---------------------------------------------------------------------*/
 ;*    find-type ...                                                    */
@@ -381,12 +381,12 @@
    (trace (ast 2) "~~~ declare-type!: " id #\Newline)
    (if (not (memq class '(bigloo C _ java)))
        (user-error "declare-type!"
-		   "Illegal type class"
-		   class)
+	  "Illegal type class"
+	  class)
        (let ((type (bind-type! id #t #unspecified)))
-	  (type-name-set!   type name)
-	  (type-$-set!      type ($-in-name? name))
-	  (type-class-set!  type class)
+	  (type-name-set! type name)
+	  (type-$-set! type ($-in-name? name))
+	  (type-class-set! type class)
 	  type)))
  
 ;*---------------------------------------------------------------------*/
@@ -397,11 +397,11 @@
 (define (declare-subtype!::type id::symbol name::bstring parents class::symbol)
    (trace (ast 2) "~~~ declare-subtype!: " id #\Newline)
    (assert (parents) (list? parents))
-   (let ((type    (bind-type! id #t #unspecified))
+   (let ((type (bind-type! id #t #unspecified))
 	 (parents (map find-type parents)))
-      (type-name-set!    type name)
-      (type-$-set!       type ($-in-name? name))
-      (type-class-set!   type class)
+      (type-name-set! type name)
+      (type-$-set! type ($-in-name? name))
+      (type-class-set! type class)
       (type-parents-set! type parents)
       type))
 
@@ -440,7 +440,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    check-types ...                                                  */
 ;*    -------------------------------------------------------------    */
-;*    We check that all types are initialized.                         */
+;*    Check that all types are initialized.                            */
 ;*    -------------------------------------------------------------    */
 ;*    After this function is called, `use-type' does not tolerate the  */
 ;*    usage of undefined types (this is implemented using the          */
@@ -451,7 +451,7 @@
       (when (pair? ut)
 	 (newline (current-error-port))
 	 (fprint (current-error-port)
-		 (length ut) " type(s) used but not defined.")
+	    (length ut) " type(s) used but not defined.")
 	 (let loop ((ut ut))
 	    (cond
 	       ((null? ut)
@@ -463,13 +463,13 @@
 		   (lambda ()
 		      (if (type-import-location (car ut))
 			  (user-error/location (type-import-location (car ut))
-					       *module*
-					       "Undefined type used in export clause"
-					       (shape (car ut)))
+			     *module*
+			     "Undefined type used in export clause"
+			     (shape (car ut)))
 			  (user-error/location (type-location (car ut))
-					       *module*
-					       "Undefined used type"
-					       (shape (car ut))))))
+			     *module*
+			     "Undefined used type"
+			     (shape (car ut))))))
 		(loop (cdr ut)))
 	       (else
 		(with-exception-handler
@@ -485,9 +485,6 @@
 ;*---------------------------------------------------------------------*/
 (define (sub-type? minor major)
    (cond
-      ((eq? minor major)
-       #t)
-      ((memq major (type-parents minor))
-       #t)
-      (else
-       #f)))
+      ((eq? minor major) #t)
+      ((memq major (type-parents minor)) #t)
+      (else #f)))

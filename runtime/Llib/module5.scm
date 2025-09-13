@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Sep 12 17:02:38 2025 (serrano)                */
+;*    Last change :  Sat Sep 13 09:29:31 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -63,7 +63,8 @@
 	      (alias::symbol read-only)
 	      (mod::Module read-only)
 	      scope::symbol
-	      (ronly (default #unspecified)))
+	      (ronly (default #unspecified))
+	      (src (default #unspecified)))
 	   
 	   (module5-resolve-path ::bstring ::bstring)
 	   (module5-resolve-library ::symbol ::pair-nil)
@@ -349,23 +350,26 @@
 	     (error/loc "Cannot find file" path clause))))
 
    (define (parse-export clause expr::pair mod::Module expand)
-      (for-each (match-lambda
-		   ((and ?id (? symbol?))
-		    (hashtable-symbol-put! (-> mod decls) id
-		       (instantiate::Decl
-			  (id id)
-			  (alias id)
-			  (mod mod)
-			  (scope 'export))))
-		   (((and ?alias (? symbol?)) (and ?id (? symbol?)))
-		    (hashtable-symbol-put! (-> mod decls) alias
-		       (instantiate::Decl
-			  (id id)
-			  (alias alias)
-			  (mod mod)
-			  (scope 'export))))
-		   (else
-		    (error/loc "Illegal export clause" clause expr)))
+      (for-each (lambda (expr)
+		   (match-case expr
+		      ((and ?id (? symbol?))
+		       (hashtable-symbol-put! (-> mod decls) id
+			  (instantiate::Decl
+			     (id id)
+			     (alias id)
+			     (mod mod)
+			     (scope 'export)
+			     (src expr))))
+		      (((and ?alias (? symbol?)) (and ?id (? symbol?)))
+		       (hashtable-symbol-put! (-> mod decls) alias
+			  (instantiate::Decl
+			     (id id)
+			     (alias alias)
+			     (mod mod)
+			     (scope 'export)
+			     (src expr))))
+		      (else
+		       (error/loc "Illegal export clause" clause expr))))
 	 (cdr clause)))
 
    (define (parse-include clause expr::pair mod::Module expand)

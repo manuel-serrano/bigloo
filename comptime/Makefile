@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Sep 12 17:15:36 2025 (serrano)                */
+#*    Last change :  Sat Sep 13 09:09:56 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -95,7 +95,7 @@ HEAP_FILE	= restore make
 HEAP_OBJ	= $(HEAP_FILE:%=Heap/%.o)
 
 #*--- write -----------------------------------------------------------*/
-WRITE_FILE	= version expanded scheme ast
+WRITE_FILE	= version unit scheme ast
 
 WRITE_OBJ	= $(WRITE_FILE:%=Write/%.o)
 

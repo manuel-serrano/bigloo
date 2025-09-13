@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Write/expanded.scm          */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Write/expanded.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:03:54 1994                          */
-;*    Last change :  Tue May 13 09:53:25 2003 (serrano)                */
-;*    Copyright   :  1994-2003 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep 13 09:09:36 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pretty-print of expanded module.                             */
 ;*=====================================================================*/
@@ -12,19 +12,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module write_expanded
+(module write_unit
    (include "Ast/unit.sch")
    (import  engine_param
 	    write_scheme
 	    tools_args
 	    ast_unit
 	    module_module)
-   (export  (write-expanded expanded)))
+   (export  (write-unit unit)))
 
 ;*---------------------------------------------------------------------*/
-;*    write-expanded ...                                               */
+;*    write-unit ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (write-expanded units)
+(define (write-unit units)
    (let* ((output-name (cond
 			  ((string? *dest*)
 			   *dest*)
@@ -40,10 +40,10 @@
 			   (open-output-file output-name)
 			   (current-output-port))))
       (if (not (output-port? port))
-	  (error "write-expanded" "Can't open output file" output-name)
+	  (error "write-unit" "Can't open output file" output-name)
 	  (unwind-protect
 	     (begin
-		(write-scheme-file-header port "The expanded module")
+		(write-scheme-file-header port "The unit module")
 		(write-scheme-comment
 		 port
 		 "---------------------------------------------------------")
@@ -55,7 +55,7 @@
 		 "---------------------------------------------------------")
 		(write-scheme-comment
 		 port
-		 "This expanded file cannot be compiled \"as is\". In order to")
+		 "This unit file cannot be compiled \"as is\". In order to")
 		(write-scheme-comment
 		 port
 		 "compile it:")
@@ -73,7 +73,7 @@
 		 "     you must select manually which files still have to")
 		(write-scheme-comment
 		 port
-		 "     be included in the expanded forms.")
+		 "     be included in the unit forms.")
 		(write-scheme-comment
 		 port
 		 "---------------------------------------------------------")

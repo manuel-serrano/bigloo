@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Tools/error.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Tools/error.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Fri Apr 12 11:04:42 2019 (serrano)                */
-;*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep 13 09:33:48 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
 ;*=====================================================================*/
@@ -29,6 +29,7 @@
 	    (user-error-notify ::obj ::symbol)
 	    (user-error <obj> <obj> <obj> . <obj>)
 	    (user-error/location ::obj <obj> <obj> <obj> . <obj>)
+	    (error/src proc msg obj src)
 	    (current-function)
 	    (enter-function ::symbol)
 	    (leave-function)
@@ -163,7 +164,19 @@
 			       (pos (location-pos loc)))
 			    (error/location proc msg objprn fname pos))
 			 (error proc msg objprn)))))))))
-		 
+
+;*---------------------------------------------------------------------*/
+;*    error/src ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (error/src proc msg obj src)
+   (if (epair? src)
+       (match-case src
+	  ((at ?fname ?loc)
+	   (error/location proc msg obj fname loc))
+	  (else
+	   (error proc msg obj)))
+       (error proc msg obj)))
+
 ;*---------------------------------------------------------------------*/
 ;*    *sfun-stack*                                                     */
 ;*---------------------------------------------------------------------*/

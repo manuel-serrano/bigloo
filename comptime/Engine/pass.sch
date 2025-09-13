@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Engine/pass.sch             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Engine/pass.sch        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:29:06 1994                          */
-;*    Last change :  Mon May 15 07:43:19 2000 (serrano)                */
-;*    Copyright   :  1994-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep 13 06:50:57 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pass prelude                                                 */
 ;*=====================================================================*/
@@ -36,8 +36,8 @@
 	      (loop (cdr hooks) (cdr hnames)))
 	     (else
 	      (internal-error ,name
-			      "failure during prelude hook"
-			      (car hnames)))))))
+		 "failure during prelude hook"
+		 (car hnames)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pass-postlude ...                                                */
@@ -47,13 +47,13 @@
        (if (>fx *nb-error-on-pass* 0)
 	   (begin
 	      (fprint (current-error-port)
-		      *nb-error-on-pass*
-		      " error"
-		      (if (and (integer? *nb-error-on-pass*)
-			       (> *nb-error-on-pass* 1))
-			  "s"
-			  "")
-		      " occured, ending ...")
+		 *nb-error-on-pass*
+		 " error"
+		 (if (and (integer? *nb-error-on-pass*)
+			  (> *nb-error-on-pass* 1))
+		     "s"
+		     "")
+		 " occured, ending ...")
 	      (exit -1))
 	   (let loop ((hooks  ,(cons 'list hooks))
 		      (hnames ',hooks))
@@ -64,8 +64,8 @@
 		  (loop (cdr hooks) (cdr hnames)))
 		 (else
 		  (internal-error *current-pass*
-				  "failure during postlude hook"
-				  (car hnames))))))))
+		     "failure during postlude hook"
+		     (car hnames))))))))
 	      
 	       
 
