@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Sep 11 08:41:26 2025 (serrano)                */
+#*    Last change :  Mon Sep 15 11:00:30 2025 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -46,6 +46,12 @@ WASMAS		= $(BGLWATIB)
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= dom
 
+_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
+OBJECTS		= $(_OBJECTS:%=objs/%.o)
+
+EOBJECTS	= objs/make_lib.o
+
+
 WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) Wlib/wdom.wat
 WEOBJECTS	= objs/make_lib.wat
 
@@ -67,12 +73,22 @@ POPULATION	= $(SOURCES) \
 .PHONY: c jvm build-c build-jvm build-wasm
 
 all:
+	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
+             $(MAKE) build-c; \
+	  fi
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+             $(MAKE) build-jvm; \
+	  fi
 	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
              $(MAKE) build-wasm; \
 	  fi
 
-c: 
-jvm:
+c: build-c
+build-c: api-c
+
+jvm: build-jvm
+build-jvm: api-jvm
+
 wasm: build-wasm
 build-wasm: api-wasm
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Sat Sep 13 09:33:48 2025 (serrano)                */
+;*    Last change :  Sun Sep 14 14:38:47 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
@@ -170,7 +170,7 @@
 ;*---------------------------------------------------------------------*/
 (define (error/src proc msg obj src)
    (if (epair? src)
-       (match-case src
+       (match-case (cer src)
 	  ((at ?fname ?loc)
 	   (error/location proc msg obj fname loc))
 	  (else

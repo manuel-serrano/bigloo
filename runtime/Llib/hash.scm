@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Fri Sep 12 15:18:07 2025 (serrano)                */
+;*    Last change :  Sun Sep 14 19:19:34 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -487,7 +487,7 @@
 (define (hashtable-map table::struct fun::procedure)
    (cond
       ((hashtable-open-string? table)
-       (open-string-hashtable->list table))
+       (open-string-hashtable-map table fun))
       ((hashtable-weak? table)
        (weak-hashtable-map table fun))
       (else

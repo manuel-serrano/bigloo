@@ -4,7 +4,7 @@ SRCS = watib.scm Misc/let-if.scm Opt/optimise.scm Val/validate.scm Asm/binary.sc
 
 OBJS = $(SRCS:.scm=.o)
 
-FLAGS = -O2 -g
+FLAGS = -O2 -g -cg
 #FLAGS = -O3 -unsafe
 
 all: watib

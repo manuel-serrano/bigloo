@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Fri Sep 12 16:46:31 2025 (serrano)                */
+;*    Last change :  Sun Sep 14 14:36:44 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -831,7 +831,7 @@
    #f)
 (param-define *module-version*
    "Version of the module language support"
-   4)
+   0)
 (define *module-shape?* #f)
 (define *key-shape?* #f)
 (define *type-shape?* #f)

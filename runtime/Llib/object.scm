@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Thu Jul 17 14:45:21 2025 (serrano)                */
+;*    Last change :  Mon Sep 15 13:46:44 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1111,7 +1111,7 @@
 	 (generics-add-class! num (if (class? super) (class-index super) num))
 	 class))
    
-   
+
    (synchronize $bigloo-generic-mutex
 	
       (initialize-objects!)

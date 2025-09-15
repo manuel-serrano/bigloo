@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Sep 13 06:27:15 2025 (serrano)                */
+;*    Last change :  Sun Sep 14 14:33:14 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -499,8 +499,15 @@
 ;*---------------------------------------------------------------------*/
 (define (src->ast src)
    (case *module-version*
-      ((5) (module5->ast src))
-      (else (module4->ast src))))
+      ((4)
+       (module4->ast src))
+      ((5)
+       (module5->ast src))
+      (else
+       (match-case (car src)
+	  ((module ?- :version 4 . ?-) (module4->ast src))
+	  ((module ?- :version 5 . ?-) (module5->ast src))
+	  (else (module4->ast src))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5->ast ...                                                 */
@@ -508,6 +515,7 @@
 (define (module5->ast src)
    (with-trace 'compiler "module5->ast"
       (trace-item "src=" src)
+      (pass-prelude "Module5")
       (let* ((mod (comptime-expand/error (car src)))
 	     (src-code (cdr src))
 	     (mod (module5-parse mod (car *src-files*)))
@@ -516,9 +524,13 @@
 	 
 	 (trace-item "units=" units)
 	 (trace-item "src-code=" src-code)
-
-	 (with-access::Module mod (id)
-	    (set! *module* id))
+	 
+	 (with-access::Module mod (id body)
+	    (set! *module* id)
+	    (set! body (append body (cdr src)))
+	    
+	    (module5-expand! mod)
+	    (module5-resolve! mod))
 	 
 	 (stop-on-pass 'dump-module (lambda () (dump-module mod)))
 	 
@@ -574,32 +586,13 @@
 		    (backend-force-register-gc-roots (the-backend)))
 	    (set! units (cons (make-gc-roots-unit) units)))
 	 
-	 (let ((ast (profile ast (build-ast units))))
-
-	    ;; set the module bindings scope
-	    (with-access::Module mod (decls (mid id))
-	       (let ((unbounds '()))
-		  (hashtable-for-each decls
-		     (lambda (k d)
-			(with-access::Decl d (scope id)
-			   (when (eq? scope 'export)
-			      (let ((g (find-global id mid)))
-				 (if (not g)
-				     (set! unbounds (cons d unbounds))
-				     (with-access::global g (import)
-					(set! import 'export))))))))
-		  (when (pair? unbounds)
-		     (for-each (lambda (d)
-				  (with-access::Decl d (id src)
-				     (with-handler exception-notify
-					(error/src mid "Definition missing" id src))))
-			unbounds)
-		     (exit 1))))
-
+	 (let* ((mast (module5-ast mod))
+		(ast (profile ast (build-ast units))))
+	    
 	    ;; check if inlined functions used by the backend
 	    ;; have all been defined
 	    (backend-check-inlines (the-backend))
-
+	    
 	    ast))))
 
 ;*---------------------------------------------------------------------*/

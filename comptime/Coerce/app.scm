@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Fri Dec 27 07:38:27 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Sep 15 11:48:10 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
 ;*=====================================================================*/

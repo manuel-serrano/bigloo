@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sat Sep 13 06:38:01 2025 (serrano)                */
+;*    Last change :  Sun Sep 14 18:27:13 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -19,19 +19,42 @@
    
    (import engine_param
 	   tools_error
-	   module_module)
+	   module_module
+	   ast_node
+	   ast_var
+	   ast_glo-decl
+	   type_type)
    
-   (export (produce-module5! ::obj ::bstring)))
+   (export (module5-ast::pair-nil ::Module)))
 
 ;*---------------------------------------------------------------------*/
-;*    produce-module5! ...                                             */
+;*    module5-ast ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (produce-module5! mod path)
-   (pass-prelude "Module5")
-   (let ((mod (module5-parse mod path :lib-path *lib-dir*)))
-      (with-access::Module mod (id)
-	 (set! *module* id))
-      (list (unit 'toplevel 100 '() #t #f))))
-
+(define (module5-ast mod::Module)
+   (with-access::Module mod (defs (mid id))
+      (hashtable-for-each defs (lambda (k d) (print "k=" k)))
+      (open-string-hashtable-map defs
+	 (lambda (k d)
+	    (with-access::Def d (src kind id decl ronly)
+	       (let ((alias (if (isa? decl Decl)
+				(with-access::Decl decl (alias) alias)
+				id))
+		     (scope (if (isa? decl Decl)
+				(with-access::Decl decl (scope) scope)
+				'static)))
+		  (tprint "id=" id " kind=" kind " ronly=" ronly)
+		  (case kind
+		     ((variable)
+		      (declare-global-svar! id alias
+			 mid scope src src))
+		     ((procedure)
+		      (tprint "procedure"))
+		     ((inline)
+		      (tprint "inline"))
+		     ((generic)
+		      (tprint "generic"))
+		     (else (error "module5-ast"
+			      (format "Unsupported definition type ~s" kind)
+			      id)))))))))
 
    

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Sep 11 13:01:44 2025 (serrano)                */
+/*    Last change :  Mon Sep 15 10:36:11 2025 (serrano)                */
 /*    Copyright   :  2024-25 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -26,7 +26,7 @@ function quit(n) {
 }
 
 const process = {
-   argv: ["js", "bigloo-web.mjs", "a.out"].concat(scriptArgs),
+   argv: [navigator?.userAgentData?.brands[1].brand, "bigloo-web.mjs", "browser"].concat(scriptArgs),
    env: { HOME: os.getenv("HOME") },
    exit: n => quit(n > 127 ? 1 : n),
    cwd: () => os.getenv("PWD")

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Wed Jun 18 10:53:50 2025 (serrano)                */
+#*    Last change :  Mon Sep 15 18:51:11 2025 (serrano)                */
 #*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -342,6 +342,8 @@ objs_c/wind.$(C_OBJ_EXTENSION): wind.scm
 
 objs_jvm/wind.class: wind.scm
 	$(BIGLOO) $(BFLAGS) -call/cc -jvm $(BJVMFLAGS) $(BPURIFYJVMFLAGS) $(EFLAGS) -c $< -jvm-directory objs_jvm -o $(@F)
+
+objs_jvm/Point.class: objs_jvm/external_jvm.class
 
 objs_wasm/callcc.wat: callcc.scm
 	$(BIGLOO) $(BFLAGS) -call/cc -wasm $(BWASMFLAGS) $(EFLAGS) -c $< -o $@

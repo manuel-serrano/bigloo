@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Thu Sep 11 08:01:52 2025 (serrano)                */
+#*    Last change :  Mon Sep 15 10:59:22 2025 (serrano)                */
 #*    Copyright   :  2001-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -32,14 +32,22 @@ all: boot build
 
 boot: build
 build:
-	@ $(MAKE) build-c && $(MAKE) build-jvm && $(MAKE) build-wasm
+	@ $(MAKE) build-c && $(MAKE) build-wasm
 
 c: build-c
 jvm: build-jvm
 
 build-c:
+	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
+            echo "[0m[1;32m>>> C[0m"; \
+	    (cd src && $(MAKE) c); \
+          fi
 
 build-jvm:
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;31m>>> JVM[0m";  \
+	    (cd src && $(MAKE) build-jvm); \
+          fi
 
 build-wasm:
 	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
@@ -80,11 +88,16 @@ cleanall: distclean
 .PHONY: install
 
 install: api-install-init
+	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
+	    $(MAKE) api-install-c; \
+          fi
 	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-wasm; \
           fi
 
 uninstall: api-uninstall-init \
+           api-uninstall-c \
+           api-uninstall-jvm \
            api-uninstall-wasm
 
 #*---------------------------------------------------------------------*/
