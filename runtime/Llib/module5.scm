@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun Sep 14 12:25:29 2025 (serrano)                */
+;*    Last change :  Tue Sep 16 12:57:24 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -53,6 +53,7 @@
    (export (class Module
 	      (id::symbol read-only)
 	      (path::bstring read-only)
+	      (checksum::long (default -1))
 	      (decls read-only (default (create-hashtable :weak 'open-string)))
 	      (defs read-only (default (create-hashtable :weak 'open-string)))
 	      (inits::pair-nil (default '()))
@@ -84,7 +85,9 @@
 	   (module5-write-heap ::bstring ::Module)
 	   (module5-parse::Module ::obj ::bstring #!key lib-path expand)
 	   (module5-expand!::Module ::Module #!key expand)
-	   (module5-resolve!::Module ::Module)))
+	   (module5-expander::obj ::obj ::procedure)
+	   (module5-resolve!::Module ::Module)
+	   (module5-checksum!::Module ::Module)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-write ::Module ...                                        */
@@ -332,7 +335,7 @@
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc "Cannot find file" path clause))))
    
-   (define (parse-import-all clause::pair expr::pair mod::Module expand)
+   (define (parse-import-all id clause::pair expr::pair mod::Module expand)
       (let* ((path (cadr clause))
 	     (rfrom (module5-resolve-path path (-> mod path))))
 	 (if (string? rfrom)
@@ -341,8 +344,13 @@
 		(hashtable-for-each (-> imod decls)
 		   (lambda (key d::Decl)
 		      (when (eq? (-> d scope) 'export)
-			 (let ((nd (duplicate::Decl d
-				      (scope 'import))))
+			 (let* ((alias (if id
+					   (string->symbol
+					      (format "~a.~a" id (-> d alias)))
+					   (-> d alias)))
+				(nd (duplicate::Decl d
+				       (alias alias)
+				       (scope 'import))))
 			    (hashtable-put! (-> mod decls) key nd)))))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc "Cannot find file" path clause))))
@@ -449,8 +457,10 @@
 	 ((import () (? string?))
 	  (parse-import-init clause expr mod expand))
 	 ((import (? string?))
-	  (parse-import-all clause expr mod expand))
-	 ((import ??- (? string?))
+	  (parse-import-all #f clause expr mod expand))
+	 ((import (and (? symbol?) ?id) (? string?))
+	  (parse-import-all id clause expr mod expand))
+	 ((import (??-) (? string?))
 	  (parse-import-some clause expr mod expand))
 	 ((export . ?bindings)
 	  (parse-export clause expr mod expand))
@@ -462,7 +472,7 @@
 	  (parse-library-some clause expr mod expand))
 	 ((extern (and (? string?) ?backend) . ?clauses)
 	  (print "extern " backend " " clauses))
-	 ((cond-expand)
+	 ((cond-expand . ?-)
 	  (parse-cond-expand clause expr mod expand))
 	 (else
 	  (error/loc "Illegal module clause" clause expr)))))
@@ -472,6 +482,28 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-expand! mod::Module #!key expand)
    mod)
+
+;*---------------------------------------------------------------------*/
+;*    module5-expander ...                                             */
+;*---------------------------------------------------------------------*/
+(define (module5-expander x e)
+   (match-case x
+      ((module ?- . ?rest)
+       ;; module5 form
+       (set-cdr! (cdr x)
+	  (map (lambda (x)
+		  (match-case x
+		     ((import () ?from)
+		      ;; treat import specially for the syntax () that
+		      ;; would trigger a syntax error otherwise
+		      (set-car! (cddr x) (e from e))
+		      x)
+		     (else
+		      (e x e))))
+	     rest))
+       x)
+      (else
+       x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-resolve! ...                                             */
@@ -636,29 +668,44 @@
 	    ((define ((and (? symbol?) ?id) . ?args) . ?body)
 	     (ronly-exprs! body (append (args-id args) env) defs))
 	    ((define-inline ((and (? symbol?) ?id) . ?args) . ?body)
-	     (let ((def (hashtable-get defs (symbol->string! id))))
-		(if (isa? def Def)
-		    (with-access::Def def (ronly kind)
-		       (unless (eq? ronly #unspecified)
-			  (error/loc "Illegally mutated inline function"
-			     id expr))
-		       (begin
-			  (set! ronly #t)
-			  (set! kind 'inline)))))
+	     (multiple-value-bind (name type)
+		(parse-ident id (cadr expr))
+		(let ((def (hashtable-get defs (symbol->string! name))))
+		   (if (isa? def Def)
+		       (with-access::Def def (ronly kind)
+			  (unless (eq? ronly #unspecified)
+			     (error/loc "Illegally mutated inline function"
+				id expr))
+			  (begin
+			     (set! ronly #t)
+			     (set! kind 'inline))))))
 	     (ronly-exprs! body (append (args-id args) env) defs))
 	    ((define-generic ((and (? symbol?) ?id) . ?args) . ?body)
-	     (let ((def (hashtable-get defs (symbol->string! id))))
-		(if (isa? def Def)
-		    (with-access::Def def (ronly kind)
-		       (unless (eq? ronly #unspecified)
-			  (error/loc "Illegally mutated generic function"
-			     id expr))
-		       (begin
-			  (set! ronly #t)
-			  (set! kind 'generic)))))
+	     (multiple-value-bind (name type)
+		(parse-ident id (cadr expr))
+		(let ((def (hashtable-get defs (symbol->string! name))))
+		   (if (isa? def Def)
+		       (with-access::Def def (ronly kind)
+			  (unless (eq? ronly #unspecified)
+			     (error/loc "Illegally mutated generic function"
+				id expr))
+			  (begin
+			     (set! ronly #t)
+			     (set! kind 'generic))))))
 	     (ronly-exprs! body (append (args-id args) env) defs))
 	    ((define-class (and (? symbol?) ?id) . ?-)
-	     #unspecified)
+	     (multiple-value-bind (name type)
+		(parse-ident id (cdr expr))
+		(let ((def (hashtable-get defs (symbol->string! name))))
+		   (if (isa? def Def)
+		       (with-access::Def def (ronly kind)
+			  (unless (eq? ronly #unspecified)
+			     (error/loc "Illegally mutated class"
+				id expr))
+			  (begin
+			     (set! ronly #t)
+			     (set! kind 'class))))))
+	     '(ronly-exprs! body (append (args-id args) env) defs))
 	    ((begin . ?exprs)
 	     (ronly-exprs! exprs env defs))
 	    ((lambda ?args . ?exprs)
@@ -688,6 +735,48 @@
 		      (set! kind 'procedure))
 		     ((define (?- . ?-) . ?-)
 		      (set! kind 'procedure)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    module5-checksum ...                                             */
+;*---------------------------------------------------------------------*/
+(define (module5-checksum! mod::Module)
+   
+   (define (add-hash n checksum)
+      (bit-and #xffffff (+fx n checksum)))
+   
+   (define (scope-number scope)
+      (case scope
+	 ((export) 124)
+	 ((static) 23544)
+	 ((export) 33)
+	 (else 8843)))
+   
+   (define (kind-number kind)
+      (case kind
+	 ((procedure) 98)
+	 ((inline) 2443)
+	 ((generic) 223)
+	 ((class) 33455)
+	 ((variable) 8739284)
+	 (else 3493)))
+   
+   (with-access::Module mod (defs decls checksum)
+      (when (<fx checksum 0)
+	 (let ((cs (+fx (hashtable-size defs) (hashtable-size decls))))
+	    (hashtable-for-each defs
+	       (lambda (k d)
+		  (with-access::Decl d (alias scope)
+		     (set! cs (add-hash (scope-number scope) cs))
+		     
+		     (set! cs (add-hash (get-hashnumber k) cs))
+		     (set! cs (add-hash (get-hashnumber alias) cs)))))
+	    (hashtable-for-each defs
+	       (lambda (k d)
+		  (with-access::Def d (kind)
+		     (set! cs (add-hash (+fx 3 (get-hashnumber k)) cs))
+		     (set! cs (add-hash (kind-number kind) cs)))))
+	    (set! checksum cs)))
+      mod))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */

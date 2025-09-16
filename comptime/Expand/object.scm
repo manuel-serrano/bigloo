@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/object.scm           */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Expand/object.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Thu Aug  3 08:51:40 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Sep 16 12:52:41 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
 ;*=====================================================================*/
@@ -50,6 +50,23 @@
 ;*    expand-define-class ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (expand-define-class x e)
+   (case *module-version*
+      ((4) (expand-define-class-module4 x e))
+      ((5) (expand-define-class-module5 x e))
+      (else (error "expand-define-class" "Unsupported module version" *module-version*))))
+
+;*---------------------------------------------------------------------*/
+;*    expand-define-class-module5 ...                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-define-class-module5 x e)
+   (match-case x
+      ((define-class . ?rest) x)
+      (else (error x "Illegal define-class" x))))
+       
+;*---------------------------------------------------------------------*/
+;*    expand-define-class-module4 ...                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-define-class-module4 x e)
    (match-case x
       (((or define-class define-final-class define-abstract-class) . ?rest)
        (let* ((nx (evepairify `(class ,@rest) x))
@@ -58,9 +75,20 @@
 	      (error (car x) "Illegal define-class" x)
 	      (begin
 		 (declare-class!
-		  (cdr proto) *module* 'static
-		  (eq? (car x) 'define-final-class)
-		  (eq? (car x) 'define-abstract-class) nx #f)
+		    (cdr proto) *module* 'static
+		    (eq? (car x) 'define-final-class)
+		    (eq? (car x) 'define-abstract-class) nx #f)
+		 (class-finalizer-add-static!)))))
+      (((or define-class define-final-class define-abstract-class) . ?rest)
+       (let* ((nx (evepairify `(class ,@rest) x))
+	      (proto (parse-prototype nx)))
+	  (if (not proto)
+	      (error (car x) "Illegal define-class" x)
+	      (begin
+		 (declare-class!
+		    (cdr proto) *module* 'static
+		    (eq? (car x) 'define-final-class)
+		    (eq? (car x) 'define-abstract-class) nx #f)
 		 (class-finalizer-add-static!)))))
       (else
        (error x "Illegal define-class" x))))
@@ -176,7 +204,7 @@
 ;*    instantiate-fill ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (instantiate-fill op provided class slots init x e)
-
+   
    (define (inlinable-call? fun module)
       (let ((g (find-global fun module)))
 	 (when (and (global? g) (sfun? (global-value g)))
@@ -206,12 +234,12 @@
 	      (and (inlinable-call? fun mod)
 		   (every (lambda (a) (inlinable? a module)) args)))
 	     (else #f))))
-
+   
    (define (sifun-body g)
       (if (eq? (sfun-body (global-value g)) #unspecified)
 	  (or (find-inline (global-id g) (global-module g)) 'no-literal)
 	  (sfun-body (global-value g))))
-
+   
    (define (find-inline fun module)
       (any (lambda (def)
 	      (match-case def
@@ -219,7 +247,7 @@
 		  (when (and (eq? f fun) (eq? m module))
 		     body))))
 	 (inline-definition-queue)))
-
+   
    (define (default-class-slot-value g s)
       (when *warning-default-slot-value*
 	 (user-warning/location (find-location x)
@@ -272,7 +300,7 @@
 		  (loop (+fx i 1) (cdr slots)))))
 	 ;; build the result
 	 (vector->list vargs)))
-
+   
    (define (collect-slot-values-TOBEREMOVE-3aug2017 slots)
       ;; When instantiate-fill is called for widening, slots only contain
       ;; the wide slots. The OFFSET value adjust the indices in such a case.
@@ -307,7 +335,7 @@
 		  (loop (cdr provided)))))
 	 ;; build the result
 	 (vector->list vargs)))
-
+   
    
    (let* ((id (type-id class))
 	  (new (gensym 'new))

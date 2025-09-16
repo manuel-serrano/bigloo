@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Globalize/free.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Globalize/free.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Thu Jul  8 11:29:16 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Sep 16 13:28:41 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
 ;*=====================================================================*/
@@ -346,7 +346,7 @@
 
    (define (global-alias-closure g)
       (with-access::global g (alias id module)
-	 (when alias
+	 (when (and alias (not (eq? id alias)))
 	    (let ((ag (find-global alias module)))
 	       (when (global? ag)
 		  (the-global-closure ag loc))))))

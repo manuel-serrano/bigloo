@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Sep 14 14:33:14 2025 (serrano)                */
+;*    Last change :  Tue Sep 16 12:50:04 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -516,7 +516,10 @@
    (with-trace 'compiler "module5->ast"
       (trace-item "src=" src)
       (pass-prelude "Module5")
-      (let* ((mod (comptime-expand/error (car src)))
+      (set! *module-version* 5)
+      (register-srfi! 'bigloo-module5)
+      (let* ((mod (module5-expand (car src)))
+	     (_ (tprint "mod=" mod))
 	     (src-code (cdr src))
 	     (mod (module5-parse mod (car *src-files*)))
 	     (tu (unit 'toplevel 100 '() #t #f))
@@ -525,14 +528,21 @@
 	 (trace-item "units=" units)
 	 (trace-item "src-code=" src-code)
 	 
-	 (with-access::Module mod (id body)
-	    (set! *module* id)
+	 (with-access::Module mod (id body checksum)
+	    
 	    (set! body (append body (cdr src)))
 	    
 	    (module5-expand! mod)
-	    (module5-resolve! mod))
+	    (module5-resolve! mod)
+	    (module5-checksum! mod)
+	    
+	    (set! *module* id)
+	    (set! *module-checksum* checksum))
 	 
 	 (stop-on-pass 'dump-module (lambda () (dump-module mod)))
+
+	 ;; imported module unit
+	 (set! units (cons (module5-imported-unit mod) units))
 	 
 	 ;; profiling initilization code
 	 (when (>=fx *profile-mode* 1)
@@ -601,6 +611,8 @@
 (define (module4->ast src)
    (with-trace 'compiler "module4->ast"
       (trace-item "src=" src)
+      (set! *module-version* 4)
+      (register-srfi! 'bigloo-module4)
       (let* ((exp0 (comptime-expand/error (car src)))
 	     (module (progn-first-expression exp0))
 	     (src-code (append (progn-tail-expressions exp0) (cdr src)))

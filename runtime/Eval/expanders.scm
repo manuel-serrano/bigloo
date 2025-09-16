@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Sep 12 17:26:28 2025 (serrano)                */
+;*    Last change :  Tue Sep 16 14:27:52 2025 (serrano)                */
 ;*    Copyright   :  2002-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -157,28 +157,7 @@
       (lambda (x e) (e (quasiquotation 1 x) e)))
    
    ;; module
-   (install-expander 'module
-      (lambda (x e)
-	 (match-case x
-	    ((module (? symbol?) . ?-)
-	     ;; old modules
-	     x)
-	    ((module . ?rest)
-	     ;; module5 form
-	     (set-cdr! x
-		(map (lambda (x)
-			(match-case x
-			   ((import () ?from)
-			    ;; treat import specially for the syntax () that
-			    ;; would trigger a syntax error otherwise
-			    (set-car! (cddr x) (e from e))
-			    x)
-			   (else
-			    (e x e))))
-		   rest))
-	     x)
-	    (else
-	     x))))
+   (install-expander 'module (lambda (x e) x))
    
    ;; define-macro  
    (install-expander 'define-macro

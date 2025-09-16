@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/BackEnd/init.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/init.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */

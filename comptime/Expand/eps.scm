@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/flt/comptime/Expand/eps.scm          */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Expand/eps.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Tue Dec 10 08:02:30 2024 (serrano)                */
-;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Sep 16 19:00:19 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
 ;*    Expansion-Passing Style: Beyond Conventional Macro,              */
@@ -38,6 +38,7 @@
 	    (comptime-expand/error ::obj)
 	    (comptime-expand-cond-expand-only ::obj)
 	    (compile-expand ::obj)
+	    (initial-expander ::obj ::procedure)
 	    (expand-units ::obj)))
 
 ;*---------------------------------------------------------------------*/
