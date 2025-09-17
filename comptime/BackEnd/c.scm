@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Sun Jun 29 12:30:06 2025 (serrano)                */
+;*    Last change :  Wed Sep 17 12:14:44 2025 (serrano)                */
 ;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -330,8 +330,14 @@
 		     (set! *o-files* (cdr *o-files*))
 		     (ld first #f))
 		  ;; let's generate a main, then link
-		  (let ((tmp (make-tmp-file-name)))
-		     (make-tmp-main tmp main (gensym 'module) clauses libraries)
+		  (let ((tmp (make-tmp-file-name))
+			(mid (if (string? *dest*)
+				 (string->symbol
+				    (string-replace! 
+				       (string-append *dest* "-")
+				       #\. #\_))
+				 'main-module-)))
+		     (make-tmp-main tmp main (gensym mid) (reverse! clauses) libraries)
 		     (set! *src-files* (list tmp))
 		     ;; we have to remove extra mco files before compiler
 		     ;; otherwise the compiler will warn about that files.
@@ -367,13 +373,10 @@
 			(close-input-port port)
 			(match-case exp
 			   ((module ?name . ?-)
-			    (let ((libs (find-libraries (cddr exp)))
-				  (nmain (find-main (cddr exp))))
+			    (let* ((libs (find-libraries (cddr exp)))
+				   (nmain (find-main (cddr exp))))
 			       (loop (cdr sources)
-				  (cons (list name
-					   (string-append
-					      "\"" (caar sources) "\""))
-				     clauses)
+				  (cons (cons name (caar sources)) clauses)
 				  (or nmain main)
 				  (if nmain (caar sources) fmain)
 				  (append libs libraries))))

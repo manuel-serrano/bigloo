@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Thu Jun 12 07:57:46 2025 (serrano)                */
+;*    Last change :  Wed Sep 17 12:18:50 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -169,7 +169,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-tmp-main ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (make-tmp-main file main module clauses libraries)
+(define (make-tmp-main file main module modules libraries)
+   (case *module-version*
+      ((5) (make-tmp-main5 file main module modules libraries))
+      ((4) (make-tmp-main4 file main module modules libraries))
+      (else (make-tmp-main4 file main module modules libraries))))
+
+;*---------------------------------------------------------------------*/
+;*    make-tmp-main5 ...                                               */
+;*---------------------------------------------------------------------*/
+(define (make-tmp-main5 file main module modules libraries)
    (let ((pout (open-output-file file)))
       (if (not (output-port? pout))
 	  (error "" "Can't open output file" file)
@@ -179,7 +188,41 @@
 	     (fprint pout ";; ==================================")
 	     (newline pout)
 	     (let ((mod `(module ,module
-			    (import ,@(reverse clauses))
+			    :version 5
+			    ,@(map (lambda (mod)
+				      (let* ((name (file-name-canonicalize!
+						      (make-file-name (pwd)
+							 (cdr mod))))
+					     (rpath (relative-file-name
+						       name file)))
+					 `(import ,(format "~s" rpath))))
+				 modules)
+			    ,@libraries)))
+		(fprint pout mod)
+		(newline pout))
+	     (when main
+		(fprint pout "(main *the-command-line*)")
+		(newline pout))
+	     (close-output-port pout)))))
+
+;*---------------------------------------------------------------------*/
+;*    make-tmp-main4 ...                                               */
+;*---------------------------------------------------------------------*/
+(define (make-tmp-main4 file main module modules libraries)
+   (let ((pout (open-output-file file)))
+      (if (not (output-port? pout))
+	  (error "" "Can't open output file" file)
+	  (begin
+	     (fprint pout ";; " *bigloo-name*)
+	     (fprint pout ";; !!! generated file, don't edit !!!")
+	     (fprint pout ";; ==================================")
+	     (newline pout)
+	     (let ((mod `(module ,module
+			    :version 4
+			    (import ,@(map (lambda (m)
+					      (list (car m)
+						 (format "~s" (cdr m))))
+					 modules))
 			    ,@libraries)))
 		(fprint pout mod)
 		(newline pout))

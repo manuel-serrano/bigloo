@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Sep 16 12:50:04 2025 (serrano)                */
+;*    Last change :  Tue Sep 16 21:19:59 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -519,7 +519,6 @@
       (set! *module-version* 5)
       (register-srfi! 'bigloo-module5)
       (let* ((mod (module5-expand (car src)))
-	     (_ (tprint "mod=" mod))
 	     (src-code (cdr src))
 	     (mod (module5-parse mod (car *src-files*)))
 	     (tu (unit 'toplevel 100 '() #t #f))
@@ -528,8 +527,10 @@
 	 (trace-item "units=" units)
 	 (trace-item "src-code=" src-code)
 	 
+	 ;; imported module unit (before processing the module body)
+	 (set! units (cons (module5-imported-unit mod) units))
+	 
 	 (with-access::Module mod (id body checksum)
-	    
 	    (set! body (append body (cdr src)))
 	    
 	    (module5-expand! mod)
@@ -541,9 +542,6 @@
 	 
 	 (stop-on-pass 'dump-module (lambda () (dump-module mod)))
 
-	 ;; imported module unit
-	 (set! units (cons (module5-imported-unit mod) units))
-	 
 	 ;; profiling initilization code
 	 (when (>=fx *profile-mode* 1)
 	    (set! units (cons (make-prof-unit) units)))

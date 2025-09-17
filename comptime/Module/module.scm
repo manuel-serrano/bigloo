@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:29:03 1996                          */
-;*    Last change :  Fri Sep 12 17:53:06 2025 (serrano)                */
+;*    Last change :  Wed Sep 17 13:37:32 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of a Module clause                               */
@@ -103,6 +103,8 @@
    (pass-prelude "Module")
    (let ((mclause (module-mclause mod)))
       (match-case mclause
+	 ((module (and (? symbol?) ?name) :version 4 . ?clauses)
+	  (do-module mclause name clauses))
 	 ((module (and (? symbol?) ?name) . ?clauses)
 	  (do-module mclause name clauses))
 	 (else

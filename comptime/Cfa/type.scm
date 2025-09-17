@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Dec 27 09:42:27 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Sep 16 21:37:00 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election (taking care of tvectors).                         */
 ;*=====================================================================*/
@@ -53,7 +53,7 @@
 ;*---------------------------------------------------------------------*/
 (define (type-fun! var::variable)
    (let ((fun (variable-value var)))
-      (trace (cfa 2) "type-fun! var=" (shape var) " "
+      (trace (cfa 2) "type-fun! var=" (shape var) " " (typeof var) " " 
 	 (typeof fun) #\Newline)
       (cond
 	 ((intern-sfun/Cinfo? fun)
@@ -62,7 +62,7 @@
 	  (with-access::intern-sfun/Cinfo fun (body args approx the-closure-global strength)
 	     ;; the formals
 	     (trace (cfa 3) "  formal " (shape var)
-		" " (typeof (local-value var)) #\Newline)
+		" " (typeof (variable-value var)) #\Newline)
 	     (if (unoptimized-closure? fun)
 		 ;; unoptimized closures have to use polymorphic arguments
 		 (for-each (lambda (var)

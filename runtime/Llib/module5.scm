@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Sep 16 12:57:24 2025 (serrano)                */
+;*    Last change :  Tue Sep 16 21:21:50 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -58,7 +58,8 @@
 	      (defs read-only (default (create-hashtable :weak 'open-string)))
 	      (inits::pair-nil (default '()))
 	      (libraries::pair-nil (default '()))
-	      (body::obj (default '())))
+	      (body::obj (default '()))
+	      (resolved::bool (default #f)))
 	   
 	   (class Decl
 	      (id::symbol read-only)
@@ -87,7 +88,9 @@
 	   (module5-expand!::Module ::Module #!key expand)
 	   (module5-expander::obj ::obj ::procedure)
 	   (module5-resolve!::Module ::Module)
-	   (module5-checksum!::Module ::Module)))
+	   (module5-checksum!::Module ::Module)
+	   (module5-get-decl::Decl ::Module ::symbol)
+	   (module5-get-def::Def ::Module ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-write ::Module ...                                        */
@@ -182,9 +185,9 @@
 		    (make-file-name (dirname path)
 		       (string-append (prefix (basename path)) ".heap5"))))
 		(else
-		 (error/loc (format "Illegal library heap \"~a\"" path) heap init)))))
+		 (error/loc #f (format "Illegal library heap \"~a\"" path) heap init)))))
 	 (else
-	  (error/loc "Illegal library" path init)))))
+	  (error/loc #f "Illegal library" path init)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-read-heap ...                                            */
@@ -245,7 +248,7 @@
 	 ((module (and (? symbol?) ?id) . ?clauses)
 	  (parse id path clauses))
 	 (else
-	  (error/loc "Illegal expression" expr #f)))))
+	  (error/loc #f "Illegal expression" expr #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse-clause ...                                         */
@@ -253,11 +256,11 @@
 (define (module5-parse-clause clause expr::pair mod::Module lib-path expand)
 
    (define (unbound-error path id clause)
-      (error/loc (format "Cannot find declaration in module \"~a\"" path)
+      (error/loc mod (format "Cannot find declaration in module \"~a\"" path)
 	 id clause))
 
    (define (scope-error path id clause)
-      (error/loc (format "Module \"~a\" does not export" path)
+      (error/loc mod (format "Module \"~a\" does not export" path)
 	 id clause))
 
    (define (hashtable-symbol-get table id)
@@ -292,7 +295,7 @@
 			(scope-error (-> imod path) b clause)))
 		 (unbound-error (-> imod path) b clause))))
 	 (else
-	  (error/loc "Illegal import binding" b clause))))
+	  (error/loc mod "Illegal import binding" b clause))))
    
    (define (parse-reexport-all clause::pair expr::pair mod::Module expand)
       (let* ((rclause (reverse (cdr clause)))
@@ -307,7 +310,7 @@
 		      (when (eq? (-> d scope) 'export)
 			 (hashtable-put! (-> mod decls) key d))))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
-	     (error/loc "Cannot find file" (cadr clause) clause))))
+	     (error/loc mod "Cannot find file" (cadr clause) clause))))
    
    (define (parse-reexport clause::pair expr::pair mod::Module expand)
       (let* ((rclause (reverse (cdr clause)))
@@ -324,7 +327,7 @@
 				d))
 		   bindings)
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
-	     (error/loc "Cannot find file" (cadr clause) clause))))
+	     (error/loc mod "Cannot find file" (cadr clause) clause))))
    
    (define (parse-import-init clause::pair expr::pair mod::Module expand)
       (let* ((path (caddr clause))
@@ -333,7 +336,7 @@
 	     (let ((imod::Module (module5-read rfrom
 				    :lib-path lib-path :expand expand)))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
-	     (error/loc "Cannot find file" path clause))))
+	     (error/loc mod "Cannot find file" path clause))))
    
    (define (parse-import-all id clause::pair expr::pair mod::Module expand)
       (let* ((path (cadr clause))
@@ -353,12 +356,12 @@
 				       (scope 'import))))
 			    (hashtable-put! (-> mod decls) key nd)))))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
-	     (error/loc "Cannot find file" path clause))))
+	     (error/loc mod "Cannot find file" path clause))))
    
    (define (parse-import-some clause::pair expr::pair mod::Module expand)
       (let* ((rclause (reverse (cdr clause)))
 	     (path (car rclause))
-	     (bindings (cdr rclause))
+	     (bindings (cadr rclause))
 	     (rfrom (module5-resolve-path path (-> mod path))))
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
@@ -366,8 +369,8 @@
 		(for-each (lambda (b)
 			     (parse-import-binding b imod expr mod expand))
 		   bindings)
-		(set! (-> mod inits) (append! (-> mod inits) (list rfrom))))
-	     (error/loc "Cannot find file" path clause))))
+		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
+	     (error/loc mod "Cannot find file" path clause))))
 
    (define (parse-export clause expr::pair mod::Module expand)
       (for-each-expr (lambda (expr src)
@@ -389,14 +392,14 @@
 				  (scope 'export)
 				  (src expr))))
 			   (else
-			    (error/loc "Illegal export clause" clause expr))))
+			    (error/loc mod "Illegal export clause" clause expr))))
 	 (cdr clause)))
 
    (define (parse-include clause expr::pair mod::Module expand)
       (for-each (lambda (f)
 		   (cond
 		      ((not (string? f))
-		       (error/loc "Illegal include clause" f clause))
+		       (error/loc mod "Illegal include clause" f clause))
 		      ((module5-resolve-path f (-> mod path))
 		       (call-with-input-file f
 			  (lambda (p)
@@ -405,7 +408,7 @@
 					     lib-path expand))
 				(port->sexp-list p #t)))))
 		      (else
-		       (error/loc "Cannot find file" f clause))))
+		       (error/loc mod "Cannot find file" f clause))))
 	 (cdr clause)))
 
    (define (parse-cond-expand clause expr::pair mod::Module expand)
@@ -428,7 +431,7 @@
 		   (append! (-> mod inits) (list lmod)))
 		(set! (-> mod libraries)
 		   (cons (cons lib rlib) (-> mod libraries))))
-	     (error/loc "Cannot find library" lib clause))))
+	     (error/loc mod "Cannot find library" lib clause))))
    
    (define (parse-library-some clause expr::pair mod::Module expand)
       (let* ((rclause (reverse (cdr clause)))
@@ -444,7 +447,7 @@
 		   (cons (cons lib rlib) (-> mod libraries)))
 		(set! (-> mod inits)
 		   (append! (-> mod inits) (list lmod))))
-	     (error/loc "Cannot find library" lib clause))))
+	     (error/loc mod "Cannot find library" lib clause))))
 
    (with-trace 'module5 "module5-parse-clause"
       (trace-item "clause=" clause)
@@ -475,7 +478,7 @@
 	 ((cond-expand . ?-)
 	  (parse-cond-expand clause expr mod expand))
 	 (else
-	  (error/loc "Illegal module clause" clause expr)))))
+	  (error/loc mod "Illegal module clause" clause expr)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-expand! ...                                              */
@@ -509,10 +512,12 @@
 ;*    module5-resolve! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (module5-resolve! mod::Module)
-   (with-access::Module mod (body)
-      (collect-define*! mod body)
-      (check-unbounds mod)
-      (ronly! mod))
+   (with-access::Module mod (body inits resolved)
+      (unless resolved
+	 (set! resolved #t)
+	 (collect-define*! mod body)
+	 (check-unbounds mod)
+	 (ronly! mod)))
    mod)
 
 ;*---------------------------------------------------------------------*/
@@ -523,15 +528,17 @@
       (let ((unbounds '()))
 	 (hashtable-for-each decls
 	    (lambda (k d)
-	       (with-access::Decl d (def id)
+	       (with-access::Decl d (def id scope)
 		  (unless (isa? def Def)
-		     (set! unbounds (cons d unbounds))))))
+		     (when (or (eq? scope 'export) (eq? scope 'static))
+			(set! unbounds (cons d unbounds)))))))
 	 (when (pair? unbounds)
 	    (for-each (lambda (d)
 			 (with-access::Decl d (id src)
-			    (with-handler exception-notify
-					  (error/loc "Definition missing"
-					     id src))))
+			    (with-handler
+			       exception-notify
+			       (error/loc mod "Definition missing"
+				  id src))))
 	       (reverse! unbounds))
 	    (error "module5-resolve!" "Unbound exported identifiers"
 	       (map (lambda (d) (with-access::Decl d (id) id)) unbounds))))))
@@ -549,7 +556,7 @@
 	    ((char=? (string-ref s i) #\:)
 	     (if (char=? (string-ref s (+fx i 1)) #\:)
 		 (if (=fx i (-fx l 3))
-		     (error/loc "Illegal identifier" id src)
+		     (error/loc #f "Illegal identifier" id src)
 		     (values (string->symbol (substring s 0 i))
 			(substring s (+fx i 2))))
 		 (loop (+fx i 2))))
@@ -560,13 +567,14 @@
 ;*    collect-define*! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (collect-define*! mod body)
+   
    (define (module-define! mod kind::symbol id::symbol type src)
       (with-access::Module mod (defs decls)
 	 (let* ((name (symbol->string! id))
 		(old (hashtable-get defs name))
 		(decl (hashtable-get decls name)))
 	    (if old
-		(error/loc "Identifier ~s has already been declared" name src)
+		(error/loc mod "Identifier ~s has already been declared" name src)
 		(let ((def (instantiate::Def
 				 (id id)
 				 (type type)
@@ -661,7 +669,7 @@
 		      (unless (pair? l)
 			 (with-access::Def def (ronly)
 			    (when (eq? ronly #t)
-			       (error/loc "Illegal assignment" id expr))
+			       (error/loc mod "Illegal assignment" id expr))
 			    (set! ronly #f)))))))
 	    ((define (and (? symbol?) ?id) ?expr)
 	     (ronly-expr! expr env defs))
@@ -674,7 +682,7 @@
 		   (if (isa? def Def)
 		       (with-access::Def def (ronly kind)
 			  (unless (eq? ronly #unspecified)
-			     (error/loc "Illegally mutated inline function"
+			     (error/loc mod "Illegally mutated inline function"
 				id expr))
 			  (begin
 			     (set! ronly #t)
@@ -687,7 +695,7 @@
 		   (if (isa? def Def)
 		       (with-access::Def def (ronly kind)
 			  (unless (eq? ronly #unspecified)
-			     (error/loc "Illegally mutated generic function"
+			     (error/loc mod "Illegally mutated generic function"
 				id expr))
 			  (begin
 			     (set! ronly #t)
@@ -700,7 +708,7 @@
 		   (if (isa? def Def)
 		       (with-access::Def def (ronly kind)
 			  (unless (eq? ronly #unspecified)
-			     (error/loc "Illegally mutated class"
+			     (error/loc mod "Illegally mutated class"
 				id expr))
 			  (begin
 			     (set! ronly #t)
@@ -763,7 +771,7 @@
    (with-access::Module mod (defs decls checksum)
       (when (<fx checksum 0)
 	 (let ((cs (+fx (hashtable-size defs) (hashtable-size decls))))
-	    (hashtable-for-each defs
+	    (hashtable-for-each decls
 	       (lambda (k d)
 		  (with-access::Decl d (alias scope)
 		     (set! cs (add-hash (scope-number scope) cs))
@@ -781,13 +789,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (error/loc msg obj container)
-   (match-case (cond
-		((epair? obj) (cer obj))
-		((epair? container) (cer container))
-		(else #f))
-      ((at ?fname ?loc) (error/location "module5" msg obj fname loc))
-      (else (error "module5" msg obj))))
+(define (error/loc mod msg obj container)
+   (let ((id (if (isa? mod Module)
+		 (with-access::Module mod (id) id)
+		 "module5")))
+      (match-case (cond
+		   ((epair? obj) (cer obj))
+		   ((epair? container) (cer container))
+		   (else #f))
+	 ((at ?fname ?loc) (error/location id msg obj fname loc))
+	 (else (error id msg obj)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    for-each-expr ...                                                */
@@ -798,3 +809,27 @@
 	 (proc (car lst) lst)
 	 (loop (cdr lst)))))
 
+;*---------------------------------------------------------------------*/
+;*    module5-get-decl ...                                             */
+;*---------------------------------------------------------------------*/
+(define (module5-get-decl mod::Module id)
+   (with-access::Module mod (decls (mid id))
+      (let ((decl (hashtable-get decls (symbol->string! id))))
+	 (if (isa? decl Decl)
+	     decl
+	     (error "module5-get-decl"
+		(format "Cannot find declaration \"~a\"" id) id)))))
+
+;*---------------------------------------------------------------------*/
+;*    module5-get-def ...                                              */
+;*---------------------------------------------------------------------*/
+(define (module5-get-def mod::Module id)
+   (with-access::Module mod (defs (mid id) resolved)
+      (unless resolved
+	 (error "module5-get-def"
+	    (format "Module definitions not resolved yet \"~a\"" id) mid))
+      (let ((def (hashtable-get defs (symbol->string! id))))
+	 (if (isa? def Def)
+	     def
+	     (error "module5-get-def"
+		(format "Cannot find definition \"~a\"" id) mid)))))
