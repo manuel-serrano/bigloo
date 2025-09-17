@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Sep 16 21:21:50 2025 (serrano)                */
+;*    Last change :  Wed Sep 17 14:22:09 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -55,6 +55,7 @@
 	      (path::bstring read-only)
 	      (checksum::long (default -1))
 	      (decls read-only (default (create-hashtable :weak 'open-string)))
+	      (exports read-only (default (create-hashtable :weak 'open-string)))
 	      (defs read-only (default (create-hashtable :weak 'open-string)))
 	      (inits::pair-nil (default '()))
 	      (libraries::pair-nil (default '()))
@@ -90,7 +91,8 @@
 	   (module5-resolve!::Module ::Module)
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol)
-	   (module5-get-def::Def ::Module ::symbol)))
+	   (module5-get-def::Def ::Module ::symbol)
+	   (module5-get-export-def ::Module ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-write ::Module ...                                        */
@@ -112,8 +114,8 @@
 (define-method (object-write d::Decl . port)
    (let ((m::Module (-> d mod)))
       (fprintf (if (pair? port) (car port) (current-output-port))
-	 "#<Decl ~a/~a mod=~a scope=~a ronly=~a>"
-	 (-> d id) (-> d alias) (-> m id) (-> d scope) (-> d ronly))))
+	 "#<Decl ~a/~a mod=~a scope=~a ronly=~a def=~a>"
+	 (-> d id) (-> d alias) (-> m id) (-> d scope) (-> d ronly) (typeof (-> d def)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ::Decl ...                                        */
@@ -121,8 +123,24 @@
 (define-method (object-display d::Decl . port)
    (let ((m::Module (-> d mod)))
       (fprintf (if (pair? port) (car port) (current-output-port))
-	 "#<Decl ~a/~a mod=~a scope=~a ronly=~a>"
-	 (-> d id) (-> d alias) (-> m id) (-> d scope) (-> d ronly))))
+	 "#<Decl ~a/~a mod=~a scope=~a ronly=~a def=~a>"
+	 (-> d id) (-> d alias) (-> m id) (-> d scope) (-> d ronly) (typeof (-> d def)))))
+
+;*---------------------------------------------------------------------*/
+;*    object-write ::Def ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (object-write d::Def . port)
+   (fprintf (if (pair? port) (car port) (current-output-port))
+      "#<Def ~a kind=~a ronly=~a>"
+      (-> d id) (-> d kind) (-> d ronly)))
+
+;*---------------------------------------------------------------------*/
+;*    object-display ::Def ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (object-display d::Def . port)
+   (fprintf (if (pair? port) (car port) (current-output-port))
+      "#<Def ~a kind=~a ronly=~a>"
+      (-> d id) (-> d kind) (-> d ronly)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *all-modules* ...                                                */
@@ -272,27 +290,24 @@
    (define (parse-import-binding b imod::Module expr::pair mod::Module expand)
       (match-case b
 	 ((? symbol?)
-	  (let ((idecl (hashtable-symbol-get (-> imod decls) b)))
+	  (let ((idecl (hashtable-symbol-get (-> imod exports) b)))
 	     (if (isa? idecl Decl)
-		 (with-access::Decl idecl (scope)
-		    (if (eq? scope 'export)
-			(let ((d (duplicate::Decl idecl
-				    (scope 'import))))
-			   (hashtable-symbol-put! (-> mod decls) b d)
-			   d)
-			(scope-error (-> imod path) b clause)))
+		 (let ((d (duplicate::Decl idecl
+			     (id b)
+			     (alias b)
+			     (scope 'import))))
+		    (hashtable-symbol-put! (-> mod decls) b d)
+		    d)
 		 (unbound-error (-> imod path) b clause))))
 	 (((and (? symbol?) ?alias) (and (? symbol?) ?id))
-	  (let ((idecl (hashtable-symbol-get (-> imod decls) id)))
+	  (let ((idecl (hashtable-symbol-get (-> imod exports) id)))
 	     (if (isa? idecl Decl)
-		 (with-access::Decl idecl (scope)
-		    (if (eq? scope 'export)
-			(let ((d (duplicate::Decl idecl
-				    (scope 'import)
-				    (alias alias))))
-			   (hashtable-symbol-put! (-> mod decls) alias d)
-			   d)
-			(scope-error (-> imod path) b clause)))
+		 (let ((d (duplicate::Decl idecl
+			     (id id)
+			     (alias alias)
+			     (scope 'import))))
+		    (hashtable-symbol-put! (-> mod decls) alias d)
+		    d)
 		 (unbound-error (-> imod path) b clause))))
 	 (else
 	  (error/loc mod "Illegal import binding" b clause))))
@@ -305,7 +320,7 @@
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
 				    :lib-path lib-path :expand expand)))
-		(hashtable-for-each (-> imod decls)
+		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
 		      (when (eq? (-> d scope) 'export)
 			 (hashtable-put! (-> mod decls) key d))))
@@ -344,17 +359,16 @@
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
 				    :lib-path lib-path :expand expand)))
-		(hashtable-for-each (-> imod decls)
+		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
-		      (when (eq? (-> d scope) 'export)
-			 (let* ((alias (if id
-					   (string->symbol
-					      (format "~a.~a" id (-> d alias)))
-					   (-> d alias)))
-				(nd (duplicate::Decl d
-				       (alias alias)
-				       (scope 'import))))
-			    (hashtable-put! (-> mod decls) key nd)))))
+		      (let* ((alias (if id
+					(string->symbol
+					   (format "~a.~a" id (-> d alias)))
+					(-> d alias)))
+			     (nd (duplicate::Decl d
+				    (alias alias)
+				    (scope 'import))))
+			 (hashtable-put! (-> mod decls) key nd))))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc mod "Cannot find file" path clause))))
    
@@ -376,21 +390,23 @@
       (for-each-expr (lambda (expr src)
 			(match-case expr
 			   ((and ?id (? symbol?))
-			    (hashtable-symbol-put! (-> mod decls) id
-			       (instantiate::Decl
-				  (id id)
-				  (alias id)
-				  (mod mod)
-				  (scope 'export)
-				  (src src))))
+			    (let ((decl (instantiate::Decl
+					   (id id)
+					   (alias id)
+					   (mod mod)
+					   (scope 'export)
+					   (src src))))
+			       (hashtable-symbol-put! (-> mod decls) id decl)
+			       (hashtable-symbol-put! (-> mod exports) id decl)))
 			   (((and ?alias (? symbol?)) (and ?id (? symbol?)))
-			    (hashtable-symbol-put! (-> mod decls) alias
-			       (instantiate::Decl
-				  (id id)
-				  (alias alias)
-				  (mod mod)
-				  (scope 'export)
-				  (src expr))))
+			    (let ((decl (instantiate::Decl
+					   (id id)
+					   (alias alias)
+					   (mod mod)
+					   (scope 'export)
+					   (src expr))))
+			       (hashtable-symbol-put! (-> mod decls) id decl)
+			       (hashtable-symbol-put! (-> mod exports) alias decl)))
 			   (else
 			    (error/loc mod "Illegal export clause" clause expr))))
 	 (cdr clause)))
@@ -512,7 +528,7 @@
 ;*    module5-resolve! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (module5-resolve! mod::Module)
-   (with-access::Module mod (body inits resolved)
+   (with-access::Module mod (body inits resolved id decls)
       (unless resolved
 	 (set! resolved #t)
 	 (collect-define*! mod body)
@@ -524,7 +540,7 @@
 ;*    check-unbounds ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (check-unbounds mod::Module)
-   (with-access::Module mod (decls (mid id))
+   (with-access::Module mod (decls (mid id) defs)
       (let ((unbounds '()))
 	 (hashtable-for-each decls
 	    (lambda (k d)
@@ -537,10 +553,10 @@
 			 (with-access::Decl d (id src)
 			    (with-handler
 			       exception-notify
-			       (error/loc mod "Definition missing"
+			       (error/loc mod "Cannot find definition"
 				  id src))))
 	       (reverse! unbounds))
-	    (error "module5-resolve!" "Unbound exported identifiers"
+	    (error "module5-resolve!" "Unbound exported identifier"
 	       (map (lambda (d) (with-access::Decl d (id) id)) unbounds))))))
 
 ;*---------------------------------------------------------------------*/
@@ -574,7 +590,8 @@
 		(old (hashtable-get defs name))
 		(decl (hashtable-get decls name)))
 	    (if old
-		(error/loc mod "Identifier ~s has already been declared" name src)
+		(error/loc mod "Identifier ~s has already been declared"
+		   name src)
 		(let ((def (instantiate::Def
 				 (id id)
 				 (type type)
@@ -833,3 +850,21 @@
 	     def
 	     (error "module5-get-def"
 		(format "Cannot find definition \"~a\"" id) mid)))))
+
+;*---------------------------------------------------------------------*/
+;*    module5-get-export-def ...                                       */
+;*---------------------------------------------------------------------*/
+(define (module5-get-export-def mod::Module id)
+   (with-access::Module mod (exports (mid id) resolved defs decls)
+      (unless resolved
+	 (error "module5-get-export-def"
+	    (format "Module definitions not resolved yet \"~a\"" id) mid))
+      (let ((decl (hashtable-get exports (symbol->string! id))))
+	 (if (isa? decl Decl)
+	     (with-access::Decl decl (def)
+		(if (isa? def Def)
+		    def
+		    (error "module5-get-export-def"
+		       (format "Cannot find definition \"~a\"" id) mid)))
+	     (error "module5-get-export-def"
+		(format "Cannot find declaration \"~a\"" id) mid)))))

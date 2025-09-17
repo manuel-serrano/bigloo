@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Wed Sep 17 12:14:44 2025 (serrano)                */
+;*    Last change :  Wed Sep 17 15:15:39 2025 (serrano)                */
 ;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -281,14 +281,14 @@
 ;*---------------------------------------------------------------------*/
 (define (make-tmp-file-name)
    (make-file-name *bigloo-tmp*
-		   (string-append "main-tmp"
-				  "@"
-				  (let ((user (getenv "USER")))
-				     (if (not (string? user))
-					 ""
-					 user))
-				  "."
-				  (car *src-suffix*))))
+      (string-append "main-tmp"
+	 "@"
+	 (let ((user (getenv "USER")))
+	    (if (not (string? user))
+		""
+		user))
+	 "."
+	 (car *src-suffix*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-link-objects ::cvm ...                                   */
@@ -361,10 +361,11 @@
 					     pre
 					     "."
 					     *c-object-file-extension*)))
-			      (for-each (lambda (f)
-					   (when (file-exists? f)
-					      (delete-file f)))
-				 (list tmp c-file o-file)))))
+			      (when *rm-tmp-files*
+				 (for-each (lambda (f)
+					      (when (file-exists? f)
+						 (delete-file f)))
+				    (list tmp c-file o-file))))))
 		     0))
 	      (let ((port (open-input-file (caar sources))))
 		 (if (not (input-port? port))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Sep 16 21:19:59 2025 (serrano)                */
+;*    Last change :  Wed Sep 17 15:07:30 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -532,7 +532,7 @@
 	 
 	 (with-access::Module mod (id body checksum)
 	    (set! body (append body (cdr src)))
-	    
+
 	    (module5-expand! mod)
 	    (module5-resolve! mod)
 	    (module5-checksum! mod)

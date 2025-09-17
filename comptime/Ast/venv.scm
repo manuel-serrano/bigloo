@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Wed Jun 11 16:55:13 2025 (serrano)                */
+;*    Last change :  Wed Sep 17 16:02:46 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -356,12 +356,9 @@
 	      (error-rebind-global! old src)))
 	  (let* ((bucket (hashtable-get *Genv* ident))
 		 (qtn (cond
-			 ((not (backend-qualified-types (the-backend)))
-			  "")
-			 ((eq? import 'eval)
-			  "eval")
-			 (else
-			  (module->qualified-type module))))
+			 ((not (backend-qualified-types (the-backend))) "")
+			 ((eq? import 'eval) "eval")
+			 (else (module->qualified-type module))))
 		 (new (instantiate::global
 			 (type *_*)
 			 (module module)

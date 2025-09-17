@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Sep 16 21:26:40 2025 (serrano)                */
+;*    Last change :  Wed Sep 17 14:33:53 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -91,13 +91,13 @@
 		     (scope (if (isa? decl Decl)
 				(with-access::Decl decl (scope) scope)
 				'static)))
-		  (declare-variable! kind id alias mid scope src)))))
+		  (declare-variable! kind id id mid scope src)))))
       
       (open-string-hashtable-map decls
 	 (lambda (k d)
 	    (with-access::Decl d (def id alias ronly scope (imod mod))
 	       (when (eq? scope 'import)
-		  (with-access::Def (module5-get-def imod alias) (kind src)
+		  (with-access::Def (module5-get-export-def imod id) (kind id src)
 		     (with-access::Module imod ((mid id))
 			(declare-variable! kind id alias mid 'import src)))))))))
 
@@ -118,7 +118,3 @@
 		     inits)))
 	 
 	 (unit 'imported-modules 12 body #t #f))))
-
-   
-
-   

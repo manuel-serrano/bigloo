@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Mon Feb  3 15:52:49 2025 (serrano)                */
+;*    Last change :  Wed Sep 17 16:00:43 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -49,7 +49,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-sfun! ...                                         */
 ;*    -------------------------------------------------------------    */
-;*    This function declare a global sfunction. It is used only when   */
+;*    This function declares a global sfunction. It is used only when  */
 ;*    compiling module clauses. When a function is defined, this       */
 ;*    function is _not_used.                                           */
 ;*---------------------------------------------------------------------*/
@@ -175,20 +175,20 @@
 ;*    declare-global-noopt-sfun! ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (declare-global-noopt-sfun! id alias args module import class srce srci)
-   (let* ((arity     (global-arity args))
-	  (args      (args*->args-list args))
-	  (export?   (or (not (eq? import 'static))
-			 (and (memq 'bdb (backend-debug-support (the-backend)))
-			      (>=fx *bdb-debug* 3))))
-	  (import    (if (and (eq? import 'static)
-			      (memq 'bdb (backend-debug-support (the-backend)))
-			      (>=fx *bdb-debug* 3))
-			 'export
-			 import))
-	  (loc       (find-location srce))
-	  (loci      (find-location/loc srci loc))
-	  (args-type (let loop ((args   args)
-				(res    '())
+   (let* ((arity (global-arity args))
+	  (args (args*->args-list args))
+	  (export? (or (not (eq? import 'static))
+		       (and (memq 'bdb (backend-debug-support (the-backend)))
+			    (>=fx *bdb-debug* 3))))
+	  (import (if (and (eq? import 'static)
+			   (memq 'bdb (backend-debug-support (the-backend)))
+			   (>=fx *bdb-debug* 3))
+		      'export
+		      import))
+	  (loc (find-location srce))
+	  (loci (find-location/loc srci loc))
+	  (args-type (let loop ((args args)
+				(res '())
 				(sgfun? (eq? class 'sgfun)))
 			(cond
 			   ((null? args)
@@ -203,20 +203,20 @@
 				       (reverse! (cons *obj* (cdr res))))
 				      (else
 				       (user-error id
-						   "Illegal nary argument type"
-						   (shape type)))))))
+					  "Illegal nary argument type"
+					  (shape type)))))))
 			   ((dsssl-named-constant? (car args))
 			    (reverse! (cons *obj* res)))
 			   (else
 			    (let ((type (let ((t (type-of-id/import-location
-						  (car args) loc loci)))
+						    (car args) loc loci)))
 					   (if (and (eq? t *_*)
 						    (or export? sgfun?))
 					       *obj*
 					       t))))
 			       (loop (cdr args)
-				     (cons type res)
-				     #f))))))
+				  (cons type res)
+				  #f))))))
 	  (args-name (let loop ((args args)
 				(res '()))
 			(cond
@@ -240,9 +240,9 @@
 	  (global    (bind-global! id alias module sfun import srce)))
       (trace (ast 3) "*** declare-global-sfun!: srce: " srce #\Newline)
       (trace (ast 3) "*** declare-global-sfun!: loc: " (find-location srce)
-	     #\Newline)
+	 #\Newline)
       (trace (ast 4) "   declare-global-sfun!: (instantiate "
-	     (shape arity) " " (shape args-type) " " (shape class) #\Newline)
+	 (shape arity) " " (shape args-type) " " (shape class) #\Newline)
       ;; we set the type of the function
       (cond
 	 ((not (eq? type-res *_*))
