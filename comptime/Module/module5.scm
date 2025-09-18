@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Sep 17 14:33:53 2025 (serrano)                */
+;*    Last change :  Thu Sep 18 22:04:15 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -23,11 +23,13 @@
 	   expand_eps
 	   ast_node
 	   ast_var
+	   ast_env
 	   ast_glo-decl
 	   type_type)
    
    (export (module5-expand ::pair-nil)
 	   (module5-ast::pair-nil ::Module)
+	   (module5-main ::Module)
 	   (module5-imported-unit ::Module)))
 
 ;*---------------------------------------------------------------------*/
@@ -100,6 +102,19 @@
 		  (with-access::Def (module5-get-export-def imod id) (kind id src)
 		     (with-access::Module imod ((mid id))
 			(declare-variable! kind id alias mid 'import src)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    module5-main ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (module5-main mod::Module)
+   (with-access::Module mod (main id)
+      (when main
+	 (let ((v (find-global/module main id)))
+	    (if v
+		(with-access::global v (import)
+		   (set! import 'export)
+		   v)
+		(error id "Cannot find main definition" main))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-imported-unit ...                                        */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Sep 17 15:07:30 2025 (serrano)                */
+;*    Last change :  Thu Sep 18 22:00:14 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -530,7 +530,7 @@
 	 ;; imported module unit (before processing the module body)
 	 (set! units (cons (module5-imported-unit mod) units))
 	 
-	 (with-access::Module mod (id body checksum)
+	 (with-access::Module mod (id body checksum main)
 	    (set! body (append body (cdr src)))
 
 	    (module5-expand! mod)
@@ -595,7 +595,11 @@
 	    (set! units (cons (make-gc-roots-unit) units)))
 	 
 	 (let* ((mast (module5-ast mod))
+		(m (module5-main mod))
 		(ast (profile ast (build-ast units))))
+
+	    ;; register main declaration
+	    (set! *main* m)
 	    
 	    ;; check if inlined functions used by the backend
 	    ;; have all been defined

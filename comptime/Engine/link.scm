@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Thu Sep 18 13:25:59 2025 (serrano)                */
+;*    Last change :  Thu Sep 18 22:20:11 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -149,6 +149,38 @@
 ;*    find-main ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (find-main clauses)
+   (case *module-version*
+      ((5) (find-main5 clauses))
+      ((4) (find-main4 clauses))
+      (else (find-main4 clauses))))
+
+;*---------------------------------------------------------------------*/
+;*    find-main5 ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (find-main5 clauses)
+   (let loop ((clauses clauses))
+      (match-case clauses
+	 (()
+	  #f)
+	 (((main ?main) . ?rest)
+	  main)
+	 (((main) . ?rest)
+	  'main)
+	 (((include . ?includes) . ?rest)
+	  (or (find (lambda (include)
+		       (find-main (call-with-input-file include read)))
+		 includes)
+	      (loop rest)))
+	 (((cond-expand . ?-) . ?rest)
+	  (or (find-main5 (list (comptime-expand/error (car clauses))))
+	      (loop rest)))
+	 (else
+	  (loop (cdr clauses))))))
+
+;*---------------------------------------------------------------------*/
+;*    find-main4 ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (find-main4 clauses)
    (let loop ((clauses clauses))
       (match-case clauses
 	 (()

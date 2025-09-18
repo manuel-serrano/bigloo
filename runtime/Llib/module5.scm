@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Sep 18 13:00:22 2025 (serrano)                */
+;*    Last change :  Thu Sep 18 21:54:33 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -57,6 +57,7 @@
 	      (decls read-only (default (create-hashtable :weak 'open-string)))
 	      (exports read-only (default (create-hashtable :weak 'open-string)))
 	      (defs read-only (default (create-hashtable :weak 'open-string)))
+	      (main (default #f))
 	      (inits::pair-nil (default '()))
 	      (libraries::pair-nil (default '()))
 	      (body::obj (default '()))
@@ -413,6 +414,9 @@
 			    (error/loc mod "Illegal export clause" clause expr))))
 	 (cdr clause)))
 
+   (define (parse-main id expr::pair mod::Module expand)
+      (set! (-> mod main) id))
+
    (define (parse-include clause expr::pair mod::Module expand)
       (for-each (lambda (f)
 		   (cond
@@ -485,6 +489,10 @@
 	  (parse-import-some clause expr mod expand))
 	 ((export . ?bindings)
 	  (parse-export clause expr mod expand))
+	 ((main)
+	  (parse-main 'main expr mod expand))
+	 ((main (and (? symbol?) ?main))
+	  (parse-main main expr mod expand))
 	 ((include . ?-)
 	  (parse-include clause expr mod expand))
 	 ((library (? symbol?))
@@ -494,6 +502,7 @@
 	 ((extern (and (? string?) ?backend) . ?clauses)
 	  (print "extern " backend " " clauses))
 	 ((cond-expand . ?-)
+	  (tprint "IN MODULE5 cond-expand...")
 	  (parse-cond-expand clause expr mod expand))
 	 (else
 	  (error/loc mod "Illegal module clause" clause expr)))))
