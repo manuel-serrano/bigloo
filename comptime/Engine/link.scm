@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Wed Sep 17 15:16:55 2025 (serrano)                */
+;*    Last change :  Thu Sep 18 13:25:59 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -195,7 +195,7 @@
 							 (cdr mod))))
 					     (rpath (relative-file-name
 						       name file)))
-					 `(import () ,(format "~s" rpath))))
+					 `(import ,(format "~s" rpath) ())))
 				 modules)
 			    ,@libraries)))
 		(fprint pout mod)
