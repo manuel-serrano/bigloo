@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Sep 19 12:47:07 2025 (serrano)                */
+;*    Last change :  Fri Sep 19 14:57:34 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -29,6 +29,7 @@
 	   type_env)
 
    (export (module5-expand ::pair-nil)
+	   (module5-import-def ::Module ::Decl)
 	   (module5-ast! ::Module)
 	   (module5-main ::Module)
 	   (module5-imported-unit ::Module)
@@ -45,6 +46,15 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-expand x)
    (module5-expander x initial-expander))
+
+;*---------------------------------------------------------------------*/
+;*    module5-import-def ...                                           */
+;*---------------------------------------------------------------------*/
+(define (module5-import-def mod::Module decl::Decl)
+   (with-access::Decl decl ((dmod mod) def id)
+      (if (eq? mod dmod)
+	  def
+	  (module5-get-export-def dmod id))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-ast! ...                                                 */
@@ -68,10 +78,12 @@
 	     ((define-inline (?- . ?args) . ?-) 'inline)
 	     ((define-generic (?- . ?args) . ?-) 'generic)
 	     ((define (and (? symbol?)) (lambda ?args . ?-)) 'procedure)
+	     ((define-macro (?- . ?args) . ?-) 'macro)
+	     ((define-expander (?- . ?args) . ?-) 'expander)
 	     ((define-class . ?-) 'class)
 	     (else 'variable))))
    
-   (define (declare-variable! kind id alias mid scope src def::Def)
+   (define (declare-definition! kind id alias mid scope src def::Def)
       (case kind
 	 ((variable)
 	  (declare-global-svar! id alias
@@ -85,12 +97,19 @@
 	 ((generic)
 	  (declare-global-sfun! id alias (procedure-args src id mid)
 	     mid scope 'sgfun src src))
-	 ((class)
-	  (tprint "CLASS"))
+	 ((macro)
+	  (with-access::Def def (src)
+	     (add-macro-definition! src)))
+	 ((expander)
+	  (with-access::Def def (src)
+	     (add-macro-definition! src)))
 	 ((c-function)
 	  (with-access::CDef def (name type infix args macro)
 	     (declare-global-cfun! id alias 'foreign name type args
 		#f macro src src)))
+	 ((c-variable)
+	  (with-access::CDef def (name type macro)
+	     (declare-global-cvar! id alias name type macro src src)))
 	 (else
 	  (error "module5-ast"
 	     (format "Unsupported definition kind \"~a\"" kind)
@@ -107,7 +126,7 @@
 		     (scope (if (isa? decl Decl)
 				(with-access::Decl decl (scope) scope)
 				'static)))
-		  (declare-variable! kind id id mid scope src d)))))
+		  (declare-definition! kind id id mid scope src d)))))
       
       (open-string-hashtable-for-each decls
 	 (lambda (k d)
@@ -116,7 +135,7 @@
 		  (let ((def (module5-get-export-def imod id)))
 		     (with-access::Def def (kind id src)
 			(with-access::Module imod ((mid id))
-			   (declare-variable! kind id alias mid 'import src def))))))))))
+			   (declare-definition! kind id alias mid 'import src def))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-main ...                                                 */
@@ -248,6 +267,38 @@
 		   (hashtable-put! exports (symbol->string! id) decl)
 		   (hashtable-put! decls (symbol->string! id) decl)
 		   (hashtable-put! defs (symbol->string! id) def)))))))
+
+   (define (parse-variable macro ident name clause mod::Module)
+      (multiple-value-bind (id type)
+	 (parse-ident ident clause mod)
+	 (cond
+	    ((not (string? type))
+	     (error/loc mod "Missing C type" ident clause))
+	    (else
+	     (co-instantiate
+		   ((def (instantiate::CDef
+			    (id id)
+			    (type (string->symbol type))
+			    (kind 'c-variable)
+			    (src clause)
+			    (ronly #t)
+			    (decl decl)
+			    (args '())
+			    (name name)
+			    (macro macro)
+			    (infix #f)))
+		    (decl (instantiate::Decl
+			     (id id)
+			     (alias id)
+			     (mod mod)
+			     (src clause)
+			     (ronly #t)
+			     (scope 'extern)
+			     (def def))))
+		(with-access::Module mod (decls defs exports)
+		   (hashtable-put! exports (symbol->string! id) decl)
+		   (hashtable-put! decls (symbol->string! id) decl)
+		   (hashtable-put! defs (symbol->string! id) def)))))))
    
    (define (parse-clause clause mod::Module)
       (with-access::Module mod (decls)
@@ -262,6 +313,10 @@
 	  (parse-function #t #t ident args name clause mod))
 	 (((and (? symbol?) ?ident) ?args (and (? string?) ?name))
 	  (parse-function #f #f ident args name clause mod))
+	 ((macro (and (? symbol?) ?ident) (and (? string?) ?name))
+	  (parse-variable #t ident name clause mod))
+	 (((and (? symbol?) ?ident) (and (? string?) ?name))
+	  (parse-variable #f ident name clause mod))
 	 (else
 	  (error/loc mod "Illegal extern \"C\" module clause" clause expr)))))
    

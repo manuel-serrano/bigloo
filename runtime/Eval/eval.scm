@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/eval.scm         */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/eval.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Tue Dec 28 18:53:03 2021 (serrano)                */
+;*    Last change :  Fri Sep 19 22:52:15 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -554,30 +554,30 @@
    
    (define (install-define-expander name expd-lam expd-lam/loc expd-eval)
       (install-expander
-       name
-       (lambda (x e)
-	  (if (not (procedure? expd-eval))
-	      (evexpand-error name "illegal expander" x)
-	      (if (not (correct-arity? expd-eval 2))
-		  (evexpand-error name
-				  "wrong number of argument for expand"
-				  x)
-		  (with-handler
-		     (lambda (exc)
-			(let ((nexc (if (isa? exc &error)
-					(with-access::&error exc (obj)
-					   (if (epair? obj)
-					       (match-case (cer obj)
-						  ((at ?fname ?loc)
-						   (duplicate::&error exc
-						      (fname fname)
-						      (location loc)))
-						  (else
-						   exc))
-					       exc))
-					exc)))
-			   (raise nexc)))
-		     (expd-eval x e))))))
+	 name
+	 (lambda (x e)
+	    (if (not (procedure? expd-eval))
+		(evexpand-error name "illegal expander" x)
+		(if (not (correct-arity? expd-eval 2))
+		    (evexpand-error name
+		       "wrong number of argument for expand"
+		       x)
+		    (with-handler
+		       (lambda (exc)
+			  (let ((nexc (if (isa? exc &error)
+					  (with-access::&error exc (obj)
+					     (if (epair? obj)
+						 (match-case (cer obj)
+						    ((at ?fname ?loc)
+						     (duplicate::&error exc
+							(fname fname)
+							(location loc)))
+						    (else
+						     exc))
+						 exc))
+					  exc)))
+			     (raise nexc)))
+		       (expd-eval x e))))))
       #unspecified)
    
    (match-case x
@@ -592,9 +592,9 @@
 	      (expd-eval (eval expd-lam/loc)))
 	  (install-define-expander name expd-lam expd-lam/loc expd-eval)))
       (else
-       (evexpand-error 'define-expander
-		       "Illegal `define-expander' syntax"
-		       x))))
+       (evexpand-error "define-expander"
+	  "Illegal `define-expander' syntax"
+	  x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-define-macro ...                                          */

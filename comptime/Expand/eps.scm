@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Tue Sep 16 19:00:19 2025 (serrano)                */
+;*    Last change :  Fri Sep 19 22:46:50 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
@@ -47,7 +47,7 @@
 (define *macro* '())
 
 ;*---------------------------------------------------------------------*/
-;*    add-macro! ...                                                   */
+;*    add-macro-definition! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (add-macro-definition! form)
    (set! *macro* (cons form *macro*)))

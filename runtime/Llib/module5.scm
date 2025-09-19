@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Sep 19 12:19:08 2025 (serrano)                */
+;*    Last change :  Fri Sep 19 19:06:50 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -138,6 +138,12 @@
 	 (-> d id) (-> d alias) (-> m id) (-> d scope) (-> d ronly) (typeof (-> d def)))))
 
 ;*---------------------------------------------------------------------*/
+;*    object-print ::Decl ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (object-print d::Decl port ds)
+   (object-write d port))
+
+;*---------------------------------------------------------------------*/
 ;*    object-write ::Def ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (object-write d::Def . port)
@@ -152,6 +158,12 @@
    (fprintf (if (pair? port) (car port) (current-output-port))
       "#<Def ~a kind=~a ronly=~a>"
       (-> d id) (-> d kind) (-> d ronly)))
+
+;*---------------------------------------------------------------------*/
+;*    object-print ::Def ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (object-print d::Def port ds)
+   (object-write d port))
 
 ;*---------------------------------------------------------------------*/
 ;*    *all-modules* ...                                                */
@@ -539,17 +551,16 @@
 ;*    module5-expand! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (module5-expand! mod::Module #!key expand)
-   (with-trace 'module5 "module5-expand!"
-      (trace-item mod)
-      (with-access::Module mod (state id exports)
-	 (case state
-	    ((parsed)
+   (with-access::Module mod (state id exports)
+      (case state
+	 ((parsed)
+	  (with-trace 'module5 "module5-expand!"
+	     (trace-item mod)
 	     (set! state 'expanded)
 	     (hashtable-for-each exports
 		(lambda (k d::Decl)
 		   (unless (eq? (-> d mod) mod)
-		      (module5-expand! (-> d mod)))))
-	     mod)))
+		      (module5-expand! (-> d mod))))))))
       mod))
 
 ;*---------------------------------------------------------------------*/
@@ -578,21 +589,23 @@
 ;*    module5-resolve! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (module5-resolve! mod::Module)
-   (with-trace 'module5 "module5-resolve!"
-      (trace-item mod)
-      (with-access::Module mod (body state exports id)
-	 (case state
-	    ((expanded)
+   (with-access::Module mod (body state exports decls defs id)
+      (case state
+	 ((expanded)
+	  (with-trace 'module5 "module5-resolve!"
+	     (trace-item mod)
 	     (set! state 'resolved)
 	     (collect-define*! mod body)
 	     (check-unbounds mod)
 	     (ronly! mod)
-	     (hashtable-for-each exports
+	     (hashtable-for-each decls
 		(lambda (k d::Decl)
 		   (unless (eq? (-> d mod) mod)
-		      (module5-resolve! (-> d mod))))))
-	    ((parsed)
-	     (error id "Illegal module state, cannot resolve" state))))
+		      (module5-resolve! (-> d mod)))))
+	     (trace-item "exports=" (hashtable-map exports (lambda (k d) d)))
+	     (trace-item "defs=" (hashtable-map defs (lambda (k d) d)))))
+	 ((parsed)
+	  (error id "Illegal module state, cannot resolve" state)))
       mod))
 
 ;*---------------------------------------------------------------------*/
@@ -686,6 +699,10 @@
 	  (multiple-value-bind (name type)
 	     (parse-ident id expr)
 	     (module-define! mod 'generic name type expr)))
+	 ((define-macro ((and (? symbol?) ?name) . ?-) . ?-)
+	  (module-define! mod 'macro name #unspecified expr))
+	 ((define-expander (and (? symbol?) ?name) . ?-)
+	  (module-define! mod 'expander name #unspecified expr))
 	 ((define-class (and (? symbol?) ?id) . ?-)
 	  (multiple-value-bind (name type)
 	     (parse-ident id expr)

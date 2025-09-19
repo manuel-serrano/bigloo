@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Sep 19 13:13:02 2025 (serrano)                */
+;*    Last change :  Fri Sep 19 19:35:48 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -533,12 +533,21 @@
 	 ;; imported module unit (before processing the module body)
 	 (set! units (cons (module5-imported-unit mod) units))
 	 
-	 (with-access::Module mod (id body checksum main)
+	 (with-access::Module mod (id body checksum main decls)
 	    (set! body (append body (cdr src)))
 
 	    (module5-expand! mod)
 	    (module5-resolve! mod)
 	    (module5-checksum! mod)
+
+	    (hashtable-for-each decls
+	       (lambda (k d)
+		  (with-access::Decl d (scope)
+		     (when (eq? scope 'import)
+			(let ((def (module5-import-def mod d)))
+			   (with-access::Def def (src kind)
+			      (when (memq kind '(macro expander))
+				 (add-macro-definition! src))))))))
 	    
 	    (set! *module* id)
 	    (set! *module-checksum* checksum))
