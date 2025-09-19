@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/trace.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/trace.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Sun Aug 25 09:10:19 2019 (serrano)                */
-;*    Copyright   :  2003-19 Manuel Serrano                            */
+;*    Last change :  Fri Sep 19 12:35:44 2025 (serrano)                */
+;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
 ;*=====================================================================*/

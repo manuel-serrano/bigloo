@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Sep 18 21:54:33 2025 (serrano)                */
+;*    Last change :  Fri Sep 19 12:19:08 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -33,6 +33,9 @@
 	    __structure
 	    __rgc
 	    __evenv
+	    
+	    __param
+	    __trace
 
 	    __r4_input_6_10_2
 	    __r4_numbers_6_5_fixnum
@@ -61,7 +64,7 @@
 	      (inits::pair-nil (default '()))
 	      (libraries::pair-nil (default '()))
 	      (body::obj (default '()))
-	      (resolved::bool (default #f)))
+	      (state::symbol (default 'init)))
 	   
 	   (class Decl
 	      (id::symbol read-only)
@@ -79,7 +82,8 @@
 	      (src (default #unspecified))
 	      (ronly (default #unspecified))
 	      (decl (default #unspecified)))
-	   
+
+	   (module5-register-plugin! ::bstring ::procedure)
 	   (module5-resolve-path ::bstring ::bstring)
 	   (module5-resolve-library ::symbol ::pair-nil)
 	   (module5-read::Module ::bstring #!key lib-path expand)
@@ -100,15 +104,21 @@
 ;*---------------------------------------------------------------------*/
 (define-method (object-write m::Module . port)
    (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<Module id=~a path=~s>" (-> m id) (-> m path)))
+      "#<Module id=~a path=~s state=~a>" (-> m id) (-> m path) (-> m state)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ::Module ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (object-display m::Module . port)
    (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<Module id=~a path=~s>" (-> m id) (-> m path)))
+      "#<Module id=~a path=~s state=~a>" (-> m id) (-> m path) (-> m state)))
 
+;*---------------------------------------------------------------------*/
+;*    object-print ::Module ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (object-print m::Module port ds)
+   (object-write m port))
+   
 ;*---------------------------------------------------------------------*/
 ;*    object-write ::Decl ...                                          */
 ;*---------------------------------------------------------------------*/
@@ -147,7 +157,17 @@
 ;*    *all-modules* ...                                                */
 ;*---------------------------------------------------------------------*/
 (define *all-modules* (create-hashtable :weak 'open-string))
+(define *plugins* '())
 (define module-mutex (make-mutex "modules"))
+
+;*---------------------------------------------------------------------*/
+;*    module5-register-plugin! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (module5-register-plugin! name::bstring plugin::procedure)
+   (synchronize module-mutex
+      (if (assoc name *plugins*)
+	  (error "module5-register-plugin!" "Plugin already registered" name)
+	  (set! *plugins* (cons (cons name plugin) *plugins*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-resolve-path ...                                         */
@@ -255,11 +275,12 @@
 	 (for-each (lambda (c)
 		      (module5-parse-clause c expr mod lib-path expand))
 	    clauses)
-	 (with-access::Module mod (inits)
-	    (set! inits (delete-duplicates! inits)))
+	 (with-access::Module mod (inits state)
+	    (set! inits (delete-duplicates! inits))
+	    (set! state 'parsed))
 	 mod))
    
-   (with-trace 'module5 "module5-parse"
+   (with-trace 'module5-parse "module5-parse"
       (trace-item "path=" path)
       (trace-item "expr=" expr)
       (trace-item "expand=" expand)
@@ -471,7 +492,14 @@
 		   (append! (-> mod inits) (list lmod))))
 	     (error/loc mod "Cannot find library" lib clause))))
 
-   (with-trace 'module5 "module5-parse-clause"
+   (define (parse-extern clause expr::pair mod::Module expand)
+      (let* ((name (cadr clause))
+	     (plugin (assoc name *plugins*)))
+	 (if plugin
+	     ((cdr plugin) mod clause) 
+	     (error/loc mod "No extern plugin" name clause))))
+      
+   (with-trace 'module5-parse "module5-parse-clause"
       (trace-item "clause=" clause)
       (trace-item "lib-path=" lib-path)
       (match-case clause
@@ -499,8 +527,8 @@
 	  (parse-library-all clause expr mod expand))
 	 ((library (? symbol?) . ?-)
 	  (parse-library-some clause expr mod expand))
-	 ((extern (and (? string?) ?backend) . ?clauses)
-	  (print "extern " backend " " clauses))
+	 ((extern (and (? string?) ?name) . ?clauses)
+	  (parse-extern clause expr mod expand))
 	 ((cond-expand . ?-)
 	  (tprint "IN MODULE5 cond-expand...")
 	  (parse-cond-expand clause expr mod expand))
@@ -511,7 +539,18 @@
 ;*    module5-expand! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (module5-expand! mod::Module #!key expand)
-   mod)
+   (with-trace 'module5 "module5-expand!"
+      (trace-item mod)
+      (with-access::Module mod (state id exports)
+	 (case state
+	    ((parsed)
+	     (set! state 'expanded)
+	     (hashtable-for-each exports
+		(lambda (k d::Decl)
+		   (unless (eq? (-> d mod) mod)
+		      (module5-expand! (-> d mod)))))
+	     mod)))
+      mod))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-expander ...                                             */
@@ -539,17 +578,22 @@
 ;*    module5-resolve! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (module5-resolve! mod::Module)
-   (with-access::Module mod (body resolved exports)
-      (unless resolved
-	 (set! resolved #t)
-	 (collect-define*! mod body)
-	 (check-unbounds mod)
-	 (ronly! mod)
-	 (hashtable-for-each exports
-	    (lambda (k d::Decl)
-	       (unless (eq? (-> d mod) mod)
-		  (module5-resolve! (-> d mod)))))))
-   mod)
+   (with-trace 'module5 "module5-resolve!"
+      (trace-item mod)
+      (with-access::Module mod (body state exports id)
+	 (case state
+	    ((expanded)
+	     (set! state 'resolved)
+	     (collect-define*! mod body)
+	     (check-unbounds mod)
+	     (ronly! mod)
+	     (hashtable-for-each exports
+		(lambda (k d::Decl)
+		   (unless (eq? (-> d mod) mod)
+		      (module5-resolve! (-> d mod))))))
+	    ((parsed)
+	     (error id "Illegal module state, cannot resolve" state))))
+      mod))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-unbounds ...                                               */
@@ -856,8 +900,8 @@
 ;*    module5-get-def ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (module5-get-def mod::Module id)
-   (with-access::Module mod (defs decls (mid id) resolved)
-      (unless resolved
+   (with-access::Module mod (defs decls (mid id) state)
+      (unless (eq? state 'resolved)
 	 (error/loc mod "Module definitions not resolved yet" id #f))
       (let ((def (hashtable-get defs (symbol->string! id))))
 	 (if (isa? def Def)
@@ -871,8 +915,8 @@
 ;*    module5-get-export-def ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (module5-get-export-def mod::Module id)
-   (with-access::Module mod (exports (mid id) resolved defs decls)
-      (unless resolved
+   (with-access::Module mod (exports (mid id) state defs decls)
+      (unless (eq? state 'resolved)
 	 (error/loc mod "Module definitions not resolved yet" id #f))
       (let ((decl (hashtable-get exports (symbol->string! id))))
 	 (if (isa? decl Decl)

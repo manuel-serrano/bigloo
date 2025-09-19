@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Sep 18 22:00:14 2025 (serrano)                */
+;*    Last change :  Fri Sep 19 13:13:02 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -516,8 +516,11 @@
    (with-trace 'compiler "module5->ast"
       (trace-item "src=" src)
       (pass-prelude "Module5")
+      
       (set! *module-version* 5)
       (register-srfi! 'bigloo-module5)
+      (module5-register-plugin! "C" module5-extern-plugin-c)
+      
       (let* ((mod (module5-expand (car src)))
 	     (src-code (cdr src))
 	     (mod (module5-parse mod (car *src-files*)))
@@ -593,9 +596,11 @@
 	 (when (and *gc-force-register-roots?*
 		    (backend-force-register-gc-roots (the-backend)))
 	    (set! units (cons (make-gc-roots-unit) units)))
+
+	 ;; build the variable and function ast
+	 (module5-ast! mod)
 	 
-	 (let* ((mast (module5-ast mod))
-		(m (module5-main mod))
+	 (let* ((m (module5-main mod))
 		(ast (profile ast (build-ast units))))
 
 	    ;; register main declaration
