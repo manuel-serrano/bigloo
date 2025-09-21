@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/expand.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/expand.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:57:39 1994                          */
-;*    Last change :  Sun Aug 25 09:12:58 2019 (serrano)                */
+;*    Last change :  Sun Sep 21 01:04:38 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La macro expansion de l'interprete                               */
 ;*=====================================================================*/
@@ -60,6 +60,8 @@
    
    (export  (expand ::obj)
 	    (expand! ::obj)
+	    (expand/env ::obj ::obj)
+	    (expand/env! ::obj ::obj)
 	    (expand-once ::obj)
 	    (%lexical-stack::pair-nil)
 	    (%with-lexical ::pair-nil ::obj ::procedure ::obj)
@@ -76,6 +78,25 @@
 ;*---------------------------------------------------------------------*/
 (define (expand! x)
    (initial-expander! x initial-expander!))
+
+;*---------------------------------------------------------------------*/
+;*    expand/env ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (expand/env x env)
+   (let ((old *module5-env*))
+      (set! *module5-env* env)
+      (unwind-protect
+	 (expand x)
+	 (set! *module5-env* old))))
+
+;*---------------------------------------------------------------------*/
+;*    expand/env! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (expand/env! x env)
+   (let ((env *module5-env*))
+      (unwind-protect
+	 (expand! x)
+	 (set! *module5-env* env))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-once ...                                                  */
@@ -108,6 +129,9 @@
 		 (lambda (x e) x))
 		((symbol? (car x))
 		 (cond
+		    ((get-module5-expander (car x))
+		     =>
+		     (lambda (x) x))
 		    ((get-eval-expander (car x))
 		     =>
 		     (lambda (x) x))
@@ -117,6 +141,11 @@
 			(cond
 			   ((pair? (assq id (%lexical-stack)))
 			    ae)
+			   ((eq? id (car x))
+			    ae)
+			   ((get-module5-expander id)
+			    =>
+			    (lambda (x) x))
 			   ((get-eval-expander id)
 			    =>
 			    (lambda (x) x))

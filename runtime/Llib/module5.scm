@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Sep 19 19:06:50 2025 (serrano)                */
+;*    Last change :  Sat Sep 20 13:15:20 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -20,7 +20,10 @@
 	    __reader
 	    __hash
 	    __library
-	    __binary)
+	    __binary
+	    __macro
+	    __eval
+	    __expand)
 
    (use     __type
 	    __tvector
@@ -64,7 +67,7 @@
 	      (inits::pair-nil (default '()))
 	      (libraries::pair-nil (default '()))
 	      (body::obj (default '()))
-	      (state::symbol (default 'init)))
+	      (resolved::bool (default #f)))
 	   
 	   (class Decl
 	      (id::symbol read-only)
@@ -86,14 +89,15 @@
 	   (module5-register-plugin! ::bstring ::procedure)
 	   (module5-resolve-path ::bstring ::bstring)
 	   (module5-resolve-library ::symbol ::pair-nil)
-	   (module5-read::Module ::bstring #!key lib-path expand)
+	   (module5-read::Module ::bstring #!key lib-path cache-path expand)
 	   (module5-read-library::Module ::bstring)
 	   (module5-read-heap::Module ::bstring)
 	   (module5-write-heap ::bstring ::Module)
-	   (module5-parse::Module ::obj ::bstring #!key lib-path expand)
-	   (module5-expand!::Module ::Module #!key expand)
+	   (module5-parse::Module ::obj ::bstring #!key lib-path cache-path expand)
+	   ;; (module5-expand::Module ::Module expand)
+	   ;; (module5-expand-exports!::Module ::Module expand)
 	   (module5-expander::obj ::obj ::procedure)
-	   (module5-resolve!::Module ::Module)
+	   (module5-expand-and-resolve!::Module ::Module ::obj)
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol)
 	   (module5-get-def::Def ::Module ::symbol)
@@ -104,14 +108,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (object-write m::Module . port)
    (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<Module id=~a path=~s state=~a>" (-> m id) (-> m path) (-> m state)))
+      "#<Module id=~a path=~s resolved=~a>" (-> m id) (-> m path) (-> m resolved)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ::Module ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (object-display m::Module . port)
    (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<Module id=~a path=~s state=~a>" (-> m id) (-> m path) (-> m state)))
+      "#<Module id=~a path=~s resolved=~a>" (-> m id) (-> m path) (-> m resolved)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-print ::Module ...                                        */
@@ -166,11 +170,12 @@
    (object-write d port))
 
 ;*---------------------------------------------------------------------*/
-;*    *all-modules* ...                                                */
+;*    *modules-by-path* ...                                            */
 ;*---------------------------------------------------------------------*/
-(define *all-modules* (create-hashtable :weak 'open-string))
-(define *plugins* '())
 (define module-mutex (make-mutex "modules"))
+(define *modules-by-path* (create-hashtable :weak 'open-string))
+(define *modules-by-id* (create-hashtable :weak 'open-string))
+(define *plugins* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-register-plugin! ...                                     */
@@ -201,23 +206,22 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-read ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (module5-read path::bstring #!key lib-path expand)
+(define (module5-read path::bstring #!key lib-path cache-path expand)
    (with-trace 'module5 "module5-read"
       (trace-item "path=" path)
       (trace-item "expand=" expand)
       (synchronize module-mutex
-	 (let ((omod (hashtable-get *all-modules* path)))
-	    (if omod
-		omod
-		(let ((exprs (call-with-input-file path
-				(lambda (p) (port->sexp-list p #t)))))
-		   (if (null? exprs)
-		       (error "module5-read" "Missing module clause" path)
-		       (let ((nmod::Module (module5-parse (car exprs) path
-					      :lib-path lib-path
-					      :expand expand)))
-			  (set! (-> nmod body) (cdr exprs))
-			  nmod))))))))
+	 (or (hashtable-get *modules-by-path* path)
+	     (let ((exprs (call-with-input-file path
+			     (lambda (p) (port->sexp-list p #t)))))
+		(if (null? exprs)
+		    (error "module5-read" "Missing module clause" path)
+		    (let ((nmod::Module (module5-parse (car exprs) path
+					   :lib-path lib-path
+					   :cache-path cache-path
+					   :expand expand)))
+		       (set! (-> nmod body) (cdr exprs))
+		       nmod)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-read-library ...                                         */
@@ -277,37 +281,45 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (module5-parse::Module expr path::bstring #!key lib-path expand)
+(define (module5-parse::Module expr path::bstring #!key lib-path cache-path expand)
 
    (define (parse id path clauses)
       (let ((mod (instantiate::Module
 		    (id id)
 		    (path path))))
-	 (hashtable-put! *all-modules* path mod)
+	 (hashtable-put! *modules-by-path* path mod)
+	 (let ((omod (hashtable-get *modules-by-id* (symbol->string id))))
+	    (if omod
+		(with-access::Module omod ((opath path))
+		   (error/loc mod
+		      (format "Module has already been declared in file ~s"
+			 opath)
+		      path expr))
+		(hashtable-put! *modules-by-id* (symbol->string id) mod)))
 	 (for-each (lambda (c)
-		      (module5-parse-clause c expr mod lib-path expand))
+		      (module5-parse-clause c expr mod lib-path cache-path expand))
 	    clauses)
-	 (with-access::Module mod (inits state)
-	    (set! inits (delete-duplicates! inits))
-	    (set! state 'parsed))
+	 (with-access::Module mod (inits)
+	    (set! inits (delete-duplicates! inits)))
 	 mod))
    
    (with-trace 'module5-parse "module5-parse"
       (trace-item "path=" path)
       (trace-item "expr=" expr)
-      (trace-item "expand=" expand)
-      (match-case expr
-	 ((module (and (? symbol?) ?id) :version 5 . ?clauses)
-	  (parse id path clauses))
-	 ((module (and (? symbol?) ?id) . ?clauses)
-	  (parse id path clauses))
-	 (else
-	  (error/loc #f "Illegal expression" expr #f)))))
+      (let ((eexpr (if expand (expand expr) expr)))
+	 (trace-item "eexpr=" eexpr)
+	 (match-case eexpr
+	    ((module (and (? symbol?) ?id) :version 5 . ?clauses)
+	     (parse id path clauses))
+	    ((module (and (? symbol?) ?id) . ?clauses)
+	     (parse id path clauses))
+	    (else
+	     (error/loc #f "Illegal expression" expr #f))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse-clause ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (module5-parse-clause clause expr::pair mod::Module lib-path expand)
+(define (module5-parse-clause clause expr::pair mod::Module lib-path cache-path expand)
 
    (define (unbound-error path id clause)
       (error/loc mod (format "Cannot find declaration in module \"~a\"" path)
@@ -354,7 +366,9 @@
 	     (rfrom (module5-resolve-path path (-> mod path))))
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
-				    :lib-path lib-path :expand expand)))
+				    :lib-path lib-path
+				    :cache-path cache-path
+				    :expand expand)))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
 		      (when (eq? (-> d scope) 'export)
@@ -368,7 +382,9 @@
 	     (rfrom (module5-resolve-path path (-> mod path))))
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
-				    :lib-path lib-path :expand expand)))
+				    :lib-path lib-path
+				    :cache-path cache-path
+				    :expand expand)))
 		(for-each (lambda (b)
 			     (let ((d::Decl (parse-import-binding b
 					       imod expr mod expand)))
@@ -386,7 +402,9 @@
 	     (rfrom (module5-resolve-path path (-> mod path))))
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
-				    :lib-path lib-path :expand expand)))
+				    :lib-path lib-path
+				    :cache-path cache-path
+				    :expand expand)))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc mod "Cannot find file" path clause))))
    
@@ -395,7 +413,9 @@
 	     (rfrom (module5-resolve-path path (-> mod path))))
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
-				    :lib-path lib-path :expand expand)))
+				    :lib-path lib-path
+				    :cache-path cache-path
+				    :expand expand)))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
 		      (let* ((alias (if id
@@ -415,7 +435,9 @@
 	     (rfrom (module5-resolve-path path (-> mod path))))
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
-				    :lib-path lib-path :expand expand)))
+				    :lib-path lib-path
+				    :cache-path cache-path
+				    :expand expand)))
 		(for-each (lambda (b)
 			     (parse-import-binding b imod expr mod expand))
 		   bindings)
@@ -460,7 +482,7 @@
 			  (lambda (p)
 			     (for-each (lambda (c)
 					  (module5-parse-clause c clause mod
-					     lib-path expand))
+					     lib-path cache-path expand))
 				(port->sexp-list p #t)))))
 		      (else
 		       (error/loc mod "Cannot find file" f clause))))
@@ -468,7 +490,7 @@
 
    (define (parse-cond-expand clause expr::pair mod::Module expand)
       (for-each (lambda (c)
-		   (module5-parse-clause c clause mod lib-path expand))
+		   (module5-parse-clause c clause mod lib-path cache-path expand))
 	 (expand clause)))
 
    (define (parse-library-all clause expr::pair mod::Module expand)
@@ -548,20 +570,19 @@
 	  (error/loc mod "Illegal module clause" clause expr)))))
 
 ;*---------------------------------------------------------------------*/
-;*    module5-expand! ...                                              */
+;*    module5-expand-exports! ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (module5-expand! mod::Module #!key expand)
-   (with-access::Module mod (state id exports)
-      (case state
-	 ((parsed)
-	  (with-trace 'module5 "module5-expand!"
-	     (trace-item mod)
-	     (set! state 'expanded)
-	     (hashtable-for-each exports
-		(lambda (k d::Decl)
-		   (unless (eq? (-> d mod) mod)
-		      (module5-expand! (-> d mod))))))))
-      mod))
+;* (define (module5-expand-exports! mod::Module expand)                */
+;*    (with-access::Module mod (id exports resolved)                   */
+;* 	 ((parsed)                                                     */
+;* 	  (with-trace 'module5 "module5-expand-exports!"               */
+;* 	     (trace-item mod)                                          */
+;* 	     (set! state 'expanded)                                    */
+;* 	     (hashtable-for-each exports                               */
+;* 		(lambda (k d::Decl)                                    */
+;* 		   (unless (eq? (-> d mod) mod)                        */
+;* 		      (module5-expand-exports! (-> d mod) expand))))))) */
+;*       mod))                                                         */
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-expander ...                                             */
@@ -586,27 +607,54 @@
        x)))
 
 ;*---------------------------------------------------------------------*/
-;*    module5-resolve! ...                                             */
+;*    module5-expand-and-resolve! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (module5-resolve! mod::Module)
-   (with-access::Module mod (body state exports decls defs id)
-      (case state
-	 ((expanded)
-	  (with-trace 'module5 "module5-resolve!"
-	     (trace-item mod)
-	     (set! state 'resolved)
-	     (collect-define*! mod body)
-	     (check-unbounds mod)
-	     (ronly! mod)
-	     (hashtable-for-each decls
-		(lambda (k d::Decl)
-		   (unless (eq? (-> d mod) mod)
-		      (module5-resolve! (-> d mod)))))
-	     (trace-item "exports=" (hashtable-map exports (lambda (k d) d)))
-	     (trace-item "defs=" (hashtable-map defs (lambda (k d) d)))))
-	 ((parsed)
-	  (error id "Illegal module state, cannot resolve" state)))
-      mod))
+(define (module5-expand-and-resolve! mod::Module new-xenv)
+   (unless (-> mod resolved)
+      (with-trace 'module5 "module5-resolve!"
+	 (trace-item mod)
+	 (trace-item "decls="
+	    (hashtable-map (-> mod decls)
+	       (lambda (k d::Decl)
+		  (format "~a/~a" (-> d id) (-> d alias)))))
+	 (set! (-> mod resolved) #t)
+	 (let ((xenv (if (procedure? new-xenv) (new-xenv) new-xenv)))
+	    (hashtable-for-each (-> mod decls)
+	       (lambda (k d::Decl)
+		  (with-access::Decl d ((imod mod) alias id)
+		     (unless (eq? imod mod)
+			(module5-expand-and-resolve! (-> d mod)
+			   (lambda ()
+			      (create-hashtable :weak 'open-string)))
+			(let ((def (module5-get-export-def imod id)))
+			   (with-access::Def def (kind src)
+			      (case kind
+				 ((macro)
+				  (trace-item "bind-macro alias="
+				     alias " id=" id)
+				  (install-module5-expander xenv alias src
+				     (eval! (macro->expander src))))
+				 ((expander)
+				  (trace-item "bind-expander alias="
+				     alias " id=" id)
+				  (install-module5-expander xenv alias src
+				     (eval! (caddr src)))))))))))
+	    (when (pair? (-> mod body))
+	       (set! (-> mod body)
+		  (map (lambda (x) (expand/env x xenv)) (-> mod body))))
+	    ;; Macro definitions have disgarded by the macro-expansion.
+	    ;; Because these definitions are needed to resolve the module
+	    ;; exports, INSTALL-MODULE5-EXPANDER (runtime/macro.scm),
+	    ;; stores these definition in XENV.
+	    (collect-define*! mod (hashtable-map xenv (lambda (k e) (car e))))
+	    (collect-define*! mod (-> mod body))
+	    (check-unbounds mod))
+	 (ronly! mod)
+	 (trace-item "exports="
+	    (hashtable-map (-> mod exports) (lambda (k d) d)))
+	 (trace-item "defs="
+	    (hashtable-map (-> mod defs) (lambda (k d) d)))))
+   mod)
 
 ;*---------------------------------------------------------------------*/
 ;*    check-unbounds ...                                               */
@@ -917,8 +965,8 @@
 ;*    module5-get-def ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (module5-get-def mod::Module id)
-   (with-access::Module mod (defs decls (mid id) state)
-      (unless (eq? state 'resolved)
+   (with-access::Module mod (defs decls (mid id) resolved)
+      (unless resolved
 	 (error/loc mod "Module definitions not resolved yet" id #f))
       (let ((def (hashtable-get defs (symbol->string! id))))
 	 (if (isa? def Def)
@@ -932,8 +980,8 @@
 ;*    module5-get-export-def ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (module5-get-export-def mod::Module id)
-   (with-access::Module mod (exports (mid id) state defs decls)
-      (unless (eq? state 'resolved)
+   (with-access::Module mod (exports (mid id) resolved defs decls)
+      (unless resolved
 	 (error/loc mod "Module definitions not resolved yet" id #f))
       (let ((decl (hashtable-get exports (symbol->string! id))))
 	 (if (isa? decl Decl)

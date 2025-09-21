@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Sep 19 22:52:15 2025 (serrano)                */
+;*    Last change :  Sun Sep 21 01:15:43 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -548,37 +548,39 @@
        (error proc mes obj)))
 
 ;*---------------------------------------------------------------------*/
+;*    expander-exception-handler ...                                   */
+;*---------------------------------------------------------------------*/
+(define (expander-exception-handler exc)
+   (if (isa? exc &error)
+       (with-access::&error exc (obj)
+	  (if (epair? obj)
+	      (match-case (cer obj)
+		 ((at ?fname ?loc)
+		  (let ((nexc (duplicate::&error exc
+				 (fname fname)
+				 (location loc))))
+		     (raise nexc)))
+		 (else
+		  (raise exc)))
+	      (raise exc)))
+       (raise exc)))
+
+;*---------------------------------------------------------------------*/
 ;*    expand-define-expander ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (expand-define-expander x e)
    
    (define (install-define-expander name expd-lam expd-lam/loc expd-eval)
-      (install-expander
-	 name
+      (install-expander name x
 	 (lambda (x e)
-	    (if (not (procedure? expd-eval))
-		(evexpand-error name "illegal expander" x)
-		(if (not (correct-arity? expd-eval 2))
-		    (evexpand-error name
-		       "wrong number of argument for expand"
-		       x)
-		    (with-handler
-		       (lambda (exc)
-			  (let ((nexc (if (isa? exc &error)
-					  (with-access::&error exc (obj)
-					     (if (epair? obj)
-						 (match-case (cer obj)
-						    ((at ?fname ?loc)
-						     (duplicate::&error exc
-							(fname fname)
-							(location loc)))
-						    (else
-						     exc))
-						 exc))
-					  exc)))
-			     (raise nexc)))
-		       (expd-eval x e))))))
-      #unspecified)
+	    (cond
+	       ((not (procedure? expd-eval))
+		(evexpand-error name "illegal expander" x))
+	       ((not (correct-arity? expd-eval 2))
+		(evexpand-error name "wrong number of argument for expand" x))
+	       (else
+		(with-handler expander-exception-handler
+		   (expd-eval x e)))))))
    
    (match-case x
       ((?- (and (? symbol?) ?name) :eval! ?macro)
@@ -600,126 +602,21 @@
 ;*    expand-define-macro ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (expand-define-macro x e)
-   (match-case x
-      ((or (?- (?name . ?args) . ?body)
-	   (?- ?name (lambda ?args . ?body)))
-       (let ((fname (gensym))
-	     (loc (gensym)))
-	  (install-expander
-	   name
-	   (let* ((evexpd `(lambda (x1 e)
-			      (let ((,fname #f) ,loc)
-				 (when (epair? x1)
-				    (match-case (cer x1)
-				       ((at ?f ?l)
-					(set! ,fname f)
-					(set! ,loc l))))
-				 (let* ((n (let* ,(destructure
-						   name fname loc
-						   args '(cdr x1) '())
-					      ,(expand-progn body)))
-					(ne (e n e)))
-				    (evepairify* ne x1)))))
-		  (evexpd/loc (evepairify evexpd x))
-		  (expd-eval (eval! evexpd/loc)))
-	      (lambda (x e)
-		 (with-handler
-		    (lambda (e)
-		       (let ((ne (if (isa? e &error)
-				     (with-access::&error e (obj)
-					(if (epair? obj)
-					    (match-case (cer obj)
-					       ((at ?fname ?loc)
-						(duplicate::&error e
-						   (fname fname)
-						   (location loc)))
-					       (else
-						e))
-					    e))
-				     e)))
-			  (raise e)))
-		    (expd-eval x e))))))
-       #unspecified)
-      (else
-       (evexpand-error 'define-macro "Illegal `define-macro' syntax" x))))
+   (let ((ev (eval! (macro->expander x))))
+      (install-expander (caadr x) x
+	 (lambda (x e)
+	    (with-handler expander-exception-handler
+	       (ev x e))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-define-hygiene-macro ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (expand-define-hygiene-macro x e)
-   (match-case x
-      ((?- (quote (?name . ?args)) . ?body)
-       (let ((body (map cadr body))
-	     (fname (gensym))
-	     (loc (gensym)))
-	  (install-expander
-	   name
-	   (let* ((expd-lam `(lambda (x e)
-				(let ((,fname #f) ,loc)
-				   (when (epair? x)
-				      (match-case (cer x)
-					 ((at ?f ?l)
-					  (set! ,fname f)
-					  (set! ,loc l))))
-				   (e (let* ,(destructure
-					      name fname loc
-					      args '(cdr x) '())
-					 ,(expand-progn body))
-				      e))))
-		  (expd-lam/loc (evepairify expd-lam x))
-		  (expd-eval (eval! expd-lam/loc)))
-	      (lambda (x e)
-		 (with-handler
-		    (lambda (e)
-		       (let ((ne (if (isa? e &error)
-				     (with-access::&error e (obj)
-					(if (epair? obj)
-					    (match-case (cer obj)
-					       ((at ?fname ?loc)
-						(duplicate::&error e
-						   (fname fname)
-						   (location loc)))
-					       (else
-						e))
-					    e))
-				     e)))
-			  (exception-notify ne)
-			  (raise ne)))
-		    (expd-eval x e)))))
-	  #unspecified))
-      (else
-       (evexpand-error 'define-hygiene-macro
-		       "Illegal `define-hygiene-macro' syntax"
-		       x))))
-
-;*---------------------------------------------------------------------*/
-;*    destructure ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (destructure id fname loc pat arg bindings)
-   (define (err msg obj)
-      `(if (string? ,fname)
-	  (error/location ',id ,msg ',obj ,fname ,loc)
-	  (error ',id ,msg ',obj)))
-   (let loop ((pat pat)
-	      (arg arg)
-	      (bindings bindings))
-      (cond
-	 ((null? pat)
-	  (cons `(,(gensym)
-		  (if (not (null? ,arg))
-		      ,(err "Too many arguments provided" arg)
-		      '()))
-		bindings))
-	 ((symbol? pat)
-	  (cons `(,pat ,arg) bindings))
-	 ((pair? pat)
-	  (loop (car pat)
-		`(if (pair? ,arg)
-		     (car ,arg)
-		     ,(err "Missing value for argument" (car pat)))
-		(loop (cdr pat) `(cdr ,arg) bindings)))
-	 (else
-	  (evexpand-error id "Illegal macro parameter" pat)))))
+   (let ((ev (eval! (macro->expander x))))
+      (install-expander (caadr x) x
+	 (lambda (x e)
+	    (with-handler expander-exception-handler
+	       (ev x e))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-define-pattern ...                                        */

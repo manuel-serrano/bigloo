@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/case.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/case.scm                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 18 15:16:39 1992                          */
-;*    Last change :  Tue Dec 12 11:31:43 2017 (serrano)                */
+;*    Last change :  Sun Sep 21 15:01:37 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test le case.                                                 */
 ;*---------------------------------------------------------------------*/
@@ -111,11 +111,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    This test used to make the compiler crashes.                     */
 ;*---------------------------------------------------------------------*/
-(define-macro push!
-   (lambda (stack o)
-      `(begin
-	  (set! ,stack (cons ,o ,stack))
-	  ,o)))
+(define-macro (push! stack o)
+   `(begin
+       (set! ,stack (cons ,o ,stack))
+       ,o)))
 
 (define (test.8 data)
    (let ((elem-stack '()))

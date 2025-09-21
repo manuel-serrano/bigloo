@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Sep 19 19:35:48 2025 (serrano)                */
+;*    Last change :  Sat Sep 20 12:44:31 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -521,53 +521,55 @@
       (register-srfi! 'bigloo-module5)
       (module5-register-plugin! "C" module5-extern-plugin-c)
       
-      (let* ((mod (module5-expand (car src)))
+      (let* ((src-mod (car src))
 	     (src-code (cdr src))
-	     (mod (module5-parse mod (car *src-files*)))
+	     (mod (module5-parse src-mod (car *src-files*)
+		     :expand module5-expand))
 	     (tu (unit 'toplevel 100 '() #t #f))
-	     (units (list tu)))
+	     (units (list tu))
+	     (xenv (create-hashtable :weak 'open-string)))
 	 
 	 (trace-item "units=" units)
 	 (trace-item "src-code=" src-code)
 	 
 	 ;; imported module unit (before processing the module body)
-	 (set! units (cons (module5-imported-unit mod) units))
+	 (set! units (cons (module5-imported-unit mod comptime-expand) units))
 	 
 	 (with-access::Module mod (id body checksum main decls)
 	    (set! body (append body (cdr src)))
-
-	    (module5-expand! mod)
-	    (module5-resolve! mod)
+	    
+	    (module5-expand-and-resolve! mod xenv)
 	    (module5-checksum! mod)
-
+	    
 	    (hashtable-for-each decls
 	       (lambda (k d)
-		  (with-access::Decl d (scope)
+		  (with-access::Decl d (scope alias)
 		     (when (eq? scope 'import)
 			(let ((def (module5-import-def mod d)))
 			   (with-access::Def def (src kind)
 			      (when (memq kind '(macro expander))
-				 (add-macro-definition! src))))))))
+				 (add-macro-definition! src alias))))))))
 	    
 	    (set! *module* id)
-	    (set! *module-checksum* checksum))
-	 
-	 (stop-on-pass 'dump-module (lambda () (dump-module mod)))
-
-	 ;; profiling initilization code
-	 (when (>=fx *profile-mode* 1)
-	    (set! units (cons (make-prof-unit) units)))
-	 
-	 ;; produce the mco file on user demand
-	 (when *module-checksum-object?*
-	    (profile mco (module-checksum-object)))
-	 (stop-on-pass 'mco (lambda () 0))
-	 
-	 ;; complete the module body
-	 (let ((code (debug-code src-code)))
-	    (unit-sexp*-add! tu code)
-	    (when (>=fx *optim* 2)
-	       (unit-sexp*-add-head! tu (optimize-code))))
+	    (set! *module-clause* src-mod)
+	    (set! *module-checksum* checksum)
+	    
+	    (stop-on-pass 'dump-module (lambda () (dump-module mod)))
+	    
+	    ;; profiling initilization code
+	    (when (>=fx *profile-mode* 1)
+	       (set! units (cons (make-prof-unit) units)))
+	    
+	    ;; produce the mco file on user demand
+	    (when *module-checksum-object?*
+	       (profile mco (module-checksum-object)))
+	    (stop-on-pass 'mco (lambda () 0))
+	    
+	    ;; complete the module body
+	    (let ((code (debug-code body)))
+	       (unit-sexp*-add! tu code)
+	       (when (>=fx *optim* 2)
+		  (unit-sexp*-add-head! tu (optimize-code)))))
 	 
 	 ;; check for errors that might have already occurred
 	 ;; when building the ast but delayed
@@ -599,7 +601,10 @@
 	 
 	 ;; ... and we macro expand
 	 (profile expand (expand-units units))
-	 (stop-on-pass 'expand (lambda () (write-unit units)))
+	 (stop-on-pass 'expand
+	    (lambda ()
+	       (set! *module-clause* (module5-expand *module-clause*))
+	       (write-unit units)))
 	 
 	 ;; explicit GC roots registration
 	 (when (and *gc-force-register-roots?*

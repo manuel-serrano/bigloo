@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Sep 19 14:57:34 2025 (serrano)                */
+;*    Last change :  Sat Sep 20 12:41:54 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -32,7 +32,7 @@
 	   (module5-import-def ::Module ::Decl)
 	   (module5-ast! ::Module)
 	   (module5-main ::Module)
-	   (module5-imported-unit ::Module)
+	   (module5-imported-unit ::Module ::procedure)
 	   (module5-extern-plugin-c ::Module ::pair))
 
    (export (class CDef::Def
@@ -82,7 +82,7 @@
 	     ((define-expander (?- . ?args) . ?-) 'expander)
 	     ((define-class . ?-) 'class)
 	     (else 'variable))))
-   
+
    (define (declare-definition! kind id alias mid scope src def::Def)
       (case kind
 	 ((variable)
@@ -99,10 +99,10 @@
 	     mid scope 'sgfun src src))
 	 ((macro)
 	  (with-access::Def def (src)
-	     (add-macro-definition! src)))
+	     (add-macro-definition! src id)))
 	 ((expander)
 	  (with-access::Def def (src)
-	     (add-macro-definition! src)))
+	     (add-macro-definition! src id)))
 	 ((c-function)
 	  (with-access::CDef def (name type infix args macro)
 	     (declare-global-cfun! id alias 'foreign name type args
@@ -153,12 +153,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-imported-unit ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (module5-imported-unit mod::Module)
+(define (module5-imported-unit mod::Module expand)
    (with-access::Module mod (inits path)
       (let ((body (map (lambda (imod)
 			  (with-access::Module imod (id checksum)
-			     (module5-expand! imod)
-			     (module5-resolve! imod)
+			     (module5-expand-and-resolve! imod
+				(lambda ()
+				   (create-hashtable :weak 'open-string)))
 			     (module5-checksum! imod)
 			     (declare-global-sfun! 'module-initialization
 				'module-initialization
@@ -167,7 +168,7 @@
 			     `((@ module-initialization ,id) ,checksum ,path)))
 		     inits)))
 	 
-	 (unit 'imported-modules 12 body #t #f))))
+	 (unit 'imported-modules 12 body #f #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */

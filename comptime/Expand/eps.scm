@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Fri Sep 19 22:46:50 2025 (serrano)                */
+;*    Last change :  Sat Sep 20 12:45:41 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
@@ -32,7 +32,7 @@
 	    tools_args)
    (export  (with-lexical ::obj ::obj loc ::procedure)
 	    (lexical-stack)
-	    (add-macro-definition! ::obj)
+	    (add-macro-definition! ::obj ::symbol)
 	    (add-macro-alias! ::symbol ::symbol)
 	    (comptime-expand ::obj)
 	    (comptime-expand/error ::obj)
@@ -49,8 +49,21 @@
 ;*---------------------------------------------------------------------*/
 ;*    add-macro-definition! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (add-macro-definition! form)
-   (set! *macro* (cons form *macro*)))
+(define (add-macro-definition! form id)
+   (let ((nform (match-case form
+		   ((define-macro (?mid . ?args) . ?body)
+		    (if (eq? mid id)
+			form
+			`(define-macro (,id ,@args) ,@body)))
+		   ((define-expander ?eid ?expr)
+		    (if (eq? eid id)
+			form
+			`(define-expander ,id ,expr)))
+		   (else
+		    (error "add-macro-definition!"
+		       (format "Illegal form \"~a\"" id)
+		       form)))))
+      (set! *macro* (cons nform *macro*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    add-macro-alias! ...                                             */

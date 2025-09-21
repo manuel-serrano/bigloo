@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Write/expanded.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Write/unit.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:03:54 1994                          */
-;*    Last change :  Sat Sep 13 09:09:36 2025 (serrano)                */
+;*    Last change :  Sun Sep 21 12:45:28 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pretty-print of expanded module.                             */
@@ -43,53 +43,15 @@
 	  (error "write-unit" "Can't open output file" output-name)
 	  (unwind-protect
 	     (begin
-		(write-scheme-file-header port "The unit module")
-		(write-scheme-comment
-		 port
-		 "---------------------------------------------------------")
-		(write-scheme-comment
-		 port
-		 "!!! WARNING !!!      !!! WARNING !!!      !!! WARNING !!!")
-		(write-scheme-comment
-		 port
-		 "---------------------------------------------------------")
-		(write-scheme-comment
-		 port
-		 "This unit file cannot be compiled \"as is\". In order to")
-		(write-scheme-comment
-		 port
-		 "compile it:")
-		(write-scheme-comment
-		 port
-		 "   - the explicit call to the MODULE-INITIALIZATION ")
-		(write-scheme-comment
-		 port
-		 "     must be removed.")
-		(write-scheme-comment
-		 port
-		 "   - If the source module was INCLUDING files,")
-		(write-scheme-comment
-		 port
-		 "     you must select manually which files still have to")
-		(write-scheme-comment
-		 port
-		 "     be included in the unit forms.")
-		(write-scheme-comment
-		 port
-		 "---------------------------------------------------------")
-		(write-scheme-comment port "The module clause")
+		(write-scheme-file-header port *module*)
 		(pp *module-clause* port)
-		(newline port)
 		(for-each
 		 (lambda (u)
 		    (if (unit-printable? u)
 			(begin
-			   (if (pair? (unit-sexp* u))
-			       (write-scheme-comment port
-						     (string-append
-						      "unit: "
-						      (symbol->string
-						       (unit-id u)))))
+			   (when (pair? (unit-sexp* u))
+			      (write-scheme-comment port
+				 (format "unit: ~a" (unit-id u))))
 			   ;; we loop on all units
 			   (for-each
 			    (lambda (code)

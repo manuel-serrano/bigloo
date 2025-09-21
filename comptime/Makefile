@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Sat Sep 13 09:09:56 2025 (serrano)                */
+#*    Last change :  Sun Sep 21 14:35:53 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -521,7 +521,7 @@ renew:
 
 debugnew:
 	touch Init/main.scm
-	$(MAKE) new EFLAGS=-g
+	$(MAKE) new EFLAGS=-g LDSTRIPFLAGS=
 
 bigloo.$(SHAREDSUFFIX):
 	$(MAKE) $(BIGLOO_DEST).$(SHAREDSUFFIX)

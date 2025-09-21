@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/R5rs/syntax.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/R5rs/syntax.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 17:24:01 2002                          */
-;*    Last change :  Tue Jan  3 15:57:15 2023 (serrano)                */
-;*    Copyright   :  2002-23 Dorai Sitaram, Manuel Serrano             */
+;*    Last change :  Sun Sep 21 14:43:40 2025 (serrano)                */
+;*    Copyright   :  2002-25 Dorai Sitaram, Manuel Serrano             */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of R5Rs macros.                               */
 ;*    -------------------------------------------------------------    */
@@ -252,7 +252,7 @@
       ((?- (and (? symbol?) ?macroname) (syntax-rules ?literals . ?rules))
        (let ((ex (syntax-rules->expander/init macroname literals rules)))
 	  (install-syntax-expander macroname ex)
-	  (install-expander macroname ex)
+	  (install-module4-expander macroname ex)
 	  #unspecified))
       (else
        (error "define-syntax" "Illegal form" x))))

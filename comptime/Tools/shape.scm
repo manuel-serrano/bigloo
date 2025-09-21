@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 17:02:04 1994                          */
-;*    Last change :  Mon Jun 16 12:28:26 2025 (serrano)                */
+;*    Last change :  Sat Sep 20 13:39:49 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    In order to print human readable messages, we designed this      */
@@ -19,6 +19,7 @@
    (import  ast_dump
 	    ast_env
 	    engine_param
+	    module_module
 	    tools_error)
    (export  (generic shape ::obj)))
 
@@ -103,7 +104,11 @@
 		       `(@ ,(global-id var) ,(global-module var)))
 	      (string->symbol (string-append str-id tshape ushape ashape)))
 	     ((0)
-	      (string->symbol (string-append str-id tshape ushape ashape)))
+	      (if (and *module* (not (eq? (global-module var) *module*)))
+		  (let ((sym (string->symbol
+				(string-append str-id tshape ushape ashape))))
+		     `(@ ,sym ,(string->symbol module)))
+		  (string->symbol (string-append str-id tshape ushape ashape))))
 	     (else
 	      (let ((sym (string->symbol
 			  (string-append str-id tshape ushape ashape))))

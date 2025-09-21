@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/evobject.scm     */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evobject.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Mon Jun  4 08:46:51 2018 (serrano)                */
-;*    Copyright   :  2006-18 Manuel Serrano                            */
+;*    Last change :  Sun Sep 21 14:43:00 2025 (serrano)                */
+;*    Copyright   :  2006-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
 ;*=====================================================================*/
@@ -334,7 +334,7 @@
 ;*---------------------------------------------------------------------*/
 (define (eval-expand-instantiate class)
    (let ((wid (symbol-append 'instantiate:: (class-name class))))
-      (install-expander wid
+      (install-module4-expander wid
 	 (eval-instantiate-expander class))))
 
 ;*--------------------------------------------------------------------*/
@@ -451,7 +451,7 @@
 ;*---------------------------------------------------------------------*/
 (define (eval-expand-duplicate class)
    (let ((did (symbol-append 'duplicate:: (class-name class))))
-      (install-expander did
+      (install-module4-expander did
 	 (eval-duplicate-expander class))))
 
 ;*---------------------------------------------------------------------*/
@@ -554,7 +554,7 @@
 ;*---------------------------------------------------------------------*/
 (define (eval-expand-with-access class)
    (let ((wid (symbol-append 'with-access:: (class-name class))))
-      (install-expander wid (eval-with-access-expander class))))
+      (install-module4-expander wid (eval-with-access-expander class))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-with-access-expander ...                                    */
