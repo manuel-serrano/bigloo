@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 08:59:04 1994                          */
-;*    Last change :  Sun Sep 21 01:07:34 2025 (serrano)                */
+;*    Last change :  Sun Sep 21 22:36:22 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation des macros (de l'interprete et du compilateur).  */
 ;*=====================================================================*/
@@ -166,7 +166,7 @@
    (when *module5-env*
       (let ((e (hashtable-get *module5-env* (symbol->string! id))))
 	 ;; see INSTALL-MODULE5-EXPANDER for the structure of E
-	 (when (pair? e)
+	 (when (and (pair? e) (cdr e))
 	    (cdr e)))))
 
 ;*---------------------------------------------------------------------*/
@@ -246,4 +246,4 @@
 		     ,(err "Missing value for argument" (car pat)))
 		(loop (cdr pat) `(cdr ,arg) bindings)))
 	 (else
-	  (error/location id "Illegal macro parameter" pat fname loc)))))
+	  (error/location id "Illegal macro parameter" pat fname loc)))))   

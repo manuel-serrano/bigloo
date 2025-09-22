@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sat Sep 20 12:41:54 2025 (serrano)                */
+;*    Last change :  Sun Sep 21 22:58:27 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -20,6 +20,7 @@
    (import engine_param
 	   tools_error
 	   module_module
+	   module_class
 	   expand_eps
 	   ast_node
 	   ast_var
@@ -110,6 +111,12 @@
 	 ((c-variable)
 	  (with-access::CDef def (name type macro)
 	     (declare-global-cvar! id alias name type macro src src)))
+	 ((class)
+	  (with-access::Def def (src id scope decl)
+	     (with-access::Decl decl (scope)
+		(tprint "ID=" id)
+		(declare-global-svar! id id mid scope src src)
+		(declare-class! (cdr src) mid scope #f #f src src))))
 	 (else
 	  (error "module5-ast"
 	     (format "Unsupported definition kind \"~a\"" kind)

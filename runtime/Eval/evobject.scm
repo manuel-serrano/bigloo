@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Sun Sep 21 14:43:00 2025 (serrano)                */
+;*    Last change :  Mon Sep 22 00:44:01 2025 (serrano)                */
 ;*    Copyright   :  2006-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -63,7 +63,8 @@
 	  (eval-expand-instantiate ::class)
 	  (eval-expand-duplicate ::class)
 	  (eval-expand-with-access ::class)
-	  (eval-co-instantiate-expander::pair-nil ::pair-nil ::procedure)))
+	  (eval-co-instantiate-expander::pair-nil ::pair-nil ::procedure)
+	  (eval-parse-class loc clauses)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-error ...                                                 */
@@ -406,6 +407,7 @@
       (check-all-values args fields)
       ;; allocate the object and set the fields,
       ;; first the actual fields, second the virtual fields
+      (tprint "INIT=" init)
       (localize x
 	 `(let ((,new ,(e init e)))
 	     (begin

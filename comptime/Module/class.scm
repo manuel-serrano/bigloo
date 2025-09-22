@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Module/class.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/class.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Mon Aug 26 14:30:21 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Sep 21 23:08:06 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
 ;*=====================================================================*/

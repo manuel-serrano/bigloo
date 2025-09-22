@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Sep 20 13:15:20 2025 (serrano)                */
+;*    Last change :  Sun Sep 21 22:20:51 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -36,6 +36,7 @@
 	    __structure
 	    __rgc
 	    __evenv
+	    __evobject
 	    
 	    __param
 	    __trace
@@ -100,7 +101,7 @@
 	   (module5-expand-and-resolve!::Module ::Module ::obj)
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol)
-	   (module5-get-def::Def ::Module ::symbol)
+	   (module5-get-def::Def ::Module ::symbol ::obj)
 	   (module5-get-export-def ::Module ::symbol)))
 
 ;*---------------------------------------------------------------------*/
@@ -618,7 +619,16 @@
 	       (lambda (k d::Decl)
 		  (format "~a/~a" (-> d id) (-> d alias)))))
 	 (set! (-> mod resolved) #t)
-	 (let ((xenv (if (procedure? new-xenv) (new-xenv) new-xenv)))
+	 (let ((xenv (if (procedure? new-xenv) (new-xenv) new-xenv))
+	       (kx (make-class-expander mod)))
+	    (install-module5-expander xenv 'define-class
+	       '(define-class) kx)
+	    (install-module5-expander xenv 'define-wide-class
+	       '(define-class) kx)
+	    (install-module5-expander xenv 'define-final-class
+	       '(define-class) kx)
+	    (install-module5-expander xenv 'define-abstract-class
+	       '(define-class) kx)
 	    (hashtable-for-each (-> mod decls)
 	       (lambda (k d::Decl)
 		  (with-access::Decl d ((imod mod) alias id)
@@ -640,9 +650,11 @@
 				  (install-module5-expander xenv alias src
 				     (eval! (caddr src)))))))))))
 	    (when (pair? (-> mod body))
+	       (trace-item "body avant-expand=" (-> mod body))
 	       (set! (-> mod body)
-		  (map (lambda (x) (expand/env x xenv)) (-> mod body))))
-	    ;; Macro definitions have disgarded by the macro-expansion.
+		  (map (lambda (x) (expand/env x xenv)) (-> mod body)))
+	       (trace-item "body apres-expand=" (-> mod body)))
+	    ;; Macro and class definitions are disgarded by the macro-expansion.
 	    ;; Because these definitions are needed to resolve the module
 	    ;; exports, INSTALL-MODULE5-EXPANDER (runtime/macro.scm),
 	    ;; stores these definition in XENV.
@@ -964,17 +976,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-get-def ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (module5-get-def mod::Module id)
+(define (module5-get-def mod::Module id src)
    (with-access::Module mod (defs decls (mid id) resolved)
       (unless resolved
 	 (error/loc mod "Module definitions not resolved yet" id #f))
       (let ((def (hashtable-get defs (symbol->string! id))))
 	 (if (isa? def Def)
 	     def
-	     (let ((decl (hashtable-get decls (symbol->string! id))))
-		(with-access::Decl decl (src)
-		   (error/loc mod "Cannot find definition" id
-		      (and decl src))))))))
+	     (error/loc mod "Cannot find definition" id src)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-get-export-def ...                                       */
@@ -990,3 +999,29 @@
 		    def
 		    (error/loc mod "Cannot find definition" id src)))
 	     (error/loc mod "Cannot find declaration" id #f)))))
+
+;*---------------------------------------------------------------------*/
+;*    module5-expand-class ...                                         */
+;*---------------------------------------------------------------------*/
+(define (make-class-expander mod)
+   (lambda (x e)
+      (match-case x
+	 ((?- ?ident . ?clauses)
+	  (multiple-value-bind (id sid)
+	     (parse-ident ident x)
+	     (let ((super (cond
+			     ((eq? id 'object)
+			      #unspecified)
+			     ((eq? sid #unspecified)
+			      (module5-get-def mod 'object x))
+			     (else
+			      (module5-get-def mod sid x)))))
+		(if (not super)
+		    (error/loc mod (format "Cannot find super class of \"~a\"" id)
+		       super x)
+		    (multiple-value-bind (ctor slots)
+		       (eval-parse-class (cer x) clauses)
+		       (tprint "ctor=" ctor)
+		       (tprint "slots=" slots))))))
+	 (else
+	  (error/loc #f "Illegal class declaration" x x)))))

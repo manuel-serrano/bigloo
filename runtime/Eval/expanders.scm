@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Sun Sep 21 14:41:34 2025 (serrano)                */
+;*    Last change :  Sun Sep 21 22:38:48 2025 (serrano)                */
 ;*    Copyright   :  2002-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -505,10 +505,9 @@
    (install-eval-expander 'co-instantiate eval-co-instantiate-expander)
    
    ;; classes
-   (let ((e (lambda (x e) (e (evmodule-static-class x) e))))
-      (install-eval-expander 'define-class e)
-      (install-eval-expander 'define-abstract-class e)
-      (install-eval-expander 'define-final-class e))
+   (install-eval-expander 'define-class define-class-expander)
+   (install-eval-expander 'define-abstract-class define-class-expander)
+   (install-eval-expander 'define-final-class define-class-expander)
 
    ;; trace
    (install-eval-expander 'when-trace (make-expand-when-trace 'eval))

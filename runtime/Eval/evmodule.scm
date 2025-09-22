@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/evmodule.scm     */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evmodule.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sat Jun  4 09:33:23 2022 (serrano)                */
-;*    Copyright   :  2006-22 Manuel Serrano                            */
+;*    Last change :  Sun Sep 21 22:28:49 2025 (serrano)                */
+;*    Copyright   :  2006-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
 ;*=====================================================================*/
@@ -83,6 +83,7 @@
 	    (eval-module)
 	    (eval-module-set! ::obj)
 	    (evmodule-static-class ::pair-nil)
+	    (define-class-expander ::pair ::procedure)
 	    (call-with-eval-module ::obj ::procedure))
 
    (option  (set! *unsafe-type* #f)))
@@ -945,6 +946,27 @@
 		     ((define-abstract-class)
 		      (evepairify `(static (abstract-class ,@rest)) x)))))
       (evmodule-static mod clause (get-source-location x) #t)))
+
+;*---------------------------------------------------------------------*/
+;*    define-class-expander ...                                        */
+;*---------------------------------------------------------------------*/
+(define (define-class-expander x e)
+   (if *module5-env*
+       (module5-define-class-expander *module5-env* x e)
+       (module4-define-class-expander x e)))
+
+;*---------------------------------------------------------------------*/
+;*    module5-define-class-expander ...                                */
+;*---------------------------------------------------------------------*/
+(define (module5-define-class-expander env x e)
+   (hashtable-put! env (symbol->string! (untype-ident (cadr x))) (cons x #f))
+   (module4-define-class-expander x e))
+   
+;*---------------------------------------------------------------------*/
+;*    module4-define-class-expander ...                                */
+;*---------------------------------------------------------------------*/
+(define (module4-define-class-expander x e)
+   (e (evmodule-static-class x) e))
 
 ;*---------------------------------------------------------------------*/
 ;*    call-with-eval-module ...                                        */
