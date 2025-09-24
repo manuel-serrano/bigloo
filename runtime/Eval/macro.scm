@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 08:59:04 1994                          */
-;*    Last change :  Sun Sep 21 22:36:22 2025 (serrano)                */
+;*    Last change :  Tue Sep 23 12:54:48 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation des macros (de l'interprete et du compilateur).  */
 ;*=====================================================================*/
@@ -14,7 +14,7 @@
 (module __macro
    
    (export  *module5-env*
-	    (install-module5-expander ::obj ::symbol ::pair ::procedure)
+	    (install-module5-expander ::obj ::symbol ::obj ::procedure)
 	    (install-module4-expander ::symbol ::procedure)
 	    (install-eval-expander ::symbol ::procedure)
 	    (install-compiler-expander ::symbol ::procedure)

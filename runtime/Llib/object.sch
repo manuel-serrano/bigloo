@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/object.sch              */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/object.sch         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 10 08:56:49 2015                          */
-;*    Last change :  Sun May 10 09:00:39 2015 (serrano)                */
-;*    Copyright   :  2015 Manuel Serrano                               */
+;*    Last change :  Tue Sep 23 09:26:53 2025 (serrano)                */
+;*    Copyright   :  2015-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Class hashing                                                    */
 ;*=====================================================================*/
@@ -32,4 +32,3 @@
 	  (loop (cdr def)
 	     (loop (car def)
 		(bit-xor 1966 hash)))))))
-

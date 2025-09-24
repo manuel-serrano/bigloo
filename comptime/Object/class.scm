@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Sat Feb  1 11:02:15 2025 (serrano)                */
+;*    Last change :  Tue Sep 23 14:07:51 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -72,7 +72,7 @@
 	    (heap-add-class! ::tclass)
 	    (wide-chunk-class-id::symbol ::symbol)
 	    (type-class-name::bstring ::type)
-	    (declare-class-type!::type ::obj ::global ::obj ::bool ::bool ::obj)
+	    (declare-class-type!::type ::symbol ::obj ::obj ::global ::obj ::bool ::bool ::obj)
 	    (declare-java-class-type!::type ::symbol ::obj ::bstring ::bstring ::pair)
 	    (final-class?::bool ::obj)
 	    (wide-class?::bool ::obj)
@@ -130,74 +130,53 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-class-type! ...                                          */
-;*    -------------------------------------------------------------    */
-;*    declare-class-type! is said to be returning a type and not       */
-;*    a class in order to help the error management.                   */
-;*    -------------------------------------------------------------    */
-;*    No check is processed in this function about the super class.    */
-;*    This check is performed by the function that creates the         */
-;*    accessors for the class (make-class-accesses! and make-wide      */
-;*    -class-accesses of the module object_access).                    */
 ;*---------------------------------------------------------------------*/
-(define (declare-class-type!::type class-def class-holder widening final? abstract? src)
-   (let* ((class-ident (parse-id (car class-def) (find-location src)))
-	  (class-id    (car class-ident))
-	  (super       (let ((super (cdr class-ident)))
-			  (cond
-			     ((eq? (type-id super) class-id)
-			      #f)
-			     ((eq? super *_*)
-			      (get-object-type))
-			     (else
-			      super))))
-	  (name        (id->name class-id))
-	  (sizeof      (string-append "struct " name "_bgl"))
-	  (t-name      (string-append name "_bglt"))
-	  (type        (declare-type! class-id t-name 'bigloo)))
-      ;; we mark that the holder is a read-only variable
-      (global-set-read-only! class-holder)
-      (global-evaluable?-set! class-holder #t)
-      (global-type-set! class-holder (get-class-type))
+(define (declare-class-type! id super ctor var widening final? abstract? src)
+   (let* ((super super)
+	  (name (id->name id))
+	  (sizeof (string-append "struct " name "_bgl"))
+	  (t-name (string-append name "_bglt"))
+	  (ty (declare-type! id t-name 'bigloo)))
       ;; By now we make the assumption that super is a correct class.
       ;; Super will be checked in `make-class-accesses!' (see module
       ;; object_access).
-      (widen!::tclass type
-	 (its-super   super)
-	 (depth       0)
-	 (holder      class-holder)
-	 (widening    widening)
-	 (final?      final?)
-	 (abstract?   abstract?)
-	 (constructor (cadr class-def)))
+      (widen!::tclass ty
+	 (its-super super)
+	 (depth 0)
+	 (holder var)
+	 (widening widening)
+	 (final? final?)
+	 (abstract? abstract?)
+	 (constructor ctor))
       (when (isa? super tclass)
 	 (with-access::tclass super (subclasses)
-	    (set! subclasses (cons type subclasses))))
+	    (set! subclasses (cons ty subclasses))))
       ;; wide classes creates a new type denoting the wide chunk of the
       ;; wide class. In addition, the type name of a wide classes is the
       ;; type name of its super class.
       (if (eq? widening 'widening)
-	  (let* ((wtid (wide-chunk-class-id class-id))
+	  (let* ((wtid (wide-chunk-class-id id))
 		 (wt (widen!::wclass (declare-type! wtid t-name 'bigloo)
-			(its-class type))))
+			(its-class ty))))
 	     (if (string? (type-name super))
 		 (begin
 		    (wclass-size-set! wt sizeof)
-		    (tclass-wide-type-set! type wt)
-		    (type-name-set! type (type-name super))
-		    (type-size-set! type (type-size super))
-		    (gen-coercion-clause! type wtid super #f)
+		    (tclass-wide-type-set! ty wt)
+		    (type-name-set! ty (type-name super))
+		    (type-size-set! ty (type-size super))
+		    (gen-coercion-clause! ty wtid super #f)
 		    (gen-class-coercers! wt super))
 		 (user-error/location
 		    (find-location src)
 		    (symbol->string (type-id super))
-		    (format "\"~a\" must be declared or imported before wide class \"~a\"" (type-id super) class-id)
-		    class-def
-		    type)))
-	  (type-size-set! type sizeof))
+		    (format "\"~a\" must be declared or imported before wide class \"~a\"" (type-id super) id)
+		    src
+		    ty)))
+	  (type-size-set! ty sizeof))
       ;; we add the class for the C type emission
-      (set! *class-type-list* (cons type *class-type-list*))
+      (set! *class-type-list* (cons ty *class-type-list*))
       ;; we are done
-      type))
+      ty))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-java-class-type! ...                                     */

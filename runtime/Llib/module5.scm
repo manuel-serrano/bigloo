@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun Sep 21 22:20:51 2025 (serrano)                */
+;*    Last change :  Tue Sep 23 09:30:43 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -13,6 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __module5
+
+   (include "Llib/class.sch")
    
    (import  __error
 	    __object
@@ -23,7 +25,8 @@
 	    __binary
 	    __macro
 	    __eval
-	    __expand)
+	    __expand
+	    __class)
 
    (use     __type
 	    __tvector
@@ -53,10 +56,11 @@
 	    __r4_characters_6_6
 	    __r4_symbols_6_4
 	    __r4_strings_6_7
-	    __r5_control_features_6_4
 	    __r4_output_6_10_3
-	    __r4_ports_6_10_1)
+	    __r4_ports_6_10_1
 
+	    __r5_control_features_6_4)
+   
    (export (class Module
 	      (id::symbol read-only)
 	      (path::bstring read-only)
@@ -64,6 +68,7 @@
 	      (decls read-only (default (create-hashtable :weak 'open-string)))
 	      (exports read-only (default (create-hashtable :weak 'open-string)))
 	      (defs read-only (default (create-hashtable :weak 'open-string)))
+	      (classes read-only (default (create-hashtable :weak 'open-string)))
 	      (main (default #f))
 	      (inits::pair-nil (default '()))
 	      (libraries::pair-nil (default '()))
@@ -87,6 +92,13 @@
 	      (ronly (default #unspecified))
 	      (decl (default #unspecified)))
 
+	   (class KDef::Def
+	      (generator read-only)
+	      (super read-only)
+	      (ctor read-only)
+	      (kkind::symbol read-only)
+	      (properties::pair-nil read-only))
+	   
 	   (module5-register-plugin! ::bstring ::procedure)
 	   (module5-resolve-path ::bstring ::bstring)
 	   (module5-resolve-library ::symbol ::pair-nil)
@@ -102,7 +114,8 @@
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
-	   (module5-get-export-def ::Module ::symbol)))
+	   (module5-get-export-def ::Module ::symbol)
+	   (module-get-class ::Module ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-write ::Module ...                                        */
@@ -293,8 +306,8 @@
 	    (if omod
 		(with-access::Module omod ((opath path))
 		   (error/loc mod
-		      (format "Module has already been declared in file ~s"
-			 opath)
+		      (format "Module \"~a\" has already been declared in file ~s"
+			 id opath)
 		      path expr))
 		(hashtable-put! *modules-by-id* (symbol->string id) mod)))
 	 (for-each (lambda (c)
@@ -619,8 +632,8 @@
 	       (lambda (k d::Decl)
 		  (format "~a/~a" (-> d id) (-> d alias)))))
 	 (set! (-> mod resolved) #t)
-	 (let ((xenv (if (procedure? new-xenv) (new-xenv) new-xenv))
-	       (kx (make-class-expander mod)))
+	 (let* ((xenv (if (procedure? new-xenv) (new-xenv) new-xenv))
+		(kx (make-class-expander mod xenv)))
 	    (install-module5-expander xenv 'define-class
 	       '(define-class) kx)
 	    (install-module5-expander xenv 'define-wide-class
@@ -658,8 +671,11 @@
 	    ;; Because these definitions are needed to resolve the module
 	    ;; exports, INSTALL-MODULE5-EXPANDER (runtime/macro.scm),
 	    ;; stores these definition in XENV.
-	    (collect-define*! mod (hashtable-map xenv (lambda (k e) (car e))))
-	    (collect-define*! mod (-> mod body))
+	    (let ((dm (hashtable-map xenv (lambda (k e) (car e)))))
+	       (collect-defines! mod (filter (lambda (x) x) dm)))
+	    (collect-defines! mod (-> mod body))
+	    (collect-classes! mod)
+	    ;; bind all the classes
 	    (check-unbounds mod))
 	 (ronly! mod)
 	 (trace-item "exports="
@@ -703,7 +719,7 @@
 	     (values id #unspecified))
 	    ((char=? (string-ref s i) #\:)
 	     (if (char=? (string-ref s (+fx i 1)) #\:)
-		 (if (=fx i (-fx l 3))
+		 (if (=fx i (-fx l 1))
 		     (error/loc #f "Illegal identifier" id src)
 		     (values (string->symbol (substring s 0 i))
 			(substring s (+fx i 2))))
@@ -712,9 +728,9 @@
 	     (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    collect-define*! ...                                             */
+;*    collect-defines! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (collect-define*! mod body)
+(define (collect-defines! mod body)
    
    (define (module-define! mod kind::symbol id::symbol type src)
       (with-access::Module mod (defs decls)
@@ -722,8 +738,10 @@
 		(old (hashtable-get defs name))
 		(decl (hashtable-get decls name)))
 	    (if old
-		(error/loc mod "Identifier ~s has already been declared"
-		   name src)
+		(error/loc mod
+		   (format "Identifier ~s has already been declared" name)
+		   (with-access::Def old (src) src)
+		   (with-access::Decl decl (src) src))
 		(let ((def (instantiate::Def
 				 (id id)
 				 (type type)
@@ -763,14 +781,65 @@
 	  (module-define! mod 'macro name #unspecified expr))
 	 ((define-expander (and (? symbol?) ?name) . ?-)
 	  (module-define! mod 'expander name #unspecified expr))
-	 ((define-class (and (? symbol?) ?id) . ?-)
-	  (multiple-value-bind (name type)
-	     (parse-ident id expr)
-	     (module-define! mod 'class name type expr)))
 	 ((begin . ?exprs)
-	  (collect-define*! mod exprs))))
-   
+	  (collect-defines! mod exprs))))
+
    (for-each (lambda (expr) (collect-define! mod expr)) body))
+
+;*---------------------------------------------------------------------*/
+;*    collect-classes! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (collect-classes! mod::Module)
+
+   (define (klass-def ci)
+      (let ((id (class-info-id ci)))
+	 (instantiate::KDef
+	    (id id)
+	    (type 'class)
+	    (kind 'class)
+	    (ronly #t)
+	    (ctor (class-info-ctor ci))
+	    (src (class-info-src ci))
+	    (generator (class-info-registration ci))
+	    (super (when (class-info-super ci)
+		      (class-info-id (class-info-super ci))))
+	    (kkind (class-info-kind ci))
+	    (properties (filter-map (lambda (p)
+				       (when (eq? (prop-info-class p) id)
+					  `((id . ,(prop-info-id p))
+					    (src . ,(prop-info-src p))
+					    (type . ,(prop-info-type p))
+					    (ronly . ,(prop-info-ronly? p))
+					    (defvalue . ,(prop-info-defv? p))
+					    (value . ,(prop-info-value p))
+					    (get . ,(prop-info-get p))
+					    (set . ,(prop-info-set p)))))
+			   (class-info-properties ci))))))
+      
+   (hashtable-for-each (-> mod classes)
+      (lambda (k ci)
+	 (with-access::Module mod (defs decls)
+	    (let* ((name (symbol->string! (class-info-id ci)))
+		   (old (hashtable-get defs name))
+		   (decl (hashtable-get decls name)))
+	       (if old
+		   (error/loc mod
+		      (format "Identifier ~s has already been declared" name)
+		      (with-access::Def old (src) src)
+		      (with-access::Decl decl (src) src))
+		   (let ((def (klass-def ci)))
+		      (hashtable-put! defs name def)
+		      (when decl
+			 (with-access::Decl decl (scope ronly (ddef def))
+			    (set! ronly #t)
+			    (with-access::Def def ((ddecl decl))
+			       (case scope
+				  ((export)
+				   (set! ddef def)
+				   (set! ddecl decl))
+				  ((static)
+				   (set! ddecl decl))))))
+		      def)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ronly! ...                                                       */
@@ -1003,25 +1072,50 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-expand-class ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (make-class-expander mod)
+(define (make-class-expander mod::Module xenv)
    (lambda (x e)
-      (match-case x
-	 ((?- ?ident . ?clauses)
-	  (multiple-value-bind (id sid)
-	     (parse-ident ident x)
-	     (let ((super (cond
-			     ((eq? id 'object)
-			      #unspecified)
-			     ((eq? sid #unspecified)
-			      (module5-get-def mod 'object x))
-			     (else
-			      (module5-get-def mod sid x)))))
-		(if (not super)
-		    (error/loc mod (format "Cannot find super class of \"~a\"" id)
-		       super x)
-		    (multiple-value-bind (ctor slots)
-		       (eval-parse-class (cer x) clauses)
-		       (tprint "ctor=" ctor)
-		       (tprint "slots=" slots))))))
-	 (else
-	  (error/loc #f "Illegal class declaration" x x)))))
+      (let ((ci (parse-class x)))
+	 ;; bind the class in the module
+	 (let ((o (module-get-class mod (class-info-id ci))))
+	    (if o
+		(error/loc mod
+		   (format "Class \"~a\" has already bin declared in module ~a"
+		      (class-info-id ci) (-> mod id))
+		   x x)
+		(module-bind-class! mod (class-info-id ci) ci)))
+	 ;; check the super class
+	 (when (class-info-super ci)
+	    (let ((si (module-get-class mod (class-info-super ci))))
+	       (if si
+		   ;; update the super class info and add additional props
+		   (begin
+		      (class-info-super-set! ci si)
+		      (class-info-properties-set! ci
+			 (append (class-info-properties si)
+			    (class-info-properties ci))))
+		   (error/loc mod
+		      (format "Cannot find super class of \"~a\""
+			 (class-info-id ci))
+		      (class-info-super ci) x))))
+	 ;; install the expanders
+	 (install-module5-expander xenv
+	    (string->symbol (format "instantiate::~a" (class-info-id ci)))
+	    #f (instantiate-expander ci))
+	 (install-module5-expander xenv
+	    (string->symbol (format "with-access::~a" (class-info-id ci)))
+	    #f (with-access-expander ci))
+	 ;; expanded class registration form
+	 (class-info-registration-set! ci (e (registration-expand ci mod) e))
+	 #unspecified)))
+
+;*---------------------------------------------------------------------*/
+;*    module-get-class ...                                             */
+;*---------------------------------------------------------------------*/
+(define (module-get-class mod::Module id::symbol)
+   (hashtable-get (-> mod classes) (symbol->string! id)))
+
+;*---------------------------------------------------------------------*/
+;*    module-bind-class! ...                                           */
+;*---------------------------------------------------------------------*/
+(define (module-bind-class! mod::Module id::symbol ci)
+   (hashtable-put! (-> mod classes) (symbol->string! id) ci))

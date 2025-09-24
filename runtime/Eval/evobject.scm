@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Mon Sep 22 00:44:01 2025 (serrano)                */
+;*    Last change :  Tue Sep 23 08:53:59 2025 (serrano)                */
 ;*    Copyright   :  2006-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -407,7 +407,6 @@
       (check-all-values args fields)
       ;; allocate the object and set the fields,
       ;; first the actual fields, second the virtual fields
-      (tprint "INIT=" init)
       (localize x
 	 `(let ((,new ,(e init e)))
 	     (begin

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Sun Sep 21 22:27:26 2025 (serrano)                */
+;*    Last change :  Tue Sep 23 08:55:23 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -301,42 +301,6 @@
 		  (loop (+fx i 1) (cdr slots)))))
 	 ;; build the result
 	 (vector->list vargs)))
-   
-   (define (collect-slot-values-TOBEREMOVE-3aug2017 slots)
-      ;; When instantiate-fill is called for widening, slots only contain
-      ;; the wide slots. The OFFSET value adjust the indices in such a case.
-      (let ((offset (-fx (length (tclass-slots class)) (length slots)))
-	    (vargs (make-vector (length slots))))
-	 ;; collect the default values
-	 (let loop ((i 0)
-		    (slots slots))
-	    (when (pair? slots)
-	       (let ((s (car slots)))
-		  (cond
-		     ((slot-default? s)
-		      (vector-set! vargs i (cons #t (slot-default-expr s))))
-		     (else
-		      (vector-set! vargs i (cons #f #unspecified))))
-		  (loop (+fx i 1) (cdr slots)))))
-	 ;; collect the provided values
-	 (let loop ((provided provided))
-	    (when (pair? provided)
-	       (let ((p (car provided)))
-		  (match-case p
-		     (((and (? symbol?) ?s-name) ?value)
-		      ;; plain slot
-		      (let ((pval (vector-ref
-                                     vargs
-                                     (-fx (find-slot-offset slots s-name op p)
-					offset))))
-			 (set-car! pval #t)
-			 (set-cdr! pval (object-epairify value p))))
-		     (else
-		      (error op (format "Illegal argument \"~a\"" p) x)))
-		  (loop (cdr provided)))))
-	 ;; build the result
-	 (vector->list vargs)))
-   
    
    (let* ((id (type-id class))
 	  (new (gensym 'new))

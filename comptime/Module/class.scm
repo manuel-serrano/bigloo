@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Sun Sep 21 23:08:06 2025 (serrano)                */
+;*    Last change :  Tue Sep 23 15:41:54 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -28,6 +28,7 @@
 	    tools_location
 	    tools_misc
 	    type_type
+	    type_cache
 	    type_env
 	    ast_ident
 	    ast_var
@@ -119,7 +120,7 @@
 		     (find-global/module class-id module)))
 	  (final? (eq? kind 'final))
 	  (wide (if (eq? kind 'wide) 'widening #f))
-	  (tclass (declare-class-type! cdef holder wide
+	  (tclass (module4-declare-class-type! cdef holder wide
 		     final? abstract?
 		     src-def)))
       ;; debug information
@@ -147,7 +148,7 @@
 	  (holder (import-parser module class-id #f))
 	  (final? (eq? kind 'final))
 	  (wide (if (eq? kind 'wide) 'widening #f))
-	  (tclass (declare-class-type! cdef holder wide
+	  (tclass (module4-declare-class-type! cdef holder wide
 		     final? abstract?
 		     src-def)))
       ;; some paranoid checking
@@ -513,3 +514,31 @@
 		       next
 		       (append (force (cdr (car cur))) access))))))))
 
+;*---------------------------------------------------------------------*/
+;*    declare-class-type! ...                                          */
+;*    -------------------------------------------------------------    */
+;*    declare-class-type! is said to be returning a type and not       */
+;*    a class in order to help the error management.                   */
+;*    -------------------------------------------------------------    */
+;*    No check is processed in this function about the super class.    */
+;*    This check is performed by the function that creates the         */
+;*    accessors for the class (make-class-accesses! and make-wide      */
+;*    -class-accesses of the module object_access).                    */
+;*---------------------------------------------------------------------*/
+(define (module4-declare-class-type!::type class-def var widening final? abstract? src)
+   (let* ((class-ident (parse-id (car class-def) (find-location src)))
+	  (class-id (car class-ident))
+	  (super (let ((super (cdr class-ident)))
+		    (cond
+		       ((eq? (type-id super) class-id)
+			#f)
+		       ((eq? super *_*)
+			(get-object-type))
+		       (else
+			super))))
+	  (ctor (cadr class-def)))
+      (global-set-read-only! var)
+      (global-evaluable?-set! var #t)
+      (global-type-set! var (get-class-type))
+      (declare-class-type! class-id super ctor
+	 var widening final? abstract? src)))

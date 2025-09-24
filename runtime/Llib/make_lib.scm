@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Fri Sep 12 16:01:25 2025 (serrano)                */
+;*    Last change :  Tue Sep 23 09:52:45 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -33,6 +33,7 @@
 	    __intext
 	    __foreign
 	    __object
+	    __class
 	    __dsssl
 	    __ucs2
 	    __unicode
