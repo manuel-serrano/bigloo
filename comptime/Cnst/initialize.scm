@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Tue Oct  1 14:15:06 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 24 09:38:11 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
 ;*=====================================================================*/
@@ -91,7 +91,7 @@
 (define (read-full-cnst-initialize!)
    
    (define (read-full-cnst-initialize/small-string cnst-string)
-      (let* ((var-string  (cnst-alloc-string cnst-string #f))
+      (let* ((var-string (cnst-alloc-string cnst-string #f))
 	     (sexp `(let ((cport::input-port
 			   (open-input-string!
 			      ,(global-id (var-variable var-string)))))
@@ -155,7 +155,7 @@
 (define (intern-full-cnst-initialize!)
 
    (define (intern-full-cnst-initialize/small-string cnst-string)
-      (let* ((var-string  (cnst-alloc-string cnst-string #f))
+      (let* ((var-string (cnst-alloc-string cnst-string #f))
 	     (sexp `(let ((cnst-tmp::vector
 			     ((@ string->obj __intext)
 			      ,(global-id

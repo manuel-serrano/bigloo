@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Tue Sep 23 08:55:23 2025 (serrano)                */
+;*    Last change :  Wed Sep 24 11:18:49 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -256,11 +256,13 @@
 	    (format "Cannot inline slot \"~s\" default value" (slot-id s))
 	    (slot-default-value s))
 	 (newline (current-error-port)))
-      `(class-field-default-value
-	  (vector-ref-ur
-	     ((@ class-all-fields __object)
-	      (@ ,(global-id g) ,(global-module g)))
-	     ,(slot-index s))))
+      (make-private-sexp 'unsafe
+	 'class-field
+	 `(class-field-default-value
+	     (vector-ref-ur
+		((@ class-all-fields __object)
+		 (@ ,(global-id g) ,(global-module g)))
+		,(slot-index s)))))
    
    (define (slot-default-expr s)
       (let ((g (tclass-holder class))

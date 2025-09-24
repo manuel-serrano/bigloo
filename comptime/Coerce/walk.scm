@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Coerce/walk.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:43:37 1995                          */
-;*    Last change :  Wed Sep 18 06:43:49 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 24 10:22:30 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We perform now coercions.                                        */
 ;*=====================================================================*/

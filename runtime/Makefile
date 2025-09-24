@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Sep 23 09:53:05 2025 (serrano)                */
+#*    Last change :  Wed Sep 24 10:46:58 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -636,9 +636,9 @@ lib-jvm_p: .jfile includes
 one-lib-jvm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip
 
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip: $(CLASSES) class$(LIBSUFFIX)/jlib Jlib/configure.java
-	@$(RM) -f $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip
-	@(cd objs/class$(LIBSUFFIX) && \
-	 $(ZIP) -q $(ZFLAGS) $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip \
+	@ $(RM) -f $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip
+	@ (cd objs/class$(LIBSUFFIX) && \
+	  $(ZIP) -q $(ZFLAGS) $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip \
                  $(SCM_SYS_SRC:%.scm=bigloo/runtime/%.class) \
                  $(SCM_USR_SRC:%.scm=bigloo/runtime/%.class) \
                  bigloo/runtime/*/_KBGl_*.class \
@@ -724,10 +724,10 @@ objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
 	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w $^ -o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
-objs/wasm_s/%.v: Wlib/%.wat
+objs/wasm_s/%.v: Wlib/%.wat $(BOOTLIBDIR)/types.wat
 	$(BGLWATIB) -v $< $(BOOTLIBDIR)/types.wat && date > $@
 
-objs/wasm_s/bigloo_s.v: objs/wasm_s/bigloo_s.wat
+objs/wasm_s/bigloo_s.v: objs/wasm_s/bigloo_s.wat 
 	$(BGLWATIB) -k -v $< && date > $@
 
 objs/wasm_u/bigloo_u.v: objs/wasm_u/bigloo_u.wat
@@ -1128,12 +1128,29 @@ objs/class_s/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
 objs/class_p/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
 	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
 
-objs/class_s/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
-	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
-
 objs/class_u/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
 	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
 
+objs/class_s/bigloo/runtime/Eval/%.class: Eval/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
+objs/class_s/bigloo/runtime/Read/%.class: Read/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Rgc/%.class: Rgc/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Pp/%.class: Pp/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Match/%.class: Match/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Lalr/%.class: Lalr/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Unsafe/%.class: Unsafe/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    objs                                                             */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Sat Dec 28 06:36:27 2024 (serrano)                */
+;*    Last change :  Wed Sep 24 09:47:29 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -304,20 +304,26 @@
 		(args actuals))
 	     ;; compile the optionals arguments in a left-to-right env
 	     (let* ((reqs (take args-name arity))
+		    (treqs (map (lambda (n t)
+				   (if (isa? t local)
+				       (make-typed-ident n (type-id (local-type t)))
+				       (make-typed-ident n (type-id t))))
+			      reqs (take args arity)))
 		    (provs (map car (take optionals (-fx len arity))))
 		    (opts (list-tail optionals (-fx len arity)))
-		    (exp `(,(let-sym) ,(map list reqs (take actuals arity))
-			     (let* (,@(map list provs (drop actuals arity))
-				      ,@opts)
-				(,var ,@reqs
-				      ,@(map (lambda (i)
-						(fast-id-of-id i loc))
-					     provs)
-				      ,@(map (lambda (o)
-						(fast-id-of-id (car o) loc))
-					     opts))))))
+		    (exp `(,(let-sym)
+			   ,(map list treqs (take actuals arity))
+			   (let* (,@(map list provs (drop actuals arity))
+				    ,@opts)
+			      (,var ,@reqs
+				 ,@(map (lambda (i)
+					   (fast-id-of-id i loc))
+				      provs)
+				 ,@(map (lambda (o)
+					   (fast-id-of-id (car o) loc))
+				      opts))))))
 		(sexp->node (compile-expand (comptime-expand exp))
-			    '() loc site))))))
+		   '() loc site))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-keys-app-node ...                                           */

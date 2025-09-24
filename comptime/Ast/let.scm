@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/let.scm          */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/let.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Fri Jul  5 13:58:37 2024 (serrano)                */
+;*    Last change :  Wed Sep 24 09:50:53 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -113,55 +113,55 @@
 ;*    make-generic-let ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-generic-let exp stack oloc site)
-   (let* ((bindings   (cadr exp))
-	  (loc        (find-location/loc exp oloc))
-	  (bloc       (if (pair? (cddr exp))
-			  (find-location/loc (caddr exp) #f)
-			  #f))
-	  (bloc-exp   (if (pair? (cddr exp))
-			  (caddr exp)
-			  #f))
-	  (body       (normalize-progn (cddr exp)))
-	  (loc-bis    (find-location/loc body loc))
-	  (nloc       (if (location? bloc)
-			  bloc
-			  loc))
-	  (frame      (map (lambda (binding)
-			      (let* ((var-id (parse-id (car binding) nloc))
-				     (id (car var-id))
-				     (type (cdr var-id)))
-				 (if (user-symbol? id)
-				     (make-user-local-svar id type)
-				     (make-local-svar id type))))
-			   bindings))
-	  (new-stack  (append frame stack)))
+   (let* ((bindings (cadr exp))
+	  (loc (find-location/loc exp oloc))
+	  (bloc (if (pair? (cddr exp))
+		    (find-location/loc (caddr exp) #f)
+		    #f))
+	  (bloc-exp (if (pair? (cddr exp))
+			(caddr exp)
+			#f))
+	  (body (normalize-progn (cddr exp)))
+	  (loc-bis (find-location/loc body loc))
+	  (nloc (if (location? bloc)
+		    bloc
+		    loc))
+	  (frame (map (lambda (binding)
+			 (let* ((var-id (parse-id (car binding) nloc))
+				(id (car var-id))
+				(ty (cdr var-id)))
+			    (if (user-symbol? id)
+				(make-user-local-svar id ty)
+				(make-local-svar id ty))))
+		    bindings))
+	  (new-stack (append frame stack)))
       (trace (ast 3)
-	     "make-generic-let: " (shape exp) #\Newline
-	     "loc: " loc #\Newline
-	     "bloc: " bloc " [exp: " (shape bloc-exp) "]" #\Newline
-	     "loc-bis: " loc-bis #\Newline
-	     "nloc: " nloc #\Newline)
-      (let* ((body     (sexp->node body new-stack nloc 'value))
-	     (bstack   (if (or (eq? (car exp) 'let) (let-sym? (car exp)))
-			   stack
-			   new-stack))
+	 "make-generic-let: " (shape exp) #\Newline
+	 "loc: " loc #\Newline
+	 "bloc: " bloc " [exp: " (shape bloc-exp) "]" #\Newline
+	 "loc-bis: " loc-bis #\Newline
+	 "nloc: " nloc #\Newline)
+      (let* ((body (sexp->node body new-stack nloc 'value))
+	     (bstack (if (or (eq? (car exp) 'let) (let-sym? (car exp)))
+			 stack
+			 new-stack))
 	     (bindings (map (lambda (binding var)
 			       (cons var
-				     (sexp->node
-				      (normalize-progn (cdr binding))
-				      bstack
-				      (find-location/loc binding nloc)
-				      'value)))
-			    bindings
-			    frame))
-	     (loc      (let ((loc (find-location/loc
-				   exp 
-				   (if (pair? bindings)
-				       (node-loc (cdr (car bindings)))
-				       (node-loc body)))))
-			  (if (location? loc)
-			      loc
-			      oloc)))
+				  (sexp->node
+				     (normalize-progn (cdr binding))
+				     bstack
+				     (find-location/loc binding nloc)
+				     'value)))
+			  bindings
+			  frame))
+	     (loc (let ((loc (find-location/loc
+				exp 
+				(if (pair? bindings)
+				    (node-loc (cdr (car bindings)))
+				    (node-loc body)))))
+		     (if (location? loc)
+			 loc
+			 oloc)))
 	     (node (instantiate::let-var
 		      (loc loc)
 		      (type *_*)
@@ -187,14 +187,14 @@
    
    
    (let loop ((bindings (let-var-bindings node-let))
-	      (fun      '())
-	      (value    '()))
+	      (fun '())
+	      (value '()))
       (if (null? bindings)
 	  (begin
 	     (trace (ast 3)
-		    "make-smart-generic-let: " (shape node-let) #\Newline
-		    "    fun: " (length fun) #\Newline
-		    "    values: " (length value) #\Newline)
+		"make-smart-generic-let: " (shape node-let) #\Newline
+		"    fun: " (length fun) #\Newline
+		"    values: " (length value) #\Newline)
 	     (cond
 		((null? fun)
 		 (let ((vars (map car (let-var-bindings node-let))))
@@ -214,18 +214,18 @@
 			  (set! type (strict-node-type *_* type)))
 		       nlet)))))
 	  (let* ((binding (car bindings))
-		 (var     (car binding))
-		 (sexp    (cdr binding)))
+		 (var (car binding))
+		 (sexp (cdr binding)))
 	     (if (let-fun? sexp)
 		 (let* ((locals (let-fun-locals sexp))
-			(body   (let-fun-body   sexp)))
+			(body (let-fun-body sexp)))
 		    (if (or (null? locals) (not (null? (cdr locals))))
 			;; several functions are introduced by the let-fun
 			;; construction or, the body of the construction
 			;; include several forms. We skip ...
 			(loop (cdr bindings)
-			      fun
-			      (cons (car bindings) value))
+			   fun
+			   (cons (car bindings) value))
 			(if (var? body)
 			    (let ((res (var-variable body))
 				  (aux (car locals)))
@@ -240,18 +240,18 @@
 					     (eq? (local-type var) *obj*))))
 				   ;; the variable is mutated, skip it
 				   (loop (cdr bindings)
-					 fun
-					 (cons (car bindings) value))
+				      fun
+				      (cons (car bindings) value))
 				   ;; yes, we have found one
 				   (loop (cdr bindings)
-					 (cons (car bindings) fun)
-					 value)))
+				      (cons (car bindings) fun)
+				      value)))
 			    (loop (cdr bindings)
-				  fun
-				  (cons (car bindings) value)))))
+			       fun
+			       (cons (car bindings) value)))))
 		 (loop (cdr bindings)
-		       fun
-		       (cons (car bindings) value)))))))
+		    fun
+		    (cons (car bindings) value)))))))
 	      
 ;*---------------------------------------------------------------------*/
 ;*    let-or-letrec ...                                                */
@@ -268,7 +268,7 @@
    (define (safe-rec-val? val)
       (or (atom? val) (closure? val) (kwote? val)
 	  (and (sequence? val) (every safe-rec-val? (sequence-nodes val)))))
-
+   
    (define (safe-rec-val-optim? val vars::pair-nil)
       (or (safe-rec-val? val)
 	  (cond
@@ -353,7 +353,7 @@
 		      (safe-rec-val-optim? value vars))))
 	     (else
 	      #f))))
-
+   
    (define (safe-let? node)
       (with-access::let-var node (bindings)
 	 (every (lambda (b) (safe-rec-val? (cdr b))) bindings)))
@@ -370,7 +370,7 @@
 		       (when (eq? (variable-access (car b)) 'read)
 			  (safe-rec-val-optim? (cdr b) vars)))
 		bindings)))))
-
+   
    (cond
       ((or (eq? let/letrec 'let) (let-sym? let/letrec))
        node-let)
@@ -393,12 +393,12 @@
 	     (if (null? bindings)
 		 (begin
 		    (let-var-body-set!
-		     node-let
-		     (instantiate::sequence
-			(loc (node-loc seq))
-			(type *_*)
-			(nodes (append (reverse! nsequence)
-				       (sequence-nodes seq)))))
+		       node-let
+		       (instantiate::sequence
+			  (loc (node-loc seq))
+			  (type *_*)
+			  (nodes (append (reverse! nsequence)
+				    (sequence-nodes seq)))))
 		    node-let)
 		 (let* ((binding (car bindings))
 			(var (car binding))
@@ -414,9 +414,9 @@
 				   (value val))))
 		       (use-variable! var loc 'set!)
 		       (set-cdr! binding
-				 (sexp->node #unspecified '() loc 'value))
+			  (sexp->node #unspecified '() loc 'value))
 		       (loop (cdr bindings)
-			     (cons init nsequence))))))))
+			  (cons init nsequence))))))))
       (else
        (let* ((bindings (let-var-bindings node-let))
 	      (body     (let-var-body node-let))
@@ -465,10 +465,10 @@
 		       (use-variable! var loc 'set!)
 		       (use-variable! nvar loc 'set!)
 		       (set-cdr! binding
-				 (sexp->node #unspecified '() loc 'value))
+			  (sexp->node #unspecified '() loc 'value))
 		       (loop (cdr bindings)
-			     (cons (cons nvar val) nbindings)
-			     (cons init nsequence))))))))))
+			  (cons (cons nvar val) nbindings)
+			  (cons init nsequence))))))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    let->labels ...                                                  */
@@ -493,7 +493,7 @@
 							(local-user? ovar)))
 			      (local-name-set! new (local-name aux))
 			      new))
-			value-bindings)))
+		      value-bindings)))
       (let loop ((vbindings value-bindings)
 		 (nvars     new-funs))
 	 (if (null? vbindings)
@@ -518,10 +518,9 @@
 		    (val (cdr binding))
 		    (aux (car (let-fun-locals val))))
 		(sfun-body-set! sfun
-				(substitute! (cons aux old-funs)
-					     (cons nvar new-funs)
-					     body
-					     'value))
+		   (substitute! (cons aux old-funs)
+		      (cons nvar new-funs)
+		      body 'value))
 		;; ok, it is finished, we loop now.
 		(loop (cdr vbindings) (cdr nvars)))))))
 
@@ -558,38 +557,38 @@
 ;*           body))                                                    */
 ;*---------------------------------------------------------------------*/
 (define (letrec*->node sexp stack loc site)
-
+   
    (define (binding->ebinding b v vars)
       (make-ebinding b v vars))
-
+   
    (define (make-ebinding b v vars)
       ;; ebinding: < binding, variable, free vars, set vars >
       (list b v
 	 (free-vars (cadr b) v vars '())
 	 (set-vars (cadr b) v vars '())))
-
+   
    (define (ebinding-binding b) (car b))
    (define (ebinding-value b) (cadr (ebinding-binding b)))
    (define (ebinding-var b) (cadr b))
    (define (ebinding-frees b) (caddr b))
    (define (ebinding-setvs b) (cadddr b))
-
+   
    (define (mutable-in? b ebindings::pair-nil)
       ;; is b mutated in any of the ebindings
       (let ((var (ebinding-var b)))
 	 (find (lambda (eb)
 		  (memq var (ebinding-setvs eb)))
 	    ebindings)))
-
+   
    (define (immutable-in? b ebindings::pair-nil)
       (not (mutable-in? b ebindings)))
-
+   
    (define (used-in? b ebindings::pair-nil)
       (let ((var (ebinding-var b)))
 	 (find (lambda (eb)
 		  (memq var (ebinding-frees eb)))
 	    ebindings)))
-
+   
    (define (letstar ebindings body)
       (cond
 	 ((null? ebindings)
@@ -600,7 +599,7 @@
 	 (else
 	  `(let (,(ebinding-binding (car ebindings)))
 	      ,(letstar (cdr ebindings) body)))))
-
+   
    (define (letstarcollapse ebindings expr)
       (let loop ((expr expr)
 		 (bindings '())
@@ -626,7 +625,7 @@
 	     (if (pair? bindings)
 		 `(let ,(reverse bindings) ,expr)
 		 expr)))))
-
+   
    (define (letreccollapse ebindings expr)
       (let loop ((expr expr)
 		 (bindings '())
@@ -655,7 +654,7 @@
 	 ((letrec . ?-) (letreccollapse ebindings expr))
 	 ((labels . ?-) (labelscollapse ebindings expr))
 	 (else expr)))
-
+   
    (define (letrecursive ebindings body)
       (cond
 	 ((null? ebindings)
@@ -686,7 +685,7 @@
 			      ,body)))
 		    stack loc site)
 		 (kont ebindings body))))))
-
+   
    (define (split-head-let* ebindings body split::procedure kont)
       (cond
 	 ((null? ebindings)
@@ -714,7 +713,7 @@
 		    stack loc site))
 		(else
 		 (kont ebindings body)))))))
-
+   
    (define (split-tail-letrec ebindings body split::procedure kont)
       (cond
 	 ((null? ebindings)
@@ -733,7 +732,7 @@
 			   ,body))
 		    stack loc site)
 		 (kont ebindings body))))))
-
+   
    (define (split-tail-let* ebindings body split::procedure kont)
       (cond
 	 ((null? ebindings)
@@ -779,7 +778,7 @@
 	     ((cell) `(make-cell #f))
 	     ((char) #a000)
 	     (else (error "type-undefined" "cannot undefined type" (type-id type))))))
-
+   
    (define (untyped-id id)
       (fast-id-of-id id #f))
    
@@ -791,7 +790,7 @@
 	  (cons (untyped-id (car pair)) (append* (cdr pair) lst)))
 	 (else
 	  (cons (untyped-id pair) lst))))
-	  
+   
    (define (free-vars sexp v vars env)
       ;; compute an over-approximation of all the
       ;; free vars appearing in sexp
@@ -823,7 +822,7 @@
 		(loop body (loop fun res fenv) (cons v env))))
 	    (else
 	     (loop (car sexp) (loop (cdr sexp) res env) env)))))
-
+   
    (define (set-vars sexp v vars env)
       ;; compute an over-approximation of all the
       ;; free vars assigned in sexp
@@ -872,7 +871,7 @@
 			      ebindings)
 			 ,body)))
 	    (sexp->node sexp stack loc site))))
-
+   
    (define (stage8 ebindings body)
       ;; a true letrec*
       (with-trace 'letrec* "letrec*/stage8"
@@ -905,7 +904,7 @@
 				 ebindings)
 			    ,body))))
 	    (sexp->node sexp stack loc site))))
-
+   
    (define (stage7 ebindings body)
       ;; if the last binding is not a function and if it is not typed,
       ;; bind it to unspecified at the beginning of the letrec*
@@ -928,10 +927,10 @@
 		(begin
 		   (trace-item "no last t=" (type-id t))
 		   (stage8 ebindings body))))))
-
+   
    (define (stage6 ebindings body)
       ;; move downward tail bindings that never appear in head bindings
-
+      
       (define (split ebindings)
 	 (with-trace 'letrec* "letrec*/stage6/split"
 	    (let loop ((ebindings (reverse ebindings))
@@ -964,7 +963,7 @@
       
       (with-trace 'letrec* "letrec*/stage6"
 	 (split-tail-letrec ebindings body split stage7)))
-
+   
    (define (stage5 ebindings body)
       ;; split the values and the functions
       
@@ -1012,11 +1011,11 @@
 		       stack loc site)
 		    ;; true letrec*
 		    (stage6 ebindings body)))))))
-
+   
    (define (stage4 ebindings body)
       ;; collect all first variables that do not use any of the following
       ;; variables
-
+      
       (define (split ebindings)
 	 (with-trace 'letrec* "letrec*/stage4/split"
 	    (let loop ((ebindings ebindings)
@@ -1036,7 +1035,7 @@
 		   (loop (cdr ebindings) (cons (car ebindings) let*-bindings)))))))
       (with-trace 'letrec* "letrec*/stage4"
 	 (split-head-let* ebindings body split stage5)))
-
+   
    (define (stage3 ebindings body)
       ;; collect all first immutable functions and move ahead those
       ;; that do not refer to any locally introduced variables
@@ -1069,7 +1068,7 @@
       
       (with-trace 'letrec* "letrec*/stage3"
 	 (split-head-letrec ebindings body split stage4)))
-
+   
    (define (stage2 ebindings body)
       ;; collect all first bound immutable values to move them up front
       
@@ -1105,11 +1104,11 @@
       
       (with-trace 'letrec* "letrec*/stage2"
 	 (split-head-letrec ebindings body split stage3)))
-
+   
    (define (stage1 ebindings body)
       ;; collect all the last independant values and move them downward
       ;; into a new let block
-
+      
       (define (split ebindings)
 	 (with-trace 'letrec* "letrec*/stage1/split"
 	    (let loop ((rebindings (reverse ebindings))
@@ -1137,7 +1136,7 @@
       
       (with-trace 'letrec* "letrec*/stage1"
 	 (split-tail-let* ebindings body split stage2)))
-
+   
    (define (stage0 ebindings body)
       ;; collect all immutable variables bound to literals
       
@@ -1161,7 +1160,7 @@
       
       (with-trace 'letrec* "letrec*/stage0"
 	 (split-head-letrec ebindings body split stage1)))
-
+   
    (define (decompose-letrec* bindings body)
       ;; for each binding, extract the variable name and the set
       ;; of scoped free variables used in the expression
@@ -1193,7 +1192,7 @@
 	  (eq? (fast-id-of-id sym #f) 'lambda))
 	 (else
 	  #f)))
-
+   
    (with-trace 'letrec* "letrec*"
       (match-case sexp
 	 ((letrec* () . ?body)

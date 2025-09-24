@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Stephane Epardaud                                 */
 ;*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-;*    Last change :  Tue Sep 17 14:47:29 2024 (serrano)                */
+;*    Last change :  Wed Sep 24 10:00:59 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Weak pointers.                                                   */
 ;*=====================================================================*/
@@ -115,6 +115,6 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-weakptr ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-weakptr obj #!optional ref)
-   ($make-weakptr obj ref))
+(define-inline (make-weakptr o #!optional ref)
+   ($make-weakptr o ref))
 

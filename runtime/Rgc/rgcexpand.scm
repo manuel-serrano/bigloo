@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Thu Sep  4 10:10:41 2025 (serrano)                */
+;*    Last change :  Wed Sep 24 11:24:34 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -140,7 +140,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-regular-parser args states actions else-num submatch? defs)
    `(let ((the-rgc-context #unspecified))
-       (lambda (iport ,@args)
+       (lambda (iport::input-port ,@args)
 	  ;; submatches (to be removed because wrong)
 	  ,@(if submatch?
 		(list

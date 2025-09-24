@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Thu Jun 26 10:18:04 2025 (serrano)                */
+;*    Last change :  Wed Sep 24 10:18:20 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce implicity type coercions                               */
@@ -286,6 +286,7 @@
 ;*    type errors.                                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::conditional caller to safe)
+   
    (define (test-static-app node)
       (with-access::app node (fun args)
 	 (and (pair? args)
@@ -306,6 +307,7 @@
 		     'false)
 		    (else
 		     #f))))))
+   
    (define (test-static-let-var node)
       (with-access::let-var node (bindings body)
 	 (when (and (pair? bindings) (null? (cdr bindings)))
@@ -350,6 +352,7 @@
 		(test-static-value (cdar bindings)))
 	       (else
 		#f)))))
+   
    (define (test-static-isa node typec)
       (with-access::app node (args)
 	 (let ((typev (cond
@@ -368,6 +371,7 @@
 		'false)
 	       (else
 		#f)))))
+   
    (define (test-static-value node)
       (cond
 	 ((isa-of node)
@@ -380,6 +384,7 @@
 	  (test-static-let-var node))
 	 (else
 	  #f)))
+   
    (with-access::conditional node (test true false type)
       (set! test (coerce! test caller *bool* safe))
       (case (test-static-value test)
