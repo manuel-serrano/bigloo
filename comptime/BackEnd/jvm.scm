@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Thu Sep 25 07:34:17 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 17:45:54 2025 (serrano)                */
 ;*    Copyright   :  2012-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -163,7 +163,7 @@
 (define (jvmasdump classfile port)
    (let ((ow *pp-width*) (oc *pp-case*))
       (set! *pp-width* 10240)
-      (set! *pp-case* 'lower)
+      '(set! *pp-case* 'lower)
       (pp classfile port)
       (set! *pp-case* oc)
       (set! *pp-width* ow)))
