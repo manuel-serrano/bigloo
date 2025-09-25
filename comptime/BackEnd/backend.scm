@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Sun Jun 29 12:32:07 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 07:34:38 2025 (serrano)                */
 ;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
@@ -49,6 +49,7 @@
 	      (bound-check::bool (default #t))
 	      (type-check::bool (default #t))
 	      (typed-funcall::bool (default #t))
+	      ;; strict-type-cast must changed for has-subtyping
 	      (strict-type-cast::bool (default #f))
 	      (force-register-gc-roots::bool (default #t))
 	      (string-literal-support::bool (default #t))

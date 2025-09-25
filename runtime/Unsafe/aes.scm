@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Wed Feb  5 15:39:02 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 11:59:27 2025 (serrano)                */
 ;*    Copyright   :  2005-25 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Advanced Encryption Standard                                     */
@@ -245,7 +245,7 @@
    ;; from the user password, create the aes key
    (let* ((state::vector (make-u8matrix 4 4))
 	  (len::int (let+ ((len ((string? plaintext) string-length)
-				((mmap? plaintext) mmap-length)))
+				((mmap? plaintext) (lambda (p) (elong->fixnum (mmap-length p))))))
 		       (len plaintext)))
 	  (key::u8vector (aes-password->key password nbits state))
 
@@ -291,7 +291,8 @@
 		  (start (+fx (noncesize) (*fx b (blocksize)))))
 
 	      (let+ ((ref ((string? plaintext) u8string-ref)
-			  ((mmap? plaintext) mmap-ref-ur)))
+			  ((mmap? plaintext) (lambda (p i)
+						(char->integer (mmap-ref-ur p i))))))
 		 (for (i 0) (<fx i blocklength) (+fx i 1)
 		      (let* ((j (+fx (*fx b (blocksize)) i))
 			     (p (ref plaintext j))

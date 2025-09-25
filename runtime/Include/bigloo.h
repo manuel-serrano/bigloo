@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Sep  9 18:18:03 2025 (serrano)                */
+/*    Last change :  Thu Sep 25 14:02:48 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2270,6 +2270,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 
 #define FOREIGN_NULL(obj) ((obj == BFALSE) ? 0L : obj)
 #define FOREIGN_TO_COBJ(f) (FOREIGN(f).cobj)
+#define BGL_UNSAFE_FOREIGN_TO_COBJ(f) (FOREIGN_TO_COBJ(f))
 #define FOREIGN_NULLP(f)   ((bool_t)(!FOREIGN_TO_COBJ(f)))
 #define FOREIGN_EQP(o1,o2) \
   ((bool_t)(FOREIGN_TO_COBJ(o1) == (FOREIGN_TO_COBJ(o2))))

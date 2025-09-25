@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/object-sans.scm              */
+;*    serrano/prgm/project/bigloo/wasm/recette/object_sans.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Tue Mar 20 14:10:50 2012 (serrano)                */
+;*    Last change :  Wed Sep 24 18:03:46 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -13,9 +13,9 @@
 ;*---------------------------------------------------------------------*/
 (module object-sans
    (import  (main "main.scm")
-	    (object2-sans "object2-sans.scm")
-	    (object1-sans "object1-sans.scm")
-	    (object3-sans "object3-sans.scm"))
+	    (object2-sans "object2_sans.scm")
+	    (object1-sans "object1_sans.scm")
+	    (object3-sans "object3_sans.scm"))
    (include "test.sch")
    (export  (test-object-sans))
    (static  (final-class foo-sans

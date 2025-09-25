@@ -77,7 +77,7 @@
        (instantiate::rtl_reg
 	  (type (get-type e #f))
 	  (var #f)
-	  (name (gensym 'r)))) )
+	  (name (gensym 'r)))))
 
 (define (new-ureg::rtl_reg var::local) ; ()
    (instantiate::rtl_reg (type (local-type var)) (var var)) )
@@ -439,9 +439,7 @@
 ;;
 (define-method (node->rtl::area e::cast) ; ()
   (with-access::cast e (arg type)
-      (if (backend-strict-type-cast (the-backend))
-	  (call e (instantiate::rtl_cast (totype type) (fromtype (get-type arg #f))) arg)
-	  (node->rtl arg) )))
+     (call e (instantiate::rtl_cast (totype type) (fromtype (get-static-type arg))) arg)))
 
 ;;
 (define-method (node->rtl::area e::cast-null) ; ()

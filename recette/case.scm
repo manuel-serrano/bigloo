@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 18 15:16:39 1992                          */
-;*    Last change :  Wed Sep 24 09:57:57 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 10:01:41 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test le case.                                                 */
 ;*---------------------------------------------------------------------*/

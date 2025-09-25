@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Sep 11 09:31:12 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 07:34:02 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -77,7 +77,7 @@
       (trace-support #f)
       (srfi0 'bigloo-wasm)
       (foreign-clause-support '(wasm extern))
-      (strict-type-cast #t)
+      (strict-type-cast #f)
       (pragma-support #t)
       (require-tailc #t)
       (typed-eq #t)

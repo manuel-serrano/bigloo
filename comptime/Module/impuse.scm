@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Sun Sep 21 12:49:07 2025 (serrano)                */
+;*    Last change :  Wed Sep 24 17:17:49 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
@@ -233,7 +233,8 @@
 		    (cond
 		       ((null? vars)
 			;; (module-name "file-name"+)
-			(if (pair? files) (module-add-access! mod files "."))
+			(when (pair? files)
+			   (module-add-access! mod files "."))
 			(import-all-module mod mode prototype))
 		       ((every variable? vars)
 			;; (var1 var2 ... varN module-name "file-name"*)

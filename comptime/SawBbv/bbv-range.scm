@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/SawBbv/bbv-range.scm     */
+;*    .../prgm/project/bigloo/wasm/comptime/SawBbv/bbv-range.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jul  8 09:57:32 2022                          */
-;*    Last change :  Tue Jun 18 17:51:34 2024 (serrano)                */
-;*    Copyright   :  2022-24 manuel serrano                            */
+;*    Last change :  Thu Sep 25 08:41:02 2025 (serrano)                */
+;*    Copyright   :  2022-25 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BBV range abstraction                                            */
 ;*=====================================================================*/
@@ -785,14 +785,14 @@
 ;*---------------------------------------------------------------------*/
 (define (*rv x y def)
    (cond
-      ((and (number? x) (number? y))
-       (->range (* x y)))
-      ((and (bbv-vlen? x) (fixnum? y))
-       (let ((no (*fx (bbv-vlen-offset x) y)))
-	  (if (<fx no 0)
-	      (duplicate::bbv-vlen x
-		 (offset no))
-	      (bbv-max-fixnum))))
+;*       ((and (number? x) (number? y))                                */
+;*        (->range (* x y)))                                           */
+;*       ((and (bbv-vlen? x) (fixnum? y))                              */
+;*        (let ((no (*fx (bbv-vlen-offset x) y)))                      */
+;* 	  (if (<fx no 0)                                               */
+;* 	      (duplicate::bbv-vlen x                                   */
+;* 		 (offset no))                                          */
+;* 	      (bbv-max-fixnum))))                                      */
       ((and (bbv-vlen? x) (fixnum? y))
        (let ((no (*fx (bbv-vlen-offset x) y)))
 	  (if (<fx no 0)

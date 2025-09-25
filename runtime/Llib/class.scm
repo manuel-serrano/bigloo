@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Tue Sep 23 18:12:48 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 14:20:41 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -188,7 +188,7 @@
 ;*    allocate-expand ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (allocate-expand class-info)
-   `((@ object-allocate __object) ,(class-info-id class-info)))
+   `((@ class-allocate __object) ,(class-info-id class-info)))
 
 ;*---------------------------------------------------------------------*/
 ;*    allocator-expand ...                                             */
@@ -360,17 +360,17 @@
 		     (nfields '()))
 	     (cond
 		((null? s)
-		 (let* ((o (gensym 'o))
-			(to (make-typed-ident o (class-info-id class-info))))
+		 (let* ((to (gensym 'o))
+			(tto (make-typed-ident to (class-info-id class-info))))
 		    (localize x
-		       `(let ((,to ,(e o e)))
+		       `(let ((,tto ,(e o e)))
 			   ,(%with-lexical
 			       (map car nfields)
 			       (expand-progn body)
 			       (eval-begin-expander
 				  (with-access-expand
-				     e o nfields x))
-			       o)))))
+				     e to nfields x))
+			       to)))))
 		((not (pair? s))
 		 (error/loc w "Illegal field" s x))
 		((symbol? (car s))

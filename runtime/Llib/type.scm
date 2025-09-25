@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Tue Sep  9 13:33:06 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 08:27:00 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -216,7 +216,7 @@
     (coerce obj input-port ($input-port?) ())
     (coerce obj output-port ($output-port?) ())
     (coerce obj binary-port ($binary-port?) ())
-    (coerce obj void* ($foreign?) ($foreign->void*))
+    (coerce obj void* ($foreign?) ($unsafe-foreign->void*))
     (coerce obj foreign ($foreign?) ())
     (coerce obj process ($process?) ())
     (coerce obj socket ($socket?) ())
@@ -231,6 +231,7 @@
     (coerce obj class ((@ class? __object)) ())
     (coerce obj class-field ((@ class-field? __object)) ())
     (coerce obj opaque ($opaque?) ())
+    (coerce obj foreign (foreign?) ())
     
     ;; cobj
     (coerce cobj obj () ($cobj->obj))
@@ -743,9 +744,9 @@
     (coerce epair pair () ())
     (coerce epair pair-nil () ())
     (coerce epair bool () ((lambda (x) #t)))
-    (coerce pair-nil pair (pair?) ())
+    (coerce pair-nil pair ($pair?) ())
     (coerce pair pair-nil () ())
-    (coerce pair-nil epair (epair?) ())
+    (coerce pair-nil epair ($epair?) ())
     (coerce pair-nil nil (null?) ())
     (coerce pair-nil bool () ((lambda (x) #t)))
     (coerce nil pair-nil () ())
@@ -1092,6 +1093,7 @@
       (macro $obj->exit::exit (::obj) "(void *)")
       ;;(macro $obj->void*::void* (::obj) "BGL_OBJ_TO_VOID_STAR"
       (macro $foreign->void*::void* (::foreign) "FOREIGN_TO_COBJ")
+      (macro $unsafe-foreign->void*::void* (::obj) "BGL_UNSAFE_FOREIGN_TO_COBJ")
       ($void*->obj::foreign (::void*) "void_star_to_obj"))
       
 
@@ -1569,8 +1571,8 @@
 	 (method static $uint32->long::long (::uint32) "BGL_INT32_ID")
 
 	 (method static $obj->exit::exit (::obj) "BGL_OBJ_TO_EXIT")
-	 ;;(method static $obj->void*::cobj (::obj) "obj_to_cobj")
 	 (method static $foreign->void*::cobj (::foreign) "FOREIGN_TO_COBJ")
+	 (method static $unsafe-foreign->void*::cobj (::obj) "BGL_UNSAFE_FOREIGN_TO_COBJ")
 	 (method static $void*->obj::foreign (::void*) "void_star_to_obj")))
 
    (pragma

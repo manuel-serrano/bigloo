@@ -1,6 +1,6 @@
 (module object3-sans
-   (import (object1-sans "object1-sans.scm")
-	   (object2-sans "object2-sans.scm"))
+   (import (object1-sans "object1_sans.scm")
+	   (object2-sans "object2_sans.scm"))
    (export (class foo3-sans::foo2-sans
 	      t)
 	   (class bar4-sans::bar3-sans

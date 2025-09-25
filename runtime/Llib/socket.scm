@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Mon Jul 28 11:21:36 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 12:09:38 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -493,7 +493,7 @@
 ;*---------------------------------------------------------------------*/
 (define (hostname #!optional hostip)
    (%socket-init!)
-   (if hostip
+   (if (string? hostip)
        ($gethostname-by-address hostip)
        ($gethostname)))
 

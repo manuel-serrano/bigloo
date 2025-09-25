@@ -3346,6 +3346,11 @@ public final class foreign
 	 return (cobj)f;
       }
 
+   public static cobj BGL_UNSAFE_FOREIGN_TO_COBJ(Object f)
+      {
+	 return (cobj)f;
+      }
+
    public static cobj obj_to_cobj(Object o)
       {
 	 return (cobj)o;

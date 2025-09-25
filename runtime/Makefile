@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Sep 24 10:46:58 2025 (serrano)                */
+#*    Last change :  Thu Sep 25 10:56:17 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -387,35 +387,36 @@ CLASSES		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.class) \
 #*---------------------------------------------------------------------*/
 #*    WASM module files                                                */
 #*---------------------------------------------------------------------*/
-# WASMS		= $(SCM_SYS_SRC:%.scm=objs/$(WASMDIR_SYS)/%.wasm) \
-                 $(SCM_USR_SRC:%.scm=objs/$(WASMDIR_USR)/%.wasm)
-WASMS = \
-	objs/$(WASMDIR_SYS)/Unsafe/base64.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/bm.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/crc.wasm objs/$(WASMDIR_SYS)/Unsafe/crc16.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/ftp.wasm objs/$(WASMDIR_SYS)/Unsafe/gunzip.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/hmac.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/intext.wasm objs/$(WASMDIR_SYS)/Unsafe/kmp.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/md5.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/regexp.wasm objs/$(WASMDIR_SYS)/Unsafe/rsa.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/sha1.wasm objs/$(WASMDIR_SYS)/Unsafe/sha2.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/ssr.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/url.wasm objs/$(WASMDIR_SYS)/Unsafe/uuid.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/aes.wasm \
-	objs/$(WASMDIR_SYS)/Unsafe/http.wasm \
-        objs/$(WASMDIR_SYS)/Unsafe/tar.wasm \
-        objs/$(WASMDIR_SYS)/Unsafe/bignumber.wasm \
-	$(LLIB:%=objs/$(WASMDIR_SYS)/Llib/%.wasm) \
-	$(IEEE:%=objs/$(WASMDIR_SYS)/Ieee/%.wasm) \
-	$(EVAL:%=objs/$(WASMDIR_SYS)/Eval/%.wasm) \
-	$(RGC:%=objs/$(WASMDIR_SYS)/Rgc/%.wasm) \
-	$(PP:%=objs/$(WASMDIR_SYS)/Pp/%.wasm) \
-	$(READ:%=objs/$(WASMDIR_SYS)/Read/%.wasm) \
-	$(R5RS:%=objs/$(WASMDIR_SYS)/R5rs/%.wasm) \
-	$(MATCH:%=objs/$(WASMDIR_SYS)/Match/%.wasm) \
-	$(LALR:%=objs/$(WASMDIR_SYS)/Lalr/%.wasm) \
-	# objs/$(WASMDIR_SYS)/Unsafe/pregexp.wasm \
-	# objs/$(WASMDIR_SYS)/Unsafe/pcre.wasm objs/$(WASMDIR_SYS)/Unsafe/regex.wasm
+WASMS		= $(SCM_SYS_SRC:%.scm=objs/$(WASMDIR_SYS)/%.wasm) \
+                  $(SCM_USR_SRC:%.scm=objs/$(WASMDIR_USR)/%.wasm)
+
+#* WASMS = \                                                           */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/base64.wasm \                       */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/bm.wasm \                           */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/crc.wasm objs/$(WASMDIR_SYS)/Unsafe/crc16.wasm \ */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/ftp.wasm objs/$(WASMDIR_SYS)/Unsafe/gunzip.wasm \ */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/hmac.wasm \                         */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/intext.wasm objs/$(WASMDIR_SYS)/Unsafe/kmp.wasm \ */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/md5.wasm \                          */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/regexp.wasm objs/$(WASMDIR_SYS)/Unsafe/rsa.wasm \ */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/sha1.wasm objs/$(WASMDIR_SYS)/Unsafe/sha2.wasm \ */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/ssr.wasm \                          */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/url.wasm objs/$(WASMDIR_SYS)/Unsafe/uuid.wasm \ */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/aes.wasm \                          */
+#* 	objs/$(WASMDIR_SYS)/Unsafe/http.wasm \                         */
+#*         objs/$(WASMDIR_SYS)/Unsafe/tar.wasm \                       */
+#*         objs/$(WASMDIR_SYS)/Unsafe/bignumber.wasm \                 */
+#* 	$(LLIB:%=objs/$(WASMDIR_SYS)/Llib/%.wasm) \                    */
+#* 	$(IEEE:%=objs/$(WASMDIR_SYS)/Ieee/%.wasm) \                    */
+#* 	$(EVAL:%=objs/$(WASMDIR_SYS)/Eval/%.wasm) \                    */
+#* 	$(RGC:%=objs/$(WASMDIR_SYS)/Rgc/%.wasm) \                      */
+#* 	$(PP:%=objs/$(WASMDIR_SYS)/Pp/%.wasm) \                        */
+#* 	$(READ:%=objs/$(WASMDIR_SYS)/Read/%.wasm) \                    */
+#* 	$(R5RS:%=objs/$(WASMDIR_SYS)/R5rs/%.wasm) \                    */
+#* 	$(MATCH:%=objs/$(WASMDIR_SYS)/Match/%.wasm) \                  */
+#* 	$(LALR:%=objs/$(WASMDIR_SYS)/Lalr/%.wasm) \                    */
+#* 	# objs/$(WASMDIR_SYS)/Unsafe/pregexp.wasm \                    */
+#* 	# objs/$(WASMDIR_SYS)/Unsafe/pcre.wasm objs/$(WASMDIR_SYS)/Unsafe/regex.wasm */
 
 #*---------------------------------------------------------------------*/
 #*    C Object files for the distribution                              */
@@ -636,9 +637,9 @@ lib-jvm_p: .jfile includes
 one-lib-jvm: $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip
 
 $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip: $(CLASSES) class$(LIBSUFFIX)/jlib Jlib/configure.java
-	@ $(RM) -f $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip
-	@ (cd objs/class$(LIBSUFFIX) && \
-	  $(ZIP) -q $(ZFLAGS) $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip \
+	@$(RM) -f $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip
+	@(cd objs/class$(LIBSUFFIX) && \
+	 $(ZIP) -q $(ZFLAGS) $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip \
                  $(SCM_SYS_SRC:%.scm=bigloo/runtime/%.class) \
                  $(SCM_USR_SRC:%.scm=bigloo/runtime/%.class) \
                  bigloo/runtime/*/_KBGl_*.class \
@@ -681,7 +682,7 @@ lib-wasm_s: includes validate-wasm
 	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS)" \
-                WASMDIR_SYS=wasm_s WASMDIR_USR=wasm_s \
+                WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_s \
                 LIBSUFFIX=_s
 
 lib-wasm_u: includes validate-wasm
@@ -724,10 +725,10 @@ objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
 	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w $^ -o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
-objs/wasm_s/%.v: Wlib/%.wat $(BOOTLIBDIR)/types.wat
+objs/wasm_s/%.v: Wlib/%.wat
 	$(BGLWATIB) -v $< $(BOOTLIBDIR)/types.wat && date > $@
 
-objs/wasm_s/bigloo_s.v: objs/wasm_s/bigloo_s.wat 
+objs/wasm_s/bigloo_s.v: objs/wasm_s/bigloo_s.wat
 	$(BGLWATIB) -k -v $< && date > $@
 
 objs/wasm_u/bigloo_u.v: objs/wasm_u/bigloo_u.wat
@@ -1128,29 +1129,12 @@ objs/class_s/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
 objs/class_p/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
 	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
 
+objs/class_s/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
 objs/class_u/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
 	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
 
-objs/class_s/bigloo/runtime/Eval/%.class: Eval/%.scm
-	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
-
-objs/class_s/bigloo/runtime/Read/%.class: Read/%.scm
-	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
-
-objs/class_s/bigloo/runtime/Rgc/%.class: Rgc/%.scm
-	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
-
-objs/class_s/bigloo/runtime/Pp/%.class: Pp/%.scm
-	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
-
-objs/class_s/bigloo/runtime/Match/%.class: Match/%.scm
-	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
-
-objs/class_s/bigloo/runtime/Lalr/%.class: Lalr/%.scm
-	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
-
-objs/class_s/bigloo/runtime/Unsafe/%.class: Unsafe/%.scm
-	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    objs                                                             */

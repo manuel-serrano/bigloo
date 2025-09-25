@@ -44,35 +44,29 @@
 ;*    coerce-function! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (coerce-function! variable type-safe)
-   (trace coerce #"\ncoerce-function!: " (shape variable) #"\n")
-   (enter-function (variable-id variable))
-   (let* ((fun  (variable-value variable))
-	  (body (sfun-body fun))
-	  (tres (variable-type variable))
-	  (clo (sfun-the-closure-global fun))
-	  (type-safety-enforced (and (not *unsafe-eval*)
-				     (global? variable)
-				     (global? clo)
-				     (global-evaluable? clo)
-				     (global-user? clo)))
-	  (type-safe (or type-safe type-safety-enforced)))
-      (if (global? variable)
-	  (trace (coerce 2) "  type-safe=" type-safe
-	     " global=" (global? variable)
-	     " evaluable=" (global-evaluable? variable)
-	     " user=" (global-user? variable)
-	     " clo=" (global? (sfun-the-closure-global fun))
-	     "\n")
-	  (trace (coerce 2) "  type-safe=" type-safe "\n"))
-      (let ((notify *notify-type-test*))
-	 (set! *notify-type-test*
-	    (and (variable-user? variable)
-		 (not (global? (sfun-the-closure-global fun)))))
-	 (pfunction-proto 3 variable)
-	 (set! the-coerced-function variable)
-	 (sfun-body-set! fun (coerce! body variable tres type-safe))
-	 (set! *notify-type-test* notify))
-      (leave-function)))
+   (with-trace 'coerce "coerce-function!"
+      (trace-item "variable=" (shape variable))
+      (trace-item "type-safe=" type-safe)
+      (enter-function (variable-id variable))
+      (let* ((fun  (variable-value variable))
+	     (body (sfun-body fun))
+	     (tres (variable-type variable))
+	     (clo (sfun-the-closure-global fun))
+	     (type-safety-enforced (and (not *unsafe-eval*)
+					(global? variable)
+					(global? clo)
+					(global-evaluable? clo)
+					(global-user? clo)))
+	     (type-safe (or type-safe type-safety-enforced)))
+	 (let ((notify *notify-type-test*))
+	    (set! *notify-type-test*
+	       (and (variable-user? variable)
+		    (not (global? (sfun-the-closure-global fun)))))
+	    (pfunction-proto 3 variable)
+	    (set! the-coerced-function variable)
+	    (sfun-body-set! fun (coerce! body variable tres type-safe))
+	    (set! *notify-type-test* notify))
+	 (leave-function))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ...                                                      */
@@ -449,7 +443,7 @@
       (set! type (strict-node-type (node-type body) type))
       (dec-ppmarge!)
       node))
-
+ 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::let-var ...                                            */
 ;*---------------------------------------------------------------------*/

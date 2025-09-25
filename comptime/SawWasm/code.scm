@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Wed Sep 10 07:31:47 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 11:08:59 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -953,7 +953,8 @@
 (define-method (gen-expr fun::rtl_boxset args)
   ;; FIXME: remove the cast to cell
   (with-fun-loc fun
-    `(struct.set $cell $val (ref.cast (ref $cell) ,(gen-reg (car args))) ,@(gen-args (cdr args)))))
+    `(struct.set $cell $val (ref.cast (ref $cell) ,(gen-reg (car args)))
+	,@(gen-args (cdr args)))))
 
 (define-method (gen-expr fun::rtl_fail args)
    (with-fun-loc fun
@@ -1694,7 +1695,7 @@
    (let ((ty (rtl_cast-totype fun)))
       (cond
 	 ((eq? (type-id ty) 'obj)
-	  (if (eq? (typeof (car args)) ty)
+	  (if (eq? (rtl-type (car args)) ty)
 	      (gen-reg (car args))
 	      `(ref.cast ,(wasm-type ty) ,(gen-reg (car args)))))
 	 ((or (eq? (wasm-type ty) 'i32) (eq? (wasm-type ty) 'i64))
@@ -1713,8 +1714,8 @@
 ;*    gen-expr ::rtl_cast_null ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (gen-expr fun::rtl_cast_null args)
-   ;; TODO: NOT IMPLEMENTED
-   (with-fun-loc fun `(ref.null none)))
+   (with-access::rtl_cast_null fun (type)
+      (with-fun-loc fun (wasm-default-value type))))
 
 ;*---------------------------------------------------------------------*/
 ;*    Literal wasm                                                     */

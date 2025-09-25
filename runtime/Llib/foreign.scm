@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  5 16:50:26 1995                          */
-;*    Last change :  Wed Sep 10 07:51:07 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 13:13:15 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign object management.                                   */
 ;*    -------------------------------------------------------------    */
@@ -90,8 +90,12 @@
 	    ($foreign-eq? side-effect-free no-cfa-top nesting)
 	    (foreign-eq? side-effect-free no-cfa-top nesting)
 	    (string-ptr-null? side-effect-free no-cfa-top nesting)
-	    (void*-null? side-effect-free no-cfa-top nesting)
-	    (obj->cobj side-effect-free)))
+	    (void*-null? side-effect-free no-cfa-top nesting))
+   
+   (cond-expand
+      ((or bigloo-c bigloo-jvm)
+       (pragma
+	  (obj->cobj side-effect-free)))))
  
 ;*---------------------------------------------------------------------*/
 ;*    foreign? ...                                                     */

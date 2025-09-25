@@ -68,6 +68,7 @@
 (define-method (size-dest-fun::type fun::rtl_lightfuncall ins) 1)
 (define-method (size-dest-fun::type fun::rtl_funcall ins) 1)
 (define-method (size-dest-fun::type fun::rtl_cast ins) 1)
+(define-method (size-dest-fun::type fun::rtl_cast_null ins) 1)
 
 ;;
 ;;
