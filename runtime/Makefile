@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Aug 26 12:15:55 2025 (serrano)                */
+#*    Last change :  Wed Sep 24 13:25:11 2025 (serrano)                */
 #*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -819,11 +819,29 @@ objs/saw_u/$(SCMOBJSUFFIX): %.scm
 objs/saw_s/$(SCMOBJSUFFIX): %.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_USR) $(SAWFLAGS) $(EFLAGS) -c $< -o $@
 
-objs/obj_u/Eval/evaluate_comp$(SCMOBJSUFFIX): Eval/evaluate_comp.scm
-	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+objs/class_u/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
 
-objs/saw_u/Eval/evaluate_comp$(SCMOBJSUFFIX): Eval/evaluate_comp.scm
-	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(SAWFLAGS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+objs/class_s/bigloo/runtime/Eval/%.class: Eval/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
+objs/class_s/bigloo/runtime/Read/%.class: Read/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Rgc/%.class: Rgc/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Pp/%.class: Pp/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Match/%.class: Match/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Lalr/%.class: Lalr/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Unsafe/%.class: Unsafe/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*     .c --> .o                                                       */
