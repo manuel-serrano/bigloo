@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Sep 12 16:46:26 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 17:56:54 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1402,7 +1402,8 @@
       (set! *optim-jvm-inlining* 3)
       (set! *optim-jvm-branch* 5)
       (set! *optim-return?* #t)
-      (set! *optim-return-goto?* #t)
+      (unless (eq? *target-language* 'jvm)
+	 (set! *optim-return-goto?* #t))
       (set! *optim-uncell?* #t)
       (when (eq? *wasm-post-optimizations* #unspecified)
 	 (set! *wasm-post-optimizations* #t))
