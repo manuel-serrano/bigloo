@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Jun 27 08:57:52 2025 (serrano)                */
+;*    Last change :  Wed Sep 24 13:32:41 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -269,22 +269,22 @@
 	    
 	    (with-exception-handler ::procedure ::procedure)
 	    (current-exception-handler::procedure)
-	    (raise ::obj)
-	    
+	    (raise::obj ::obj)
+
+	    ;; these are special functions that never return
 	    (error ::obj ::obj ::obj)
-	    (error/errno::magic ::int ::obj ::obj ::obj)
+	    (error/errno::obj ::int ::obj ::obj ::obj)
 	    (error/location::obj ::obj ::obj ::obj ::obj ::obj)
 	    (error/source-location::obj ::obj ::obj ::obj ::obj)
 	    (error/source::obj ::obj ::obj ::obj ::obj)
+	    (type-error::obj fname loc proc type obj)
+	    (index-out-of-bounds-error::obj fname loc p o i::int len::int)
+	    (stack-overflow-error::obj)
+	    (module-init-error::obj ::string ::string)
+
 	    (error/c-location::obj ::obj ::obj ::obj ::string ::long)
 	    (bigloo-type-error::obj ::obj ::obj ::obj)
 	    (bigloo-type-error/location::obj ::obj ::obj ::obj ::obj ::obj)
-
-	    (type-error fname loc proc type obj)
-	    (index-out-of-bounds-error fname loc proc obj i::int len::int)
-	    (stack-overflow-error)
-
-	    (module-init-error ::string ::string)
 
 	    (error-notify ::obj)
 	    (error-notify/location ::obj ::bstring ::int)

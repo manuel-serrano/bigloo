@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 17:02:04 1994                          */
-;*    Last change :  Sat Sep 20 13:39:49 2025 (serrano)                */
+;*    Last change :  Wed Sep 24 08:00:16 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    In order to print human readable messages, we designed this      */
@@ -95,24 +95,28 @@
       (cond
 	 (*module-shape?*
 	  (string->symbol
-	   (string-append str-id "@" module tshape ushape ashape)))
+	     (string-append str-id "@" module tshape ushape ashape)))
 	 (else
-	  (case (global-bucket-position (global-id var) (global-module var))
-	     ((-1)
-	      (warning "global-shape:"
-		       "Can't find global anymore -- "
-		       `(@ ,(global-id var) ,(global-module var)))
-	      (string->symbol (string-append str-id tshape ushape ashape)))
-	     ((0)
-	      (if (and *module* (not (eq? (global-module var) *module*)))
-		  (let ((sym (string->symbol
-				(string-append str-id tshape ushape ashape))))
-		     `(@ ,sym ,(string->symbol module)))
-		  (string->symbol (string-append str-id tshape ushape ashape))))
-	     (else
-	      (let ((sym (string->symbol
-			  (string-append str-id tshape ushape ashape))))
-		 `(@ ,sym ,(string->symbol module)))))))))
+	  (with-access::global var (id module)
+	     (case (global-bucket-position id module)
+		((-1)
+		 (warning "global-shape:"
+		    "Can't find global anymore -- "
+		    `(@ ,(global-id var) ,(global-module var)))
+		 (string->symbol (string-append str-id tshape ushape ashape)))
+		((0)
+		 (if (and *module*
+			  (not (eq? module *module*))
+			  (>fx (global-bucket-length id module) 1))
+		     (let ((sym (string->symbol
+				   (string-append str-id tshape ushape ashape))))
+			`(@ ,sym ,module))
+		     (string->symbol
+			(string-append str-id tshape ushape ashape))))
+		(else
+		 (let ((sym (string->symbol
+			       (string-append str-id tshape ushape ashape))))
+		    `(@ ,sym ,module)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    shape ::local                                                    */

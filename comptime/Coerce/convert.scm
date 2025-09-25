@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Mon Sep 15 12:55:40 2025 (serrano)                */
+;*    Last change :  Wed Sep 24 13:36:15 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -30,6 +30,7 @@
 	    type_typeof
 	    ast_sexp
 	    ast_var
+	    ast_local
 	    ast_node
 	    ast_ident
 	    ast_lvtype
@@ -94,22 +95,16 @@
 ;*    type-error/location ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (type-error/location loc function from to)
-   (user-error/location loc function
-      "Type error"
+   (user-error/location loc function "Type error"
       (bigloo-type-error-msg "" (shape to) (shape from))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-warning/location ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (type-warning/location loc function from to)
-   (when *warning-types*
-      (user-warning/location loc
-	 function
-	 "Type error"
-	 (bigloo-type-error-msg
-	    ""
-	    (shape to)
-	    (shape from)))))
+   (when *warning-type-error*
+      (user-warning/location loc function "Type error"
+	 (bigloo-type-error-msg "" (shape to) (shape from)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    runtime-type-error/id ...                                        */
@@ -130,20 +125,28 @@
 ;*    runtime-type-error ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (runtime-type-error loc ti value::node)
-   (with-trace 'convert "runtime-type-error/id"
+   (with-trace 'convert "runtime-type-error"
       (trace-item "ti=" (shape ti))
       (trace-item "value=" (shape value))
-      (let* ((aux (gensym 'aux))
-	     (uvalue (if (var? value)
-			 (duplicate::ref value
-			    (type *obj*))
-			 value))
+
+      (define (get-value value)
+	 (cond
+	    ((cast? value)
+	     (get-value (cast-arg value)))
+	    ((var? value)
+	     (coerce! (duplicate::ref value) #unspecified *obj* #f))
+	    (else
+	     (coerce! value #unspecified *obj* #f))))
+      
+      (let* ((aux (gensym 'err))
+	     (uvalue (get-value value))
 	     (res (top-level-sexp->node
 		     `(let ((,(mark-symbol-non-user! (symbol-append aux '::obj))
 			     #unspecified))
 			 ,(runtime-type-error/id loc ti aux))
 		     loc)))
-	 (set-cdr! (car (let-var-bindings res)) uvalue)
+	 (coerce! res #unspecified (node-type value) #f)
+	 (set-cdr! (car (let-var-bindings res)) (cast-obj-if-needed uvalue))
 	 res)))
 
 ;*---------------------------------------------------------------------*/
@@ -153,23 +156,39 @@
 ;*    type we emit a warning and compile an error. Otherwise, we       */
 ;*    stop the compilation.                                            */
 ;*---------------------------------------------------------------------*/
-(define (convert-error from to loc node)
+(define (convert-error from to loc node safe)
    (with-trace 'convert "convert-error"
       (trace-item "node=" (shape node))
       (trace-item "from=" (shape from))
       (trace-item "to=" (shape to))
       (trace-item "loc=" loc)
       (cond
+	 ((not safe)
+	  (type-warning/location loc (current-function) from to)
+	  (instantiate::cast-null
+	     (loc loc)
+	     (c-format "")
+	     (type to)))
 	 ((and (not (eq? to *obj*)) (sub-type? to *obj*))
 	  (let ((node (runtime-type-error loc (type-id to) node)))
 	     (type-warning/location loc (current-function) from to)
 	     (lvtype-node! node)
-	     (coerce! node #unspecified from #f)))
+	     (instantiate::sequence
+		(type to)
+		(nodes (list node
+			  (instantiate::cast-null
+			     (c-format "")
+			     (type to)))))))
 	 ((tclass? to)
 	  (let ((node (runtime-type-error loc (type-id to) node)))
 	     (type-warning/location loc (current-function) from to)
 	     (lvtype-node! node)
-	     (coerce! node #unspecified from #f)))
+	     (instantiate::sequence
+		(type to)
+		(nodes (list node
+			  (instantiate::cast-null
+			     (c-format "")
+			     (type to)))))))
 	 ((not *warning-type-error*)
 	  (cond
 	     ((or (eq? to *int*) (eq? to *long*)
@@ -188,8 +207,7 @@
 		 (lvtype-node! node)
 		 (instantiate::sequence
 		    (type to)
-		    (nodes (list
-			      (coerce! node #unspecified from #f)
+		    (nodes (list (coerce! node #unspecified from #f)
 			      (instantiate::literal (type to) (value 0)))))))
 	     ((eq? to *bool*)
 	      (let ((node (runtime-type-error loc (type-id to) node)))
@@ -197,8 +215,7 @@
 		 (lvtype-node! node)
 		 (instantiate::sequence
 		    (type to)
-		    (nodes (list
-			      (coerce! node #unspecified from #f)
+		    (nodes (list (coerce! node #unspecified from #f)
 			      (instantiate::literal (type to) (value 0)))))))
 	     ((eq? to *real*)
 	      (let ((node (runtime-type-error loc (type-id to) node)))
@@ -206,8 +223,7 @@
 		 (lvtype-node! node)
 		 (instantiate::sequence
 		    (type to)
-		    (nodes (list
-			      (coerce! node #unspecified from #f)
+		    (nodes (list (coerce! node #unspecified from #f)
 			      (instantiate::literal (type to) (value 0.0)))))))
 	     ((eq? to *char*)
 	      (let ((node (runtime-type-error loc (type-id to) node)))
@@ -215,8 +231,7 @@
 		 (lvtype-node! node)
 		 (instantiate::sequence
 		    (type to)
-		    (nodes (list
-			      (coerce! node #unspecified from #f)
+		    (nodes (list (coerce! node #unspecified from #f)
 			      (instantiate::literal (type to) (value #a000)))))))
 	     ((eq? to *schar*)
 	      (let ((node (runtime-type-error loc (type-id to) node)))
@@ -224,8 +239,7 @@
 		 (lvtype-node! node)
 		 (instantiate::sequence
 		    (type *char*)
-		    (nodes (list
-			      (coerce! node #unspecified from #f)
+		    (nodes (list (coerce! node #unspecified from #f)
 			      (instantiate::literal (type *char*) (value #a000)))))))
 	     ((eq? to *string*)
 	      (let ((node (runtime-type-error loc (type-id to) node)))
@@ -233,8 +247,7 @@
 		 (lvtype-node! node)
 		 (instantiate::sequence
 		    (type to)
-		    (nodes (list
-			      (coerce! node #unspecified from #f)
+		    (nodes (list (coerce! node #unspecified from #f)
 			      (instantiate::literal (type to) (value "")))))))
 	     (else
 	      (type-error/location loc (current-function) from to))))
@@ -257,14 +270,24 @@
 	  node
 	  (let ((to (get-aliased-type to))
 		(fro (get-aliased-type from)))
-	     (if (or (eq? fro to) (type-magic? fro))
-		 node
+	     (cond
+		((eq? fro to)
+		 node)
+		((type-magic? fro)
+		 (instantiate::sequence
+		    (type to)
+		    (nodes (list (coerce! node #unspecified from #f)
+			      (instantiate::cast-null
+				 (loc (node-loc node))
+				 (type to)
+				 (c-format (format "/* magic to ~a */" (shape to))))))))
+		(else
 		 (let ((coercer (find-coercer fro to))
 		       (loc (node-loc node)))
 		    (if (not (coercer? coercer))
 			;; There is no convertion between these types. 
 			;; Thus, it is a type error.
-			(convert-error fro to loc node)
+			(convert-error fro to loc node safe)
 			(let loop ((checks (coercer-check-op coercer))
 				   (coerces (coercer-coerce-op coercer))
 				   (node node))
@@ -287,7 +310,7 @@
 				     (caar checks)
 				     (caar coerces)
 				     node
-				     safe))))))))))))
+				     safe)))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-one-conversion ...                                          */
@@ -317,143 +340,163 @@
 ;*    make-one-type-conversion ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (make-one-type-conversion from to check-op coerce-op node)
-   (trace (coerce 2) "make-one-type-conversion: " (shape node) " ("
-      (shape from) " -> " (shape to) ")" #\Newline)
-   (let* ((aux (mark-symbol-non-user! (gensym 'aux)))
+   (with-trace 'convert "make-one-type-concversion"
+      (trace-item "node=" (shape node))
+      (trace-item "from=" (shape from))
+      (trace-item "to=" (shape to))
+      (let* ((aux (mark-symbol-non-user! (gensym 'aux)))
+	     (loc (node-loc node))
+	     (lnode (top-level-sexp->node
+		       ;; we coerce all checked object into `obj' because
+		       ;; all the predicate are only defined under this
+		       ;; type and sometimes `super-class' object' have to
+		       ;; be checked and they are not of obj type (but of
+		       ;; a compatible type).
+		       `(let ((,(mark-symbol-non-user!
+				   (make-typed-ident aux (type-id from)))
+			       #unspecified))
+			   (if (,check-op ,aux)
+			       ,aux
+			       ,(runtime-type-error/id loc (type-id to) aux)))
+		       loc)))
+	 (increment-stat-check! from to loc)
+	 (spread-side-effect! lnode)
+	 (let* ((var (car (car (let-var-bindings lnode))))
+		(ref (instantiate::ref
+			(loc loc)
+			(type (strict-node-type to from))
+			(variable var)))
+		(coerce-app (do-convert coerce-op ref from to))
+		(condn (skip-let-var lnode)))
+	    ;; we set the local variable type
+	    (local-type-set! var from)
+	    ;; and the local variable value
+	    (set-cdr! (car (let-var-bindings lnode)) node)
+	    (node-type-set! node from)
+	    ;; FIXME
+	    (node-type-set! lnode to)
+	    (node-type-set! condn to)
+	    (conditional-true-set! condn coerce-app)
+	    (conditional-false-set! condn
+	       (coerce! (conditional-false condn) #unspecified to #f))
+	    (lvtype-node! lnode)
+	    lnode))))
+
+;*---------------------------------------------------------------------*/
+;*    cast-obj-if-needed ...                                           */
+;*---------------------------------------------------------------------*/
+(define (cast-obj-if-needed node)
+   (if (or (eq? (get-static-type node) *obj*)
+	   (not (backend-strict-type-cast (the-backend))))
+       node
+       (instantiate::cast
 	  (loc (node-loc node))
-	  (lnode (top-level-sexp->node
-		    ;; we coerce all checked object into `obj' because
-		    ;; all the predicate are only defined under this
-		    ;; type and sometimes `super-class' object' have to
-		    ;; be checked and they are not of obj type (but of
-		    ;; a compatible type).
-		    `(let ((,(mark-symbol-non-user!
-				(make-typed-ident aux (type-id from)))
-			    #unspecified))
-			(if (,check-op ,aux)
-			    ,aux
-			    ,(runtime-type-error/id loc (type-id to) aux)))
-		    loc)))
-      (increment-stat-check! from to loc)
-      (spread-side-effect! lnode)
-      (let* ((var (car (car (let-var-bindings lnode))))
-	     (ref (instantiate::ref
-		     (loc loc)
-		     (type (strict-node-type to from))
-		     (variable var)))
-	     (coerce-app (do-convert coerce-op ref from to))
-	     (condn (skip-let-var lnode)))
-	 ;; we set the local variable type
-	 (local-type-set! var from)
-	 ;; and the local variable value
-	 (set-cdr! (car (let-var-bindings lnode)) node)
-	 (node-type-set! node from)
-	 (conditional-true-set! condn coerce-app)
-	 (conditional-false-set! condn
-	    (coerce! (conditional-false condn)
-	       #unspecified
-	       from
-	       #f))
-	 (lvtype-node! lnode)
-	 lnode)))
+	  (type *obj*)
+	  (arg node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-one-class-conversion ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (make-one-class-conversion from to check-op coerce-op node)
-   (trace (coerce 2) "make-one-class-conversion: " (shape node) " ("
-	  (shape from) " -> " (shape to) ")" #\Newline)
-   (if (and (tclass? to) (type-subclass? from to))
-       (do-convert coerce-op node from to)
-       (let* ((aux   (gensym 'aux))
-	      (aux2  (gensym 'aux2))
-	      (loc   (node-loc node))
-	      (lnode (top-level-sexp->node
-		      `(let ((,(mark-symbol-non-user!
-				(symbol-append aux '::obj)) #unspecified))
-			  (let ((,(mark-symbol-non-user!
-				   (symbol-append aux2 '::obj)) #unspecified))
-			     (if (,check-op ,aux2)
-				 ,aux
-				 ,(runtime-type-error/id loc (type-id to) aux))))
-		      loc)))
-	  (increment-stat-check! from to loc)
-	  (spread-side-effect! lnode)
-	  (let* ((var (car (car (let-var-bindings lnode))))
-		 (coerce-app (do-convert coerce-op
-					 (instantiate::ref
-					    (loc loc)
-					    (type from)
-					    (variable var))
-					 from to))
-		 (condn (skip-let-var lnode)))
-	     ;; we set the local variable type
-	     (local-type-set! var from)
-	     ;; and the local variable value
-	     (set-cdr! (car (let-var-bindings lnode)) node)
-	     (let ((binding2 (car (let-var-bindings (let-var-body lnode)))))
-		(set-cdr! binding2 (instantiate::cast
-				      (loc loc)
-				      (type *obj*)
-				      (arg (instantiate::ref 
-					      (loc loc)
-					      (type from)
-					      (variable var))))))
-	     (conditional-true-set! condn coerce-app)
-	     (conditional-false-set! condn
-				     (coerce! (conditional-false condn)
-					      #unspecified
-					      from
-					      #f))
-	     (lvtype-node! lnode)
-	     lnode))))
+
+   (define (ref-check from to check-op node::ref)
+      (let* ((loc (node-loc node))
+	     (tmp (gensym 'tmp))
+	     (ttmp (mark-symbol-non-user! (symbol-append tmp '::obj)))
+	     (lnode (top-level-sexp->node
+		       `(let ((,ttmp #unspecified))
+			   (if (,check-op ,tmp)
+			       ,node
+			       ,(runtime-type-error loc (type-id to)
+				   (duplicate::ref node))))
+		       loc)))
+	 (increment-stat-check! from to loc)
+	 (spread-side-effect! lnode)
+	 (with-access::ref node ((var variable))
+	    (let ((condn (skip-let-var lnode))
+		  (binding (car (let-var-bindings lnode))))
+	       ;; set the value of the temp variable
+	       (set-cdr! binding (cast-obj-if-needed node))
+	       (values lnode condn (duplicate::ref node))))))
+
+   (define (node-check from to check-op node::node)
+      (let* ((loc (node-loc node))
+	     (o (make-local-svar (gensym 'o) from))
+	     (ref (instantiate::ref
+		     (loc loc)
+		     (variable o)
+		     (type from))))
+	 (multiple-value-bind (lnode cnode rnode)
+	    (ref-check from to check-op ref)
+	    (values (instantiate::let-var
+		       (loc loc)
+		       (type to)
+		       (bindings (list (cons o node)))
+		       (body lnode))
+	       cnode
+	       rnode))))
+
+   (with-trace 'convert "make-one-class-concversion"
+      (trace-item "node=" (shape node))
+      (trace-item "from=" (shape from))
+      (trace-item "to=" (shape to))
+
+      (if (and (tclass? to) (type-subclass? from to))
+	  (do-convert coerce-op node from to)
+	  (multiple-value-bind (lnode cnode rnode)
+	     (if (isa? node ref)
+		 (ref-check from to check-op node)
+		 (node-check from to check-op node))
+	     (let ((capp (do-convert coerce-op rnode from to))
+		   (fnode (coerce! (conditional-false cnode) #unspecified to #f)))
+		(with-access::conditional cnode (true false type)
+		   (set! type to)
+		   (set! true capp)
+		   (set! false fnode)
+		   (lvtype-node! lnode)
+		   lnode))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-convert ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (do-convert coerce-op node from::type to::type)
-   (trace coerce "do-convert: " (shape coerce-op) " " (shape node)
-	  #\Newline)
-   (if (eq? coerce-op #t)
-      (if (not (is-subtype? from to))
-	  ;; The backend's strict-type-cast option has been added when
-	  ;; when working on the wasm backend. It ensures that the AST
-	  ;; no longer contains any implicit type cast after the coerce
-	  ;; pass. In theory, all backends should set the strict-type-cast
-	  ;; option to #t as an anti-reckless attitude, but only the wasm
-	  ;; backend will set it by default
-	  (instantiate::cast
-	     (loc (node-loc node))
-	     (type to)
-	     (arg node))
-	  node)
-      (let ((nnode (top-level-sexp->node `(,coerce-op ,node)
-		      (node-loc node))))
-	 (trace coerce
-	    "   app : " (shape nnode) #\Newline
-	    "   type: " (shape (node-type nnode)) #\Newline
-	    "   node: " (shape node) #\Newline
-	    "   type: " (shape (node-type node)) #\Newline
-	    "   from: " (shape from) #\Newline)
-	 ;; we have to mark that the node has been converted and is
-	 ;; now of the correct type...
-	 (lvtype-node! nnode)
-	 (spread-side-effect! nnode)
-	 ;; explicit args type cast when the backend demands it
-	 (when (backend-strict-type-cast (the-backend))
-	    (when (isa? nnode app)
-	       (with-access::app nnode (fun args)
-		  (when (isa? fun ref)
-		     (let* ((proc (variable-value (var-variable fun)))
-			    (ta (node-type (car args)))
-			    (tf (cond
-				   ((sfun? proc) (car (sfun-args proc)))
-				   ((cfun? proc) (car (cfun-args-type proc)))
-				   (else *obj*))))
-			(unless (eq? ta tf)
-			   (set-car! args
-			      (instantiate::cast
-				 (type tf)
-				 (arg (car args))))))))))
-	 nnode)))
+   (with-trace 'convert "do-convert"
+      (trace-item "node=" (shape node))
+      (trace-item "from=" (shape from))
+      (trace-item "to=" (shape to))
+      
+      (let ((loc (node-loc node)))
+	 (if (eq? coerce-op #t)
+	     (if (is-subtype? from to)
+		 node
+		 (instantiate::cast
+		    (loc loc)
+		    (type to)
+		    (arg node)))
+	     (let ((nnode (top-level-sexp->node `(,coerce-op ,node) loc)))
+		;; we have to mark that the node has been converted and is
+		;; now of the correct type...
+		(lvtype-node! nnode)
+		(spread-side-effect! nnode)
+		;; explicit args type cast when the backend demands it
+		(when (backend-strict-type-cast (the-backend))
+		   (when (isa? nnode app)
+		      (with-access::app nnode (fun args)
+			 (when (isa? fun ref)
+			    (let* ((proc (variable-value (var-variable fun)))
+				   (ta (node-type (car args)))
+				   (tf (cond
+					  ((sfun? proc)
+					   (car (sfun-args proc)))
+					  ((cfun? proc)
+					   (car (cfun-args-type proc)))
+					  (else
+					   *obj*))))
+			       (unless (eq? ta tf)
+				  (set-car! args
+				     (instantiate::cast
+					(loc loc)
+					(type tf)
+					(arg (car args))))))))))
+		nnode)))))
 

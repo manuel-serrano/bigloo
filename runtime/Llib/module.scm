@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/module.scm       */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/module.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Tue Sep 10 07:06:27 2024 (serrano)                */
-;*    Copyright   :  2009-24 Manuel Serrano                            */
+;*    Last change :  Wed Sep 24 17:51:11 2025 (serrano)                */
+;*    Copyright   :  2009-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
 ;*    that is in charge of mapping module names to file names.         */

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Cgen/emit_cop.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cgen/emit_cop.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Fri Nov  8 08:09:44 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Sep 25 10:18:28 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
 ;*=====================================================================*/
@@ -120,12 +120,12 @@
 (define-method (emit-cop cop::varc)
    (with-access::varc cop (variable)
       (if (when (isa? variable global)
-	     (with-access::global  variable (value)
+	     (with-access::global variable (value)
 		(when (isa? value scnst)
 		   (with-access::scnst value (class)
 		      (eq? class 'sreal)))))
 	  (begin
-	     (display "BGL_REAL_CNST( " *c-port*)
+	     (display "BGL_REAL_CNST(" *c-port*)
 	     (display (variable-name variable) *c-port*)
 	     (display ")" *c-port*))
 	  (display (variable-name variable) *c-port*))

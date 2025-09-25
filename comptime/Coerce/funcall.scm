@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Thu Jan  9 10:56:49 2025 (serrano)                */
+;*    Last change :  Wed Sep 24 17:02:21 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
@@ -83,9 +83,7 @@
 				   (body (top-level-sexp->node
 					    `(let ((,a-tlen ,len))
 						(if (correct-arity? ,fun ,a-len)
-;* 						    ,(cast-if-not-obj loc nty to */
-;* 							(convert! node nty to safe)) */
-						    ,(convert! (cast-if-not-obj node) *obj* to safe)
+						    ,(convert! (force-obj-type! node) *obj* to safe)
 						    ,(make-arity-error-node
 							fun
 							error-msg
@@ -103,24 +101,15 @@
 		    lnode)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    cast-if-not-obj ...                                              */
+;*    force-obj-type! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (cast-if-not-obj node)
-   (if (eq? (node-type node) *obj*)
-       node
+(define (force-obj-type! node)
+;*    (if (eq? (node-type node) *obj*)                                 */
+;*        node                                                         */
        (with-access::funcall node (type)
 	  (set! type *obj*)
-	  node)))
-
-(define (cast-if-not-obj-TBR loc from to node)
-   (if (eq? from *obj*)
-       node
-       (with-access::funcall node (type)
-	  (set! type *obj*)
-	  (instantiate::cast
-	     (loc loc)
-	     (type to)
-	     (arg node)))))
+	  node))
+;* )                                                                   */
 
 ;*---------------------------------------------------------------------*/
 ;*    make-arity-error-node ...                                        */

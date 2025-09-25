@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sun Sep 14 14:36:44 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 11:52:58 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -822,7 +822,7 @@
    #f)
 (param-define *warning-type-error*
    "Set to #t to treat type warnigns as error"
-   #f)
+   #t)
 (param-define *warning-default-slot-value*
    "Set to #t to warn about non-inlinable default slot values"
    #f)

@@ -115,6 +115,11 @@
       (result externref)
       (struct.get $foreign $obj (local.get $o)))
    
+   (func $BGL_UNSAFE_FOREIGN_TO_COBJ (export "BGL_UNSAFE_FOREIGN_TO_COBJ")
+      (param $o (ref eq))
+      (result externref)
+      (struct.get $foreign $obj (ref.cast (ref $foreign) (local.get $o))))
+   
    ;; -----------------------------------------------------------------
    ;; Library functions
    ;; -----------------------------------------------------------------

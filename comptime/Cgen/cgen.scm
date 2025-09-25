@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cgen/cgen.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cgen/cgen.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Fri Nov  8 08:51:30 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Sep 25 07:08:59 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
 ;*=====================================================================*/
@@ -540,6 +540,43 @@
 	  "  kont: " kont #\Newline)
    (with-access::private node (c-format)
       (extern->cop c-format #t node kont inpushexit)))
+   
+;*---------------------------------------------------------------------*/
+;*    node->cop ::cast-null ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (node->cop node::cast-null kont inpushexit)
+   (trace (cgen 3)
+      "(node->cop node::private kont): " (shape node) #\Newline
+      "  kont: " kont #\Newline)
+   
+   (define (null-type-expr type c-format)
+      (cond
+	 ((or (eq? type *int*) (eq? type *long*)
+	      (eq? type *elong*)
+	      (eq? type *llong*)
+	      (eq? type *int8*)
+	      (eq? type *uint8*)
+	      (eq? type *int16*)
+	      (eq? type *uint16*)
+	      (eq? type *int32*)
+	      (eq? type *uint32*)
+	      (eq? type *int64*)
+	      (eq? type *uint64*))
+	  "0")
+	 ((eq? type *bool*)
+	  "0")
+	 ((eq? type *real*)
+	  "0.0")
+	 ((or (eq? type *char*)
+	      (eq? type *schar*))
+	  "0")
+	 ((eq? type *string*)
+	  "0L")
+	 (else
+	  (format "~a((~a)0L)" c-format (type-name type)))))
+   
+   (with-access::cast-null node (c-format type)
+      (extern->cop (null-type-expr type c-format) #t node kont inpushexit)))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::cast ...                                             */

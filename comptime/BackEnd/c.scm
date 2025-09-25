@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Wed Sep 17 15:15:39 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 06:45:04 2025 (serrano)                */
 ;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -75,9 +75,9 @@
 (define (build-sawc-backend)
    (instantiate::sawc
       (language 'c-saw)
+      (srfi0 'bigloo-c)
       (heap-compatible 'c)
       (trace-support #f)
-      (srfi0 'bigloo-c)
       (require-tailc #t)
       (strict-type-cast #t)))
  
@@ -88,7 +88,8 @@
    (instantiate::cgen
       (language 'c)
       (srfi0 'bigloo-c)
-      (local-exit #t)))
+      (local-exit #t)
+      (strict-type-cast #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */
@@ -405,7 +406,7 @@
    '(pragma "BGL_GC_INIT()"))
 
 ;*---------------------------------------------------------------------*/
-;*    backend-constant-bindings ::cgen ...                             */
+;*    backend-constant-bindings ::cvm ...                              */
 ;*---------------------------------------------------------------------*/
-(define-method (backend-constant-bindings b::cgen)
+(define-method (backend-constant-bindings b::cvm)
    '(pragma "bgl_constant_bindings()"))

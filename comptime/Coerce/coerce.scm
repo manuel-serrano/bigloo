@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Thu Jun 26 10:18:04 2025 (serrano)                */
+;*    Last change :  Wed Sep 24 10:18:20 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce implicity type coercions                               */
@@ -44,35 +44,29 @@
 ;*    coerce-function! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (coerce-function! variable type-safe)
-   (trace coerce #"\ncoerce-function!: " (shape variable) #"\n")
-   (enter-function (variable-id variable))
-   (let* ((fun  (variable-value variable))
-	  (body (sfun-body fun))
-	  (tres (variable-type variable))
-	  (clo (sfun-the-closure-global fun))
-	  (type-safety-enforced (and (not *unsafe-eval*)
-				     (global? variable)
-				     (global? clo)
-				     (global-evaluable? clo)
-				     (global-user? clo)))
-	  (type-safe (or type-safe type-safety-enforced)))
-      (if (global? variable)
-	  (trace (coerce 2) "  type-safe=" type-safe
-	     " global=" (global? variable)
-	     " evaluable=" (global-evaluable? variable)
-	     " user=" (global-user? variable)
-	     " clo=" (global? (sfun-the-closure-global fun))
-	     "\n")
-	  (trace (coerce 2) "  type-safe=" type-safe "\n"))
-      (let ((notify *notify-type-test*))
-	 (set! *notify-type-test*
-	    (and (variable-user? variable)
-		 (not (global? (sfun-the-closure-global fun)))))
-	 (pfunction-proto 3 variable)
-	 (set! the-coerced-function variable)
-	 (sfun-body-set! fun (coerce! body variable tres type-safe))
-	 (set! *notify-type-test* notify))
-      (leave-function)))
+   (with-trace 'coerce "coerce-function!"
+      (trace-item "variable=" (shape variable))
+      (trace-item "type-safe=" type-safe)
+      (enter-function (variable-id variable))
+      (let* ((fun  (variable-value variable))
+	     (body (sfun-body fun))
+	     (tres (variable-type variable))
+	     (clo (sfun-the-closure-global fun))
+	     (type-safety-enforced (and (not *unsafe-eval*)
+					(global? variable)
+					(global? clo)
+					(global-evaluable? clo)
+					(global-user? clo)))
+	     (type-safe (or type-safe type-safety-enforced)))
+	 (let ((notify *notify-type-test*))
+	    (set! *notify-type-test*
+	       (and (variable-user? variable)
+		    (not (global? (sfun-the-closure-global fun)))))
+	    (pfunction-proto 3 variable)
+	    (set! the-coerced-function variable)
+	    (sfun-body-set! fun (coerce! body variable tres type-safe))
+	    (set! *notify-type-test* notify))
+	 (leave-function))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ...                                                      */
@@ -286,6 +280,7 @@
 ;*    type errors.                                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::conditional caller to safe)
+   
    (define (test-static-app node)
       (with-access::app node (fun args)
 	 (and (pair? args)
@@ -306,6 +301,7 @@
 		     'false)
 		    (else
 		     #f))))))
+   
    (define (test-static-let-var node)
       (with-access::let-var node (bindings body)
 	 (when (and (pair? bindings) (null? (cdr bindings)))
@@ -350,6 +346,7 @@
 		(test-static-value (cdar bindings)))
 	       (else
 		#f)))))
+   
    (define (test-static-isa node typec)
       (with-access::app node (args)
 	 (let ((typev (cond
@@ -368,6 +365,7 @@
 		'false)
 	       (else
 		#f)))))
+   
    (define (test-static-value node)
       (cond
 	 ((isa-of node)
@@ -380,6 +378,7 @@
 	  (test-static-let-var node))
 	 (else
 	  #f)))
+   
    (with-access::conditional node (test true false type)
       (set! test (coerce! test caller *bool* safe))
       (case (test-static-value test)
@@ -444,7 +443,7 @@
       (set! type (strict-node-type (node-type body) type))
       (dec-ppmarge!)
       node))
-
+ 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::let-var ...                                            */
 ;*---------------------------------------------------------------------*/

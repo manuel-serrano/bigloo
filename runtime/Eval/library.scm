@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Fri Sep 12 11:40:05 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 13:10:04 2025 (serrano)                */
 ;*    Copyright   :  2005-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -339,7 +339,8 @@
 		 (init (find-file/path (library-init-file lib) path))
 		 (be (cond-expand
 			(bigloo-c 'bigloo-c)
-			(bigloo-jvm 'bigloo-jvm))))
+			(bigloo-jvm 'bigloo-jvm)
+			(bigloo-wasm 'bigloo-wasm))))
 	     (when init (load-init init))
 	     (let* ((info (library-info lib))
 		    (n (make-shared-lib-name
@@ -449,7 +450,8 @@
 				     (cons "." (unix-path->list venv))))))
 		    (be (cond-expand
 			   (bigloo-c 'bigloo-c)
-			   (bigloo-jvm 'bigloo-jvm))))
+			   (bigloo-jvm 'bigloo-jvm)
+			   (bigloo-wasm 'bigloo-wasm))))
 		(library-load-init lib path)
 		(let* ((info (library-info lib))
 		       (n (make-shared-lib-name

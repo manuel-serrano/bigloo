@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon Sep 15 13:46:44 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 14:17:08 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -348,6 +348,7 @@
 	    (class-constructor::obj ::class)
 	    (class-allocator::procedure ::class)
 	    (class-creator::obj ::class)
+	    (inline class-allocate::object ::class)
 	    (inline class-nil::obj ::class)
 	    (class-nil-init!::obj ::class)
 	    (make-class-field::class-field ::symbol ::obj ::obj ::bool ::bool ::obj ::obj ::obj)
@@ -748,6 +749,15 @@
    (if (class? class)
        ($class-alloc-fun class)
        (bigloo-type-error "class-allocator" "class" class)))
+
+;*---------------------------------------------------------------------*/
+;*    class-allocate ...                                               */
+;*    -------------------------------------------------------------    */
+;*    For preformance, this function is overriden by a compiler        */
+;*    macro.                                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (class-allocate class)
+   (($class-alloc-fun class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-hash ...                                                   */

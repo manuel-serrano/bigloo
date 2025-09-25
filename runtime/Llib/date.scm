@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Wed Feb  5 07:47:22 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 12:10:17 2025 (serrano)                */
 ;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -233,7 +233,7 @@
 	   (sec 0) (min 0) (hour 0)
 	   (day 1) (month 1) (year 1970)
 	   timezone (dst -1))
-   (if (integer? timezone)
+   (if (fixnum? timezone)
        ($date-new nsec sec min hour day month year timezone #t dst)
        ($date-new nsec sec min hour day month year 0 #f dst)))
 

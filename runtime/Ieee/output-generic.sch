@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 15:24:13 2024                          */
-;*    Last change :  Sun Jun 22 08:53:38 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 11:47:58 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable output implementation                                   */
@@ -20,7 +20,7 @@
            (bgl_display_elong::obj ::elong ::output-port)
            (bgl_write_elong::obj ::elong ::output-port)
            (bgl_display_llong::obj ::llong ::output-port)
-           (bgl_write_llong::obj ::elong ::output-port)
+           (bgl_write_llong::obj ::llong ::output-port)
 	   (bgl_display_bignum::obj ::bignum ::output-port)
 	   (bgl_write_bignum::obj ::bignum ::output-port)
 	   (bgl_write_mmap::obj ::mmap ::output-port)
@@ -284,9 +284,9 @@
 ;*---------------------------------------------------------------------*/
 (define (bgl_write_datagram_socket d op)
    (display "#<datagram-socket:" op)
-   (display (socket-hostname d) op)
+   (display (datagram-socket-hostname d) op)
    (display "." op)
-   (display (socket-port-number d) op)
+   (display (datagram-socket-port-number d) op)
    (display ">" op))
 
 ;*---------------------------------------------------------------------*/
@@ -301,6 +301,6 @@
 (define (bgl_ill_char_rep c)
    (let ((n (char->integer c)))
       (cond
-	 ((<fx n 10) (string-append "#a00" n))
-	 ((<fx n 100) (string-append "#a0" n))
-	 (else (string-append "#a" n)))))
+	 ((<fx n 10) (string-append "#a00" (integer->string n)))
+	 ((<fx n 100) (string-append "#a0" (integer->string n)))
+	 (else (string-append "#a" (integer->string n))))))

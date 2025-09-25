@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Mon Dec 23 09:11:20 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 24 14:37:37 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
 ;*=====================================================================*/
@@ -27,6 +27,7 @@
    (export  (is-subtype? t1 t2)
 	    (get-type-atom::type <atom>)
 	    (get-type-kwote::type <kwote>)
+	    (generic get-static-type::type ::node)
 	    (generic get-type::type ::node ::bool)))
 
 ;*---------------------------------------------------------------------*/
@@ -83,6 +84,19 @@
 ;*---------------------------------------------------------------------*/
 (define (pair-nil? t)
    (or (eq? t *pair*) (eq? t *epair*) (eq? t *bnil*) (eq? t *pair-nil*)))
+
+;*---------------------------------------------------------------------*/
+;*    get-static-type ...                                              */
+;*---------------------------------------------------------------------*/
+(define-generic (get-static-type node::node)
+   (get-type node #t))
+
+;*---------------------------------------------------------------------*/
+;*    get-static-type ::var ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (get-static-type node::var)
+   (with-access::var node (variable)
+      (variable-type variable)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type ...                                                     */
@@ -195,10 +209,12 @@
       ((or (eq? t2 *_*) (eq? t1 *_*))
        #t)
       ((eq? t2 *pair-nil*)
-       (or (eq? t1 *pair*) (eq? t1 *epair*) (eq? t1 *nil*)))
+       (or (eq? t1 *pair*) (eq? t1 *epair*) (eq? t1 *bnil*)))
       ((eq? t2 *pair*)
        (eq? t1 *epair*))
-      ((or (tclass? t1) (tclass? t2))
+      ((and (tclass? t1) (tclass? t2))
+       (type-subclass? t1 t2))
+      ((and (jclass? t1) (jclass? t2))
        (type-subclass? t1 t2))
       ((and (not (bigloo-type? t1)) (not (bigloo-type? t2)))
        (c-subtype? t1 t2))

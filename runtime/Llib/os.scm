@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Jun  5 08:35:05 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 12:08:47 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -1286,7 +1286,7 @@
 ;*    umask ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (umask #!optional mask)
-   (if (integer? mask)
+   (if (fixnum? mask)
        ($umask mask)
        (let ((old ($umask 0)))
 	  ($umask old)

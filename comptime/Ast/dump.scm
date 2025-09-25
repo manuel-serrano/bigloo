@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Fri Dec 27 09:40:01 2024 (serrano)                */
+;*    Last change :  Wed Sep 24 16:26:16 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -269,9 +269,9 @@
    (node->sexp-hook node)
    (with-access::valloc node (expr* type ftype)
       `(,(string->symbol
-	  (string-append "valloc::"
-			 (shape (get-type node #f))
-			 "[::" (shape ftype) "]"))
+	    (string-append "valloc::"
+	       (shape (get-type node #f))
+	       "[::" (shape ftype) "]"))
 	,@(map node->sexp expr*))))
    
 ;*---------------------------------------------------------------------*/
@@ -287,8 +287,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::cast-null)
    (node->sexp-hook node)
-   (with-access::cast-null node (type)
-      `(cast-null:: ,(type-id type))))
+   (with-access::cast-null node (c-format type)
+      `(cast-null ,c-format ,(type-id type))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::cast ...                                            */
@@ -325,9 +325,10 @@
 (define-method (node->sexp node::fail)
    (node->sexp-hook node)
    (location-shape (node-loc node)
-      `(failure ,(node->sexp (fail-proc node))
-	  ,(node->sexp (fail-msg node))
-	  ,(node->sexp (fail-obj node)))))
+      `(,(shape-typed-node 'failure (node-type node))
+	,(node->sexp (fail-proc node))
+	,(node->sexp (fail-msg node))
+	,(node->sexp (fail-obj node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::switch ...                                          */

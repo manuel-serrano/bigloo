@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Wed Sep 17 16:02:46 2025 (serrano)                */
+;*    Last change :  Wed Sep 24 07:59:00 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -37,7 +37,8 @@
 	    (bind-global!::global ::symbol ::obj ::symbol ::value ::symbol ::obj)
 	    (unbind-global! ::symbol ::symbol)
 	    (for-each-global! ::procedure . env)
-	    (global-bucket-position ::symbol ::symbol)
+	    (global-bucket-position::long ::symbol ::symbol)
+	    (global-bucket-length::long ::symbol ::symbol)
 	    (restore-global! new)
 	    (additional-heap-restore-globals!)
 	    (already-restored? fun)))
@@ -421,13 +422,18 @@
       (if (not (pair? bucket))
 	  -1
 	  (let loop ((globals (cdr bucket))
-		     (pos     0))
+		     (pos 0))
 	     (cond
-		((null? globals)
-		 -1)
-		((eq? (global-module (car globals)) module)
-		 pos)
-		(else
-		 (loop (cdr globals)
-		       (+fx pos 1))))))))
+		((null? globals) -1)
+		((eq? (global-module (car globals)) module) pos)
+		(else (loop (cdr globals) (+fx pos 1))))))))
+
+;*---------------------------------------------------------------------*/
+;*    global-bucket-length                                             */
+;*---------------------------------------------------------------------*/
+(define (global-bucket-length id module)
+   (let ((bucket (hashtable-get *Genv* id)))
+      (if (not (pair? bucket))
+	  0
+	  (length (cdr bucket)))))
    
