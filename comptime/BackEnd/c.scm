@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Sun Jun 29 12:30:06 2025 (serrano)                */
+;*    Last change :  Thu Sep 25 10:40:18 2025 (serrano)                */
 ;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -400,7 +400,7 @@
    '(pragma "BGL_GC_INIT()"))
 
 ;*---------------------------------------------------------------------*/
-;*    backend-constant-bindings ::cgen ...                             */
+;*    backend-constant-bindings ::cvm ...                              */
 ;*---------------------------------------------------------------------*/
-(define-method (backend-constant-bindings b::cgen)
+(define-method (backend-constant-bindings b::cvm)
    '(pragma "bgl_constant_bindings()"))

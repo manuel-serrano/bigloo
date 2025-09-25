@@ -445,7 +445,13 @@
       (emit-atom-value (atom-value i) (atom-type i))) )
 
 (define-method (gen-prefix fun::rtl_loadg) ;()
-   (display (gname (rtl_loadg-var fun))) )
+   (let ((g (rtl_loadg-var fun)))
+      (with-access::global g (value)
+	 (if (and (isa? value scnst)
+		  (with-access::scnst value (class)
+		     (eq? class 'sreal)))
+	     (display* "BGL_REAL_CNST(" (gname (rtl_loadg-var fun)) ")")
+	     (display (gname (rtl_loadg-var fun))) ))))
 
 (define-method (gen-prefix fun::rtl_loadfun) ;()
    (display* "(function_t) " (gname (rtl_loadfun-var fun))) )
