@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Tue Sep 23 14:07:51 2025 (serrano)                */
+;*    Last change :  Fri Sep 26 07:32:10 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -82,7 +82,6 @@
 	    (class-make::obj ::tclass)
 	    (class-fill::obj ::tclass)
 	    (class-predicate::symbol ::tclass)
-	    (class-allocate::symbol ::tclass)
 	    (check-class-declaration?::bool ::tclass ::obj)
 	    (set-class-slots! ::tclass ::pair-nil ::pair-nil)))
 
@@ -313,14 +312,6 @@
 ;*---------------------------------------------------------------------*/
 (define (class-predicate::symbol t::tclass)
    (symbol-append (type-id t) '?))
-
-;*---------------------------------------------------------------------*/
-;*    class-allocate ...                                               */
-;*    -------------------------------------------------------------    */
-;*    The name of the allocator                                        */
-;*---------------------------------------------------------------------*/
-(define (class-allocate::symbol t::tclass)
-   (symbol-append '%allocate- (type-id t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-occurrence-increment! ::tclass ...                          */

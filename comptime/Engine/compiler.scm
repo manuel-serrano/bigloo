@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Sep 20 12:44:31 2025 (serrano)                */
+;*    Last change :  Fri Sep 26 07:41:57 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -613,6 +613,10 @@
 
 	 ;; build the variable and function ast
 	 (module5-ast! mod)
+
+	 ;; object unit
+	 (let ((u (module5-object-unit mod)))
+	    (when u (set! units (cons u units))))
 	 
 	 (let* ((m (module5-main mod))
 		(ast (profile ast (build-ast units))))

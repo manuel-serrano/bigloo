@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Thu Sep 25 14:20:41 2025 (serrano)                */
+;*    Last change :  Fri Sep 26 07:57:30 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -93,12 +93,12 @@
       (((and (? class-kind?) ?kind)  ?ident (?ctor) . ?props)
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
-	  (class-info id super kind
+	  (class-info id -1 super kind
 	     ctor (parse-properties props id) #unspecified x)))
       (((and (? class-kind?) ?kind) ?ident . ?props)
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
-	  (class-info id super kind
+	  (class-info id -1 super kind
 	     #f (parse-properties props id) #unspecified x)))
       (else
        (error/loc "parse" "Illegal class definition" x x))))
@@ -258,9 +258,9 @@
 					    (list `(lambda (,to ,tv)
 						      (set! (-> o ,id) v)))))
 				   ;; ronly
-				   (prop-info-ronly? p)
+				   ,(prop-info-ronly? p)
 				   ;; virtual
-				   (prop-info-virtual? p)
+				   ,(prop-info-virtual? p)
 				   ;; info
 				   #f
 				   ;; default

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Sep 26 05:38:03 2025 (serrano)                */
+;*    Last change :  Fri Sep 26 07:21:18 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -93,11 +93,24 @@
 	      (decl (default #unspecified)))
 
 	   (class KDef::Def
-	      (generator read-only)
+	      (index::long read-only)
+	      (registration read-only)
 	      (super read-only)
 	      (ctor read-only)
 	      (kkind::symbol read-only)
 	      (properties::pair-nil read-only))
+
+	   (class Kprop
+	      (id::symbol read-only)
+	      (type read-only)
+	      (class read-only)
+	      (defv?::bool read-only)
+	      (ronly?::bool read-only)
+	      (virtual?::bool read-only)
+	      (get read-only)
+	      (set read-only)
+	      (value read-only)
+	      (src read-only))
 	   
 	   (module5-register-plugin! ::bstring ::procedure)
 	   (module5-resolve-path ::bstring ::bstring)
@@ -632,8 +645,6 @@
 	       (lambda (k d::Decl)
 		  (format "~a/~a" (-> d id) (-> d alias)))))
 	 (set! (-> mod resolved) #t)
-	 (module-bind-class! mod 'object
-	    (class-info 'object #f 'class #f '() #unspecified #unspecified))
 	 (let* ((xenv (if (procedure? new-xenv) (new-xenv) new-xenv))
 		(kx (make-class-expander mod xenv)))
 	    (install-module5-expander xenv 'define-class
@@ -797,12 +808,13 @@
       (let ((id (class-info-id ci)))
 	 (instantiate::KDef
 	    (id id)
+	    (index (class-info-index ci))
 	    (type 'class)
 	    (kind 'class)
 	    (ronly #t)
 	    (ctor (class-info-ctor ci))
 	    (src (class-info-src ci))
-	    (generator (class-info-registration ci))
+	    (registration (class-info-registration ci))
 	    (super (when (class-info-super ci)
 		      (class-info-id (class-info-super ci))))
 	    (kkind (class-info-kind ci))
@@ -1120,4 +1132,5 @@
 ;*    module-bind-class! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (module-bind-class! mod::Module id::symbol ci)
+   (class-info-index-set! ci (hashtable-size (-> mod classes)))
    (hashtable-put! (-> mod classes) (symbol->string! id) ci))

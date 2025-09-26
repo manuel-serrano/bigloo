@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/module5.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/FOO.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Sep 26 05:14:31 2025 (serrano)                */
+;*    Last change :  Fri Sep 26 07:48:09 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -38,6 +38,7 @@
 	   (module5-ast! ::Module)
 	   (module5-main ::Module)
 	   (module5-imported-unit ::Module ::procedure)
+	   (module5-object-unit ::Module)
 	   (module5-extern-plugin-c ::Module ::pair))
 
    (export (class CDef::Def
@@ -90,34 +91,33 @@
 
    (define (declare-class-definition! id alias mid scope src def::Def)
       (with-access::KDef def (src id decl super ctor src kkind properties)
-	 (let* ((var (declare-global-svar! id id mid scope src src))
-		(sup (and super (find-type super)))
-		(ty (if (type-exists? id)
-			(find-type id)
-			(declare-class-type! id sup
-			   ctor var #f
-			   (eq? kkind 'define-final-class)
-			   (eq? kkind 'define-abstract-class)
-			   (eq? kkind 'define-wide-class)))))
+	 (let ((var (declare-global-svar! id id mid scope src src)))
 	    (global-type-set! var (find-type 'class))
-	    (gen-class-coercions! ty)
-	    (let* ((sslots (if sup (tclass-slots sup) '()))
-		   (nslots (map (lambda (p i)
-				   (let ((id (cdr (assq 'id p))))
-				      (instantiate::slot
-					 (id id)
-					 (index i)
-					 (name (id->name id))
-					 (src (cdr (assq 'src p)))
-					 (class-owner ty)
-					 (user-info #f)
-					 (type (find-type
-						  (cdr (assq 'type p)))))))
-			      properties
-			      (iota (length properties)
-				 (length sslots)))))
-	       (tclass-slots-set! ty (append sslots nslots))
-	       var))))
+	    (unless (eq? scope 'import)
+		(let* ((sup (and super (find-type super)))
+		       (ty (declare-class-type! id sup
+			      ctor var #f
+			      (eq? kkind 'define-final-class)
+			      (eq? kkind 'define-abstract-class)
+			      (eq? kkind 'define-wide-class))))
+		   (gen-class-coercions! ty)
+		   (let* ((sslots (if sup (tclass-slots sup) '()))
+			  (nslots (map (lambda (p i)
+					  (let ((id (cdr (assq 'id p))))
+					     (instantiate::slot
+						(id id)
+						(index i)
+						(name (id->name id))
+						(src (cdr (assq 'src p)))
+						(class-owner ty)
+						(user-info #f)
+						(type (find-type
+							 (cdr (assq 'type p)))))))
+				     properties
+				     (iota (length properties)
+					(length sslots)))))
+		      (tclass-slots-set! ty (append sslots nslots)))))
+	    var)))
    
    (define (declare-definition! kind id alias mid scope src def::Def)
       (case kind
@@ -208,6 +208,31 @@
 	 
 	 (unit 'imported-modules 12 body #f #f))))
 
+;*---------------------------------------------------------------------*/
+;*    module5-object-unit ...                                          */
+;*---------------------------------------------------------------------*/
+(define (module5-object-unit mod::Module)
+   (with-access::Module mod (decls)
+      (let* ((decls (sort (lambda (x y)
+			     (with-access::KDef x ((xindex index))
+				(with-access::KDef y ((yindex index))
+				   (<fx xindex yindex))))
+		       (filter-map (lambda (xdecl)
+				      (when xdecl
+					 (with-access::Decl xdecl (def)
+					    def)))
+			  (hashtable-map decls
+			     (lambda (k decl)
+				(with-access::Decl decl ((dmod mod) def)
+				   (when (and (eq? dmod mod) (isa? def KDef))
+				      decl)))))))
+	     (body (map (lambda (def)
+			   (with-access::KDef def (id registration)
+			      `(set! ,id ,registration)))
+		      decls)))
+	 (when (pair? body)
+	    (unit 'object 19 body #f #f)))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */
 ;*---------------------------------------------------------------------*/

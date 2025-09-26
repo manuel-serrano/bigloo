@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 10 08:56:49 2015                          */
-;*    Last change :  Tue Sep 23 14:52:01 2025 (serrano)                */
+;*    Last change :  Fri Sep 26 08:05:30 2025 (serrano)                */
 ;*    Copyright   :  2015-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Class hashing                                                    */
@@ -12,7 +12,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-info ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-struct class-info id super kind ctor properties registration src)
+(define-struct class-info id index super kind ctor properties registration src)
 
 ;*---------------------------------------------------------------------*/
 ;*    prop-info ...                                                    */

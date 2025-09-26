@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Thu Sep 25 14:17:08 2025 (serrano)                */
+;*    Last change :  Fri Sep 26 07:22:21 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -348,7 +348,7 @@
 	    (class-constructor::obj ::class)
 	    (class-allocator::procedure ::class)
 	    (class-creator::obj ::class)
-	    (inline class-allocate::object ::class)
+	    (inline class-allocate::obj ::class)
 	    (inline class-nil::obj ::class)
 	    (class-nil-init!::obj ::class)
 	    (make-class-field::class-field ::symbol ::obj ::obj ::bool ::bool ::obj ::obj ::obj)
@@ -756,7 +756,10 @@
 ;*    For preformance, this function is overriden by a compiler        */
 ;*    macro.                                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (class-allocate class)
+(define-inline (class-allocate::obj class)
+   ;; although this function always returns an "object", its prototype
+   ;; says "obj" so that it simplifies the bootstrap of the runtime
+   ;; that defines the "object" class.
    (($class-alloc-fun class)))
 
 ;*---------------------------------------------------------------------*/
