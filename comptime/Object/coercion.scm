@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Object/coercion.scm      */
+;*    .../prgm/project/bigloo/wasm/comptime/Object/coercion.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Mon Aug 26 15:48:08 2024 (serrano)                */
-;*    Copyright   :  2000-24 Manuel Serrano                            */
+;*    Last change :  Fri Sep 26 05:22:45 2025 (serrano)                */
+;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
 ;*    -------------------------------------------------------------    */
@@ -46,6 +46,7 @@
 ;*    gen-class-coercions! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (gen-class-coercions! class)
+   (install-module-clauses-compiler!)
    (with-access::tclass class (id its-super)
       (gen-coercion-clause! class id its-super)
       (gen-class-coercers! class its-super)))
@@ -54,6 +55,7 @@
 ;*    gen-java-class-coercions! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (gen-java-class-coercions! class)
+   (install-module-clauses-compiler!)
    (with-access::jclass class (id its-super)
       (gen-coercion-clause! class id its-super)
       (gen-class-coercers! class its-super)))

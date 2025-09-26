@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:29:03 1996                          */
-;*    Last change :  Wed Sep 17 13:37:32 2025 (serrano)                */
+;*    Last change :  Fri Sep 26 05:22:13 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of a Module clause                               */
@@ -55,6 +55,8 @@
 	       ;; what to do after the overall module compilation
 	       (finalizer::procedure read-only (default (lambda () 'void))))
 
+	    (install-module-clauses-compiler!)
+	    
 	    (produce-module! <module-clause>)
 	    (produce-module-clause! <clause>)
 	    (consume-module! ::symbol <module-clause>)

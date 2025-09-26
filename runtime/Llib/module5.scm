@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Sep 23 09:30:43 2025 (serrano)                */
+;*    Last change :  Fri Sep 26 05:38:03 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -632,6 +632,8 @@
 	       (lambda (k d::Decl)
 		  (format "~a/~a" (-> d id) (-> d alias)))))
 	 (set! (-> mod resolved) #t)
+	 (module-bind-class! mod 'object
+	    (class-info 'object #f 'class #f '() #unspecified #unspecified))
 	 (let* ((xenv (if (procedure? new-xenv) (new-xenv) new-xenv))
 		(kx (make-class-expander mod xenv)))
 	    (install-module5-expander xenv 'define-class

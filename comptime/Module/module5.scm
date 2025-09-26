@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Sep 23 15:00:14 2025 (serrano)                */
+;*    Last change :  Fri Sep 26 05:14:31 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -30,7 +30,8 @@
 	   type_type
 	   type_env
 	   object_class
-	   object_slots)
+	   object_slots
+	   object_coercion)
 
    (export (module5-expand ::pair-nil)
 	   (module5-import-def ::Module ::Decl)
@@ -86,6 +87,37 @@
 	     ((define-expander (?- . ?args) . ?-) 'expander)
 	     ((define-class . ?-) 'class)
 	     (else 'variable))))
+
+   (define (declare-class-definition! id alias mid scope src def::Def)
+      (with-access::KDef def (src id decl super ctor src kkind properties)
+	 (let* ((var (declare-global-svar! id id mid scope src src))
+		(sup (and super (find-type super)))
+		(ty (if (type-exists? id)
+			(find-type id)
+			(declare-class-type! id sup
+			   ctor var #f
+			   (eq? kkind 'define-final-class)
+			   (eq? kkind 'define-abstract-class)
+			   (eq? kkind 'define-wide-class)))))
+	    (global-type-set! var (find-type 'class))
+	    (gen-class-coercions! ty)
+	    (let* ((sslots (if sup (tclass-slots sup) '()))
+		   (nslots (map (lambda (p i)
+				   (let ((id (cdr (assq 'id p))))
+				      (instantiate::slot
+					 (id id)
+					 (index i)
+					 (name (id->name id))
+					 (src (cdr (assq 'src p)))
+					 (class-owner ty)
+					 (user-info #f)
+					 (type (find-type
+						  (cdr (assq 'type p)))))))
+			      properties
+			      (iota (length properties)
+				 (length sslots)))))
+	       (tclass-slots-set! ty (append sslots nslots))
+	       var))))
    
    (define (declare-definition! kind id alias mid scope src def::Def)
       (case kind
@@ -115,37 +147,13 @@
 	  (with-access::CDef def (name type macro)
 	     (declare-global-cvar! id alias name type macro src src)))
 	 ((class)
-	  (with-access::KDef def (src id decl super ctor src kkind properties)
-	     (let* ((var (declare-global-svar! id id mid scope src src))
-		    (sup (and super (find-type super)))
-		    (ty (declare-class-type! id sup
-			   ctor var #f
-			   (eq? kkind 'define-final-class)
-			   (eq? kkind 'define-abstract-class)
-			   (eq? kkind 'define-wide-class))))
-		(let* ((sslots (if sup (tclass-slots sup) '()))
-		       (nslots (map (lambda (p i)
-				       (let ((id (cdr (assq 'id p))))
-					  (instantiate::slot
-					     (id id)
-					     (index i)
-					     (name (id->name id))
-					     (src (cdr (assq 'src p)))
-					     (class-owner ty)
-					     (user-info #f)
-					     (type (find-type
-						      (cdr (assq 'type p)))))))
-				  properties
-				  (iota (length properties)
-				     (length sslots)))))
-		   (tclass-slots-set! ty (append sslots nslots))
-		   var))))
+	  (declare-class-definition! id alias mid scope src def))
 	 (else
 	  (error "module5-ast"
 	     (format "Unsupported definition kind \"~a\"" kind)
 	     id))))
    
-   (with-access::Module mod (classes defs decls exports (mid id))
+   (with-access::Module mod (defs decls exports (mid id))
       
       (hashtable-for-each defs
 	 (lambda (k d)
