@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/FOO.scm         */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/module5.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Sep 26 07:48:09 2025 (serrano)                */
+;*    Last change :  Sat Sep 27 14:35:33 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -103,16 +103,15 @@
 		   (gen-class-coercions! ty)
 		   (let* ((sslots (if sup (tclass-slots sup) '()))
 			  (nslots (map (lambda (p i)
-					  (let ((id (cdr (assq 'id p))))
+					  (with-access::Kprop p (id type src)
 					     (instantiate::slot
 						(id id)
 						(index i)
 						(name (id->name id))
-						(src (cdr (assq 'src p)))
+						(src src)
 						(class-owner ty)
 						(user-info #f)
-						(type (find-type
-							 (cdr (assq 'type p)))))))
+						(type (find-type type)))))
 				     properties
 				     (iota (length properties)
 					(length sslots)))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Sep 26 07:21:18 2025 (serrano)                */
+;*    Last change :  Sat Sep 27 14:21:14 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -104,12 +104,12 @@
 	      (id::symbol read-only)
 	      (type read-only)
 	      (class read-only)
-	      (defv?::bool read-only)
-	      (ronly?::bool read-only)
-	      (virtual?::bool read-only)
-	      (get read-only)
-	      (set read-only)
-	      (value read-only)
+	      (defv::bool (default #f))
+	      (ronly::bool (default #f))
+	      (virtual::bool (default #f))
+	      (get (default #unspecified))
+	      (set (default #unspecified))
+	      (value (default #unspecified))
 	      (src read-only))
 	   
 	   (module5-register-plugin! ::bstring ::procedure)
@@ -818,16 +818,9 @@
 	    (super (when (class-info-super ci)
 		      (class-info-id (class-info-super ci))))
 	    (kkind (class-info-kind ci))
-	    (properties (filter-map (lambda (p)
-				       (when (eq? (prop-info-class p) id)
-					  `((id . ,(prop-info-id p))
-					    (src . ,(prop-info-src p))
-					    (type . ,(prop-info-type p))
-					    (ronly . ,(prop-info-ronly? p))
-					    (defvalue . ,(prop-info-defv? p))
-					    (value . ,(prop-info-value p))
-					    (get . ,(prop-info-get p))
-					    (set . ,(prop-info-set p)))))
+	    (properties (filter (lambda (p)
+				   (with-access::Kprop p (class)
+				      (eq? class id)))
 			   (class-info-properties ci))))))
       
    (hashtable-for-each (-> mod classes)

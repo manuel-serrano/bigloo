@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 10 08:56:49 2015                          */
-;*    Last change :  Fri Sep 26 08:05:30 2025 (serrano)                */
+;*    Last change :  Sat Sep 27 14:30:54 2025 (serrano)                */
 ;*    Copyright   :  2015-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Class hashing                                                    */
@@ -13,8 +13,3 @@
 ;*    class-info ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-struct class-info id index super kind ctor properties registration src)
-
-;*---------------------------------------------------------------------*/
-;*    prop-info ...                                                    */
-;*---------------------------------------------------------------------*/
-(define-struct prop-info id type class defv? ronly? virtual? get set value src)
