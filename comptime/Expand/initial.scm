@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Wed Jun 18 17:51:55 2025 (serrano)                */
+;*    Last change :  Sat Sep 27 07:26:47 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -980,6 +980,9 @@
    (install-compiler-expander 'define-class expand-define-class)
    (install-compiler-expander 'define-final-class expand-define-class)
    (install-compiler-expander 'define-abstract-class expand-define-class)
+
+   ;; $class-allocate
+   (install-compiler-expander '$class-allocate expand-class-allocate)
    
    ;; with-access
    (install-compiler-expander 'with-access expand-with-access)

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/runtime/Include/bigloo_object.h        */
+/*    .../prgm/project/bigloo/wasm/runtime/Include/bigloo_object.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Mar 10 18:57:28 2025 (serrano)                */
+/*    Last change :  Sat Sep 27 09:15:37 2025 (serrano)                */
 /*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -170,13 +170,15 @@ typedef struct BgL_objectz00_bgl {
 #define BGL_CLASS_NIL(f) (BGL_CLASS(f).nil)
 #define BGL_CLASS_NIL_SET(f, v) BASSIGN(BGL_CLASS_NIL(f), v, f)
    
+#define BGL_CLASS_ALLOC_INSTANCE(k) ((k)(GC_MALLOC(sizeof(k))))
+
 #define BGL_CLASS_CONSTRUCTOR(f) (BGL_CLASS(f).constructor)
    
 #define BGL_CLASS_SHRINK(f) (BGL_CLASS(f).shrink)
    
 #define BGL_CLASS_EVDATA(f) (BGL_CLASS(f).evdata)   
 #define BGL_CLASS_EVDATA_SET(f, o) (BGL_CLASS_EVDATA(f) = o)
-   
+
 /*---------------------------------------------------------------------*/
 /*    C++                                                              */
 /*---------------------------------------------------------------------*/

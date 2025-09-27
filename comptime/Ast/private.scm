@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/private.scm             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/private.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Sat May  6 08:50:12 2017 (serrano)                */
-;*    Copyright   :  2000-17 Manuel Serrano                            */
+;*    Last change :  Sat Sep 27 07:59:57 2025 (serrano)                */
+;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
 ;*=====================================================================*/
@@ -19,6 +19,8 @@
 	   type_cache
 	   type_env
 	   tools_shape
+	   object_class
+	   object_slots
 	   ast_sexp
 	   ast_var)
    (export (private-node ::pair ::obj ::obj ::symbol)
@@ -116,6 +118,18 @@
 	  (type (use-type! type loc))
 	  (side-effect #t)
 	  (c-format "")))
+      ((?- new/args ?type ?args)
+       (with-access::tclass (find-type type) (slots)
+	  (instantiate::new
+	     (loc loc)
+	     (type (use-type! type loc))
+	     (side-effect #t)
+	     (c-format "")
+	     (args-type (map slot-type slots))
+	     (expr* (if (null? args)
+			'()
+			(sexp*->node args stack loc 'value)))
+	     (side-effect #t))))
       ((?- new ?type (quote ?args-type) . ?rest)
        (if (null? rest)
 	   ;; not an external class
@@ -239,9 +253,10 @@
 ;*    are never macro-expanded).                                       */
 ;*---------------------------------------------------------------------*/
 (define (make-private-sexp::pair kind::symbol type-id::symbol . objs)
-   (assert (kind) (memq kind '(getfield setfield new cast cast-null
+   (assert (kind) (memq kind '(getfield setfield new new/args
+			       cast cast-null
 			       ;; isa to be removed
-			       instanceof isa
+			       instanceof ;; isa
 			       vlength vref vset! valloc unsafe
 			       vref-ur vset-ur! meta)))
    (cons* *private-stamp* kind type-id objs))

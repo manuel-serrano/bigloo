@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/sexp.scm         */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/sexp.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Nov  3 10:57:14 2022 (serrano)                */
+;*    Last change :  Sat Sep 27 09:45:28 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -457,7 +457,7 @@
       
 ;*--- lambda ----------------------------------------------------------*/
       ((lambda . ?-)
-       (lambda->node exp stack loc site "anonymous"))
+       (lambda->node exp stack loc site "L"))
 ;*--- pragma ----------------------------------------------------------*/
       ((pragma . ?-)
        (pragma/type->node #f #f *unspec* exp stack loc site))
@@ -807,14 +807,14 @@
 (define (make-anonymous-name::symbol loc . pref)
    (let ((pref (if (and (pair? pref) (string? (car pref)))
 		   (car pref)
-		   "anonymous")))
+		   "L")))
       (if (location? loc)
-	  (let ((file (location-full-fname loc))
+	  (let ((file (location-fname loc))
 		(line (location-lnum loc))
 		(base (symbol->string (gensym (string-append "<@" pref ":")))))
 	     (cond
 		((string-contains pref "<@")
-		 (symbol-append (string->symbol pref) (gensym 'anonymous)))
+		 (symbol-append (string->symbol pref) (gensym 'L)))
 		((or (and (>=fx *bdb-debug* 1)
 			  (memq 'bdb (backend-debug-support (the-backend))))
 		     (>=fx *compiler-debug* 1))

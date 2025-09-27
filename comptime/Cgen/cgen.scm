@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Thu Sep 25 07:08:59 2025 (serrano)                */
+;*    Last change :  Sat Sep 27 09:06:53 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -596,6 +596,56 @@
 		     (arg (car new-args)))))
 	 inpushexit)))
 
+;*---------------------------------------------------------------------*/
+;*    node->cop ::new ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (node->cop node::new kont inpushexit)
+   (trace (cgen 3)
+      "(node->cop node::cast kont): " (shape node) #\Newline
+      "  kont: " kont #\Newline)
+   (with-access::new node (arg type loc type expr*)
+      (let* ((o (make-local-svar/name (gensym 'o) type))
+	     (alloc (instantiate::pragma
+		       (type type)
+		       (format (format "BGL_CLASS_ALLOC_INSTANCE(~a)"
+				  (type-name type)))))
+	     (assig (node->cop (node-setq o alloc) *id-kont* inpushexit)))
+	 (set-variable-name! o)
+	 (instantiate::cblock
+	    (type type)
+	    (loc loc)
+	    (body
+	       (instantiate::csequence
+		  (type type)
+		  (loc loc)
+		  (cops
+		     `(,(instantiate::local-var
+			   (type *obj*)
+			   (vars (list o))
+			   (loc loc))
+		       ,assig
+		       ,@(map (lambda (x s)
+				 (instantiate::cpragma
+				    (type (slot-type s))
+				    (loc loc)
+				    (format (format "~a->~a = $1"
+					       (variable-name o)
+					       (slot-name s)))
+				    (args (list
+					     (node->cop x *id-kont* inpushexit)))))
+			    expr*
+			    (filter (lambda (s) (<fx (slot-virtual-num s) 0))
+			       (tclass-slots type)))
+		       ,(kont (instantiate::cpragma
+				 (type type)
+				 (loc loc)
+				 (format (format "((~a)BOBJECT($1))"
+					    (type-name type)))
+				 (args (list (instantiate::varc
+						(type type)
+						(variable o)
+						(loc loc))))))))))))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::setq ...                                             */
 ;*---------------------------------------------------------------------*/

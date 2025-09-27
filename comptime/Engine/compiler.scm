@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Sep 26 07:41:57 2025 (serrano)                */
+;*    Last change :  Sat Sep 27 07:32:30 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -599,7 +599,11 @@
 	 (user-walk tu)
 	 (stop-on-pass 'user (lambda () (write-unit units)))
 	 
-	 ;; ... and we macro expand
+	 ;; object unit
+	 (let ((u (module5-object-unit mod)))
+	    (when u (set! units (cons u units))))
+	 
+	 ;; ... and the global user-defined macro expansion
 	 (profile expand (expand-units units))
 	 (stop-on-pass 'expand
 	    (lambda ()
@@ -614,10 +618,6 @@
 	 ;; build the variable and function ast
 	 (module5-ast! mod)
 
-	 ;; object unit
-	 (let ((u (module5-object-unit mod)))
-	    (when u (set! units (cons u units))))
-	 
 	 (let* ((m (module5-main mod))
 		(ast (profile ast (build-ast units))))
 

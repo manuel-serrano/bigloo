@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Wed Sep 24 10:18:20 2025 (serrano)                */
+;*    Last change :  Sat Sep 27 09:35:52 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce implicity type coercions                               */
@@ -188,14 +188,16 @@
 ;*    coerce! ::new ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::new caller to safe)
-   (with-access::new node (expr* type)
-      (let loop ((l expr*))
+   (with-access::new node (expr* type args-type)
+      (let loop ((l expr*)
+		 (t args-type))
 	 (if (null? l)
 	     (convert! node type to safe)
 	     (let* ((v (car l))
-		    (nv (coerce! v caller (get-type v #f) safe)))
+		    ;;(nv (coerce! v caller (get-type v #f) safe)))
+		    (nv (coerce! v caller (car t) safe)))
 		(set-car! l nv)
-		(loop (cdr l)))))
+		(loop (cdr l) (cdr t)))))
       (convert! node type to safe)))
 
 ;*---------------------------------------------------------------------*/

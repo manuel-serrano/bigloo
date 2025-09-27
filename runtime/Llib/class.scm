@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Fri Sep 26 07:57:30 2025 (serrano)                */
+;*    Last change :  Sat Sep 27 07:20:27 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -194,7 +194,7 @@
 ;*    allocator-expand ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (allocator-expand class-info)
-   `(lambda () ,(allocate-expand class-info)))
+   `(lambda () ($class-allocate ,(class-info-id class-info))))
 
 ;*---------------------------------------------------------------------*/
 ;*    creator-expand ...                                               */
@@ -225,16 +225,15 @@
 			 (make-typed-ident (prop-info-id p) (prop-info-type p)))
 		    props)))
       `(lambda ()
-	(,(make-typed-ident 'instantiate (class-info-id class-info))
-	 ,@(map (lambda (p)
-		   (let ((ty (prop-info-type p)))
-		      (cond
-			 ((module-get-class mod ty)
-			  `(,(prop-info-id p) (class-nil ,ty)))
-			 (else
-			  ;; TBR
-			  `(,(prop-info-id p) #unspecified)))))
-	      props)))))
+	  (,(make-typed-ident 'instantiate (class-info-id class-info))
+	   ,@(map (lambda (p)
+		     (let ((ty (prop-info-type p)))
+			(cond
+			   ((module-get-class mod ty)
+			    `(,(prop-info-id p) (class-nil ,ty)))
+			   (else
+			    `($cast-null ,(prop-info-id p))))))
+		props)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    properties-expand ...                                            */
@@ -313,29 +312,29 @@
 		      (unless (match-case p (((? symbol?) ?e) #t) (else #f))
 			 (error/loc (car x) "Illegal property" p args)))
 	    args)
-	 `(let ((,to ,(allocate-expand class-info)))
-	     ;; concrete properties
-	     ,@(filter-map (lambda (p)
-			      (cond
-				 ((prop-info-virtual? p)
-				  #f)
-				 ((assq (prop-info-id p) args)
-				  =>
-				  (lambda (arg)
-				     `(set! (-> ,o ,(prop-info-id p))
-					 ,(e (cadr arg) e))))
-				 ((prop-info-defv? p)
-				  `(set! (-> ,o ,(prop-info-id p))
-				      ,(e (prop-info-value p) e)))
-				 (else
-				  (error/loc (car x) "Property missing"
-				     (prop-info-id p) (prop-info-src p)))))
-		  (class-info-properties class-info))
+	 `(let ((,to ($class-allocate ,(class-info-id class-info)
+			;; concrete properties
+			,@(filter-map (lambda (p)
+					 (cond
+					    ((prop-info-virtual? p)
+					     #f)
+					    ((assq (prop-info-id p) args)
+					     =>
+					     (lambda (arg)
+						(e (cadr arg) e)))
+					    ((prop-info-defv? p)
+					     (e (prop-info-value p) e))
+					    (else
+					     (error/loc (car x)
+						"Property missing"
+						(prop-info-id p)
+						(prop-info-src p)))))
+			     (class-info-properties class-info)))))
 	     ;; constructor
 	     ,@(if (class-info-ctor class-info)
 		   (list (class-info-ctor class-info))
 		   '())
-	     ;; virtual propertyes
+	     ;; virtual propertys
 	     ,@(filter-map (lambda (p)
 			      (cond
 				 ((not (prop-info-virtual? p))
