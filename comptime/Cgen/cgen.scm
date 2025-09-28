@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Sat Sep 27 09:06:53 2025 (serrano)                */
+;*    Last change :  Sun Sep 28 06:56:37 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -603,6 +603,24 @@
    (trace (cgen 3)
       "(node->cop node::cast kont): " (shape node) #\Newline
       "  kont: " kont #\Newline)
+
+   (define (set-instance-class-num o type loc)
+      (instantiate::cpragma
+	 (type *unspec*)
+	 (loc loc)
+	 (format "BGL_OBJECT_CLASS_NUM_SET(BOBJECT($1), BGL_CLASS_NUM($2))")
+	 (args (list
+		  (instantiate::varc
+		     (type type)
+		     (variable o)
+		     (loc loc))
+		  (with-access::tclass type (holder)
+		     (set-variable-name! holder)
+		     (instantiate::varc
+			(type (get-class-type))
+			(variable holder)
+			(loc loc)))))))
+   
    (with-access::new node (arg type loc type expr*)
       (let* ((o (make-local-svar/name (gensym 'o) type))
 	     (alloc (instantiate::pragma
@@ -624,6 +642,7 @@
 			   (vars (list o))
 			   (loc loc))
 		       ,assig
+		       ,(set-instance-class-num o type loc)
 		       ,@(map (lambda (x s)
 				 (instantiate::cpragma
 				    (type (slot-type s))

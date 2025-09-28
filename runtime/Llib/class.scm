@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Sat Sep 27 14:21:57 2025 (serrano)                */
+;*    Last change :  Sun Sep 28 06:20:49 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -134,44 +134,41 @@
 ;*---------------------------------------------------------------------*/
 (define (parse-properties props klass)
 
-   (define (ronly-error id a)
+   (define (ronly-error pi a)
       (error/loc klass
 	 (format "Abstract property \"~a\" is declared read-only but is given a setter"
-	    id)
+	    (prop-info-id pi))
 	 a a))
    
    (define (parse-attribute a pi x)
-      (with-access::Kprop pi (id set ronly defv virtual get set value)
-	 (match-case a
-	    (read-only
-	     (if set
-		 (ronly-error id a)
-		 (set! ronly #t)))
-	    ((default ?val)
-	     (set! defv #t)
-	     (set! value val))
-	    ((get ?g)
-	     (set! virtual #t)
-	     (set! get g))
-	    ((set ?s)
-	     (if ronly
-		 (ronly-error id a)
-		 (begin
-		    (set! virtual #t)
-		    (set! set s))))
-	    (else
-	     (error/loc id "Illegal attribute" a x)))))
+      (match-case a
+	 (read-only
+	  (if (prop-info-set pi)
+	      (ronly-error pi a)
+	      (prop-info-ronly?-set! pi #t)))
+	 ((default ?val)
+	  (prop-info-defv?-set! pi #t)
+	  (prop-info-value-set! pi val))
+	 ((get ?get)
+	  (prop-info-virtual?-set! pi #t)
+	  (prop-info-get-set! pi get))
+	 ((set ?set)
+	  (if (prop-info-ronly? pi)
+	      (ronly-error pi a)
+	      (begin
+		 (prop-info-virtual?-set! pi #t)
+		 (prop-info-get-set! pi set))))
+	 (else
+	  (error/loc (prop-info-id pi) "Illegal attribute" a x))))
       
    (define (parse-property p x)
       (match-case p
 	 ((?ident . ?attrs)
 	  (multiple-value-bind (id type)
 	     (parse-ident ident p)
-	     (let ((pi (instantiate::Kprop
-			  (id id)
-			  (type (or type 'obj))
-			  (class klass)
-			  (src p))))
+	     (let ((pi (prop-info id (or type 'obj) klass #f #f #f
+			  #unspecified #unspecified #unspecified
+			  p)))
 		(for-each (lambda (a)
 			     (parse-attribute a pi p))
 		   attrs)
@@ -179,11 +176,9 @@
 	 ((? symbol?)
 	  (multiple-value-bind (id type)
 	     (parse-ident p x)
-	     (instantiate::Kprop
-		(id id)
-		(type (or type 'obj))
-		(class klass)
-		(src p))))
+	     (prop-info id (or type 'obj) klass #f #f #f
+		#unspecified #unspecified #unspecified
+		p)))
 	 (else
 	  (error/loc klass "Illegal property" p props))))
    
@@ -206,18 +201,16 @@
 ;*---------------------------------------------------------------------*/
 (define (creator-expand class-info)
    (let* ((props (filter (lambda (p)
-			    (with-access::Kprop p (virtual ronly)
-			       (or (not virtual) (not ronly))))
+			    (or (not (prop-info-virtual? p))
+				(not (prop-info-ronly? p))))
 		    (class-info-properties class-info)))
 	  (targs (map (lambda (p)
-			 (with-access::Kprop p (id type)
-			    (make-typed-ident id type)))
+			 (make-typed-ident (prop-info-id p) (prop-info-type p)))
 		    props)))
       `(lambda ,targs
 	  (,(make-typed-ident 'instantiate (class-info-id class-info))
 	   ,@(map (lambda (p)
-		     (with-access::Kprop p (id)
-			`(,id ,id)))
+		     `(,(prop-info-id p) ,(prop-info-id p)))
 		props))))) 
 	  
 ;*---------------------------------------------------------------------*/
@@ -225,22 +218,21 @@
 ;*---------------------------------------------------------------------*/
 (define (nil-creator-expand class-info mod)
    (let* ((props (filter (lambda (p)
-			    (with-access::Kprop p (virtual ronly)
-			       (or (not virtual) (not ronly))))
+			    (or (not (prop-info-virtual? p))
+				(not (prop-info-ronly? p))))
 		    (class-info-properties class-info)))
 	  (targs (map (lambda (p)
-			 (with-access::Kprop p (id type)
-			    (make-typed-ident id type)))
+			 (make-typed-ident (prop-info-id p) (prop-info-type p)))
 		    props)))
       `(lambda ()
 	  (,(make-typed-ident 'instantiate (class-info-id class-info))
 	   ,@(map (lambda (p)
-		     (with-access::Kprop p (id type)
+		     (let ((ty (prop-info-type p)))
 			(cond
-			   ((module-get-class mod type)
-			    `(,id (class-nil ,type)))
+			   ((module-get-class mod ty)
+			    `(,(prop-info-id p) (class-nil ,ty)))
 			   (else
-			    `($cast-null ,id)))))
+			    `($cast-null ,(prop-info-id p))))))
 		props)))))
 
 ;*---------------------------------------------------------------------*/
@@ -250,29 +242,30 @@
    (let ((to (make-typed-ident 'o (class-info-id class-info))))
       `(vector
 	  ,@(filter-map (lambda (p)
-			   (with-access::Kprop p (virtual ronly id type value)
-			      (when (eq? virtual virtual?)
+			   (when (eq? (prop-info-virtual? p) virtual?)
+			      (let ((ty (prop-info-type p))
+				    (id (prop-info-id p)))
 				 `((@ make-class-field __object)
 				   ;; id
 				   ',id
 				   ;; get
 				   (lambda (,to) (-> o ,id))
 				   ;; set
-				   ,@(if ronly
+				   ,@(if (prop-info-ronly? p)
 					 '()
-					 (let ((tv (make-typed-ident 'v type)))
+					 (let ((tv (make-typed-ident 'v ty)))
 					    (list `(lambda (,to ,tv)
 						      (set! (-> o ,id) v)))))
 				   ;; ronly
-				   ,ronly
+				   ,(prop-info-ronly? p)
 				   ;; virtual
-				   ,virtual
+				   ,(prop-info-virtual? p)
 				   ;; info
 				   #f
 				   ;; default
-				   (lambda () ,value)
+				   (lambda () ,(prop-info-value p))
 				   ;; type
-				   ',type))))
+				   ',(prop-info-type p)))))
 	       (class-info-properties class-info)))))
 
 ;*---------------------------------------------------------------------*/
@@ -322,21 +315,20 @@
 	 `(let ((,to ($class-allocate ,(class-info-id class-info)
 			;; concrete properties
 			,@(filter-map (lambda (p)
-					 (with-access::Kprop p (id virtual defv value src)
-					    (cond
-					       (virtual
-						#f)
-					       ((assq id args)
-						=>
-						(lambda (arg)
-						   (e (cadr arg) e)))
-					       (defv
-						(e value e))
-					       (else
-						(error/loc (car x)
-						   "Property missing"
-						   id
-						   src)))))
+					 (cond
+					    ((prop-info-virtual? p)
+					     #f)
+					    ((assq (prop-info-id p) args)
+					     =>
+					     (lambda (arg)
+						(e (cadr arg) e)))
+					    ((prop-info-defv? p)
+					     (e (prop-info-value p) e))
+					    (else
+					     (error/loc (car x)
+						"Property missing"
+						(prop-info-id p)
+						(prop-info-src p)))))
 			     (class-info-properties class-info)))))
 	     ;; constructor
 	     ,@(if (class-info-ctor class-info)
@@ -344,15 +336,14 @@
 		   '())
 	     ;; virtual propertys
 	     ,@(filter-map (lambda (p)
-			      (with-access::Kprop p (virtual id)
-				 (cond
-				    ((not virtual)
-				     #f)
-				    ((assq id args)
-				     =>
-				     (lambda (arg)
-					`(class-instance-virtual-property-set! ,o
-					    (e ,(cadr arg) e)))))))
+			      (cond
+				 ((not (prop-info-virtual? p))
+				  #f)
+				 ((assq (prop-info-id p) args)
+				  =>
+				  (lambda (arg)
+				     `(class-instance-virtual-property-set! ,o
+					(e ,(cadr arg) e))))))
 		  (class-info-properties class-info))
 	     ;; done
 	     ,o))))

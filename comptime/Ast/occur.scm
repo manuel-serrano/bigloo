@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/occur.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/occur.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Wed Jun 16 15:53:11 2021 (serrano)                */
+;*    Last change :  Sun Sep 28 07:12:03 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrences number and compute the read/write        */
 ;*    property of local variables. The read/write property is          */
@@ -21,7 +21,8 @@
 	    ast_sexp
 	    ast_env
 	    ast_local
-	    ast_dump)
+	    ast_dump
+	    object_class)
    (export  (occur-var globals)
 	    (occur-node-sfun! ::sfun ::global)
 	    (occur-node-in! ::node ::global)
@@ -156,6 +157,17 @@
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::cast)
    (occur-node! (cast-arg node)))
+
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::new ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::new)
+   (with-access::new node (type args)
+      (when (isa? type tclass)
+	 (with-access::tclass type (holder)
+	    (with-access::global holder (occurrence)
+	       (set! occurrence (+fx occurrence 1))))))
+   (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    occur-node! ::setq ...                                           */

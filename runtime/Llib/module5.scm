@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Sep 27 14:21:14 2025 (serrano)                */
+;*    Last change :  Sat Sep 27 14:45:32 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -98,20 +98,9 @@
 	      (super read-only)
 	      (ctor read-only)
 	      (kkind::symbol read-only)
+	      (ci::struct read-only)
 	      (properties::pair-nil read-only))
 
-	   (class Kprop
-	      (id::symbol read-only)
-	      (type read-only)
-	      (class read-only)
-	      (defv::bool (default #f))
-	      (ronly::bool (default #f))
-	      (virtual::bool (default #f))
-	      (get (default #unspecified))
-	      (set (default #unspecified))
-	      (value (default #unspecified))
-	      (src read-only))
-	   
 	   (module5-register-plugin! ::bstring ::procedure)
 	   (module5-resolve-path ::bstring ::bstring)
 	   (module5-resolve-library ::symbol ::pair-nil)
@@ -179,7 +168,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (object-write d::Def . port)
    (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<Def ~a kind=~a ronly=~a>"
+      "#<~a ~a kind=~a ronly=~a>"
+      (class-name (object-class d))
       (-> d id) (-> d kind) (-> d ronly)))
 
 ;*---------------------------------------------------------------------*/
@@ -187,7 +177,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (object-display d::Def . port)
    (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<Def ~a kind=~a ronly=~a>"
+      "#<~a ~a kind=~a ronly=~a>"
+      (class-name (object-class d))
       (-> d id) (-> d kind) (-> d ronly)))
 
 ;*---------------------------------------------------------------------*/
@@ -674,7 +665,12 @@
 				  (trace-item "bind-expander alias="
 				     alias " id=" id)
 				  (install-module5-expander xenv alias src
-				     (eval! (caddr src)))))))))))
+				     (eval! (caddr src))))
+				 ((class)
+				  (trace-item "bind-class alias="
+				     alias " id=" id)
+				  (with-access::KDef def (ci)
+				     (install-class-expanders ci xenv))))))))))
 	    (when (pair? (-> mod body))
 	       (trace-item "body avant-expand=" (-> mod body))
 	       (set! (-> mod body)
@@ -818,9 +814,17 @@
 	    (super (when (class-info-super ci)
 		      (class-info-id (class-info-super ci))))
 	    (kkind (class-info-kind ci))
-	    (properties (filter (lambda (p)
-				   (with-access::Kprop p (class)
-				      (eq? class id)))
+	    (ci ci)
+	    (properties (filter-map (lambda (p)
+				       (when (eq? (prop-info-class p) id)
+					  `((id . ,(prop-info-id p))
+					    (src . ,(prop-info-src p))
+					    (type . ,(prop-info-type p))
+					    (ronly . ,(prop-info-ronly? p))
+					    (defvalue . ,(prop-info-defv? p))
+					    (value . ,(prop-info-value p))
+					    (get . ,(prop-info-get p))
+					    (set . ,(prop-info-set p)))))
 			   (class-info-properties ci))))))
       
    (hashtable-for-each (-> mod classes)
@@ -1086,7 +1090,7 @@
 	 (let ((o (module-get-class mod (class-info-id ci))))
 	    (if o
 		(error/loc mod
-		   (format "Class \"~a\" has already bin declared in module ~a"
+		   (format "Class \"~a\" has already been declared in module ~a"
 		      (class-info-id ci) (-> mod id))
 		   x x)
 		(module-bind-class! mod (class-info-id ci) ci)))
@@ -1101,20 +1105,27 @@
 			 (append (class-info-properties si)
 			    (class-info-properties ci))))
 		   (error/loc mod
-		      (format "Cannot find super class of \"~a\""
+		      (format "Cannot find \"~a\" super class"
 			 (class-info-id ci))
 		      (class-info-super ci) x))))
 	 ;; install the expanders
-	 (install-module5-expander xenv
-	    (string->symbol (format "instantiate::~a" (class-info-id ci)))
-	    #f (instantiate-expander ci))
-	 (install-module5-expander xenv
-	    (string->symbol (format "with-access::~a" (class-info-id ci)))
-	    #f (with-access-expander ci))
+	 (install-class-expanders ci xenv)
 	 ;; expanded class registration form
 	 (class-info-registration-set! ci (e (registration-expand ci mod) e))
 	 #unspecified)))
 
+;*---------------------------------------------------------------------*/
+;*    install-class-expanders ...                                      */
+;*---------------------------------------------------------------------*/
+(define (install-class-expanders ci xenv)
+   ;; install the expanders
+   (install-module5-expander xenv
+      (string->symbol (format "instantiate::~a" (class-info-id ci)))
+      #f (instantiate-expander ci))
+   (install-module5-expander xenv
+      (string->symbol (format "with-access::~a" (class-info-id ci)))
+      #f (with-access-expander ci)))
+	   
 ;*---------------------------------------------------------------------*/
 ;*    module-get-class ...                                             */
 ;*---------------------------------------------------------------------*/
