@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Sun Sep 28 06:20:49 2025 (serrano)                */
+;*    Last change :  Tue Sep 30 15:59:22 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -280,7 +280,7 @@
      ;; super class
      ,(and (class-info-super ci) (class-info-id (class-info-super ci)))
      ;; hash
-     ,(get-class-hash (class-info-src ci))
+     ,(get-class-hash (class-info-expr ci))
      ;; creator
      ,(creator-expand ci)
      ;; allocator
@@ -328,7 +328,7 @@
 					     (error/loc (car x)
 						"Property missing"
 						(prop-info-id p)
-						(prop-info-src p)))))
+						(prop-info-expr p)))))
 			     (class-info-properties class-info)))))
 	     ;; constructor
 	     ,@(if (class-info-ctor class-info)

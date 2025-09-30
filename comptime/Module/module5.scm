@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sun Sep 28 06:14:17 2025 (serrano)                */
+;*    Last change :  Tue Sep 30 15:20:28 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -21,6 +21,7 @@
 	   tools_error
 	   module_module
 	   module_class
+	   module_checksum
 	   expand_eps
 	   ast_node
 	   ast_var
@@ -39,6 +40,7 @@
 	   (module5-main ::Module)
 	   (module5-imported-unit ::Module ::procedure)
 	   (module5-object-unit ::Module)
+	   (module5-imported-inline-unit ::Module)
 	   (module5-extern-plugin-c ::Module ::pair))
 
    (export (class CDef::Def
@@ -74,7 +76,7 @@
 	 ((define-method (?- . ?args) . ?-) args)
 	 ((define-generic (?- . ?args) . ?-) args)
 	 ((define (and (? symbol?)) (lambda ?args . ?-)) args)
-	 (else (error mid (format "Illegal procedure source \"~a\"" id) src))))
+	 (else (error mid (format "Illegal procedure expression \"~a\"" id) src))))
    
    (define (import-kind src ronly)
       (if (not ronly)
@@ -90,8 +92,8 @@
 	     (else 'variable))))
 
    (define (declare-class-definition! id alias mid scope src def::Def)
-      (with-access::KDef def (src id decl super ctor src kkind properties)
-	 (let ((var (declare-global-svar! id id mid scope src src)))
+      (with-access::KDef def (expr id decl super ctor kkind properties)
+	 (let ((var (declare-global-svar! id id mid scope expr expr)))
 	    (global-type-set! var (find-type 'class))
 	    (global-set-read-only! var)
 	    (let* ((sup (and super (find-type super)))
@@ -108,7 +110,7 @@
 					    (id id)
 					    (index i)
 					    (name (id->name id))
-					    (src (cdr (assq 'src p)))
+					    (src (cdr (assq 'expr p)))
 					    (class-owner ty)
 					    (user-info #f)
 					    (type (find-type
@@ -119,35 +121,35 @@
 		  (tclass-slots-set! ty (append sslots nslots))))
 	    var)))
    
-   (define (declare-definition! kind id alias mid scope src def::Def)
+   (define (declare-definition! kind id alias mid scope expr def::Def)
       (case kind
 	 ((variable)
 	  (declare-global-svar! id alias
-	     mid scope src src))
+	     mid scope expr expr))
 	 ((procedure)
-	  (declare-global-sfun! id alias (procedure-args src id mid)
-	     mid scope 'sfun src src))
+	  (declare-global-sfun! id alias (procedure-args expr id mid)
+	     mid scope 'sfun expr expr))
 	 ((inline)
-	  (declare-global-sfun! id alias (procedure-args src id mid)
-	     mid scope 'sifun src src))
+	  (declare-global-sfun! id alias (procedure-args expr id mid)
+	     mid scope 'sifun expr expr))
 	 ((generic)
-	  (declare-global-sfun! id alias (procedure-args src id mid)
-	     mid scope 'sgfun src src))
+	  (declare-global-sfun! id alias (procedure-args expr id mid)
+	     mid scope 'sgfun expr expr))
 	 ((macro)
-	  (with-access::Def def (src)
-	     (add-macro-definition! src id)))
+	  (with-access::Def def (expr)
+	     (add-macro-definition! expr id)))
 	 ((expander)
-	  (with-access::Def def (src)
-	     (add-macro-definition! src id)))
+	  (with-access::Def def (expr)
+	     (add-macro-definition! expr id)))
 	 ((c-function)
 	  (with-access::CDef def (name type infix args macro)
 	     (declare-global-cfun! id alias 'foreign name type args
-		#f macro src src)))
+		#f macro expr expr)))
 	 ((c-variable)
 	  (with-access::CDef def (name type macro)
-	     (declare-global-cvar! id alias name type macro src src)))
+	     (declare-global-cvar! id alias name type macro expr expr)))
 	 ((class)
-	  (declare-class-definition! id alias mid scope src def))
+	  (declare-class-definition! id alias mid scope expr def))
 	 (else
 	  (error "module5-ast"
 	     (format "Unsupported definition kind \"~a\"" kind)
@@ -157,23 +159,23 @@
       
       (hashtable-for-each defs
 	 (lambda (k d)
-	    (with-access::Def d (src kind id decl ronly)
+	    (with-access::Def d (expr kind id decl ronly)
 	       (let ((alias (if (isa? decl Decl)
 				(with-access::Decl decl (alias) alias)
 				id))
 		     (scope (if (isa? decl Decl)
 				(with-access::Decl decl (scope) scope)
 				'static)))
-		  (declare-definition! kind id id mid scope src d)))))
+		  (declare-definition! kind id id mid scope expr d)))))
       
       (hashtable-for-each decls
 	 (lambda (k d)
 	    (with-access::Decl d (def id alias ronly scope (imod mod))
 	       (when (eq? scope 'import)
 		  (let ((def (module5-get-export-def imod id)))
-		     (with-access::Def def (kind id src)
+		     (with-access::Def def (kind id expr)
 			(with-access::Module imod ((mid id))
-			   (declare-definition! kind id alias mid 'import src def))))))))))
+			   (declare-definition! kind id alias mid 'import expr def))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-main ...                                                 */
@@ -194,11 +196,13 @@
 (define (module5-imported-unit mod::Module expand)
    (with-access::Module mod (inits path)
       (let ((body (map (lambda (imod)
-			  (with-access::Module imod (id checksum)
+			  (with-access::Module imod (id checksum version expr)
 			     (module5-expand-and-resolve! imod
 				(lambda ()
 				   (create-hashtable :weak 'open-string)))
-			     (module5-checksum! imod)
+			     (if (=fx version 5)
+				 (module5-checksum! imod)
+				 (set! checksum (module-checksum expr '())))
 			     (declare-global-sfun! 'module-initialization
 				'module-initialization
 				'(checksum::long path::string) id 'import 'sfun
@@ -232,6 +236,22 @@
 		      defs)))
 	 (when (pair? body)
 	    (unit 'object 19 body #f #f)))))
+
+;*---------------------------------------------------------------------*/
+;*    module5-imported-inline-unit ...                                 */
+;*---------------------------------------------------------------------*/
+(define (module5-imported-inline-unit mod::Module)
+   (with-access::Module mod (imports)
+      (let ((body (filter (lambda (x) x)
+		     (hashtable-map imports
+			(lambda (k decl)
+			   (with-access::Decl decl (def)
+			      (when (isa? def Def)
+				 (with-access::Def def (kind expr)
+				    (when (eq? kind 'inline)
+				       expr)))))))))
+	 (when (pair? body)
+	    (unit 'inline 0 body #t #f)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */
@@ -312,7 +332,7 @@
 			    (id id)
 			    (type (string->symbol type))
 			    (kind 'c-function)
-			    (src clause)
+			    (expr clause)
 			    (ronly #t)
 			    (decl decl)
 			    (args args)
@@ -323,7 +343,7 @@
 			     (id id)
 			     (alias id)
 			     (mod mod)
-			     (src clause)
+			     (expr clause)
 			     (ronly #t)
 			     (scope 'extern)
 			     (def def))))
@@ -344,7 +364,7 @@
 			    (id id)
 			    (type (string->symbol type))
 			    (kind 'c-variable)
-			    (src clause)
+			    (expr clause)
 			    (ronly #t)
 			    (decl decl)
 			    (args '())
@@ -355,7 +375,7 @@
 			     (id id)
 			     (alias id)
 			     (mod mod)
-			     (src clause)
+			     (expr clause)
 			     (ronly #t)
 			     (scope 'extern)
 			     (def def))))

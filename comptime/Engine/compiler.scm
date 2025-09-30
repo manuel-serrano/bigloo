@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Sep 27 07:32:30 2025 (serrano)                */
+;*    Last change :  Tue Sep 30 14:11:17 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -512,31 +512,30 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5->ast ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (module5->ast src)
+(define (module5->ast expr)
    (with-trace 'compiler "module5->ast"
-      (trace-item "src=" src)
+      (trace-item "expr=" expr)
       (pass-prelude "Module5")
       
       (set! *module-version* 5)
       (register-srfi! 'bigloo-module5)
-      (module5-register-plugin! "C" module5-extern-plugin-c)
+      (module5-register-extern-plugin! "C" module5-extern-plugin-c)
       
-      (let* ((src-mod (car src))
-	     (src-code (cdr src))
-	     (mod (module5-parse src-mod (car *src-files*)
+      (let* ((expr-mod (car expr))
+	     (expr-body (cdr expr))
+	     (mod (module5-parse expr (car *src-files*)
 		     :expand module5-expand))
 	     (tu (unit 'toplevel 100 '() #t #f))
 	     (units (list tu))
 	     (xenv (create-hashtable :weak 'open-string)))
 	 
 	 (trace-item "units=" units)
-	 (trace-item "src-code=" src-code)
+	 (trace-item "body=" body)
 	 
 	 ;; imported module unit (before processing the module body)
 	 (set! units (cons (module5-imported-unit mod comptime-expand) units))
 	 
-	 (with-access::Module mod (id body checksum main decls)
-	    (set! body (append body (cdr src)))
+	 (with-access::Module mod (id body checksum main decls imports)
 	    
 	    (module5-expand-and-resolve! mod xenv)
 	    (module5-checksum! mod)
@@ -546,12 +545,12 @@
 		  (with-access::Decl d (scope alias)
 		     (when (eq? scope 'import)
 			(let ((def (module5-import-def mod d)))
-			   (with-access::Def def (src kind)
+			   (with-access::Def def (expr kind)
 			      (when (memq kind '(macro expander))
-				 (add-macro-definition! src alias))))))))
+				 (add-macro-definition! expr alias))))))))
 	    
 	    (set! *module* id)
-	    (set! *module-clause* src-mod)
+	    (set! *module-clause* expr-mod)
 	    (set! *module-checksum* checksum)
 	    
 	    (stop-on-pass 'dump-module (lambda () (dump-module mod)))
@@ -601,6 +600,10 @@
 	 
 	 ;; object unit
 	 (let ((u (module5-object-unit mod)))
+	    (when u (set! units (cons u units))))
+
+	 ;; imported inline units
+	 (let ((u (module5-imported-inline-unit mod)))
 	    (when u (set! units (cons u units))))
 	 
 	 ;; ... and the global user-defined macro expansion

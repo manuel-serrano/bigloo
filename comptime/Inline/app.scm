@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Sun Jan  5 10:40:00 2025 (serrano)                */
+;*    Last change :  Tue Sep 30 16:16:24 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
@@ -40,10 +40,10 @@
       (trace-item "node=" (shape node))
       (trace-item "node-type=" (shape (node-type node)))
       (let* ((callee (app-fun node))
-	     (var    (var-variable callee))
-	     (sfun   (variable-value var))
-	     (args   (app-args node))
-	     (loc    (node-loc node)))
+	     (var (var-variable callee))
+	     (sfun (variable-value var))
+	     (args (app-args node))
+	     (loc (node-loc node)))
 	 (cond
 	    ((not (sfun? sfun))
 	     node)
@@ -102,87 +102,89 @@
 ;*    inline-app? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (inline-app? var::variable kfactor::long call-size::long stack)
-   (trace (inline inline+ 0)
-      "inline-app?: " (shape var)
-      " [kfactor:" kfactor
-      "] [stack: " (shape stack) "] ... ")
-   (let* ((sfun (variable-value var))
-	  (body (if (isfun? sfun)
-		    (isfun-original-body sfun)
-		    (sfun-body sfun))))
-      (cond
-	 ((not (isa? body node))
-	  (trace (inline inline+ 0) " no (no body)" #\Newline)
-          #f)
-         ((not *inlining?*)
-          ;; no, because the user said so
-          (trace (inline inline+ 0) " no (no-inlining option)" #\Newline)
-          #f)
-         ((and *optim-loop-inlining?*
-	       (not *optim-unroll-loop?*)
-	       (memq var stack))
-          ;; no we won't because we are already inlining a app to `fun'
-	  (trace (inline inline+ 0) " no (recursive)" #\Newline)
-          #f)
-	 ((eq? (sfun-class sfun) 'snifun)
-	  (trace (inline inline+ 0) " no (declared snifun)" #\Newline)
-	  ;; non inlinable functions are never inlined (sic !).
-	  #f)
-	 ((and (not (eq? *inline-mode* 'all))
-	       (eq? (sfun-class sfun) 'sifun)
-	       (is-recursive? var))
-	  (trace (inline inline+ 0) " no (recursive)" #\Newline)
-	  ;; recursive functions can be inlined only on the first inlining
-	  #f)
-	 ((eq? (sfun-class sfun) 'sgfun)
-	  (trace (inline inline+ 0) " no (generic)" #\Newline)
-	  ;; don't inline generic (they use find-method which is inline)
-	  #f)
-	 ((and (eq? (sfun-class sfun) 'sifun)
-	       (not (memq var stack))
-	       (or (not (eq? *inline-mode* 'reducer))
-		   (not (contains-kwote? (sfun-body sfun))))
-	       (or (not (eq? *inline-mode* 'predicate))
-		   (fun-predicate-of sfun)))
-	  ;; yes, because the function has been declared inline
-	  (trace (inline inline+ 0) " yes (sifun) mode=" *inline-mode* #\Newline)
-	  #t)
-	 ((and (global? var) (eq? (global-import var) 'import))
-          ;; of course not.
-          (trace (inline inline+ 0) " no (import)" #\Newline)
-          #f)
-	 ((not *user-inlining?*)
-	  (trace (inline inline+ 0) " no, not user-inlining...\n")
-	  #f)
-	 ((<fx (node-size body) (*fx kfactor call-size))
-          ;; yes, because the size does not grew
-	  (trace (inline inline+ 0) " yes, small enough (size: "
-	     (node-size body)
-	     " max: " (*fx kfactor call-size)
-	     ")"
-	     #\newline)
-          #t)
-	 ((and (=fx (node-size body) call-size) (not (memq var stack)))
-	  ;; yes, because the call and the body are of the same size
-	  ;; and we are not inlining an infinite loop
-	  (trace (inline inline+ 0) " yes, same size and not in stack (size: "
-	     (node-size body)
-	     ")"
-	     #\newline)
-	  #t)
-	 ((and (=fx (variable-occurrence var) 1)
-	       (or (not (global? var)) (eq? (global-import var) 'static))
-	       (isa? (sfun-body (variable-value var)) retblock))
-	  (trace (inline inline+ 0)  " yes, because static 1 occ retblock"
-	     ")"
-	     #\newline)
-	  #t)
-	 (else
-          ;; no, because the function is too large
-          (trace (inline inline+ 0) " no, too large (size: "
-	     (node-size body)
-	     " max: " (*fx kfactor call-size)
-	     ")"
-	     #\newline)
-          #f))))
+   (with-trace 'inline "inline-app?"
+      (trace-item "var=" (shape var))
+      (trace-item "kfactor=" kfactor)
+      (trace-item "call-size=" call-size)
+      (trace-item "stack=" (shape stack))
+      (let* ((sfun (variable-value var))
+	     (body (if (isfun? sfun)
+		       (isfun-original-body sfun)
+		       (sfun-body sfun))))
+	 (trace-item "class=" (sfun-class sfun))
+	 (cond
+	    ((not (isa? body node))
+	     (trace (inline inline+ 0) " no (no body)" #\Newline)
+	     #f)
+	    ((not *inlining?*)
+	     ;; no, because the user said so
+	     (trace (inline inline+ 0) " no (no-inlining option)" #\Newline)
+	     #f)
+	    ((and *optim-loop-inlining?*
+		  (not *optim-unroll-loop?*)
+		  (memq var stack))
+	     ;; no we won't because we are already inlining a app to `fun'
+	     (trace (inline inline+ 0) " no (recursive)" #\Newline)
+	     #f)
+	    ((eq? (sfun-class sfun) 'snifun)
+	     (trace (inline inline+ 0) " no (declared snifun)" #\Newline)
+	     ;; non inlinable functions are never inlined (sic !).
+	     #f)
+	    ((and (not (eq? *inline-mode* 'all))
+		  (eq? (sfun-class sfun) 'sifun)
+		  (is-recursive? var))
+	     (trace (inline inline+ 0) " no (recursive)" #\Newline)
+	     ;; recursive functions can be inlined only on the first inlining
+	     #f)
+	    ((eq? (sfun-class sfun) 'sgfun)
+	     (trace (inline inline+ 0) " no (generic)" #\Newline)
+	     ;; don't inline generic (they use find-method which is inline)
+	     #f)
+	    ((and (eq? (sfun-class sfun) 'sifun)
+		  (not (memq var stack))
+		  (or (not (eq? *inline-mode* 'reducer))
+		      (not (contains-kwote? (sfun-body sfun))))
+		  (or (not (eq? *inline-mode* 'predicate))
+		      (fun-predicate-of sfun)))
+	     ;; yes, because the function has been declared inline
+	     (trace (inline inline+ 0) " yes (sifun) mode=" *inline-mode* #\Newline)
+	     #t)
+	    ((and (global? var) (eq? (global-import var) 'import))
+	     ;; of course not.
+	     (trace (inline inline+ 0) " no (import)" #\Newline)
+	     #f)
+	    ((not *user-inlining?*)
+	     (trace (inline inline+ 0) " no, not user-inlining...\n")
+	     #f)
+	    ((<fx (node-size body) (*fx kfactor call-size))
+	     ;; yes, because the size does not grew
+	     (trace (inline inline+ 0) " yes, small enough (size: "
+		(node-size body)
+		" max: " (*fx kfactor call-size)
+		")"
+		#\newline)
+	     #t)
+	    ((and (=fx (node-size body) call-size) (not (memq var stack)))
+	     ;; yes, because the call and the body are of the same size
+	     ;; and we are not inlining an infinite loop
+	     (trace (inline inline+ 0) " yes, same size and not in stack (size: "
+		(node-size body)
+		")"
+		#\newline)
+	     #t)
+	    ((and (=fx (variable-occurrence var) 1)
+		  (or (not (global? var)) (eq? (global-import var) 'static))
+		  (isa? (sfun-body (variable-value var)) retblock))
+	     (trace (inline inline+ 0)  " yes, because static 1 occ retblock"
+		")"
+		#\newline)
+	     #t)
+	    (else
+	     ;; no, because the function is too large
+	     (trace (inline inline+ 0) " no, too large (size: "
+		(node-size body)
+		" max: " (*fx kfactor call-size)
+		")"
+		#\newline)
+	     #f)))))
  

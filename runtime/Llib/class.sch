@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 10 08:56:49 2015                          */
-;*    Last change :  Sun Sep 28 06:19:40 2025 (serrano)                */
+;*    Last change :  Tue Sep 30 15:58:10 2025 (serrano)                */
 ;*    Copyright   :  2015-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 class info                                               */
@@ -12,9 +12,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-info ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-struct class-info id index super kind ctor properties registration src)
+(define-struct class-info id index super kind ctor properties registration expr)
 
 ;*---------------------------------------------------------------------*/
 ;*    prop-info ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-struct prop-info id type class defv? ronly? virtual? get set value src)
+(define-struct prop-info id type class defv? ronly? virtual? get set value expr)
