@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Sep 30 15:20:28 2025 (serrano)                */
+;*    Last change :  Tue Sep 30 17:53:02 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -41,7 +41,8 @@
 	   (module5-imported-unit ::Module ::procedure)
 	   (module5-object-unit ::Module)
 	   (module5-imported-inline-unit ::Module)
-	   (module5-extern-plugin-c ::Module ::pair))
+	   (module5-extern-plugin-c ::Module ::pair)
+	   (module5-extern-plugin-wasm ::Module ::pair))
 
    (export (class CDef::Def
 	      (args read-only)
@@ -385,7 +386,6 @@
 		   (hashtable-put! defs (symbol->string! id) def)))))))
    
    (define (parse-clause clause mod::Module)
-      (with-access::Module mod (decls)
       (match-case clause
 	 ((include (and (? string?) ?string))
 	  (parse-include string clause mod))
@@ -402,7 +402,28 @@
 	 (((and (? symbol?) ?ident) (and (? string?) ?name))
 	  (parse-variable #f ident name clause mod))
 	 (else
-	  (error/loc mod "Illegal extern \"C\" module clause" clause expr)))))
+	  (error/loc mod "Illegal extern \"C\" module clause" clause expr))))
+   
+   (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
+
+;*---------------------------------------------------------------------*/
+;*    module5-extern-plugin-wasm ...                                   */
+;*---------------------------------------------------------------------*/
+(define (module5-extern-plugin-wasm mod::Module expr::pair)
+   
+   (define (parse-clause clause mod::Module)
+      (match-case clause
+	 (((and (? symbol?) ?ident) (and (? string?) ?name) . ?deps)
+	  (multiple-value-bind (id type)
+	     (parse-ident ident clause mod)
+	     (let ((decl (hashtable-get (-> mod decls) (symbol->string! id))))
+		(if (isa? decl Decl)
+		    (with-access::Decl decl (qname pragma)
+		       (set! qname name)
+		       (set! pragma (cons (cons 'wasm deps) pragma)))
+		    (error/loc "mod" "Cannot find declaration" clause expr)))))
+	 (else
+	  (error/loc mod "Illegal extern \"C\" module clause" clause expr))))
    
    (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
 

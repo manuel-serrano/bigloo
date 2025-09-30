@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Sep 30 14:09:47 2025 (serrano)                */
+;*    Last change :  Tue Sep 30 18:07:57 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -85,7 +85,9 @@
 	      (def (default #unspecified))
 	      (expr (default #unspecified))
 	      (ronly (default #unspecified))
-	      scope::symbol)
+	      scope::symbol
+	      (qname (default #unspecified))
+	      (pragma::pair-nil (default '())))
 
 	   (class Def
 	      (id::symbol read-only)

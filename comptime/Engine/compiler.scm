@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Sep 30 14:11:17 2025 (serrano)                */
+;*    Last change :  Tue Sep 30 17:52:51 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -520,6 +520,7 @@
       (set! *module-version* 5)
       (register-srfi! 'bigloo-module5)
       (module5-register-extern-plugin! "C" module5-extern-plugin-c)
+      (module5-register-extern-plugin! "wasm" module5-extern-plugin-wasm)
       
       (let* ((expr-mod (car expr))
 	     (expr-body (cdr expr))
