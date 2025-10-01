@@ -84,7 +84,8 @@
       ((or extern noextern) 'extern)
       ((or exn noexn) 'exn)
       ((? idx?) (ht-upperbound env (type-get env t)))
-      ((? deftype?) (ht-upperbound env (deftype-head t)))))
+      ((? deftype?) (ht-upperbound env (deftype-head t)))
+      (else (error "ht-upperbound" "Illegal type" t))))
 
 (define (rt-upperbound::pair env::env t)
    `(ref null ,(ht-upperbound env (reftype->heaptype t))))
@@ -94,7 +95,8 @@
       (i8 #l8)
       (i16 #l16)
       (i32 #l32)
-      (i64 #l64)))
+      (i64 #l64)
+      (else #l0)))
 
 ;; deftypes type x = (rec subtypes*).i are represented as epairs (deftype
 ;; subtypes* i)) with cer equal to x ; x = (rec i) are represented as (rec i)
@@ -115,7 +117,9 @@
            (final (?hd . ?-))
            (?- (?hd . ?-))
            ((?hd . ?-)))
-       hd)))
+       hd)
+      (else
+       (error "deftype-head" "Illegal type" t))))
 
 (define (nullable?::bool rt::pair)
    (eq? (cadr rt) 'null))

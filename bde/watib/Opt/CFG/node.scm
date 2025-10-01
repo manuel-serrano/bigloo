@@ -25,7 +25,7 @@
 
            ;; the last one is the default
            (class switch::jump
-              dsts::pair)
+              dsts::pair-nil)
 
            (class on-cast::jump
               rt-dst::pair

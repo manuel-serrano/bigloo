@@ -1,14 +1,14 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/api/dom/Makefile                */
+#*    serrano/prgm/project/bigloo/wasm/api/browser/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Mon Sep 15 10:59:22 2025 (serrano)                */
+#*    Last change :  Wed Oct  1 15:51:03 2025 (serrano)                */
 #*    Copyright   :  2001-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
-#*    The Makefile for Dom                                             */
+#*    The Makefile for Browser                                         */
 #*=====================================================================*/
 include ../../Makefile.buildconfig
 include ../../Makefile.config
@@ -16,7 +16,7 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    The name of the API (used by Makefile.api).                      */
 #*---------------------------------------------------------------------*/
-API=dom
+API=browser
 
 #*---------------------------------------------------------------------*/
 #*    Directories where to find the files composing a revision         */

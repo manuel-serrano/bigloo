@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Oct  1 07:14:13 2025 (serrano)                */
+#*    Last change :  Wed Oct  1 15:50:30 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -46,7 +46,7 @@ rpath=
 
 #*--- api -------------------------------------------------------------*/
 importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 crypto openpgp csv upnp libuv libbacktrace"
-apis="$importantapis gstreamer alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat mqtt dom"
+apis="$importantapis gstreamer alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat mqtt browser"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -305,8 +305,8 @@ libuvconfigureopt=
 #* libuvversion=v1.49.2                                                */
 libuvversion=v1.51.0
 
-#*--- dom (left blank for autoconfiguration) --------------------------*/
-dom=
+#*--- browser (left blank for autoconfiguration) ----------------------*/
+browser=
 
 #*--- regexp ----------------------------------------------------------*/
 regexp=
@@ -1584,7 +1584,7 @@ if [ "$action" != "bigloo_config_el" ]; then
   gstreamer_is_enabled=no
   libuv_is_enabled=no
   libbacktrace_is_enabled=no
-  dom_is_enable=no
+  browser_is_enable=no
   
   for a in $apis; do
     case $a in
@@ -1603,7 +1603,7 @@ if [ "$action" != "bigloo_config_el" ]; then
       gstreamer) gstreamer_is_enabled="yes";;
       libuv) libuv_is_enabled="yes";;
       libbacktrace) libbacktrace_is_enabled="yes";;
-      dom) dom_is_enabled="yes";;
+      browser) browser_is_enabled="yes";;
     esac
   done
   
@@ -2742,13 +2742,13 @@ if [ "$sqlite_is_enabled " = "yes " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
-#*    dom                                                              */
+#*    browser                                                          */
 #*---------------------------------------------------------------------*/
-if [ " $dom" = " " -a "$sqlite_is_enabled " = "yes " ]; then
+if [ " $browser" = " " -a "$sqlite_is_enabled " = "yes " ]; then
   if [ "$wasmbackend " != "yes " ]; then
-    dom="yes"
+    browser="yes"
   else
-    dom="no"
+    browser="no"
   fi
 fi
 
@@ -5113,20 +5113,20 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   cat api/csv/src/Llib/csv.sch \
       >>  api/csv/src/Misc/csv.init
 
-  # DOM
-  if [ " $dom " != " no" ]; then
-    $echo "DOM=$dom" >> $makefile_cfg
+  # BROWSER
+  if [ " $browser " != " no" ]; then
+    $echo "BROWSER=$browser" >> $makefile_cfg
 
-    # Patch the code of the DOM init file
-    $echo ";; automatically generated. Don't edit" > api/dom/src/Misc/dom.init
-    cat api/dom/src/Misc/dom.init.in \
-      | sed -e "s|@DOMLIBS@|$domlibs|g" \
-            -e "s|@DOMCFLAGS@|$domcflags|g" \
-      >>  api/dom/src/Misc/dom.init
+    # Patch the code of the BROWSER init file
+    $echo ";; automatically generated. Don't edit" > api/browser/src/Misc/browser.init
+    cat api/browser/src/Misc/browser.init.in \
+      | sed -e "s|@BROWSERLIBS@|$browserlibs|g" \
+            -e "s|@BROWSERCFLAGS@|$browsercflags|g" \
+      >>  api/browser/src/Misc/browser.init
   else
     napis=;
     for a in $apis; do
-       if [ "dom" != $a ]; then
+       if [ "browser" != $a ]; then
          if [ "$napis " = " " ]; then
            napis="$a";
          else
@@ -5135,7 +5135,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
        fi
     done
     apis=$napis;
-    $echo "DOM=" >> $makefile_cfg
+    $echo "BROWSER=" >> $makefile_cfg
   fi
 
   # SCMPKG

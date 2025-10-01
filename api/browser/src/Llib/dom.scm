@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/api/dom/src/Llib/dom.scm        */
+;*    .../prgm/project/bigloo/wasm/api/browser/src/Llib/dom.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Sep 11 08:10:30 2025                          */
-;*    Last change :  Mon Sep 15 11:02:07 2025 (serrano)                */
+;*    Last change :  Wed Oct  1 15:52:52 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo DOM binding for the wasm backend.                         */
@@ -12,7 +12,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __dom_dom
+(module __browser_dom
 
    (cond-expand
       (bigloo-c

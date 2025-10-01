@@ -1,15 +1,15 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/api/dom/src/Makefile            */
+#*    serrano/prgm/project/bigloo/wasm/api/browser/src/Makefile        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Sep 15 11:00:30 2025 (serrano)                */
+#*    Last change :  Wed Oct  1 15:54:20 2025 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
-#*    Standard Dom configuration                                       */
+#*    Standard Browser configuration                                   */
 #*---------------------------------------------------------------------*/
 include ../../../Makefile.buildconfig
 include ../../../Makefile.config
@@ -19,7 +19,7 @@ include ../../../Makefile.misc
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
 # the library name
-API		= dom
+API		= browser
 # Directories
 BIGLOO_SRC_DIR 	= Llib
 JAVA_SRC_DIR 	= Java
@@ -52,7 +52,7 @@ OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 
 
-WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) Wlib/wdom.wat
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) Wlib/wbrowser.wat
 WEOBJECTS	= objs/make_lib.wat
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)

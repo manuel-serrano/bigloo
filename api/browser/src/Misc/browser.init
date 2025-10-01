@@ -1,22 +1,22 @@
 ;; automatically generated. Don't edit
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/dom/src/Misc/dom.init            */
+;*    serrano/prgm/project/bigloo/api/browser/src/Misc/browser.init    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
 ;*    Last change :  Fri Dec 13 12:50:16 2013 (serrano)                */
 ;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    The Dom init file.                                               */
+;*    The Browser init file.                                           */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
-(declare-library! 'dom
-   :srfi '(dom)
-   :basename "bigloodom"
-   :module-init '__dom_dom
-   :module-eval '__dom_makelib
+(declare-library! 'browser
+   :srfi '(browser)
+   :basename "bigloobrowser"
+   :module-init '__browser_browser
+   :module-eval '__browser_makelib
    :wasm-js #t)
    
