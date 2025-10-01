@@ -6,60 +6,60 @@
               type
               init?::bool)
 
-           (type-get-index::bint env::env x)
+           (type-get-index::long env::env x)
            (type-get env::env x)
-           (type-get-name env::env x::bint)
+           (type-get-name env::env x::long)
            (add-type! env::env nm t)
            (set-type! env::env id t)
            (typeidx::typeidxp env::env x)
 
-           (func-get-index::bint env::env x)
-           (func-get-type env::env x::bint)
-           (func-get-name env::env x::bint)
+           (func-get-index::long env::env x)
+           (func-get-type env::env x::long)
+           (func-get-name env::env x::long)
            (func-add! env::env t)
            (func-add-name! env::env id::symbol)
            (funcidx::funcidxp env::env x)
 
-           (global-get-index::bint env::env x)
-           (global-get-type env::env x::bint)
+           (global-get-index::long env::env x)
+           (global-get-type env::env x::long)
            (global-add! env::env t)
            (global-add-name! env::env id::symbol)
            (globalidx::globalidxp env::env x)
 
-           (tag-get-index::bint env::env x)
-           (tag-get-type env::env x::bint)
+           (tag-get-index::long env::env x)
+           (tag-get-type env::env x::long)
            (tag-add! env::env t)
            (tag-add-name! env::env id::symbol)
            (tagidx::tagidxp env::env x)
 
-           (mem-get-index::bint env::env x)
-           (mem-get-type env::env x::bint)
+           (mem-get-index::long env::env x)
+           (mem-get-type env::env x::long)
            (mem-add! env::env t)
            (mem-add-name! env::env id::symbol)
            (memidx::memidxp env::env x)
 
-           (data-get-index::bint env::env x)
+           (data-get-index::long env::env x)
            (dataidx::dataidxp env::env x)
 
-           (field-get-index::bint env::env t::bint f)
+           (field-get-index::long env::env t::long f)
            (fieldidx-get-name env::env x::typeidxp y::fieldidxp)
            (fieldidx::fieldidxp env::env x)
 
-           (local-get-index env::env l)
-           (local-init! env::env l::bint)
+           (local-get-index::long env::env l)
+           (local-init! env::env l::long)
            (local-init?::bool env::env l)
            (local-get-type env::env l)
            (localidx::localidxp env::env x)
 
-           (label-get-index::bint env::env x)
-           (label-get-type env::env x::bint)
+           (label-get-index::long env::env x)
+           (label-get-type env::env x::long)
            (push-label! env::env nm t::pair-nil)
            (pop-label! env::env)
            (labelidx::labelidxp env::env x)
 
            (generic idx-get-name x::idxp env::env)))
 
-(define (get-index::bint table range::bint x ex-oor ex-unkwn ex-exp)
+(define (get-index::long table range::long x ex-oor ex-unkwn ex-exp)
    (cond ((number? x)
           (if (<fx x range)
               x
@@ -75,14 +75,14 @@
             ((equal? (car lst) x) i)
             (else (index (cdr lst) x (+fx 1 i) e))))
 
-(define (type-get-index::bint env::env x)
+(define (type-get-index::long env::env x)
    (get-index (-> env type-table) (-> env ntype) x '(idx-out-of-range type)
-              '(unknown type) '(expected-idx type)))
+              '(unknown type) '(expected typeidx)))
 
 (define (type-get env::env x)
    (vector-ref (-> env types) (type-get-index env x)))
 
-(define (type-get-name env::env x::bint)
+(define (type-get-name env::env x::long)
    (let ((nm (vector-ref (-> env type-names) x)))
       (if nm nm x)))
 
@@ -108,12 +108,13 @@
 
 (define-macro (table-boilerplate x)
    `(begin
-       (define (,(symbol-append x '-get-index::bint) env::env x)
+       (define (,(symbol-append x '-get-index::long) env::env x)
           (get-index (-> env ,(symbol-append x '-table))
                      (-> env ,(symbol-append 'n x)) x
-                     '(idx-out-of-range ,x) '(unknown ,x) '(expected-idx ,x)))
+                     '(idx-out-of-range ,x) '(unknown ,x)
+                     '((expected ,(symbol-append x 'idx)) ,x)))
 
-       (define (,(symbol-append x '-get-type) env::env x::bint)
+       (define (,(symbol-append x '-get-type) env::env x::long)
           (vector-ref (-> env ,(symbol-append x '-types)) x))
 
        (define (,(symbol-append x '-add!) env::env t)
@@ -129,7 +130,7 @@
           (vector-set! (-> env ,(symbol-append x '-names))
                        (-> env ,(symbol-append 'n x)) id))
 
-       (define (,(symbol-append x '-get-name) env::env x::bint)
+       (define (,(symbol-append x '-get-name) env::env x::long)
           (let ((nm (vector-ref (-> env ,(symbol-append x '-names)) x)))
              (if nm nm x)))))
 
@@ -138,35 +139,35 @@
 (table-boilerplate tag)
 (table-boilerplate mem)
 
-(define (data-get-index::bint env::env x)
+(define (data-get-index::long env::env x)
    (get-index (-> env data-table) (-> env ndata) x '(idx-out-range data)
-              '(unknown data) '(expected-idx data)))
+              '(unknown data) '(expected dataidx)))
 
-(define (field-get-index::bint env::env t::bint f)
+(define (field-get-index::long env::env t::long f)
    (let ((v (vector-ref (-> env field-names) t)))
       (cond
        ((number? f)
         (if (<fx f (length v))
-         t
+         f
          (raise `((idx-out-of-range field) ,t (length v) ,f))))
     ((ident? f)
-     (index v f 0 'unknown-field))
-    (#t (raise `(expected-fieldidx ,t))))))
+     (index v f 0 '(unknown field)))
+    (else (raise `((expected fieldidx) ,t))))))
 
 (define (fieldidx-get-name env::env x::typeidxp y::fieldidxp)
    (list-ref (vector-ref (-> env field-names) (-> x idx)) (-> y idx)))
 
-(define (local-get-index env::env l)
+(define (local-get-index::long env::env l)
    (cond
     ((number? l)
      (if (< l (vector-length (-> env local-types)))
          l
-         (raise `(localidx-out-of-range ,l))))
+         (raise `((idx-out-of range) ,l))))
     ((ident? l)
-     (index (-> env local-names) l 0 'unknown-local))
-    (#t `(expected-local ,l))))
+     (index (-> env local-names) l 0 '(unknown local)))
+    (else (raise `((expected local) ,l)))))
 
-(define (local-init! env::env l::bint)
+(define (local-init! env::env l::long)
    (with-access::local-var (vector-ref (-> env local-types) l) ((init? init?))
       (set! init? #t)))
 
@@ -182,7 +183,7 @@
       ((type type))
       type))
 
-(define (label-get-index::bint env::env x)
+(define (label-get-index::long env::env x)
   (cond
    ((number? x)
     (if (<fx x (-> env nlabel))
@@ -190,9 +191,9 @@
         (raise `(labelidx-out-of-range ,x))))
    ((ident? x)
     (index (-> env label-names) x 0 'unknown-label))
-   (else `((expected-idx label) ,x))))
+   (else (raise `((expected labelidx) ,x)))))
 
-(define (label-get-type env::env x::bint)
+(define (label-get-type env::env x::long)
    (vector-ref (-> env label-types) (- (-> env nlabel) x 1)))
 
 (define (push-label! env::env nm t::pair-nil)
@@ -206,18 +207,18 @@
    (set! (-> env label-names) (cdr (-> env label-names))))
 
 ;;;;;;;; REPLACE LAST TYPE WITH A TYPEIDX
-(define (get-struct-fldts env::env x::bint)
+(define (get-struct-fieldtypes env::env x::long)
    (match-case (expand (type-get env x))
       ((struct . ?fldts) fldts)
-      (?t (raise `(expected-struct ,x ,t)))))
+      (?t (raise `((expected struct) ,x ,t)))))
 
 ;; to work, needs to be called after typeidx
 (define (fieldidx::fieldidxp env::env x)
    (unless (vector-ref (-> env field-names) (-> env last-type))
-      (raise `(expected-struct ,(-> env last-type)
+      (raise `((expected struct) ,(-> env last-type)
                ,(expand (type-get env (-> env last-type))))))
    (let* ((idx (field-get-index env (-> env last-type) x))
-          (t (list-ref (get-struct-fldts env (-> env last-type)) idx)))
+          (t (list-ref (get-struct-fieldtypes env (-> env last-type)) idx)))
       (instantiate::fieldidxp (idx idx) (mut? (car t)) (type (cadr t)))))
 
 (define (typeidx::typeidxp env::env x)

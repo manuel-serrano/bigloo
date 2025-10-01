@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Sep 30 18:07:57 2025 (serrano)                */
+;*    Last change :  Tue Sep 30 18:41:55 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -76,7 +76,8 @@
 	      (inits::pair-nil (default '()))
 	      (libraries::pair-nil (default '()))
 	      (body::obj (default '()))
-	      (resolved::bool (default #f)))
+	      (resolved::bool (default #f))
+	      (cache-dir (default #f)))
 	   
 	   (class Decl
 	      (id::symbol read-only)
@@ -110,11 +111,11 @@
 	   (module5-register-extern-plugin! ::bstring ::procedure)
 	   (module5-resolve-path ::bstring ::bstring)
 	   (module5-resolve-library ::symbol ::pair-nil)
-	   (module5-read::Module ::bstring #!key lib-path cache-path expand)
+	   (module5-read::Module ::bstring #!key lib-path cache-dir expand)
 	   (module5-read-library::Module ::bstring)
 	   (module5-read-heap::Module ::bstring)
 	   (module5-write-heap ::bstring ::Module)
-	   (module5-parse::Module ::pair-nil ::bstring #!key lib-path cache-path expand)
+	   (module5-parse::Module ::pair-nil ::bstring #!key lib-path cache-dir expand)
 	   ;; (module5-expand::Module ::Module expand)
 	   ;; (module5-expand-exports!::Module ::Module expand)
 	   (module5-expander::obj ::obj ::procedure)
@@ -238,36 +239,89 @@
 	 (file-name-unix-canonicalize! path))))
 
 ;*---------------------------------------------------------------------*/
+;*    absolute-file-name ...                                           */
+;*---------------------------------------------------------------------*/
+(define (absolute-file-name path)
+   (file-name-canonicalize (make-file-name (pwd) path)))
+
+;*---------------------------------------------------------------------*/
+;*    filecache-name ...                                               */
+;*---------------------------------------------------------------------*/
+(define (filecache-name path)
+   (string-replace path #\/ #\_))
+
+;*---------------------------------------------------------------------*/
+;*    filecache-dirs ...                                               */
+;*---------------------------------------------------------------------*/
+(define (filecache-dirs path cache-dir)
+   (let* ((apath (absolute-file-name path))
+	  (cname (filecache-name apath))
+	  (cpath (make-file-name cache-dir cname)))
+      (values apath cname cpath)))
+
+;*---------------------------------------------------------------------*/
+;*    filecache-get ...                                                */
+;*---------------------------------------------------------------------*/
+(define (filecache-get path cache-dir)
+   (when (string? cache-dir)
+      (unless (directory? cache-dir)
+	 (make-directories cache-dir))
+      (multiple-value-bind (apath cname cpath)
+	 (filecache-dirs path cache-dir)
+	 (when (and (file-exists? cpath)
+		    (>=elong (file-modification-time cpath)
+		       (file-modification-time apath)))
+	    (let ((p (open-input-binary-file cpath)))
+	       (unwind-protect
+		  (input-obj p)
+		  (close-binary-port p)))))))
+
+;*---------------------------------------------------------------------*/
+;*    filecache-put! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (filecache-put! path mod::Module)
+   (when (string? (-> mod cache-dir))
+      (unless (directory? (-> mod cache-dir))
+	 (make-directories (-> mod cache-dir)))
+      (multiple-value-bind (apath cname cpath)
+	 (filecache-dirs path (-> mod cache-dir))
+	 (let ((p (open-output-binary-file cpath)))
+	    (unwind-protect
+	       (output-obj p mod)
+	       (close-binary-port p))))))
+   
+;*---------------------------------------------------------------------*/
 ;*    module-read ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (module-read path::bstring lib-path cache-path expand parse)
+(define (module-read path::bstring lib-path cache-dir expand parse)
    (with-trace 'module5 "module-read"
       (trace-item "path=" path)
       (trace-item "expand=" expand)
       (synchronize module-mutex
 	 (or (hashtable-get *modules-by-path* path)
+	     (filecache-get path cache-dir)
 	     (let ((exprs (call-with-input-file path
 			     (lambda (p) (port->sexp-list p #t)))))
 		(if (null? exprs)
 		    (error "module5-read" "Missing module clause" path)
 		    (parse exprs path
 		       :lib-path lib-path
-		       :cache-path cache-path
+		       :cache-dir cache-dir
 		       :expand expand)))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    module5-read ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (module5-read path::bstring #!key lib-path cache-path expand)
-   (module-read path lib-path cache-path expand module5-parse))
+(define (module5-read path::bstring #!key lib-path cache-dir expand)
+   (module-read path lib-path cache-dir expand module5-parse))
 
 ;*---------------------------------------------------------------------*/
 ;*    module4-read ...                                                 */
 ;*    -------------------------------------------------------------    */
 ;*    Read and parse a module4 when imported from a module 5.          */
 ;*---------------------------------------------------------------------*/
-(define (module4-read path::bstring #!key lib-path cache-path expand)
-   (module-read path lib-path cache-path expand module4-parse))
+(define (module4-read path::bstring #!key lib-path cache-dir expand)
+   (module-read path lib-path cache-dir expand module4-parse))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-read-library ...                                         */
@@ -327,14 +381,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (module5-parse::Module exprs path::bstring #!key lib-path cache-path expand)
+(define (module5-parse::Module exprs path::bstring #!key lib-path cache-dir expand)
 
    (define (parse5 id path clauses expr body)
       (let ((mod (instantiate::Module
 		    (id id)
 		    (path path)
 		    (expr expr)
-		    (body body))))
+		    (body body)
+		    (cache-dir cache-dir))))
 	 (hashtable-put! *modules-by-path* path mod)
 	 (let ((omod (hashtable-get *modules-by-id* (symbol->string id))))
 	    (if omod
@@ -345,10 +400,14 @@
 		      path expr))
 		(hashtable-put! *modules-by-id* (symbol->string id) mod)))
 	 (for-each (lambda (c)
-		      (module5-parse-clause c expr mod lib-path cache-path expand))
+		      (module5-parse-clause c expr mod lib-path cache-dir expand))
 	    clauses)
 	 (with-access::Module mod (inits)
-	    (set! inits (delete-duplicates! inits)))
+	    (set! inits (delete-duplicates! inits
+			   (lambda (x y)
+			      (with-access::Module x ((xid id))
+				 (with-access::Module y ((yid id))
+				    (eq? xid yid)))))))
 	 mod))
    
    (with-trace 'module5-parse "module5-parse"
@@ -368,7 +427,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse-clause ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (module5-parse-clause clause expr::pair mod::Module lib-path cache-path expand)
+(define (module5-parse-clause clause expr::pair mod::Module lib-path cache-dir expand)
 
    (define (unbound-error path id clause)
       (error/loc mod (format "Cannot find declaration in module \"~a\"" path)
@@ -417,7 +476,7 @@
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
 				    :lib-path lib-path
-				    :cache-path cache-path
+				    :cache-dir cache-dir
 				    :expand expand)))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
@@ -432,7 +491,7 @@
 	 (if (string? rfrom)
 	     (let ((imod::Module (module4-read rfrom
 				    :lib-path lib-path
-				    :cache-path cache-path
+				    :cache-dir cache-dir
 				    :expand expand)))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
@@ -448,7 +507,7 @@
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
 				    :lib-path lib-path
-				    :cache-path cache-path
+				    :cache-dir cache-dir
 				    :expand expand)))
 		(for-each (lambda (b)
 			     (let ((d::Decl (parse-import-binding b
@@ -468,7 +527,7 @@
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
 				    :lib-path lib-path
-				    :cache-path cache-path
+				    :cache-dir cache-dir
 				    :expand expand)))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc mod "Cannot find file" path clause))))
@@ -479,7 +538,7 @@
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
 				    :lib-path lib-path
-				    :cache-path cache-path
+				    :cache-dir cache-dir
 				    :expand expand)))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
@@ -502,7 +561,7 @@
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
 				    :lib-path lib-path
-				    :cache-path cache-path
+				    :cache-dir cache-dir
 				    :expand expand)))
 		(for-each (lambda (b)
 			     (parse-import-binding b imod expr mod expand))
@@ -516,7 +575,7 @@
 	 (if (string? rfrom)
 	     (let ((imod::Module (module4-read rfrom
 				    :lib-path lib-path
-				    :cache-path cache-path
+				    :cache-dir cache-dir
 				    :expand expand)))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
@@ -567,7 +626,7 @@
 			  (lambda (p)
 			     (for-each (lambda (c)
 					  (module5-parse-clause c clause mod
-					     lib-path cache-path expand))
+					     lib-path cache-dir expand))
 				(port->sexp-list p #t)))))
 		      (else
 		       (error/loc mod "Cannot find file" f clause))))
@@ -575,7 +634,7 @@
 
    (define (parse-cond-expand clause expr::pair mod::Module expand)
       (for-each (lambda (c)
-		   (module5-parse-clause c clause mod lib-path cache-path expand))
+		   (module5-parse-clause c clause mod lib-path cache-dir expand))
 	 (expand clause)))
 
    (define (parse-library-all clause expr::pair mod::Module expand)
@@ -760,6 +819,7 @@
 	    ;; bind all the classes
 	    (check-unbounds mod))
 	 (ronly! mod)
+	 (filecache-put! (-> mod path) mod)
 	 (trace-item "exports="
 	    (hashtable-map (-> mod exports) (lambda (k d) d)))
 	 (trace-item "defs="
@@ -769,7 +829,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module4-parse ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (module4-parse::Module exprs path::bstring #!key lib-path cache-path expand)
+(define (module4-parse::Module exprs path::bstring #!key lib-path cache-dir expand)
    
    (define (parse4 id path clauses expr body)
       (let ((mod (instantiate::Module
@@ -790,10 +850,11 @@
 		(hashtable-put! *modules-by-id* (symbol->string id) mod)))
 	 (collect-defines! mod body)
 	 (for-each (lambda (c)
-		      (module4-parse-clause c expr mod lib-path cache-path expand))
+		      (module4-parse-clause c expr mod lib-path cache-dir expand))
 	    clauses)
 	 (with-access::Module mod (inits)
 	    (set! inits (delete-duplicates! inits)))
+	 (filecache-put! cache-dir mod)
 	 mod))
    
    (with-trace 'module5-parse "module4-parse"
@@ -813,7 +874,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module4-parse-clause ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (module4-parse-clause clause expr::pair mod::Module lib-path cache-path expand)
+(define (module4-parse-clause clause expr::pair mod::Module lib-path cache-dir expand)
 
    (define (unbound-error path id clause)
       (error/loc mod (format "Cannot find declaration in module \"~a\"" path)
@@ -929,7 +990,7 @@
 			  (lambda (p)
 			     (for-each (lambda (c)
 					  (module5-parse-clause c clause mod
-					     lib-path cache-path expand))
+					     lib-path cache-dir expand))
 				(port->sexp-list p #t)))))
 		      (else
 		       (error/loc mod "Cannot find file" f clause))))

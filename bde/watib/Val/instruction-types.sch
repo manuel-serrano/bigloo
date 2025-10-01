@@ -480,15 +480,21 @@
   ; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsubsection*.196
   (br_on_cast
    (,labelidx ,rt ,rt)
-   ,(lambda (env l::labelidxp rt1 rt2)
-       (multiple-value-bind (t* rt') (label-get-last-rest l)
-          (unless (reftype? rt')
-             (raise `(expected-reftype-label ,rt')))
-          (unless (<rt= env rt2 rt1)
-             (raise `(non-matching ,rt2 ,rt1)))
-          (unless (<rt= env rt2 rt')
-             (raise `(non-matching ,rt2 ,rt')))
-          `((,@t* ,rt1) (,@t* ,(rt-diff rt1 rt2))))))
+   ,(lambda (env l::labelidxp t1 t2)
+       (let ((rt1 (if (isa? t1 typep)
+		      (with-access::typep t1 (type) type)
+		      t1))
+	     (rt2 (if (isa? t2 typep)
+		      (with-access::typep t2 (type) type)
+		      t2)))
+	  (multiple-value-bind (t* rt') (label-get-last-rest l)
+	     (unless (reftype? rt')
+		(raise `(expected-reftype-label ,rt')))
+	     (unless (<rt= env rt2 rt1)
+		(raise `(non-matching ,rt2 ,rt1)))
+	     (unless (<rt= env rt2 rt')
+		(raise `(non-matching ,rt2 ,rt')))
+	     `((,@t* ,rt1) (,@t* ,(rt-diff rt1 rt2)))))))
 
   ; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsubsection*.197
   (br_on_cast_fail

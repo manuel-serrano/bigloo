@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Sep 30 17:53:02 2025 (serrano)                */
+;*    Last change :  Tue Sep 30 18:30:16 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -42,6 +42,7 @@
 	   (module5-object-unit ::Module)
 	   (module5-imported-inline-unit ::Module)
 	   (module5-extern-plugin-c ::Module ::pair)
+	   (module5-extern-plugin-java mod::Module expr::pair)
 	   (module5-extern-plugin-wasm ::Module ::pair))
 
    (export (class CDef::Def
@@ -407,6 +408,18 @@
    (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
 
 ;*---------------------------------------------------------------------*/
+;*    module5-extern-plugin-java ...                                   */
+;*---------------------------------------------------------------------*/
+(define (module5-extern-plugin-java mod::Module expr::pair)
+   
+   (define (parse-clause clause mod::Module)
+      (match-case clause
+	 (else
+	  (error/loc mod "Illegal extern \"java\" module clause" clause expr))))
+   
+   (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
+
+;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-wasm ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (module5-extern-plugin-wasm mod::Module expr::pair)
@@ -423,7 +436,7 @@
 		       (set! pragma (cons (cons 'wasm deps) pragma)))
 		    (error/loc "mod" "Cannot find declaration" clause expr)))))
 	 (else
-	  (error/loc mod "Illegal extern \"C\" module clause" clause expr))))
+	  (error/loc mod "Illegal extern \"wasm\" module clause" clause expr))))
    
    (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
 

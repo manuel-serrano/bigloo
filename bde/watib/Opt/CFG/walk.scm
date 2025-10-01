@@ -335,13 +335,15 @@
            (br_on_cast
             (with-access::three-args (car l) (x y z)
                (with-access::labelidxp x (idx)
-                  (end-current-block (instantiate::on-cast
-                                      (dst-cast-fail
-                                       (build-node (cdr l) st st '()
-                                                   next labs))
-                                      (rt-src y)
-                                      (rt-dst z)
-                                      (dst-cast (list-ref labs idx)))))))
+		  (with-access::typep y ((ty type))
+		     (with-access::typep z ((tz type))
+			(end-current-block (instantiate::on-cast
+					      (dst-cast-fail
+						 (build-node (cdr l) st st '()
+						    next labs))
+					      (rt-src ty)
+					      (rt-dst tz)
+					      (dst-cast (list-ref labs idx)))))))))
 
            (else
             (let ((new-st (append (reverse outtype)

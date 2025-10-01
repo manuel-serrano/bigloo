@@ -107,7 +107,7 @@
             #f
             (with-access::specialization (car versions) (context)
                (if (context-equal? context target-context)
-                  (get-most-recent-merge state specialization)
+                  (get-most-recent-merge state (car versions))
                   (loop (cdr versions))))))))
 
 (define (get-specializations::pair-nil state::bbv-state specialization::specialization)
@@ -129,7 +129,7 @@
 
 (define (walk state::bbv-state specialization::specialization) (***NotImplemented*** 'walk))
 
-(define (reach::specialization state::bbv-state origin::cfg-node context::context from::specialization)
+(define (reach::specialization state::bbv-state origin::cfg-node context::context from)
    (with-access::bbv-state state (reachability)
       (let ((target
                (or
@@ -140,15 +140,15 @@
                            (id (new-id! state))
                            (version #f)
                            (context context))))
-                     (add-specialization! state specialization)
+                     (add-specialization! state new-specialization)
                      new-specialization))))
          (with-access::specialization target (id)
-            (if from
-               (ssr-add-edge! reachability (-> from id) id
+            (if (isa? from specialization)
+               (ssr-add-edge! reachability (with-access::specialization from (id) id) id
                   :onconnect (lambda (reachable)
                                  (queue-put!
                                     (-> state queue)
-                                    (get-specialization-by-id bbv-state reachable)))))
+                                    (get-specialization-by-id state reachable)))))
             target))))
 
 (define (merge? state::bbv-state specialization::specialization version-limit::bint)
@@ -157,7 +157,7 @@
 
 ;; BBV CORE ALGO
 (define (bbv::cfg g::cfg version-limit::bint)
-   (let ((state (make-init-state cfg)))
+   (let ((state (make-init-state g)))
       (with-access::bbv-state state (queue)
       (with-access::cfg g (entry func)
          (let ((new-entry (reach state entry (make-context (iota (length (-> func locals)))) #f)))
@@ -171,7 +171,7 @@
                      (loop))))
             (multiple-value-bind (-size rpostorder) (reverse-postorder! entry)
                (let ((new-cfg (instantiate::cfg
-                                 (entry (get-most-recent-merge state new-entry))
+                                 (entry (with-access::specialization (get-most-recent-merge state new-entry) (origin) origin))
                                  (size (-fx 0 -size))
                                  (rpostorder rpostorder)
                                  (func func))))

@@ -17,6 +17,7 @@
    (export 
       $$configure-release-number
       $$configure-specific-version
+      $$configure-build-tag
       $$configure-homeurl
       $$configure-shell
       $$configure-shell-mv
@@ -103,6 +104,7 @@
 ;*---------------------------------------------------------------------*/
 (define $$configure-release-number "@BGL_RELEASE_NUMBER@")
 (define $$configure-specific-version "@BGL_SPECIFIC_VERSION@")
+(define $$configure-build-tag "@BGL_BUILD_TAG@")
 (define $$configure-homeurl "@BGL_HOMEURL@")
 (define $$configure-shell "@SHELL@")
 (define $$configure-shell-mv "@SHELL_MV@")

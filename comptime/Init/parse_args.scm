@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Sep 25 17:56:54 2025 (serrano)                */
+;*    Last change :  Wed Oct  1 07:56:31 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -187,7 +187,8 @@
 	      ("BIGLOOSTACKDEPTH" . "the error stack depth printing")
 	      ("BIGLOOLIVEPROCESS" . "the maximum number of Bigloo live processes")
 	      ("BIGLOOTRACE" . "list of active traces")
-	      ("BIGLOOGCTHREADS" . "Max GC threads number"))))
+	      ("BIGLOOGCTHREADS" . "Max GC threads number")
+	      ("BIGLOOCACHE" . "Module cache directory"))))
       (newline)
       (print "Runtime Command file:")
       (print "   - ~/.bigloorc"))
@@ -966,6 +967,10 @@
        (set! *wasm-peephole* #f))
       (("-fwasm-post-optimizer" ?cmd (help "Wasm post optimizer"))
        (set! *wasm-post-optimizer* cmd))
+      (("-fno-wasm-br-on-cast" (help "Disable wasm br-on-cast optimization"))
+       (set! *wasm-br-on-cast* #f))
+      (("-fwasm-post-optimizer" ?cmd (help "Wasm post optimizer"))
+       (set! *wasm-post-optimizer* cmd))
       
 ;*--- trace options ---------------------------------------------------*/
       (section "Traces")
@@ -1401,6 +1406,10 @@
       (-O2!)
       (set! *optim-jvm-inlining* 3)
       (set! *optim-jvm-branch* 5)
+      ;; to be uncommented when watib is fixed...
+      ;; (when (eq? *wasm-br-on-cast* #unspecified) (set! *wasm-br-on-cast* #t))
+      (when (eq? *wasm-peephole* #unspecified)
+	 (set! *wasm-peephole* #t))
       (set! *optim-return?* #t)
       (unless (eq? *target-language* 'jvm)
 	 (set! *optim-return-goto?* #t))

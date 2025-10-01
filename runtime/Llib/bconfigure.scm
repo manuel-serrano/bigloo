@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Tue Aug 26 13:33:48 2025 (serrano)                */
+;*    Last change :  Wed Oct  1 07:20:31 2025 (serrano)                */
 ;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -51,6 +51,7 @@
 
    (extern (macro $configure-release-number::string "BGL_RELEASE_NUMBER")
 	   (macro $configure-specific-version::string "BGL_SPECIFIC_VERSION")
+	   (macro $configure-build-tag::string "BGL_BUILD_TAG")
 	   (macro $configure-homeurl::string "BGL_HOMEURL")
 	   (macro $configure-shell::string "SHELL")
 	   (macro $configure-shell-mv::string "BGL_SHELL_MV")
@@ -138,6 +139,7 @@
    (java   (class $configure
 	      (field static release-number::string "BGL_RELEASE_NUMBER")
 	      (field static specific-version::string "BGL_SPECIFIC_VERSION")
+	      (field static build-tag::string "BGL_BUILD_TAG")
 	      (field static homeurl::string "BGL_HOMEURL")
 	      (field static shell::string "SHELL")
 	      (field static shell-mv::string "BGL_SHELL_MV")
@@ -236,6 +238,7 @@
 (define *bigloo-configuration*
    `((release-number . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-release-number) (else $$configure-release-number)))
      (specific-version . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-specific-version) (else $$configure-specific-version)))
+     (build-tag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-build-tag) (else $$configure-build-tag)))
      (library-safety . ,(library-safety))
      (homeurl . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-homeurl) (else $$configure-homeurl)))
      (shell . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-shell) (else $$configure-shell)))

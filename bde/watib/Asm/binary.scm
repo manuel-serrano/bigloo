@@ -63,10 +63,13 @@
       ((ref ?t)
        (write-byte #x64 op)
        (write-type t op))
-      ((or (? rectype?) (? deftype?)) (leb128-write-signed (cer t) op))
+      ((or (? rectype?) (? deftype?))
+       (leb128-write-signed (cer t) op))
       ((ref null ?t)
        (write-byte #x63 op)
-       (write-type t op))))
+       (write-type t op))
+      (else
+       (error "write-type" "Illegal type" t))))
 
 (define (write-comptype t op::output-port)
    (define (write-fieldtype t op::output-port)

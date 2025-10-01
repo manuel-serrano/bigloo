@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Thu Sep 25 11:52:58 2025 (serrano)                */
+;*    Last change :  Wed Oct  1 07:12:35 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -133,6 +133,7 @@
 	    *profile-mode*
 	    *prof-table-name*
 	    *module-version*
+	    *module-cache-dir*
 	    *module-shape?*
 	    *key-shape?*
 	    *type-shape?*
@@ -260,6 +261,7 @@
 	    *wasm-local-preinit*
 	    *wasm-tailcall*
 	    *wasm-peephole*
+	    *wasm-br-on-cast*
 	    *wasm-fixnum*
 	    *wasm-post-optimizations*
 	    *wasm-post-optimizer*
@@ -832,6 +834,16 @@
 (param-define *module-version*
    "Version of the module language support"
    0)
+(param-define *module-cache-dir*
+   "Optional disk cache to store resolved modules"
+   (or (getenv "BIGLOOCACHE")
+       (make-file-path
+	  (or (getenv "TMPDIR") "/tmp")
+	  (or (getenv "USER") "/anonymous")
+	  "cache"
+	  "bigloo"
+	  (bigloo-config 'release-number)
+	  (bigloo-config 'build-tag))))
 (define *module-shape?* #f)
 (define *key-shape?* #f)
 (define *type-shape?* #f)
@@ -1305,7 +1317,14 @@
 ;*---------------------------------------------------------------------*/
 (param-define *wasm-peephole*
    "wasm peephole optimizations"
-   #t)
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    *wasm-br-on-cast* ...                                            */
+;*---------------------------------------------------------------------*/
+(param-define *wasm-br-on-cast*
+   "Optimize wasm type test with br_on_cast blocks"
+   #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    *wasm-fixnum* ...                                                */

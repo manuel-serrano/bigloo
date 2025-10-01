@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Thu Sep 25 11:08:59 2025 (serrano)                */
+;*    Last change :  Wed Oct  1 08:05:41 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -163,6 +163,10 @@
 		(for-each (lambda (l) (wasm_local-nullable-set! l #t)) locals)
 		(gen-dispatcher-body blocks)))))
 
+   (define (optim-body)
+      (let ((body (plain-body)))
+	 (br-on-cast! body)))
+   
    (define (body-sans-locals body)
       (match-case body
 	 (((local . ?-) . ?rest) (body-sans-locals rest))
@@ -172,7 +176,7 @@
       (match-case body
 	 (((and ?decl (local . ?-)) . ?rest) (cons decl (body-locals rest)))
 	 (else '())))
-
+   
    (define (local.get var)
       (if *wasm-local-preinit*
 	  `(local.get ,var)
@@ -185,7 +189,7 @@
 		(ty (wasm-type (global-type v)))
 		($exn (gensym '$exn))
 		($exit (wasm-sym (reg-name protect)))
-		(body (plain-body)))
+		(body (optim-body)))
 	     `((comment "try block")
 	       ,@(body-locals body)
 	       (local ,$exn (ref $bexception))
@@ -201,44 +205,7 @@
 		  (call $bgl_exception_handler
 		     (local.get ,$exn)
 		     (local.get ,$exit)))))
-	  #;(let ((lblb (gensym '$try-bexit))
-		(lblc (gensym '$try))
-		(ty (wasm-type (global-type v)))
-		($exn (gensym '$exn))
-		($exit (wasm-sym (reg-name protect)))
-		(body (plain-body)))
-	     `((comment "try block")
-	       ,@(body-locals body)
-	       (local ,$exn (ref $bexception))
-	       (local.set ,$exit (global.get $exit-default-value))
-	       (try
-		  (do
-		     (call $BGL_STORE_TRACE)
-		     ,@(body-sans-locals body))
-		  (catch $BEXCEPTION
-		     (local.set ,$exn)
-		     (return_call $BGL_RESTORE_TRACE_WITH_VALUE
-			(call $bgl_exception_handler
-			   (local.get ,$exn)
-			   (local.get ,$exit)))))))
-	  #;(let ((lblb (gensym '$try-bexit))
-		(lblc (gensym '$try))
-		(ty (wasm-type (global-type v)))
-		($exit (wasm-sym (reg-name protect)))
-		(body (plain-body)))
-	     `((comment "try block")
-	       ,@(body-locals body)
-	       (local.set ,$exit (global.get $exit-default-value))
-	       (block ,lblc (result (ref eq))
-		  (call $BGL_RESTORE_TRACE_WITH_VALUE
-		     (call $bgl_exception_handler
-			(block ,lblb (result (ref $bexception))
-			   (try_table (catch $BEXCEPTION ,lblb)
-			      ,@(body-sans-locals body)
-			      (br ,lblc)))
-			,(local.get $exit)))
-		  (br ,lblc))))
-	  (plain-body))))
+	  (optim-body))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-protect-temp ...                                             */
@@ -1398,7 +1365,7 @@
 ;*    peephole ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (peephole expr)
-   (if *wasm-peephole*
+   (if (eq? *wasm-peephole* #t)
        (match-case expr
 	  ((BGl_2zc3zc3zz__r4_numbers_6_5z00
 	      (call $make_bint ?num)
@@ -1842,3 +1809,72 @@
 				    blocks)
 				 (cons nb blocks))
 			      (loop (cdr first) (cons i prelude))))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    br-on-cast! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (br-on-cast! x)
+   
+   (define (type-error? x)
+      (match-case x
+	 ((local.set ?var ((kwote @) ?loc2 (call $type-error@__error . ?-))) #t)
+	 ((local.set ?var (call $type-error@__error . ?-)) #t)
+	 (else #f)))
+   
+   (define (failure? x)
+      (match-case x
+	 (((kwote @) ?- (block (call $the_failure . ?-) ((kwote @) ?- (unreachable)))) #t)
+	 (((kwote @) ?- (block (call $the_failure . ?-) (unreachable))) #t)
+	 (((block (call $the_failure . ?-) (unreachable))) #t)
+	 (else #f)))
+   
+   (define (find-cast x type expr)
+      (match-case x
+	 ((ref.cast (ref (? (lambda (t) (eq? type t)))) (? (lambda (e) (equal? e expr))))
+	  x)
+	 ((comment ?- ?x)
+	  (find-cast x type expr))
+	 (((kwote @) ?- ?x)
+	  (find-cast x type expr))
+	 ((?- . ?-)
+	  (let loop ((x x))
+	     (when (pair? x)
+		(or (find-cast (car x) type expr)
+		    (loop (cdr x))))))
+	 (else
+	  #f)))
+   
+   (if (eq? *wasm-br-on-cast* #t)
+       (let loop ((x x))
+	  (match-case x
+	     ((if ((kwote @) ?loc (ref.test (ref ?type) ?expr)) (then . ?then) (else ?e ?f))
+	      (if (and (type-error? e) (failure? f))
+		  (let ((cx (find-cast then type expr)))
+		     (if cx
+			 (let* ((lbl (gensym '$br-on-cast))
+				(nblock `(block ,lbl (result (ref ,type))
+					    (br_on_cast ,lbl (ref eq) (ref ,type) ,expr)
+					    ,e ,f)))
+			    (set-car! cx (car nblock))
+			    (set-cdr! cx (cdr nblock))
+			    `(block ,@then))
+			 (begin
+			    (map! loop x)
+			    x)))
+		  (begin
+		     (map! loop x)
+		     x)))
+	     ((comment ?msg ?y)
+	      (set-car! (cddr x) (loop y))
+	      x)
+	     (((kwote @) ?- ?y)
+	      (set-car! (cddr x) (loop y))
+	      x)
+	     ((?- . ?-)
+	      (map! loop x)
+	      x)
+	     (else
+	      x)))
+       x))
+
+		 

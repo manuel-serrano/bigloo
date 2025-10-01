@@ -4,13 +4,10 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Sep 11 07:54:37 2025 (serrano)                */
+#*    Last change :  Wed Oct  1 07:14:13 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
-#*    -------------------------------------------------------------    */
-#*    Please, dont talk to me about autoconf. I simply dont want       */
-#*    to hear about it...                                              */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -23,6 +20,12 @@ bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 bigloohttp=http://www-sop.inria.fr/indes/fp/Bigloo/download
 
 bigloosvn=ssh://hop@hop.inria.fr/bigloo
+
+buildtag=`git log -1 --abbrev-commit --pretty="%h"`
+git status -s | grep M > /dev/null
+if [ "$? " = "0 " ]; then
+  buildtag="$buildtag+"
+fi
 
 #*---------------------------------------------------------------------*/
 #*    User variables                                                   */
@@ -3831,6 +3834,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_RELEASE_NUMBER@|$release|" \
               -e "s|@BGL_RELEASE_VERSION@|$version|" \
               -e "s|@BGL_RELEASE_BRANCH@|$branch|" \
+              -e "s|@BGL_BUILD_TAG@|$buildtag|" \
               -e "s|@BGL_HOMEURL@|$bigloourl|" \
               -e "s|@BGL_SPECIFIC_VERSION@|$specific|" \
               -e "s|@GC_VERSION@|$gcversion|" \

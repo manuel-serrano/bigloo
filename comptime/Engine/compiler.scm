@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Sep 30 17:52:51 2025 (serrano)                */
+;*    Last change :  Tue Sep 30 18:30:54 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -520,12 +520,14 @@
       (set! *module-version* 5)
       (register-srfi! 'bigloo-module5)
       (module5-register-extern-plugin! "C" module5-extern-plugin-c)
+      (module5-register-extern-plugin! "java" module5-extern-plugin-java)
       (module5-register-extern-plugin! "wasm" module5-extern-plugin-wasm)
       
       (let* ((expr-mod (car expr))
 	     (expr-body (cdr expr))
 	     (mod (module5-parse expr (car *src-files*)
-		     :expand module5-expand))
+		     :expand module5-expand
+		     :cache-dir *module-cache-dir*))
 	     (tu (unit 'toplevel 100 '() #t #f))
 	     (units (list tu))
 	     (xenv (create-hashtable :weak 'open-string)))

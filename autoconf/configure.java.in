@@ -15,6 +15,7 @@ public class configure {
   public static final byte[] BGL_RELEASE_NUMBER = "@BGL_RELEASE_NUMBER@".getBytes();
   public static final byte[] BGL_HOMEURL = "@BGL_HOMEURL@".getBytes();
   public static final byte[] BGL_SPECIFIC_VERSION = "@BGL_SPECIFIC_VERSION@".getBytes();
+  public static final byte[] BGL_BUILD_TAG = "@BGL_BUILD_TAG@".getBytes();
   public static final byte[] BGL_DEFAULT_BACK_END = "@BGL_DEFAULT_BACK_END@".getBytes();
   public static final boolean STACK_GROWS_DOWN = (@STACK_GROWS_DOWN@ == 1);
   public static final int PTR_ALIGNMENT = @PTR_ALIGNMENT@;

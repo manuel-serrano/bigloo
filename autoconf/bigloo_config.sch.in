@@ -13,6 +13,7 @@
   (dlopen-lib . "@DLOPEN_LD_OPT@")
   (have-dlopen . ,(not (=fx @HAVE_DLOPEN@ 0)))
   (release-number . "@BGL_RELEASE_NUMBER@")
+  (build-tag . "@BGL_BUILD_TAG@")
   (specific-version . "@BGL_SPECIFIC_VERSION@")
   (c-compiler-style . "@C_COMPILER_STYLE@")
   (c-compiler . "@C_COMPILER@")
