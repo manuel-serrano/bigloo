@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Sep 30 18:30:16 2025 (serrano)                */
+;*    Last change :  Thu Oct  2 07:40:26 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -431,9 +431,11 @@
 	     (parse-ident ident clause mod)
 	     (let ((decl (hashtable-get (-> mod decls) (symbol->string! id))))
 		(if (isa? decl Decl)
-		    (with-access::Decl decl (qname pragma)
-		       (set! qname name)
-		       (set! pragma (cons (cons 'wasm deps) pragma)))
+		    (with-access::Decl decl (attributes)
+		       (set! attributes
+			  (cons* (cons 'wasm deps)
+			     (cons 'qualitifed-type-name name)
+			     attributes)))
 		    (error/loc "mod" "Cannot find declaration" clause expr)))))
 	 (else
 	  (error/loc mod "Illegal extern \"wasm\" module clause" clause expr))))
