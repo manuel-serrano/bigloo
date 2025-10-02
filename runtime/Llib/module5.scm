@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Oct  2 08:04:33 2025 (serrano)                */
+;*    Last change :  Thu Oct  2 08:33:38 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -25,6 +25,7 @@
 	    __binary
 	    __macro
 	    __eval
+	    __expander_srfi0
 	    __expand
 	    __class)
 
@@ -107,14 +108,15 @@
 	      (properties::pair-nil read-only))
 
 	   (module5-register-plugin! ::symbol ::procedure)
+	   (module4-register-plugin! ::symbol ::procedure)
 	   (module5-register-extern-plugin! ::bstring ::procedure)
 	   (module5-resolve-path ::bstring ::bstring)
 	   (module5-resolve-library ::symbol ::pair-nil)
-	   (module5-read::Module ::bstring #!key lib-path cache-dir expand)
-	   (module5-read-library::Module ::bstring)
-	   (module5-read-heap::Module ::bstring)
+	   (module5-read::Module ::bstring #!key (lib-path '()) cache-dir expand)
+	   (module5-read-library::Module ::bstring ::obj ::Module)
+	   (module5-read-heap::Module ::bstring ::obj ::Module)
 	   (module5-write-heap ::bstring ::Module)
-	   (module5-parse::Module ::pair-nil ::bstring #!key lib-path cache-dir expand)
+	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand)
 	   ;; (module5-expand::Module ::Module expand)
 	   ;; (module5-expand-exports!::Module ::Module expand)
 	   (module5-expander::obj ::obj ::procedure)
@@ -200,6 +202,7 @@
 (define *modules-by-path* (create-hashtable :weak 'open-string))
 (define *modules-by-id* (create-hashtable :weak 'open-string))
 (define *plugins* '())
+(define *plugins4* '())
 (define *extern-plugins* '())
 
 ;*---------------------------------------------------------------------*/
@@ -210,6 +213,15 @@
       (if (assq id *plugins*)
 	  (error "module5-register-plugin!" "Plugin already registered" id)
 	  (set! *plugins* (cons (cons id plugin) *plugins*)))))
+
+;*---------------------------------------------------------------------*/
+;*    module4-register-plugin! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (module4-register-plugin! id::symbol plugin::procedure)
+   (synchronize module-mutex
+      (if (assq id *plugins4*)
+	  (error "module4-register-plugin!" "Plugin already registered" id)
+	  (set! *plugins4* (cons (cons id plugin) *plugins4*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-register-extern-plugin! ...                              */
@@ -234,7 +246,7 @@
 (define (module5-resolve-library id::symbol search-path)
    (let* ((init (library-init-file id))
 	  (path (find-file/path init search-path)))
-      (when (file-exists? path)
+      (when (and (string? path) (file-exists? path))
 	 (file-name-unix-canonicalize! path))))
 
 ;*---------------------------------------------------------------------*/
@@ -311,47 +323,53 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-read ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (module5-read path::bstring #!key lib-path cache-dir expand)
-   (module-read path lib-path cache-dir expand module5-parse))
+(define (module5-read path::bstring #!key (lib-path '()) cache-dir expand)
+   (module-read path (or lib-path '()) cache-dir expand module5-parse))
 
 ;*---------------------------------------------------------------------*/
 ;*    module4-read ...                                                 */
 ;*    -------------------------------------------------------------    */
 ;*    Read and parse a module4 when imported from a module 5.          */
 ;*---------------------------------------------------------------------*/
-(define (module4-read path::bstring #!key lib-path cache-dir expand)
+(define (module4-read path::bstring #!key (lib-path '()) cache-dir expand)
    (module-read path lib-path cache-dir expand module4-parse))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-read-library ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (module5-read-library path::bstring)
+(define (module5-read-library path::bstring expr mod)
    (let ((init (call-with-input-file path read)))
       (match-case init 
 	 ((declare-library! (quote ?id) . ?rest)
+	  (let ((srfi (member :srfi rest)))
+	     (match-case srfi
+		((:srfi (quote ?srfis) . ?-)
+		 (for-each register-srfi! srfis))))
 	  (let ((heap (member :heap rest)))
 	     (match-case heap
 		((:heap (and (? string?) ?file . ?-))
 		 (module5-read-heap
-		    (make-file-name (dirname path) file)))
-		(#f
+		    (make-file-name (dirname path) file)
+		    expr mod))
+		(else
 		 (module5-read-heap
 		    (make-file-name (dirname path)
-		       (string-append (prefix (basename path)) ".heap5"))))
-		(else
-		 (error/loc #f (format "Illegal library heap \"~a\"" path) heap init)))))
+		       (string-append (prefix (basename path)) ".heap5"))
+		    expr mod)))))
 	 (else
-	  (error/loc #f "Illegal library" path init)))))
+	  (error/loc mod "Illegal library" path init)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-read-heap ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (module5-read-heap path::bstring)
+(define (module5-read-heap path::bstring expr mod)
    (let ((port (open-input-binary-file path)))
       (if (not (binary-port? port))
-	  (error "module5" "Cannot read heap file" path)
+	  (if (file-exists? path)
+	      (error/loc mod "Cannot read heap file" path expr)
+	      (error/loc mod "Cannot find heap file" path expr))
 	  (unwind-protect
-	     (heap->module5 (input-obj port))
+	     (heap->module5 (input-obj port) path expr mod)
 	     (close-binary-port port)))))
 
 ;*---------------------------------------------------------------------*/
@@ -360,27 +378,51 @@
 (define (module5-write-heap path::bstring mod::Module)
    (let ((port (open-output-binary-file path)))
       (if (not (binary-port? port))
-	  (error "module5" "Cannot write heap file" path)
+	  (error/loc mod "Cannot write heap file" path path)
 	  (unwind-protect
 	     (output-obj port (module5->heap mod))
 	     (close-binary-port port)))))
 
 ;*---------------------------------------------------------------------*/
+;*    *heap-signature* ...                                             */
+;*---------------------------------------------------------------------*/
+(define *heap-signature* 17051966)
+
+;*---------------------------------------------------------------------*/
 ;*    heap->module5 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (heap->module5::Module heap)
-   heap)
+(define (heap->module5::Module heap path expr mod)
+   (cond
+      ((or (not (vector? heap))
+	   (not (=fx (vector-length heap) 4))
+	   (not (=fx (vector-ref-ur heap 0) *heap-signature*)))
+       (error/loc mod "Corrupted head" path expr))
+      ((not (equal? (vector-ref-ur heap 1) (bigloo-config 'release-number)))
+       (error/loc mod
+	  (format "Heap incompatible, build-release ~s vs ~s"
+	     (vector-ref-ur heap 1) (bigloo-config 'release-number))
+	  path expr))
+      ((not (equal? (vector-ref-ur heap 2) (bigloo-config 'specific-version)))
+       (error/loc mod
+	  (format "Heap incompatible, build-specific ~s vs ~s"
+	     (vector-ref-ur heap 2) (bigloo-config 'specific-version))
+	  path expr))
+      (else
+       (vector-ref-ur heap 3))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5->heap ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (module5->heap mod::Module)
-   mod)
+   (vector *heap-signature*
+      (bigloo-config 'release-number)
+      (bigloo-config 'specific-version)
+      mod))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (module5-parse::Module exprs path::bstring #!key lib-path cache-dir expand)
+(define (module5-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand)
 
    (define (parse5 id path clauses expr body)
       (let ((mod (instantiate::Module
@@ -411,7 +453,7 @@
    
    (with-trace 'module5-parse "module5-parse"
       (trace-item "path=" path)
-      (trace-item "expr=" expr)
+      (trace-item "exprs=" exprs)
       (let* ((expr (car exprs))
 	     (eexpr (if expand (expand expr) expr)))
 	 (trace-item "eexpr=" eexpr)
@@ -442,6 +484,12 @@
    (define (hashtable-symbol-put! table id d)
       (hashtable-put! table (symbol->string! id) d))
 
+   (define (module-add-libraries! mod::Module libs::pair-nil)
+      (for-each (lambda (l)
+		   (unless (assq (car l) (-> mod libraries))
+		      (set! (-> mod libraries) (cons l (-> mod libraries)))))
+	 libs))
+   
    (define (parse-import-binding b imod::Module expr::pair mod::Module expand)
       (match-case b
 	 ((? symbol?)
@@ -482,7 +530,7 @@
 		      (when (eq? (-> d scope) 'export)
 			 (hashtable-put! (-> mod exports) key d))))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
-	     (error/loc mod "Cannot find file" (cadr clause) clause))))
+	     (error/loc mod "Cannot find file" path clause))))
    
    (define (parse-reexport4-all clause::pair expr::pair mod::Module expand)
       (let* ((path (cadr (cddr clause)))
@@ -497,7 +545,7 @@
 		      (when (eq? (-> d scope) 'export)
 			 (hashtable-put! (-> mod exports) key d))))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
-	     (error/loc mod "Cannot find file" (cadr clause) clause))))
+	     (error/loc mod "Cannot find file" path clause))))
    
    (define (parse-reexport-some clause::pair expr::pair mod::Module expand)
       (let* ((path (cadr clause))
@@ -518,7 +566,7 @@
 				d))
 		   bindings)
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
-	     (error/loc mod "Cannot find file" (cadr clause) clause))))
+	     (error/loc mod "Cannot find file" path clause))))
    
    (define (parse-import-init clause::pair expr::pair mod::Module expand)
       (let* ((path (cadr clause))
@@ -550,6 +598,7 @@
 				    (scope 'import))))
 			 (hashtable-put! (-> mod decls) key nd)
 			 (hashtable-put! (-> mod imports) key nd))))
+		(module-add-libraries! mod (-> imod libraries))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc mod "Cannot find file" path clause))))
    
@@ -565,6 +614,7 @@
 		(for-each (lambda (b)
 			     (parse-import-binding b imod expr mod expand))
 		   bindings)
+		(module-add-libraries! mod (-> imod libraries))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc mod "Cannot find file" path clause))))
 
@@ -640,13 +690,13 @@
       (let* ((lib (cadr clause))
 	     (rlib (module5-resolve-library lib lib-path)))
 	 (if (string? rlib)
-	     (let ((lmod::Module (module5-read-library rlib)))
-		(hashtable-for-each (-> lmod decls)
+	     (let ((lmod::Module (module5-read-library rlib clause mod)))
+		(hashtable-for-each (-> lmod exports)
 		   (lambda (k d::Decl)
-		      (when (eq? (-> d scope) 'export)
-			 (let ((nd (duplicate::Decl d
-				      (scope 'import))))
-			    (hashtable-put! (-> mod decls) k nd)))))
+		      (tprint "IMPORT " d)
+		      (let ((nd (duplicate::Decl d
+				   (scope 'import))))
+			 (hashtable-put! (-> mod decls) k nd))))
 		(set! (-> mod inits)
 		   (append! (-> mod inits) (list lmod)))
 		(set! (-> mod libraries)
@@ -659,7 +709,7 @@
 	     (bindings (cdr rclause))
 	     (rlib (module5-resolve-library lib lib-path)))
 	 (if (string? rlib)
-	     (let ((lmod::Module (module5-read-library rlib)))
+	     (let ((lmod::Module (module5-read-library rlib clause mod)))
 		(for-each (lambda (b)
 			     (parse-import-binding b lmod expr mod expand))
 		   bindings)
@@ -781,7 +831,7 @@
 	       (lambda (k d::Decl)
 		  (with-access::Decl d ((imod mod) alias id)
 		     (unless (eq? imod mod)
-			(module5-expand-and-resolve! (-> d mod)
+			(module5-expand-and-resolve! imod
 			   (lambda ()
 			      (create-hashtable :weak 'open-string)))
 			(let ((def (module5-get-export-def imod id)))
@@ -828,7 +878,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module4-parse ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (module4-parse::Module exprs path::bstring #!key lib-path cache-dir expand)
+(define (module4-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand)
    
    (define (parse4 id path clauses expr body)
       (let ((mod (instantiate::Module
@@ -858,7 +908,7 @@
    
    (with-trace 'module5-parse "module4-parse"
       (trace-item "path=" path)
-      (trace-item "expr=" expr)
+      (trace-item "exprs=" exprs)
       (let* ((expr (car exprs))
 	     (eexpr (if expand (expand expr) expr)))
 	 (trace-item "eexpr=" eexpr)
@@ -874,21 +924,21 @@
 ;*    module4-parse-clause ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (module4-parse-clause clause expr::pair mod::Module lib-path cache-dir expand)
-
+   
    (define (unbound-error path id clause)
       (error/loc mod (format "Cannot find declaration in module \"~a\"" path)
 	 id clause))
-
+   
    (define (scope-error path id clause)
       (error/loc mod (format "Module \"~a\" does not export" path)
 	 id clause))
-
+   
    (define (hashtable-symbol-get table id)
       (hashtable-get table (symbol->string! id)))
-
+   
    (define (hashtable-symbol-put! table id d)
       (hashtable-put! table (symbol->string! id) d))
-
+   
    (define (procedure4 expr id args kind nexpr)
       (multiple-value-bind (name type)
 	 (parse-ident id expr)
@@ -908,7 +958,7 @@
 			(expr nexpr)
 			(decl decl))))
 	    (values name decl def))))
-
+   
    (define (inline4 expr id args)
       (multiple-value-bind (name type)
 	 (parse-ident id expr)
@@ -926,7 +976,7 @@
 		      (set! ddecl decl)
 		      (values name decl def)))
 		(unbound-error (-> mod path) name expr)))))
-
+   
    (define (variable4 expr id)
       (multiple-value-bind (name type)
 	 (parse-ident id expr)
@@ -945,7 +995,7 @@
 			(decl decl)
 			(expr `(define ,id #unspecified)))))
 	    (values name decl def))))
-      
+   
    (define (parse-export clause expr::pair mod::Module expand)
       (for-each-expr (lambda (expr src)
 			(match-case expr
@@ -962,6 +1012,18 @@
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (hashtable-symbol-put! (-> mod exports) id decl)
 			       (hashtable-symbol-put! (-> mod defs) id def)))
+			   ((class ?k . ?rest)
+			    (tprint "TODO export4 class...")
+			    '(error "export4" "Class not implemented" expr))
+			   ((wide-class ?k . ?rest)
+			    (tprint "TODO export4 class...")
+			    '(error "export4" "Class not implemented" expr))
+			   ((final-class ?k . ?rest)
+			    (tprint "TODO export4 class...")
+			    '(error "export4" "Class not implemented" expr))
+			   ((abstract-class ?k . ?rest)
+			    (tprint "TODO export4 class...")
+			    '(error "export4" "Class not implemented" expr))
 			   ((?id . ?args)
 			    (multiple-value-bind (id decl def)
 			       (procedure4 expr id args 'procedure
@@ -978,7 +1040,7 @@
 			   (else
 			    (error/loc mod "Illegal export4 clause" clause expr))))
 	 (cdr clause)))
-
+   
    (define (parse-include clause expr::pair mod::Module expand)
       (for-each (lambda (f)
 		   (cond
@@ -994,7 +1056,7 @@
 		      (else
 		       (error/loc mod "Cannot find file" f clause))))
 	 (cdr clause)))
-
+   
    (with-trace 'module5-parse "module4-parse-clause"
       (trace-item "clause=" clause)
       (trace-item "lib-path=" lib-path)
@@ -1020,14 +1082,17 @@
 	  #unspecified)
 	 ((library (? symbol?) . ?-)
 	  #unspecified)
-	 ((extern (and (? string?) ?name) . ?clauses)
-	  #unspecified)
 	 ((use . ?-)
 	  #unspecified)
 	 ((from . ?-)
 	  #unspecified)
 	 ((static . ?-)
 	  #unspecified)
+	 ((?id . ?-)
+	  (let ((plugin (assq id *plugins4*)))
+	     (if plugin
+		 ((cdr plugin) mod clause) 
+		 (error/loc mod "Illegal module clause" clause expr))))
 	 (else
 	  (error/loc mod "Illegal module clause" clause expr)))))
 

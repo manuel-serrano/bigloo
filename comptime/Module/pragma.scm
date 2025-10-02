@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Thu Oct  2 08:14:34 2025 (serrano)                */
+;*    Last change :  Thu Oct  2 09:37:22 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
@@ -229,6 +229,8 @@
 	   (args-noescape global val fun-args-noescape fun-args-noescape-set!))
 	  ((args-retescape)
 	   (args-noescape global val fun-args-retescape fun-args-retescape-set!))
+	  ((qualified-type-name)
+	   (global-qualified-type-name-set! global val))
 	  (else
 	   (user-error "Parse error" "Illegal \"pragma\" form" prop '()))))
       (else

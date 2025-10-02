@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Oct  2 07:48:23 2025 (serrano)                */
+;*    Last change :  Thu Oct  2 09:26:03 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -265,7 +265,6 @@
    (let ((id (if (isa? mod Module)
 		 (with-access::Module mod (id) id)
 		 "module5")))
-      (tprint "E " (epair? obj) " " (epair? container))
       (match-case (cond
 		   ((epair? obj) (cer obj))
 		   ((epair? container) (cer container))
@@ -436,10 +435,14 @@
 	     (let ((decl (hashtable-get (-> mod decls) (symbol->string! id))))
 		(if (isa? decl Decl)
 		    (with-access::Decl decl (attributes)
-		       (set! attributes
-			  (cons* (cons 'wasm deps)
-			     (cons 'qualitifed-type-name name)
-			     attributes)))
+		       (if (pair? deps)
+			   (set! attributes
+			      (cons* (cons 'wasm deps)
+				 (cons 'qualified-type-name name)
+				 attributes))
+			   (set! attributes
+			      (cons (cons 'qualified-type-name name)
+				 attributes))))
 		    (error/loc "mod" "Cannot find declaration" clause expr)))))
 	 (else
 	  (error/loc mod "Illegal extern \"wasm\" module clause" clause expr))))
@@ -475,9 +478,10 @@
    (with-access::Module mod (decls (mid id))
       (hashtable-for-each decls
 	 (lambda (k d)
-	    (with-access::Decl d ((dmod mod) id attributes)
-	       (when (eq? dmod mod)
-		  (let ((g (find-global/module id mid)))
+	    (with-access::Decl d ((dmod mod) id attributes scope)
+	       (when (and (eq? dmod mod) (pair? attributes))
+		  (let* ((m (if (eq? scope 'extern) 'foreign mid))
+			 (g (find-global/module id m)))
 		     (if (isa? g global)
 			 (for-each (lambda (p)
 				      (set-global-pragma-property! g p p))

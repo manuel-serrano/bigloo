@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Thu Sep 11 08:40:03 2025 (serrano)                */
+#*    Last change :  Thu Oct  2 08:45:23 2025 (serrano)                */
 #*    Copyright   :  2010-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -172,10 +172,15 @@ api-c_mt: api-init $(TAGS) .afile heap-c
 	$(MAKE) api-c-shared_mt
 
 heap-c: $(BOOTLIBDIR)/$(API).heap
+heap5-c: $(BOOTLIBDIR)/$(API).heap5
 $(BOOTLIBDIR)/$(API).heap: .afile $(MISC_SRC_DIR)/make_lib.scm
 	$(RM) -f $(BOOTLIBDIR)/$(API).heap
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+	$(BIGLOO) -module4 $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
              $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).heap
+$(BOOTLIBDIR)/$(API).heap5: .afile $(MISC_SRC_DIR)/make_lib5.scm
+	$(RM) -f $(BOOTLIBDIR)/$(API).heap5
+	$(BIGLOO) -module5 $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+             $(MISC_SRC_DIR)/make_lib5.scm -addheap $(BOOTLIBDIR)/$(API).heap5
 
 api-c-static: $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).a \
               $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).a \
@@ -328,10 +333,15 @@ api-wasm: api-init heap-wasm
 	$(MAKE) api.wasm
 
 heap-wasm: $(BOOTLIBDIR)/$(API).wheap
+heap5-wasm: $(BOOTLIBDIR)/$(API).wheap5
 $(BOOTLIBDIR)/$(API).wheap: .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
 	@ $(RM) -f $(BOOTLIBDIR)/$(API).wheap
 	@ $(BIGLOO) -wasm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
             $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).wheap
+$(BOOTLIBDIR)/$(API).wheap5: .jfile .afile $(MISC_SRC_DIR)/make_lib5.scm
+	@ $(RM) -f $(BOOTLIBDIR)/$(API).wheap5
+	@ $(BIGLOO) -module5 -wasm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+            $(MISC_SRC_DIR)/make_lib5.scm -addheap $(BOOTLIBDIR)/$(API).wheap5
 
 api.wasm: $(BOOTLIBDIR)/bigloo$(API)_s.wasm \
          $(BOOTLIBDIR)/bigloo$(API)_es.wasm
@@ -372,6 +382,9 @@ api-clean-wasm:
 objs/%.o: $(BIGLOO_SRC_DIR)/%.scm
 	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
 
+objs/make_lib5.o: $(MISC_SRC_DIR)/make_lib5.scm
+	$(BIGLOO) -module5 $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
+
 objs/%.o: $(MISC_SRC_DIR)/%.scm
 	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
 
@@ -392,6 +405,9 @@ objs/%.wat: $(BIGLOO_SRC_DIR)/%.scm
 
 objs/%.wat: $(MISC_SRC_DIR)/%.scm
 	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
+
+objs/make_lib5.wat: $(MISC_SRC_DIR)/make_lib5.scm
+	$(BIGLOO) -module5 -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
 
 
 #*---------------------------------------------------------------------*/

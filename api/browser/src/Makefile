@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Oct  1 15:54:20 2025 (serrano)                */
+#*    Last change :  Thu Oct  2 09:03:30 2025 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -46,13 +46,14 @@ WASMAS		= $(BGLWATIB)
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= dom
 
-_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) make_lib5
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 
 EOBJECTS	= objs/make_lib.o
 
 
-WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) Wlib/wbrowser.wat
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) \
+   objs/make_lib5.wat Wlib/wbrowser.wat
 WEOBJECTS	= objs/make_lib.wat
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
@@ -75,12 +76,11 @@ POPULATION	= $(SOURCES) \
 all:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
              $(MAKE) build-c; \
-	  fi
-	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
-             $(MAKE) build-jvm; \
+	     $(MAKE) heap5-c; \
 	  fi
 	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
              $(MAKE) build-wasm; \
+             $(MAKE) heap5-wasm; \
 	  fi
 
 c: build-c

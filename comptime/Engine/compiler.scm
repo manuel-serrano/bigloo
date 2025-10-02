@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Oct  2 07:47:55 2025 (serrano)                */
+;*    Last change :  Thu Oct  2 08:40:52 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -50,6 +50,7 @@
 	    module_module5
 	    module_include
 	    module_alibrary
+	    module_foreign
 	    expand_eps
 	    expand_install
 	    init_main
@@ -519,14 +520,18 @@
       
       (set! *module-version* 5)
       (register-srfi! 'bigloo-module5)
+      
       (module5-register-plugin! 'pragma module5-plugin-pragma)
       (module5-register-extern-plugin! "C" module5-extern-plugin-c)
       (module5-register-extern-plugin! "java" module5-extern-plugin-java)
       (module5-register-extern-plugin! "wasm" module5-extern-plugin-wasm)
-      
+
+      (module4-register-plugin! 'extern module4-plugin-extern)
+
       (let* ((expr-mod (car expr))
 	     (expr-body (cdr expr))
 	     (mod (module5-parse expr (car *src-files*)
+		     :lib-path *lib-dir*
 		     :expand module5-expand
 		     :cache-dir *module-cache-dir*))
 	     (tu (unit 'toplevel 100 '() #t #f))
@@ -534,7 +539,7 @@
 	     (xenv (create-hashtable :weak 'open-string)))
 	 
 	 (trace-item "units=" units)
-	 (trace-item "body=" body)
+	 (trace-item "body=" expr-body)
 	 
 	 ;; imported module unit (before processing the module body)
 	 (set! units (cons (module5-imported-unit mod comptime-expand) units))
@@ -637,6 +642,14 @@
 	    ;; check if inlined functions used by the backend
 	    ;; have all been defined
 	    (backend-check-inlines (the-backend))
+
+	    ;; collect all the libraries
+	    (with-access::Module mod (libraries)
+	       (for-each (lambda (l) (use-library! (car l))) libraries))
+
+	    ;; generate a heap5 ondemange
+	    (stop-on-pass 'make-add-heap
+	       (lambda () (module5-write-heap *additional-heap-name* mod)))
 	    
 	    ast))))
 
