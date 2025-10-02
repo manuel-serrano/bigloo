@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Module/pragma.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/pragma.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Thu May  9 09:38:02 2019 (serrano)                */
-;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Oct  2 08:14:34 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
 ;*=====================================================================*/
@@ -27,7 +27,8 @@
 	   effect_feffect
 	   (find-location tools_location))
    (export (make-pragma-compiler)
-	   (pragma-finalizer)))
+	   (pragma-finalizer)
+	   (set-global-pragma-property! ::obj ::obj ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-pragma-compiler ...                                         */
@@ -104,7 +105,7 @@
 ;*---------------------------------------------------------------------*/
 (define (set-pragma-properties! global prop* clause)
    (for-each (lambda (prop)
-		(set-pragma-property! global prop clause))
+		(set-global-pragma-property! global prop clause))
 	     prop*))
 
 ;*---------------------------------------------------------------------*/
@@ -118,9 +119,9 @@
 	  '())))
 
 ;*---------------------------------------------------------------------*/
-;*    set-pragma-property! ...                                         */
+;*    set-global-pragma-property! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (set-pragma-property! global prop clause)
+(define (set-global-pragma-property! global prop clause)
    (match-case prop
       ((? symbol?)
        (case prop

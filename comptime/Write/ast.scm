@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:29:03 1994                          */
-;*    Last change :  Mon Feb  3 13:47:50 2025 (serrano)                */
+;*    Last change :  Thu Oct  2 08:19:30 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast pretty-printer                                           */
@@ -124,4 +124,8 @@
 					  (display (global-removable g))))
 		     " evaluable?: " (if (global-evaluable? g) "#t" "#f")
 		     " eval?: " (if (global-eval? g) "#t" "#f")
+		     " pragma: " (format "~a"
+				    (if (fun-top? sfun)
+					(global-pragma g)
+					(cons 'no-cfa-top (global-pragma g))))
 		     "]")))

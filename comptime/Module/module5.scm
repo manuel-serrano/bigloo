@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Oct  2 07:40:26 2025 (serrano)                */
+;*    Last change :  Thu Oct  2 07:48:23 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -22,6 +22,7 @@
 	   module_module
 	   module_class
 	   module_checksum
+	   module_pragma
 	   expand_eps
 	   ast_node
 	   ast_var
@@ -42,8 +43,10 @@
 	   (module5-object-unit ::Module)
 	   (module5-imported-inline-unit ::Module)
 	   (module5-extern-plugin-c ::Module ::pair)
-	   (module5-extern-plugin-java mod::Module expr::pair)
-	   (module5-extern-plugin-wasm ::Module ::pair))
+	   (module5-extern-plugin-java ::Module ::pair)
+	   (module5-extern-plugin-wasm ::Module ::pair)
+	   (module5-plugin-pragma ::Module ::pair)
+	   (module5-resolve-pragma! ::Module))
 
    (export (class CDef::Def
 	      (args read-only)
@@ -262,6 +265,7 @@
    (let ((id (if (isa? mod Module)
 		 (with-access::Module mod (id) id)
 		 "module5")))
+      (tprint "E " (epair? obj) " " (epair? container))
       (match-case (cond
 		   ((epair? obj) (cer obj))
 		   ((epair? container) (cer container))
@@ -442,3 +446,41 @@
    
    (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
 
+;*---------------------------------------------------------------------*/
+;*    module5-plugin-pragma ...                                        */
+;*---------------------------------------------------------------------*/
+(define (module5-plugin-pragma mod::Module expr::pair)
+
+   (define (parse-clause clause::pair mod::Module)
+      (match-case clause
+	 ((?id . ?props)
+	  (let ((decl (module5-get-decl mod id clause)))
+	     (with-access::Decl decl ((dmod mod) attributes)
+		(cond
+		   ((not (eq? dmod mod))
+		    (error/loc mod
+		       (format "\"~a\" is not defined in module" id)
+		       clause mod))
+		   (else
+		    (set! attributes (append attributes props)))))))
+	 (else
+	  (error/loc mod "Illegal pragma clause" clause expr))))
+   
+   (for-each (lambda (c) (parse-clause c mod)) (cdr expr)))
+
+;*---------------------------------------------------------------------*/
+;*    module5-resolve-pragma! ...                                      */
+;*---------------------------------------------------------------------*/
+(define (module5-resolve-pragma! mod::Module)
+   (with-access::Module mod (decls (mid id))
+      (hashtable-for-each decls
+	 (lambda (k d)
+	    (with-access::Decl d ((dmod mod) id attributes)
+	       (when (eq? dmod mod)
+		  (let ((g (find-global/module id mid)))
+		     (if (isa? g global)
+			 (for-each (lambda (p)
+				      (set-global-pragma-property! g p p))
+			    attributes)
+			 (error/loc mod "Cannot find global definition" id
+			    attributes)))))))))

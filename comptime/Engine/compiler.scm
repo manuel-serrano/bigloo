@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Sep 30 18:30:54 2025 (serrano)                */
+;*    Last change :  Thu Oct  2 07:47:55 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -519,6 +519,7 @@
       
       (set! *module-version* 5)
       (register-srfi! 'bigloo-module5)
+      (module5-register-plugin! 'pragma module5-plugin-pragma)
       (module5-register-extern-plugin! "C" module5-extern-plugin-c)
       (module5-register-extern-plugin! "java" module5-extern-plugin-java)
       (module5-register-extern-plugin! "wasm" module5-extern-plugin-wasm)
@@ -629,7 +630,10 @@
 
 	    ;; register main declaration
 	    (set! *main* m)
-	    
+
+	    ;; handle pragma declarations
+	    (module5-resolve-pragma! mod)
+
 	    ;; check if inlined functions used by the backend
 	    ;; have all been defined
 	    (backend-check-inlines (the-backend))

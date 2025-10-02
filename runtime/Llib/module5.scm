@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Oct  2 07:41:05 2025 (serrano)                */
+;*    Last change :  Thu Oct  2 08:04:33 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -120,7 +120,7 @@
 	   (module5-expander::obj ::obj ::procedure)
 	   (module5-expand-and-resolve!::Module ::Module ::obj)
 	   (module5-checksum!::Module ::Module)
-	   (module5-get-decl::Decl ::Module ::symbol)
+	   (module5-get-decl::Decl ::Module ::symbol ::obj)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
 	   (module5-get-export-def ::Module ::symbol)
 	   (module-get-class ::Module ::symbol)))
@@ -1383,13 +1383,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-get-decl ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (module5-get-decl mod::Module id)
+(define (module5-get-decl mod::Module id src)
    (with-access::Module mod (decls (mid id))
       (let ((decl (hashtable-get decls (symbol->string! id))))
 	 (if (isa? decl Decl)
 	     decl
-	     (error "module5-get-decl"
-		(format "Cannot find declaration \"~a\"" id) id)))))
+	     (error/loc mod "Cannot find declaration" id src)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-get-def ...                                              */
