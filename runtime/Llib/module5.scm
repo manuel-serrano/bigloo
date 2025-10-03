@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Oct  2 08:33:38 2025 (serrano)                */
+;*    Last change :  Fri Oct  3 07:35:58 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -513,7 +513,7 @@
 		    (hashtable-symbol-put! (-> mod decls) alias d)
 		    (hashtable-symbol-put! (-> mod imports) alias d)
 		    d)
-		 (unbound-error (-> imod path) b clause))))
+		 (unbound-error (-> imod path) id clause))))
 	 (else
 	  (error/loc mod "Illegal import binding" b clause))))
    
