@@ -481,15 +481,15 @@
   (br_on_cast
    (,labelidx ,rt ,rt)
    ,(lambda (env l::labelidxp rt1::typep rt2::typep)
-      (multiple-value-bind (t* rt') (label-get-last-rest l)
-         (unless (reftype? rt')
-            (raise `(expected-reftype-label ,rt')))
-         (unless (<rt= env (-> rt2 type) (-> rt1 type))
-            (raise `(non-matching ,rt2 ,rt1)))
-         (unless (<rt= env (-> rt2 type) rt')
-            (raise `(non-matching ,(-> rt2 type) ,rt')))
-         `((,@t* ,(-> rt1 type))
-           (,@t* ,(rt-diff (-> rt1 type) (-> rt2 type)))))))
+	  (multiple-value-bind (t* rt') (label-get-last-rest l)
+	     (unless (reftype? rt')
+		(raise `(expected-reftype-label ,rt')))
+          (unless (<rt= env (-> rt2 type) (-> rt1 type))
+		(raise `(non-matching ,rt2 ,rt1)))
+          (unless (<rt= env (-> rt2 type) rt')
+             (raise `(non-matching ,(-> rt2 type) ,rt')))
+          `((,@t* ,(-> rt1 type))
+            (,@t* ,(rt-diff (-> rt1 type) (-> rt2 type)))))))
 
   ; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsubsection*.197
   (br_on_cast_fail

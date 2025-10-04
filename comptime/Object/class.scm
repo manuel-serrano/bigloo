@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Fri Sep 26 07:32:10 2025 (serrano)                */
+;*    Last change :  Sat Oct  4 06:56:48 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -54,7 +54,9 @@
 	       ;; the true wide type associated with the wide classes
 	       (wide-type (default #f))
 	       ;; the list of subclasses
-	       (subclasses::pair-nil (default '())))
+	       (subclasses::pair-nil (default '()))
+	       ;; source declaration (to help module5 class declarations)
+	       (src (default #unspecified)))
 
 	    (wide-class jclass::type
 	       ;; the `super' field
@@ -146,7 +148,8 @@
 	 (widening widening)
 	 (final? final?)
 	 (abstract? abstract?)
-	 (constructor ctor))
+	 (constructor ctor)
+	 (src src))
       (when (isa? super tclass)
 	 (with-access::tclass super (subclasses)
 	    (set! subclasses (cons ty subclasses))))

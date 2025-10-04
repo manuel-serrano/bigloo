@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Oct  2 08:40:52 2025 (serrano)                */
+;*    Last change :  Sat Oct  4 06:45:45 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -19,6 +19,7 @@
    
    (import  tools_error
 	    tools_progn
+	    tools_shape
 	    engine_pass
 	    engine_signals
 	    engine_param
@@ -528,6 +529,8 @@
 
       (module4-register-plugin! 'extern module4-plugin-extern)
 
+(tprint "CL=" (map shape (get-class-list)))
+      
       (let* ((expr-mod (car expr))
 	     (expr-body (cdr expr))
 	     (mod (module5-parse expr (car *src-files*)

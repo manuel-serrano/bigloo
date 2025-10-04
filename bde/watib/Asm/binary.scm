@@ -172,8 +172,6 @@
       ((or br_on_cast br_on_cast_fail)
        (with-access::typep (-> i y) ((rt1 type))
           (with-access::typep (-> i z) ((rt2 type))
-             (print (reftype->heaptype rt1))
-             (print (reftype->heaptype rt2))
              (write-byte #xFB op)
              (if (eq? 'br_on_cast (-> i opcode))
                  (leb128-write-unsigned 24 op)
