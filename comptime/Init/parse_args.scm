@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Oct  1 07:56:31 2025 (serrano)                */
+;*    Last change :  Fri Oct  3 10:52:38 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -967,10 +967,12 @@
        (set! *wasm-peephole* #f))
       (("-fwasm-post-optimizer" ?cmd (help "Wasm post optimizer"))
        (set! *wasm-post-optimizer* cmd))
-      (("-fno-wasm-br-on-cast" (help "Disable wasm br-on-cast optimization"))
-       (set! *wasm-br-on-cast* #f))
       (("-fwasm-post-optimizer" ?cmd (help "Wasm post optimizer"))
        (set! *wasm-post-optimizer* cmd))
+      (("-fwasm-br-on-cast" (help "Enable wasm br-on-cast optimization"))
+       (set! *wasm-br-on-cast* #t))
+      (("-fno-wasm-br-on-cast" (help "Disable wasm br-on-cast optimization"))
+       (set! *wasm-br-on-cast* #f))
       
 ;*--- trace options ---------------------------------------------------*/
       (section "Traces")

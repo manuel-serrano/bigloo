@@ -550,7 +550,8 @@
 
 (define (adhoc-instr?::bool s)
    (or (eq? s 'br_table) (eq? s 'br_on_null) (eq? s 'ref.as_non_null)
-       (eq? s 'ref.is_null) (eq? s 'br_on_cast)))
+       (eq? s 'ref.is_null) ;;(eq? s 'br_on_cast)
+       ))
 
 (define (adhoc-instr env::env i::pair st::pair-nil)
    (match-case i
