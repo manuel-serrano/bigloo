@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Oct  4 06:45:45 2025 (serrano)                */
+;*    Last change :  Sat Oct  4 07:07:17 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -529,8 +529,6 @@
 
       (module4-register-plugin! 'extern module4-plugin-extern)
 
-(tprint "CL=" (map shape (get-class-list)))
-      
       (let* ((expr-mod (car expr))
 	     (expr-body (cdr expr))
 	     (mod (module5-parse expr (car *src-files*)
@@ -543,12 +541,14 @@
 	 
 	 (trace-item "units=" units)
 	 (trace-item "body=" expr-body)
-	 
+
 	 ;; imported module unit (before processing the module body)
 	 (set! units (cons (module5-imported-unit mod comptime-expand) units))
 	 
 	 (with-access::Module mod (id body checksum main decls imports)
-	    
+
+	    (module5-import-heap4! mod)
+	 
 	    (module5-expand-and-resolve! mod xenv)
 	    (module5-checksum! mod)
 	    

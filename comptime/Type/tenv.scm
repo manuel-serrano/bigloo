@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Sat Sep 13 06:53:20 2025 (serrano)                */
+;*    Last change :  Sun Oct  5 07:43:20 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -284,8 +284,8 @@
 			    (type-init? type))
 		    (unless *allow-type-redefinition*
 		       (user-warning 'bind-type!
-				     "Type redefinition"
-				     (shape type))))
+			  "Type redefinition"
+			  (shape type))))
 		 ;; the type has already been allocated, we mark it
 		 ;; has initialized.
 		 (if init? (type-init?-set! type #t))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Sat Oct  4 06:56:48 2025 (serrano)                */
+;*    Last change :  Sat Oct  4 09:18:36 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -71,6 +71,7 @@
 	       (its-class (default #unspecified)))
 	    
 	    (get-class-list::pair-nil)
+	    (set-class-depth! clazz::tclass)
 	    (heap-add-class! ::tclass)
 	    (wide-chunk-class-id::symbol ::symbol)
 	    (type-class-name::bstring ::type)
@@ -97,6 +98,17 @@
 ;*---------------------------------------------------------------------*/
 (define (get-class-list)
    *class-type-list*)
+
+;*---------------------------------------------------------------------*/
+;*    set-class-depth! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (set-class-depth! clazz::tclass)
+   (with-access::tclass clazz (depth its-super)
+      (when (=fx depth 0)
+	 (if (tclass? its-super)
+	     (set! depth (+fx 1 (set-class-depth! its-super)))
+	     0))
+      depth))
 
 ;*---------------------------------------------------------------------*/
 ;*    heap-add-class! ...                                              */

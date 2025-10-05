@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Oct  2 09:26:03 2025 (serrano)                */
+;*    Last change :  Sat Oct  4 08:37:16 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -19,6 +19,7 @@
    
    (import engine_param
 	   tools_error
+	   tools_shape
 	   module_module
 	   module_class
 	   module_checksum
@@ -46,7 +47,8 @@
 	   (module5-extern-plugin-java ::Module ::pair)
 	   (module5-extern-plugin-wasm ::Module ::pair)
 	   (module5-plugin-pragma ::Module ::pair)
-	   (module5-resolve-pragma! ::Module))
+	   (module5-resolve-pragma! ::Module)
+	   (module5-import-heap4! ::Module))
 
    (export (class CDef::Def
 	      (args read-only)
@@ -96,35 +98,42 @@
 	     ((define-class . ?-) 'class)
 	     (else 'variable))))
 
-   (define (declare-class-definition! id alias mid scope src def::Def)
+   (define (make-class-slot p i ty)
+      (let ((id (cdr (assq 'id p))))
+	 (instantiate::slot
+	    (id id)
+	    (index i)
+	    (name (id->name id))
+	    (src (cdr (assq 'expr p)))
+	    (class-owner ty)
+	    (user-info #f)
+	    (type (find-type (cdr (assq 'type p)))))))
+   
+   (define (declare-class-definition! id alias mid scope src def::KDef)
       (with-access::KDef def (expr id decl super ctor kkind properties)
-	 (let ((var (declare-global-svar! id id mid scope expr expr)))
-	    (global-type-set! var (find-type 'class))
-	    (global-set-read-only! var)
-	    (let* ((sup (and super (find-type super)))
-		   (ty (declare-class-type! id sup
-			  ctor var #f
-			  (eq? kkind 'define-final-class)
-			  (eq? kkind 'define-abstract-class)
-			  (eq? kkind 'define-wide-class))))
-	       (gen-class-coercions! ty)
-	       (let* ((sslots (if sup (tclass-slots sup) '()))
-		      (nslots (map (lambda (p i)
-				      (let ((id (cdr (assq 'id p))))
-					 (instantiate::slot
-					    (id id)
-					    (index i)
-					    (name (id->name id))
-					    (src (cdr (assq 'expr p)))
-					    (class-owner ty)
-					    (user-info #f)
-					    (type (find-type
-						     (cdr (assq 'type p)))))))
-				 properties
-				 (iota (length properties)
-				    (length sslots)))))
-		  (tclass-slots-set! ty (append sslots nslots))))
-	    var)))
+	 (when (isa? decl Decl)
+	    (with-access::Decl decl (mod)
+	       (with-access::Module mod ((mid id))
+		  (unless (find-global/module id mid) 
+		     ;; a class declared in the module being compiled
+		     (let ((var (declare-global-svar! id id mid scope expr expr)))
+			(global-type-set! var (find-type 'class))
+			(global-set-read-only! var)
+			(let* ((sup (and super (find-type super)))
+			       (ty (declare-class-type! id sup
+				      ctor var #f
+				      (eq? kkind 'define-final-class)
+				      (eq? kkind 'define-abstract-class)
+				      (eq? kkind 'define-wide-class))))
+			   (gen-class-coercions! ty)
+			   (let* ((sslots (if sup (tclass-slots sup) '()))
+				  (nslots (map (lambda (p i)
+						  (make-class-slot p i ty))
+					     properties
+					     (iota (length properties)
+						(length sslots)))))
+			      (tclass-slots-set! ty (append sslots nslots))))
+			var)))))))
    
    (define (declare-definition! kind id alias mid scope expr def::Def)
       (case kind
@@ -277,18 +286,16 @@
 ;*---------------------------------------------------------------------*/
 (define (parse-ident id src mod)
    (let* ((s (symbol->string id))
-	  (l (-fx (string-length s) 2)))
+	  (l (string-length s)))
       (let loop ((i 0))
 	 (cond
-	    ((>=fx i l)
+	    ((>=fx i (-fx l 2))
 	     (values id #unspecified))
 	    ((char=? (string-ref s i) #\:)
 	     (if (char=? (string-ref s (+fx i 1)) #\:)
-		 (if (=fx i (-fx l 3))
-		     (error/loc mod "Illegal identifier" id src)
-		     (values (string->symbol (substring s 0 i))
-			(substring s (+fx i 2))))
-		 (loop (+fx i 2))))
+		 (values (string->symbol (substring s 0 i))
+		    (substring s (+fx i 2)))
+		 (loop (+fx i 1))))
 	    (else
 	     (loop (+fx i 1)))))))
 
@@ -488,3 +495,77 @@
 			    attributes)
 			 (error/loc mod "Cannot find global definition" id
 			    attributes)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    heap4-module-list ...                                            */
+;*    -------------------------------------------------------------    */
+;*    Returns a list of dummy module5 that are as automatically        */
+;*    imported by the compiled module.                                 */
+;*    -------------------------------------------------------------    */
+;*    This takes no argument as it builds its module list from         */
+;*    the global environment that has been built when loading          */
+;*    the heap file.                                                   */
+;*---------------------------------------------------------------------*/
+(define (heap4-module-list::pair-nil)
+   
+   (define mods '())
+   
+   (define (symbol->path id)
+      (string-append "/" (symbol->string id)))
+   
+   (define (get-module::pair id::symbol)
+      (let ((c (assq id mods)))
+	 (if (pair? c)
+	     (cdr c)
+	     (let ((m (list `(module ,id))))
+		(set! mods (cons (cons id m) mods))
+		m))))
+   
+   (define (src->def src)
+      (match-case src
+	 ((class . ?rest) `(define-class ,@rest))
+	 ((wide-class . ?rest) `(define-wide-class ,@rest))
+	 ((abstract-class . ?rest) `(define-abstract-class ,@rest))
+	 ((final-class . ?rest) `(define-final-class ,@rest))
+	 (else (error "module5-from-heap4" "Illegal class source" src))))
+   
+   (define (module-export-class! m::pair t::tclass)
+      (with-access::tclass t (src holder id its-super depth)
+	 ;; super class
+	 (when its-super
+	    (with-access::tclass its-super (holder (sid id))
+	       (with-access::global holder (module)
+		  (let ((ms (get-module module)))
+		     (unless (eq? m ms)
+			(set-cdr! (last-pair (car m))
+			   `((import ,(symbol->path module) ,sid))))))))
+	 ;; new class
+	 (set-cdr! (last-pair (car m)) `((export ,id)))
+	 (set-cdr! (last-pair m) (list (src->def src)))))
+   
+   (let ((mods '()))
+      (for-each set-class-depth! (get-class-list))
+      
+      (for-each (lambda (t::tclass)
+		   (with-access::tclass t (holder)
+		      (with-access::global holder (module)
+			 (let ((m (get-module module)))
+			    (module-export-class! m t)))))
+	 (sort (lambda (c1 c2)
+		  (with-access::tclass c1 ((d1 depth))
+		     (with-access::tclass c2 ((d2 depth))
+			(<fx d1 d2))))
+	    (get-class-list))))
+   
+   (map (lambda (c)
+	   (let ((mi (cdr c)))
+	      (module5-parse mi (symbol->path (car c)))))
+      (reverse mods)))
+
+;*---------------------------------------------------------------------*/
+;*    module5-import-heap4! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (module5-import-heap4! mod::Module)
+   (map (lambda (m)
+	   (module5-import-all! mod m))
+      (heap4-module-list)))

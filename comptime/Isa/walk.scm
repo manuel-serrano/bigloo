@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Isa/walk.scm         */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Isa/walk.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Sun Nov 14 06:33:36 2021 (serrano)                */
-;*    Copyright   :  2010-21 Manuel Serrano                            */
+;*    Last change :  Sat Oct  4 09:18:22 2025 (serrano)                */
+;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace isa? calls with specialized inlinable versions           */
 ;*=====================================================================*/
@@ -71,17 +71,6 @@
    (set! *isa-object/cdepth* #f)
    (set! *isa/final* #f)
    (set! *isa-object/final* #f))
-
-;*---------------------------------------------------------------------*/
-;*    set-class-depth! ...                                             */
-;*---------------------------------------------------------------------*/
-(define (set-class-depth! clazz::tclass)
-   (with-access::tclass clazz (depth its-super)
-      (when (=fx depth 0)
-	 (if (tclass? its-super)
-	     (set! depth (+fx 1 (set-class-depth! its-super)))
-	     0))
-      depth))
 
 ;*---------------------------------------------------------------------*/
 ;*    isa-fun! ...                                                     */

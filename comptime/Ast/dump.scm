@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Wed Sep 24 16:26:16 2025 (serrano)                */
+;*    Last change :  Sun Oct  5 08:21:34 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -201,7 +201,7 @@
    (with-access::getfield node (fname ftype otype expr*)
       (location-shape (node-loc node)
 	 `(,(shape-typed-node 'getfield (get-type node #f))
-	   (,fname ,(type-id ftype))
+	   ,(format "~a::~a" fname (type-id ftype))
 	   ,(type-id otype) ,(node->sexp (car expr*))))))
    
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Tue Sep 30 15:59:22 2025 (serrano)                */
+;*    Last change :  Sat Oct  4 09:51:28 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -114,18 +114,16 @@
 ;*---------------------------------------------------------------------*/
 (define (parse-ident id x)
    (let* ((s (symbol->string id))
-	  (l (-fx (string-length s) 2)))
+	  (l (string-length s)))
       (let loop ((i 0))
 	 (cond
-	    ((>=fx i l)
+	    ((>=fx i (-fx l 2))
 	     (values id #f))
 	    ((char=? (string-ref s i) #\:)
 	     (if (char=? (string-ref s (+fx i 1)) #\:)
-		 (if (=fx i (-fx l 3))
-		     (error/loc "parse" "Illegal identifier" id x)
-		     (values (string->symbol (substring s 0 i))
-			(string->symbol (substring s (+fx i 2)))))
-		 (loop (+fx i 2))))
+		 (values (string->symbol (substring s 0 i))
+		    (string->symbol (substring s (+fx i 2))))
+		 (loop (+fx i 1))))
 	    (else
 	     (loop (+fx i 1)))))))
 
@@ -143,7 +141,7 @@
    (define (parse-attribute a pi x)
       (match-case a
 	 (read-only
-	  (if (prop-info-set pi)
+	  (if (eq? (prop-info-set pi) #t)
 	      (ronly-error pi a)
 	      (prop-info-ronly?-set! pi #t)))
 	 ((default ?val)
@@ -232,7 +230,7 @@
 			   ((module-get-class mod ty)
 			    `(,(prop-info-id p) (class-nil ,ty)))
 			   (else
-			    `($cast-null ,(prop-info-id p))))))
+			    `(,(prop-info-id p) (cast-null ,(prop-info-type p)))))))
 		props)))))
 
 ;*---------------------------------------------------------------------*/

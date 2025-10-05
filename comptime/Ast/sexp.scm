@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Sat Sep 27 09:45:28 2025 (serrano)                */
+;*    Last change :  Sun Oct  5 08:25:21 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -152,6 +152,7 @@
 		 (loc (find-location/loc atom loc)))
 	      (cond
 		 ((not (global? global))
+		  (trace (ast 2) "*** UNBOUND VARIALBLE " exp " " loc)
 		  (error-sexp->node "Unbound variable" exp loc))
 		 ((eq? (global-import global) 'eval)
 		  (sexp->node `(eval ',atom) stack loc site))
@@ -178,7 +179,7 @@
 		    (loc (find-location/loc name loc)))
 		 (cond
 		    ((not (global? global))
-		     (error-sexp->node "Unbound variable" exp loc))
+		     (error-sexp->node "Unbound global variable" exp loc))
 		    ((eq? (global-import global) 'eval)
 		     (sexp->node `(eval ,atom) stack loc site))
 		    (else
@@ -482,6 +483,12 @@
        (pragma/type->node #t
 	  (parse-effect effect)
 	  *unspec* `(pragma ,@rest) stack loc site))
+;*--- cast-null -------------------------------------------------------*/
+      ((cast-null ?type)
+       (instantiate::cast-null
+	  (c-format "")
+	  (loc (find-location/loc exp loc))
+	  (type (find-type type))))
 ;*--- failure ---------------------------------------------------------*/
       ((failure . ?-)
        (match-case exp

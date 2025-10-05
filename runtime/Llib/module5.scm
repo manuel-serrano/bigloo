@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Oct  3 07:35:58 2025 (serrano)                */
+;*    Last change :  Sat Oct  4 07:11:22 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -117,8 +117,7 @@
 	   (module5-read-heap::Module ::bstring ::obj ::Module)
 	   (module5-write-heap ::bstring ::Module)
 	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand)
-	   ;; (module5-expand::Module ::Module expand)
-	   ;; (module5-expand-exports!::Module ::Module expand)
+	   (module5-import-all! ::Module ::Module)
 	   (module5-expander::obj ::obj ::procedure)
 	   (module5-expand-and-resolve!::Module ::Module ::obj)
 	   (module5-checksum!::Module ::Module)
@@ -233,12 +232,27 @@
 	  (set! *extern-plugins* (cons (cons name plugin) *extern-plugins*)))))
 
 ;*---------------------------------------------------------------------*/
+;*    absolute-file-name? ...                                          */
+;*---------------------------------------------------------------------*/
+(define (absolute-file-name? path)
+   (when (>fx (string-length path) 0)
+      (char=? (string-ref path 0) #\/)))
+
+;*---------------------------------------------------------------------*/
 ;*    module5-resolve-path ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (module5-resolve-path rel::bstring base::bstring)
-   (let ((path (make-file-name (dirname base) rel)))
-      (when (file-exists? path)
-	 (file-name-unix-canonicalize! path))))
+   (let ((path (if (absolute-file-name? rel)
+		   rel
+		   (make-file-name (dirname base) rel))))
+      (synchronize module-mutex
+	 (let ((m (hashtable-get *modules-by-path* path)))
+	    (cond
+	       ((isa? m Module)
+		(with-access::Module m (path)
+		   path))
+	       ((file-exists? path)
+		(file-name-unix-canonicalize! path)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-resolve-library ...                                      */
@@ -484,12 +498,6 @@
    (define (hashtable-symbol-put! table id d)
       (hashtable-put! table (symbol->string! id) d))
 
-   (define (module-add-libraries! mod::Module libs::pair-nil)
-      (for-each (lambda (l)
-		   (unless (assq (car l) (-> mod libraries))
-		      (set! (-> mod libraries) (cons l (-> mod libraries)))))
-	 libs))
-   
    (define (parse-import-binding b imod::Module expr::pair mod::Module expand)
       (match-case b
 	 ((? symbol?)
@@ -693,7 +701,6 @@
 	     (let ((lmod::Module (module5-read-library rlib clause mod)))
 		(hashtable-for-each (-> lmod exports)
 		   (lambda (k d::Decl)
-		      (tprint "IMPORT " d)
 		      (let ((nd (duplicate::Decl d
 				   (scope 'import))))
 			 (hashtable-put! (-> mod decls) k nd))))
@@ -769,20 +776,33 @@
 	  (error/loc mod "Illegal module clause" clause expr)))))
 
 ;*---------------------------------------------------------------------*/
-;*    module5-expand-exports! ...                                      */
+;*    module5-import-all! ...                                          */
+;*    -------------------------------------------------------------    */
+;*    Used by the compiler to force a compiled module to import        */
+;*    previously loaded module. Used to restore the classes of         */
+;*    a heap4 file (see comptime/Module/module5.scm).                  */
 ;*---------------------------------------------------------------------*/
-;* (define (module5-expand-exports! mod::Module expand)                */
-;*    (with-access::Module mod (id exports resolved)                   */
-;* 	 ((parsed)                                                     */
-;* 	  (with-trace 'module5 "module5-expand-exports!"               */
-;* 	     (trace-item mod)                                          */
-;* 	     (set! state 'expanded)                                    */
-;* 	     (hashtable-for-each exports                               */
-;* 		(lambda (k d::Decl)                                    */
-;* 		   (unless (eq? (-> d mod) mod)                        */
-;* 		      (module5-expand-exports! (-> d mod) expand))))))) */
-;*       mod))                                                         */
+(define (module5-import-all! mod::Module imod::Module)
+   (hashtable-for-each (-> imod exports)
+      (lambda (key d::Decl)
+	 (let* ((alias (-> d alias))
+		(nd (duplicate::Decl d
+		       (alias alias)
+		       (scope 'import))))
+	    (hashtable-put! (-> mod decls) key nd)
+	    (hashtable-put! (-> mod imports) key nd))))
+   (module-add-libraries! mod (-> imod libraries))
+   (set! (-> mod inits) (append! (-> mod inits) (list imod))))
 
+;*---------------------------------------------------------------------*/
+;*    module-add-libraries! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (module-add-libraries! mod::Module libs::pair-nil)
+   (for-each (lambda (l)
+		(unless (assq (car l) (-> mod libraries))
+		   (set! (-> mod libraries) (cons l (-> mod libraries)))))
+      libs))
+   
 ;*---------------------------------------------------------------------*/
 ;*    module5-expander ...                                             */
 ;*---------------------------------------------------------------------*/
@@ -829,13 +849,13 @@
 	       '(define-class) kx)
 	    (hashtable-for-each (-> mod decls)
 	       (lambda (k d::Decl)
-		  (with-access::Decl d ((imod mod) alias id)
+		  (with-access::Decl d ((imod mod) alias id def)
 		     (unless (eq? imod mod)
 			(module5-expand-and-resolve! imod
 			   (lambda ()
 			      (create-hashtable :weak 'open-string)))
-			(let ((def (module5-get-export-def imod id)))
-			   (with-access::Def def (kind expr)
+			(let ((idef (module5-get-export-def imod id)))
+			   (with-access::Def idef (kind expr ci)
 			      (case kind
 				 ((macro)
 				  (trace-item "bind-macro alias="
@@ -850,7 +870,9 @@
 				 ((class)
 				  (trace-item "bind-class alias="
 				     alias " id=" id)
-				  (with-access::KDef def (ci)
+				  (set! def idef)
+				  (with-access::KDef idef (ci decl)
+				     (module-bind-class! mod id ci)
 				     (install-class-expanders ci xenv))))))))))
 	    (when (pair? (-> mod body))
 	       (trace-item "body avant-expand=" (-> mod body))
@@ -1124,18 +1146,16 @@
 ;*---------------------------------------------------------------------*/
 (define (parse-ident id src)
    (let* ((s (symbol->string id))
-	  (l (-fx (string-length s) 2)))
+	  (l (string-length s)))
       (let loop ((i 0))
 	 (cond
-	    ((>=fx i l)
+	    ((>=fx i (-fx l 2))
 	     (values id #unspecified))
 	    ((char=? (string-ref s i) #\:)
 	     (if (char=? (string-ref s (+fx i 1)) #\:)
-		 (if (=fx i (-fx l 1))
-		     (error/loc #f "Illegal identifier" id src)
-		     (values (string->symbol (substring s 0 i))
-			(substring s (+fx i 2))))
-		 (loop (+fx i 2))))
+		 (values (string->symbol (substring s 0 i))
+		    (substring s (+fx i 2)))
+		 (loop (+fx i 1))))
 	    (else
 	     (loop (+fx i 1)))))))
 
@@ -1229,7 +1249,7 @@
 					    (get . ,(prop-info-get p))
 					    (set . ,(prop-info-set p)))))
 			   (class-info-properties ci))))))
-      
+
    (hashtable-for-each (-> mod classes)
       (lambda (k ci)
 	 (with-access::Module mod (defs decls)

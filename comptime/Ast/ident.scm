@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/ident.scm               */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/ident.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:33:09 1996                          */
-;*    Last change :  Thu Nov  3 16:47:56 2011 (serrano)                */
+;*    Last change :  Sun Oct  5 07:35:14 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The identifier managment                                         */
 ;*=====================================================================*/

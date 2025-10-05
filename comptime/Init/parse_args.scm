@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Oct  3 10:52:38 2025 (serrano)                */
+;*    Last change :  Sun Oct  5 10:20:21 2025 (serrano)                */
 ;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -296,6 +296,16 @@
        (set! *dlopen-init-gc* #t))
       (("-heapsize" ?size (help "Set the initial heap size value (in megabyte)"))
        (set! *user-heap-size* (string->integer size)))
+      (("--clean-cache" (help "Cleanup module cache and exit"))
+       (when (directory? *module-cache-dir*)
+	  (let loop ((path *module-cache-dir*))
+	     (cond
+		((directory? path)
+		 (for-each loop (directory->path-list path))
+		 (delete-directory path))
+		((file-exists? path)
+		 (delete-file path)))))
+       (exit 0))
       
 ;*--- Configuration and version ---------------------------------------*/
       (section "Configuration and path")
