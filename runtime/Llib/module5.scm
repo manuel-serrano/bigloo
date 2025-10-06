@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Oct  4 07:11:22 2025 (serrano)                */
+;*    Last change :  Mon Oct  6 15:40:59 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -923,6 +923,7 @@
 	 (for-each (lambda (c)
 		      (module4-parse-clause c expr mod lib-path cache-dir expand))
 	    clauses)
+	 (collect-classes! mod)
 	 (with-access::Module mod (inits)
 	    (set! inits (delete-duplicates! inits)))
 	 (filecache-put! cache-dir mod)
@@ -960,26 +961,32 @@
    
    (define (hashtable-symbol-put! table id d)
       (hashtable-put! table (symbol->string! id) d))
+
+   (define (localize new old)
+      (if (epair? old)
+	  (econs (car new) (cdr new) (cer old))
+	  new))
    
    (define (procedure4 expr id args kind nexpr)
-      (multiple-value-bind (name type)
-	 (parse-ident id expr)
-	 (co-instantiate
-	       ((decl (instantiate::Decl
-			 (id name)
-			 (alias name)
-			 (mod mod)
-			 (scope 'export)
-			 (ronly #t)
-			 (def def)
-			 (expr expr)))
-		(def (instantiate::Def
-			(id name)
-			(type type)
-			(kind kind)
-			(expr nexpr)
-			(decl decl))))
-	    (values name decl def))))
+      (let ((lnexpr (localize nexpr expr)))
+	 (multiple-value-bind (name type)
+	    (parse-ident id expr)
+	    (co-instantiate
+		  ((decl (instantiate::Decl
+			    (id name)
+			    (alias name)
+			    (mod mod)
+			    (scope 'export)
+			    (ronly #t)
+			    (def def)
+			    (expr expr)))
+		   (def (instantiate::Def
+			   (id name)
+			   (type type)
+			   (kind kind)
+			   (expr lnexpr)
+			   (decl decl))))
+	       (values name decl def)))))
    
    (define (inline4 expr id args)
       (multiple-value-bind (name type)
@@ -1017,6 +1024,11 @@
 			(decl decl)
 			(expr `(define ,id #unspecified)))))
 	    (values name decl def))))
+
+   (define (class4 expr nexpr)
+      (let ((lnexpr (localize nexpr expr)))
+	 (parse-class lnexpr)))
+	 
    
    (define (parse-export clause expr::pair mod::Module expand)
       (for-each-expr (lambda (expr src)
@@ -1035,8 +1047,10 @@
 			       (hashtable-symbol-put! (-> mod exports) id decl)
 			       (hashtable-symbol-put! (-> mod defs) id def)))
 			   ((class ?k . ?rest)
-			    (tprint "TODO export4 class...")
-			    '(error "export4" "Class not implemented" expr))
+			    (multiple-value-bind (name type)
+			       (parse-ident k expr)
+			       (hashtable-symbol-put! (-> mod classes) name
+				  (class4 expr `(define-class ,k ,@rest)))))
 			   ((wide-class ?k . ?rest)
 			    (tprint "TODO export4 class...")
 			    '(error "export4" "Class not implemented" expr))
