@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Oct  4 07:11:22 2025 (serrano)                */
+;*    Last change :  Mon Oct  6 07:46:00 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -119,7 +119,7 @@
 	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand)
 	   (module5-import-all! ::Module ::Module)
 	   (module5-expander::obj ::obj ::procedure)
-	   (module5-expand-and-resolve!::Module ::Module ::obj)
+	   (module5-expand-and-resolve!::Module ::Module ::obj #!key (heap-modules '()))
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol ::obj)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
@@ -366,6 +366,15 @@
 		    (make-file-name (dirname path) file)
 		    expr mod))
 		(else
+		 (let ((m (module5-read-heap
+			     (make-file-name (dirname path)
+				(string-append (prefix (basename path)) ".heap5"))
+			     expr mod)))
+		    (tprint "m=" m)
+		    (with-access::Module m (exports)
+		       (hashtable-for-each exports
+			  (lambda (k d)
+			     (tprint d)))))
 		 (module5-read-heap
 		    (make-file-name (dirname path)
 		       (string-append (prefix (basename path)) ".heap5"))
@@ -828,15 +837,26 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-expand-and-resolve! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (module5-expand-and-resolve! mod::Module new-xenv)
+(define (module5-expand-and-resolve! mod::Module new-xenv #!key (heap-modules '()))
    (unless (-> mod resolved)
-      (with-trace 'module5 "module5-resolve!"
+      (with-trace 'module5 "module5-expand-and-resolve!"
 	 (trace-item mod)
 	 (trace-item "decls="
 	    (hashtable-map (-> mod decls)
 	       (lambda (k d::Decl)
 		  (format "~a/~a" (-> d id) (-> d alias)))))
+	 (trace-item "defs="
+	    (hashtable-map (-> mod defs)
+	       (lambda (k d::Def)
+		  (format "~a::~a" (-> d id) (typeof d)))))
+	 (trace-item "exports="
+	    (hashtable-map (-> mod exports)
+	       (lambda (k d::Decl)
+		  (format "~a" (-> d id)))))
 	 (set! (-> mod resolved) #t)
+	 ;; force import the "heap-modules", i.e., the modules that
+	 ;; come from a Bigloo heap file
+	 (for-each (lambda (m) (module5-import-all! mod m)) heap-modules)
 	 (let* ((xenv (if (procedure? new-xenv) (new-xenv) new-xenv))
 		(kx (make-class-expander mod xenv)))
 	    (install-module5-expander xenv 'define-class
@@ -853,7 +873,8 @@
 		     (unless (eq? imod mod)
 			(module5-expand-and-resolve! imod
 			   (lambda ()
-			      (create-hashtable :weak 'open-string)))
+			      (create-hashtable :weak 'open-string))
+			   :heap-modules heap-modules)
 			(let ((idef (module5-get-export-def imod id)))
 			   (with-access::Def idef (kind expr ci)
 			      (case kind
@@ -891,10 +912,15 @@
 	    (check-unbounds mod))
 	 (ronly! mod)
 	 (filecache-put! (-> mod path) mod)
+	 (trace-item "decls="
+	    (hashtable-map (-> mod decls)
+	       (lambda (k d) (with-access::Decl d (id) id))))
 	 (trace-item "exports="
-	    (hashtable-map (-> mod exports) (lambda (k d) d)))
+	    (hashtable-map (-> mod exports)
+	       (lambda (k d) (with-access::Decl d (id) id))))
 	 (trace-item "defs="
-	    (hashtable-map (-> mod defs) (lambda (k d) d)))))
+	    (hashtable-map (-> mod defs)
+	       (lambda (k d) (with-access::Def d (id) id))))))
    mod)
 
 ;*---------------------------------------------------------------------*/
@@ -1122,24 +1148,31 @@
 ;*    check-unbounds ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (check-unbounds mod::Module)
-   (with-access::Module mod (decls (mid id) defs)
-      (let ((unbounds '()))
-	 (hashtable-for-each decls
-	    (lambda (k d)
-	       (with-access::Decl d (def id scope (dmod mod))
-		  (unless (or (isa? def Def) (not (eq? dmod mod)))
-		     (when (or (eq? scope 'export) (eq? scope 'static))
-			(set! unbounds (cons d unbounds)))))))
-	 (when (pair? unbounds)
-	    (for-each (lambda (d)
-			 (with-access::Decl d (id expr)
-			    (with-handler
-			       exception-notify
-			       (error/loc mod "Cannot find definition"
-				  id expr))))
-	       (reverse! unbounds))
-	    (error mid "Unbound exported identifier"
-	       (map (lambda (d) (with-access::Decl d (id) id)) unbounds))))))
+   (with-trace 'module5 "check-unbounds"
+      (trace-item "mod=" (-> mod id))
+      (with-access::Module mod (decls (mid id) defs)
+	 (let ((unbounds '()))
+	    (hashtable-for-each decls
+	       (lambda (k d)
+		  (with-access::Decl d (def id scope (dmod mod))
+		     (unless (or (isa? def Def) (not (eq? dmod mod)))
+			(when (or (eq? scope 'export) (eq? scope 'static))
+			   (set! unbounds (cons d unbounds)))))))
+	    (when (pair? unbounds)
+	       (trace-item "decls="
+		  (hashtable-map decls
+		     (lambda (k d)
+			(with-access::Decl d (id) id))))
+	       (for-each (lambda (d)
+			    (with-access::Decl d (id expr)
+			       (with-handler
+				  exception-notify
+				  (error/loc mod "Cannot find definition"
+				     id expr))))
+		  (reverse! unbounds))
+	       (error mid "Unbound exported identifier"
+		  (map (lambda (d) (with-access::Decl d (id) id))
+		     unbounds)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-ident ...                                                  */
@@ -1499,7 +1532,7 @@
 	     (with-access::Decl decl (def expr (dmod mod))
 		(if (isa? def Def)
 		    def
-		    (error/loc mod "Cannot find definition YY" id expr)))
+		    (error/loc mod "Cannot find exported definition" id expr)))
 	     (error/loc mod "Cannot find declaration" id #f)))))
 
 ;*---------------------------------------------------------------------*/

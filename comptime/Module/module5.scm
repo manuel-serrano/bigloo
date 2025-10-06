@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sat Oct  4 08:37:16 2025 (serrano)                */
+;*    Last change :  Mon Oct  6 07:49:12 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -48,7 +48,7 @@
 	   (module5-extern-plugin-wasm ::Module ::pair)
 	   (module5-plugin-pragma ::Module ::pair)
 	   (module5-resolve-pragma! ::Module)
-	   (module5-import-heap4! ::Module))
+	   (module5-heap4-modules::pair-nil))
 
    (export (class CDef::Def
 	      (args read-only)
@@ -76,6 +76,8 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-ast! mod::Module)
    
+   (define unsorted-classes '())
+
    (define (procedure-args src id mid)
       (match-case src
 	 ((define (?- . ?args) . ?-) args)
@@ -97,7 +99,7 @@
 	     ((define-expander (?- . ?args) . ?-) 'expander)
 	     ((define-class . ?-) 'class)
 	     (else 'variable))))
-
+   
    (define (make-class-slot p i ty)
       (let ((id (cdr (assq 'id p))))
 	 (instantiate::slot
@@ -163,33 +165,56 @@
 	  (with-access::CDef def (name type macro)
 	     (declare-global-cvar! id alias name type macro expr expr)))
 	 ((class)
-	  (declare-class-definition! id alias mid scope expr def))
+	  ;; postpone the declaration of classes because they must be sorted
+	  ;; before declared
+	  (set! unsorted-classes (cons (vector def alias scope) unsorted-classes)))
 	 (else
 	  (error "module5-ast"
 	     (format "Unsupported definition kind \"~a\"" kind)
 	     id))))
    
+   (define (declare-local-definition! d::Def mid)
+      (with-access::Def d (expr kind id decl ronly)
+	 (let ((alias (if (isa? decl Decl)
+			  (with-access::Decl decl (alias) alias)
+			  id))
+	       (scope (if (isa? decl Decl)
+			  (with-access::Decl decl (scope) scope)
+			  'static)))
+	    (declare-definition! kind id id mid scope expr d))))
+   
+   (define (declare-import-declaration! d::Decl mid)
+      (with-access::Decl d (def id alias ronly scope (imod mod))
+	 (when (eq? scope 'import)
+	    (let ((def (module5-get-export-def imod id)))
+	       (with-access::Def def (kind id expr)
+		  (with-access::Module imod ((mid id))
+		     (declare-definition! kind id alias mid 'import expr def)))))))
+   
+   (define (kdefs)
+      (sort (lambda (kx ky)
+	       (with-access::KDef (vector-ref kx 0) ((ix index))
+		  (with-access::KDef (vector-ref ky 0) ((iy index))
+		     (<fx ix iy))))
+	 unsorted-classes))
+      
    (with-access::Module mod (defs decls exports (mid id))
       
       (hashtable-for-each defs
 	 (lambda (k d)
-	    (with-access::Def d (expr kind id decl ronly)
-	       (let ((alias (if (isa? decl Decl)
-				(with-access::Decl decl (alias) alias)
-				id))
-		     (scope (if (isa? decl Decl)
-				(with-access::Decl decl (scope) scope)
-				'static)))
-		  (declare-definition! kind id id mid scope expr d)))))
+	    (declare-local-definition! d mid)))
       
       (hashtable-for-each decls
 	 (lambda (k d)
-	    (with-access::Decl d (def id alias ronly scope (imod mod))
-	       (when (eq? scope 'import)
-		  (let ((def (module5-get-export-def imod id)))
-		     (with-access::Def def (kind id expr)
-			(with-access::Module imod ((mid id))
-			   (declare-definition! kind id alias mid 'import expr def))))))))))
+	    (declare-import-declaration! d mid)))
+      
+      (for-each (lambda (k)
+		   (let ((d (vector-ref k 0))
+			 (alias (vector-ref k 1))
+			 (scope (vector-ref k 2)))
+		      (with-access::Def d (expr kind id decl ronly)
+			 (declare-class-definition! kind id alias scope expr d))))
+	 (kdefs))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-main ...                                                 */
@@ -497,16 +522,31 @@
 			    attributes)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    heap4-module-list ...                                            */
+;*    *heap4-modules* ...                                              */
+;*---------------------------------------------------------------------*/
+(define *heap4-modules* #f)
+
+;*---------------------------------------------------------------------*/
+;*    module5-heap4-modules ...                                        */
 ;*    -------------------------------------------------------------    */
 ;*    Returns a list of dummy module5 that are as automatically        */
 ;*    imported by the compiled module.                                 */
+;*---------------------------------------------------------------------*/
+(define (module5-heap4-modules::pair-nil)
+   (if *heap4-modules*
+       *heap4-modules*
+       (begin
+	  (set! *heap4-modules* (heap4-modules))
+	  *heap4-modules*)))
+
+;*---------------------------------------------------------------------*/
+;*    heap4-modules ...                                                */
 ;*    -------------------------------------------------------------    */
-;*    This takes no argument as it builds its module list from         */
-;*    the global environment that has been built when loading          */
+;*    This function takes no argument as it builds its module list     */
+;*    from the global environment that has been built when loading     */
 ;*    the heap file.                                                   */
 ;*---------------------------------------------------------------------*/
-(define (heap4-module-list::pair-nil)
+(define (heap4-modules)
    
    (define mods '())
    
@@ -556,16 +596,11 @@
 		     (with-access::tclass c2 ((d2 depth))
 			(<fx d1 d2))))
 	    (get-class-list))))
-   
+
    (map (lambda (c)
 	   (let ((mi (cdr c)))
-	      (module5-parse mi (symbol->path (car c)))))
+	      (let ((m (module5-parse mi (symbol->path (car c)))))
+		 (module5-expand-and-resolve! m
+		    (lambda ()
+		       (create-hashtable :weak 'open-string))))))
       (reverse mods)))
-
-;*---------------------------------------------------------------------*/
-;*    module5-import-heap4! ...                                        */
-;*---------------------------------------------------------------------*/
-(define (module5-import-heap4! mod::Module)
-   (map (lambda (m)
-	   (module5-import-all! mod m))
-      (heap4-module-list)))
