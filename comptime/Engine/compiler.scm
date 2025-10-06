@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Oct  4 07:07:17 2025 (serrano)                */
+;*    Last change :  Mon Oct  6 07:50:31 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -547,9 +547,8 @@
 	 
 	 (with-access::Module mod (id body checksum main decls imports)
 
-	    (module5-import-heap4! mod)
-	 
-	    (module5-expand-and-resolve! mod xenv)
+	    (module5-expand-and-resolve! mod xenv
+	       :heap-modules (module5-heap4-modules))
 	    (module5-checksum! mod)
 	    
 	    (hashtable-for-each decls
