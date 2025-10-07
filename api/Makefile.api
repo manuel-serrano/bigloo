@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Thu Oct  2 08:45:23 2025 (serrano)                */
+#*    Last change :  Tue Oct  7 07:29:10 2025 (serrano)                */
 #*    Copyright   :  2010-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -267,6 +267,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_eu$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX): .
 api-clean-c:
 	$(RM) -rf objs
 	$(RM) -f $(BOOTLIBDIR)/$(API).heap
+	$(RM) -f $(BOOTLIBDIR)/$(API).heap5
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX)

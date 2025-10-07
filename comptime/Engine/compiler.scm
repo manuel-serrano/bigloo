@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Oct  6 07:50:31 2025 (serrano)                */
+;*    Last change :  Tue Oct  7 07:41:49 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -527,7 +527,7 @@
       (module5-register-extern-plugin! "java" module5-extern-plugin-java)
       (module5-register-extern-plugin! "wasm" module5-extern-plugin-wasm)
 
-      (module4-register-plugin! 'extern module4-plugin-extern)
+      (module4-register-plugin! 'extern module4-extern-plugin-c)
 
       (let* ((expr-mod (car expr))
 	     (expr-body (cdr expr))

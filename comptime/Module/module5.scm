@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Mon Oct  6 07:49:12 2025 (serrano)                */
+;*    Last change :  Tue Oct  7 07:09:47 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -24,6 +24,7 @@
 	   module_class
 	   module_checksum
 	   module_pragma
+	   module_foreign
 	   expand_eps
 	   ast_node
 	   ast_var
@@ -44,6 +45,7 @@
 	   (module5-object-unit ::Module)
 	   (module5-imported-inline-unit ::Module)
 	   (module5-extern-plugin-c ::Module ::pair)
+	   (module4-extern-plugin-c ::Module ::pair)
 	   (module5-extern-plugin-java ::Module ::pair)
 	   (module5-extern-plugin-wasm ::Module ::pair)
 	   (module5-plugin-pragma ::Module ::pair)
@@ -54,7 +56,10 @@
 	      (args read-only)
 	      (name::bstring read-only)
 	      (infix::bool read-only)
-	      (macro::bool read-only))))
+	      (macro::bool read-only))
+
+	   (class TDef::Def
+	      (name::bstring read-only))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-expand ...                                               */
@@ -164,6 +169,9 @@
 	 ((c-variable)
 	  (with-access::CDef def (name type macro)
 	     (declare-global-cvar! id alias name type macro expr expr)))
+	 ((c-type)
+	  (with-access::TDef def (id name)
+	     (declare-type! id name 'C)))
 	 ((class)
 	  ;; postpone the declaration of classes because they must be sorted
 	  ;; before declared
@@ -326,9 +334,9 @@
 	     (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    module5-extern-plugin-c ...                                      */
+;*    parse-extern-c-clause ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (module5-extern-plugin-c mod::Module expr::pair)
+(define (parse-extern-c-clause clause mod::Module x::pair)
 
    (define (parse-include string clause mod::Module)
       (unless (member string *include-foreign*)
@@ -421,27 +429,63 @@
 		   (hashtable-put! exports (symbol->string! id) decl)
 		   (hashtable-put! decls (symbol->string! id) decl)
 		   (hashtable-put! defs (symbol->string! id) def)))))))
+
+   (define (parse-type id name clause mod::Module)
+      (co-instantiate
+	    ((def (instantiate::TDef
+		     (id id)
+		     (kind 'c-type)
+		     (expr clause)
+		     (ronly #t)
+		     (expr clause)
+		     (decl decl)
+		     (name name)))
+	     (decl (instantiate::Decl
+		      (id id)
+		      (alias id)
+		      (mod mod)
+		      (expr clause)
+		      (ronly #t)
+		      (scope 'extern)
+		      (def def))))
+	 (with-access::Module mod (decls defs exports)
+	    (hashtable-put! exports (symbol->string! id) decl)
+	    (hashtable-put! decls (symbol->string! id) decl)
+	    (hashtable-put! defs (symbol->string! id) def))
+	 (parse-c-foreign-type clause)))
+
+   (match-case clause
+      ((include (and (? string?) ?string))
+       (parse-include string clause mod))
+      ((type (and (? symbol?) ?id) (and (? string?) ?name))
+       (parse-type id name clause mod))
+      ((type (and (? symbol?) ?id) ?- (and (? string?) ?name))
+       (parse-type id name clause mod))
+      ((macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
+       (parse-function #t #f ident args name clause mod))
+      ((infix macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
+       (parse-function #t #t ident args name clause mod))
+      (((and (? symbol?) ?ident) ?args (and (? string?) ?name))
+       (parse-function #f #f ident args name clause mod))
+      ((macro (and (? symbol?) ?ident) (and (? string?) ?name))
+       (parse-variable #t ident name clause mod))
+      (((and (? symbol?) ?ident) (and (? string?) ?name))
+       (parse-variable #f ident name clause mod))
+      (else
+       (error/loc mod "Illegal extern \"C\" module clause" clause x))))
    
-   (define (parse-clause clause mod::Module)
-      (match-case clause
-	 ((include (and (? string?) ?string))
-	  (parse-include string clause mod))
-	 ((type (and (? symbol?) ?id) (and (? string?) ?name))
-	  (declare-type! id name 'C))
-	 ((macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
-	  (parse-function #t #f ident args name clause mod))
-	 ((infix macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
-	  (parse-function #t #t ident args name clause mod))
-	 (((and (? symbol?) ?ident) ?args (and (? string?) ?name))
-	  (parse-function #f #f ident args name clause mod))
-	 ((macro (and (? symbol?) ?ident) (and (? string?) ?name))
-	  (parse-variable #t ident name clause mod))
-	 (((and (? symbol?) ?ident) (and (? string?) ?name))
-	  (parse-variable #f ident name clause mod))
-	 (else
-	  (error/loc mod "Illegal extern \"C\" module clause" clause expr))))
-   
-   (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
+;*---------------------------------------------------------------------*/
+;*    module5-extern-plugin-c ...                                      */
+;*---------------------------------------------------------------------*/
+(define (module5-extern-plugin-c mod::Module x::pair)
+   (for-each (lambda (c) (parse-extern-c-clause c mod x)) (cddr x)))
+
+;*---------------------------------------------------------------------*/
+;*    module4-extern-plugin-c ...                                      */
+;*---------------------------------------------------------------------*/
+(define (module4-extern-plugin-c mod::Module x::pair)
+   (for-each (lambda (c) (parse-extern-c-clause c mod x)) (cdr x))
+   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-java ...                                   */

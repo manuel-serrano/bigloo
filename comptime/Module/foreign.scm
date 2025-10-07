@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Thu Oct  2 09:18:00 2025 (serrano)                */
+;*    Last change :  Tue Oct  7 07:45:00 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign and extern clauses compilation. Foreign and extern   */
@@ -37,7 +37,7 @@
 	    (find-location tools_location))
    (export  (make-foreign-compiler)
 	    (make-extern-compiler)
-	    (module4-plugin-extern ::Module ::pair)
+	    (parse-c-foreign-type ::pair)
 	    (foreign-accesses-add! ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
@@ -58,12 +58,6 @@
       (id 'extern)
       (producer (lambda (c) (extern-producer c #t)))
       (consumer (lambda (m c) (extern-producer c #f)))))
-
-;*---------------------------------------------------------------------*/
-;*    module4-plugin-extern ...                                        */
-;*---------------------------------------------------------------------*/
-(define (module4-plugin-extern mod::Module expr::pair)
-   (extern-producer expr #t))
 
 ;*---------------------------------------------------------------------*/
 ;*    foreign-producer ...                                             */

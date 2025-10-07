@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Mon Oct  6 16:01:19 2025 (serrano)                */
+;*    Last change :  Tue Oct  7 07:22:06 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -366,15 +366,6 @@
 		    (make-file-name (dirname path) file)
 		    expr mod))
 		(else
-		 (let ((m (module5-read-heap
-			     (make-file-name (dirname path)
-				(string-append (prefix (basename path)) ".heap5"))
-			     expr mod)))
-		    (tprint "m=" m)
-		    (with-access::Module m (exports)
-		       (hashtable-for-each exports
-			  (lambda (k d)
-			     (tprint d)))))
 		 (module5-read-heap
 		    (make-file-name (dirname path)
 		       (string-append (prefix (basename path)) ".heap5"))
@@ -544,8 +535,7 @@
 				    :expand expand)))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
-		      (when (eq? (-> d scope) 'export)
-			 (hashtable-put! (-> mod exports) key d))))
+		      (hashtable-put! (-> mod exports) key d)))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc mod "Cannot find file" path clause))))
    
@@ -559,8 +549,7 @@
 				    :expand expand)))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
-		      (when (eq? (-> d scope) 'export)
-			 (hashtable-put! (-> mod exports) key d))))
+		      (hashtable-put! (-> mod exports) key d)))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc mod "Cannot find file" path clause))))
    
