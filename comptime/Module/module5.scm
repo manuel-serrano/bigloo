@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Oct  7 07:09:47 2025 (serrano)                */
+;*    Last change :  Wed Oct  8 10:53:07 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -50,7 +50,8 @@
 	   (module5-extern-plugin-wasm ::Module ::pair)
 	   (module5-plugin-pragma ::Module ::pair)
 	   (module5-resolve-pragma! ::Module)
-	   (module5-heap4-modules::pair-nil))
+	   (module5-heap4-modules::pair-nil)
+	   (module5-init-xenv! xenv ::Module))
 
    (export (class CDef::Def
 	      (args read-only)
@@ -245,8 +246,7 @@
       (let ((body (map (lambda (imod)
 			  (with-access::Module imod (id checksum version expr)
 			     (module5-expand-and-resolve! imod
-				(lambda ()
-				   (create-hashtable :weak 'open-string))
+				module5-init-xenv!
 				:heap-modules (module5-heap4-modules))
 			     (if (=fx version 5)
 				 (module5-checksum! imod)
@@ -645,7 +645,30 @@
    (map (lambda (c)
 	   (let ((mi (cdr c)))
 	      (let ((m (module5-parse mi (symbol->path (car c)))))
-		 (module5-expand-and-resolve! m
-		    (lambda ()
-		       (create-hashtable :weak 'open-string))))))
+		 (module5-expand-and-resolve! m module5-init-xenv!))))
       (reverse mods)))
+
+;*---------------------------------------------------------------------*/
+;*    module5-init-xenv! ...                                           */
+;*---------------------------------------------------------------------*/
+(define (module5-init-xenv! xenv mod)
+   
+   (define (localize nx x)
+      (if (epair? x)
+	  (econs (car nx) (cdr nx) (cer x))
+	  nx))
+   
+   (define (define-expander x e)
+      (match-case x
+	 ((?def ?proto ?body)
+	  (localize `(,def ,proto ,(e body e)) x))
+	 ((?def ?proto . ?body)
+	  (localize `(,def ,proto ,(map (lambda (x) (e x e)) body)) x))
+	 (else
+	  (error "expand" "Illegal form" x))))
+   
+   (install-module5-expander xenv 'define-inline #f define-expander)
+   (install-module5-expander xenv 'define-generic #f define-expander)
+   (install-module5-expander xenv 'define-method #f define-expander)
+   xenv)
+

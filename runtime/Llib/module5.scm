@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Oct  7 07:22:06 2025 (serrano)                */
+;*    Last change :  Wed Oct  8 09:09:27 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -44,6 +44,7 @@
 	    
 	    __param
 	    __trace
+	    __intext
 
 	    __r4_input_6_10_2
 	    __r4_numbers_6_5_fixnum
@@ -68,11 +69,11 @@
 	      (expr::pair read-only)
 	      (version::long read-only (default 5))
 	      (checksum::long (default -1))
-	      (decls read-only (default (create-hashtable :weak 'open-string)))
-	      (exports read-only (default (create-hashtable :weak 'open-string)))
-	      (imports read-only (default (create-hashtable :weak 'open-string)))
-	      (defs read-only (default (create-hashtable :weak 'open-string)))
-	      (classes read-only (default (create-hashtable :weak 'open-string)))
+	      (decls read-only (default (create-hashtable :size 32 :weak 'open-string)))
+	      (exports read-only (default (create-hashtable :size 32 :weak 'open-string)))
+	      (imports read-only (default (create-hashtable :size 32 :weak 'open-string)))
+	      (defs read-only (default (create-hashtable :size 32 :weak 'open-string)))
+	      (classes read-only (default (create-hashtable :size 16 :weak 'open-string)))
 	      (main (default #f))
 	      (inits::pair-nil (default '()))
 	      (libraries::pair-nil (default '()))
@@ -119,7 +120,7 @@
 	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand)
 	   (module5-import-all! ::Module ::Module)
 	   (module5-expander::obj ::obj ::procedure)
-	   (module5-expand-and-resolve!::Module ::Module ::obj #!key (heap-modules '()))
+	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()))
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol ::obj)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
@@ -288,32 +289,44 @@
 ;*    filecache-get ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (filecache-get path cache-dir)
-   (when (string? cache-dir)
-      (unless (directory? cache-dir)
-	 (make-directories cache-dir))
-      (multiple-value-bind (apath cname cpath)
-	 (filecache-dirs path cache-dir)
-	 (when (and (file-exists? cpath)
-		    (>=elong (file-modification-time cpath)
-		       (file-modification-time apath)))
-	    (let ((p (open-input-binary-file cpath)))
-	       (unwind-protect
-		  (input-obj p)
-		  (close-binary-port p)))))))
+   (with-trace 'module5-cache "filecache-get"
+      (trace-item "path=" path)
+      (trace-item "cache-dir=" cache-dir)
+      (when (string? cache-dir)
+	 (unless (directory? cache-dir)
+	    (make-directories cache-dir))
+	 (multiple-value-bind (apath cname cpath)
+	    (filecache-dirs path cache-dir)
+	    (trace-item "apath=" apath)
+	    (trace-item "cname=" cname)
+	    (trace-item "cpath=" cpath)
+	    (when (and (file-exists? cpath)
+		       (>=elong (file-modification-time cpath)
+			  (file-modification-time apath)))
+	       (let ((p (open-input-binary-file cpath)))
+		  (unwind-protect
+		     (let ((m (input-obj p)))
+			(trace-item "m=" (typeof m))
+			(with-access::Module m (path)
+			   (hashtable-put! *modules-by-path* path m)
+			   m))
+		     (close-binary-port p))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    filecache-put! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (filecache-put! path mod::Module)
-   (when (string? (-> mod cache-dir))
-      (unless (directory? (-> mod cache-dir))
-	 (make-directories (-> mod cache-dir)))
-      (multiple-value-bind (apath cname cpath)
-	 (filecache-dirs path (-> mod cache-dir))
-	 (let ((p (open-output-binary-file cpath)))
-	    (unwind-protect
-	       (output-obj p mod)
-	       (close-binary-port p))))))
+   (with-trace 'module5-cache "filecache-put!"
+      (trace-item "path=" path)
+      (when (string? (-> mod cache-dir))
+	 (unless (directory? (-> mod cache-dir))
+	    (make-directories (-> mod cache-dir)))
+	 (multiple-value-bind (apath cname cpath)
+	    (filecache-dirs path (-> mod cache-dir))
+	    (let ((p (open-output-binary-file cpath)))
+	       (unwind-protect
+		  (output-obj p mod)
+		  (close-binary-port p)))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    module-read ...                                                  */
@@ -826,7 +839,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-expand-and-resolve! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (module5-expand-and-resolve! mod::Module new-xenv #!key (heap-modules '()))
+(define (module5-expand-and-resolve! mod::Module init-xenv #!key (heap-modules '()))
    (unless (-> mod resolved)
       (with-trace 'module5 "module5-expand-and-resolve!"
 	 (trace-item mod)
@@ -850,7 +863,7 @@
 	 ;; force import the "heap-modules", i.e., the modules that
 	 ;; come from a Bigloo heap file
 	 (for-each (lambda (m) (module5-import-all! mod m)) heap-modules)
-	 (let* ((xenv (if (procedure? new-xenv) (new-xenv) new-xenv))
+	 (let* ((xenv (init-xenv (create-hashtable :weak 'open-string) mod))
 		(kx (make-class-expander mod xenv)))
 	    (install-module5-expander xenv 'define-class
 	       '(define-class) kx)
@@ -864,9 +877,7 @@
 	       (lambda (k d::Decl)
 		  (with-access::Decl d ((imod mod) alias id def)
 		     (unless (eq? imod mod)
-			(module5-expand-and-resolve! imod
-			   (lambda ()
-			      (create-hashtable :weak 'open-string))
+			(module5-expand-and-resolve! imod init-xenv
 			   :heap-modules heap-modules)
 			(let ((idef (module5-get-export-def imod id)))
 			   (with-access::Def idef (kind expr ci)
@@ -913,7 +924,7 @@
 	       (lambda (k d) (with-access::Decl d (id) id))))
 	 (trace-item "defs="
 	    (hashtable-map (-> mod defs)
-	       (lambda (k d) (with-access::Def d (id) id))))))
+	       (lambda (k d) (with-access::Def d (id kind) (cons id kind)))))))
    mod)
 
 ;*---------------------------------------------------------------------*/
@@ -986,7 +997,7 @@
 	  (econs (car new) (cdr new) (cer old))
 	  new))
 
-   (define (procedure4 expr id args kind nexpr)
+   (define (procedure4 expr id args nexpr)
       (let ((lnexpr (localize nexpr expr)))
 	 (multiple-value-bind (name type)
 	    (parse-ident id expr)
@@ -1064,7 +1075,7 @@
 			       (hashtable-symbol-put! (-> mod exports) id decl)))
 			   ((generic ?id . ?args)
 			    (multiple-value-bind (id decl)
-			       (procedure4 expr id args 'generic
+			       (procedure4 expr id args
 				  `(define-generic ,(cons id args) #unspecified))
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (hashtable-symbol-put! (-> mod exports) id decl)))
@@ -1085,7 +1096,7 @@
 			    '(error "export4" "Class not implemented" expr))
 			   ((?id . ?args)
 			    (multiple-value-bind (id decl)
-			       (procedure4 expr id args 'procedure
+			       (procedure4 expr id args
 				  `(define ,(cons id args) #unspecified))
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (hashtable-symbol-put! (-> mod exports) id decl)))

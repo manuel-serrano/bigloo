@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Oct  7 07:41:49 2025 (serrano)                */
+;*    Last change :  Wed Oct  8 10:36:51 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -536,8 +536,7 @@
 		     :expand module5-expand
 		     :cache-dir *module-cache-dir*))
 	     (tu (unit 'toplevel 100 '() #t #f))
-	     (units (list tu))
-	     (xenv (create-hashtable :weak 'open-string)))
+	     (units (list tu)))
 	 
 	 (trace-item "units=" units)
 	 (trace-item "body=" expr-body)
@@ -547,7 +546,7 @@
 	 
 	 (with-access::Module mod (id body checksum main decls imports)
 
-	    (module5-expand-and-resolve! mod xenv
+	    (module5-expand-and-resolve! mod module5-init-xenv!
 	       :heap-modules (module5-heap4-modules))
 	    (module5-checksum! mod)
 	    

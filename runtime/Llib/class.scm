@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Sat Oct  4 09:51:28 2025 (serrano)                */
+;*    Last change :  Wed Oct  8 09:03:31 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -222,16 +222,17 @@
 	  (targs (map (lambda (p)
 			 (make-typed-ident (prop-info-id p) (prop-info-type p)))
 		    props)))
-      `(lambda ()
-	  (,(make-typed-ident 'instantiate (class-info-id class-info))
-	   ,@(map (lambda (p)
-		     (let ((ty (prop-info-type p)))
-			(cond
-			   ((module-get-class mod ty)
-			    `(,(prop-info-id p) (class-nil ,ty)))
-			   (else
-			    `(,(prop-info-id p) (cast-null ,(prop-info-type p)))))))
-		props)))))
+      `(lambda (,(make-typed-ident 'o (class-info-id class-info)))
+	  ,@(map (lambda (p)
+		    (let ((ty (prop-info-type p)))
+		       `(set! (-> o ,(prop-info-id p))
+			   ,(cond
+			      ((module-get-class mod ty)
+			       `(class-nil ,ty))
+			      (else
+			       `(cast-null ,(prop-info-type p)))))))
+	       props)
+	  o)))
 
 ;*---------------------------------------------------------------------*/
 ;*    properties-expand ...                                            */
