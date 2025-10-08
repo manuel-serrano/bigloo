@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Oct  2 09:03:30 2025 (serrano)                */
+#*    Last change :  Wed Oct  8 14:01:27 2025 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -84,7 +84,7 @@ all:
 	  fi
 
 c: build-c
-build-c: api-c
+build-c: api-c heap5-c
 
 jvm: build-jvm
 build-jvm: api-jvm

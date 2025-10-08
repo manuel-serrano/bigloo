@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Oct  8 10:53:07 2025 (serrano)                */
+;*    Last change :  Wed Oct  8 11:32:27 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -83,7 +83,7 @@
 (define (module5-ast! mod::Module)
    
    (define unsorted-classes '())
-
+   
    (define (procedure-args src id mid)
       (match-case src
 	 ((define (?- . ?args) . ?-) args)
@@ -171,59 +171,111 @@
 	  (with-access::CDef def (name type macro)
 	     (declare-global-cvar! id alias name type macro expr expr)))
 	 ((c-type)
-	  (with-access::TDef def (id name)
-	     (declare-type! id name 'C)))
+	  ;; already processed so ignore
+	  #unspecified)
 	 ((class)
-	  ;; postpone the declaration of classes because they must be sorted
-	  ;; before declared
-	  (set! unsorted-classes (cons (vector def alias scope) unsorted-classes)))
+	  ;; postponed classes, do nothing
+	  #unspecified)
 	 (else
 	  (error "module5-ast"
 	     (format "Unsupported definition kind \"~a\"" kind)
 	     id))))
    
-   (define (declare-local-definition! d::Def mid)
-      (with-access::Def d (expr kind id decl ronly)
-	 (let ((alias (if (isa? decl Decl)
-			  (with-access::Decl decl (alias) alias)
-			  id))
-	       (scope (if (isa? decl Decl)
-			  (with-access::Decl decl (scope) scope)
-			  'static)))
-	    (declare-definition! kind id id mid scope expr d))))
+   (define (def-scope def::Def)
+      (with-access::Def def (decl)
+	 (if (isa? decl Decl)
+	     (with-access::Decl decl ((imod mod) scope)
+		(if (eq? imod mod)
+		    scope
+		    'import))
+	     'static)))
    
-   (define (declare-import-declaration! d::Decl mid)
-      (with-access::Decl d (def id alias ronly scope (imod mod))
-	 (when (eq? scope 'import)
-	    (let ((def (module5-get-export-def imod id)))
-	       (with-access::Def def (kind id expr)
-		  (with-access::Module imod ((mid id))
-		     (declare-definition! kind id alias mid 'import expr def)))))))
+   (define (def-alias def::Def)
+      (with-access::Def def (decl)
+	 (if (isa? decl Decl)
+	     (with-access::Decl decl (alias) alias)
+	     (with-access::Def def (id) id))))
    
-   (define (kdefs)
-      (sort (lambda (kx ky)
-	       (with-access::KDef (vector-ref kx 0) ((ix index))
-		  (with-access::KDef (vector-ref ky 0) ((iy index))
-		     (<fx ix iy))))
-	 unsorted-classes))
+   (define (def-mid def::Def)
+      (with-access::Def def (decl)
+	 (if (isa? decl Decl)
+	     (with-access::Decl decl (mod)
+		(with-access::Module mod (id) id))
+	     (with-access::Module mod (id) id))))
+   
+   (define (split-local-definitions mid defs)
+      (let ((types '())
+	    (classes '())
+	    (others '()))
+	 (hashtable-for-each defs
+	    (lambda (k def)
+	       (with-access::Def def (id)
+		  (let ((e (vector def mid id (def-scope def))))
+		     (cond
+			((isa? def KDef) (set! classes (cons e classes)))
+			((isa? def TDef) (set! types (cons e types)))
+			(else (set! others (cons e others))))))))
+	 (values types classes others)))
+
+   (define (split-imported-declarations mid decls)
+      (let ((types '())
+	    (classes '())
+	    (others '()))
+	 (hashtable-for-each decls
+	    (lambda (k decl)
+	       (with-access::Decl decl (mod id alias)
+		  (with-access::Module mod ((mid id))
+		     (let* ((d (module5-get-export-def mod id))
+			    (e (vector d mid alias 'import)))
+			(cond
+			   ((isa? d KDef) (set! classes (cons e classes)))
+			   ((isa? d TDef) (set! types (cons e types)))
+			   (else (set! others (cons e others)))))))))
+	 (values types classes others)))
+
+   (define (split-definitions mid defs decls)
+      (multiple-value-bind (deft defc defo)
+	 (split-local-definitions mid defs)
+	 (multiple-value-bind (declt declc declo)
+	    (split-imported-declarations mid decls)
+	    (values (append declt deft)
+	       (append declc defc)
+	       (append declo defo)))))
       
-   (with-access::Module mod (defs decls exports (mid id))
-      
-      (hashtable-for-each defs
-	 (lambda (k d)
-	    (declare-local-definition! d mid)))
-      
-      (hashtable-for-each decls
-	 (lambda (k d)
-	    (declare-import-declaration! d mid)))
-      
-      (for-each (lambda (k)
-		   (let ((d (vector-ref k 0))
-			 (alias (vector-ref k 1))
-			 (scope (vector-ref k 2)))
-		      (with-access::Def d (expr kind id decl ronly)
-			 (declare-class-definition! kind id alias scope expr d))))
-	 (kdefs))))
+   (with-access::Module mod (defs imports (mid id))
+
+      (multiple-value-bind (types classes others)
+	 (split-definitions mid defs imports)
+
+	 ;; declare all C types
+	 (for-each (lambda (e)
+		      (with-access::TDef (vector-ref e 0) (id name)
+			 (declare-type! id name 'C)))
+	    types)
+	 
+	 ;; declare all classes
+	 (for-each (lambda (e)
+		      (let ((def (vector-ref e 0))
+			    (alias (vector-ref e 2))
+			    (scope (vector-ref e 3)))
+			 (with-access::Def (vector-ref e 0) (expr kind id)
+			    (declare-class-definition! kind id alias
+			       scope expr def))))
+	    (sort (lambda (ex ey)
+		     (with-access::KDef (vector-ref ex 0) ((ix index))
+			(with-access::KDef (vector-ref ey 0) ((iy index))
+			   (<fx ix iy))))
+	       classes))
+
+	 ;; other declarations
+	 (for-each (lambda (e)
+		      (let ((def (vector-ref e 0))
+			    (mid (vector-ref e 1))
+			    (alias (vector-ref e 2))
+			    (scope (vector-ref e 3)))
+			 (with-access::Def def (expr kind id)
+			    (declare-definition! kind id alias mid scope expr def))))
+	    others))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-main ...                                                 */
@@ -670,5 +722,6 @@
    (install-module5-expander xenv 'define-inline #f define-expander)
    (install-module5-expander xenv 'define-generic #f define-expander)
    (install-module5-expander xenv 'define-method #f define-expander)
+   
    xenv)
 

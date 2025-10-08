@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Oct  8 09:09:27 2025 (serrano)                */
+;*    Last change :  Wed Oct  8 12:27:12 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -714,7 +714,8 @@
 		   (lambda (k d::Decl)
 		      (let ((nd (duplicate::Decl d
 				   (scope 'import))))
-			 (hashtable-put! (-> mod decls) k nd))))
+			 (hashtable-put! (-> mod decls) k nd)
+			 (hashtable-put! (-> mod imports) k nd))))
 		(set! (-> mod inits)
 		   (append! (-> mod inits) (list lmod)))
 		(set! (-> mod libraries)
