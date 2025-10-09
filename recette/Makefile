@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Mon Sep 15 18:51:11 2025 (serrano)                */
+#*    Last change :  Wed Oct  8 14:17:17 2025 (serrano)                */
 #*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -56,7 +56,7 @@ ICOMMON		= vital bps bool list vector srfi4 struct print \
                   globalis filtre rgc_trap rgc_jm rgc_insert port \
                   read tail sqic eval inline match letrec macro \
                   flonum number bignum bchar define error cse \
-                  kapture include cfa alias alias_aux main \
+                  kapture include cfa alias alias_aux \
                   rgc_eval rgc hash module import1 import2 \
                   cfa2 cell hygiene wind dsssl sua peek callcc fringe \
                   unicode optim pregexp lalr system date process \
@@ -113,14 +113,18 @@ POPULATION	= $(SOURCE_FILES) \
 #*---------------------------------------------------------------------*/
 #*    recette                                                          */
 #*---------------------------------------------------------------------*/
-recette: recette-c
+all: recette-c
 
 recette-c: .etags .afile-c objs_c
-	@ $(MAKE) recette-bin
+	@ $(MAKE) recette
 
-recette-bin: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)
-	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)
-	@ echo "\e[1;34mrecette\e[0m done."
+recette: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs_c/main.o
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $^
+	@ echo "\e[1;34m$@\e[0m done."
+
+recette5: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs_c/main5.o
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $^
+	@ echo "\e[1;34m$@\e[0m done."
 
 saw:
 	$(MAKE) EFLAGS=-saw
@@ -131,8 +135,8 @@ new-jvm:
 	$(MAKE) jvm BIGLOO=$(BOOTBINDIR)/bigloo.new
 
 gstatic: recette-static
-recette-static: .afile-c objs_c $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)
-	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) -static-bigloo
+recette-static: .afile-c objs_c $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs_c/main.o
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $^ -static-bigloo
 	@ echo "\e[1;35m$@\e[0m done."
 
 wasm: objs_wasm .afile-wasm
@@ -141,36 +145,36 @@ wasm: objs_wasm .afile-wasm
 wasm-static: objs_wasm .afile-wasm
 	$(MAKE) recette-wasm-static
 
-recette-wasm: $(WASM_OBJECTS:%=objs_wasm/%)
-	$(BIGLOO) -wasm $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette.wasm $(WASM_OBJECTS:%=objs_wasm/%)
+recette-wasm: $(WASM_OBJECTS:%=objs_wasm/%) objs_wasm/main.wasm
+	$(BIGLOO) -wasm $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette.wasm $^
 	@ echo "\e[1;36mrecette.wasm\e[0m done."
 
 recette-wasm-static: $(WASM_OBJECTS:%=objs_wasm/%)
-	$(BIGLOO) -static-bigloo -wasm $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette.wasm-static $(WASM_OBJECTS:%=objs_wasm/%)
+	$(BIGLOO) -static-bigloo -wasm $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette.wasm-static $^
 	@ echo "\e[1;36mrecette.wasm-static\e[0m done."
 
 jvm: recette-jvm-nojar
 recette-jvm-nojar: .jfile-jvm .afile-jvm 
 	@ $(MAKE) recette-jvm
 
-recette-jvm: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
-	$(BIGLOO) $(BFLAGS) -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -no-jvm-jar $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
+recette-jvm: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%) objs_jvm/main.class
+	$(BIGLOO) $(BFLAGS) -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -no-jvm-jar $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $^
 	@ echo "\e[1;37m$@$(SCRIPTEXTENSION)\e[0m done."
 
 jvm-jar: recette-jvm-jar
 recette-jvm-jar: .jfile-jvm .afile-jvm 
 	@ $(MAKE) recette-jar
 
-recette-jar: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
-	$(BIGLOO) $(BFLAGS) -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -jvm-jar $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $(OBJECT_JVM_FORE:%=objs_jvm/%) $(JVM_OBJECTS:%=objs_jvm/%)
+recette-jar: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%) objs_jvm/main.class
+	$(BIGLOO) $(BFLAGS) -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -jvm-jar $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $^
 	@ echo "\e[1;38m$@$(SCRIPTEXTENSION)\e[0m done."
 
 djvm: recette-jvm-debug
 recette-jvm-debug: .jfile-jvm .afile-jvm
 	@ $(MAKE) recette-class-debug
 
-recette-class-debug: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
-	$(BIGLOO) $(BFLAGS) -jvm $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%)
+recette-class-debug: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%) objs_jvm/main.class
+	$(BIGLOO) $(BFLAGS) -jvm $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $^
 	@ echo "\e[1;39m$@$(SCRIPTEXTENSION)\e[0m done."
 
 jvm-purify:
@@ -223,6 +227,7 @@ distclean: lintclean
 	@- $(RM) -f -r objs_jvm
 	@- $(RM) -f -r objs_wasm
 	@- $(RM) -f recette
+	@- $(RM) -f recette5
 	@- $(RM) -f recette-static
 	@- $(RM) -f recette.exe
 	@- $(RM) -f recette-jvm
@@ -325,6 +330,9 @@ objs_wasm/%.wat: %.scm
 #*---------------------------------------------------------------------*/
 #*    Specific compilations                                            */
 #*---------------------------------------------------------------------*/
+objs_c/main5.o: main.scm
+	$(BIGLOO) $(BFLAGS) -module5 -c $(BCFLAGS) $(EFLAGS) $< -o $@
+
 objs_c/callcc.$(C_OBJ_EXTENSION): callcc.scm
 	$(BIGLOO) $(BFLAGS) -call/cc -c $(BCFLAGS) $(EFLAGS) $< -o $@
 

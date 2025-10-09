@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Oct  8 11:32:27 2025 (serrano)                */
+;*    Last change :  Wed Oct  8 14:43:41 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -25,6 +25,7 @@
 	   module_checksum
 	   module_pragma
 	   module_foreign
+	   module_type
 	   expand_eps
 	   ast_node
 	   ast_var
@@ -49,6 +50,7 @@
 	   (module5-extern-plugin-java ::Module ::pair)
 	   (module5-extern-plugin-wasm ::Module ::pair)
 	   (module5-plugin-pragma ::Module ::pair)
+	   (module4-plugin-type ::Module ::pair)
 	   (module5-resolve-pragma! ::Module)
 	   (module5-heap4-modules::pair-nil)
 	   (module5-init-xenv! xenv ::Module))
@@ -537,6 +539,13 @@
 ;*---------------------------------------------------------------------*/
 (define (module4-extern-plugin-c mod::Module x::pair)
    (for-each (lambda (c) (parse-extern-c-clause c mod x)) (cdr x))
+   '())
+
+;*---------------------------------------------------------------------*/
+;*    module4-plugin-type ...                                          */
+;*---------------------------------------------------------------------*/
+(define (module4-plugin-type mod::Module x::pair)
+   (for-each (lambda (c) (type-parser #f c x)) (cdr x))
    '())
 
 ;*---------------------------------------------------------------------*/

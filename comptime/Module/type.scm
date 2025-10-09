@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Module/type.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/type.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:05:27 1996                          */
-;*    Last change :  Tue Jul  9 10:02:17 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Oct  8 14:44:31 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type clauses compilation.                                    */
 ;*=====================================================================*/
@@ -25,6 +25,7 @@
 	    tools_shape
 	    (find-location tools_location))
    (export  (make-type-compiler)
+	    (type-parser import clause clauses)
 	    (tvector-finalizer)
 	    (module-tvector-clause ::symbol ::symbol ::obj ::obj)
 	    (delay-tvector! tv clause ::bool)))

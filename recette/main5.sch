@@ -1,0 +1,95 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/wasm/recette/main5.sch               */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Wed Oct  8 14:12:11 2025                          */
+;*    Last change :  Wed Oct  8 14:48:33 2025 (serrano)                */
+;*    Copyright   :  2025 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Module5 include file                                             */
+;*=====================================================================*/
+
+(main recette)
+   
+(import :version 4 "vital.scm")
+(import :version 4 "bps.scm")
+(import :version 4 "hash.scm")
+(import :version 4 "bool.scm")
+(import :version 4 "list.scm")
+(import :version 4 "vector.scm")
+(import :version 4 "srfi4.scm")
+(import :version 4 "struct.scm")
+(import :version 4 "print.scm")
+(import :version 4 "bchar.scm")
+(import :version 4 "string.scm")
+(import :version 4 "kwote.scm")
+(import :version 4 "case.scm")
+(import :version 4 "bexit.scm")
+(import :version 4 "vararity.scm")
+(import :version 4 "apply.scm")
+(import :version 4 "globalisation.scm")
+(import :version 4 "glo_cell.scm")
+(import :version 4 "kapture.scm")
+(import :version 4 "filtre.scm")
+(import :version 4 "match.scm")
+(import :version 4 "rgc-trap.scm")
+(import :version 4 "rgc-jm.scm")
+(import :version 4 "rgc-eval.scm")
+(import :version 4 "rgc-insert.scm")
+(import :version 4 "rgc.scm")
+(import :version 4 "lalr.scm")
+(import :version 4 "input-port.scm")
+(import :version 4 "mmap.scm")
+(import :version 4 "input-mmap-port.scm")
+(import :version 4 "read.scm")
+(import :version 4 "callcc.scm")
+(import :version 4 "fringe.scm")
+(import :version 4 "tail.scm")
+(import :version 4 "sqic.scm")
+(import :version 4 "reval.scm")
+(import :version 4 "inline.scm")
+(import :version 4 "letrec.scm")
+(import :version 4 "macro.scm")
+(import :version 4 "flonum.scm")
+(import :version 4 "number.scm")
+(import :version 4 "bignum.scm")
+(import :version 4 "define.scm")
+(import :version 4 "cse.scm")
+(import :version 4 "error.scm")
+(import :version 4 "include.scm")
+(import :version 4 "0cfa.scm")
+(import :version 4 "sua.scm")
+(import :version 4 "alias.scm")
+(import :version 4 "alias-aux.scm")
+(import :version 4 "module.scm")
+(import :version 4 "import1.scm")
+(import :version 4 "import2.scm")
+(import :version 4 "object.scm")
+(import :version 4 "object-sans.scm")
+(import :version 4 "object5.scm")
+(import :version 4 "object5-sans.scm")
+(import :version 4 "hygiene.scm")
+(import :version 4 "wind.scm")
+(import :version 4 "dsssl.scm")
+(import :version 4 "peek.scm")
+(import :version 4 "unicode.scm")
+(import :version 4 "optim.scm")
+(import :version 4 "pregexp.scm")
+(import :version 4 "system.scm")
+(import :version 4 "date.scm")
+(import :version 4 "process.scm")
+(import :version 4 "weakptr.scm")
+(import :version 4 "crypto.scm")
+(import :version 4 "crc.scm")
+(import :version 4 "ssr.scm")
+   
+(cond-expand
+   (bigloo-jvm (import external_jvm)))
+   
+(export (do-test name thunk good?)
+   (test-module name file)
+   *recette-port*
+   *bigloo-path*
+   *silent*)
+   
+(option (bigloo-debug-set! 0))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Oct  8 10:36:51 2025 (serrano)                */
+;*    Last change :  Wed Oct  8 14:38:00 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -522,12 +522,14 @@
       (set! *module-version* 5)
       (register-srfi! 'bigloo-module5)
       
+      (module5-register-plugin! 'option (lambda (m x) (for-each eval x)))
       (module5-register-plugin! 'pragma module5-plugin-pragma)
       (module5-register-extern-plugin! "C" module5-extern-plugin-c)
       (module5-register-extern-plugin! "java" module5-extern-plugin-java)
       (module5-register-extern-plugin! "wasm" module5-extern-plugin-wasm)
 
       (module4-register-plugin! 'extern module4-extern-plugin-c)
+      (module4-register-plugin! 'type module4-plugin-type)
 
       (let* ((expr-mod (car expr))
 	     (expr-body (cdr expr))

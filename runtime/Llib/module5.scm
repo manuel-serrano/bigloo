@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Oct  8 12:27:12 2025 (serrano)                */
+;*    Last change :  Wed Oct  8 14:06:58 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -292,7 +292,7 @@
    (with-trace 'module5-cache "filecache-get"
       (trace-item "path=" path)
       (trace-item "cache-dir=" cache-dir)
-      (when (string? cache-dir)
+      (when (and *file-cache* (string? cache-dir))
 	 (unless (directory? cache-dir)
 	    (make-directories cache-dir))
 	 (multiple-value-bind (apath cname cpath)
@@ -312,13 +312,15 @@
 			   m))
 		     (close-binary-port p))))))))
 
+(define *file-cache* #f)
+
 ;*---------------------------------------------------------------------*/
 ;*    filecache-put! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (filecache-put! path mod::Module)
    (with-trace 'module5-cache "filecache-put!"
       (trace-item "path=" path)
-      (when (string? (-> mod cache-dir))
+      (when (and *file-cache* (string? (-> mod cache-dir)))
 	 (unless (directory? (-> mod cache-dir))
 	    (make-directories (-> mod cache-dir)))
 	 (multiple-value-bind (apath cname cpath)
@@ -977,7 +979,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module4-parse-clause ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (module4-parse-clause clause expr::pair mod::Module lib-path cache-dir expand)
+(define (module4-parse-clause::pair-nil clause expr::pair mod::Module lib-path cache-dir expand)
    
    (define (unbound-error path id clause)
       (error/loc mod (format "Cannot find declaration in module \"~a\"" path)
@@ -1047,7 +1049,7 @@
 			(expr expr))))
 	    (values name decl `(,kind ,@(cdr expr))))))
 
-   (define (parse-static clause expr::pair mod::Module expand)
+   (define (parse-static::pair-nil clause expr::pair mod::Module expand)
       
       (define nbody '())
       
@@ -1063,7 +1065,7 @@
 
       (reverse! nbody))
 			   
-   (define (parse-export clause expr::pair mod::Module expand)
+   (define (parse-export::pair-nil clause expr::pair mod::Module expand)
       
       (define nbody '())
       
@@ -1112,20 +1114,28 @@
 
       (reverse! nbody))
    
-   (define (parse-include clause expr::pair mod::Module expand)
-      (for-each (lambda (f)
-		   (cond
-		      ((not (string? f))
-		       (error/loc mod "Illegal include clause" f clause))
-		      ((module5-resolve-path f (-> mod path))
-		       (call-with-input-file f
-			  (lambda (p)
-			     (for-each (lambda (c)
-					  (module5-parse-clause c clause mod
-					     lib-path cache-dir expand))
-				(port->sexp-list p #t)))))
-		      (else
-		       (error/loc mod "Cannot find file" f clause))))
+   (define (parse-include::pair-nil clause expr::pair mod::Module expand)
+      (append-map (lambda (f)
+		     (cond
+			((not (string? f))
+			 (error/loc mod "Illegal include clause" f clause))
+			((module5-resolve-path f (-> mod path))
+			 (let ((exprs (call-with-input-file f
+					 (lambda (p) (port->sexp-list p #t)))))
+			    (match-case exprs
+			       (((directives . ?clauses) . ?rest)
+				(append
+				   (append-map (lambda (c)
+						  (tprint "c=" c)
+						  (module4-parse-clause c clause
+						     mod lib-path cache-dir
+						     expand))
+				      clauses)
+				   rest))
+			       (else
+				exprs))))
+			(else
+			 (error/loc mod "Cannot find file" f clause))))
 	 (cdr clause)))
    
    (with-trace 'module5-parse "module4-parse-clause"
@@ -1143,6 +1153,8 @@
 	  '())
 	 ((import :version 4 (? string?))
 	  '())
+	 ((import . ?-)
+	  '())
 	 ((export . ?bindings)
 	  (parse-export clause expr mod expand))
 	 ((main (and (? symbol?) ?main))
@@ -1159,6 +1171,9 @@
 	  '())
 	 ((static . ?-)
 	  (parse-static clause expr mod expand))
+	 ((option . ?x)
+	  (for-each eval x)
+	  '())
 	 ((?id . ?-)
 	  (let ((plugin (assq id *plugins4*)))
 	     (if plugin

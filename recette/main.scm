@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Thu Jul 24 15:37:18 2025 (serrano)                */
+;*    Last change :  Wed Oct  8 14:08:36 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -12,105 +12,29 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module main
-   (main   recette)
-   (import vital
-	   bps
-	   hash
-	   bool
-	   list
-	   vector
-	   srfi4
-	   struct
-	   print
-	   bchar
-	   string
-	   kwote
-	   case
-	   bind-exit
-	   vararity
-	   apply
-	   globalisation
-	   glo_cell
-	   kapture
-	   filtre
-	   match
-	   rgc-trap
-	   rgc-jm
-	   rgc-eval
-	   rgc-insert
-	   rgc
-	   lalr
-	   input-port
-	   mmap
-           input-mmap-port
-	   read
-	   callcc
-	   fringe
-	   tail
-	   sqic
-	   reval
-	   inline
-	   letrec
-	   macro
-	   flonum
-	   number
-	   bignum
-	   define
-	   cse
-	   error
-	   include
-	   0cfa
-	   sua
-	   alias
-	   alias-aux
-	   module
-	   import1
-	   import2
-	   object
-	   object-sans
-	   object5
-	   object5-sans
-	   hygiene
-	   wind
-	   dsssl
-	   peek
-	   unicode
-	   optim
-	   pregexp
-	   system
-	   date
-           process
-           weakptr
-	   crypto
-	   crc
-	   ssr)
    (cond-expand
-      (bigloo-jvm (import external_jvm)))
-   (export (do-test name thunk good?)
-	   (test-module name file)
-	   *recette-port*
-	   *bigloo-path*
-	   *silent*)
-   
-   (option (bigloo-debug-set! 0)))
+      (bigloo-module5 (include "./main5.sch"))
+      (bigloo-module4 (include "./main4.sch"))
+      (else (error "main" "Missing bigloo-moduleXXX" #f))))
    
 ;*---------------------------------------------------------------------*/
 ;*    Des variables statiques                                          */
 ;*---------------------------------------------------------------------*/
-(define *test-number*   0)
-(define *nb-test*       0)
-(define *nb-err*        0)
-(define *module-name*   "")
-(define *verbose*       #f)
-(define *silent*        #t)
-(define *recette-port*  #f)
-(define *tick-number*   -1)
-(define *callcc?*       #t)
-(define *dumping*       #f)
-(define *modules*       '())
-(define *bigloo-path*   (if (member (os-class) '("win32" "mingw"))
-			    "..\\bin\\bigloo.exe"
-                            "../bin/bigloo.sh"))
+(define *test-number* 0)
+(define *nb-test* 0)
+(define *nb-err* 0)
+(define *module-name* "")
+(define *verbose* #f)
+(define *silent* #t)
+(define *recette-port* #f)
+(define *tick-number* -1)
+(define *callcc?* #t)
+(define *dumping* #f)
+(define *modules* '())
+(define *bigloo-path*
+   (if (member (os-class) '("win32" "mingw"))
+       "..\\bin\\bigloo.exe"
+       "../bin/bigloo.sh"))
 
 ;*---------------------------------------------------------------------*/
 ;*    tick ...                                                         */
