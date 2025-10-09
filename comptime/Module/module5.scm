@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Oct  8 14:43:41 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 07:57:40 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -25,6 +25,7 @@
 	   module_checksum
 	   module_pragma
 	   module_foreign
+	   module_java
 	   module_type
 	   expand_eps
 	   ast_node
@@ -47,6 +48,7 @@
 	   (module5-imported-inline-unit ::Module)
 	   (module5-extern-plugin-c ::Module ::pair)
 	   (module4-extern-plugin-c ::Module ::pair)
+	   (module4-extern-plugin-java ::Module ::pair)
 	   (module5-extern-plugin-java ::Module ::pair)
 	   (module5-extern-plugin-wasm ::Module ::pair)
 	   (module5-plugin-pragma ::Module ::pair)
@@ -68,7 +70,7 @@
 ;*    module5-expand ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (module5-expand x)
-   (module5-expander x initial-expander))
+   (expand-compile-cond-expand x (lambda (x e) x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-import-def ...                                           */
@@ -542,6 +544,13 @@
    '())
 
 ;*---------------------------------------------------------------------*/
+;*    module4-extern-plugin-java ...                                   */
+;*---------------------------------------------------------------------*/
+(define (module4-extern-plugin-java mod::Module x::pair)
+   (for-each (lambda (c) (parse-extern-java-clause c mod x)) (cdr x))
+   '())
+
+;*---------------------------------------------------------------------*/
 ;*    module4-plugin-type ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (module4-plugin-type mod::Module x::pair)
@@ -551,14 +560,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-java ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (module5-extern-plugin-java mod::Module expr::pair)
-   
-   (define (parse-clause clause mod::Module)
-      (match-case clause
-	 (else
-	  (error/loc mod "Illegal extern \"java\" module clause" clause expr))))
-   
-   (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
+(define (module5-extern-plugin-java mod::Module x::pair)
+   (for-each (lambda (c) (parse-extern-java-clause c mod x)) (cddr x)))
+
+;*---------------------------------------------------------------------*/
+;*    parse-extern-java-clause ...                                     */
+;*---------------------------------------------------------------------*/
+(define (parse-extern-java-clause c mod::Module x)
+   (with-access::Module mod (id)
+      (parse-java-clause id c)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-wasm ...                                   */

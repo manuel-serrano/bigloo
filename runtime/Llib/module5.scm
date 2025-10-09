@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Oct  8 14:06:58 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 07:51:17 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -119,7 +119,7 @@
 	   (module5-write-heap ::bstring ::Module)
 	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand)
 	   (module5-import-all! ::Module ::Module)
-	   (module5-expander::obj ::obj ::procedure)
+	   ;;(module5-expander::obj ::obj ::procedure)
 	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()))
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol ::obj)
@@ -483,10 +483,8 @@
    (with-trace 'module5-parse "module5-parse"
       (trace-item "path=" path)
       (trace-item "exprs=" exprs)
-      (let* ((expr (car exprs))
-	     (eexpr (if expand (expand expr) expr)))
-	 (trace-item "eexpr=" eexpr)
-	 (match-case eexpr
+      (let ((expr (car exprs)))
+	 (match-case expr
 	    ((module (and (? symbol?) ?id) :version 5 . ?clauses)
 	     (parse5 id path clauses expr (cdr exprs)))
 	    ((module (and (? symbol?) ?id) . ?clauses)
@@ -703,9 +701,9 @@
 	 (cdr clause)))
 
    (define (parse-cond-expand clause expr::pair mod::Module expand)
-      (for-each (lambda (c)
-		   (module5-parse-clause c clause mod lib-path cache-dir expand))
-	 (expand clause)))
+      (let ((ec (expand clause)))
+	 (when (epair? ec)
+	    (module5-parse-clause ec expr mod lib-path cache-dir expand))))
 
    (define (parse-library-all clause expr::pair mod::Module expand)
       (let* ((lib (cadr clause))
@@ -781,6 +779,8 @@
 	  (parse-library-some clause expr mod expand))
 	 ((extern (and (? string?) ?name) . ?clauses)
 	  (parse-extern clause expr mod expand))
+	 ((cond-expand . ?-)
+	  (parse-cond-expand clause expr mod expand))
 	 ((?id . ?rest)
 	  (let ((p (synchronize module-mutex (assq id *plugins*))))
 	     (if p
@@ -820,24 +820,24 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-expander ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (module5-expander x e)
-   (match-case x
-      ((module ?- . ?rest)
-       ;; module5 form
-       (set-cdr! (cdr x)
-	  (map (lambda (x)
-		  (match-case x
-		     ((import ?from ())
-		      ;; treat import specially for the syntax () that
-		      ;; would trigger a syntax error otherwise
-		      (set-car! (cdr x) (e from e))
-		      x)
-		     (else
-		      (e x e))))
-	     rest))
-       x)
-      (else
-       x)))
+;* (define (module5-expander x e)                                      */
+;*    (match-case x                                                    */
+;*       ((module ?- . ?rest)                                          */
+;*        ;; module5 form                                              */
+;*        (set-cdr! (cdr x)                                            */
+;* 	  (map (lambda (x)                                             */
+;* 		  (match-case x                                        */
+;* 		     ((import ?from ())                                */
+;* 		      ;; treat import specially for the syntax () that */
+;* 		      ;; would trigger a syntax error otherwise        */
+;* 		      (set-car! (cdr x) (e from e))                    */
+;* 		      x)                                               */
+;* 		     (else                                             */
+;* 		      (e x e))))                                       */
+;* 	     rest))                                                    */
+;*        x)                                                           */
+;*       (else                                                         */
+;*        x)))                                                         */
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-expand-and-resolve! ...                                  */
@@ -965,10 +965,8 @@
    (with-trace 'module5-parse "module4-parse"
       (trace-item "path=" path)
       (trace-item "exprs=" exprs)
-      (let* ((expr (car exprs))
-	     (eexpr (if expand (expand expr) expr)))
-	 (trace-item "eexpr=" eexpr)
-	 (match-case eexpr
+      (let ((expr (car exprs)))
+	 (match-case expr
 	    ((module (and (? symbol?) ?id) :version 4 . ?clauses)
 	     (parse4 id path clauses expr (cdr exprs)))
 	    ((module (and (? symbol?) ?id) . ?clauses)
@@ -1137,6 +1135,12 @@
 			(else
 			 (error/loc mod "Cannot find file" f clause))))
 	 (cdr clause)))
+
+   (define (parse-cond-expand clause expr mod expand)
+      (let ((ec (expand clause)))
+	 (if (epair? ec)
+	     (module4-parse-clause ec expr mod lib-path cache-dir expand)
+	     '())))
    
    (with-trace 'module5-parse "module4-parse-clause"
       (trace-item "clause=" clause)
@@ -1174,6 +1178,8 @@
 	 ((option . ?x)
 	  (for-each eval x)
 	  '())
+	 ((cond-expand . ?-)
+	  (parse-cond-expand clause expr mod expand))
 	 ((?id . ?-)
 	  (let ((plugin (assq id *plugins4*)))
 	     (if plugin

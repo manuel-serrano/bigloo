@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:58:26 1992                          */
-;*    Last change :  Sun Jan  5 08:32:16 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 08:14:46 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test differentes sortes d'apply                               */
 ;*---------------------------------------------------------------------*/
@@ -12,17 +12,17 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module apply
-   (import  (main "main.scm")
-	    (alias-aux "alias_aux.scm"))
+   (import (main "main.scm")
+	   (alias-aux "alias_aux.scm"))
    (extern (macro c-dummy::obj (::obj . ::obj) ""))
-   (java    (abstract-class c
-	       (method static dummy::obj (::obj ::obj) "c_dummy")
-	       "foo"))
+   (java (abstract-class c
+	    (method static dummy::obj (::obj ::obj) "c_dummy")
+	    "foo"))
    (include "test.sch")
-   (eval    (export f33))
-   (export  (test-apply)
-	    (test-apply2 x)
-	    (apply-dummy x y)))
+   (eval (export f33))
+   (export (test-apply)
+	   (test-apply2 x)
+	   (apply-dummy x y)))
  
 ;*---------------------------------------------------------------------*/
 ;*    gtest1 ...                                                       */

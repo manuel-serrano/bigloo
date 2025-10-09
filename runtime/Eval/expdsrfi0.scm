@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Thu Jun 19 09:35:31 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 07:48:48 2025 (serrano)                */
 ;*    Copyright   :  2001-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -262,9 +262,6 @@
 ;*    expand-cond-exapnd ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (expand-cond-expand x e features)
-   
-   
-   
    (match-case x
       ((cond-expand)
        #unspecified)

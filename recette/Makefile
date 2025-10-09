@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Wed Oct  8 14:17:17 2025 (serrano)                */
+#*    Last change :  Thu Oct  9 08:31:46 2025 (serrano)                */
 #*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -131,7 +131,7 @@ saw:
 new: 
 	$(MAKE) BIGLOO=$(BOOTBINDIR)/bigloo.new
 
-new-jvm: 
+new-jvm:  objs_jvm
 	$(MAKE) jvm BIGLOO=$(BOOTBINDIR)/bigloo.new
 
 gstatic: recette-static
@@ -154,10 +154,10 @@ recette-wasm-static: $(WASM_OBJECTS:%=objs_wasm/%)
 	@ echo "\e[1;36mrecette.wasm-static\e[0m done."
 
 jvm: recette-jvm-nojar
-recette-jvm-nojar: .jfile-jvm .afile-jvm 
+recette-jvm-nojar: .jfile-jvm .afile-jvm .afile-c objs_jvm
 	@ $(MAKE) recette-jvm
 
-recette-jvm: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%) objs_jvm/main.class
+recette-jvm: $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%) objs_jvm/main.class
 	$(BIGLOO) $(BFLAGS) -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -no-jvm-jar $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $^
 	@ echo "\e[1;37m$@$(SCRIPTEXTENSION)\e[0m done."
 
@@ -289,7 +289,7 @@ all.lint: $(LN_OBJECTS)
 #*    .jfile-jvm                                                       */
 #*---------------------------------------------------------------------*/
 .jfile-jvm:
-	$(BGLJFILE) $(JVM_OBJECTS:%.class=%.scm) -o .jfile-jvm
+	$(BGLJFILE) $(JVM_OBJECTS:%.class=%.scm) main.scm -o .jfile-jvm
 
 #*---------------------------------------------------------------------*/
 #*    .afile-c                                                         */

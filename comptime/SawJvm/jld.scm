@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct 24 10:32:46 2000                          */
-;*    Last change :  Sun Oct  6 10:34:37 2024 (serrano)                */
-;*    Copyright   :  2000-24 Manuel Serrano                            */
+;*    Last change :  Thu Oct  9 08:54:14 2025 (serrano)                */
+;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The pseudo Jvm link (generation of a script shell that will run  */
 ;*    the application).                                                */
@@ -42,25 +42,25 @@
 		      (default-script-name)))
 	  (jarname (string-append (prefix target) ".jar"))
 	  (zips (append
-		 (append-map library->zips *additional-bigloo-libraries*)
-		 *additional-bigloo-zips*)))
-      (if *jvm-jar?*
-	  (let* ((manifest (make-manifest-name))
-		 (o-files (append (map source->jvm-class *src-files*)
-				  *o-files*))
-		 (all-objects (unique (objects->classes o-files))))
-	     (verbose 1 "   . jar")
-	     (verbose 2 " (" jarname ")")
-	     (verbose 1 #\Newline)
-	     (generate-jvm-manifest manifest
-				    (find-jvm-main o-files)
-				    jarname
-				    zips)
-	     (jvm-jar jarname manifest all-objects)))
+		   (append-map library->zips *additional-bigloo-libraries*)
+		   *additional-bigloo-zips*)))
+      (when *jvm-jar?*
+	 (let* ((manifest (make-manifest-name))
+		(o-files (append (map source->jvm-class *src-files*)
+			    *o-files*))
+		(all-objects (unique (objects->classes o-files))))
+	    (verbose 1 "   . jar")
+	    (verbose 2 " (" jarname ")")
+	    (verbose 1 #\Newline)
+	    (generate-jvm-manifest manifest
+	       (find-jvm-main o-files)
+	       jarname
+	       zips)
+	    (jvm-jar jarname manifest all-objects)))
       (generate-jvm-script target
-			   (find-jvm-mainclass link-main-module)
-			   jarname
-			   zips)))
+	 (find-jvm-mainclass link-main-module)
+	 jarname
+	 zips)))
 
 ;*---------------------------------------------------------------------*/
 ;*    source->jvm-class ...                                            */
@@ -126,9 +126,48 @@
 ;*    find-jvm-main ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (find-jvm-main o-files)
+
+   (define (find-main-in-directives mod f::bstring)
+      (with-input-from-file f
+	 (lambda ()
+	    (let ((x (compiler-read)))
+	       (tprint "find in direcives x=" x)
+	       (match-case x
+		  ((directives ??- (main ?-) . ?-)
+		   (module->qualified-type mod))
+		  ((include . ?files)
+		   (any (lambda (f) (find-main-in-directives mod f)) files))
+		  (else
+		   (find-main-in-include mod (cdr x))))))))
+
+   (define (find-main-in-include mod x)
+      (let loop ((x x))
+	 (tprint "find in include x=" x)
+	 (when (pair? x)
+	    (match-case x
+	       ((include . ?files)
+		(any (lambda (f) (find-main-in-directives mod f)) files))
+	       (else
+		(loop (cdr x)))))))
+
+   (define (find-main-in-module f::bstring)
+      (tprint "find in module f=" f)
+      (with-input-from-file f
+	 (lambda ()
+	    (let ((x (compiler-read)))
+	       (match-case x
+		  ((module ?mod ??- (main ?-) . ?-)
+		   (module->qualified-type mod))
+		  ((module ?mod . ?rest)
+		   (find-main-in-include mod rest))
+		  (else
+		   #f))))))
+
+   (tprint "M=" (typeof *main*))
    (if (global? *main*)
        (prefix (car *src-files*))
        (let loop ((o-files o-files))
+	  (tprint "ofiles=" o-files)
 	  (if (null? o-files)
 	      (error "jar" "No main clause found" o-files)
 	      (let* ((pref (unprof-src-name (prefix (car o-files))))
@@ -137,12 +176,7 @@
 		 (if (or (not (string? scm-file))
 			 (not (file-exists? scm-file)))
 		     (loop (cdr o-files))
-		     (or (with-input-from-file scm-file
-			    (lambda ()
-			       (match-case (compiler-read)
-				  ((module ?mod ??- (main ?-) . ?-)
-				   (module->qualified-type mod))
-				  (else #f) )))
+		     (or (find-main-in-module scm-file)
 			 (loop (cdr o-files)))))))))
 
 ;*---------------------------------------------------------------------*/

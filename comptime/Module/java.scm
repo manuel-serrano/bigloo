@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Module/java.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/java.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Tue Sep  3 06:42:41 2024 (serrano)                */
-;*    Copyright   :  2000-24 Manuel Serrano                            */
+;*    Last change :  Thu Oct  9 08:19:41 2025 (serrano)                */
+;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
 ;*=====================================================================*/
@@ -44,7 +44,8 @@
 	    (find-java-class ::symbol)
 	    ;; heap-add-jclass is untyped other it force the module
 	    ;; object-module to be imported in too many places.
-	    (heap-add-jclass! jclass))
+	    (heap-add-jclass! jclass)
+	    (parse-java-clause ::symbol ::pair))
    (static  (class jklass
 	       (bind-jklass!)
 	       (src::pair read-only)
@@ -72,8 +73,8 @@
 (define (make-java-compiler)
    (instantiate::ccomp
       (id 'java)
-      (producer (lambda (c) (java-producer *module* c)))
-      (consumer (lambda (m c) (java-producer m c)))
+      (producer (lambda (c) (parse-java-clause *module* c)))
+      (consumer (lambda (m c) (parse-java-clause m c)))
       (finalizer java-finalizer)))
 
 ;*---------------------------------------------------------------------*/
@@ -86,9 +87,9 @@
 	       '()))
 
 ;*---------------------------------------------------------------------*/
-;*    java-producer ...                                                */
+;*    parse-java-clause ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (java-producer module clause)
+(define (parse-java-clause module clause)
    (if (memq 'java (backend-foreign-clause-support (the-backend)))
        (match-case clause
 	  ((?- . ?protos)

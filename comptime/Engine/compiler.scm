@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Oct  8 14:38:00 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 08:04:16 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -529,6 +529,7 @@
       (module5-register-extern-plugin! "wasm" module5-extern-plugin-wasm)
 
       (module4-register-plugin! 'extern module4-extern-plugin-c)
+      (module4-register-plugin! 'java module4-extern-plugin-java)
       (module4-register-plugin! 'type module4-plugin-type)
 
       (let* ((expr-mod (car expr))
@@ -620,10 +621,7 @@
 	 
 	 ;; ... and the global user-defined macro expansion
 	 (profile expand (expand-units units))
-	 (stop-on-pass 'expand
-	    (lambda ()
-	       (set! *module-clause* (module5-expand *module-clause*))
-	       (write-unit units)))
+	 (stop-on-pass 'expand (lambda () (write-unit units)))
 	 
 	 ;; explicit GC roots registration
 	 (when (and *gc-force-register-roots?*

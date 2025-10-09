@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Thu Sep 25 17:45:54 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 08:37:07 2025 (serrano)                */
 ;*    Copyright   :  2012-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -96,7 +96,8 @@
 		    (error "jvm-dump" "Can't open file for output" cname))
 		(with-handler
 		   (lambda (e)
-		      (delete-file cname)
+		      (when *rm-tmp-files*
+			 (delete-file cname))
 		      (raise e))
 		   (unwind-protect
 		      (jvm-as classfile port)
@@ -229,6 +230,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link me::jvm result)
    ;; CARE move the code here...
+   (tprint "LA")
    (jvm-ld #f))
 
 ;*---------------------------------------------------------------------*/
@@ -259,9 +261,11 @@
 ;*    backend-link-objects ::jvm ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link-objects me::jvm sources)
+   
    (define (do-link first module)
       (read-jfile)
       (jvm-ld module))
+
    (if (null? sources)
        (let ((first (prefix (car *o-files*))))
 	  (warning "link" "No source file found" " -- " *o-files*)
@@ -292,7 +296,7 @@
 						    (for-each use-library! libs)
 						    (for-each add-eval-library! libs)))
 					 clauses))))
-			       libraries)
+			libraries)
 		     ;; we load the library init files.
 		     (load-library-init)
 		     (set! *src-files* (list fmain))
@@ -318,8 +322,9 @@
 			(load-library-init)
 			(let* ((pre        (prefix tmp))
 			       (class-file (string-append pre ".class")))
-			   (when (file-exists? tmp)
-			      (delete-file tmp))))
+			   (when *rm-tmp-files*
+			      (when (file-exists? tmp)
+				 (delete-file tmp)))))
 		     0))
 	      (let ((port (open-input-file (caar sources))))
 		 (if (not (input-port? port))
@@ -337,10 +342,7 @@
 				     (file-separator)
 				     #\.))
 			       (loop (cdr sources)
-				  (cons (list name
-					   (string-append
-					      "\"" (caar sources) "\""))
-				     cls)
+				  (cons (cons name (caar sources)) cls)
 				  (if nmain name main-module)
 				  (or nmain main)
 				  (if nmain (caar sources) fmain)
@@ -349,11 +351,11 @@
 			    ;; ah, ce n'etait pas un fichier bigloo,
 			    ;; on saute (en meprisant :-)
 			    (loop (cdr sources)
-				  cls
-				  main-module
-				  main
-				  fmain
-				  libraries))))))))))
+			       cls
+			       main-module
+			       main
+			       fmain
+			       libraries))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-check-inlines ::jvm ...                                  */

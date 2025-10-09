@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Thu Sep 18 22:20:11 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 10:41:48 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -43,6 +43,10 @@
 (define (link)
    ;; register bigloo-compile srfi for library inclusion
    (register-eval-srfi! 'bigloo-compile)
+   (case *module-version*
+      ((0 1 2 3 4) (register-srfi! 'bigloo-module4))
+      ((5) (register-srfi! 'bigloo-module5))
+      (else (register-srfi! 'bigloo-module5)))
    ;; we install macros for expanding module clauses
    (install-initial-expander)
    ;; we build the ad-hoc backend
@@ -57,17 +61,16 @@
 		(exception-notify e)
 		(exit 1))
 	     (backend-link-objects (the-backend) (reverse sources)))
-	  (let* ((object   (car objects))
-		 (pref     (unprof-src-name (prefix object)))
-		 (bpref    (basename pref))
+	  (let* ((object (car objects))
+		 (pref (unprof-src-name (prefix object)))
+		 (bpref (basename pref))
 		 (scm-file (find-src-file pref bpref)))
 	     (if (string? scm-file)
 		 (loop (cdr objects) (cons (cons scm-file object) sources))
 		 (begin
-		    (if (>=fx (bigloo-warning) 2)
-			(warning  "link"
-				  "No Bigloo module found for -- "
-				  (car objects)))
+		    (when (>=fx (bigloo-warning) 2)
+		       (warning  "link" "No Bigloo module found for -- "
+			  (car objects)))
 		    (loop (cdr objects) sources)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -188,12 +191,12 @@
 	 (((main ?main) . ?rest)
 	  main)
 	 (((include . ?includes) . ?rest)
-	  (or (find (lambda (include)
+	  (or (any (lambda (include)
 		       (find-main (read-directives include)))
 		 includes)
 	      (loop rest)))
 	 (((cond-expand . ?-) . ?rest)
-	  (or (find-main (list (comptime-expand/error (car clauses))))
+	  (or (find-main4 (list (comptime-expand/error (car clauses))))
 	      (loop rest)))
 	 (else
 	  (loop (cdr clauses))))))
