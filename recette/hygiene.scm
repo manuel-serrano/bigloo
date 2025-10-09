@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/hygiene.scm                  */
+;*    serrano/prgm/project/bigloo/wasm/recette/hygiene.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb 27 12:52:59 1998                          */
-;*    Last change :  Wed Aug  4 06:44:44 2010 (serrano)                */
+;*    Last change :  Thu Oct  9 15:03:14 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Hygienic macro tests                                             */
 ;*=====================================================================*/
@@ -12,9 +12,9 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module hygiene
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-hygiene)))
+   (export (test-hygiene)))
 
 ;*---------------------------------------------------------------------*/
 ;*    global syntax                                                    */

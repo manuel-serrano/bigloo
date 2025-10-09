@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/inline.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/inline.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov  6 10:40:50 1992                          */
-;*    Last change :  Sat Feb  6 07:41:14 2016 (serrano)                */
+;*    Last change :  Thu Oct  9 15:08:22 2025 (serrano)                */
 ;*                                                                     */
 ;*    Des petits tests qui verifie que l'inlining se fait              */
 ;*    convenablement.                                                  */
@@ -13,14 +13,14 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module inline
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-inline)
-	    (link-with x)
-	    (gee-inline a b c d e f)
-	    (foo-inline x)
-	    (type-hux x)
-	    (read-file-break-dsssl input-string)))
+   (export (test-inline)
+	   (link-with x)
+	   (gee-inline a b c d e f)
+	   (foo-inline x)
+	   (type-hux x)
+	   (read-file-break-dsssl input-string)))
 
 ;*---------------------------------------------------------------------*/
 ;*    link-with ...                                                    */

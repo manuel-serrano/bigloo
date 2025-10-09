@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/macro.scm                    */
+;*    serrano/prgm/project/bigloo/wasm/recette/macro.scm               */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 23 15:13:19 1992                          */
-;*    Last change :  Fri Oct 22 16:25:28 2010 (serrano)                */
+;*    Last change :  Thu Oct  9 15:06:38 2025 (serrano)                */
 ;*                                                                     */
 ;*    Des tests d'expanseurs.                                          */
 ;*---------------------------------------------------------------------*/
@@ -12,10 +12,10 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module macro
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (static  (integer->char))
-   (export  (test-macro)))
+   (static (integer->char))
+   (export (test-macro)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defun ...                                                        */

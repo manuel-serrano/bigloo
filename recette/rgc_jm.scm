@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/rgc_jm.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/rgc_jm.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 12:14:43 1992                          */
-;*    Last change :  Wed Oct 26 08:14:02 2016 (serrano)                */
+;*    Last change :  Thu Oct  9 15:07:40 2025 (serrano)                */
 ;*                                                                     */
 ;*    Un essai de grammaire de Jean-Marie qui faisait planter          */
 ;*    bigloov1.0                                                       */
@@ -13,9 +13,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module rgc-jm
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-rgc-jm)))
+   (export (test-rgc-jm)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-rgc-jm ...                                                  */

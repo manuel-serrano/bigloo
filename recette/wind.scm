@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  8 19:31:00 1998                          */
-;*    Last change :  Tue Jul 22 10:01:23 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:06:03 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Wind test (dynamic-wind and unwind-protect).                     */
 ;*=====================================================================*/
@@ -12,10 +12,10 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module wind
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-wind)
-	    (test-wind-sans-handler end::procedure))
+   (export (test-wind)
+	   (test-wind-sans-handler end::procedure))
    (static (class &dummy-exn::&exception)))
 
 ;*---------------------------------------------------------------------*/

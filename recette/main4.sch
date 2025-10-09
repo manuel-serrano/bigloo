@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/main-module4.sch        */
+;*    serrano/prgm/project/bigloo/wasm/recette/main4.sch               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Wed Oct  8 14:12:11 2025                          */
-;*    Last change :  Wed Oct  8 14:12:53 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 14:58:25 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module4 directives                                               */
@@ -12,7 +12,8 @@
 (directives
    (main recette)
    
-   (import vital
+   (import utils
+	   vital
 	   bps
 	   hash
 	   bool
@@ -86,11 +87,5 @@
    
    (cond-expand
       (bigloo-jvm (import external_jvm)))
-   
-   (export (do-test name thunk good?)
-	   (test-module name file)
-	   *recette-port*
-	   *bigloo-path*
-	   *silent*)
    
    (option (bigloo-debug-set! 0)))

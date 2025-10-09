@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Wed Sep 24 18:03:46 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:11:11 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -12,26 +12,26 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module object-sans
-   (import  (main "main.scm")
-	    (object2-sans "object2_sans.scm")
-	    (object1-sans "object1_sans.scm")
-	    (object3-sans "object3_sans.scm"))
+   (import (utils "utils.scm")
+	   (object2-sans "object2_sans.scm")
+	   (object1-sans "object1_sans.scm")
+	   (object3-sans "object3_sans.scm"))
    (include "test.sch")
-   (export  (test-object-sans))
-   (static  (final-class foo-sans
-	       x::long
-	       (y::string (default "yoyo"))
-	       (z::string (default "zozo")))
-	    (class gee-sans
-	       x y)
-	    (wide-class foo/l-sans::foo-sans (dummy (default 'dummy)))
-	    (class titi-sans
-	       (x::int (default 666)))
-	    (class toto-sans::titi-sans
-	       y::char
-	       (yy::char read-only)
-	       z
-	       t))
+   (export (test-object-sans))
+   (static (final-class foo-sans
+	      x::long
+	      (y::string (default "yoyo"))
+	      (z::string (default "zozo")))
+	   (class gee-sans
+	      x y)
+	   (wide-class foo/l-sans::foo-sans (dummy (default 'dummy)))
+	   (class titi-sans
+	      (x::int (default 666)))
+	   (class toto-sans::titi-sans
+	      y::char
+	      (yy::char read-only)
+	      z
+	      t))
    (export (class value-sans)
 	   (class fin-sans::value-sans x)
 	   (class sfin-sans::fin-sans y)

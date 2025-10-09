@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/read.scm              */
+;*    serrano/prgm/project/bigloo/wasm/recette/read.scm                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 22 16:17:03 1992                          */
-;*    Last change :  Mon Oct  8 08:31:43 2018 (serrano)                */
+;*    Last change :  Thu Oct  9 15:07:51 2025 (serrano)                */
 ;*                                                                     */
 ;*    Un essai de reader                                               */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module read
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-read)))
+   (export (test-read)))
  
 ;*---------------------------------------------------------------------*/
 ;*    read-test ...                                                    */

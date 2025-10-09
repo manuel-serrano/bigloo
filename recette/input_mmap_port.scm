@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Joseph Donaldson                                  */
 ;*    Creation    :  Tue Jan 16 07:26:45 2024                          */
-;*    Last change :  Mon Jan 13 13:44:01 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:06:56 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Joseph Donaldson                          */
 ;*    -------------------------------------------------------------    */
 ;*    MMAP testing                                                     */
@@ -13,9 +13,9 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module input-mmap-port
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-input-mmap-port)))
+   (export (test-input-mmap-port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-mmap ...                                                    */

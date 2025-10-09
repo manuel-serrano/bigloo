@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 14:24:02 1992                          */
-;*    Last change :  Mon Jun  7 16:56:56 2010 (serrano)                */
+;*    Last change :  Thu Oct  9 15:02:00 2025 (serrano)                */
 ;*                                                                     */
 ;*    Un essai de grammaire qui trappe                                 */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module rgc-trap
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-rgc-trap)))
+   (export (test-rgc-trap)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-test ...                                                     */

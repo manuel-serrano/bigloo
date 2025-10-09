@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Mon Jul 28 08:44:11 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:10:27 2025 (serrano)                */
 ;*                                                                     */
 ;*    Process tests                                                    */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module process
-  (import  (main "main.scm"))
+  (import (utils "utils.scm"))
   (include "test.sch")
-  (export  (test-process)))
+  (export (test-process)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-number ...                                                  */

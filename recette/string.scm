@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/string.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/string.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Sat Sep 23 09:28:16 2017 (serrano)                */
+;*    Last change :  Thu Oct  9 15:17:31 2025 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -12,7 +12,7 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module string
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
    (export  (test-string)))
 

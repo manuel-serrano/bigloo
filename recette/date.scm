@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  5 10:03:10 2003                          */
-;*    Last change :  Tue Feb  4 09:38:47 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:01:27 2025 (serrano)                */
 ;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test date features                                               */
@@ -13,9 +13,9 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module date
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-date)))
+   (export (test-date)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-date ...                                                    */

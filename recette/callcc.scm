@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/callcc.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/callcc.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 13:57:49 1992                          */
-;*    Last change :  Mon Nov 11 08:36:25 2013 (serrano)                */
+;*    Last change :  Thu Oct  9 15:04:01 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test differents call/cc                                       */
 ;*---------------------------------------------------------------------*/
@@ -12,10 +12,10 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module callcc
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-callcc)
-	    (plante-1)))
+   (export (test-callcc)
+	   (plante-1)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cons-gd ...                                                      */

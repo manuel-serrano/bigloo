@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 13 05:06:17 2008                          */
-;*    Last change :  Fri Jun 20 14:27:09 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:08:55 2025 (serrano)                */
 ;*    Copyright   :  2008-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test bignums                                                     */
@@ -13,7 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module bignum
-   (import (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
    (export (test-bignum)))
 

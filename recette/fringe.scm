@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/fringe.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/fringe.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 21 16:01:48 1992                          */
-;*    Last change :  Mon Feb 28 15:57:17 2005 (serrano)                */
+;*    Last change :  Thu Oct  9 15:03:21 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test same fringe (de luis mateu)                              */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module fringe
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-fringe)))
+   (export (test-fringe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-fringe ...                                                  */

@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/vararity.scm                 */
+;*    serrano/prgm/project/bigloo/wasm/recette/vararity.scm            */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 18 15:32:05 1992                          */
-;*    Last change :  Sun Dec 18 07:28:10 2005 (serrano)                */
+;*    Last change :  Thu Oct  9 15:02:50 2025 (serrano)                */
 ;*                                                                     */
 ;*    Les tests sur les aritees variables                              */
 ;*---------------------------------------------------------------------*/
@@ -12,11 +12,11 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module vararity
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-vararity)
-	    (dsssl3 a #!optional b (c 'c) (d 'd))
-	    (dsssl3b a #!key b (c 'c) (d 'd))))
+   (export (test-vararity)
+	   (dsssl3 a #!optional b (c 'c) (d 'd))
+	   (dsssl3b a #!key b (c 'c) (d 'd))))
 
 ;*---------------------------------------------------------------------*/
 ;*    test 1.                                                          */

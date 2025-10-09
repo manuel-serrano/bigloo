@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/rgc_eval.scm                 */
+;*    serrano/prgm/project/bigloo/wasm/recette/rgc_eval.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 08:54:00 1994                          */
-;*    Last change :  Mon Nov 14 14:00:29 2011 (serrano)                */
+;*    Last change :  Thu Oct  9 15:09:36 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    On test rgc sous eval                                            */
 ;*=====================================================================*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module rgc-eval
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-rgc-eval)))
+   (export (test-rgc-eval)))
 	    
 ;*---------------------------------------------------------------------*/
 ;*    Le test                                                          */

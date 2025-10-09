@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/hash.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/hash.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 26 11:50:50 1994                          */
-;*    Last change :  Thu Sep 15 16:06:33 2011 (serrano)                */
+;*    Last change :  Thu Oct  9 15:05:22 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    On test les tables de hash                                       */
 ;*=====================================================================*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module hash
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-hash)))
+   (export (test-hash)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test1-new ...                                                    */

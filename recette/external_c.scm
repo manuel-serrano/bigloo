@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/external_c.scm               */
+;*    serrano/prgm/project/bigloo/wasm/recette/external_c.scm          */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 19 15:38:42 1992                          */
-;*    Last change :  Wed Mar 30 18:28:00 2011 (serrano)                */
+;*    Last change :  Thu Oct  9 15:11:54 2025 (serrano)                */
 ;*                                                                     */
 ;*    Le fichier principale de test des foreign                        */
 ;*---------------------------------------------------------------------*/
@@ -13,43 +13,43 @@
 ;*---------------------------------------------------------------------*/
 (module external
    (include "test.sch") 
-   (import  (bis big-file "big_file.scm")
-	    (main "main.scm"))
-   (export  (test-external))
-   (extern  (macro sprn::int (::string ::string . ::long) "sprintf"))
+   (import (bis big-file "big_file.scm")
+	   (utils "utils.scm"))
+   (export (test-external))
+   (extern (macro sprn::int (::string ::string . ::long) "sprintf"))
    (foreign (string hux (string) "hux")
-            (int var "var")
-	    (include "c-file.h")
-	    (type el (struct (int key "key") (el* next "next")) "struct el")
-	    (type tab (pointer int) "int *")
-	    (int sum-el (el*) "sum_el")
-	    (el*  define-el (int) "define_el")
-	    (double sum-tab (tab int) "sum_tab")
-	    (el*  make-dummy-el () "make_dummy_el")
-	    
-	    (type fun (function int (int)) "int (*$)(int)")
-	    (type fun2 fun "int (*$)(int)")
-	    (fun f1 "f1")
-	    (fun f2 "f1")
-	    
-	    (type p0 (pointer int) "int *")
-	    (type p1 (array int) "int $[22]")
-	    
-	    (type s0 (struct (int key "key") (el* next "next")) "struct el")
-	    (type s1* s0* "EL *")
-	    
-	    (type pt (struct (int x "x") (int y "y")) "Point")
-	    (type pt-foo* pt* "Point *")
-	    (type pt-foo-2* pt-foo* "Point *")
-	    (type pt-bar pt* "Point *")
-	    (type pt-bar* (pointer pt-bar) "Point **")
-	    
-	    (type ->int (function int ()) "int (*$)()")
-	    (type ->int-array-128 (array ->int) "int (*$[ 128 ])()")
-	    (type ->int* (pointer ->int) "int (*(*$))()")
-
-	    (type s (struct (int x "x") (int y "y")) "struct s")
-	    (type a (array s) "struct s[ 10 ]")))
+      (int var "var")
+      (include "c-file.h")
+      (type el (struct (int key "key") (el* next "next")) "struct el")
+      (type tab (pointer int) "int *")
+      (int sum-el (el*) "sum_el")
+      (el*  define-el (int) "define_el")
+      (double sum-tab (tab int) "sum_tab")
+      (el*  make-dummy-el () "make_dummy_el")
+      
+      (type fun (function int (int)) "int (*$)(int)")
+      (type fun2 fun "int (*$)(int)")
+      (fun f1 "f1")
+      (fun f2 "f1")
+      
+      (type p0 (pointer int) "int *")
+      (type p1 (array int) "int $[22]")
+      
+      (type s0 (struct (int key "key") (el* next "next")) "struct el")
+      (type s1* s0* "EL *")
+      
+      (type pt (struct (int x "x") (int y "y")) "Point")
+      (type pt-foo* pt* "Point *")
+      (type pt-foo-2* pt-foo* "Point *")
+      (type pt-bar pt* "Point *")
+      (type pt-bar* (pointer pt-bar) "Point **")
+      
+      (type ->int (function int ()) "int (*$)()")
+      (type ->int-array-128 (array ->int) "int (*$[ 128 ])()")
+      (type ->int* (pointer ->int) "int (*(*$))()")
+      
+      (type s (struct (int x "x") (int y "y")) "struct s")
+      (type a (array s) "struct s[ 10 ]")))
 
 ;*---------------------------------------------------------------------*/
 ;*    foo ... ...                                                      */

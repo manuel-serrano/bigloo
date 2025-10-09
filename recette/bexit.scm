@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 12 10:06:03 1992                          */
-;*    Last change :  Fri Jun 20 08:33:54 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:05:53 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les trois sortes de `bind-exit'                          */
 ;*---------------------------------------------------------------------*/
@@ -12,10 +12,10 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module bind-exit
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-bind-exit)
-	    (bug-bexit-1 x)))
+   (export (test-bind-exit)
+	   (bug-bexit-1 x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test0 ...                                                        */

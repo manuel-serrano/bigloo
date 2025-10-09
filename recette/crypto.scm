@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/crypto.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/crypto.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May  4 08:30:19 2009                          */
-;*    Last change :  Mon May 18 19:57:52 2009 (serrano)                */
-;*    Copyright   :  2009 Manuel Serrano                               */
+;*    Last change :  Thu Oct  9 15:03:41 2025 (serrano)                */
+;*    Copyright   :  2009-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Testing cryptography                                             */
 ;*=====================================================================*/
@@ -13,9 +13,9 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module crypto
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-crypto)))
+   (export (test-crypto)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-crypto ...                                                  */

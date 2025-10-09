@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  8 11:03:03 1994                          */
-;*    Last change :  Sun Jan  5 20:09:56 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:01:53 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Quelques tests d'rgc                                             */
 ;*=====================================================================*/
@@ -13,9 +13,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module rgc
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-rgc)))
+   (export (test-rgc)))
 
 ;; cette grammaire plante tous les bigloo (a la compilation)
 ;; jusqu'a la version 1.6c

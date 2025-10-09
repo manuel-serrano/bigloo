@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/pregexp.scm                  */
+;*    serrano/prgm/project/bigloo/wasm/recette/pregexp.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 28 16:04:55 1998                          */
-;*    Last change :  Fri Dec  9 11:08:23 2011 (serrano)                */
+;*    Last change :  Thu Oct  9 15:04:28 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Portable regular expressions test suit for Scheme                */
 ;*    Dorai Sitaram                                                    */
@@ -15,9 +15,9 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module pregexp
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-pregexp)))
+   (export (test-pregexp)))
 
 (define-macro (pregexp-test . ee)
    `(begin

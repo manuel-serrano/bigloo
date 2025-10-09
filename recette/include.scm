@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/include.scm                  */
+;*    serrano/prgm/project/bigloo/wasm/recette/include.scm             */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 23 14:14:44 1993                          */
-;*    Last change :  Wed Apr  1 14:08:48 1998 (serrano)                */
+;*    Last change :  Thu Oct  9 15:09:26 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test l'inclusion                                              */
 ;*=====================================================================*/
@@ -12,11 +12,11 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module include
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch"
 	    "include.sch"
 	    "include2.sch")
-   (export  (test-include)))
+   (export (test-include)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-include ...                                                 */

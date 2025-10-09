@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct 17 07:53:29 2002                          */
-;*    Last change :  Tue Feb  4 16:35:04 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:01:14 2025 (serrano)                */
 ;*    Copyright   :  2002-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test system features                                             */
@@ -13,9 +13,9 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module system
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-system)))
+   (export (test-system)))
 
 ;*---------------------------------------------------------------------*/
 ;*    fname ...                                                        */

@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/kapture.scm                  */
+;*    serrano/prgm/project/bigloo/wasm/recette/kapture.scm             */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 11 10:37:55 1992                          */
-;*    Last change :  Wed Jan 22 08:17:43 2014 (serrano)                */
+;*    Last change :  Thu Oct  9 15:05:08 2025 (serrano)                */
 ;*                                                                     */
 ;*    Des tests de capture de variables                                */
 ;*---------------------------------------------------------------------*/
@@ -12,11 +12,11 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module kapture
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-kapture)
-	    (plante-9 file))
-   (option  (set! *inlining?* #f)))
+   (export (test-kapture)
+	   (plante-9 file))
+   (option (set! *inlining?* #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test1 ...                                                        */

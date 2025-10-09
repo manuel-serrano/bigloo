@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/define.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/define.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan  7 16:20:22 1993                          */
-;*    Last change :  Fri Aug 24 17:02:55 2012 (serrano)                */
+;*    Last change :  Thu Oct  9 15:03:34 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les `define's internes                                   */
 ;*---------------------------------------------------------------------*/
@@ -12,10 +12,10 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module define
-   (import  (main "main.scm")
-	    (fun  module "module.scm"))
+   (import (utils "utils.scm")
+	   (fun  module "module.scm"))
    (include "test.sch")
-   (export  (test-define)))
+   (export (test-define)))
 
 ;*---------------------------------------------------------------------*/
 ;*    aliasing                                                         */

@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  1 09:29:00 1992                          */
-;*    Last change :  Thu Sep  4 11:55:26 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:09:03 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les caracteres                                           */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module bchar
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-char)))
+   (export (test-char)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-char ...                                                    */

@@ -1,5 +1,5 @@
 (module bps
-   (import (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
    (export (test-bps)) )
 

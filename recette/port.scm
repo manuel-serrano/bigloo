@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */
-;*    Last change :  Thu Sep 20 12:47:11 2018 (serrano)                */
+;*    Last change :  Thu Oct  9 15:02:27 2025 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations simples sur les ports                    */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module input-port
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-input-port)))
+   (export (test-input-port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test1 ...                                                        */

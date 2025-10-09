@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/cell.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/cell.scm                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 29 17:16:25 1992                          */
-;*    Last change :  Thu Jul 26 10:32:01 2001 (serrano)                */
+;*    Last change :  Thu Oct  9 15:00:26 2025 (serrano)                */
 ;*                                                                     */
 ;*    Un essai de fonction qui kapture des variables qui doivent       */
 ;*    etre placees dans des variables d'indirection.                   */
@@ -14,7 +14,7 @@
 ;*    le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module glo_cell
-   (import  (main "main.scm"))
+   (import  (utils "utils.scm"))
    (static  (test1 a b)
 	    (test2 a b . c)
 	    (test3 . c))

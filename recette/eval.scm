@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/eval.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/eval.scm                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 14:42:03 1992                          */
-;*    Last change :  Sun Nov  5 20:43:11 2017 (serrano)                */
+;*    Last change :  Thu Oct  9 15:08:10 2025 (serrano)                */
 ;*                                                                     */
 ;*    On fait des tests pour tester eval.                              */
 ;*---------------------------------------------------------------------*/
@@ -12,24 +12,24 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module reval
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch"
 	    "eval.sch")
-   (export  (test-eval))
-   (export  *g* foo *f* bar)
-   (static  (class evpt x (y read-only (default 10))))
-   (eval    (export *g*)
-	    (export foo)
-	    (export *f*)
-	    (export bar)
-	    (export gee)
-	    (export evpt?)
-	    (export make-evpt)
-	    (export evpt-x)
-	    (export evpt-x-set!)
-	    (export evpt-y)
-	    (export-exports)
-	    (class evpt)))
+   (export (test-eval))
+   (export *g* foo *f* bar)
+   (static (class evpt x (y read-only (default 10))))
+   (eval (export *g*)
+      (export foo)
+      (export *f*)
+      (export bar)
+      (export gee)
+      (export evpt?)
+      (export make-evpt)
+      (export evpt-x)
+      (export evpt-x-set!)
+      (export evpt-y)
+      (export-exports)
+      (class evpt)))
 
 (define (eval-fun) #t)
 

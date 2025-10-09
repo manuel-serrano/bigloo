@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/cse.scm                      */
+;*    serrano/prgm/project/bigloo/wasm/recette/cse.scm                 */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 17:25:53 1993                          */
-;*    Last change :  Wed Mar 30 08:44:30 2011 (serrano)                */
+;*    Last change :  Thu Oct  9 15:09:14 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test l'elimination de sous expression commune.                */
 ;*=====================================================================*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module cse
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-cse)))
+   (export (test-cse)))
 
 ;*---------------------------------------------------------------------*/
 ;*    foo ...                                                          */

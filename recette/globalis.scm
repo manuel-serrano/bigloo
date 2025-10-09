@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 11:30:18 1992                          */
-;*    Last change :  Mon Oct 17 10:04:27 2016 (serrano)                */
+;*    Last change :  Thu Oct  9 15:00:30 2025 (serrano)                */
 ;*                                                                     */
 ;*    Des tests qui globalisent des fonctions locales par la passe Glo */
 ;*---------------------------------------------------------------------*/
@@ -12,7 +12,7 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module globalisation
-   (import  (main "main.scm"))
+   (import  (utils "utils.scm"))
    (include "test.sch")
    (export  (test-globalisation)
 	    (plante-2 x)

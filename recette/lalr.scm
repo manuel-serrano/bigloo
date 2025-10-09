@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/lalr.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/lalr.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 15 12:20:33 2002                          */
-;*    Last change :  Fri Mar 15 12:27:34 2002 (serrano)                */
-;*    Copyright   :  2002 Manuel Serrano                               */
+;*    Last change :  Thu Oct  9 15:06:46 2025 (serrano)                */
+;*    Copyright   :  2002-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Lalr grammar tests                                               */
 ;*=====================================================================*/
@@ -13,9 +13,9 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module lalr
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-lalr)))
+   (export (test-lalr)))
 
 (define rg
    (regular-grammar ((number (posix "[0-9]+"))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Oct  9 07:51:17 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 14:50:56 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1057,7 +1057,21 @@
 			    (multiple-value-bind (id decl expr)
 			       (class4 expr k 'define-class)
 			       (hashtable-symbol-put! (-> mod decls) id decl)
-			       (hashtable-symbol-put! (-> mod exports) id decl)
+			       (set! nbody (cons expr nbody))))
+			   ((wide-class ?k . ?rest)
+			    (multiple-value-bind (id decl expr)
+			       (class4 expr k 'define-wide-class)
+			       (hashtable-symbol-put! (-> mod decls) id decl)
+			       (set! nbody (cons expr nbody))))
+			   ((final-class ?k . ?rest)
+			    (multiple-value-bind (id decl expr)
+			       (class4 expr k 'define-final-class)
+			       (hashtable-symbol-put! (-> mod decls) id decl)
+			       (set! nbody (cons expr nbody))))
+			   ((abstract-class ?k . ?rest)
+			    (multiple-value-bind (id decl expr)
+			       (class4 expr k 'define-abstract-class)
+			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (set! nbody (cons expr nbody))))))
 	 (cdr clause))
 
@@ -1087,14 +1101,23 @@
 			       (hashtable-symbol-put! (-> mod exports) id decl)
 			       (set! nbody (cons expr nbody))))
 			   ((wide-class ?k . ?rest)
-			    (tprint "TODO export4 class...")
-			    '(error "export4" "Class not implemented" expr))
+			    (multiple-value-bind (id decl expr)
+			       (class4 expr k 'define-wide-class)
+			       (hashtable-symbol-put! (-> mod decls) id decl)
+			       (hashtable-symbol-put! (-> mod exports) id decl)
+			       (set! nbody (cons expr nbody))))
 			   ((final-class ?k . ?rest)
-			    (tprint "TODO export4 class...")
-			    '(error "export4" "Class not implemented" expr))
+			    (multiple-value-bind (id decl expr)
+			       (class4 expr k 'define-final-class)
+			       (hashtable-symbol-put! (-> mod decls) id decl)
+			       (hashtable-symbol-put! (-> mod exports) id decl)
+			       (set! nbody (cons expr nbody))))
 			   ((abstract-class ?k . ?rest)
-			    (tprint "TODO export4 class...")
-			    '(error "export4" "Class not implemented" expr))
+			    (multiple-value-bind (id decl expr)
+			       (class4 expr k 'define-abstract-class)
+			       (hashtable-symbol-put! (-> mod decls) id decl)
+			       (hashtable-symbol-put! (-> mod exports) id decl)
+			       (set! nbody (cons expr nbody))))
 			   ((?id . ?args)
 			    (multiple-value-bind (id decl)
 			       (procedure4 expr id args
@@ -1124,7 +1147,6 @@
 			       (((directives . ?clauses) . ?rest)
 				(append
 				   (append-map (lambda (c)
-						  (tprint "c=" c)
 						  (module4-parse-clause c clause
 						     mod lib-path cache-dir
 						     expand))
@@ -1362,9 +1384,11 @@
 	 ((null? args)
 	  '())
 	 ((pair? args)
-	  (multiple-value-bind (name type)
-	     (parse-ident (car args) args)
-	     (cons name (args-id (cdr args)))))
+	  (if (not (symbol? (car args)))
+	      (args-id (cdr args))
+	      (multiple-value-bind (name type)
+		 (parse-ident (car args) args)
+		 (cons name (args-id (cdr args))))))
 	 (else
 	  (multiple-value-bind (name type)
 	     (parse-ident args args)
@@ -1378,7 +1402,7 @@
 	 name))
 	  
    (define (bindings-id bindings)
-      (append-map binding-id bindings))
+      (map binding-id bindings))
    
    (define (ronly-exprs! exprs env defs)
       (let loop ((exprs exprs))

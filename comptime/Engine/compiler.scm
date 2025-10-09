@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Oct  9 08:04:16 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 14:36:20 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -52,6 +52,7 @@
 	    module_include
 	    module_alibrary
 	    module_foreign
+	    module_eval
 	    expand_eps
 	    expand_install
 	    init_main
@@ -522,8 +523,9 @@
       (set! *module-version* 5)
       (register-srfi! 'bigloo-module5)
       
-      (module5-register-plugin! 'option (lambda (m x) (for-each eval x)))
+      (module5-register-plugin! 'option (lambda (m x) (for-each eval (cdr x))))
       (module5-register-plugin! 'pragma module5-plugin-pragma)
+      (module5-register-plugin! 'eval module5-plugin-eval)
       (module5-register-extern-plugin! "C" module5-extern-plugin-c)
       (module5-register-extern-plugin! "java" module5-extern-plugin-java)
       (module5-register-extern-plugin! "wasm" module5-extern-plugin-wasm)
@@ -531,6 +533,7 @@
       (module4-register-plugin! 'extern module4-extern-plugin-c)
       (module4-register-plugin! 'java module4-extern-plugin-java)
       (module4-register-plugin! 'type module4-plugin-type)
+      (module4-register-plugin! 'eval module4-plugin-eval)
 
       (let* ((expr-mod (car expr))
 	     (expr-body (cdr expr))
@@ -606,6 +609,9 @@
 	 (restore-additional-heaps)
 	 (additional-heap-restore-globals!)
 	 (unit-sexp*-add-head! tu (get-alibrary-inits))
+
+	 ;; eval code
+	 (eval-finalizer)
 	 
 	 ;; user pass
 	 (user-walk tu)

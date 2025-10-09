@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/bool.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/bool.scm                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:16:12 1992                          */
-;*    Last change :  Wed Apr  1 14:05:49 1998 (serrano)                */
+;*    Last change :  Thu Oct  9 15:00:14 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations booleenes.                                */
 ;*---------------------------------------------------------------------*/
@@ -12,7 +12,7 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module bool
-   (import  (main "main.scm"))
+   (import  (utils "utils.scm"))
    (include "test.sch")
    (export  (test-bool)
 	    (encore-faux x)))

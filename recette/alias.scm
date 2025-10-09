@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/alias.scm                    */
+;*    serrano/prgm/project/bigloo/wasm/recette/alias.scm               */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 15 13:30:45 1993                          */
-;*    Last change :  Mon Jun  7 16:58:17 2010 (serrano)                */
+;*    Last change :  Thu Oct  9 15:07:08 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les alias                                                */
 ;*=====================================================================*/
@@ -12,8 +12,8 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module alias
-   (import  (main "main.scm")
-	    (alias-aux "alias_aux.scm"))
+   (import (utils "utils.scm")
+	   (alias-aux "alias_aux.scm"))
    (include "test.sch")
    (export (test-alias)))
 

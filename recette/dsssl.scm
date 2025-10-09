@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 31 09:21:59 1998                          */
-;*    Last change :  Tue Feb  4 08:45:25 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:09:51 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    DSSSL funcall tests                                              */
 ;*=====================================================================*/
@@ -12,25 +12,25 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module dsssl
-   (import  (main "main.scm")
-	    (vararity "vararity.scm"))
+   (import (utils "utils.scm")
+	   (vararity "vararity.scm"))
    (include "test.sch")
-   (export  (test-dsssl)
-	    (foo ::int y #!optional z (zz 1) #!rest r #!key i (j 1))
-	    (dsssl2 a #!optional b (c 'c) (d 'd))
-	    (dsssl4 a #!key b (c 'c) (d 'd))
-	    (dsssl6 #!optional (a 'a) b)
-	    (dsssl7 #!optional (dsssl7 2) (z dsssl7))
-	    (dsssl8 #!key (y 2) (z y))
-	    (dsssl9 ::input-port ::output-port #!optional (s 1) (o -1))
-	    (dsssl11 x y #!optional z #!key i (j 1) #!rest r)
-	    (dsssl-lexical b c #!optional (=::procedure equal?))
-	    (dt->sec a #!key (x #t)))
-   (eval    (export dsssl2)
-	    (export dsssl3)
-	    (export dsssl3b)
-	    (export dsssl4)
-	    (export dsssl6)))
+   (export (test-dsssl)
+	   (foo ::int y #!optional z (zz 1) #!rest r #!key i (j 1))
+	   (dsssl2 a #!optional b (c 'c) (d 'd))
+	   (dsssl4 a #!key b (c 'c) (d 'd))
+	   (dsssl6 #!optional (a 'a) b)
+	   (dsssl7 #!optional (dsssl7 2) (z dsssl7))
+	   (dsssl8 #!key (y 2) (z y))
+	   (dsssl9 ::input-port ::output-port #!optional (s 1) (o -1))
+	   (dsssl11 x y #!optional z #!key i (j 1) #!rest r)
+	   (dsssl-lexical b c #!optional (=::procedure equal?))
+	   (dt->sec a #!key (x #t)))
+   (eval (export dsssl2)
+      (export dsssl3)
+      (export dsssl3b)
+      (export dsssl4)
+      (export dsssl6)))
 
 (define (foo x y #!optional z (zz 1) #!rest r #!key i (j 1))
    (let ((f (lambda (z y #!key (i 8)) (list z y i))))

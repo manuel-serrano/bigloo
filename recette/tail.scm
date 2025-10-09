@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/tail.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/tail.scm                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  1 17:44:12 1992                          */
-;*    Last change :  Thu Dec 31 18:11:43 2015 (serrano)                */
+;*    Last change :  Thu Oct  9 15:02:35 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test la facon de gerer les appels recursifs terminaux.        */
 ;*---------------------------------------------------------------------*/
@@ -12,7 +12,7 @@
 ;*    le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module tail
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
    (option (set! *optim* 1))
    (export (test-tail)))

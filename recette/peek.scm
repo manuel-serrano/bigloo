@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/peek.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/peek.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Mike Levy                                         */
 ;*    Creation    :  Sat Apr 17 09:05:31 1999                          */
-;*    Last change :  Thu Sep 23 19:05:56 2004 (serrano)                */
+;*    Last change :  Thu Oct  9 15:02:58 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Testing peek-char                                                */
 ;*=====================================================================*/
@@ -12,9 +12,9 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module peek
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-peek)))
+   (export (test-peek)))
 
 ;; test the peek-char bug by reading a writing then reading a long file
 ;; 

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/0cfa.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/cfa.scm                 */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  7 11:13:48 1993                          */
-;*    Last change :  Sat Jun  4 07:22:11 2016 (serrano)                */
+;*    Last change :  Thu Oct  9 15:03:52 2025 (serrano)                */
 ;*                                                                     */
 ;*    Quelques tests sur la 0cfa                                       */
 ;*=====================================================================*/
@@ -12,13 +12,13 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module 0cfa
-   (import  (main "main.scm")
-	    (module "module.scm")
-	    (cfa2 "cfa2.scm"))
+   (import (utils "utils.scm")
+	   (module "module.scm")
+	   (cfa2 "cfa2.scm"))
    (include "test.sch")
-   (export  (test-0cfa)
-	    (cfa-dataflow-error ::obj ::procedure)
-	    sc-vm))
+   (export (test-0cfa)
+	   (cfa-dataflow-error ::obj ::procedure)
+	   sc-vm))
 
 (define-macro (O4)
    (set! *optim* 4)

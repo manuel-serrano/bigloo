@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 11:59:37 1992                          */
-;*    Last change :  Thu Jun 19 11:11:58 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:05:28 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test un peu les flotants (il le faut bien).                   */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module flonum
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-flonum)))
+   (export (test-flonum)))
 
 ;*---------------------------------------------------------------------*/
 ;*    fact ...                                                         */

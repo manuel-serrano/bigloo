@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:21:42 1992                          */
-;*    Last change :  Sat Dec 21 09:46:43 2024 (serrano)                */
+;*    Last change :  Thu Oct  9 15:00:21 2025 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations primitives sur les listes                */
 ;*---------------------------------------------------------------------*/
@@ -12,7 +12,7 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module list
-   (import  (main "main.scm"))
+   (import  (utils "utils.scm"))
    (include "test.sch")
    (export  (test-list))
    (option  (set! *shared-cnst?* #f)))

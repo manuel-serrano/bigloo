@@ -1,5 +1,5 @@
 (module weakptr
- (import (main "main.scm"))
+ (import (utils "utils.scm"))
  (include "test.sch")
  (export (test-weakptr)))
 

@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/error.scm             */
+;*    serrano/prgm/project/bigloo/wasm/recette/error.scm               */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 16 15:41:47 1993                          */
-;*    Last change :  Mon Jul  5 10:50:26 2021 (serrano)                */
+;*    Last change :  Thu Oct  9 15:05:36 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test le fonctionnement des `error-handler'                    */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module error
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-error)))
+   (export (test-error)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gee ...                                                          */

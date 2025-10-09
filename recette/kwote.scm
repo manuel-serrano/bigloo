@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/kwote.scm                    */
+;*    serrano/prgm/project/bigloo/wasm/recette/kwote.scm               */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:22:02 1992                          */
-;*    Last change :  Fri Jul  6 09:37:50 2001 (serrano)                */
+;*    Last change :  Thu Oct  9 15:01:46 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test l'expansion des kwote                                    */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module kwote
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-kwote)))
+   (export (test-kwote)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-kwote ...                                                   */

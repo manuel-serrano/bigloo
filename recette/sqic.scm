@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/sqic.scm                     */
+;*    serrano/prgm/project/bigloo/wasm/recette/sqic.scm                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 14:27:18 1992                          */
-;*    Last change :  Thu Nov  3 14:19:38 2011 (serrano)                */
+;*    Last change :  Thu Oct  9 15:06:12 2025 (serrano)                */
 ;*                                                                     */
 ;*    On fait quelque tests qui portent sur la phase sqic->c.          */
 ;*---------------------------------------------------------------------*/
@@ -12,16 +12,16 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module sqic
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-sqic)
-	    (filter@types x)
-	    (2-171-concat_228@baltree x1 x2)
-	    (bug-integ-1)
-	    (stupid)
-	    (dummy)
-	    (generic-write x)
-	    (generic-write-2 x)))
+   (export (test-sqic)
+	   (filter@types x)
+	   (2-171-concat_228@baltree x1 x2)
+	   (bug-integ-1)
+	   (stupid)
+	   (dummy)
+	   (generic-write x)
+	   (generic-write-2 x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    generic-write ...                                                */

@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 10 16:37:46 1992                          */
-;*    Last change :  Sun Jan  5 09:54:47 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:08:32 2025 (serrano)                */
 ;*                                                                     */
 ;*    Un essai de match-case                                           */
 ;*---------------------------------------------------------------------*/
@@ -12,10 +12,10 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module match
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-match)
-            (uncompilable x)))
+   (export (test-match)
+	   (uncompilable x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    match-test ...                                                   */

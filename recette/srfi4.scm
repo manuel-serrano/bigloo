@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:39:09 1992                          */
-;*    Last change :  Thu Dec 26 06:09:46 2024 (serrano)                */
+;*    Last change :  Thu Oct  9 15:01:02 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations primitives sur les vecteurs               */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module srfi4
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-srfi4)))
+   (export (test-srfi4)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-hvector ...                                                 */

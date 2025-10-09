@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Thu Oct  9 08:31:46 2025 (serrano)                */
+#*    Last change :  Thu Oct  9 14:35:05 2025 (serrano)                */
 #*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -51,7 +51,7 @@ BWASMFLAGS      = $(BFLAGS) -afile .afile-wasm -g
 #*---------------------------------------------------------------------*/
 #*    Les objects destinations                                         */
 #*---------------------------------------------------------------------*/
-ICOMMON		= vital bps bool list vector srfi4 struct print \
+ICOMMON		= utils vital bps bool list vector srfi4 struct print \
                   string kwote case bexit vararity apply \
                   globalis filtre rgc_trap rgc_jm rgc_insert port \
                   read tail sqic eval inline match letrec macro \
@@ -117,6 +117,7 @@ all: recette-c
 
 recette-c: .etags .afile-c objs_c
 	@ $(MAKE) recette
+	@ $(MAKE) recette5
 
 recette: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs_c/main.o
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $^

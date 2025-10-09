@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Module/eval.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/eval.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Thu Mar 19 12:09:34 2020 (serrano)                */
-;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Oct  9 14:38:42 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
 ;*=====================================================================*/
@@ -32,6 +32,8 @@
 	    ast_ident
 	    backend_backend)
    (export  (make-eval-compiler)
+	    (parse-eval ::pair ::pair)
+	    (eval-finalizer)
 	    (get-eval-libraries::pair-nil)
 	    (add-eval-library! ::symbol)
 	    *all-eval?*
@@ -54,7 +56,7 @@
 (define (eval-producer clause)
    (match-case clause
       ((?- . ?protos)
-       (for-each (lambda (proto) (eval-parser proto clause)) protos)
+       (for-each (lambda (proto) (parse-eval proto clause)) protos)
        '())
       (else
        (user-error "Parse error"
@@ -63,9 +65,9 @@
 		   '()))))
    
 ;*---------------------------------------------------------------------*/
-;*    eval-parser ...                                                  */
+;*    parse-eval ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (eval-parser proto clause)
+(define (parse-eval proto clause)
    (match-case proto
       ((export-all)
        (set! *all-eval?* #t))

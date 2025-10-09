@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Thu Jun 19 11:04:40 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:08:41 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les operateurs generiques sur les nombres                */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module number
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-number)))
+   (export (test-number)))
 
 ;*---------------------------------------------------------------------*/
 ;*    llong constant ...                                               */

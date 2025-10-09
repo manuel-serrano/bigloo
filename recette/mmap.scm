@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep  4 07:43:45 2005                          */
-;*    Last change :  Thu Sep  4 12:10:40 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:06:29 2025 (serrano)                */
 ;*    Copyright   :  2005-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MMAP testing                                                     */
@@ -13,9 +13,9 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module mmap
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-mmap)))
+   (export (test-mmap)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-mmap ...                                                    */

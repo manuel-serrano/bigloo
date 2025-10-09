@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/filtre.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/filtre.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug 12 16:13:39 1992                          */
-;*    Last change :  Thu Nov  3 14:18:53 2011 (serrano)                */
+;*    Last change :  Thu Oct  9 15:07:28 2025 (serrano)                */
 ;*                                                                     */
 ;*    Des tests de globalisation d'apres Christian.                    */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module filtre
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-filtre)))
+   (export (test-filtre)))
 
 ;*---------------------------------------------------------------------*/
 ;*    L'interprete                                                     */

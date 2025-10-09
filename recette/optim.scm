@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/optim.scm                    */
+;*    serrano/prgm/project/bigloo/wasm/recette/optim.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 28 16:04:55 1998                          */
-;*    Last change :  Wed Dec 26 16:44:00 2007 (serrano)                */
+;*    Last change :  Thu Oct  9 15:04:37 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `storage analysis tests'                                     */
 ;*=====================================================================*/
@@ -12,18 +12,18 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module optim
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-optim))
-   (option  (bigloo-debug-set! 0)
-	    (set! *unsafe-library* #t)
-	    (set! *unsafe-arity*   #t)
-	    (set! *unsafe-type*    #t)
-	    (set! *unsafe-eval*    #t)
-	    (set! *unsafe-struct*  #t)
-	    (set! *unsafe-range*   #t)
-	    (set! *unsafe-version* #t)
-	    (set! *optim* 6)))
+   (export (test-optim))
+   (option (bigloo-debug-set! 0)
+      (set! *unsafe-library* #t)
+      (set! *unsafe-arity*   #t)
+      (set! *unsafe-type*    #t)
+      (set! *unsafe-eval*    #t)
+      (set! *unsafe-struct*  #t)
+      (set! *unsafe-range*   #t)
+      (set! *unsafe-version* #t)
+      (set! *optim* 6)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-while ...                                                    */

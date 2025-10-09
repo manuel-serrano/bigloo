@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Sun Feb  2 09:00:35 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:00:39 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -12,7 +12,7 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module object
-   (import  (main    "main.scm")
+   (import  (utils "utils.scm")
 	    (object2 "object2.scm")
 	    (object1 "object1.scm")
 	    (object3 "object3.scm"))

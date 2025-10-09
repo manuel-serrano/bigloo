@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/object5_sans.scm      */
+;*    serrano/prgm/project/bigloo/wasm/recette/object5_sans.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 24 13:29:40 2000                          */
-;*    Last change :  Wed Feb 14 08:01:25 2018 (serrano)                */
-;*    Copyright   :  2000-18 Manuel Serrano                            */
+;*    Last change :  Thu Oct  9 15:11:46 2025 (serrano)                */
+;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Testing with-access and instantiate.                             */
 ;*=====================================================================*/
@@ -13,7 +13,7 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module object5-sans
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
    (export (test-object5-sans))
    (static (class object5-sans

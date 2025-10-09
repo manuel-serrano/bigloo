@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/struct.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/struct.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:42:44 1992                          */
-;*    Last change :  Fri Jan 11 10:37:14 2013 (serrano)                */
+;*    Last change :  Thu Oct  9 15:01:21 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test le fonctionnement des structures                         */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module struct
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-struct)))
+   (export (test-struct)))
 
 ;*---------------------------------------------------------------------*/
 ;*    La structure ...                                                 */

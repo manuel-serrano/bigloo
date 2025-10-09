@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/letrec.scm                   */
+;*    serrano/prgm/project/bigloo/wasm/recette/letrec.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 17 19:18:37 1992                          */
-;*    Last change :  Tue Apr 11 12:03:41 2017 (serrano)                */
+;*    Last change :  Thu Oct  9 15:04:58 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test `letrec'                                                 */
 ;*---------------------------------------------------------------------*/
@@ -12,10 +12,10 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module letrec
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
    (eval (export foo-loop))
-   (export  (test-letrec)))
+   (export (test-letrec)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test1 ...                                                        */

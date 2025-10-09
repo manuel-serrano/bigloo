@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/print.scm                    */
+;*    serrano/prgm/project/bigloo/wasm/recette/print.scm               */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:47:58 1992                          */
-;*    Last change :  Wed Apr  1 14:10:02 1998 (serrano)                */
+;*    Last change :  Thu Oct  9 15:01:37 2025 (serrano)                */
 ;*                                                                     */
 ;*    On affiche des objects pour voir si tous ce passe bien           */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module print
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-print)))
+   (export (test-print)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-print ...                                                   */

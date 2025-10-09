@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:58:26 1992                          */
-;*    Last change :  Thu Oct  9 08:14:46 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:04:14 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test differentes sortes d'apply                               */
 ;*---------------------------------------------------------------------*/
@@ -12,7 +12,7 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module apply
-   (import (main "main.scm")
+   (import (utils "utils.scm")
 	   (alias-aux "alias_aux.scm"))
    (extern (macro c-dummy::obj (::obj . ::obj) ""))
    (java (abstract-class c

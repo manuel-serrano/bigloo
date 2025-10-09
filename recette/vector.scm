@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:39:09 1992                          */
-;*    Last change :  Tue Dec 24 07:21:34 2024 (serrano)                */
+;*    Last change :  Thu Oct  9 15:00:48 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations primitives sur les vecteurs               */
 ;*---------------------------------------------------------------------*/
@@ -12,10 +12,10 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module vector
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
    (type (tvector array-of-int (int)))
-   (export  (test-vector)))
+   (export (test-vector)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Tvector optimization check                                       */

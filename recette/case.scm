@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 18 15:16:39 1992                          */
-;*    Last change :  Thu Sep 25 10:01:41 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 15:07:16 2025 (serrano)                */
 ;*                                                                     */
 ;*    On test le case.                                                 */
 ;*---------------------------------------------------------------------*/
@@ -12,9 +12,9 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module case
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
-   (export  (test-case)))
+   (export (test-case)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dummy-macro ...                                                  */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Wed Oct  8 14:24:14 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 14:59:52 2025 (serrano)                */
 ;*    Copyright   :  2002-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -13,7 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module vital
-   (import (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
    (export (test-vital))
    (static var))

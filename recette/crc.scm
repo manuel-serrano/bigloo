@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/crc.scm                      */
+;*    serrano/prgm/project/bigloo/wasm/recette/crc.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Thu Sep  3 12:31:31 2009                          */
-;*    Last change :  Thu Sep  3 12:31:44 2009 (serrano)                */
-;*    Copyright   :  2009 Manuel Serrano                               */
+;*    Last change :  Thu Oct  9 15:05:45 2025 (serrano)                */
+;*    Copyright   :  2009-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CRC tests                                                        */
 ;*=====================================================================*/
@@ -13,7 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module crc
-   (import (main "main.scm"))
+   (import (utils "utils.scm"))
    (include "test.sch")
    (export (test-crc)))
 

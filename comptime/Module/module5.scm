@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Oct  9 07:57:40 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 14:36:48 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -27,6 +27,7 @@
 	   module_foreign
 	   module_java
 	   module_type
+	   module_eval
 	   expand_eps
 	   ast_node
 	   ast_var
@@ -47,11 +48,13 @@
 	   (module5-object-unit ::Module)
 	   (module5-imported-inline-unit ::Module)
 	   (module5-extern-plugin-c ::Module ::pair)
-	   (module4-extern-plugin-c ::Module ::pair)
-	   (module4-extern-plugin-java ::Module ::pair)
 	   (module5-extern-plugin-java ::Module ::pair)
 	   (module5-extern-plugin-wasm ::Module ::pair)
 	   (module5-plugin-pragma ::Module ::pair)
+	   (module5-plugin-eval ::Module ::pair)
+	   (module4-extern-plugin-c ::Module ::pair)
+	   (module4-extern-plugin-java ::Module ::pair)
+	   (module4-plugin-eval ::Module ::pair)
 	   (module4-plugin-type ::Module ::pair)
 	   (module5-resolve-pragma! ::Module)
 	   (module5-heap4-modules::pair-nil)
@@ -618,6 +621,19 @@
 	  (error/loc mod "Illegal pragma clause" clause expr))))
    
    (for-each (lambda (c) (parse-clause c mod)) (cdr expr)))
+
+;*---------------------------------------------------------------------*/
+;*    module5-plugin-eval ...                                          */
+;*---------------------------------------------------------------------*/
+(define (module5-plugin-eval mod::Module expr::pair)
+   (for-each (lambda (c) (parse-eval c expr)) (cdr expr)))
+
+;*---------------------------------------------------------------------*/
+;*    module4-plugin-eval ...                                          */
+;*---------------------------------------------------------------------*/
+(define (module4-plugin-eval mod::Module expr::pair)
+   (module5-plugin-eval mod expr)
+   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-resolve-pragma! ...                                      */
