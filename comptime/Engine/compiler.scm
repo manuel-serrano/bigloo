@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Oct  9 14:36:20 2025 (serrano)                */
+;*    Last change :  Sat Oct 11 00:21:07 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -654,7 +654,7 @@
 	    (with-access::Module mod (libraries)
 	       (for-each (lambda (l) (use-library! (car l))) libraries))
 
-	    ;; generate a heap5 ondemange
+	    ;; generate a heap5 ondemande
 	    (stop-on-pass 'make-add-heap
 	       (lambda () (module5-write-heap *additional-heap-name* mod)))
 	    
