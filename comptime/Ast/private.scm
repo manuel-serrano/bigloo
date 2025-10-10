@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Sat Sep 27 07:59:57 2025 (serrano)                */
+;*    Last change :  Fri Oct 10 06:17:56 2025 (serrano)                */
 ;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -119,7 +119,7 @@
 	  (side-effect #t)
 	  (c-format "")))
       ((?- new/args ?type ?args)
-       (with-access::tclass (find-type type) (slots)
+       (with-access::tclass (find-type/expr type sexp) (slots)
 	  (instantiate::new
 	     (loc loc)
 	     (type (use-type! type loc))

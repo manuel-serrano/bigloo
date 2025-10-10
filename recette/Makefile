@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Thu Oct  9 14:35:05 2025 (serrano)                */
+#*    Last change :  Fri Oct 10 07:21:55 2025 (serrano)                */
 #*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -124,7 +124,7 @@ recette: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs_c/main.o
 	@ echo "\e[1;34m$@\e[0m done."
 
 recette5: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs_c/main5.o
-	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $^
+	$(BIGLOO) -no-auto-link-main $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $^
 	@ echo "\e[1;34m$@\e[0m done."
 
 saw:

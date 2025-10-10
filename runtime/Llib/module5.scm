@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Oct  9 14:50:56 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 16:18:57 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -100,7 +100,7 @@
 	      (decl (default #unspecified)))
 
 	   (class KDef::Def
-	      (index::long read-only)
+	      (depth::long read-only)
 	      (registration read-only)
 	      (super read-only)
 	      (ctor read-only)
@@ -119,7 +119,6 @@
 	   (module5-write-heap ::bstring ::Module)
 	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand)
 	   (module5-import-all! ::Module ::Module)
-	   ;;(module5-expander::obj ::obj ::procedure)
 	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()))
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol ::obj)
@@ -816,36 +815,14 @@
 		(unless (assq (car l) (-> mod libraries))
 		   (set! (-> mod libraries) (cons l (-> mod libraries)))))
       libs))
-   
-;*---------------------------------------------------------------------*/
-;*    module5-expander ...                                             */
-;*---------------------------------------------------------------------*/
-;* (define (module5-expander x e)                                      */
-;*    (match-case x                                                    */
-;*       ((module ?- . ?rest)                                          */
-;*        ;; module5 form                                              */
-;*        (set-cdr! (cdr x)                                            */
-;* 	  (map (lambda (x)                                             */
-;* 		  (match-case x                                        */
-;* 		     ((import ?from ())                                */
-;* 		      ;; treat import specially for the syntax () that */
-;* 		      ;; would trigger a syntax error otherwise        */
-;* 		      (set-car! (cdr x) (e from e))                    */
-;* 		      x)                                               */
-;* 		     (else                                             */
-;* 		      (e x e))))                                       */
-;* 	     rest))                                                    */
-;*        x)                                                           */
-;*       (else                                                         */
-;*        x)))                                                         */
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-expand-and-resolve! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (module5-expand-and-resolve! mod::Module init-xenv #!key (heap-modules '()))
    (unless (-> mod resolved)
-      (with-trace 'module5 "module5-expand-and-resolve!"
-	 (trace-item mod)
+      (with-trace 'module5-expand-and-resolve "module5-expand-and-resolve!"
+	 (trace-item mod " resolved=" (-> mod resolved))
 	 (trace-item "decls="
 	    (hashtable-map (-> mod decls)
 	       (lambda (k d::Decl)
@@ -866,8 +843,9 @@
 	 ;; force import the "heap-modules", i.e., the modules that
 	 ;; come from a Bigloo heap file
 	 (for-each (lambda (m) (module5-import-all! mod m)) heap-modules)
-	 (let* ((xenv (init-xenv (create-hashtable :weak 'open-string) mod))
-		(kx (make-class-expander mod xenv)))
+	 (let* ((xenv (init-xenv (make-module5-xenv) mod))
+		(kx (define-class-expander mod xenv))
+		(ko (co-instantiate-expander mod)))
 	    (install-module5-expander xenv 'define-class
 	       '(define-class) kx)
 	    (install-module5-expander xenv 'define-wide-class
@@ -876,6 +854,8 @@
 	       '(define-class) kx)
 	    (install-module5-expander xenv 'define-abstract-class
 	       '(define-class) kx)
+	    (install-module5-expander xenv 'co-instantiate
+	       '(co-instantiate) ko)
 	    (hashtable-for-each (-> mod decls)
 	       (lambda (k d::Decl)
 		  (with-access::Decl d ((imod mod) alias id def)
@@ -934,6 +914,14 @@
 ;*    module4-parse ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (module4-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand)
+
+   (define (define-class? x)
+      (match-case x
+	 ((define-class . ?-) #t)
+	 ((define-wide-class . ?-) #t)
+	 ((define-final-class . ?-) #t)
+	 ((define-abstract-class . ?-) #t)
+	 (else #f)))
    
    (define (parse4 id path clauses expr body)
       (let ((mod (instantiate::Module
@@ -952,12 +940,14 @@
 			 id opath)
 		      path expr))
 		(hashtable-put! *modules-by-id* (symbol->string id) mod)))
-	 (let ((nbody (append-map (lambda (c)
-				     (module4-parse-clause c expr mod
-					lib-path cache-dir expand))
-			 clauses)))
+	 (let* ((nbody (append-map (lambda (c)
+				      (module4-parse-clause c expr mod
+					 lib-path cache-dir expand))
+			  clauses))
+		(nclasses (filter define-class? nbody))
+		(others (filter (lambda (x) (not (define-class? x))) nbody)))
 	    (with-access::Module mod (body)
-	       (set! body (append! nbody body))))
+	       (set! body (append! nclasses (append! others body)))))
 	 (with-access::Module mod (inits)
 	    (set! inits (delete-duplicates! inits)))
 	 mod))
@@ -1034,19 +1024,72 @@
 			(expr expr))))
 	    (values name decl))))
 
-   (define (class4 expr id kind)
+   (define (class4 expr id kind scope)
       (multiple-value-bind (name type)
 	 (parse-ident id expr)
 	 (let ((decl (instantiate::Decl
 			(id name)
 			(alias name)
 			(mod mod)
-			(scope 'export)
+			(scope scope)
 			(ronly #t)
 			(def #unspecified)
 			(expr expr))))
-	    (values name decl `(,kind ,@(cdr expr))))))
+	    (values name decl
+	       (localize `(,kind ,@(cdr expr)) expr)))))
 
+   (define (parse-import-all id path)
+      (let ((imod::Module (module4-read path
+			     :lib-path lib-path
+			     :cache-dir cache-dir
+			     :expand expand)))
+	 (hashtable-for-each (-> imod exports)
+	    (lambda (key d::Decl)
+	       (let* ((alias (if id
+				 (string->symbol
+				    (format "~a.~a"
+				       id (-> d alias)))
+				 (-> d alias)))
+		      (nd (duplicate::Decl d
+			     (alias alias)
+			     (scope 'import))))
+		  (hashtable-put! (-> mod decls) key nd)
+		  (hashtable-put! (-> mod imports) key nd))))
+	 (module-add-libraries! mod (-> imod libraries))
+	 (set! (-> mod inits)
+	    (append! (-> mod inits) (list imod)))))
+
+   (define (parse-import-some syms id path)
+      (let ((imod::Module (module4-read path
+			     :lib-path lib-path
+			     :cache-dir cache-dir
+			     :expand expand)))
+	 (hashtable-for-each (-> imod exports)
+	    (lambda (key d::Decl)
+	       (when (memq (-> d id) syms)
+		  (let* ((alias (if id
+				    (string->symbol
+				       (format "~a.~a"
+					  id (-> d alias)))
+				    (-> d alias)))
+			 (nd (duplicate::Decl d
+				(alias alias)
+				(scope 'import))))
+		     (hashtable-put! (-> mod decls) key nd)
+		     (hashtable-put! (-> mod imports) key nd)))))
+	 (module-add-libraries! mod (-> imod libraries))
+	 (set! (-> mod inits)
+	    (append! (-> mod inits) (list imod)))))
+   
+   (define (parse-import import::pair-nil expr::pair mod::Module expand)
+      (match-case import
+	 (((and (? symbol?) ?id) (and (? string?) ?path))
+	  (parse-import-all id path))
+	 ((??- (and (? symbol?) ?id) (and (? string?) ?path))
+	  (parse-import-some (cddr (reverse import)) id path))
+	 (else
+	  (tprint "parse-import (4) not implemented " import))))
+	  
    (define (parse-static::pair-nil clause expr::pair mod::Module expand)
       
       (define nbody '())
@@ -1055,22 +1098,22 @@
 			(match-case expr
 			   ((class ?k . ?rest)
 			    (multiple-value-bind (id decl expr)
-			       (class4 expr k 'define-class)
+			       (class4 expr k 'define-class 'static)
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (set! nbody (cons expr nbody))))
 			   ((wide-class ?k . ?rest)
 			    (multiple-value-bind (id decl expr)
-			       (class4 expr k 'define-wide-class)
+			       (class4 expr k 'define-wide-class 'static)
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (set! nbody (cons expr nbody))))
 			   ((final-class ?k . ?rest)
 			    (multiple-value-bind (id decl expr)
-			       (class4 expr k 'define-final-class)
+			       (class4 expr k 'define-final-class 'static)
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (set! nbody (cons expr nbody))))
 			   ((abstract-class ?k . ?rest)
 			    (multiple-value-bind (id decl expr)
-			       (class4 expr k 'define-abstract-class)
+			       (class4 expr k 'define-abstract-class 'static)
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (set! nbody (cons expr nbody))))))
 	 (cdr clause))
@@ -1096,25 +1139,25 @@
 			       (hashtable-symbol-put! (-> mod exports) id decl)))
 			   ((class ?k . ?rest)
 			    (multiple-value-bind (id decl expr)
-			       (class4 expr k 'define-class)
+			       (class4 expr k 'define-class 'export)
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (hashtable-symbol-put! (-> mod exports) id decl)
 			       (set! nbody (cons expr nbody))))
 			   ((wide-class ?k . ?rest)
 			    (multiple-value-bind (id decl expr)
-			       (class4 expr k 'define-wide-class)
+			       (class4 expr k 'define-wide-class 'export)
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (hashtable-symbol-put! (-> mod exports) id decl)
 			       (set! nbody (cons expr nbody))))
 			   ((final-class ?k . ?rest)
 			    (multiple-value-bind (id decl expr)
-			       (class4 expr k 'define-final-class)
+			       (class4 expr k 'define-final-class 'export)
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (hashtable-symbol-put! (-> mod exports) id decl)
 			       (set! nbody (cons expr nbody))))
 			   ((abstract-class ?k . ?rest)
 			    (multiple-value-bind (id decl expr)
-			       (class4 expr k 'define-abstract-class)
+			       (class4 expr k 'define-abstract-class 'export)
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (hashtable-symbol-put! (-> mod exports) id decl)
 			       (set! nbody (cons expr nbody))))
@@ -1145,7 +1188,7 @@
 					 (lambda (p) (port->sexp-list p #t)))))
 			    (match-case exprs
 			       (((directives . ?clauses) . ?rest)
-				(append
+				(append 
 				   (append-map (lambda (c)
 						  (module4-parse-clause c clause
 						     mod lib-path cache-dir
@@ -1169,17 +1212,11 @@
       (trace-item "lib-path=" lib-path)
 
       (match-case clause
-	 ((import (? string?))
+	 ((import :version 4 . ?imports)
+	  (for-each (lambda (i) (parse-import i clause mod expand)) imports)
 	  '())
-	 ((import (? string?) ())
-	  '())
-	 ((import (? string?) ((and (? symbol?) ?id)))
-	  '())
-	 ((import (? string?) . ?-)
-	  '())
-	 ((import :version 4 (? string?))
-	  '())
-	 ((import . ?-)
+	 ((import . ?imports)
+	  (for-each (lambda (i) (parse-import i clause mod expand)) imports)
 	  '())
 	 ((export . ?bindings)
 	  (parse-export clause expr mod expand))
@@ -1326,7 +1363,7 @@
       (let ((id (class-info-id ci)))
 	 (instantiate::KDef
 	    (id id)
-	    (index (class-info-index ci))
+	    (depth (class-info-depth ci))
 	    (type 'class)
 	    (kind 'class)
 	    (ronly #t)
@@ -1366,12 +1403,8 @@
 			 (with-access::Decl decl (scope ronly (ddef def))
 			    (set! ronly #t)
 			    (with-access::Def def ((ddecl decl))
-			       (case scope
-				  ((export)
-				   (set! ddef def)
-				   (set! ddecl decl))
-				  ((static)
-				   (set! ddecl decl))))))
+			       (set! ddef def)
+			       (set! ddecl decl))))
 		      def)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -1604,11 +1637,11 @@
 	     (error/loc mod "Cannot find declaration" id #f)))))
 
 ;*---------------------------------------------------------------------*/
-;*    module5-expand-class ...                                         */
+;*    define-class-expander ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (make-class-expander mod::Module xenv)
+(define (define-class-expander mod::Module xenv)
    (lambda (x e)
-      (let ((ci (parse-class x)))
+      (let ((ci (parse-class x mod)))
 	 ;; bind the class in the module
 	 (let ((o (module-get-class mod (class-info-id ci))))
 	    (if o
@@ -1659,5 +1692,6 @@
 ;*    module-bind-class! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (module-bind-class! mod::Module id::symbol ci)
-   (class-info-index-set! ci (hashtable-size (-> mod classes)))
-   (hashtable-put! (-> mod classes) (symbol->string! id) ci))
+   (with-trace 'module5-expand-and-resolve "module-bind-class!"
+      (trace-item "class=" id " module=" (-> mod id))
+      (hashtable-put! (-> mod classes) (symbol->string! id) ci)))

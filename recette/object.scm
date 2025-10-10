@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Thu Oct  9 15:00:39 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 17:05:18 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -12,28 +12,28 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module object
-   (import  (utils "utils.scm")
-	    (object2 "object2.scm")
-	    (object1 "object1.scm")
-	    (object3 "object3.scm"))
+   (import (utils "utils.scm")
+	   (object2 "object2.scm")
+	   (object1 "object1.scm")
+	   (object3 "object3.scm"))
    (include "test.sch"
 	    "object.sch")
-   (export  (test-object)
-	    (dump-obj fname))
-   (static  (final-class foo
-	       x::long
-	       (y::string (default "yoyo"))
-	       (z::string (default "zozo")))
-	    (class gee
-	       x y)
-	    (wide-class foo/l::foo (dummy (default 'dummy)))
-	    (class titi
-	       (x::int (default 666)))
-	    (class toto::titi
-	       y::char
-	       (yy::char read-only)
-	       z
-	       t))
+   (export (test-object)
+	   (dump-obj fname))
+   (static (final-class foo
+	      x::long
+	      (y::string (default "yoyo"))
+	      (z::string (default "zozo")))
+	   (class gee
+	      x y)
+	   (wide-class foo/l::foo (dummy (default 'dummy)))
+	   (class titi
+	      (x::int (default 666)))
+	   (class toto::titi
+	      y::char
+	      (yy::char read-only)
+	      z
+	      t))
    (export (class value)
 	   (class fin::value x)
 	   (class sfin::fin y)

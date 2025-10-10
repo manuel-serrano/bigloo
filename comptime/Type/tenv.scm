@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Sun Oct  5 07:43:20 2025 (serrano)                */
+;*    Last change :  Fri Oct 10 06:14:52 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -49,6 +49,7 @@
 	    (add-tenv! <Tenv>)
 	    (get-tenv)
 	    (find-type::type ::symbol)
+	    (find-type/expr::type ::symbol ::obj)
 	    (find-type/location::type ::symbol loc)
 	    (use-type!::type ::symbol loc)
 	    (use-type/import-loc!::type ::symbol loc loci)
@@ -205,7 +206,7 @@
 			    (let* ((super-id (tclass-id super))
 				   (old-s (find-type super-id)))
 			       (if (not (tclass? old-s))
-				   (error 'add-Tenv
+				   (error "add-Tenv"
 				      "Can't find super class of"
 				      (tclass-name new))
 				   (tclass-its-super-set! new old-s)))))))
@@ -245,7 +246,19 @@
 (define (find-type::type id::symbol)
    (let ((type (hashtable-get *Tenv* id)))
       (if (not (type? type))
-	  (error 'find-type "Can't find type" id)
+	  (error "find-type" "Can't find type" id)
+	  type)))
+
+;*---------------------------------------------------------------------*/
+;*    find-type/expr ...                                               */
+;*---------------------------------------------------------------------*/
+(define (find-type/expr::type id::symbol x)
+   (let ((type (hashtable-get *Tenv* id)))
+      (if (not (type? type))
+	  (if (epair? x)
+	      (user-error/location (find-location x) "find-type"
+		 (format "Can't find type \"~a\"" id) x)
+	      (error "find-type" (format "Can't find type \"~a\"" id) x))
 	  type)))
 
 ;*---------------------------------------------------------------------*/

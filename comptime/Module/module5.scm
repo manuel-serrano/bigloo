@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Oct  9 14:36:48 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 16:12:18 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -113,7 +113,7 @@
 	     ((define-class . ?-) 'class)
 	     (else 'variable))))
    
-   (define (make-class-slot p i ty)
+   (define (make-class-slot p i ty expr)
       (let ((id (cdr (assq 'id p))))
 	 (instantiate::slot
 	    (id id)
@@ -122,7 +122,7 @@
 	    (src (cdr (assq 'expr p)))
 	    (class-owner ty)
 	    (user-info #f)
-	    (type (find-type (cdr (assq 'type p)))))))
+	    (type (find-type/expr (cdr (assq 'type p)) expr)))))
    
    (define (declare-class-definition! id alias mid scope src def::KDef)
       (with-access::KDef def (expr id decl super ctor kkind properties)
@@ -132,9 +132,9 @@
 		  (unless (find-global/module id mid) 
 		     ;; a class declared in the module being compiled
 		     (let ((var (declare-global-svar! id id mid scope expr expr)))
-			(global-type-set! var (find-type 'class))
+			(global-type-set! var (find-type/expr 'class expr))
 			(global-set-read-only! var)
-			(let* ((sup (and super (find-type super)))
+			(let* ((sup (and super (find-type/expr super expr)))
 			       (ty (declare-class-type! id sup
 				      ctor var #f
 				      (eq? kkind 'define-final-class)
@@ -143,7 +143,7 @@
 			   (gen-class-coercions! ty)
 			   (let* ((sslots (if sup (tclass-slots sup) '()))
 				  (nslots (map (lambda (p i)
-						  (make-class-slot p i ty))
+						  (make-class-slot p i ty src))
 					     properties
 					     (iota (length properties)
 						(length sslots)))))
@@ -259,7 +259,7 @@
 		      (with-access::TDef (vector-ref e 0) (id name)
 			 (declare-type! id name 'C)))
 	    types)
-	 
+
 	 ;; declare all classes
 	 (for-each (lambda (e)
 		      (let ((def (vector-ref e 0))
@@ -269,9 +269,9 @@
 			    (declare-class-definition! kind id alias
 			       scope expr def))))
 	    (sort (lambda (ex ey)
-		     (with-access::KDef (vector-ref ex 0) ((ix index))
-			(with-access::KDef (vector-ref ey 0) ((iy index))
-			   (<fx ix iy))))
+		     (with-access::KDef (vector-ref ex 0) ((dx depth))
+			(with-access::KDef (vector-ref ey 0) ((dy depth))
+			   (<fx dx dy))))
 	       classes))
 
 	 ;; other declarations
@@ -325,9 +325,9 @@
 (define (module5-object-unit mod::Module)
    (with-access::Module mod (decls)
       (let* ((defs (sort (lambda (x y)
-			    (with-access::KDef x ((xindex index))
-			       (with-access::KDef y ((yindex index))
-				  (<fx xindex yindex))))
+			    (with-access::KDef x ((xdepth depth))
+			       (with-access::KDef y ((ydepth depth))
+				  (<fx xdepth ydepth))))
 		      (filter-map (lambda (xdecl)
 				     (when xdecl
 					(with-access::Decl xdecl (def)
@@ -757,6 +757,7 @@
    (install-module5-expander xenv 'define-inline #f define-expander)
    (install-module5-expander xenv 'define-generic #f define-expander)
    (install-module5-expander xenv 'define-method #f define-expander)
+   (install-module5-expander xenv 'cond-expand #f expand-compile-cond-expand)
    
    xenv)
 

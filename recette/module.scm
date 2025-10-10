@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan 29 10:56:02 1995                          */
-;*    Last change :  Thu Oct  9 14:50:37 2025 (serrano)                */
+;*    Last change :  Thu Oct  9 17:03:48 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Les tests d'exportations                                         */
 ;*=====================================================================*/
@@ -16,12 +16,10 @@
 	    ((renamed-test1 import-test1) import1 "import1.scm")
 	    ((renamed-test2 import-test2) import2 "import2.scm")
 	    (utils "utils.scm"))
-   (extern  (macro c-dummy1::int (::string) "printf"))
    (export  fun
 	    (test-modulel)
 	    c-dummy1
-	    c-dummy2)
-   (extern  (macro c-dummy2::int (::string) "printf")))
+	    c-dummy2))
 
 ;*---------------------------------------------------------------------*/
 ;*    Le bug signale par David Gurr                                    */

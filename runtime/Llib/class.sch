@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 10 08:56:49 2015                          */
-;*    Last change :  Tue Sep 30 15:58:10 2025 (serrano)                */
+;*    Last change :  Fri Oct 10 07:02:15 2025 (serrano)                */
 ;*    Copyright   :  2015-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 class info                                               */
@@ -12,7 +12,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-info ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-struct class-info id index super kind ctor properties registration expr)
+(define-struct class-info id depth super kind ctor properties registration expr)
 
 ;*---------------------------------------------------------------------*/
 ;*    prop-info ...                                                    */

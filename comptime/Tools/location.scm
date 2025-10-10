@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Tools/location.scm          */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Tools/location.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:00:44 1996                          */
-;*    Last change :  Wed Feb 10 11:21:56 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Oct 10 06:32:44 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The location managment                                           */
 ;*=====================================================================*/
@@ -16,7 +16,7 @@
    (include "Tools/location.sch")
    (import  engine_param)
    (export  (parse-location ::obj)
-		(find-location ::obj)
+	    (find-location ::obj)
 	    (find-location/loc ::obj ::obj)
 	    (location-full-fname::bstring ::obj)
 	    (location-shape ::obj ::obj)

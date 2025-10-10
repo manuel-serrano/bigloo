@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 08:59:04 1994                          */
-;*    Last change :  Tue Sep 23 12:54:48 2025 (serrano)                */
+;*    Last change :  Fri Oct 10 05:11:15 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation des macros (de l'interprete et du compilateur).  */
 ;*=====================================================================*/
@@ -14,6 +14,7 @@
 (module __macro
    
    (export  *module5-env*
+	    (make-module5-xenv)
 	    (install-module5-expander ::obj ::symbol ::obj ::procedure)
 	    (install-module4-expander ::symbol ::procedure)
 	    (install-eval-expander ::symbol ::procedure)
@@ -127,6 +128,15 @@
       (else
        (synchronize *compiler-macro-mutex*
 	  (put-macro! *compiler-macro-table* id expander "compiler")))))
+
+;*---------------------------------------------------------------------*/
+;*    make-module5-xenv ...                                            */
+;*    -------------------------------------------------------------    */
+;*    Create an environment (mapping from name to expander) for        */
+;*    expanding module5 bodies.                                        */
+;*---------------------------------------------------------------------*/
+(define (make-module5-xenv)
+   (create-hashtable :weak 'open-string))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-module5-expander ...                                     */

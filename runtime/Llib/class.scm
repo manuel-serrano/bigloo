@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Wed Oct  8 09:03:31 2025 (serrano)                */
+;*    Last change :  Fri Oct 10 05:13:54 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -61,19 +61,19 @@
 	    __pp_circle
 	    __evenv)
    
-   (export (parse-class::struct ::pair)
-	   (allocator-expand::pair ::struct)
+   (export (parse-class::struct ::pair ::Module)
 	   (creator-expand::pair ::struct)
 	   (nil-creator-expand::pair ::struct ::obj)
 	   (properties-expand::pair ::struct ::bool)
 	   (registration-expand::pair ::struct ::Module)
 	   (instantiate-expander::procedure ::struct)
-	   (with-access-expander::procedure ::struct)))
+	   (with-access-expander::procedure ::struct)
+	   (co-instantiate-expander::procedure ::Module)))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-class ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (parse-class x::pair)
+(define (parse-class x::pair mod::Module)
    
    (define (class-kind? k)
       (or (eq? k 'define-class)
@@ -88,17 +88,26 @@
 	    ((not super) (values id 'object))
 	    ((eq? id super) (values id #f))
 	    (else (values id super)))))
+
+   (define (class-depth k)
+      (if (not k)
+	  0
+	  (let ((ci (module-get-class mod k)))
+	     (if (not ci)
+		 (error/loc "parse-class"
+		    "Cannot find super class" x x)
+		 (+fx 1 (class-info-depth ci))))))
    
    (match-case x
       (((and (? class-kind?) ?kind)  ?ident (?ctor) . ?props)
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
-	  (class-info id -1 super kind
+	  (class-info id (class-depth super) super kind
 	     ctor (parse-properties props id) #unspecified x)))
       (((and (? class-kind?) ?kind) ?ident . ?props)
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
-	  (class-info id -1 super kind
+	  (class-info id (class-depth super) super kind
 	     #f (parse-properties props id) #unspecified x)))
       (else
        (error/loc "parse" "Illegal class definition" x x))))
@@ -191,8 +200,23 @@
 ;*---------------------------------------------------------------------*/
 ;*    allocator-expand ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (allocator-expand class-info)
-   `(lambda () ($class-allocate ,(class-info-id class-info))))
+(define (allocator-expand class-info mod)
+   `($class-allocate ,(class-info-id class-info)
+       ,@(filter-map (lambda (p)
+			(cond
+			   ((prop-info-virtual? p)
+			    #f)
+			   ((prop-info-defv? p)
+			    (prop-info-value p))
+			   (else
+			    (let ((ty (prop-info-type p)))
+			       `(set! (-> o ,(prop-info-id p))
+				   ,(cond
+				       ((module-get-class mod ty)
+					`(class-nil ,ty))
+				       (else
+					`(cast-null ,(prop-info-type p)))))))))
+	    (class-info-properties class-info))))
 
 ;*---------------------------------------------------------------------*/
 ;*    creator-expand ...                                               */
@@ -283,7 +307,7 @@
      ;; creator
      ,(creator-expand ci)
      ;; allocator
-     ,(allocator-expand ci)
+     ,(lambda () (allocator-expand ci mod))
      ;; ctor
      ,(class-info-ctor ci)
      ;; nil
@@ -409,6 +433,74 @@
 		    (localize x (olde `(set! ,(cadr x) ,val) olde)))))
 	    (else
 	     (olde x e))))))
+
+;*---------------------------------------------------------------------*/
+;*    co-instantiate-expander ...                                      */
+;*---------------------------------------------------------------------*/
+(define (co-instantiate-expander mod::Module)
+
+   (define (instantiate-class op bdg)
+      (multiple-value-bind (key klass)
+	 (parse-ident op bdg)
+	 (cond
+	    ((not (eq? key 'instantiate))
+	     (error/loc "co-instantiate" "Illegal instantiate form" op bdg))
+	    ((not klass)
+	     (error/loc "co-instantiate" "Illegal instantiate form" op bdg))
+	    (else
+	     klass))))
+   
+   (define (co-instantiate-expand bindings body x)
+      (let ((vis (map (lambda (bdg)
+			 (match-case bdg
+			    (((and ?var (? symbol?)) (?op . ?args))
+			     (let* ((k (instantiate-class op bdg))
+				    (ci (module-get-class mod k)))
+				(if (not ci)
+				    (error/loc "co-instantiate"
+				       "class unbound" k bdg)
+				    (vector var ci args bdg))))
+			    (else
+			     (error/loc "co-instantiate"
+				"Wrong binding" bdg x))))
+		    bindings)))
+	 `(let ,(map (lambda (vi)
+			(let ((v (vector-ref vi 0))
+			      (ci (vector-ref vi 1))
+			      (x (vector-ref vi 3)))
+			   (localize x 
+			      (list v (allocator-expand ci mod)))))
+		   vis)
+	     ;; class constructors
+	     ,@(filter-map (lambda (vi)
+			      (let ((v (vector-ref vi 0))
+				    (ci (vector-ref vi 1)))
+				 (when (class-info-ctor ci)
+				    (class-info-ctor ci))))
+		  vis)
+	     ;; properties
+	     ,@(append-map (lambda (vi)
+			      (let ((v (vector-ref vi 0))
+				    (ci (vector-ref vi 1))
+				    (as (vector-ref vi 2))
+				    (x (vector-ref vi 3)))
+				 (filter-map (lambda (a)
+						(match-case a
+						   (((and (? symbol?) ?p) ?val)
+						    `(set! (-> ,v ,p) ,val))
+						   (else
+						    (error/loc "co-instantiate"
+						       "Wrong instantiate form" a x))))
+				    as)))
+		  vis)
+	     ,@body)))
+   
+   (lambda (x e)
+      (match-case x
+	 ((co-instantiate (and (? list?) ?bindings) . ?body)
+	  (e (co-instantiate-expand bindings body x) e))
+	 (else
+	  (error/loc "co-instantiate" "Illegal form" x x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */

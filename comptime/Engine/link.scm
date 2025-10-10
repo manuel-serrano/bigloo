@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Thu Oct  9 10:41:48 2025 (serrano)                */
+;*    Last change :  Fri Oct 10 07:13:51 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -170,8 +170,8 @@
 	 (((main) . ?rest)
 	  'main)
 	 (((include . ?includes) . ?rest)
-	  (or (find (lambda (include)
-		       (find-main (call-with-input-file include read)))
+	  (or (any (lambda (include)
+		       (find-main5 (call-with-input-file include read)))
 		 includes)
 	      (loop rest)))
 	 (((cond-expand . ?-) . ?rest)
