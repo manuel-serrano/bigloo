@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Fri Oct 10 05:13:54 2025 (serrano)                */
+;*    Last change :  Sat Oct 11 11:29:52 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -307,7 +307,7 @@
      ;; creator
      ,(creator-expand ci)
      ;; allocator
-     ,(lambda () (allocator-expand ci mod))
+     (lambda () ,(allocator-expand ci mod))
      ;; ctor
      ,(class-info-ctor ci)
      ;; nil

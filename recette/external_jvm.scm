@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 25 11:52:25 2000                          */
-;*    Last change :  Fri Dec 13 11:41:45 2024 (serrano)                */
-;*    Copyright   :  2000-24 Manuel Serrano                            */
+;*    Last change :  Sat Oct 11 11:50:55 2025 (serrano)                */
+;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Jvm foreign interface tests                                  */
 ;*=====================================================================*/
@@ -14,7 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module external_jvm
    (include "test.sch") 
-   (import  (main "main.scm"))
+   (import (utils "utils.scm"))
    (java (abstract-class intf
             (method met::int (::intf) "abstract_method")
             "Intf")
