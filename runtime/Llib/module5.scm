@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Oct  9 16:18:57 2025 (serrano)                */
+;*    Last change :  Sun Oct 12 08:09:00 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -84,7 +84,7 @@
 	   (class Decl
 	      (id::symbol read-only)
 	      (alias::symbol read-only)
-	      (mod::Module read-only)
+	      mod
 	      (def (default #unspecified))
 	      (expr (default #unspecified))
 	      (ronly (default #unspecified))
@@ -124,7 +124,8 @@
 	   (module5-get-decl::Decl ::Module ::symbol ::obj)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
 	   (module5-get-export-def ::Module ::symbol)
-	   (module-get-class ::Module ::symbol)))
+	   (module5-get-class ::Module ::symbol)
+	   ))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-write ::Module ...                                        */
@@ -193,6 +194,24 @@
 ;*---------------------------------------------------------------------*/
 (define-method (object-print d::Def port ds)
    (object-write d port))
+
+;*---------------------------------------------------------------------*/
+;*    object-copy ::Decl ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (object-copy d::Decl)
+   (duplicate::Decl d))
+
+;*---------------------------------------------------------------------*/
+;*    object-copy ::Def ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (object-copy d::Def)
+   (duplicate::Def d))
+
+;*---------------------------------------------------------------------*/
+;*    object-copy ::KDef ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (object-copy d::KDef)
+   (duplicate::KDef d))
 
 ;*---------------------------------------------------------------------*/
 ;*    *modules-by-path* ...                                            */
@@ -285,13 +304,94 @@
       (values apath cname cpath)))
 
 ;*---------------------------------------------------------------------*/
+;*    serialize ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (serialize mod::Module)
+
+   (define (exports->list exports)
+      (hashtable-map (-> mod exports)
+	 (lambda (k d::Decl)
+	    (with-access::Decl d (mod)
+	       (with-access::Module mod (path)
+		  (let ((decl::Decl (duplicate::Decl d
+				       (mod path))))
+		     (when (isa? (-> d def) Def)
+			(let ((def::Def (object-copy (-> d def))))
+			   (set! (-> decl def) def)
+			   (set! (-> def decl) decl)))
+		     (cons k decl)))))))
+
+   (define (classes->list classes exports)
+      (hashtable-filter-map (-> mod classes)
+	 (lambda (k ci)
+	    (let* ((id (class-info-id ci))
+		   (d (hashtable-get exports (symbol->string! id))))
+	       (when d
+		  (cons k ci))))))
+
+   (if (eq? (-> mod decls) #unspecified)
+       mod
+       (begin
+	  (module5-checksum! mod)
+	  (duplicate::Module mod
+	     (inits '())
+	     (body '())
+	     (decls #unspecified)
+	     (imports #unspecified)
+	     (defs #unspecified)
+	     (exports (exports->list (-> mod exports)))
+	     (classes (classes->list (-> mod classes) (-> mod exports)))))))
+
+;*---------------------------------------------------------------------*/
+;*    unserialize ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (unserialize mod::Module lib-path cache-dir expand)
+   
+   (define (unserialize-decl d::Decl)
+      ;; link the module
+      (set! (-> d mod)
+	 (module5-read (-> d mod)
+	    lib-path: lib-path :cache-dir cache-dir :expand expand))
+      d)
+   
+   (define (list->exports! env l)
+      (for-each (lambda (e)
+		   (hashtable-put! env (car e) (unserialize-decl (cdr e))))
+	 l)
+      env)
+   
+   (define (list->defs! env l)
+      (for-each (lambda (e)
+		   (with-access::Decl (cdr e) (id def)
+		      (hashtable-put! env (symbol->string! id) def)))
+	 l)
+      env)
+   
+   (define (list->classes! env l)
+      (for-each (lambda (e)
+		   (hashtable-put! env (car e) (cdr e)))
+	 l)
+      env)
+   
+   (let ((m::Module (duplicate::Module mod
+		       (exports (create-hashtable :size 32 :weak 'open-string))
+		       (decls (create-hashtable :size 32 :weak 'open-string))
+		       (defs (create-hashtable :size 32 :weak 'open-string))
+		       (classes (create-hashtable :size 32 :weak 'open-string)))))
+      (hashtable-put! *modules-by-path* (-> mod path) m)
+      (list->exports! (-> m exports) (-> mod exports))
+      (list->defs! (-> m defs) (-> mod exports))
+      (list->classes! (-> m classes) (-> mod classes))
+      m))
+
+;*---------------------------------------------------------------------*/
 ;*    filecache-get ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (filecache-get path cache-dir)
+(define (filecache-get path lib-path cache-dir expand parse)
    (with-trace 'module5-cache "filecache-get"
       (trace-item "path=" path)
       (trace-item "cache-dir=" cache-dir)
-      (when (and *file-cache* (string? cache-dir))
+      (when (string? cache-dir)
 	 (unless (directory? cache-dir)
 	    (make-directories cache-dir))
 	 (multiple-value-bind (apath cname cpath)
@@ -304,14 +404,16 @@
 			  (file-modification-time apath)))
 	       (let ((p (open-input-binary-file cpath)))
 		  (unwind-protect
-		     (let ((m (input-obj p)))
-			(trace-item "m=" (typeof m))
-			(with-access::Module m (path)
+		     (let ((m (unserialize (input-obj p)
+				 lib-path cache-dir expand)))
+			(with-access::Module m (path decls defs classes exports)
+			   (trace-item "classes=" (hashtable-size classes))
+			   (trace-item "exports=" (hashtable-size exports))
+			   (trace-item "decls=" (typeof decls))
+			   (trace-item "defs=" (hashtable-size defs))
 			   (hashtable-put! *modules-by-path* path m)
 			   m))
 		     (close-binary-port p))))))))
-
-(define *file-cache* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    filecache-put! ...                                               */
@@ -319,16 +421,16 @@
 (define (filecache-put! path mod::Module)
    (with-trace 'module5-cache "filecache-put!"
       (trace-item "path=" path)
-      (when (and *file-cache* (string? (-> mod cache-dir)))
+      (when (string? (-> mod cache-dir))
 	 (unless (directory? (-> mod cache-dir))
 	    (make-directories (-> mod cache-dir)))
 	 (multiple-value-bind (apath cname cpath)
 	    (filecache-dirs path (-> mod cache-dir))
 	    (let ((p (open-output-binary-file cpath)))
 	       (unwind-protect
-		  (output-obj p mod)
+		  (output-obj p (serialize mod))
 		  (close-binary-port p)))))))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    module-read ...                                                  */
 ;*---------------------------------------------------------------------*/
@@ -338,7 +440,7 @@
       (trace-item "expand=" expand)
       (synchronize module-mutex
 	 (or (hashtable-get *modules-by-path* path)
-	     (filecache-get path cache-dir)
+	     (filecache-get path lib-path cache-dir expand parse)
 	     (let ((exprs (call-with-input-file path
 			     (lambda (p) (port->sexp-list p #t)))))
 		(if (null? exprs)
@@ -615,7 +717,8 @@
 				    (alias alias)
 				    (scope 'import))))
 			 (hashtable-put! (-> mod decls) key nd)
-			 (hashtable-put! (-> mod imports) key nd))))
+			 (hashtable-put! (-> mod imports) key nd)
+			 )))
 		(module-add-libraries! mod (-> imod libraries))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc mod "Cannot find file" path clause))))
@@ -651,7 +754,8 @@
 				    (alias alias)
 				    (scope 'import))))
 			 (hashtable-put! (-> mod decls) key nd)
-			 (hashtable-put! (-> mod imports) key nd))))
+			 (hashtable-put! (-> mod imports) key nd)
+			 )))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc mod "Cannot find file" path clause))))
 
@@ -714,7 +818,8 @@
 		      (let ((nd (duplicate::Decl d
 				   (scope 'import))))
 			 (hashtable-put! (-> mod decls) k nd)
-			 (hashtable-put! (-> mod imports) k nd))))
+			 (hashtable-put! (-> mod imports) k nd)
+			 )))
 		(set! (-> mod inits)
 		   (append! (-> mod inits) (list lmod)))
 		(set! (-> mod libraries)
@@ -803,7 +908,8 @@
 		       (alias alias)
 		       (scope 'import))))
 	    (hashtable-put! (-> mod decls) key nd)
-	    (hashtable-put! (-> mod imports) key nd))))
+	    (hashtable-put! (-> mod imports) key nd)
+	    )))
    (module-add-libraries! mod (-> imod libraries))
    (set! (-> mod inits) (append! (-> mod inits) (list imod))))
 
@@ -880,7 +986,7 @@
 				     alias " id=" id)
 				  (set! def idef)
 				  (with-access::KDef idef (ci decl)
-				     (module-bind-class! mod id ci)
+				     (module5-bind-class! mod id ci)
 				     (install-class-expanders ci xenv))))))))))
 	    (when (pair? (-> mod body))
 	       (trace-item "body avant-expand=" (-> mod body))
@@ -1054,7 +1160,8 @@
 			     (alias alias)
 			     (scope 'import))))
 		  (hashtable-put! (-> mod decls) key nd)
-		  (hashtable-put! (-> mod imports) key nd))))
+		  (hashtable-put! (-> mod imports) key nd)
+		  )))
 	 (module-add-libraries! mod (-> imod libraries))
 	 (set! (-> mod inits)
 	    (append! (-> mod inits) (list imod)))))
@@ -1076,7 +1183,8 @@
 				(alias alias)
 				(scope 'import))))
 		     (hashtable-put! (-> mod decls) key nd)
-		     (hashtable-put! (-> mod imports) key nd)))))
+		     (hashtable-put! (-> mod imports) key nd)
+		     ))))
 	 (module-add-libraries! mod (-> imod libraries))
 	 (set! (-> mod inits)
 	    (append! (-> mod inits) (list imod)))))
@@ -1643,16 +1751,16 @@
    (lambda (x e)
       (let ((ci (parse-class x mod)))
 	 ;; bind the class in the module
-	 (let ((o (module-get-class mod (class-info-id ci))))
+	 (let ((o (module5-get-class mod (class-info-id ci))))
 	    (if o
 		(error/loc mod
 		   (format "Class \"~a\" has already been declared in module ~a"
 		      (class-info-id ci) (-> mod id))
 		   x x)
-		(module-bind-class! mod (class-info-id ci) ci)))
+		(module5-bind-class! mod (class-info-id ci) ci)))
 	 ;; check the super class
 	 (when (class-info-super ci)
-	    (let ((si (module-get-class mod (class-info-super ci))))
+	    (let ((si (module5-get-class mod (class-info-super ci))))
 	       (if si
 		   ;; update the super class info and add additional props
 		   (begin
@@ -1683,15 +1791,33 @@
       #f (with-access-expander ci)))
 	   
 ;*---------------------------------------------------------------------*/
-;*    module-get-class ...                                             */
+;*    module5-get-class ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (module-get-class mod::Module id::symbol)
+(define (module5-get-class mod::Module id::symbol)
    (hashtable-get (-> mod classes) (symbol->string! id)))
 
 ;*---------------------------------------------------------------------*/
-;*    module-bind-class! ...                                           */
+;*    module5-bind-class! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (module-bind-class! mod::Module id::symbol ci)
-   (with-trace 'module5-expand-and-resolve "module-bind-class!"
+(define (module5-bind-class! mod::Module id::symbol ci)
+   (with-trace 'module5-expand-and-resolve "module5-bind-class!"
       (trace-item "class=" id " module=" (-> mod id))
       (hashtable-put! (-> mod classes) (symbol->string! id) ci)))
+
+;* {*---------------------------------------------------------------------*} */
+;* {*    module5-for-each-import ...                                      *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (module5-for-each-import mod::Module proc::procedure)       */
+;*    (hashtble-for-each (-> mod decls)                                */
+;*       (lambda (k d::Decl)                                           */
+;* 	 (when (import-decl? d)                                        */
+;* 	    (proc k d)))))                                             */
+;*                                                                     */
+;* {*---------------------------------------------------------------------*} */
+;* {*    module5-for-each-export ...                                      *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (module5-for-each-export mod::Module proc::procedure)       */
+;*    (hashtble-for-each (-> mod decls)                                */
+;*       (lambda (k d::Decl)                                           */
+;* 	 (when (export-decl? d)                                        */
+;* 	    (proc k d)))))                                             */

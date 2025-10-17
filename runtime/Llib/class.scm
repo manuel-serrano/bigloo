@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Sat Oct 11 11:29:52 2025 (serrano)                */
+;*    Last change :  Wed Oct 15 02:48:49 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -92,7 +92,7 @@
    (define (class-depth k)
       (if (not k)
 	  0
-	  (let ((ci (module-get-class mod k)))
+	  (let ((ci (module5-get-class mod k)))
 	     (if (not ci)
 		 (error/loc "parse-class"
 		    "Cannot find super class" x x)
@@ -212,7 +212,7 @@
 			    (let ((ty (prop-info-type p)))
 			       `(set! (-> o ,(prop-info-id p))
 				   ,(cond
-				       ((module-get-class mod ty)
+				       ((module5-get-class mod ty)
 					`(class-nil ,ty))
 				       (else
 					`(cast-null ,(prop-info-type p)))))))))
@@ -251,7 +251,7 @@
 		    (let ((ty (prop-info-type p)))
 		       `(set! (-> o ,(prop-info-id p))
 			   ,(cond
-			      ((module-get-class mod ty)
+			      ((module5-get-class mod ty)
 			       `(class-nil ,ty))
 			      (else
 			       `(cast-null ,(prop-info-type p)))))))
@@ -455,7 +455,7 @@
 			 (match-case bdg
 			    (((and ?var (? symbol?)) (?op . ?args))
 			     (let* ((k (instantiate-class op bdg))
-				    (ci (module-get-class mod k)))
+				    (ci (module5-get-class mod k)))
 				(if (not ci)
 				    (error/loc "co-instantiate"
 				       "class unbound" k bdg)

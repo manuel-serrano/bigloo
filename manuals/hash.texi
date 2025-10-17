@@ -158,6 +158,20 @@ If the hash table is weak, @var{fun} will only be called on sets of key/datum
 which haven't dissapeared yet.
 @end deffn
 
+@deffn {bigloo procedure} hashtable-map filter fun
+Applies @var{fun} to each of the keys and elements of @var{table} 
+(no order is specified). In consequence, @var{fun} must be a procedure
+of two arguments. Returns a list of elements for which the predicate
+@var{fun} evaluated to @code{#t}.
+@end deffn
+
+@deffn {bigloo procedure} hashtable-filter-map filter fun
+Applies @var{fun} to each of the keys and elements of @var{table} 
+(no order is specified). In consequence, @var{fun} must be a procedure
+of two arguments. Returns a list of values produced by the call to @code{fun}
+that did not return the value @code{#f}.
+@end deffn
+
 @deffn {bigloo procedure} hashtable-filter! table fun
 Filter out elements from @var{table} according to predicate @var{fun}.
 If the hash table is weak, @var{fun} will only be called on sets of key/datum

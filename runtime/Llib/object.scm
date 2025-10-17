@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Sep 26 07:22:21 2025 (serrano)                */
+;*    Last change :  Fri Oct 17 07:30:30 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -386,6 +386,7 @@
 	    (generic object-write ::object . port)
 	    (generic object-hashnumber::long ::object)
 	    (generic object-equal?::bool ::object ::object)
+	    (generic object-copy::object ::object)
 	    
 	    (generic exception-notify exc)
 	    
@@ -1551,6 +1552,12 @@
 		   (loop (-fx i 1)))
 		  (else
 		   #f)))))))
+
+;*---------------------------------------------------------------------*/
+;*    object-copy ::object ...                                         */
+;*---------------------------------------------------------------------*/
+(define-generic (object-copy obj::object)
+   (duplicate::object obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-notify ::obj ...                                       */

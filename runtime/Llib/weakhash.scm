@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/weakhash.scm     */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/weakhash.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Sun May 28 07:02:26 2023 (serrano)                */
+;*    Last change :  Tue Oct 14 08:44:17 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The weak hash tables.                                            */
 ;*    -------------------------------------------------------------    */
@@ -56,6 +56,8 @@
 	   (weak-hashtable-key-list::pair-nil ::struct)
 	   (weak-hashtable-map::pair-nil ::struct ::procedure)
 	   (weak-hashtable-for-each ::struct ::procedure)
+	   (weak-hashtable-filter::pair-nil ::struct ::procedure)
+	   (weak-hashtable-filter-map::pair-nil ::struct ::procedure)
 	   (weak-hashtable-filter! ::struct ::procedure)
 	   (weak-hashtable-clear! ::struct)
 	   (weak-hashtable-contains?::bool ::struct ::obj)
@@ -299,6 +301,29 @@
 ;*---------------------------------------------------------------------*/
 (define (weak-hashtable-for-each table::struct fun::procedure)
    (traverse-hash table fun))
+
+;*---------------------------------------------------------------------*/
+;*    weak-hashtable-filter ...                                        */
+;*---------------------------------------------------------------------*/
+(define (weak-hashtable-filter table::struct fun::procedure)
+   (let ((res '()))
+      (traverse-hash table
+	 (lambda (key val)
+	    (when (fun key val)
+	       (set! res (cons val res)))))
+      res))
+
+;*---------------------------------------------------------------------*/
+;*    weak-hashtable-filter-map ...                                    */
+;*---------------------------------------------------------------------*/
+(define (weak-hashtable-filter-map table::struct fun::procedure)
+   (let ((res '()))
+      (traverse-hash table
+	 (lambda (key val)
+	    (let ((v (fun key val)))
+	       (when v
+		  (set! res (cons v res))))))
+      res))
 
 ;*---------------------------------------------------------------------*/
 ;*    weak-keys-hashtable-filter! ...                                  */

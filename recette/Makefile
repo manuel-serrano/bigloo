@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Fri Oct 10 07:21:55 2025 (serrano)                */
+#*    Last change :  Fri Oct 17 10:37:56 2025 (serrano)                */
 #*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -68,10 +68,13 @@ OCOMMON		= object object_sans \
                   object3 object3_sans \
                   object5 object5_sans
 
+MODULE5		= module5
+
 COMMON		= $(ICOMMON) $(OCOMMON)
 
 C_SPECIFIC	= external_c big_file
 C_OBJECTS	= $(COMMON:%=%.$(C_OBJ_EXTENSION)) $(C_SPECIFIC:%=%.$(C_OBJ_EXTENSION))
+C_OBJECTS5	= $(MODULE5:%=%.$(C_OBJ_EXTENSION))
 OBJECT_C_FOREIGN= c-file.$(C_OBJ_EXTENSION)
 
 JVM_SPECIFIC	= external_jvm
@@ -115,7 +118,7 @@ POPULATION	= $(SOURCE_FILES) \
 #*---------------------------------------------------------------------*/
 all: recette-c
 
-recette-c: .etags .afile-c objs_c
+recette-c: .etags .afile-c objs_c objs5_c
 	@ $(MAKE) recette
 	@ $(MAKE) recette5
 
@@ -123,7 +126,7 @@ recette: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs_c/main.o
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $^
 	@ echo "\e[1;34m$@\e[0m done."
 
-recette5: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs_c/main5.o
+recette5: $(C_OBJECTS:%=objs_c/%) $(C_OBJECTS5:%=objs5_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs5_c/main5.o
 	$(BIGLOO) -no-auto-link-main $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $^
 	@ echo "\e[1;34m$@\e[0m done."
 
@@ -225,8 +228,11 @@ lintclean:
 
 distclean: lintclean
 	@- $(RM) -f -r objs_c
+	@- $(RM) -f -r objs5_c
 	@- $(RM) -f -r objs_jvm
+	@- $(RM) -f -r objs5_jvm
 	@- $(RM) -f -r objs_wasm
+	@- $(RM) -f -r objs5_wasm
 	@- $(RM) -f recette
 	@- $(RM) -f recette5
 	@- $(RM) -f recette-static
@@ -316,11 +322,17 @@ all.lint: $(LN_OBJECTS)
 objs_c/%.$(C_OBJ_EXTENSION): %.scm
 	$(BIGLOO) $(BFLAGS) -c $(BCFLAGS) $(EFLAGS) $< -o $@
 
+objs5_c/%.$(C_OBJ_EXTENSION): %.scm
+	$(BIGLOO) $(BFLAGS) -module5 -c $(BCFLAGS) $(EFLAGS) $< -o $@
+
 #*---------------------------------------------------------------------*/
 #*    .scm.class                                                       */
 #*---------------------------------------------------------------------*/
 objs_jvm/%.class: %.scm
 	$(BIGLOO) $(BFLAGS) -jvm $(BJVMFLAGS) $(BPURIFYJVMFLAGS) $(EFLAGS) -c $< -jvm-directory objs_jvm -o $(@F)
+
+objs5_jvm/%.class: %.scm
+	$(BIGLOO) $(BFLAGS) -module5 -jvm $(BJVMFLAGS) $(BPURIFYJVMFLAGS) $(EFLAGS) -c $< -jvm-directory objs_jvm -o $(@F)
 
 #*---------------------------------------------------------------------*/
 #*    .scm.wat                                                         */
@@ -328,11 +340,14 @@ objs_jvm/%.class: %.scm
 objs_wasm/%.wat: %.scm
 	$(BIGLOO) $(BFLAGS) -wasm $(BWASMFLAGS) $(EFLAGS) -c $< -o $@
 
+objs5_wasm/%.wat: %.scm
+	$(BIGLOO) $(BFLAGS) -module5 -wasm $(BWASMFLAGS) $(EFLAGS) -c $< -o $@
+
 #*---------------------------------------------------------------------*/
 #*    Specific compilations                                            */
 #*---------------------------------------------------------------------*/
-objs_c/main5.o: main.scm
-	$(BIGLOO) $(BFLAGS) -module5 -c $(BCFLAGS) $(EFLAGS) $< -o $@
+objs5_c/main5.o: main.scm
+	$(BIGLOO) $(BFLAGS)  -c $(BCFLAGS) $(EFLAGS) $< -o $@
 
 objs_c/callcc.$(C_OBJ_EXTENSION): callcc.scm
 	$(BIGLOO) $(BFLAGS) -call/cc -c $(BCFLAGS) $(EFLAGS) $< -o $@
@@ -390,13 +405,17 @@ objs_jvm/%.class: %.java
 #*    sub-directories                                                  */
 #*---------------------------------------------------------------------*/
 objs_c:
-	@ mkdir objs_c
-
+	@ mkdir -p $@
+objs5_c:
+	@ mkdir -p $@
 objs_jvm:
-	@ mkdir objs_jvm
-
+	@ mkdir -p $@
+objs5_jvm:
+	@ mkdir -p $@
 objs_wasm:
-	@ mkdir objs_wasm
+	@ mkdir -p $@
+objs5_wasm:
+	@ mkdir -p $@
 
 #*---------------------------------------------------------------------*/
 #*    misc/dump.XXX                                                    */

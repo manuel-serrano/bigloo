@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Sun Sep 14 19:19:34 2025 (serrano)                */
+;*    Last change :  Tue Oct 14 08:34:20 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -141,6 +141,8 @@
 	    (hashtable-key-list::pair-nil ::struct)
 	    (hashtable-map ::struct ::procedure)
 	    (hashtable-for-each ::struct ::procedure)
+	    (hashtable-filter ::struct ::procedure)
+	    (hashtable-filter-map ::struct ::procedure)
 	    (hashtable-filter! ::struct ::procedure)
 	    (hashtable-clear! ::struct)
             (hashtable-collisions::pair-nil ::struct)
@@ -149,6 +151,8 @@
 	    (open-string-hashtable-add! ::struct ::bstring ::procedure obj init)
 	    (open-string-hashtable-remove! ::struct ::bstring)
 	    (open-string-hashtable-map ::struct ::procedure)
+	    (open-string-hashtable-filter ::struct ::procedure)
+	    (open-string-hashtable-filter-map ::struct ::procedure)
 	    (open-string-hashtable-for-each ::struct ::procedure)
 	    (open-string-hashtable-filter! ::struct ::procedure)
 	    )
@@ -567,6 +571,104 @@
 			     (fun (car cell) (cdr cell)))
 			  (vector-ref-ur buckets i))
 		(loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    hashtable-filter ...                                             */
+;*---------------------------------------------------------------------*/
+(define (hashtable-filter table::struct fun::procedure)
+   (cond
+      ((hashtable-open-string? table)
+       (open-string-hashtable-filter table fun))
+      ((hashtable-weak? table)
+       (weak-hashtable-filter table fun))
+      (else
+       (plain-hashtable-filter table fun))))
+
+;*---------------------------------------------------------------------*/
+;*    open-string-hashtable-filter ...                                 */
+;*---------------------------------------------------------------------*/
+(define (open-string-hashtable-filter table::struct fun)
+   (let* ((size (%hashtable-max-bucket-len table))
+	  (size3 (*fx 3 size))
+	  (buckets (%hashtable-buckets table)))
+      (let loop ((i 0)
+		 (res '()))
+	 (if (=fx i size3)
+	     res
+	     (if (and (vector-ref buckets i) (vector-ref buckets (+fx i 2)))
+		 (let* ((c (vector-ref buckets (+fx i 1)))
+			(v (fun (vector-ref buckets i) c)))
+		    (loop (+fx i 3)
+		       (if v (cons c res) res)))
+		 (loop (+fx i 3) res))))))
+
+;*---------------------------------------------------------------------*/
+;*    plain-hashtable-filter ...                                       */
+;*---------------------------------------------------------------------*/
+(define (plain-hashtable-filter table::struct fun::procedure)
+   (let* ((buckets (%hashtable-buckets table))
+	  (buckets-len (vector-length buckets)))
+      (let loop ((i 0)
+		 (res '()))
+	 (if (<fx i buckets-len)
+	     (let liip ((lst (vector-ref-ur buckets i))
+			(res res))
+		(if (null? lst)
+		    (loop (+fx i 1) res)
+		    (let* ((c (car lst))
+			   (v (fun (car c) (cdr c))))
+		       (liip (cdr lst)
+			  (if v (cons c res) res)))))
+	     res))))
+
+;*---------------------------------------------------------------------*/
+;*    hashtable-filter-map ...                                         */
+;*---------------------------------------------------------------------*/
+(define (hashtable-filter-map table::struct fun::procedure)
+   (cond
+      ((hashtable-open-string? table)
+       (open-string-hashtable-filter-map table fun))
+      ((hashtable-weak? table)
+       (weak-hashtable-filter-map table fun))
+      (else
+       (plain-hashtable-filter-map table fun))))
+
+;*---------------------------------------------------------------------*/
+;*    open-string-hashtable-filter-map ...                             */
+;*---------------------------------------------------------------------*/
+(define (open-string-hashtable-filter-map table::struct fun)
+   (let* ((size (%hashtable-max-bucket-len table))
+	  (size3 (*fx 3 size))
+	  (buckets (%hashtable-buckets table)))
+      (let loop ((i 0)
+		 (res '()))
+	 (if (=fx i size3)
+	     res
+	     (if (and (vector-ref buckets i) (vector-ref buckets (+fx i 2)))
+		 (let* ((c (vector-ref buckets (+fx i 1)))
+			(v (fun (vector-ref buckets i) c)))
+		    (loop (+fx i 3)
+		       (if v (cons v res) res)))
+		 (loop (+fx i 3) res))))))
+
+;*---------------------------------------------------------------------*/
+;*    plain-hashtable-filter-map ...                                   */
+;*---------------------------------------------------------------------*/
+(define (plain-hashtable-filter-map table::struct fun::procedure)
+   (let* ((buckets (%hashtable-buckets table))
+	  (buckets-len (vector-length buckets)))
+      (let loop ((i 0)
+		 (res '()))
+	 (if (<fx i buckets-len)
+	     (let liip ((lst (vector-ref-ur buckets i))
+			(res res))
+		(if (null? lst)
+		    (loop (+fx i 1) res)
+		    (let* ((c (car lst))
+			   (v (fun (car c) (cdr c))))
+		       (liip (cdr lst)
+			  (if v (cons v res) res)))))
+	     res))))
 
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-filter! ...                                            */
