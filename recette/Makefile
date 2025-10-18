@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Fri Oct 17 10:37:56 2025 (serrano)                */
+#*    Last change :  Sat Oct 18 14:22:36 2025 (serrano)                */
 #*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -40,7 +40,7 @@ BFLAGS          = $(VERBOSE) -cg -g -O3 -q -Wall -init-lib \
                   -eval "(set! *indent* (= 1 2))" -gself \
                   -lib-dir $(BOOTLIBDIR)
 
-BCFLAGS         = $(BFLAGS) -afile .afile-c
+BCFLAGS         = -afile .afile-c
                   
 
 BJVMFLAGS       = $(BFLAGS) -afile .afile-jvm -jfile .jfile-jvm -g
@@ -68,7 +68,24 @@ OCOMMON		= object object_sans \
                   object3 object3_sans \
                   object5 object5_sans
 
-MODULE5		= module5
+MODULE5		= module5 \
+                  module5_ex0 \
+                  module5_ex1 \
+                  module5_ex2 \
+                  module5_ex3 \
+                  module5_ex4 \
+                  module5_ex5 \
+                  module5_ex6 \
+                  module5_ex7 \
+                  module5_ex8 \
+                  module5_ex9 \
+                  module5_ex10 \
+                  module5_ex11 \
+                  module5_ex12 \
+                  module5_ex13 \
+                  module5_ex14 \
+                  module5_ex15 \
+                  module5_ex16
 
 COMMON		= $(ICOMMON) $(OCOMMON)
 
@@ -127,7 +144,7 @@ recette: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs_c/main.o
 	@ echo "\e[1;34m$@\e[0m done."
 
 recette5: $(C_OBJECTS:%=objs_c/%) $(C_OBJECTS5:%=objs5_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs5_c/main5.o
-	$(BIGLOO) -no-auto-link-main $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $^
+	$(BIGLOO) -no-auto-link-main -module5 $(BFLAGS) $(EFLAGS) -o $@ $^
 	@ echo "\e[1;34m$@\e[0m done."
 
 saw:
@@ -323,7 +340,7 @@ objs_c/%.$(C_OBJ_EXTENSION): %.scm
 	$(BIGLOO) $(BFLAGS) -c $(BCFLAGS) $(EFLAGS) $< -o $@
 
 objs5_c/%.$(C_OBJ_EXTENSION): %.scm
-	$(BIGLOO) $(BFLAGS) -module5 -c $(BCFLAGS) $(EFLAGS) $< -o $@
+	$(BIGLOO) $(BFLAGS) -module5 -c $(EFLAGS) $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    .scm.class                                                       */
@@ -347,7 +364,7 @@ objs5_wasm/%.wat: %.scm
 #*    Specific compilations                                            */
 #*---------------------------------------------------------------------*/
 objs5_c/main5.o: main.scm
-	$(BIGLOO) $(BFLAGS)  -c $(BCFLAGS) $(EFLAGS) $< -o $@
+	$(BIGLOO) $(BFLAGS) -module5 -c $(EFLAGS) $< -o $@
 
 objs_c/callcc.$(C_OBJ_EXTENSION): callcc.scm
 	$(BIGLOO) $(BFLAGS) -call/cc -c $(BCFLAGS) $(EFLAGS) $< -o $@

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun Oct 12 08:09:00 2025 (serrano)                */
+;*    Last change :  Sat Oct 18 14:10:35 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -859,6 +859,10 @@
 	  (parse-reexport-some clause expr mod expand))
 	 ((export :version 4 (? string?))
 	  (parse-reexport4-all clause expr mod expand))
+	 ((import :version 5 . ?rest)
+	  (module5-parse-clause
+	     (localize `(import ,@rest) clause)
+	     expr mod lib-path cache-dir expand))
 	 ((import (? string?))
 	  (parse-import-all #f clause expr mod expand))
 	 ((import (? string?) ())
@@ -951,7 +955,8 @@
 	 (for-each (lambda (m) (module5-import-all! mod m)) heap-modules)
 	 (let* ((xenv (init-xenv (make-module5-xenv) mod))
 		(kx (define-class-expander mod xenv))
-		(ko (co-instantiate-expander mod)))
+		(ko (co-instantiate-expander mod))
+		(ki (include-expander mod)))
 	    (install-module5-expander xenv 'define-class
 	       '(define-class) kx)
 	    (install-module5-expander xenv 'define-wide-class
@@ -962,6 +967,8 @@
 	       '(define-class) kx)
 	    (install-module5-expander xenv 'co-instantiate
 	       '(co-instantiate) ko)
+	    (install-module5-expander xenv 'include
+	       '(include) ki)
 	    (hashtable-for-each (-> mod decls)
 	       (lambda (k d::Decl)
 		  (with-access::Decl d ((imod mod) alias id def)
@@ -1088,11 +1095,6 @@
    
    (define (hashtable-symbol-put! table id d)
       (hashtable-put! table (symbol->string! id) d))
-
-   (define (localize new old)
-      (if (epair? old)
-	  (econs (car new) (cdr new) (cer old))
-	  new))
 
    (define (procedure4 expr id args nexpr)
       (let ((lnexpr (localize nexpr expr)))
@@ -1789,7 +1791,21 @@
    (install-module5-expander xenv
       (string->symbol (format "with-access::~a" (class-info-id ci)))
       #f (with-access-expander ci)))
-	   
+
+;*---------------------------------------------------------------------*/
+;*    include-expander ...                                             */
+;*---------------------------------------------------------------------*/
+(define (include-expander mod::Module)
+   (lambda (x e)
+      (match-case x
+	 ((include ?path)
+	  `(begin
+	      ,@(map (lambda (x) (e x e))
+		   (call-with-input-file path
+		      (lambda (p) (port->sexp-list p))))))
+	 (else
+	  (error/loc mod "Wrong include format" x x)))))
+
 ;*---------------------------------------------------------------------*/
 ;*    module5-get-class ...                                            */
 ;*---------------------------------------------------------------------*/
@@ -1804,20 +1820,11 @@
       (trace-item "class=" id " module=" (-> mod id))
       (hashtable-put! (-> mod classes) (symbol->string! id) ci)))
 
-;* {*---------------------------------------------------------------------*} */
-;* {*    module5-for-each-import ...                                      *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (module5-for-each-import mod::Module proc::procedure)       */
-;*    (hashtble-for-each (-> mod decls)                                */
-;*       (lambda (k d::Decl)                                           */
-;* 	 (when (import-decl? d)                                        */
-;* 	    (proc k d)))))                                             */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    module5-for-each-export ...                                      *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define (module5-for-each-export mod::Module proc::procedure)       */
-;*    (hashtble-for-each (-> mod decls)                                */
-;*       (lambda (k d::Decl)                                           */
-;* 	 (when (export-decl? d)                                        */
-;* 	    (proc k d)))))                                             */
+;*---------------------------------------------------------------------*/
+;*    localize ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (localize new old)
+   (if (epair? old)
+       (econs (car new) (cdr new) (cer old))
+       new))   
+
