@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Oct 18 14:10:35 2025 (serrano)                */
+;*    Last change :  Sun Oct 19 03:59:44 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -363,6 +363,8 @@
    (define (list->defs! env l)
       (for-each (lambda (e)
 		   (with-access::Decl (cdr e) (id def)
+		      (with-access::Def def (decl)
+			 (set! decl (cdr e)))
 		      (hashtable-put! env (symbol->string! id) def)))
 	 l)
       env)
@@ -385,6 +387,15 @@
       m))
 
 ;*---------------------------------------------------------------------*/
+;*    filecache-read ...                                               */
+;*---------------------------------------------------------------------*/
+(define (filecache-read path lib-path cache-dir expand)
+   (let ((p (open-input-binary-file path)))
+      (unwind-protect
+	 (unserialize (input-obj p) lib-path cache-dir expand)
+	 (close-binary-port p))))
+
+;*---------------------------------------------------------------------*/
 ;*    filecache-get ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (filecache-get path lib-path cache-dir expand parse)
@@ -392,8 +403,6 @@
       (trace-item "path=" path)
       (trace-item "cache-dir=" cache-dir)
       (when (string? cache-dir)
-	 (unless (directory? cache-dir)
-	    (make-directories cache-dir))
 	 (multiple-value-bind (apath cname cpath)
 	    (filecache-dirs path cache-dir)
 	    (trace-item "apath=" apath)
@@ -402,18 +411,15 @@
 	    (when (and (file-exists? cpath)
 		       (>=elong (file-modification-time cpath)
 			  (file-modification-time apath)))
-	       (let ((p (open-input-binary-file cpath)))
-		  (unwind-protect
-		     (let ((m (unserialize (input-obj p)
-				 lib-path cache-dir expand)))
-			(with-access::Module m (path decls defs classes exports)
-			   (trace-item "classes=" (hashtable-size classes))
-			   (trace-item "exports=" (hashtable-size exports))
-			   (trace-item "decls=" (typeof decls))
-			   (trace-item "defs=" (hashtable-size defs))
-			   (hashtable-put! *modules-by-path* path m)
-			   m))
-		     (close-binary-port p))))))))
+	       (let ((m (filecache-read cpath
+			   lib-path cache-dir expand)))
+		  (with-access::Module m (classes exports decls defs)
+		     (trace-item "classes=" (hashtable-size classes))
+		     (trace-item "exports=" (hashtable-size exports))
+		     (trace-item "decls=" (typeof decls))
+		     (trace-item "defs=" (hashtable-size defs))
+		     (hashtable-put! *modules-by-path* path m)
+		     m)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    filecache-put! ...                                               */
@@ -437,7 +443,6 @@
 (define (module-read path::bstring lib-path cache-dir expand parse)
    (with-trace 'module5 "module-read"
       (trace-item "path=" path)
-      (trace-item "expand=" expand)
       (synchronize module-mutex
 	 (or (hashtable-get *modules-by-path* path)
 	     (filecache-get path lib-path cache-dir expand parse)
@@ -912,8 +917,7 @@
 		       (alias alias)
 		       (scope 'import))))
 	    (hashtable-put! (-> mod decls) key nd)
-	    (hashtable-put! (-> mod imports) key nd)
-	    )))
+	    (hashtable-put! (-> mod imports) key nd))))
    (module-add-libraries! mod (-> imod libraries))
    (set! (-> mod inits) (append! (-> mod inits) (list imod))))
 
@@ -996,10 +1000,10 @@
 				     (module5-bind-class! mod id ci)
 				     (install-class-expanders ci xenv))))))))))
 	    (when (pair? (-> mod body))
-	       (trace-item "body avant-expand=" (-> mod body))
+	       (trace-item "body before-expand=" (-> mod body))
 	       (set! (-> mod body)
 		  (map (lambda (x) (expand/env x xenv)) (-> mod body)))
-	       (trace-item "body apres-expand=" (-> mod body)))
+	       (trace-item "body after-expand=" (-> mod body)))
 	    ;; Macro and class definitions are disgarded by the macro-expansion.
 	    ;; Because these definitions are needed to resolve the module
 	    ;; exports, INSTALL-MODULE5-EXPANDER (runtime/macro.scm),

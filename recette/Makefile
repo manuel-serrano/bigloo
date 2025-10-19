@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Sat Oct 18 14:22:36 2025 (serrano)                */
+#*    Last change :  Sun Oct 19 03:54:12 2025 (serrano)                */
 #*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -365,6 +365,9 @@ objs5_wasm/%.wat: %.scm
 #*---------------------------------------------------------------------*/
 objs5_c/main5.o: main.scm
 	$(BIGLOO) $(BFLAGS) -module5 -c $(EFLAGS) $< -o $@
+
+objs5_c/module5_ex12.o: module5_ex12.scm
+	$(BIGLOO) $(BFLAGS) -c $(EFLAGS) $< -o $@
 
 objs_c/callcc.$(C_OBJ_EXTENSION): callcc.scm
 	$(BIGLOO) $(BFLAGS) -call/cc -c $(BCFLAGS) $(EFLAGS) $< -o $@

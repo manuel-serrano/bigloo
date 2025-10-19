@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Tue Sep  9 10:09:59 2025 (serrano)                */
+#*    Last change :  Sun Oct 19 04:13:05 2025 (serrano)                */
 #*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -102,12 +102,16 @@ WATIB_LINKSRC	= $(WATIB_LINKFILE:%=watib/%.scm)
 WATIB_LINKOBJ	= $(WATIB_LINKFILE:%=watib/%.o)
 WATIB_OBJ  	= $(WATIB_FILE:%=watib/%.o)
 
+#*--- bcache ----------------------------------------------------------*/
+BCACHE_FILE	= bcache
+BCACHE_OBJ	= $(BCACHE_FILE:%=bcache/%.o)
+
 #*---------------------------------------------------------------------*/
 #*    Population                                                       */
 #*---------------------------------------------------------------------*/
 OBJECTS		= $(AFILE_OBJ) $(BPP_OBJ) $(BTAGS_OBJ) $(BDEPEND_OBJ) \
                   $(BMAKE_OBJ) $(BPROF_OBJ) $(MCO_OBJ) $(JFILE_OBJ) \
-                  $(JAS_OBJ) $(WATIB_OBJ)
+                  $(JAS_OBJ) $(WATIB_OBJ) $(BCACHE_OBJ)
 SOURCES_FILES	= $(OBJECTS:%.o=%.scm)
 
 POPULATION	= $(SOURCES_FILES) \
@@ -141,7 +145,8 @@ all-common: $(BOOTBINDIR)/bglafile \
      $(BOOTBINDIR)/bglpp \
      $(BOOTBINDIR)/bgltags \
      $(BOOTBINDIR)/bglprof \
-     $(BOOTBINDIR)/bgljfile
+     $(BOOTBINDIR)/bgljfile \
+     $(BOOTBINDIR)/bglcache
 
 all-jvm: $(BOOTBINDIR)/bgljas
 
@@ -197,6 +202,9 @@ watib: $(BOOTBINDIR)/bglwatib
 $(BOOTBINDIR)/bglwatib: $(WATIB_LINKSRC) $(WATIB_AFILE) $(WATIB_OBJ) $(WATIB_LINKOBJ)
 	(cd watib; $(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $(WATIB_OBJ:watib/%=%) $(WATIB_LINKOBJ:watib/%=%))
 
+$(BOOTBINDIR)/bglcache: $(BCACHE_OBJ)
+	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
+
 #*---------------------------------------------------------------------*/
 #*    install                                                          */
 #*---------------------------------------------------------------------*/
@@ -237,6 +245,7 @@ uninstall:
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bglpp$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bgltags$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bgljas$(EXE_SUFFIX)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bglcache$(EXE_SUFFIX)
 	- (cd bmem; $(MAKE) uninstall)
 
 #*---------------------------------------------------------------------*/
@@ -280,6 +289,7 @@ cleanall: clean
 	@- $(RM) -f $(BOOTBINDIR)/bgltags
 	@- $(RM) -f $(BOOTBINDIR)/bgljas
 	@- $(RM) -f $(BOOTBINDIR)/bglwatib
+	@- $(RM) -f $(BOOTBINDIR)/bglcache
 	@- $(RM) -f $(JAS_LINKSRC)
 
 distclean: cleanall

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 17 10:40:09 2025                          */
-;*    Last change :  Sat Oct 18 15:09:53 2025 (serrano)                */
+;*    Last change :  Sun Oct 19 03:51:28 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 tests                                                    */
@@ -64,9 +64,10 @@
    (test "ex9.3" (ex9f) (cons 340 'ex9m))
    (test "ex10.1" (ex10i "from module5.scm") (cons 'ex10m "from module5.scm"))
    (test "ex11.1" (ex11f) (list 10 20 "C2"))
-   (test "ex12.1" (to-string (ex12 4)) "toto")
-   (test "ex12.2" (to-string (ex12i 4 3 9)) "tutu")
+   (test "ex12.1" (to-string (ex12 4)) "==> C12  4")
+   (test "ex12.2" (to-string (ex12i 4 3 9)) "==> bint ")
    (test "ex13.1" G 45)
    (test "ex14.1" (ex14 '(1 2 3)) 2)
    (test "ex15.1" (ex15f) "procedure")
-   (test "ex16.1" (ex16a) 'ex5a))
+   (test "ex16.1" (ex16a) 'ex5a)
+   )
