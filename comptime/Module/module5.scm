@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Oct 17 07:33:30 2025 (serrano)                */
+;*    Last change :  Sun Oct 19 07:41:33 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -364,7 +364,7 @@
       (let ((body (filter (lambda (x) x)
 		     (hashtable-map imports
 			(lambda (k decl)
-			   (with-access::Decl decl (def)
+			   (with-access::Decl decl (def id)
 			      (when (isa? def Def)
 				 (with-access::Def def (kind expr)
 				    (when (eq? kind 'inline)

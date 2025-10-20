@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Tue Sep 30 16:16:24 2025 (serrano)                */
+;*    Last change :  Sun Oct 19 07:53:52 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
@@ -114,30 +114,30 @@
 	 (trace-item "class=" (sfun-class sfun))
 	 (cond
 	    ((not (isa? body node))
-	     (trace (inline inline+ 0) " no (no body)" #\Newline)
+	     (trace (inline inline+ 0) " no (no body) " (shape var) #\Newline)
 	     #f)
 	    ((not *inlining?*)
 	     ;; no, because the user said so
-	     (trace (inline inline+ 0) " no (no-inlining option)" #\Newline)
+	     (trace (inline inline+ 0) " no (no-inlining option) " (shape var) #\Newline)
 	     #f)
 	    ((and *optim-loop-inlining?*
 		  (not *optim-unroll-loop?*)
 		  (memq var stack))
 	     ;; no we won't because we are already inlining a app to `fun'
-	     (trace (inline inline+ 0) " no (recursive)" #\Newline)
+	     (trace (inline inline+ 0) " no (recursive) " (shape var) #\Newline)
 	     #f)
 	    ((eq? (sfun-class sfun) 'snifun)
-	     (trace (inline inline+ 0) " no (declared snifun)" #\Newline)
+	     (trace (inline inline+ 0) " no (declared snifun) " (shape var) #\Newline)
 	     ;; non inlinable functions are never inlined (sic !).
 	     #f)
 	    ((and (not (eq? *inline-mode* 'all))
 		  (eq? (sfun-class sfun) 'sifun)
 		  (is-recursive? var))
-	     (trace (inline inline+ 0) " no (recursive)" #\Newline)
+	     (trace (inline inline+ 0) " no (recursive) " (shape var) #\Newline)
 	     ;; recursive functions can be inlined only on the first inlining
 	     #f)
 	    ((eq? (sfun-class sfun) 'sgfun)
-	     (trace (inline inline+ 0) " no (generic)" #\Newline)
+	     (trace (inline inline+ 0) " no (generic) " (shape var) #\Newline)
 	     ;; don't inline generic (they use find-method which is inline)
 	     #f)
 	    ((and (eq? (sfun-class sfun) 'sifun)
@@ -151,7 +151,7 @@
 	     #t)
 	    ((and (global? var) (eq? (global-import var) 'import))
 	     ;; of course not.
-	     (trace (inline inline+ 0) " no (import)" #\Newline)
+	     (trace (inline inline+ 0) " no (import) " (shape var) #\Newline)
 	     #f)
 	    ((not *user-inlining?*)
 	     (trace (inline inline+ 0) " no, not user-inlining...\n")
@@ -184,7 +184,7 @@
 	     (trace (inline inline+ 0) " no, too large (size: "
 		(node-size body)
 		" max: " (*fx kfactor call-size)
-		")"
+		") " (shape var)
 		#\newline)
 	     #f)))))
  

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun Oct 19 03:59:44 2025 (serrano)                */
+;*    Last change :  Sun Oct 19 07:21:34 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -363,8 +363,9 @@
    (define (list->defs! env l)
       (for-each (lambda (e)
 		   (with-access::Decl (cdr e) (id def)
-		      (with-access::Def def (decl)
-			 (set! decl (cdr e)))
+		      (when (isa? def Def)
+			 (with-access::Def def (decl)
+			    (set! decl (cdr e))))
 		      (hashtable-put! env (symbol->string! id) def)))
 	 l)
       env)
@@ -716,14 +717,13 @@
 		   (lambda (key d::Decl)
 		      (let* ((alias (if id
 					(string->symbol
-					   (format "~a.~a" id (-> d alias)))
+					   (format "~a@~a" (-> d alias) id))
 					(-> d alias)))
 			     (nd (duplicate::Decl d
 				    (alias alias)
 				    (scope 'import))))
 			 (hashtable-put! (-> mod decls) key nd)
-			 (hashtable-put! (-> mod imports) key nd)
-			 )))
+			 (hashtable-put! (-> mod imports) key nd))))
 		(module-add-libraries! mod (-> imod libraries))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc mod "Cannot find file" path clause))))
@@ -940,7 +940,7 @@
 	 (trace-item "decls="
 	    (hashtable-map (-> mod decls)
 	       (lambda (k d::Decl)
-		  (format "~a/~a" (-> d id) (-> d alias)))))
+		  (format "~a/~a(~a)" (-> d id) (-> d alias) (-> d scope)))))
 	 (trace-item "defs="
 	    (hashtable-map (-> mod defs)
 	       (lambda (k d::Def)
