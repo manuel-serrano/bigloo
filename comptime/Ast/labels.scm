@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/labels.scm              */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/labels.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Thu Nov  3 14:22:35 2011 (serrano)                */
+;*    Last change :  Mon Oct 20 12:59:05 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `labels->node' translator                                    */
 ;*=====================================================================*/
@@ -26,7 +26,7 @@
 	    ast_local)
    (export  (labels-sym? ::obj)
 	    (labels-sym::symbol)
-	    (labels->node::let-fun <sexp> <stack> ::obj ::symbol)))
+	    (labels->node::let-fun <sexp> <stack> ::obj ::symbol ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *labels* ...                                                     */
@@ -48,16 +48,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    labels->node ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (labels->node exp stack loc site)
+(define (labels->node exp stack loc site genv)
    (let ((loc (find-location/loc exp loc)))
       (match-case exp
          ((?- (and (? pair?) ?bindings) . ?body)
-          (let* ((locals (allocate-sfuns bindings loc))
+          (let* ((locals (allocate-sfuns bindings loc genv))
                  (new-stack (append locals stack))
-		 (body (sexp->node (normalize-progn body) new-stack loc site))
+		 (body (sexp->node (normalize-progn body) new-stack loc site genv))
 		 (loc (find-location/loc exp loc)))
 	     ;; we compute the ast for all local bodies
-	     (for-each (lambda (fun b) (labels-binding fun b new-stack loc))
+	     (for-each (lambda (fun b) (labels-binding fun b new-stack loc genv))
 		       locals
 		       bindings)
 	     ;; and we allocate the let-fun node
@@ -67,12 +67,12 @@
 		(locals locals)
 		(body body))))
          (else
-	  (error-sexp->node "Illegal `labels' expression" exp loc)))))
+	  (error-sexp->node "Illegal `labels' expression" exp loc genv)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    allocate-sfuns ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (allocate-sfuns bindings loc)
+(define (allocate-sfuns bindings loc genv)
    (let loop ((bindings bindings)
 	      (res      '()))
       (if (null? bindings)
@@ -81,16 +81,16 @@
 	     (match-case src
 		(((and (? symbol?) ?fun) ?args . ?body)
 		 (let* ((loc (find-location/loc (car bindings) loc))
-			(fun (make-local-noopt-sfun loc src fun args body)))
+			(fun (make-local-noopt-sfun loc src fun args body genv)))
 		    (loop (cdr bindings) (cons fun res))))
 		(else
-		 (error-sexp->node "Illegal `binding' form" src loc)
+		 (error-sexp->node "Illegal `binding' form" src loc genv)
 		 '()))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-local-noopt-sfun ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (make-local-noopt-sfun loc src fun args body)
+(define (make-local-noopt-sfun loc src fun args body genv)
    (let* ((id-type (parse-id fun loc))
 	  (id      (car id-type))
 	  (type    (cdr id-type))
@@ -129,27 +129,27 @@
 		 (make-user-local-sfun id type sfun)
 		 (make-local-sfun id type sfun)))
 	  (begin
-	     (error-sexp->node "Illegal formal type" src loc)
+	     (error-sexp->node "Illegal formal type" src loc genv)
 	     '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    labels-binding ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (labels-binding local binding stack loc)
+(define (labels-binding local binding stack loc genv)
    (match-case binding
       ((?- ?args . ?body)
        (enter-function (local-id local))
        (let* ((loc (find-location/loc binding loc))
 	      (body2 (make-dsssl-function-prelude (local-id local)
-						  args
-						  (normalize-progn body)
-						  user-error))
+			args
+			(normalize-progn body)
+			user-error))
 	      (body3 (sexp->node body2
-				 (append (sfun-args (local-value local)) stack)
-				 loc
-				 'value)))
+			(append (sfun-args (local-value local)) stack)
+			loc
+			'value genv)))
 	  (sfun-loc-set! (local-value local) loc)
 	  (sfun-body-set! (local-value local) body3)
 	  (leave-function)))
       (else
-       (error-sexp->node "Illegal `labels' form" binding loc))))
+       (error-sexp->node "Illegal `labels' form" binding loc genv))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Wed Sep 24 17:02:21 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:08:17 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
@@ -24,6 +24,7 @@
 	    type_cache
 	    type_typeof
 	    ast_var
+	    ast_env
 	    ast_node
 	    ast_sexp
 	    ast_local
@@ -90,7 +91,7 @@
 							loc
 							caller
 							to)))
-					    loc)))))
+					    loc (get-genv))))))
 		    (funcall-fun-set! node
 		       (instantiate::ref
 			  (loc loc)
@@ -137,7 +138,7 @@
 					      ":Wrong number of arguments")
 			      ,error-msg
 			      ,fun))
-		loc)))
+		loc (get-genv))))
       (lvtype-node! node)
       (coerce! node caller to #f)))
 
@@ -145,7 +146,7 @@
 ;*    coerce-eoa ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (coerce-eoa node)
-   (let ((n (top-level-sexp->node '__eoa__ (node-loc node))))
+   (let ((n (top-level-sexp->node '__eoa__ (node-loc node) (get-genv))))
       (lvtype-node! n)
       n))
 

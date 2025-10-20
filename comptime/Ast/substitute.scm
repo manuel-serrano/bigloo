@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Ast/substitute.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/substitute.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Thu Jul  8 11:25:32 2021 (serrano)                */
+;*    Last change :  Mon Oct 20 13:08:14 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -23,7 +23,7 @@
 	    ast_apply
 	    ast_app
 	    ast_sexp)
-   (export  (substitute!::node what* by* ::node site)))
+   (export  (substitute!::node what* by* ::node site ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    substitute! ...                                                  */
@@ -31,7 +31,7 @@
 ;*    Substitute can replace a variable by a variable or an atom       */
 ;*    (including `fun') construction but nothing else.                 */
 ;*---------------------------------------------------------------------*/
-(define (substitute! what* by* node site)
+(define (substitute! what* by* node site genv)
    (assert (site) (memq site '(value apply app set!)))
    ;; we set alpha-fnode slot 
    (for-each (lambda (what by)
@@ -39,7 +39,7 @@
 		(variable-fast-alpha-set! what by))
 	     what*
 	     by*)
-   (let ((res (do-substitute! node site)))
+   (let ((res (do-substitute! node site genv)))
       ;; we remove alpha-fast slots
       (for-each (lambda (what)
 		   (variable-fast-alpha-set! what #unspecified))
@@ -49,18 +49,18 @@
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-generic (do-substitute!::node node::node site))
+(define-generic (do-substitute!::node node::node site genv))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::atom ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::atom site)
+(define-method (do-substitute! node::atom site genv)
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::var ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::var site)
+(define-method (do-substitute! node::var site genv)
    (let* ((var   (var-variable node))
 	  (alpha (variable-fast-alpha var)))
       (let loop ((alpha alpha))
@@ -88,44 +88,44 @@
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::kwote ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::kwote site)
+(define-method (do-substitute! node::kwote site genv)
    node)
        
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::sequence ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::sequence site)
-   (do-substitute*! (sequence-nodes node) site)
+(define-method (do-substitute! node::sequence site genv)
+   (do-substitute*! (sequence-nodes node) site genv)
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::sync ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::sync site)
-   (sync-mutex-set! node (do-substitute! (sync-mutex node) site))
-   (sync-prelock-set! node (do-substitute! (sync-prelock node) site))
-   (sync-body-set! node (do-substitute! (sync-body node) site))
+(define-method (do-substitute! node::sync site genv)
+   (sync-mutex-set! node (do-substitute! (sync-mutex node) site genv))
+   (sync-prelock-set! node (do-substitute! (sync-prelock node) site genv))
+   (sync-body-set! node (do-substitute! (sync-body node) site genv))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::app ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::app site)
-   (app-fun-set! node (do-substitute! (app-fun node) 'app))
-   (do-substitute*! (app-args node) 'value)
+(define-method (do-substitute! node::app site genv)
+   (app-fun-set! node (do-substitute! (app-fun node) 'app genv))
+   (do-substitute*! (app-args node) 'value genv)
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::app-ly ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::app-ly site)
+(define-method (do-substitute! node::app-ly site genv)
    (with-access::app-ly node (arg fun loc)
-      (let ((nfun (do-substitute! fun 'apply))
-	    (narg (do-substitute! arg 'value)))
+      (let ((nfun (do-substitute! fun 'apply genv))
+	    (narg (do-substitute! arg 'value genv)))
 	 (if (and (closure? nfun)
 		  (not (global-optional? (var-variable nfun)))
 		  (not (global-key? (var-variable nfun))))
-	     (known-app-ly->node '() loc (duplicate::ref nfun) narg site)
+	     (known-app-ly->node '() loc (duplicate::ref nfun) narg site genv)
 	     (begin
 		(set! fun nfun)
 		(set! arg narg)
@@ -137,16 +137,16 @@
 ;*    When transforming a funcall into an app node we have to remove   */
 ;*    the extra argument which hold the closure.                       */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::funcall site)
+(define-method (do-substitute! node::funcall site genv)
    (with-access::funcall node (args fun loc)
-      (let ((nfun  (do-substitute! fun 'value))
-	    (nargs (map (lambda (a) (do-substitute! a 'value)) args)))
+      (let ((nfun  (do-substitute! fun 'value genv))
+	    (nargs (map (lambda (a) (do-substitute! a 'value genv)) args)))
 	 (if (or (closure? nfun)
 		 (and (var? nfun)
 		      (fun? (variable-value (var-variable nfun)))))
 	     (if (correct-arity-app? (var-variable nfun)
 				     (cdr nargs))
-		 (make-app-node '() loc 'funcall nfun (cdr nargs))
+		 (make-app-node '() loc 'funcall nfun (cdr nargs) genv)
 		 (user-error/location
 		    loc
 		    "Illegal application" "wrong number of argument(s)"
@@ -159,127 +159,127 @@
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::extern ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::extern site)
-   (do-substitute*! (extern-expr* node) site)
+(define-method (do-substitute! node::extern site genv)
+   (do-substitute*! (extern-expr* node) site genv)
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::cast ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::cast site)
-   (cast-arg-set! node (do-substitute! (cast-arg node) site))
+(define-method (do-substitute! node::cast site genv)
+   (cast-arg-set! node (do-substitute! (cast-arg node) site genv))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::setq ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::setq site)
+(define-method (do-substitute! node::setq site genv)
    (with-access::setq node (var value)
-      (set! var (do-substitute! var 'set!))
-      (set! value (do-substitute! value site))
+      (set! var (do-substitute! var 'set! genv))
+      (set! value (do-substitute! value site genv))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::conditional ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::conditional site)
+(define-method (do-substitute! node::conditional site genv)
    (with-access::conditional node (test true false)
-      (set! test (do-substitute! test 'value))
-      (set! true (do-substitute! true site))
-      (set! false (do-substitute! false site))
+      (set! test (do-substitute! test 'value genv))
+      (set! true (do-substitute! true site genv))
+      (set! false (do-substitute! false site genv))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::fail ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::fail site)
+(define-method (do-substitute! node::fail site genv)
    (with-access::fail node (proc msg obj)
-      (set! proc (do-substitute! proc 'value))
-      (set! msg (do-substitute! msg 'value))
-      (set! obj (do-substitute! obj 'value))
+      (set! proc (do-substitute! proc 'value genv))
+      (set! msg (do-substitute! msg 'value genv))
+      (set! obj (do-substitute! obj 'value genv))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::switch ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::switch site)
-   (switch-test-set! node (do-substitute! (switch-test node) 'value))
+(define-method (do-substitute! node::switch site genv)
+   (switch-test-set! node (do-substitute! (switch-test node) 'value genv))
    (for-each (lambda (clause)
-		(set-cdr! clause (do-substitute! (cdr clause) site)))
+		(set-cdr! clause (do-substitute! (cdr clause) site genv)))
 	     (switch-clauses node))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::let-fun ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::let-fun site)
+(define-method (do-substitute! node::let-fun site genv)
    (for-each (lambda (local)
 		(let ((fun (local-value local)))
 		   (sfun-body-set! fun (do-substitute! (sfun-body fun)
-						       'value))))
+						       'value genv))))
 	     (let-fun-locals node))
-   (let-fun-body-set! node (do-substitute! (let-fun-body node) site))
+   (let-fun-body-set! node (do-substitute! (let-fun-body node) site genv))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::let-var ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::let-var site)
+(define-method (do-substitute! node::let-var site genv)
    (for-each (lambda (binding)
-		(set-cdr! binding (do-substitute! (cdr binding) 'value)))
+		(set-cdr! binding (do-substitute! (cdr binding) 'value genv)))
 	     (let-var-bindings node))
-   (let-var-body-set! node (do-substitute! (let-var-body node) site))
+   (let-var-body-set! node (do-substitute! (let-var-body node) site genv))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::set-ex-it ...                                   */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::set-ex-it site)
-   (set-ex-it-body-set! node (do-substitute! (set-ex-it-body node) site))
-   (set-ex-it-onexit-set! node (do-substitute! (set-ex-it-onexit node) site))
+(define-method (do-substitute! node::set-ex-it site genv)
+   (set-ex-it-body-set! node (do-substitute! (set-ex-it-body node) site genv))
+   (set-ex-it-onexit-set! node (do-substitute! (set-ex-it-onexit node) site genv))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::jump-ex-it ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::jump-ex-it site)
-   (jump-ex-it-exit-set! node (do-substitute! (jump-ex-it-exit node) 'app))
-   (jump-ex-it-value-set! node (do-substitute! (jump-ex-it-value node) 'value))
+(define-method (do-substitute! node::jump-ex-it site genv)
+   (jump-ex-it-exit-set! node (do-substitute! (jump-ex-it-exit node) 'app genv))
+   (jump-ex-it-value-set! node (do-substitute! (jump-ex-it-value node) 'value genv))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::make-box ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::make-box site)
-   (make-box-value-set! node (do-substitute! (make-box-value node) 'value))
+(define-method (do-substitute! node::make-box site genv)
+   (make-box-value-set! node (do-substitute! (make-box-value node) 'value genv))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::box-ref ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::box-ref site)
-   (box-ref-var-set! node (do-substitute! (box-ref-var node) 'value))
+(define-method (do-substitute! node::box-ref site genv)
+   (box-ref-var-set! node (do-substitute! (box-ref-var node) 'value genv))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::box-set! ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::box-set! site)
-   (box-set!-var-set! node (do-substitute! (box-set!-var node) 'value))
-   (box-set!-value-set! node (do-substitute! (box-set!-value node) 'value))
+(define-method (do-substitute! node::box-set! site genv)
+   (box-set!-var-set! node (do-substitute! (box-set!-var node) 'value genv))
+   (box-set!-value-set! node (do-substitute! (box-set!-value node) 'value genv))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute*! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (do-substitute*! node* site)
+(define (do-substitute*! node* site genv)
    (cond
       ((null? node*)
        'done)
       ((null? (cdr node*))
-       (set-car! node* (do-substitute! (car node*) site))
+       (set-car! node* (do-substitute! (car node*) site genv))
        'done)
       (else
-       (set-car! node* (do-substitute! (car node*) 'value))
-       (do-substitute*! (cdr node*) site))))
+       (set-car! node* (do-substitute! (car node*) 'value genv))
+       (do-substitute*! (cdr node*) site genv))))
    

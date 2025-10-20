@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Mon Oct 20 08:54:45 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:08:46 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -166,9 +166,7 @@
 				(cons (cons (car kaptured)
 					    (sexp->node
 					     `(procedure-ref env ,num)
-					     stack
-					     loc
-					     'value))
+					     stack loc 'value (get-genv)))
 				      res)))))
 	 (body (instantiate::let-fun
 		  (loc loc)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Oct 20 10:14:16 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 12:45:53 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -465,7 +465,7 @@
 	 (stop-on-pass 'inline+ (lambda () (write-ast ast)))
 	 
 	 ;; the code production
-	 (let ((ast2 (append-ast (ast-initializers) ast)))
+	 (let ((ast2 (append-ast (ast-initializers (get-genv)) ast)))
 	    (stop-on-pass 'init (lambda () (write-ast ast2)))
 	    (check-sharing "init" ast2)
 	    (check-type "init" ast2 #t #t)
@@ -640,7 +640,7 @@
 	 (module5-ast! mod genv)
 
 	 (let* ((m (module5-main mod genv))
-		(ast (profile ast (build-ast units))))
+		(ast (profile ast (build-ast units genv))))
 
 	    ;; register main declaration
 	    (set! *main* m)
@@ -733,7 +733,7 @@
 		    (backend-force-register-gc-roots (the-backend)))
 	    (set! units (cons (make-gc-roots-unit) units)))
 	 
-	 (profile ast (build-ast units)))))
+	 (profile ast (build-ast units genv)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    debug-code ...                                                   */

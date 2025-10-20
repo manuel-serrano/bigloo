@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/iterate.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/iterate.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Wed Oct 13 12:16:21 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 14:19:46 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
 ;*=====================================================================*/
@@ -18,6 +18,7 @@
 	    tools_speek
 	    type_type
 	    type_cache
+	    ast_env
 	    ast_var
 	    ast_node
 	    ast_unit
@@ -50,7 +51,7 @@
 		       (set! glodefs (cons g glodefs))))
 	 globals)
       ;; add the top level forms
-      (set! glodefs (append (unit-initializers) glodefs))
+      (set! glodefs (append (unit-initializers (get-genv)) glodefs))
       ;; start iterations
       (continue-cfa! 'init)
       ;; and loop

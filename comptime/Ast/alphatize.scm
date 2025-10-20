@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Fri Dec 27 09:58:17 2024 (serrano)                */
+;*    Last change :  Mon Oct 20 13:18:29 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -22,7 +22,8 @@
 	    ast_local
 	    ast_apply
 	    ast_app
-	    ast_dump)
+	    ast_dump
+	    ast_env)
    (static  (wide-class retblock/alpha::retblock
 	       alpha::retblock))
    (export  (alphatize::node what* by* loc ::node)
@@ -220,10 +221,9 @@
 	       (not (global-optional? (var-variable fun)))
 	       (not (global-key? (var-variable fun))))
 	  (known-app-ly->node '()
-			      (get-location node loc)
-			      (duplicate::ref fun)
-			      arg
-			      'value)
+	     (get-location node loc)
+	     (duplicate::ref fun)
+	     arg 'value (get-genv))
 	  (duplicate::app-ly node
 	     (loc (get-location node loc))
 	     (fun fun)
@@ -233,14 +233,14 @@
 ;*    do-alphatize ::funcall ...                                       */
 ;*    -------------------------------------------------------------    */
 ;*    When transforming a funcall into an app node we have to remove   */
-;*    the extra argument which hold the closure.                       */
+;*    the extra argument which holds the closure.                      */
 ;*---------------------------------------------------------------------*/
 (define-method (do-alphatize node::funcall loc)
-   (let ((fun  (do-alphatize (funcall-fun node) loc))
+   (let ((fun (do-alphatize (funcall-fun node) loc))
 	 (args (do-alphatize* (funcall-args node) loc)))
       (if (closure? fun)
 	  (sexp->node `(,(duplicate::ref fun) ,@(cdr args))
-	     '() (node-loc node) 'app)
+	     '() (node-loc node) 'app (get-genv))
 	  (duplicate::funcall node
 	     (loc (get-location node loc))
 	     (fun fun)
@@ -456,7 +456,8 @@
 	 (body (alphatize old-locals
 		  new-locals
 		  (get-location node loc)
-		  (let-fun-body node))))))
+		  (let-fun-body node)
+		 )))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::let-var ...                                       */
@@ -484,7 +485,8 @@
 	 (body (alphatize old-locals
 			  new-locals
 			  (get-location node loc)
-			  (let-var-body node))))))
+			  (let-var-body node)
+			 )))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::set-ex-it ...                                     */
@@ -510,7 +512,8 @@
 	 (body (alphatize (list old-var)
 		  (list new-var)
 		  (get-location node loc)
-		  old-body))
+		  old-body
+		 ))
 	 (onexit (do-alphatize old-onexit loc)))))
 
 ;*---------------------------------------------------------------------*/

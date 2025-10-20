@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Fri Dec 27 07:47:21 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 14:09:59 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `apply' coercion                                            */
 ;*=====================================================================*/
@@ -23,6 +23,7 @@
 	    type_type
 	    type_cache
 	    ast_var
+	    ast_env
 	    ast_node
 	    ast_sexp
 	    ast_local
@@ -61,37 +62,37 @@
 		    (val (make-local-svar 'val *pair-nil*))
 		    (loc (node-loc node))
 		    (lval (lvtype-node
-			     (top-level-sexp->node `(length ,val) loc)
+			     (top-level-sexp->node `(length ,val) loc (get-genv))
 			     *long*))
 		    (len (gensym 'len))
 		    (body (lvtype-node
-			   (top-level-sexp->node
-			    `(let ((,(symbol-append len '::long)
-				    ,(coerce! lval caller *int* safe)))
-				(if (correct-arity? ,fun ,len)
-				    ,(convert! node *obj* to safe)
-				    ,(make-error-node error-msg
-						      loc
-						      caller 
-						      to)))
-			    loc)
-			   to))
+			     (top-level-sexp->node
+				`(let ((,(symbol-append len '::long)
+					,(coerce! lval caller *int* safe)))
+				    (if (correct-arity? ,fun ,len)
+					,(convert! node *obj* to safe)
+					,(make-error-node error-msg
+					    loc
+					    caller 
+					    to)))
+				loc (get-genv))
+			     to))
 		    (lnode (instantiate::let-var
 			      (loc loc)
 			      (type (strict-node-type (node-type body) *obj*))
 			      (bindings (list (cons fun c-fun)
-					      (cons val (app-ly-arg node))))
+					   (cons val (app-ly-arg node))))
 			      (body body))))
-		   ;; we set the new apply value
+		;; we set the new apply value
 		(app-ly-fun-set! node (instantiate::ref
-					(loc loc)
-					(type *procedure*)
-					(variable fun)))
+					 (loc loc)
+					 (type *procedure*)
+					 (variable fun)))
 		(app-ly-arg-set! node (instantiate::ref
-					(loc loc)
-					(type (strict-node-type
-					       (variable-type val) *obj*))
-					(variable val)))
+					 (loc loc)
+					 (type (strict-node-type
+						  (variable-type val) *obj*))
+					 (variable val)))
 		lnode)))))
 
 ;*---------------------------------------------------------------------*/
@@ -116,6 +117,6 @@
 		    `(failure ,(list 'quote (current-function))
 			      "Wrong number of arguments"
 			      ,error-msg))
-		loc)))
+		loc (get-genv))))
       (coerce! node caller to #f)))
 

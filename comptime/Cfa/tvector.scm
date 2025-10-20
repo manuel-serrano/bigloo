@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Mon Oct 20 08:55:07 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:20:28 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
@@ -257,7 +257,8 @@
       (let ((tvector-unit (tvector-finalizer)))
 	 (pragma-finalizer)
 	 (let ((res (if (unit? tvector-unit)
-			(let ((ast (build-ast-sans-remove (list tvector-unit))))
+			(let ((ast (build-ast-sans-remove
+				      (list tvector-unit) (get-genv))))
 			   (globalize-walk! ast 'no-remove))
 			'())))
 	    (lvtype-ast! res)
@@ -527,7 +528,7 @@
 	     (tv (get-approx-type approx node)))
 	 (if (and (tvec? tv) (not tvector?))
 	     (let* ((length-tv (symbol-append (type-id tv) '-length))
-		    (n (sexp->node `(,length-tv ,(car expr*)) '() loc 'value)))
+		    (n (sexp->node `(,length-tv ,(car expr*)) '() loc 'value (get-genv))))
 		(node-type-set! n (get-tvector-length-type))
 		(inline-node n 1 '()))
 	     node))))
@@ -577,7 +578,7 @@
 	     (tv     (get-approx-type approx node)))
 	 (if (tvec? tv)
 	     (let* ((tv->list (symbol-append (type-id tv) '->list))
-		    (n (sexp->node `(,tv->list ,@args) '() loc 'value)))
+		    (n (sexp->node `(,tv->list ,@args) '() loc 'value (get-genv))))
 		(node-type-set! n (node-type node))
 		n)
 	     node))))
@@ -593,7 +594,7 @@
 	 ;; (tprint "make-vector-app ty=" (shape ty) " tv=" (shape tv))
 	 (if (and (type? tv) tvector?)
 	     (let* ((make-tv (symbol-append 'make- (type-id tv)))
-		    (n (sexp->node `(,make-tv ,@args) '() loc 'value)))
+		    (n (sexp->node `(,make-tv ,@args) '() loc 'value (get-genv))))
 		(node-type-set! n tv)
 		(inline-node n 1 '()))
 	     node))))
@@ -608,7 +609,7 @@
 	     (tv (type-tvector ty)))
 	 (if (and (type? tv) (eq? ftype *_*))
 	     (let* ((create-tv (symbol-append 'allocate- (type-id tv)))
-		    (n (sexp->node `(,create-tv ,@expr*) '() loc 'value)))
+		    (n (sexp->node `(,create-tv ,@expr*) '() loc 'value (get-genv))))
 		(let ((in (inline-node n 1 '())))
 		   (lvtype-node! in)
 		   in))
@@ -635,7 +636,7 @@
 		    node)
 		 (let* ((ty (get-approx-type approx node))
 			(tv-ref (symbol-append (type-id tv) '-ref))
-			(n (sexp->node `(,tv-ref ,@expr*) '() loc 'value)))
+			(n (sexp->node `(,tv-ref ,@expr*) '() loc 'value (get-genv))))
 		    (node-type-set! n ty)
 		    (inline-node n 1 '())))))))
 
@@ -653,7 +654,7 @@
 		 node
 		 (let* ((ty (get-approx-type approx node))
 			(tv-set! (symbol-append (type-id tv) '-set!))
-			(n (sexp->node `(,tv-set! ,@expr*) '() loc 'value)))
+			(n (sexp->node `(,tv-set! ,@expr*) '() loc 'value (get-genv))))
 		    (node-type-set! n ty)
 		    (inline-node n 1 '())))))))
 

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Beta/walk.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Beta/walk.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Tue Aug 27 13:18:26 2024 (serrano)                */
+;*    Last change :  Mon Oct 20 14:01:00 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a very simple beta reduction. It reduces  */
 ;*    read-only local variables bound to atoms (e.g., bools, numbers)  */
@@ -27,6 +27,7 @@
 	    ast_occur
 	    ast_remove
 	    ast_app
+	    ast_env
 	    type_cache)
    (export  (beta-walk!::obj ::pair-nil)))
 
@@ -125,7 +126,8 @@
 		    (set! occurrence (-fx occurrence 2))
 		    (make-app-node '() (node-loc node) 'value
 		       (duplicate::ref (cdr red))
-		       (cdr (funcall-args node))))
+		       (cdr (funcall-args node))
+		       (get-genv)))
 		 node))
 	  node)))
 

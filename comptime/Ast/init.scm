@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/init.scm                */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/init.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 19 14:33:36 2005                          */
-;*    Last change :  Mon Oct 15 08:12:08 2012 (serrano)                */
-;*    Copyright   :  2005-12 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 13:57:08 2025 (serrano)                */
+;*    Copyright   :  2005-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The initialization part of the AST                               */
 ;*=====================================================================*/
@@ -42,7 +42,7 @@
 	    backend_c_prototype
 	    backend_c_main)
    
-   (export (ast-initializers::pair-nil)))
+   (export (ast-initializers::pair-nil ::obj)))
    
 ;*---------------------------------------------------------------------*/
 ;*    ast-initializers ...                                             */
@@ -51,10 +51,10 @@
 ;*    for initializing the application (e.g. module-initialization,    */
 ;*    cnst-initialization, ...).                                       */
 ;*---------------------------------------------------------------------*/
-(define (ast-initializers::pair-nil)
+(define (ast-initializers::pair-nil genv)
    (let* ((lib-unit (library-finalizer))
 	  (lib-init (if (unit? lib-unit)
-			(let ((vars (build-ast-sans-remove (list lib-unit))))
+			(let ((vars (build-ast-sans-remove (list lib-unit) genv)))
 			   (for-each (lambda (g)
 					(let ((n (sfun-body (global-value g))))
 					   (occur-node-in! n g)

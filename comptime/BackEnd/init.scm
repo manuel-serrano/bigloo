@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Mon Oct 20 09:38:51 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:24:03 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
@@ -102,7 +102,7 @@
 				  from)))))
 	  (cvar (make-local-svar 'checksum *long*))
 	  (nvar (make-local-svar 'from *string*))
-	  (node (let ((node (sexp->node body (list cvar nvar) '() 'value)))
+	  (node (let ((node (sexp->node body (list cvar nvar) '() 'value (get-genv))))
 		   (lvtype-node! node)
 		   (coerce!  node req *obj* #f)))
 	  (init (def-global-sfun-no-warning! (get-genv)

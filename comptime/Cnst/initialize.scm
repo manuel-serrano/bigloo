@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Wed Sep 24 09:38:11 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:19:31 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
@@ -52,7 +52,7 @@
 					 *init-mode*)))))
       (if (pair? body)
 	  (let ((unit (unit 'cnst 8 body #t (eq? *object-init-mode* 'staged))))
-	     (let ((ast (build-ast (list unit))))
+	     (let ((ast (build-ast (list unit) (get-genv))))
 		(for-each (lambda (global)
 			     (let ((body (sfun-body (global-value global))))
 				(lvtype-node! body)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Wed Sep 24 09:47:29 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 13:50:22 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -27,8 +27,8 @@
 	    tools_dsssl
 	    expand_eps)
    (import type_typeof)
-   (export  (application->node::node ::obj ::obj ::obj ::symbol)
-	    (make-app-node::node stack loc site var::var args)
+   (export  (application->node::node ::obj ::obj ::obj ::symbol ::obj)
+	    (make-app-node::node stack loc site var::var args ::obj)
 	    (correct-arity-app?::bool ::variable ::obj)))
 
 ;*---------------------------------------------------------------------*/
@@ -71,7 +71,7 @@
 ;*    Each parameters which is not a variable _is_ forced to be bound  */
 ;*    to a variable.                                                   */
 ;*---------------------------------------------------------------------*/
-(define (application->node exp stack loc site)
+(define (application->node exp stack loc site genv)
    
    (define (atomic? exp)
       (match-case exp
@@ -137,21 +137,22 @@
 	 (error-sexp->node
 	    (string-append "Illegal application: " expect provide)
 	    (shape exp)
-	    loc)))
+	    loc
+	    genv)))
    
    (let* ((loc (find-location/loc exp loc))
 	  (err-nb *nb-error-on-pass*)
 	  (debugstamp (gensym))
-	  (fun (sexp->node (car exp) stack loc 'app))
+	  (fun (sexp->node (car exp) stack loc 'app genv))
 	  (fun-err? (>fx *nb-error-on-pass* err-nb)))
       (if (and (all-subexp-symbol? exp) (var? fun))
 	  (let* ((args  (cdr exp))
 		 (delta (check-user-app fun args)))
 	     (cond
 		((not (var? fun))
-		 (sexp->node ''() stack loc 'value))
+		 (sexp->node ''() stack loc 'value genv))
 		((=fx delta 0)
-		 (make-app-node stack loc site fun args))
+		 (make-app-node stack loc site fun args genv))
 		(else
 		 (wrong-number-of-arguments exp loc fun args))))
 	  (let loop ((old-args (cdr exp))
@@ -168,16 +169,14 @@
 		    (if (var? fun)
 			(begin
 			   (let ((node (sexp->node (make-the-app fun)
-						   stack
-						   loc
-						   site)))
+					  stack loc site genv)))
 			      (clean-user-node! node)))
 			(let* ((new-fun (mark-symbol-non-user! (gensym 'fun)))
 			       (lexp `(,(let-sym) ((,new-fun ,(if fun-err?
 								  '(@ list __r4_pairs_and_lists_6_3)
 							   fun)))
 					 ,(make-the-app new-fun)))
-			       (node (sexp->node lexp stack loc site)))
+			       (node (sexp->node lexp stack loc site genv)))
 			   (clean-user-node! node)))))
 		((atomic? (car old-args))
 		 (loop (cdr old-args)
@@ -249,7 +248,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-app-node ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (make-app-node stack loc site var args)
+(define (make-app-node stack loc site var args genv)
    (let ((fun (variable-value (var-variable var))))
       (cond
 	 ((and (sfun? fun) (pair? (sfun-optionals fun)))
@@ -260,9 +259,9 @@
 			     (let ((a   (car args))
 				   (loc (find-location/loc args loc)))
 				(loop (cdr args)
-				      (cons (sexp->node a stack loc 'value)
+				      (cons (sexp->node a stack loc 'value genv)
 					    res)))))))
-	     (make-optionals-app-node stack loc site var args)))
+	     (make-optionals-app-node stack loc site var args genv)))
 	 ((and (sfun? fun) (pair? (sfun-keys fun)))
 	  (let ((args (let loop ((args args)
 				 (res  '()))
@@ -271,9 +270,9 @@
 			     (let ((a   (car args))
 				   (loc (find-location/loc args loc)))
 				(loop (cdr args)
-				      (cons (sexp->node a stack loc 'value)
+				      (cons (sexp->node a stack loc 'value genv)
 					    res)))))))
-	     (make-keys-app-node stack loc site var args)))
+	     (make-keys-app-node stack loc site var args genv)))
 	 ((or (not (fun? fun)) (>=fx (fun-arity fun) 0) (cfun? fun))
 	  (let ((args (let loop ((args args)
 				 (res  '()))
@@ -282,16 +281,16 @@
 			     (let ((a   (car args))
 				   (loc (find-location/loc args loc)))
 				(loop (cdr args)
-				      (cons (sexp->node a stack loc 'value)
+				      (cons (sexp->node a stack loc 'value genv)
 					    res)))))))
 	     (make-fx-app-node loc var args)))
 	 (else
-	  (make-va-app-node (fun-arity fun) stack loc var args)))))
+	  (make-va-app-node (fun-arity fun) stack loc var args genv)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-optionals-app-node ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (make-optionals-app-node stack loc site var actuals)
+(define (make-optionals-app-node stack loc site var actuals genv)
    (let ((v (var-variable var))
 	 (len (length actuals)))
       (with-access::sfun (variable-value v) (arity args optionals args-name)
@@ -323,14 +322,14 @@
 					   (fast-id-of-id (car o) loc))
 				      opts))))))
 		(sexp->node (compile-expand (comptime-expand exp))
-		   '() loc site))))))
+		   '() loc site genv))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-keys-app-node ...                                           */
 ;*    -------------------------------------------------------------    */
 ;*    This function assumes a correct arity.                           */
 ;*---------------------------------------------------------------------*/
-(define (make-keys-app-node stack loc site var args)
+(define (make-keys-app-node stack loc site var args genv)
    (let ((v (var-variable var)))
       (with-access::sfun (variable-value v) (arity keys (formals args))
 	 (let ((collected (let loop ((l (list-tail args arity)))
@@ -352,7 +351,7 @@
 		  ;; it may be safer to use
 		  ;; `(,(let-sym) ((f #unspecified)) (set! f ,v) (,f @args))
 		  (let ((exp `(,(let-sym) ((,f ,v)) (,f ,@args))))
-		     (sexp->node exp stack loc site))))
+		     (sexp->node exp stack loc site genv))))
 	    (define (unique vals)
 	       (let loop ((vs vals)
 			  (nvals '()))
@@ -383,12 +382,12 @@
 			 (args (append
 				(take args arity)
 				(map (lambda (v)
-					(sexp->node v stack loc site))
+					(sexp->node v stack loc site genv))
 				     (reverse! env))))))
 		     ((null? vals)
 		      (let* ((it (parse-id (caar keys) loc))
 			     (var (make-user-local-svar (car it) (cdr it)))
-			     (val (sexp->node (cadar keys) stack loc site))
+			     (val (sexp->node (cadar keys) stack loc site genv))
 			     (nenv (cons var env))
 			     (nstack (cons var stack))
 			     (body (loop (cdr keys) '() nenv nstack)))
@@ -400,7 +399,7 @@
 		     ((eq? (fast-id-of-id (caar keys) loc) (caar vals))
 		      (let* ((it (parse-id (caar vals) loc))
 			     (var (make-user-local-svar (car it) (cdr it)))
-			     (val (sexp->node (cadar vals) stack loc site))
+			     (val (sexp->node (cadar vals) stack loc site genv))
 			     (nenv (cons var env))
 			     (nstack (cons var stack))
 			     (body (loop (cdr keys) (cdr vals) nenv nstack)))
@@ -412,7 +411,7 @@
 		     (else
 		      (let* ((it (parse-id (caar keys) loc))
 			     (var (make-user-local-svar (car it) (cdr it)))
-			     (val (sexp->node (cadar keys) stack loc site))
+			     (val (sexp->node (cadar keys) stack loc site genv))
 			     (nenv (cons var env))
 			     (nstack (cons var stack))
 			     (body (loop (cdr keys) vals nenv nstack)))
@@ -489,7 +488,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-va-app-node ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (make-va-app-node arity stack loc var args)
+(define (make-va-app-node arity stack loc var args genv)
    (define (make-args-list args)
       (if (null? args)
 	  ''()
@@ -501,7 +500,7 @@
 	  (let* ((l-arg (mark-symbol-non-user! (gensym 'list)))
 		 (l-exp  `(,(let-sym) ((,l-arg ,(make-args-list old-args)))
 				      ,l-arg))
-		 (l-node (sexp->node l-exp stack loc 'value))
+		 (l-node (sexp->node l-exp stack loc 'value genv))
 		 (l-var (let-var-body l-node))
 		 (app (make-fx-app-node
 			 loc var (reverse! (cons l-var f-args)))))
@@ -511,7 +510,7 @@
 	     (clean-user-node! l-node))
 	  (loop (cdr old-args)
 	     (+fx arity 1)
-	     (cons (sexp->node (car old-args) stack loc 'value) f-args)))))
+	     (cons (sexp->node (car old-args) stack loc 'value genv) f-args)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    special-cfun? ...                                                */

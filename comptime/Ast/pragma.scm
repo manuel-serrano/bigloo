@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/pragma.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/pragma.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:11:13 1996                          */
-;*    Last change :  Wed Jun 26 15:16:21 2024 (serrano)                */
+;*    Last change :  Mon Oct 20 12:47:34 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The creation of pragma forms.                                    */
 ;*=====================================================================*/
@@ -18,7 +18,7 @@
 	    backend_backend
  	    ast_sexp
 	    engine_param)
-   (export (pragma/type->node::node ::bool ::obj ::type e s ::obj ::symbol)
+   (export (pragma/type->node::node ::bool ::obj ::type e s ::obj ::symbol ::obj)
 	   (get-static-pragmas::pair-nil)
 	   (add-static-pragma! ::node)))
 
@@ -42,14 +42,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    pragma/type->node ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (pragma/type->node free effect type exp stack loc site)
+(define (pragma/type->node free effect type exp stack loc site genv)
    (if (not (backend-pragma-support (the-backend)))
        (begin
 	  (user-warning/location loc
 	     "pragma"
 	     "Pragma ignored with this back-end"
 	     exp)
-	  (sexp->node #unspecified stack loc site))
+	  (sexp->node #unspecified stack loc site genv))
        (match-case exp
 	  ((?- (and (? string?) ?format) . ?values)
 	   (let ((max-index (get-max-index format))
@@ -57,8 +57,7 @@
 	      (if (not (=fx max-index (length values)))
 		  (error-sexp->node
 		     "Wrong number of arguments in `pragma' form"
-		     exp
-		     loc)
+		     exp loc genv)
 		  (let loop ((exps values)
 			     (nodes '()))
 		     (if (null? exps)
@@ -75,7 +74,8 @@
 			       (sexp->node (car exps)
 				  stack
 				  (find-location/loc (car exps) loc)
-				  (if free 'value 'set!))
+				  (if free 'value 'set!)
+				  genv)
 			       nodes)))))))
 	  ((?- :srfi (and (? symbol?) ?srfi) (and (? string?) ?format) . ?values)
 	   (let ((max-index (get-max-index format))
@@ -83,8 +83,7 @@
 	      (if (not (=fx max-index (length values)))
 		  (error-sexp->node
 		     "Wrong number of arguments in `pragma' form"
-		     exp
-		     loc)
+		     exp loc genv)
 		  (let loop ((exps values)
 			     (nodes '()))
 		     (if (null? exps)
@@ -101,10 +100,11 @@
 			       (sexp->node (car exps)
 				  stack
 				  (find-location/loc (car exps) loc)
-				  (if free 'value 'set!))
+				  (if free 'value 'set!)
+				  genv)
 			       nodes)))))))
 	  ((?- ?ident)
-	   (let ((v (sexp->node ident stack loc site)))
+	   (let ((v (sexp->node ident stack loc site genv)))
 	      (if (isa? v var)
 		  (with-access::var v (variable)
 		     (with-access::variable variable (name removable)
@@ -116,9 +116,9 @@
 			   (side-effect (not free))
 			   (effect effect))))
 		  (error-sexp->node "Illegal `pragma' expression" exp
-		     (find-location/loc exp loc)))))
+		     (find-location/loc exp loc) genv))))
 	  ((?- :srfi (and (? symbol?) ?srfi) ?ident)
-	   (let ((v (sexp->node ident stack loc site)))
+	   (let ((v (sexp->node ident stack loc site genv)))
 	      (if (isa? v var)
 		  (with-access::var v (variable)
 		     (with-access::variable variable (name removable)
@@ -131,9 +131,9 @@
 			   (side-effect (not free))
 			   (effect effect))))
 		  (error-sexp->node "Illegal `pragma' expression" exp
-		     (find-location/loc exp loc)))))
+		     (find-location/loc exp loc) genv))))
 	  (else
-	   (error-sexp->node "Illegal \"pragma\" form" exp loc)))))
+	   (error-sexp->node "Illegal \"pragma\" form" exp loc genv)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-max-index ...                                                */

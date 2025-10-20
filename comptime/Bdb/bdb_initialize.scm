@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Bdb/initialize.scm          */
+;*    .../prgm/project/bigloo/wasm/comptime/Bdb/bdb_initialize.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 14:53:02 1998                          */
-;*    Last change :  Thu Sep 18 12:00:34 2008 (serrano)                */
-;*    Copyright   :  1992-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 14:23:09 2025 (serrano)                */
+;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module specific Bdb runtime initialization.                  */
 ;*=====================================================================*/
@@ -44,7 +44,7 @@
    (let ((body `((bdb-set-module-info! ',*module*
 				       (pragma::obj "((obj_t)__bdb_info)")))))
       (let ((unit (unit 'bdb 9 body #t #f)))
-	 (let ((ast (build-ast (list unit))))
+	 (let ((ast (build-ast (list unit) (get-genv))))
 	    (for-each (lambda (global)
 			 (coerce! (sfun-body (global-value global))
 				  global

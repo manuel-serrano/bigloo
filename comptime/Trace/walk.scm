@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Mon Oct 20 09:17:59 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:21:51 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
@@ -272,7 +272,7 @@
 				     lloc)
 			      `($env-pop-trace ,tmp3))
 			 ,aux))))
-	  (nnode (sexp->node exp '() loc 'value)))
+	  (nnode (sexp->node exp '() loc 'value (get-genv))))
       (let-var-removable?-set! nnode (backend-remove-empty-let (the-backend)))
       nnode))
 

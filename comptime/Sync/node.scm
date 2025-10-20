@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Sync/node.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Sync/node.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Mon Jul  8 08:45:55 2024 (serrano)                */
-;*    Copyright   :  2012-24 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 14:26:08 2025 (serrano)                */
+;*    Copyright   :  2012-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
 ;*    explicitly lock/unlock and push/pop operations. Used by the      */
@@ -30,6 +30,7 @@
 	    object_class
 	    object_slots
 	    ast_var
+	    ast_env
 	    ast_node
 	    ast_local
 	    ast_sexp
@@ -59,26 +60,26 @@
 ;*---------------------------------------------------------------------*/
 ;*    init-sync! ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (init-sync! loc)
+(define (init-sync! loc genv)
    (unless mlock
-      (set! getexitdtop (sexp->node '$get-exitd-top '() loc 'app))
-      (set! mlock (sexp->node '$mutex-lock '() loc 'app))
-      (set! mlockprelock (sexp->node '$mutex-lock-prelock '() loc 'app))
-      (set! mulock (sexp->node '$mutex-unlock '() loc 'app))
+      (set! getexitdtop (sexp->node '$get-exitd-top '() loc 'app genv))
+      (set! mlock (sexp->node '$mutex-lock '() loc 'app genv))
+      (set! mlockprelock (sexp->node '$mutex-lock-prelock '() loc 'app genv))
+      (set! mulock (sexp->node '$mutex-unlock '() loc 'app genv))
       (case (backend-language (the-backend))
 	 ((c c-saw)
 	  (when *sync-profiling*
 	     (set! exitd-mutex-profile
-		(sexp->node '$exitd-mutex-profile '() loc 'app))
+		(sexp->node '$exitd-mutex-profile '() loc 'app genv))
 	     (set! failsafe-mutex-profile
-		(sexp->node '$failsafe-mutex-profile '() loc 'app))
+		(sexp->node '$failsafe-mutex-profile '() loc 'app genv))
 	     (set-variable-name! (var-variable exitd-mutex-profile))
 	     (set-variable-name! (var-variable failsafe-mutex-profile)))
-	  (set! mpush (sexp->node '$exitd-push-protect! '() loc 'app))
-	  (set! mpop (sexp->node '$exitd-pop-protect! '() loc 'app)))
+	  (set! mpush (sexp->node '$exitd-push-protect! '() loc 'app genv))
+	  (set! mpop (sexp->node '$exitd-pop-protect! '() loc 'app genv)))
 	 (else
-	  (set! mpush (sexp->node '(@ exitd-push-protect! __bexit) '() loc 'app))
-	  (set! mpop (sexp->node '(@ exitd-pop-protect! __bexit) '() loc 'app))))
+	  (set! mpush (sexp->node '(@ exitd-push-protect! __bexit) '() loc 'app genv))
+	  (set! mpop (sexp->node '(@ exitd-pop-protect! __bexit) '() loc 'app genv))))
       (set-variable-name! (var-variable getexitdtop))
       (set-variable-name! (var-variable mlock))
       (set-variable-name! (var-variable mlockprelock))
@@ -112,7 +113,7 @@
 (define (sync->sequence node::sync)
    
    (define (app expr loc)
-      (application->node expr '() loc 'value))
+      (application->node expr '() loc 'value (get-genv)))
 
    (define (profsync node loc)
       (if (when exitd-mutex-profile)
@@ -189,7 +190,7 @@
 			(nodes (cons* lock push (profsync lbody loc)))))))))
    
    (with-access::sync node (loc)
-      (init-sync! loc))
+      (init-sync! loc (get-genv)))
    
    (let ((enode (if (failsafe-sync? node)
 		    (failsafe-sync->sequence node)

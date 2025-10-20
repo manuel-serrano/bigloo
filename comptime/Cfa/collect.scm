@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/collect.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/collect.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Wed Jun 16 15:56:42 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 14:20:06 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Collect all types and allocs approximations                      */
 ;*=====================================================================*/
@@ -110,7 +110,7 @@
 			   ,(if (monomorphic-vector? value)
 				(vector-ref value 0)
 				'(pragma::obj "")))
-		       #f)))
+		       #f (get-genv))))
 	 (backend-pragma-support-set! backend pragma?)
 	 (bigloo-warning-set! warning)
 	 (widen!::kwote/node node (node dummy))
@@ -128,7 +128,7 @@
 		     (if (null? v)
 			 ''()
 			 `($cons ',(car v) ,(loop (cdr v))))))
-	     (dummy (top-level-sexp->node exp #f)))
+	     (dummy (top-level-sexp->node exp #f (get-genv))))
 	 (backend-pragma-support-set! backend pragma?)
 	 (bigloo-warning-set! warning)
 	 (widen!::kwote/node node (node dummy))

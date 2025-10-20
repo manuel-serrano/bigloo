@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Wed Sep 24 09:50:53 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 13:00:33 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -32,8 +32,8 @@
 	    backend_backend)
    (export  (let-sym? ::obj)
 	    (let-sym::symbol)
-	    (let->node::node <sexp> <stack> ::obj ::symbol)
-	    (letrec*->node::node <sexp> <stack> ::obj ::symbol)))
+	    (let->node::node <sexp> <stack> ::obj ::symbol ::obj)
+	    (letrec*->node::node <sexp> <stack> ::obj ::symbol ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *let* ...                                                        */
@@ -55,7 +55,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    let->node ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (let->node exp stack oloc site)
+(define (let->node exp stack oloc site genv)
    (trace (ast 3)
       "*** LET *******: " (shape exp) #\Newline
       "            loc: " (find-location/loc exp #f) #\Newline
@@ -73,7 +73,7 @@
 	      (bloc (if (pair? body)
 			(find-location/loc (car body) nloc)
 			nloc))
-	      (body (sexp->node (normalize-progn body) stack bloc 'value)))
+	      (body (sexp->node (normalize-progn body) stack bloc 'value genv)))
 	  (trace (ast 3)
 	     "make-empty-let: " (shape exp) #\Newline
 	     "bloc: " bloc #\Newline
@@ -98,21 +98,24 @@
 	   (error-sexp->node
 	      (string-append "Illegal `" (symbol->string (car exp)) "' form")
 	      exp
-	      (find-location/loc exp oloc))
+	      (find-location/loc exp oloc)
+	      genv)
 	   (make-smart-generic-let
 	      (car exp)
-	      (make-generic-let exp stack oloc site)
-	      site)))
+	      (make-generic-let exp stack oloc site genv)
+	      site
+	      genv)))
       (else
        (error-sexp->node
 	  (string-append "Illegal `" (symbol->string (car exp)) "' form")
 	  exp
-	  (find-location/loc exp oloc)))))
+	  (find-location/loc exp oloc)
+	  genv))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-generic-let ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (make-generic-let exp stack oloc site)
+(define (make-generic-let exp stack oloc site genv)
    (let* ((bindings (cadr exp))
 	  (loc (find-location/loc exp oloc))
 	  (bloc (if (pair? (cddr exp))
@@ -141,7 +144,7 @@
 	 "bloc: " bloc " [exp: " (shape bloc-exp) "]" #\Newline
 	 "loc-bis: " loc-bis #\Newline
 	 "nloc: " nloc #\Newline)
-      (let* ((body (sexp->node body new-stack nloc 'value))
+      (let* ((body (sexp->node body new-stack nloc 'value genv))
 	     (bstack (if (or (eq? (car exp) 'let) (let-sym? (car exp)))
 			 stack
 			 new-stack))
@@ -151,7 +154,7 @@
 				     (normalize-progn (cdr binding))
 				     bstack
 				     (find-location/loc binding nloc)
-				     'value)))
+				     'value genv)))
 			  bindings
 			  frame))
 	     (loc (let ((loc (find-location/loc
@@ -183,7 +186,7 @@
 ;*       -->                                                           */
 ;*    (labels ((f args body)) (let (...) ...))                         */
 ;*---------------------------------------------------------------------*/
-(define (make-smart-generic-let let/letrec node-let site)
+(define (make-smart-generic-let let/letrec node-let site genv)
    
    
    (let loop ((bindings (let-var-bindings node-let))
@@ -198,17 +201,17 @@
 	     (cond
 		((null? fun)
 		 (let ((vars (map car (let-var-bindings node-let))))
-		    (let-or-letrec let/letrec node-let vars)))
+		    (let-or-letrec let/letrec node-let vars genv)))
 		((null? value)
-		 (let->labels fun (let-var-body node-let) site))
+		 (let->labels fun (let-var-body node-let) site genv))
 		(else
 		 (let ((vars (map car (let-var-bindings node-let))))
 		    ;; first we ajust let-var bindings
 		    (let-var-bindings-set! node-let (reverse! value))
 		    ;; then, we send the let form to the `let-or-letrec'
 		    ;; function
-		    (let* ((nlet (let-or-letrec let/letrec node-let vars))
-			   (nbody (let->labels fun (let-var-body nlet) site)))
+		    (let* ((nlet (let-or-letrec let/letrec node-let vars genv))
+			   (nbody (let->labels fun (let-var-body nlet) site genv)))
 		       (with-access::let-var nlet (body type)
 			  (set! body nbody)
 			  (set! type (strict-node-type *_* type)))
@@ -263,7 +266,7 @@
 ;*    all variables have to be bound to unspecified then, they have    */
 ;*    to be mutated to their correct values.                           */
 ;*---------------------------------------------------------------------*/
-(define (let-or-letrec let/letrec node-let vars)
+(define (let-or-letrec let/letrec node-let vars genv)
    
    (define (safe-rec-val? val)
       (or (atom? val) (closure? val) (kwote? val)
@@ -414,7 +417,7 @@
 				   (value val))))
 		       (use-variable! var loc 'set!)
 		       (set-cdr! binding
-			  (sexp->node #unspecified '() loc 'value))
+			  (sexp->node #unspecified '() loc 'value genv))
 		       (loop (cdr bindings)
 			  (cons init nsequence))))))))
       (else
@@ -465,7 +468,7 @@
 		       (use-variable! var loc 'set!)
 		       (use-variable! nvar loc 'set!)
 		       (set-cdr! binding
-			  (sexp->node #unspecified '() loc 'value))
+			  (sexp->node #unspecified '() loc 'value genv))
 		       (loop (cdr bindings)
 			  (cons (cons nvar val) nbindings)
 			  (cons init nsequence))))))))))
@@ -477,7 +480,7 @@
 ;*    introduced in a `let' form which are never mutated and bound     */
 ;*    to functions.                                                    */
 ;*---------------------------------------------------------------------*/
-(define (let->labels value-bindings node site)
+(define (let->labels value-bindings node site genv)
    ;; we compute (allocate) the list of new functions
    (let ((old-funs (map car value-bindings))
 	 (new-funs (map (lambda (binding)
@@ -499,7 +502,7 @@
 	 (if (null? vbindings)
 	     ;; the call to substitute! has only the goal to introduce
 	     ;; the `closure' constructions
-	     (let* ((body (substitute! old-funs new-funs node site))
+	     (let* ((body (substitute! old-funs new-funs node site genv))
 		    (funs (reverse! new-funs))
 		    (loc  (if (and (pair? funs)
 				   (sfun? (local-value (car funs))))
@@ -520,7 +523,7 @@
 		(sfun-body-set! sfun
 		   (substitute! (cons aux old-funs)
 		      (cons nvar new-funs)
-		      body 'value))
+		      body 'value genv))
 		;; ok, it is finished, we loop now.
 		(loop (cdr vbindings) (cdr nvars)))))))
 
@@ -556,7 +559,7 @@
 ;*           (set! v3 i3)                                              */
 ;*           body))                                                    */
 ;*---------------------------------------------------------------------*/
-(define (letrec*->node sexp stack loc site)
+(define (letrec*->node sexp stack loc site genv)
    
    (define (binding->ebinding b v vars)
       (make-ebinding b v vars))
@@ -669,7 +672,7 @@
    (define (split-head-letrec ebindings body split::procedure kont)
       (cond
 	 ((null? ebindings)
-	  (sexp->node body stack loc site))
+	  (sexp->node body stack loc site genv))
 	 (else
 	  (multiple-value-bind (rec-bindings rec*-bindings)
 	     (split ebindings)
@@ -683,13 +686,13 @@
 		       (letrecursive rec-bindings
 			  `(letrec* ,(map ebinding-binding rec*-bindings)
 			      ,body)))
-		    stack loc site)
+		    stack loc site genv)
 		 (kont ebindings body))))))
    
    (define (split-head-let* ebindings body split::procedure kont)
       (cond
 	 ((null? ebindings)
-	  (sexp->node body stack loc site))
+	  (sexp->node body stack loc site genv))
 	 (else
 	  (multiple-value-bind (let-bindings rec*-bindings)
 	     (split ebindings)
@@ -704,20 +707,20 @@
 		       (letstar let-bindings
 			  `(letrec* ,(map ebinding-binding rec*-bindings)
 			      ,body)))
-		    stack loc site))
+		    stack loc site genv))
 		((pair? let-bindings)
 		 (sexp->node
 		    (letcollapse let-bindings
 		       (letstar let-bindings
 			  body))
-		    stack loc site))
+		    stack loc site genv))
 		(else
 		 (kont ebindings body)))))))
    
    (define (split-tail-letrec ebindings body split::procedure kont)
       (cond
 	 ((null? ebindings)
-	  (sexp->node body stack loc site))
+	  (sexp->node body stack loc site genv))
 	 (else
 	  (multiple-value-bind (rec*-bindings tail-bindings)
 	     (split ebindings)
@@ -730,13 +733,13 @@
 		    `(letrec* ,(map ebinding-binding rec*-bindings)
 			(letrec* ,(map ebinding-binding tail-bindings)
 			   ,body))
-		    stack loc site)
+		    stack loc site genv)
 		 (kont ebindings body))))))
    
    (define (split-tail-let* ebindings body split::procedure kont)
       (cond
 	 ((null? ebindings)
-	  (sexp->node body stack loc site))
+	  (sexp->node body stack loc site genv))
 	 (else
 	  (multiple-value-bind (rec*-bindings tail-bindings)
 	     (split ebindings)
@@ -751,11 +754,11 @@
 		 (sexp->node
 		    `(letrec* ,(map ebinding-binding rec*-bindings)
 			,(letstar tail-bindings body))
-		    stack loc site))
+		    stack loc site genv))
 		(else
 		 (sexp->node
 		    (letstar tail-bindings body)
-		    stack loc site)))))))
+		    stack loc site genv)))))))
    
    (define (type-undefined type)
       (if (tclass? type)
@@ -870,7 +873,7 @@
 				       ,(cadr (car b))))
 			      ebindings)
 			 ,body)))
-	    (sexp->node sexp stack loc site))))
+	    (sexp->node sexp stack loc site genv))))
    
    (define (stage8 ebindings body)
       ;; a true letrec*
@@ -903,7 +906,7 @@
 						    ,(ebinding-value b))))
 				 ebindings)
 			    ,body))))
-	    (sexp->node sexp stack loc site))))
+	    (sexp->node sexp stack loc site genv))))
    
    (define (stage7 ebindings body)
       ;; if the last binding is not a function and if it is not typed,
@@ -923,7 +926,7 @@
 					       (reverse ebindings))))
 			     (set! ,(ebinding-var last) ,(ebinding-value last))
 			     ,body))
-		      stack loc site))
+		      stack loc site genv))
 		(begin
 		   (trace-item "no last t=" (type-id t))
 		   (stage8 ebindings body))))))
@@ -994,7 +997,7 @@
       (with-trace 'letrec* "letrec*/stage5"
 	 (cond
 	    ((null? ebindings)
-	     (sexp->node body stack loc site))
+	     (sexp->node body stack loc site genv))
 	    (else
 	     (multiple-value-bind (vbindings fbindings)
 		;; split values/functions
@@ -1008,7 +1011,7 @@
 		       `(letrec* ,(map ebinding-binding vbindings)
 			   (letrec* ,(map ebinding-binding fbindings)
 			      ,body))
-		       stack loc site)
+		       stack loc site genv)
 		    ;; true letrec*
 		    (stage6 ebindings body)))))))
    
@@ -1180,7 +1183,7 @@
    
    (define (letrec*->letrec sexp stack loc site)
       (set-car! sexp 'letrec)
-      (sexp->node sexp stack loc site))
+      (sexp->node sexp stack loc site genv))
    
    (define (lambda? exp)
       (match-case exp
@@ -1199,11 +1202,11 @@
 	  ;; not a real letrec*
 	  (sexp->node
 	     (epairify-propagate-loc `(begin ,@body) loc)
-	     stack loc site))
+	     stack loc site genv))
 	 ((letrec* (and ?bindings (?binding)) . ?body)
 	  (sexp->node
 	     (epairify-propagate-loc `(letrec ,bindings ,@body) loc)
-	     stack loc site))
+	     stack loc site genv))
 	 ((letrec* (and (? list?) ?bindings) . ?body)
 	  (if (every lambda? bindings)
 	      ;; a plain letrec
@@ -1212,7 +1215,7 @@
 	      (decompose-letrec* bindings body)))
 	 (else
 	  (error-sexp->node (string-append "Illegal 'letrec*' form")
-	     exp (find-location/loc exp loc))))))
+	     exp (find-location/loc exp loc) genv)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    function? ...                                                    */

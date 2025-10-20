@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Mon Oct 20 08:49:47 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:01:39 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -147,16 +147,17 @@
 ;*---------------------------------------------------------------------*/
 (define (eval-finalizer)
    
-   (define (eval-export-global g)
+   (define (eval-export-global g genv)
       (global-eval?-set! g #t)
       (cond
 	 ((svar? (global-value g))
 	  (variable-access-set! g 'write)
-	  (define-primop-ref/src->node g (location->node g) (global-src g)))
+	  (define-primop-ref/src->node g (location->node g genv) (global-src g)
+	     genv))
 	 ((scnst? (global-value g))
-	  (define-primop-ref->node g (location->node g)))
+	  (define-primop-ref->node g (location->node g genv) genv))
 	 (else
-	  (define-primop->node g))))
+	  (define-primop->node g genv))))
    
    (if (or *one-eval?*
 	   *all-eval?*
@@ -193,7 +194,8 @@
 			  (loop (cdr globals)
 			     (if (global-eval? g)
 				 init*
-				 (cons (eval-export-global g) init*)))))))
+				 (cons (eval-export-global g (get-genv))
+				    init*)))))))
 	     #f
 	     #f))
        'void))
@@ -221,7 +223,7 @@
 	     `((@ evmodule-comp! __evmodule)
 	       ',*module* ',*src-files* ',*module-location*
 	       ,@(map export-global (get-evaluated-globals 'module)))
-	     '() #f 'value))
+	     '() #f 'value (get-genv)))
        '()))
 
 ;*---------------------------------------------------------------------*/

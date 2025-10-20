@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Mon Oct 20 09:15:56 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:19:15 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
@@ -379,9 +379,7 @@
 					     (loc loc)
 					     (type *_*)
 					     (value 0)))
-				       '()
-				       loc
-				       'value))
+				       '() loc 'value (get-genv)))
 		 (closure  (def-global-scnst! (get-genv) (symbol-append
 						 (if (global-alias global)
 						     (global-alias global)

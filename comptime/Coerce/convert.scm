@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Wed Sep 24 13:36:15 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:17:45 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -29,6 +29,7 @@
 	    type_env
 	    type_typeof
 	    ast_sexp
+	    ast_env
 	    ast_var
 	    ast_local
 	    ast_node
@@ -144,7 +145,7 @@
 		     `(let ((,(mark-symbol-non-user! (symbol-append aux '::obj))
 			     #unspecified))
 			 ,(runtime-type-error/id loc ti aux))
-		     loc)))
+		     loc (get-genv))))
 	 (coerce! res #unspecified (node-type value) #f)
 	 (set-cdr! (car (let-var-bindings res)) (cast-obj-if-needed uvalue))
 	 res)))
@@ -358,7 +359,7 @@
 			   (if (,check-op ,aux)
 			       ,aux
 			       ,(runtime-type-error/id loc (type-id to) aux)))
-		       loc)))
+		       loc (get-genv))))
 	 (increment-stat-check! from to loc)
 	 (spread-side-effect! lnode)
 	 (let* ((var (car (car (let-var-bindings lnode))))
@@ -409,7 +410,7 @@
 			       ,node
 			       ,(runtime-type-error loc (type-id to)
 				   (duplicate::ref node))))
-		       loc)))
+		       loc (get-genv))))
 	 (increment-stat-check! from to loc)
 	 (spread-side-effect! lnode)
 	 (with-access::ref node ((var variable))
@@ -473,7 +474,8 @@
 		    (loc loc)
 		    (type to)
 		    (arg node)))
-	     (let ((nnode (top-level-sexp->node `(,coerce-op ,node) loc)))
+	     (let ((nnode (top-level-sexp->node
+			     `(,coerce-op ,node) loc (get-genv))))
 		;; we have to mark that the node has been converted and is
 		;; now of the correct type...
 		(lvtype-node! nnode)

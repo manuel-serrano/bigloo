@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Mon Oct 20 09:39:32 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:24:25 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
@@ -53,7 +53,7 @@
 			     (let ((z::bint ($long->bint 0)))
 				(%exit z))
 			     #unspecified)))
-	  (node (let ((node (sexp->node main-body args #f 'value)))
+	  (node (let ((node (sexp->node main-body args #f 'value (get-genv))))
 		   (lvtype-node! node)
 		   node))
 	  (bigloo-main (def-global-sfun! (get-genv) 'bigloo_main::obj

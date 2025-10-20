@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Mon Oct 20 08:42:52 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 12:45:00 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -51,8 +51,8 @@
 	    expand_eps)
    (export  (unit-sexp*-add! <unit> ::obj)
 	    (unit-sexp*-add-head! <unit> ::obj)
-	    (unit->defs <unit>)
-	    (unit-initializers)
+	    (unit->defs <unit> ::obj)
+	    (unit-initializers ::obj)
 	    (unit-initializer-id id)
 	    (unit-init-calls)))
 
@@ -73,10 +73,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    unit->defs ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (unit->defs unit)
-   (verbose 2
-	    "      [" (string-downcase (symbol->string (unit-id unit)))
-	    "]" #\Newline)
+(define (unit->defs unit genv)
+   (verbose 2 "      [" (string-downcase (symbol->string (unit-id unit)))
+      "]" #\Newline)
    (when (pair? (unit-sexp* unit))
       (trace (ast 2) "  sexp*=" (map shape (unit-sexp* unit)) #\Newline))
    (let* ((id (unit-id unit))
@@ -96,13 +95,13 @@
 				       (begin
 					  (set! (@ ,(unit-require-init-id id) ,*module*) #f)
 					  ,@(initialize-imported-modules
-					     (lambda (m)
-						(unit-initializer-id id)))
+					       (lambda (m)
+						  (unit-initializer-id id)))
 					  ,@(reverse! init*)))
 				  (normalize-progn (reverse! init*))))
-			(init (def-global-sfun-no-warning! (get-genv)
+			(init (def-global-sfun-no-warning! genv
 				 (make-typed-ident
-				  (unit-initializer-id id) 'obj)
+				    (unit-initializer-id id) 'obj)
 				 '()
 				 '()
 				 *module*
@@ -115,8 +114,8 @@
 		       (global-import-set! init 'export))
 		    ;; all init functions but the toplevel ones are
 		    ;; compiler functions.
-		    (if (not (eq? unit (get-toplevel-unit)))
-			(global-user?-set! init #f))
+		    (unless (eq? unit (get-toplevel-unit))
+		       (global-user?-set! init #f))
 		    ;; we declare the unit for the late module
 		    ;; initialization (unit initializer are called
 		    ;; in order they are declared).
@@ -127,20 +126,16 @@
 		    ;; global function definitions.
 		    (when (unit-exported? unit)
 		       (let* ((id (make-typed-ident (unit-require-init-id id)
-						    'obj))
-			      (glo (def-global-svar! (get-genv) id *module*
+				     'obj))
+			      (glo (def-global-svar! genv id *module*
 				      *module-clause* 'now)))
 			  (global-user?-set! glo #f)
 			  (global-evaluable?-set! glo #f)))
 		    (cons init (reverse! def*)))
 		 (reverse! def*))
 	     (if (global? (car aexp*))
-		 (loop (cdr aexp*)
-		       init*
-		       (cons (car aexp*) def*))
-		 (loop (cdr aexp*)
-		       (cons (car aexp*) init*)
-		       def*))))))
+		 (loop (cdr aexp*) init* (cons (car aexp*) def*))
+		 (loop (cdr aexp*) (cons (car aexp*) init*) def*))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    *unit-list* ...                                                  */
@@ -178,9 +173,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    unit-initializers ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (unit-initializers)
+(define (unit-initializers genv)
    (map (lambda (unit)
-	   (find-global/module (get-genv) (unit-initializer-id (car unit)) *module*))
+	   (find-global/module genv (unit-initializer-id (car unit)) *module*))
 	*unit-list*))
 
 ;*---------------------------------------------------------------------*/
@@ -198,8 +193,7 @@
 	      (aexp* '()))
       (if (null? sexp*)
 	  (reverse! aexp*)
-	  (loop (cdr sexp*)
-		(append (toplevel->ast (car sexp*) gdefs) aexp*)))))
+	  (loop (cdr sexp*) (append (toplevel->ast (car sexp*) gdefs) aexp*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lambda? ...                                                      */
@@ -401,7 +395,8 @@
 ;*---------------------------------------------------------------------*/
 (define (normalize-progn/error exp src loc)
    (if (null? exp)
-       (error-sexp->node "Illegal '() expression" src (find-location src))
+       (error-sexp->node "Illegal '() expression"
+	  src (find-location src) (get-genv))
        (let ((exp (normalize-progn exp)))
 	  (cond
 	     ((not loc)
@@ -819,7 +814,7 @@
 	 ((pair? opts)
 	  (if (pair? (cdr (filter dsssl-named-constant? args)))
 	      (error-sexp->node "generics can only use on DSSSL keyword" src
-		 (find-location src))
+		 (find-location src) (get-genv))
 	      (make-generic-opt-definition opts id module args body src)))
 	 ((pair? keys)
 	  (make-generic-key-definition keys id module args body src))
@@ -875,7 +870,7 @@
    (if (not (and (pair? args) (symbol? (car args))))
        (begin
 	  (error-sexp->node "Bad generic formal argument" src
-	     (find-location src))
+	     (find-location src) (get-genv))
 	  (list #unspecified))
        (let* ((loc (find-location src))
 	      (locals (if (and (dsssl-prototype? args)
@@ -929,7 +924,7 @@
    (if (not (and (pair? args) (symbol? (car args))))
        (begin
 	  (error-sexp->node "Bad method formal argument" src
-	     (find-location src))
+	     (find-location src) (get-genv))
 	  (list #unspecified))
        (let* ((loc (find-location src))
 	      (locals (parse-fun-args args src loc)))

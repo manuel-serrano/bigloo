@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Mon Oct 20 09:11:36 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:23:24 2025 (serrano)                */
 ;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
@@ -164,7 +164,7 @@
 			 ((@ index-out-of-bounds-error __error)
 			  ,lname ,lpos ,name ,s ,l ,i)
 			 #f #f))))
-	     loc))))
+	     loc (get-genv)))))
 
    (abound-node*! (app-args node))
    ;; check if we are calling string-ref/set!, or struct-ref/set!
@@ -291,7 +291,7 @@
 			    (symbol->string! (type-id vtype)) "-ref")
 			,v ,l ,i)
 		       #f #f))))
-	 loc)))
+	 loc (get-genv))))
 
 ;*---------------------------------------------------------------------*/
 ;*    abound-node ::vset! ...                                          */
@@ -343,7 +343,7 @@
 			    (symbol->string! (type-id vtype)) "-set!")
 			,v ,l ,i)
 		       #f #f))))
-	 loc)))
+	 loc (get-genv))))
    
 ;*---------------------------------------------------------------------*/
 ;*    abound-node ::cast ...                                           */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Ast/find_gdefs.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/find_gdefs.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 11:21:26 1996                          */
-;*    Last change :  Mon Nov 30 09:08:17 2015 (serrano)                */
+;*    Last change :  Mon Oct 20 14:33:03 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which travers an entire        */
 ;*    unit in order to find the global declared variable and their     */
@@ -64,11 +64,10 @@
    (for-each (lambda (global)
 		(let ((def (getprop (global-id global) *gdef-key*)))
 		   (if (not (def? def))
-		       (user-error (shape global)
-				   "Can't find global definition"
-				   (shape (global-src global))
-				   '()))))
-	     *to-be-define*)
+		       (user-error (shape global) "Can't find global definition"
+			  (shape (global-src global))
+			  '()))))
+      *to-be-define*)
    ;; we remove all the property list
    (for-each (lambda (id) (remprop! id *gdef-key*)) *all-defined-id*)
    (set! *all-defined-id* '())
@@ -120,9 +119,9 @@
 	     res)
 	  (let ((def (car defs)))
 	     (loop (cdr defs)
-		   (cons (cons (def-id def) (cons (def-access def)
-						  (def-arity def)))
-			 res))))))
+		(cons (cons (def-id def)
+			 (cons (def-access def) (def-arity def)))
+		   res))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-global-defs ...                                             */
@@ -137,8 +136,10 @@
 ;*    defined).                                                        */
 ;*---------------------------------------------------------------------*/
 (define (find-global-defs sexp*)
+   
    ;; we reset the global variables
    (set! *gdefs-list* '())
+   
    ;; what to do when seing a global definition...
    (define (define-global var arity exp)
       (match-case var
@@ -150,6 +151,7 @@
 		 (bind-global-def! id arity))))
 	 (else
 	  (internal-error "find-globald-defs" "Illegal define form" var))))
+   
    ;; the generic scanning function
    (define (scan sexp* action-define action-body)
       (let loop ((sexp* sexp*))
@@ -177,15 +179,12 @@
 		    (action-body '() (list sexp) sexp)
 		    (loop (cdr sexp*))))))))
    ;; the first pass where we defines global variables
-   (scan sexp*
-	 define-global
-	 (lambda (args exp def) 'nothing))
+   (scan sexp* define-global
+      (lambda (args exp def) 'nothing))
    ;; the second pass where we traverse top level expressions
-   (scan sexp*
-	 (lambda (x y exp)
-	    'nothing)
-	 (lambda (args exp def)
-	    (find-mutations! exp (push-args args '() (find-location def)))))
+   (scan sexp* (lambda (x y exp) 'nothing)
+      (lambda (args exp def)
+	 (find-mutations! exp (push-args args '() (find-location def)))))
    ;; we return the list of the global variables and their mutations
    (defs->list))
 
@@ -314,10 +313,7 @@
 			((?- ?args . ?body)
 			 (find-mutations! body (push-args args stack loc)))
 			(else
-			 (user-error "lambda"
-				     "Illegal `lambda' form"
-				     exp
-				     '()))))
+			 (user-error "lambda" "Illegal `lambda' form" exp '()))))
 		    (else
 		     (find-mutations! exp stack))))
 	      (find-mutations! exp stack))))))
@@ -338,15 +334,13 @@
 	 ((not (pair? expr))
 	  (cond
 	     (dsssl
-	      (user-error/location loc
-				   'lambda
-				   "Can't use both DSSSL named constant, and `.' notation"
-				   expr))
+	      (user-error/location loc 'lambda
+		 "Can't use both DSSSL named constant, and `.' notation"
+		 expr))
 	     ((not (symbol? expr))
-	      (user-error/location loc
-				   'lambda
-				   "Illegal formal parameter, symbol expected"
-				   expr))
+	      (user-error/location loc 'lambda
+		 "Illegal formal parameter, symbol expected"
+		 expr))
 	     (else
 	      (cons (id-of-id expr loc) list))))
 	 ((not (symbol? (car expr)))
@@ -354,22 +348,20 @@
 	     ((dsssl-named-constant? (car expr))
 	      (loop (cdr expr) list #t))
 	     ((not dsssl)
-	      (user-error/location (or (find-location expr) loc)
-				   'lambda
-				   "Illegal formal parameter, symbol expected"
-				   expr))
+	      (user-error/location (or (find-location expr) loc) 'lambda
+		 "Illegal formal parameter, symbol expected"
+		 expr))
 	     ((dsssl-defaulted-formal? (car expr))
 	      (loop (cdr expr)
-		    (cons (id-of-id (dsssl-default-formal (car expr)) loc)
-			  list)
-		    #t))
+		 (cons (id-of-id (dsssl-default-formal (car expr)) loc)
+		    list)
+		 #t))
 	     (else
-	      (user-error/location (or (find-location expr) loc)
-				   'lambda
-				   "Illegal formal parameter, symbol or named constant expected"
-				   expr))))
+	      (user-error/location (or (find-location expr) loc) 'lambda
+		 "Illegal formal parameter, symbol or named constant expected"
+		 expr))))
 	 (else
 	  (loop (cdr expr)
-		(cons (id-of-id (car expr) loc) list)
-		dsssl)))))
+	     (cons (id-of-id (car expr) loc) list)
+	     dsssl)))))
 

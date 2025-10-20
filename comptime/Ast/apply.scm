@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/apply.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/apply.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Thu Jul  8 11:26:41 2021 (serrano)                */
+;*    Last change :  Mon Oct 20 13:13:22 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The apply compilation                                            */
 ;*=====================================================================*/
@@ -22,30 +22,30 @@
 	    ast_local
 	    ast_app
 	    ast_ident)
-   (export  (applycation->node::node ::obj ::obj ::obj ::symbol)
-	    (known-app-ly->node::node stack loc proc::node ::node ::symbol)))
+   (export  (applycation->node::node ::obj ::obj ::obj ::symbol genv)
+	    (known-app-ly->node::node stack loc proc::node ::node ::symbol ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    applycation->node ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (applycation->node exp stack loc site)
+(define (applycation->node exp stack loc site genv)
    (match-case exp
       ((apply ?proc ?arg)
        (let* ((loc  (find-location/loc exp loc))
 	      (proc (sexp->node proc
-				stack
-				(find-location/loc proc loc)
-				'apply))
+		       stack
+		       (find-location/loc proc loc)
+		       'apply genv))
 	      (arg  (sexp->node arg
-				stack
-				(find-location/loc arg loc)
-				'value)))
+		       stack
+		       (find-location/loc arg loc)
+		       'value genv)))
 	  (if (and (var? proc)
 		   (fun? (variable-value (var-variable proc)))
 		   (or (not (global? (var-variable proc)))
 		       (and (not (global-optional? (var-variable proc)))
 			    (not (global-key? (var-variable proc))))))
-	      (known-app-ly->node stack loc proc arg site)
+	      (known-app-ly->node stack loc proc arg site genv)
 	      (instantiate::app-ly
 		 (loc loc)
 		 (type *_*)
@@ -53,7 +53,7 @@
 		 (arg arg)))))
       (else
        (error-sexp->node
-	"Illegal `apply' form" exp (find-location/loc exp loc)))))
+	  "Illegal `apply' form" exp (find-location/loc exp loc) genv))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-fun-frame ...                                               */
@@ -74,11 +74,11 @@
 	     (reverse! locals))
 	    (else
 	     (loop (cdr formals)
-		   (cons (make-local-svar (mark-symbol-non-user! (gensym 'aux))
-					  (if (type? (car formals))
-					      (car formals)
-					      (local-type (car formals))))
-			 locals)))))))
+		(cons (make-local-svar (mark-symbol-non-user! (gensym 'aux))
+			 (if (type? (car formals))
+			     (car formals)
+			     (local-type (car formals))))
+		   locals)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-fun-frame ::cfun ...                                        */
@@ -94,9 +94,9 @@
 	     (reverse! locals))
 	    (else
 	     (loop (cdr types)
-		   (cons (make-local-svar (mark-symbol-non-user! (gensym 'aux))
-					  (car types))
-			 locals)))))))
+		(cons (make-local-svar (mark-symbol-non-user! (gensym 'aux))
+			 (car types))
+		   locals)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    known-app-ly->node ...                                           */
@@ -104,7 +104,7 @@
 ;*    This function assumes that proc is not an opt- or key-           */
 ;*    function.                                                        */
 ;*---------------------------------------------------------------------*/
-(define (known-app-ly->node stack loc proc arg site)
+(define (known-app-ly->node stack loc proc arg site genv)
    (let* ((fun   (variable-value (var-variable proc)))
 	  (arity (fun-arity fun))
 	  (frame (make-fun-frame fun)))
@@ -113,17 +113,17 @@
 				   (not (sfun-key? fun)))))
       (cond
 	 ((>fx arity 0)
-	  (fx-known-app-ly->node stack loc proc arg frame site))
+	  (fx-known-app-ly->node stack loc proc arg frame site genv))
 	 ((=fx arity 0)
-	  (0-known-app-ly->node stack loc proc arg frame site))
+	  (0-known-app-ly->node stack loc proc arg frame site genv))
 	 (else
-	  (va-known-app-ly->node stack loc proc arg frame site)))))
+	  (va-known-app-ly->node stack loc proc arg frame site genv)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    0-known-app-ly->node ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (0-known-app-ly->node stack loc proc arg frame site)
-   (sexp->node (list proc) stack loc site))
+(define (0-known-app-ly->node stack loc proc arg frame site genv)
+   (sexp->node (list proc) stack loc site genv))
    
 ;*---------------------------------------------------------------------*/
 ;*    fx-known-app-ly->node ...                                        */
@@ -144,9 +144,9 @@
 ;*                   (f a0 ... an)))))                                 */
 ;*                   (error)                                           */
 ;*---------------------------------------------------------------------*/
-(define (fx-known-app-ly->node stack loc proc arg frame site)
+(define (fx-known-app-ly->node stack loc proc arg frame site genv)
    (let ((runner (make-local-svar (mark-symbol-non-user! (gensym 'runner))
-				  *_*))
+		    *_*))
 	 (type (node-type proc)))
       (local-access-set! runner 'write)
       (instantiate::let-var
@@ -156,62 +156,54 @@
 	 (body (let loop ((locals frame))
 		  (if (null? locals)
 		      (let ((app (application->node
-				  `(,proc
-				    ,@(map (lambda (local)
-					      (instantiate::ref
-						 (loc loc)
-						 (type (strict-node-type *_* (local-type local)))
-						 (variable local)))
-					   frame))
-				  stack
-				  loc
-				  'value)))
+				    `(,proc
+					,@(map (lambda (local)
+						  (instantiate::ref
+						     (loc loc)
+						     (type (strict-node-type *_* (local-type local)))
+						     (variable local)))
+					     frame))
+				    stack loc 'value genv)))
 			 (if *unsafe-arity*
 			     app
 			     (sexp->node
-			      `(if (null? (cdr
-					   ,(instantiate::ref
-					       (loc loc)
-					       (type (strict-node-type *_* (local-type runner)))
-					       (variable runner))))
-				   ,app
-				   (failure "apply"
-					    "Too many arguments provided"
-					    ',(shape (var-variable proc))))
-			      stack
-			      loc
-			      site)))
-		      (instantiate::let-var
-			 (loc loc)
-			 (type (strict-node-type *_* type))
-			 (bindings (list (cons
-					  (car locals)
-					  (sexp->node
-					   `(car
-					     ,(instantiate::ref
-						 (loc loc)
-						 (type (strict-node-type *_* (local-type runner)))
-						 (variable runner)))
-					   stack
-					   loc
-					   'value))))
-			 (body (if (null? (cdr locals))
-				   (loop (cdr locals))
-				   (sexp->node
-				    `(begin
-					(set! ,(instantiate::ref
-						  (loc loc)
-						  (type (strict-node-type *_* (local-type runner)))
-						  (variable runner))
-					      (cdr
+				`(if (null? (cdr
 					       ,(instantiate::ref
 						   (loc loc)
 						   (type (strict-node-type *_* (local-type runner)))
 						   (variable runner))))
-					,(loop (cdr locals)))
-				    stack
-				    loc
-				    'value))))))))))
+				     ,app
+				     (failure "apply"
+					"Too many arguments provided"
+					',(shape (var-variable proc))))
+				stack loc site genv)))
+		      (instantiate::let-var
+			 (loc loc)
+			 (type (strict-node-type *_* type))
+			 (bindings (list (cons
+					    (car locals)
+					    (sexp->node
+					       `(car
+						   ,(instantiate::ref
+						       (loc loc)
+						       (type (strict-node-type *_* (local-type runner)))
+						       (variable runner)))
+					       stack loc 'value genv))))
+			 (body (if (null? (cdr locals))
+				   (loop (cdr locals))
+				   (sexp->node
+				      `(begin
+					  (set! ,(instantiate::ref
+						    (loc loc)
+						    (type (strict-node-type *_* (local-type runner)))
+						    (variable runner))
+					     (cdr
+						,(instantiate::ref
+						    (loc loc)
+						    (type (strict-node-type *_* (local-type runner)))
+						    (variable runner))))
+					  ,(loop (cdr locals)))
+				      stack loc 'value genv))))))))))
 				     
 ;*---------------------------------------------------------------------*/
 ;*    va-known-app-ly->node ...                                        */
@@ -229,7 +221,7 @@
 ;*             ...                                                     */
 ;*             (f a0 ... runner))))                                    */
 ;*---------------------------------------------------------------------*/
-(define (va-known-app-ly->node stack loc proc arg frame site)
+(define (va-known-app-ly->node stack loc proc arg frame site genv)
    (let ((runner (make-local-svar (mark-symbol-non-user! (gensym 'runner)) *_*))
 	 (type   (strict-node-type *_* (node-type proc))))
       (when (pair? frame)
@@ -254,35 +246,31 @@
 					     (loc loc)
 					     (type (strict-node-type *_* (local-type local)))
 					     (variable local)))
-				       frame))))
+				     frame))))
 		      (instantiate::let-var
 			 (loc loc)
 			 (type (strict-node-type *_* type))
 			 (bindings (list (cons
-					  (car locals)
-					  (sexp->node
-					   `(car
-					     ,(instantiate::ref
-						 (loc loc)
-						 (type (strict-node-type *_* (local-type runner)))
-						 (variable runner)))
-					   stack
-					   loc
-					   'value))))
+					    (car locals)
+					    (sexp->node
+					       `(car
+						   ,(instantiate::ref
+						       (loc loc)
+						       (type (strict-node-type *_* (local-type runner)))
+						       (variable runner)))
+					       stack loc 'value genv))))
 			 (body (sexp->node
-				`(begin
-				    (set! ,(instantiate::ref
-					      (loc loc)
-					      (type (strict-node-type *_* (local-type runner)))
-					      (variable runner))
-					  (cdr ,(instantiate::ref
-						   (loc loc)
-						   (type (strict-node-type *_* (local-type runner)))
-						   (variable runner))))
-				    ,(loop (cdr locals) locals))
-				stack
-				loc
-				'value)))))))))
+				  `(begin
+				      (set! ,(instantiate::ref
+						(loc loc)
+						(type (strict-node-type *_* (local-type runner)))
+						(variable runner))
+					 (cdr ,(instantiate::ref
+						  (loc loc)
+						  (type (strict-node-type *_* (local-type runner)))
+						  (variable runner))))
+				      ,(loop (cdr locals) locals))
+				  stack loc 'value genv)))))))))
 					 
 
 

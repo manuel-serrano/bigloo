@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Oct 20 08:44:31 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 12:42:19 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -48,14 +48,14 @@
 	    effect_feffect)
    
    (export  (if-sym)
-	    (top-level-sexp->node::node <sexp> ::obj)
-	    (sexp->node::node ::obj <obj> ::obj ::symbol)
-	    (sexp*->node::pair-nil ::pair-nil <obj> ::obj ::symbol)
-	    (define-primop-ref->node::node ::global ::node)
-	    (define-primop-ref/src->node::node ::global ::node ::obj)
-	    (define-primop->node::node ::global)
-	    (location->node::node ::global)
-	    (error-sexp->node::node ::bstring ::obj ::obj)
+	    (top-level-sexp->node::node <sexp> ::obj ::obj)
+	    (sexp->node::node ::obj <obj> ::obj ::symbol ::obj)
+	    (sexp*->node::pair-nil ::pair-nil <obj> ::obj ::symbol ::obj)
+	    (define-primop-ref->node::node ::global ::node ::obj)
+	    (define-primop-ref/src->node::node ::global ::node ::obj ::obj)
+	    (define-primop->node::node ::global ::obj)
+	    (location->node::node ::global ::obj)
+	    (error-sexp->node::node ::bstring ::obj ::obj ::obj)
 	    (use-variable! ::variable ::obj ::symbol)
 	    (make-anonymous-name::symbol loc . pref)
 	    (find-local ::symbol ::obj)))
@@ -63,14 +63,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    top-level-sexp->node ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (top-level-sexp->node exp loc)
+(define (top-level-sexp->node exp loc genv)
    (bind-exit (skip)
       (with-exception-handler
 	 (lambda (e)
 	    (exception-notify e)
 	    (skip #unspecified))
 	 (lambda ()
-	    (sexp->node exp '() loc 'value)))))
+	    (sexp->node exp '() loc 'value genv)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *sites* ...                                                      */
@@ -111,7 +111,7 @@
 ;*    `loc' is the current file-position                               */
 ;*    `site' is a information on the place the sexp takes place        */
 ;*---------------------------------------------------------------------*/
-(define (sexp->node exp stack loc site)
+(define (sexp->node exp stack loc site genv)
    (assert (site) (memq site *sites*))
    (trace (ast 2) "sexp->node(" loc "): " (shape exp))
    (trace (ast 3) " site: " site)
@@ -119,26 +119,26 @@
    (match-case exp
 ;*--- () --------------------------------------------------------------*/
       (()
-       (error-sexp->node "Illegal `()' expression" exp loc))
+       (error-sexp->node "Illegal `()' expression" exp loc genv))
 ;*--- node ------------------------------------------------------------*/
       ((? node?)
        (when (extern? exp)
 	  (with-access::extern exp (expr* loc)
-	     (map! (lambda (e) (sexp->node e stack loc 'value)) expr*)))
+	     (map! (lambda (e) (sexp->node e stack loc 'value genv)) expr*)))
        (when (app? exp)
 	  (with-access::app exp (args loc)
-	     (map! (lambda (e) (sexp->node e stack loc 'value)) args)))
+	     (map! (lambda (e) (sexp->node e stack loc 'value genv)) args)))
        exp)
 ;*--- atom ------------------------------------------------------------*/
       ((atom ?atom)
        (cond
 	  ((or (local? atom) (global? atom))
-	   (variable->node atom loc site))
+	   (variable->node atom loc site genv))
 	  ((or (struct? atom)
 	       (vector? atom) (homogeneous-vector? atom)
 	       (object? atom)
 	       (procedure? atom))
-	   (error-sexp->node "Illegal atom in s-expression" exp loc))
+	   (error-sexp->node "Illegal atom in s-expression" exp loc genv))
 	  ((not (symbol? atom))
 	   (instantiate::literal
 	      (loc loc)
@@ -146,18 +146,18 @@
 	      (value atom)))
 	  ((find-local atom stack)
 	   =>
-	   (lambda (i) (variable->node i loc site)))
+	   (lambda (i) (variable->node i loc site genv)))
 	  (else
 	   (let ((global (find-global (get-genv) atom))
 		 (loc (find-location/loc atom loc)))
 	      (cond
 		 ((not (global? global))
 		  (trace (ast 2) "*** UNBOUND VARIALBLE " exp " " loc)
-		  (error-sexp->node "Unbound variable" exp loc))
+		  (error-sexp->node "Unbound variable" exp loc genv))
 		 ((eq? (global-import global) 'eval)
-		  (sexp->node `(eval ',atom) stack loc site))
+		  (sexp->node `(eval ',atom) stack loc site genv))
 		 (else
-		  (variable->node global loc site)))))))
+		  (variable->node global loc site genv)))))))
 ;*--- application -----------------------------------------------------*/
       (((and (? symbol?)
 	     (? (lambda (x)
@@ -169,7 +169,7 @@
 	. ?rest)
        ;; apply is a special case. unless overriden it must be handled
        ;; as a special form by the compiler.
-       (call->node exp stack loc site))
+       (call->node exp stack loc site genv))
 ;*--- qualified global variable ---------------------------------------*/
       ((@ . ?-)
        (let ((loc (find-location/loc exp loc)))
@@ -179,18 +179,18 @@
 		    (loc (find-location/loc name loc)))
 		 (cond
 		    ((not (global? global))
-		     (error-sexp->node "Unbound global variable" exp loc))
+		     (error-sexp->node "Unbound global variable" exp loc genv))
 		    ((eq? (global-import global) 'eval)
-		     (sexp->node `(eval ,atom) stack loc site))
+		     (sexp->node `(eval ,atom) stack loc site genv))
 		    (else
-		     (variable->node global loc site)))))
+		     (variable->node global loc site genv)))))
 	     (else
-	      (error-sexp->node "Illegal `@' expression" exp loc)))))
+	      (error-sexp->node "Illegal `@' expression" exp loc genv)))))
 ;*--- -> --------------------------------------------------------------*/
       ((-> . ?l)
        (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
-	   (field-ref->node l exp stack loc site)
-	   (error-sexp->node "Illegal ->" exp loc)))
+	   (field-ref->node l exp stack loc site genv)
+	   (error-sexp->node "Illegal ->" exp loc genv)))
 ;*--- quote -----------------------------------------------------------*/
       ((quote . ?-)
        (match-case exp
@@ -220,17 +220,17 @@
 		      ;; these tests.
 		      (char? value)
 		      (boolean? value))
-		  (sexp->node value stack loc site))
+		  (sexp->node value stack loc site genv))
 		 (else
-		  (error-sexp->node "Illegal `quote' expression" exp loc)))))
+		  (error-sexp->node "Illegal `quote' expression" exp loc genv)))))
           (else
-	   (error-sexp->node "Illegal `quote' expression" exp loc))))
+	   (error-sexp->node "Illegal `quote' expression" exp loc genv))))
 ;*--- begin -----------------------------------------------------------*/
       ((begin)
-       (sexp->node #unspecified stack (find-location/loc exp loc) site))
+       (sexp->node #unspecified stack (find-location/loc exp loc) site genv))
       ((begin . ?body)
        (let* ((loc (find-location/loc exp loc))
-	      (nodes (sexp*->node body stack loc site)))
+	      (nodes (sexp*->node body stack loc site genv)))
 	  (instantiate::sequence
 	     (loc loc)
 	     (type *_*)
@@ -238,7 +238,7 @@
 ;*--- if --------------------------------------------------------------*/
       ((and ((or if (? if-sym?)) ?test #t #f)
 	    (? (lambda (x) (eq? site 'test))))
-       (sexp->node test stack loc site))
+       (sexp->node test stack loc site genv))
       (((or if (? if-sym?)) . ?-)
        (match-case exp
           ((?- ?si ?alors ?sinon)
@@ -248,7 +248,7 @@
 		     (set-car! (cdr exp) nt)
 		     (set-car! (cddr exp) sinon)
 		     (set-car! (cdddr exp) alors)
-		     (sexp->node exp stack loc site))
+		     (sexp->node exp stack loc site genv))
 		  (let* ((loc (find-location/loc exp loc))
 			 (cdloc (find-location/loc (cdr exp) loc))
 			 (cddloc (find-location/loc (cddr exp) loc))
@@ -256,18 +256,18 @@
 			 (l-si (find-location/loc si cdloc))
 			 (l-alors (find-location/loc alors cddloc))
 			 (l-sinon (find-location/loc sinon cdddloc))
-			 (test (sexp->node si stack loc 'test)))
+			 (test (sexp->node si stack loc 'test genv)))
 		     (cond
 			((atom? test)
 			 (with-access::atom test (value)
 			    (if (not value)
-				(sexp->node sinon stack l-sinon 'value)
-				(sexp->node alors stack l-alors 'value))))
+				(sexp->node sinon stack l-sinon 'value genv)
+				(sexp->node alors stack l-alors 'value genv))))
 			((kwote? test)
-			 (sexp->node alors stack l-alors 'value))
+			 (sexp->node alors stack l-alors 'value genv))
 			((test-nestable? test)
-			 (let ((alors (sexp->node alors stack l-alors 'value))
-			       (sinon (sexp->node sinon stack l-sinon 'value)))
+			 (let ((alors (sexp->node alors stack l-alors 'value genv))
+			       (sinon (sexp->node sinon stack l-sinon 'value genv)))
 			    (instantiate::conditional
 			       (loc loc)
 			       (type *_*)
@@ -279,17 +279,17 @@
 				(var (make-typed-ident v 'bool))
 				(nexp (epairify-rec `(if ,v ,alors ,sinon) exp)))
 			    (replace! exp `(,(let-sym) ((,var ,si)) ,nexp))
-			    (sexp->node exp stack loc site))))))))
+			    (sexp->node exp stack loc site genv))))))))
 	  ((?- ?si ?alors)
            (set-cdr! (cddr exp) (list #unspecified))
-           (sexp->node exp stack loc site))
+           (sexp->node exp stack loc site genv))
           (else
-	   (error-sexp->node "Illegal `if' form" exp loc))))
+	   (error-sexp->node "Illegal `if' form" exp loc genv))))
 ;*--- set! ------------------------------------------------------------*/
       ((set! (-> . ?l) ?val)
        (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
-	   (field-set->node l val exp stack loc site)
-	   (error-sexp->node "Illegal ->" exp loc)))
+	   (field-set->node l val exp stack loc site genv)
+	   (error-sexp->node "Illegal ->" exp loc genv)))
       ((set! . ?-)
        (match-case exp
           ((?- ?var ?val)
@@ -300,26 +300,26 @@
 		  (val (match-case val
 			  ((lambda . ?-)
 			   (lambda->node val stack val-loc 'value
-				(symbol->string var)))	    
+				(symbol->string var) genv))	    
 			  (else
-			   (sexp->node val stack val-loc 'value)))))
-	      (let ((ast (sexp->node var stack cdloc 'set!)))
+			   (sexp->node val stack val-loc 'value genv)))))
+	      (let ((ast (sexp->node var stack cdloc 'set! genv)))
 		 (if (var? ast)
 		     (with-access::var ast (variable)
 			(if (and (global? variable)
 				 (global-read-only? variable))
 			    (error-sexp->node
-			       "Read-only variable" exp cdloc)
+			       "Read-only variable" exp cdloc genv)
 			    (instantiate::setq
 			       (loc loc)
 			       (type *unspec*)
 			       (var ast)
 			       (value val))))
 		     (error-sexp->node
-			"illegal `set!' expression" exp loc)))))
+			"illegal `set!' expression" exp loc genv)))))
           (else
 	   (error-sexp->node
-	      "Illegal `set!' form" exp (find-location/loc exp loc)))))
+	      "Illegal `set!' form" exp (find-location/loc exp loc) genv))))
 ;*--- define ----------------------------------------------------------*/
       ((define . ?-)
        ;; define is very close to `set!' except that is it not
@@ -330,8 +330,8 @@
 		  (cdloc (find-location/loc (cdr exp) loc))
 		  (cddloc (find-location/loc (cddr exp) loc))
 		  (val-loc (find-location/loc val cddloc))
-		  (val (sexp->node val stack val-loc 'value)))
-	      (let ((ast (sexp->node var stack cdloc 'value)))
+		  (val (sexp->node val stack val-loc 'value genv)))
+	      (let ((ast (sexp->node var stack cdloc 'value genv)))
 		 (if (and (var? ast) (global? (var-variable ast)))
 		     (begin
 			(global-src-set! (var-variable ast) val)
@@ -341,24 +341,24 @@
 			   (var ast)
 			   (value val)))
 		     (error-sexp->node
-			"illegal `define' expression" exp loc)))))
+			"illegal `define' expression" exp loc genv)))))
           (else
 	   (error-sexp->node
-	      "Illegal `define' form" exp (find-location/loc exp loc)))))
+	      "Illegal `define' form" exp (find-location/loc exp loc) genv))))
 ;*--- let & letrec ----------------------------------------------------*/
       (($let ?bindings . ?expr)
-       (let ((exp (let->node exp stack loc 'value)))
+       (let ((exp (let->node exp stack loc 'value genv)))
 	  (if (isa? exp let-var)
 	      (with-access::let-var exp (removable?)
 		 (set! removable? #f)
 		 exp)
 	      (error-sexp->node
-		 "illegal `$let' expression, does not produce a let" exp loc))))
+		 "illegal `$let' expression, does not produce a let" exp loc genv))))
 ;*--- a pattern to improve pattern-matching compilation ---------------*/
       ((((or let (? let-sym?) letrec labels (? labels-sym?)) ?- ?body) . ?args)
        (let* ((let-part (car exp))
 	      (nexp `(,(car let-part) ,(cadr let-part) (,body ,@args))))
-	  (sexp->node nexp stack loc site)))
+	  (sexp->node nexp stack loc site genv)))
 ;*--- let & letrec ----------------------------------------------------*/
       (((or let (? let-sym?) letrec) ?bindings . ?expr)
        (when (and (pair? bindings) (null? (cdr bindings))
@@ -377,18 +377,18 @@
 		       (set-car! (cdr binding) nt)
 		       (set-car! (cddr body) otherwise)
 		       (set-car! (cdddr body) then)))))))
-       (let->node exp stack loc 'value))
+       (let->node exp stack loc 'value genv))
       ((letrec* . ?-)
-       (letrec*->node exp stack loc 'value))
+       (letrec*->node exp stack loc 'value genv))
 ;*--- labels ----------------------------------------------------------*/
       (((or labels (? labels-sym?)) . ?-)
-       (labels->node exp stack loc 'value))
+       (labels->node exp stack loc 'value genv))
 ;*--- the direct lambda applications (see match-case ...) -------------*/
       (((lambda (?var) (and ?body (?- . ?-) (? cast-sexp?))) (atom ?arg))
        (instantiate::cast
 	  (loc loc)
 	  (type (use-type! (cast-sexp-type body) loc))
-	  (arg (sexp->node arg stack loc site))))
+	  (arg (sexp->node arg stack loc site genv))))
       (((lambda ?vars . ?body) . ?args)
        (let ((loc (find-location/loc exp loc))
 	     (nexp `(,(let-sym) ,(let loop ((vars vars)
@@ -438,14 +438,14 @@
 				    (normalize-progn body)
 				    (lambda (obj proc msg)
 				       (user-error/location loc obj proc msg))))))
-	  (let->node nexp stack loc 'value)))
+	  (let->node nexp stack loc 'value genv)))
 ;*--- the direct if applications --------------------------------------*/
       (((if ?test
 	    (and (? proc-or-lambda?) ?proc1)
 	    (and (? proc-or-lambda?) ?proc2))
 	. (and (? (lambda (l) (every (lambda (l) (not (pair? l))) l))) ?args))
        (let ((nexp `(if ,test (,proc1 ,@args) (,proc2 ,@args))))
-	  (sexp->node nexp stack (find-location/loc exp loc) site)))
+	  (sexp->node nexp stack (find-location/loc exp loc) site genv)))
       (((if ?test
 	    (and (? proc-or-lambda?) ?proc1)
 	    (and (? proc-or-lambda?) ?proc2))
@@ -454,35 +454,34 @@
 	      (loc (find-location/loc exp loc))
 	      (nexp `(,(let-sym) ,(map list tmps args)
 				 (if ,test (,proc1 ,@tmps) (,proc2 ,@tmps)))))
-	  (let->node nexp stack (find-location/loc exp loc) site)))
-      
+	  (let->node nexp stack (find-location/loc exp loc) site genv)))
 ;*--- lambda ----------------------------------------------------------*/
       ((lambda . ?-)
-       (lambda->node exp stack loc site "L"))
+       (lambda->node exp stack loc site "L" genv))
 ;*--- pragma ----------------------------------------------------------*/
       ((pragma . ?-)
-       (pragma/type->node #f #f *unspec* exp stack loc site))
+       (pragma/type->node #f #f *unspec* exp stack loc site genv))
 ;*--- pragma/effect ---------------------------------------------------*/
       ((pragma/effect ?effect . ?rest)
        (pragma/type->node #f
 	  (parse-effect effect)
-	  *unspec* `(pragma ,@rest) stack loc site))
+	  *unspec* `(pragma ,@rest) stack loc site genv))
 ;*--- free-pragma -----------------------------------------------------*/
       ((free-pragma . ?-)
-       (pragma/type->node #t #f *unspec* exp stack loc site))
+       (pragma/type->node #t #f *unspec* exp stack loc site genv))
 ;*--- static-pragma ---------------------------------------------------*/
       ((static-pragma . ?-)
        (if (not (and (null? stack) (eq? site 'value)))
-	   (error-sexp->node "Illegal `static-pragma' expression" exp loc)
+	   (error-sexp->node "Illegal `static-pragma' expression" exp loc genv)
 	   (begin
 	      (add-static-pragma!
-		 (pragma/type->node #t #f *unspec* exp stack loc site))
-	      (sexp->node #unspecified stack loc site))))
+		 (pragma/type->node #t #f *unspec* exp stack loc site genv))
+	      (sexp->node #unspecified stack loc site genv))))
 ;*--- pragma/effect ---------------------------------------------------*/
       ((free-pragma/effect ?effect . ?rest)
        (pragma/type->node #t
 	  (parse-effect effect)
-	  *unspec* `(pragma ,@rest) stack loc site))
+	  *unspec* `(pragma ,@rest) stack loc site genv))
 ;*--- cast-null -------------------------------------------------------*/
       ((cast-null ?type)
        (instantiate::cast-null
@@ -500,9 +499,9 @@
 		  (loc-proc (find-location/loc proc cdloc))
 		  (loc-msg (find-location/loc msg cddloc))
 		  (loc-obj (find-location/loc obj cdddloc))
-		  (proc (sexp->node proc stack loc-proc 'value))
-		  (msg (sexp->node msg stack loc-msg 'value))
-		  (obj (sexp->node obj stack loc-obj 'value)))
+		  (proc (sexp->node proc stack loc-proc 'value genv))
+		  (msg (sexp->node msg stack loc-msg 'value genv))
+		  (obj (sexp->node obj stack loc-obj 'value genv)))
 	      (instantiate::fail
 		 (loc loc)
 		 (type *magic*)
@@ -511,7 +510,7 @@
 		 (obj obj))))
           (else
 	   (error-sexp->node
-	      "Illegal `failure' form" exp (find-location/loc exp loc)))))
+	      "Illegal `failure' form" exp (find-location/loc exp loc) genv))))
 ;*--- case ------------------------------------------------------------*/
       ((case . ?-)
        ;; former versions of the compiler used to make side effect
@@ -528,7 +527,7 @@
                   (test (sexp->node test
 			   stack
 			   (find-location/loc test cdloc)
-			   'value)))
+			   'value genv)))
 	      (let loop ((cls clauses)
 			 (nclauses '()))
 		 (if (null? cls)
@@ -542,39 +541,39 @@
 			    (body   (sexp->node (normalize-progn (cdr clause))
 				       stack
 				       (find-location/loc clause cddloc)
-				       'value))
+				       'value genv))
 			    (nclause (cons (car clause) body)))
 			;; we check that it is not an illegal `else' clause
 			(if (and (eq? (car clause) 'else)
 				 (not (null? (cdr cls))))
 			    (error-sexp->node
-			       "Illegal `case' form" exp (find-location/loc exp loc))
+			       "Illegal `case' form" exp (find-location/loc exp loc) genv)
 			    (loop (cdr cls)
 			       (cons (epairify nclause clause)
 				  nclauses))))))))
           (else
 	   (error-sexp->node
-	      "Illegal `case' form" exp (find-location/loc exp loc)))))
+	      "Illegal `case' form" exp (find-location/loc exp loc) genv))))
 ;*--- set-exit --------------------------------------------------------*/
       ((set-exit . ?-)
-       (set-exit->node exp stack loc site))
+       (set-exit->node exp stack loc site genv))
 ;*--- jump-exit -------------------------------------------------------*/
       ((jump-exit . ?-)
-       (jump-exit->node exp stack loc site))
+       (jump-exit->node exp stack loc site genv))
 ;*--- apply -----------------------------------------------------------*/
       ((apply ?- ?-)
-       (applycation->node exp stack loc site))
+       (applycation->node exp stack loc site genv))
 ;*--- synchronize -----------------------------------------------------*/
       ((synchronize ?mutex :prelock ?prelock . ?body)
-       (synchronize->node exp mutex prelock body stack (find-location/loc exp loc) site))
+       (synchronize->node exp mutex prelock body stack (find-location/loc exp loc) site genv))
       ((synchronize ?mutex . ?body)
-       (synchronize->node exp mutex ''() body stack (find-location/loc exp loc) site))
+       (synchronize->node exp mutex ''() body stack (find-location/loc exp loc) site genv))
 ;*--- private ---------------------------------------------------------*/
       ((#unspecified)
        (error-sexp->node
-	  "Illegal `application' form" exp (find-location/loc exp loc)))
+	  "Illegal `application' form" exp (find-location/loc exp loc) genv))
       ((? private-sexp?)
-       (private-node exp stack loc site))
+       (private-node exp stack loc site genv))
 ;*--- app -------------------------------------------------------------*/
       (else
        ;; this expression can be a function call or a typed pragma
@@ -582,12 +581,12 @@
        ;; we compile a function call. This check is required by the
        ;; form (pragma::??? ...) (because we can't add a branch in the
        ;; match-case to check the node `pragma::???').
-       (call->node exp stack loc site))))
+       (call->node exp stack loc site genv))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lambda->node ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (lambda->node exp stack loc site prefname)
+(define (lambda->node exp stack loc site prefname genv)
    (match-case exp
       ((?- ?args . ?body) 
        (let ((loc (find-location/loc exp loc))
@@ -595,16 +594,16 @@
 	  (sexp->node `(,(labels-sym) ((,fun ,args ,(normalize-progn body))) ,fun)
 	     stack
 	     loc
-	     site)))
+	     site genv)))
       (else
        (error-sexp->node "Illegal `lambda' form"
 	  exp
-	  (find-location/loc exp loc)))))
+	  (find-location/loc exp loc) genv))))
 
 ;*---------------------------------------------------------------------*/
 ;*    variable->node ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (variable->node v loc site)
+(define (variable->node v loc site genv)
    (use-variable! v loc site)
    (if (and (not (eq? site 'app)) (fun? (variable-value v)))
        (if (and (global? v)
@@ -612,7 +611,7 @@
 		(not (backend-foreign-closure (the-backend)))
 		(not (eq? site 'apply)))
 	   (error-sexp->node
-	      (format "Backend (~a) does not support external first class function" (backend-name (the-backend))) exp loc)
+	      (format "Backend (~a) does not support external first class function" (backend-name (the-backend))) exp loc genv)
 	   (instantiate::closure
 	      (loc loc)
 	      (type (strict-node-type *procedure* (variable-type v)))
@@ -625,7 +624,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    call->node ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (call->node exp stack loc site)
+(define (call->node exp stack loc site genv)
    (let ((caller (car exp))
 	 (loc (find-location/loc exp loc)))
       (if (symbol? caller)
@@ -635,25 +634,25 @@
 		 (type (cdr pid)))
 	     (case id
 		((pragma)
-		 (pragma/type->node #f #f type exp stack loc site))
+		 (pragma/type->node #f #f type exp stack loc site genv))
 		((pragma/effect)
 		 (if (not (pair? (cdr exp)))
 		     (error-sexp->node
 			"Illegal pragma/effect"
-			exp (find-location/loc exp loc))
+			exp (find-location/loc exp loc) genv)
 		     (pragma/type->node #f (parse-effect (cadr exp))
 			type `((car exp) ,@(cddr exp))
-			stack loc site)))
+			stack loc site genv)))
 		((free-pragma)
-		 (pragma/type->node #t #f type exp stack loc site))
+		 (pragma/type->node #t #f type exp stack loc site genv))
 		((free-pragma/effect)
 		 (if (not (pair? (cdr exp)))
 		     (error-sexp->node
 			"Illegal free-pragma/effect"
-			exp (find-location/loc exp loc))
+			exp (find-location/loc exp loc) genv)
 		     (pragma/type->node #t (parse-effect (cadr exp))
 			type `((car exp) ,@(cddr exp))
-			stack loc site)))
+			stack loc site genv)))
 		((lambda)
 		 (match-case exp
 		    ((?- ?args . ?body)
@@ -667,33 +666,33 @@
 					   ,fun)
 			   stack
 			   loc
-			   site)))
+			   site genv)))
 		    (else
-		     (error-sexp->node "Illegal lambda" exp loc))))
+		     (error-sexp->node "Illegal lambda" exp loc genv))))
 		(else
-		 (application->node exp stack loc site))))
-	  (application->node exp stack loc site))))
+		 (application->node exp stack loc site genv))))
+	  (application->node exp stack loc site genv))))
  
 ;*---------------------------------------------------------------------*/
 ;*    sexp*->node ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (sexp*->node::pair-nil exp*::pair-nil stack loc site)
+(define (sexp*->node::pair-nil exp*::pair-nil stack loc site genv)
    (let loop ((exps exp*)
 	      (res  '())
 	      (loc  loc))
       (cond
 	 ((null? exps)
-	  (error-sexp->node "Illegal empty sequence" exps loc))
+	  (error-sexp->node "Illegal empty sequence" exps loc genv))
 	 ((null? (cdr exps))
 	  (let ((loc (find-location/loc (car exps)
 					(find-location/loc exps loc)))
 		(nsite (if (eq? site 'app) 'value site)))
-	     (reverse! (cons (sexp->node (car exps) stack loc nsite) res))))
+	     (reverse! (cons (sexp->node (car exps) stack loc nsite genv) res))))
 	 (else
 	  (let ((loc (find-location/loc (car exps)
 					(find-location/loc exps loc))))
 	     (loop (cdr exps)
-		   (cons (sexp->node (car exps) stack loc 'value) res)
+		   (cons (sexp->node (car exps) stack loc 'value genv) res)
 		   loc))))))
 
 ;*---------------------------------------------------------------------*/
@@ -732,72 +731,72 @@
       (variable-access-set! var 'write))
    (let ((val (variable-value var)))
       (when (and (eq? site 'set!) (fun? val))
-	 (error-sexp->node "Illegal mutation" (shape var) loc))))
+	 (error-sexp->node "Illegal mutation" (shape var) loc (get-genv)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error-sexp->node ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (error-sexp->node msg exp loc)
+(define (error-sexp->node msg exp loc genv)
    (user-error/location loc
       (shape (current-function))
       msg
       exp
-      (sexp->node ''() '() loc 'value)))
+      (sexp->node ''() '() loc 'value genv)))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-primop-ref->node ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (define-primop-ref->node global ref)
-   (let ((fun (sexp->node '(@ define-primop-ref! __evenv) '() #f 'app)))
+(define (define-primop-ref->node global ref genv)
+   (let ((fun (sexp->node '(@ define-primop-ref! __evenv) '() #f 'app genv)))
       (if (var? fun)
 	  (instantiate::app
 	     (type *_*)
 	     (fun fun)
-	     (args (list (sexp->node `',(global-id global) '() #f 'value) ref)))
+	     (args (list (sexp->node `',(global-id global) '() #f 'value genv) ref)))
 	  fun)))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-primop-ref/src->node ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (define-primop-ref/src->node global ref src)
+(define (define-primop-ref/src->node global ref src genv)
    (if (not (epair? src))
-       (define-primop-ref->node global ref)
+       (define-primop-ref->node global ref genv)
        (match-case (cer src)
 	  ((at ?fname ?loc)
-	   (let ((fun (sexp->node '(@ define-primop-ref/loc! __evenv) '() #f 'app)))
+	   (let ((fun (sexp->node '(@ define-primop-ref/loc! __evenv) '() #f 'app genv)))
 	      (if (var? fun)
 		  (instantiate::app
 		     (type *_*)
 		     (fun fun)
 		     (args (list
-			      (sexp->node `',(global-id global) '() #f 'value)
+			      (sexp->node `',(global-id global) '() #f 'value genv)
 			      ref
-			      (sexp->node fname '() #f 'value)
-			      (sexp->node loc '() #f 'value))))
+			      (sexp->node fname '() #f 'value genv)
+			      (sexp->node loc '() #f 'value genv))))
 		  fun)))
 	  (else
-	   (define-primop-ref->node global ref)))))
+	   (define-primop-ref->node global ref genv)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-primop->node ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (define-primop->node global)
+(define (define-primop->node global genv)
    (use-variable! global #f 'value)
-   (let ((fun (sexp->node '(@ define-primop! __evenv) '() #f 'app)))
+   (let ((fun (sexp->node '(@ define-primop! __evenv) '() #f 'app genv)))
       (if (var? fun)
 	  (instantiate::app
 	     (type *_*)
 	     (fun fun)
-	     (args (list (sexp->node `',(global-id global) '() #f 'value)
-			 (sexp->node global '() #f 'value))))
+	     (args (list (sexp->node `',(global-id global) '() #f 'value genv)
+			 (sexp->node global '() #f 'value genv))))
 	  fun)))
    
 ;*---------------------------------------------------------------------*/
 ;*    location->node ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (location->node global)
+(define (location->node global genv)
    (use-variable! global #f 'value)
-   (let ((fun (sexp->node '(@ __evmeaning_address foreign) '() #f 'app)))
+   (let ((fun (sexp->node '(@ __evmeaning_address foreign) '() #f 'app genv)))
       (if (var? fun)
 	  (let ((expr (if (backend-pragma-support (the-backend))
 			  `(pragma::obj "($1)" ,global)
@@ -805,7 +804,7 @@
 	     (instantiate::app
 		(type (strict-node-type *_* *obj*))
 		(fun fun)
-		(args (list (sexp->node expr '() #f 'value)))))
+		(args (list (sexp->node expr '() #f 'value genv)))))
 	  fun)))
    
 ;*---------------------------------------------------------------------*/
@@ -840,19 +839,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    synchronize->node ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (synchronize->node exp mutex prelock body stack loc site)
+(define (synchronize->node exp mutex prelock body stack loc site genv)
    (if (symbol? mutex)
        (instantiate::sync
 	  (loc loc)
 	  (type *_*)
-	  (mutex (sexp->node mutex stack loc 'value))
-	  (prelock (sexp->node prelock stack loc 'value))
-	  (body (sexp->node (normalize-progn body) stack loc site)))
+	  (mutex (sexp->node mutex stack loc 'value genv))
+	  (prelock (sexp->node prelock stack loc 'value genv))
+	  (body (sexp->node (normalize-progn body) stack loc site genv)))
        (let* ((v (mark-symbol-non-user! (gensym 'mutex)))
 	      (var (make-typed-ident v 'mutex))
 	      (nexp (epairify-rec `(synchronize ,v ,@body) exp)))
 	  (replace! exp `(,(let-sym) ((,var ,mutex)) ,nexp))
-	  (sexp->node exp stack loc site))))
+	  (sexp->node exp stack loc site genv))))
 	     
 ;*---------------------------------------------------------------------*/
 ;*    not-test ...                                                     */

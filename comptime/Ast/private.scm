@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Fri Oct 10 06:17:56 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 13:53:44 2025 (serrano)                */
 ;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -23,7 +23,7 @@
 	   object_slots
 	   ast_sexp
 	   ast_var)
-   (export (private-node ::pair ::obj ::obj ::symbol)
+   (export (private-node ::pair ::obj ::obj ::symbol ::obj)
 	   (private-stamp::symbol)
 	   (private-sexp?::bool ::pair)
 	   (cast-sexp?::bool ::pair)
@@ -72,7 +72,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    private-node ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (private-node sexp::pair stack loc site)
+(define (private-node sexp::pair stack loc site genv)
    (define (bigloodemangle f)
       (if (bigloo-mangled? f)
 	  (bigloo-demangle f)
@@ -80,8 +80,8 @@
    (match-case sexp
       ((?- getfield ?ftype ?otype ?field-name ?c-fmt ?obj)
        (let ((tid (symbol-append otype '-
-				 (string->symbol
-				  (bigloodemangle field-name))))
+		     (string->symbol
+			(bigloodemangle field-name))))
 	     (ftype (use-type! ftype loc))
 	     (otype (use-type! otype loc)))
 	  (instantiate::getfield
@@ -91,14 +91,14 @@
 	     (fname field-name)
 	     (ftype ftype)
 	     (side-effect #f)
-	     (expr* (list (sexp->node obj stack loc 'value)))
+	     (expr* (list (sexp->node obj stack loc 'value genv)))
 	     (effect (instantiate::feffect
 			(read (list tid))))
 	     (c-format c-fmt))))
       ((?- setfield ?ftype ?otype ?field-name ?c-fmt . ?rest)
        (let ((tid (symbol-append otype '-
-				 (string->symbol
-				  (bigloodemangle field-name))))
+		     (string->symbol
+			(bigloodemangle field-name))))
 	     (otype (use-type! otype loc))
 	     (ftype (use-type! ftype loc)))
 	  (instantiate::setfield
@@ -108,7 +108,7 @@
 	     (fname field-name)
 	     (ftype ftype)
 	     (side-effect #t)
-	     (expr* (sexp*->node rest stack loc 'value))
+	     (expr* (sexp*->node rest stack loc 'value genv))
 	     (effect (instantiate::feffect
 			(write (list tid))))
 	     (c-format c-fmt))))
@@ -128,7 +128,7 @@
 	     (args-type (map slot-type slots))
 	     (expr* (if (null? args)
 			'()
-			(sexp*->node args stack loc 'value)))
+			(sexp*->node args stack loc 'value genv)))
 	     (side-effect #t))))
       ((?- new ?type (quote ?args-type) . ?rest)
        (if (null? rest)
@@ -145,14 +145,14 @@
 	      (args-type (map (lambda (t) (use-type! t loc)) args-type))
 	      (expr* (if (null? rest)
 			 '()
-			 (sexp*->node rest stack loc 'value)))
+			 (sexp*->node rest stack loc 'value genv)))
 	      (side-effect #t)
 	      (c-format ""))))
       ((?- cast ?type ?exp)
        (instantiate::cast
 	  (loc loc)
 	  (type (use-type! type loc))
-	  (arg (sexp->node exp stack loc site))))
+	  (arg (sexp->node exp stack loc site genv))))
       ((?- cast-null ?type)
        (instantiate::cast-null
 	  (loc loc)
@@ -164,7 +164,7 @@
 	  (loc loc)
 	  (type *bool*)
 	  (class (use-type! type loc))
-	  (expr* (list (sexp->node exp stack loc site)))
+	  (expr* (list (sexp->node exp stack loc site genv)))
 	  (effect (instantiate::feffect))
 	  (c-format "")))
       ((?- vlength ?vtype ?ftype ?otype (and (? string?) ?c-fmt) ?exp)
@@ -177,7 +177,7 @@
 	     (vtype vtype)
 	     (ftype ftype)
 	     (c-format c-fmt)
-	     (expr* (list (sexp->node exp stack loc 'value)))
+	     (expr* (list (sexp->node exp stack loc 'value genv)))
 	     (effect (instantiate::feffect)))))
       ((?- (or vref vref-ur) ?vtype ?ftype ?otype (and (? string?) ?c-fmt) . ?rest)
        (let ((ftype (use-type! ftype loc))
@@ -190,7 +190,7 @@
 	     (otype otype)
 	     (vtype vtype)
 	     (c-format c-fmt)
-	     (expr* (sexp*->node rest stack loc 'value))
+	     (expr* (sexp*->node rest stack loc 'value genv))
 	     (unsafe (eq? (cadr sexp) 'vref-ur))
 	     (effect (instantiate::feffect
 			(read (list (type-id ftype))))))))
@@ -205,14 +205,14 @@
 	     (otype otype)
 	     (vtype vtype)
 	     (c-format c-fmt)
-	     (expr* (sexp*->node rest stack loc 'value))
+	     (expr* (sexp*->node rest stack loc 'value genv))
 	     (unsafe (eq? (cadr sexp) 'vset-ur!))
 	     (effect (instantiate::feffect
 			(write (list (type-id ftype))))))))
       ((?- valloc ?vtype ?ftype ?otype
-	   (and (? string?) ?c-heap-fmt)
-	   (and (? string?) ?c-stack-fmt)
-	   (and (? boolean?) ?stack?) . ?rest)
+	  (and (? string?) ?c-heap-fmt)
+	  (and (? string?) ?c-stack-fmt)
+	  (and (? boolean?) ?stack?) . ?rest)
        (let ((ftype (use-type! ftype loc))
 	     (vtype (use-type! vtype loc))
 	     (otype (use-type! otype loc)))
@@ -222,23 +222,23 @@
 	     (ftype ftype)
 	     (otype otype)
 	     (c-format c-heap-fmt)
-	     (expr* (sexp*->node rest stack loc 'value)))))
+	     (expr* (sexp*->node rest stack loc 'value genv)))))
       ((?- unsafe ?type ?exp)
        (instantiate::sequence
 	  (loc loc)
 	  (type (use-type! type loc))
 	  (unsafe #t)
-	  (nodes (list (sexp->node exp stack loc 'value)))))
+	  (nodes (list (sexp->node exp stack loc 'value genv)))))
       ((?- meta ?type ?kwds ?body)
        (instantiate::sequence
 	  (loc loc)
 	  (type (use-type! type loc))
 	  (meta kwds)
-	  (nodes (sexp*->node body stack loc 'value))))
+	  (nodes (sexp*->node body stack loc 'value genv))))
       (else
        (error "private-node"
-	      "Illegal private kind"
-	      (if (pair? (cdr sexp)) (cadr sexp) sexp)))))
+	  "Illegal private kind"
+	  (if (pair? (cdr sexp)) (cadr sexp) sexp)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-private-sexp ...                                            */

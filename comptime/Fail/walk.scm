@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Mon Oct 20 09:14:45 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 14:22:14 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of fail in debugging mode.                      */
@@ -103,13 +103,11 @@
       (if (and (location? loc)
 	       (eq? (var-variable fun) *error*))
 	  (sexp->node `(error/location ,(car args)
-				       ,(cadr args)
-				       ,(caddr args)
-				       ,(location-full-fname loc)
-				       ,(location-pos loc))
-		      '()
-		      loc
-		      'value)
+			  ,(cadr args)
+			  ,(caddr args)
+			  ,(location-full-fname loc)
+			  ,(location-pos loc))
+	     '() loc 'value (get-genv))
 	  node)))
  
 ;*---------------------------------------------------------------------*/
@@ -164,13 +162,11 @@
       (set! obj (fail-node! obj))
       (if (location? loc)
 	  (sexp->node `(error/location ,proc
-				       ,msg
-				       ,obj
-				       ,(location-full-fname loc)
-				       ,(location-pos loc))
-		      '()
-		      loc
-		      'value)
+			  ,msg
+			  ,obj
+			  ,(location-full-fname loc)
+			  ,(location-pos loc))
+	     '() loc 'value (get-genv))
 	  node)))
 
 ;*---------------------------------------------------------------------*/
