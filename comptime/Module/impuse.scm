@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Mon Oct 20 09:27:17 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 17:39:45 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
@@ -277,17 +277,17 @@
    ;; get the ordered list of imported modules
    (let ((imports (sort (lambda (i1 i2)
 			   (<fx (import-number i1) (import-number i2)))
-			(hashtable->list *imports*))))
+		     (hashtable->list *imports*))))
       ;; import everything needed from imported modules
       (for-each (lambda (i)
 		   (unless (or (eq? (import-mode i) 'with)
 			       (eq? (import-decl i) 'error))
 		      (import-module! i)))
-		imports)
+	 imports)
       ;; prepare the initialization functions
       (let ((inits (filter (lambda (i)
 			      (memq (import-mode i) '(import with from)))
-			   imports)))
+		      imports)))
 	 (if (pair? inits)
 	     (list (imported-modules-unit inits))
 	     '()))))
@@ -301,6 +301,7 @@
 ;*    initialize-imported-modules ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (initialize-imported-modules get-init)
+   
    (define (initialize-module import)
       (with-access::import import ((mod module) checksum)
 	 (let* ((fun (get-init mod))
@@ -309,6 +310,7 @@
 	    ;; from eval. We mark this.
 	    (global-evaluable?-set! var #f)
 	    `((@ ,fun ,mod) ,checksum ,(symbol->string *module*)))))
+   
    (define (trace-initialize-module import call)
       `(begin
 	  (pragma::void
@@ -316,12 +318,13 @@
 		 (symbol->string (get-init *module*))
 		 (symbol->string (import-module import))))
 	  ,call))
+   
    (let* ((calls (map initialize-module *imported-modules-in-unit*)))
       (if (and (>fx *debug-module* 0)
 	       (memq 'module (backend-debug-support (the-backend))))
 	  `((begin
 	       ,@(map trace-initialize-module *imported-modules-in-unit*
-		      calls)))
+		    calls)))
 	  calls)))
    
 ;*---------------------------------------------------------------------*/

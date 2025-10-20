@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Mon Oct 20 10:14:35 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 15:04:44 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -20,6 +20,7 @@
    (import engine_param
 	   tools_error
 	   tools_shape
+	   tools_location
 	   module_module
 	   module_class
 	   module_checksum
@@ -28,12 +29,16 @@
 	   module_java
 	   module_type
 	   module_eval
+	   heap_restore
 	   expand_eps
 	   ast_node
 	   ast_var
 	   ast_env
 	   ast_glo-decl
 	   ast_ident
+	   ast_toplevel
+	   ast_build
+	   ast_sexp
 	   type_type
 	   type_env
 	   object_class
@@ -371,6 +376,25 @@
 				    expr))))))))
 	 (when (pair? body)
 	    (unit 'inline 0 body #t #f)))))
+
+;*---------------------------------------------------------------------*/
+;*    *module5-genvs* ...                                              */
+;*---------------------------------------------------------------------*/
+(define *module5-genvs* '())
+
+;*---------------------------------------------------------------------*/
+;*    module5-genv ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (module5-genv mod)
+   (let ((e (assq mod *module5-genvs*)))
+      (if (pair? e)
+	  (cdr e)
+	  (let ((genv (if *lib-mode*
+			  (profile env (initialize-genv!))
+			  (profile heap (restore-heap)))))
+	     (module5-ast! mod genv)
+	     (set! *module5-genvs* (cons (cons mod genv) *module5-genvs*))
+	     genv))))
    
 ;*---------------------------------------------------------------------*/
 ;*    module5-imported-inline ...                                      */
@@ -382,12 +406,42 @@
    (with-access::Module mod (imports)
       (hashtable-for-each imports
 	 (lambda (k decl)
-	    (with-access::Decl decl (def id)
-	       (when (isa? def Def)
-		  (with-access::Def def (kind expr)
-		     (when (eq? kind 'inline)
-			(tprint "GOT ONE " id " expr=" expr)
-			expr))))))))
+	    (with-access::Decl decl (def id mod)
+	       (with-access::Module mod ((mid id) resolved)
+		  (let ((def (module5-get-export-def mod id)))
+		     (when (isa? def Def)
+			(with-access::Def def (kind expr)
+			   (when (eq? kind 'inline)
+			      (tprint "GOT ONE " id " expr=" expr " mid=" mid " kind=" kind)
+			      (tprint "mid=" mid " " resolved " id=" id " def=" (typeof def))
+			      (tprint "expr=" expr)
+			      (let* ((genv (module5-genv mod))
+				     (d (find-global env id)))
+				 (tprint "D=" (shape d))
+				 (toplevel->ast expr '() mid genv)
+				 
+				 (let* ((nd (find-global genv id))
+					(f (global-value nd)))
+				    (tprint "f=" (sfun-args f))
+				    (tprint "BODU=" (sfun-body f))
+				    (sfun-body-set! (global-value d)
+				       (sexp->node (sfun-body f)
+					  (sfun-args f)
+					  (find-location expr)
+					  'value
+					  genv))
+				    (tprint "nd=" (typeof nd)))
+				 
+				 #unspecified)))))))))))
+				 
+;* 				                                       */
+;* 				 (unbind-global! genv id mid)          */
+;* 				 (toplevel->ast expr '() mid genv)     */
+;* 				    (with-access::global nd (value)    */
+;* 				       (tprint "nd=" nd " " (typeof value) */
+;* 					  " " (shape (sfun-body value)))) */
+;* 				                                       */
+;* 				    expr))))))))))))                   */
    
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */
@@ -769,10 +823,7 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-init-xenv! xenv mod)
    
-   (define (localize nx x)
-      (if (epair? x)
-	  (econs (car nx) (cdr nx) (cer x))
-	  nx))
+   
    
    (define (define-expander x e)
       (match-case x
@@ -790,3 +841,10 @@
    
    xenv)
 
+;*---------------------------------------------------------------------*/
+;*    localize ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (localize nx x)
+   (if (epair? x)
+       (econs (car nx) (cdr nx) (cer x))
+       nx))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Oct 20 12:45:53 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 16:17:19 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -622,11 +622,9 @@
 	    (when u (set! units (cons u units))))
 
 	 ;; imported inline units
-	 (let ((u (module5-imported-inline-unit mod)))
-	    (when u (set! units (cons u units))))
+;* 	 (let ((u (module5-imported-inline-unit mod)))                 */
+;* 	    (when u (set! units (cons u units))))                      */
 
-	 (module5-imported-inline mod genv)
-	 
 	 ;; ... and the global user-defined macro expansion
 	 (profile expand (expand-units units))
 	 (stop-on-pass 'expand (lambda () (write-unit units)))
@@ -639,6 +637,8 @@
 	 ;; build the variable and function ast
 	 (module5-ast! mod genv)
 
+	 (module5-imported-inline mod genv)
+	 
 	 (let* ((m (module5-main mod genv))
 		(ast (profile ast (build-ast units genv))))
 

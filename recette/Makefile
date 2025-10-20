@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Sun Oct 19 07:26:55 2025 (serrano)                */
+#*    Last change :  Mon Oct 20 14:49:26 2025 (serrano)                */
 #*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -86,7 +86,8 @@ MODULE5		= module5 \
                   module5_ex14 \
                   module5_ex15 \
                   module5_ex16 \
-                  module5_ex17
+                  module5_ex17 \
+                  module5_ex18
 
 COMMON		= $(ICOMMON) $(OCOMMON)
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Mon Oct 20 10:04:51 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 17:34:26 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -69,16 +69,16 @@
 ;*---------------------------------------------------------------------*/
 (define (declare-global-dsssl-sfun! env opts keys id alias args module scope class srce srci)
    (trace (ast 3) "declare-global-dsssl-sfun!: "
-	  (shape id) " opts=" (shape opts) " keys=" (shape keys) #\newline)
+      (shape id) " opts=" (shape opts) " keys=" (shape keys) #\newline)
    (let* ((arity (global-arity args))
 	  (export? (or (not (eq? scope 'static))
 		       (and (memq 'bdb (backend-debug-support (the-backend)))
 			    (>=fx *bdb-debug* 3))))
 	  (scope (if (and (eq? scope 'static)
-			   (memq 'bdb (backend-debug-support (the-backend)))
-			   (>=fx *bdb-debug* 3))
-		      'export
-		      scope))
+			  (memq 'bdb (backend-debug-support (the-backend)))
+			  (>=fx *bdb-debug* 3))
+		     'export
+		     scope))
 	  (loc (find-location srce))
 	  (loci (find-location/loc srci loc))
 	  (args (if (pair? keys)
@@ -108,13 +108,13 @@
 					  (car args)
 					  (caar args)))
 				   (ty (let ((t (type-of-id/import-location
-						 a loc loci)))
+						   a loc loci)))
 					  (if (and (eq? t *_*) export?)
 					      *obj*
 					      t))))
 			       (loop (cdr args) (cons ty res)))))))
-	  (args-name (let loop ((args   args)
-				(res    '()))
+	  (args-name (let loop ((args args)
+				(res '()))
 			(cond
 			   ((null? args)
 			    (reverse! res))
@@ -143,9 +143,9 @@
 	  (global (bind-global! env id alias module sfun scope srce)))
       (trace (ast 3) "*** declare-global-dsssl-sfun!: srce: " srce #\Newline)
       (trace (ast 3) "*** declare-global-dsssl-sfun!: loc: " (find-location srce)
-	     #\Newline)
+	 #\Newline)
       (trace (ast 4) "   declare-global-dsssl-sfun!: (instantiate "
-	     (shape arity) " " (shape args-type) " " (shape class) #\Newline)
+	 (shape arity) " " (shape args-type) " " (shape class) #\Newline)
       ;; we set the type of the function
       (cond
 	 ((not (eq? type-res *_*))
@@ -232,7 +232,7 @@
 	  (id (car id-type))
 	  (sfun (instantiate::sfun
 			(arity arity)
-			(args  args-type)
+			(args args-type)
 			(args-name args-name)
 			(dsssl-keywords (dsssl-formals args))
 			(class class)))

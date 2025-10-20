@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Oct 20 12:42:19 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 17:14:05 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -322,7 +322,7 @@
 	      "Illegal `set!' form" exp (find-location/loc exp loc) genv))))
 ;*--- define ----------------------------------------------------------*/
       ((define . ?-)
-       ;; define is very close to `set!' except that is it not
+       ;; define is very similar to `set!' except that is it not
        ;; considered as a mutation of the defined variable.
        (match-case exp
           ((?- ?var ?val)

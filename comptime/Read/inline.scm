@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Read/inline.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Read/inline.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 29 10:30:51 1994                          */
-;*    Last change :  Wed Sep 15 14:13:54 2021 (serrano)                */
-;*    Copyright   :  1994-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 17:37:16 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We scan files in order to find `inline' definitions.             */
 ;*=====================================================================*/
@@ -40,9 +40,7 @@
 	  (let ((port (open-input-file path)))
 	     (if (input-port? port)
 		 port
-		 (user-error 'inline
-			     "Cannot open file for input"
-			     path)))
+		 (user-error 'inline "Cannot open file for input" path)))
 	  (user-error 'inline "Cannot find source file" file))))
 
 ;*---------------------------------------------------------------------*/
@@ -51,7 +49,7 @@
 ;*    We read until we have found all inline and macro definitions.    */
 ;*---------------------------------------------------------------------*/
 (define (look-for-inlines-and-macros inlines macros syntaxes expanders
-				     code exps fnames module)
+	   code exps fnames module)
    (let ((port (open-inline-file (car fnames))))
       (unwind-protect
 	 (begin
@@ -59,7 +57,7 @@
 	    (compiler-read port #f)
 	    ;; start reading the module body
 	    (look-for-definitions inlines macros syntaxes expanders
-				  code exps (cdr fnames) module port))
+	       code exps (cdr fnames) module port))
 	 (close-input-port port))))
 
 ;*---------------------------------------------------------------------*/
@@ -136,7 +134,7 @@
 			   (begin
 			      (set-car! proto `(@ ,id ,module))
 			      (set! *inline-definitions*
-				    (cons exp *inline-definitions*))
+				 (cons exp *inline-definitions*))
 			      (remq! cell inlines))
 			   inlines)))
 	      (values inl macros syntaxes expanders)))
@@ -145,7 +143,7 @@
 		  (mac (if (pair? cell)
 			   (begin
 			      (set! *macro-definitions*
-				    (cons exp *macro-definitions*))
+				 (cons exp *macro-definitions*))
 			      (remq! cell macros))
 			   macros)))
 	      (values inlines mac syntaxes expanders)))
@@ -154,7 +152,7 @@
 		  (syn (if (pair? cell)
 			   (begin
 			      (set! *macro-definitions*
-				    (cons exp *macro-definitions*))
+				 (cons exp *macro-definitions*))
 			      (remq! cell syntaxes))
 			   syntaxes)))
 	      (values inlines macros syn expanders)))
@@ -163,7 +161,7 @@
 		  (expd (if (pair? cell)
 			    (begin
 			       (set! *macro-definitions*
-				     (cons exp *macro-definitions*))
+				  (cons exp *macro-definitions*))
 			       (remq! cell expanders))
 			    expanders)))
 	      (values inlines macros syntaxes expd)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Mon Oct 20 08:43:50 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 17:48:41 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the functions used to def (define) a      */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -64,10 +64,10 @@
 ;*    This function is a simple interface for DEF-GLOBAL-SFUN. It      */
 ;*    prevent the global declaration from emitting warning.            */
 ;*---------------------------------------------------------------------*/
-(define (def-global-sfun-no-warning! env id args loc mod class src-exp rem node)
+(define (def-global-sfun-no-warning! env id args locals mod class src-exp rem node)
    (let ((warning (bigloo-warning)))
       (bigloo-warning-set! 0)
-      (let ((fun (def-global-sfun! env id args loc mod class src-exp rem node)))
+      (let ((fun (def-global-sfun! env id args locals mod class src-exp rem node)))
 	 (bigloo-warning-set! warning)
 	 fun)))
    

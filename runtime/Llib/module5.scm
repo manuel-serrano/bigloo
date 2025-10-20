@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun Oct 19 07:21:34 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 15:42:02 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1008,8 +1008,8 @@
 	    ;; Because these definitions are needed to resolve the module
 	    ;; exports, INSTALL-MODULE5-EXPANDER (runtime/macro.scm),
 	    ;; stores these definition in XENV.
-	    (let ((dm (hashtable-map xenv (lambda (k e) (car e)))))
-	       (collect-defines! mod (filter (lambda (x) x) dm)))
+	    (let ((dm (hashtable-filter-map xenv (lambda (k e) (car e)))))
+	       (collect-defines! mod dm))
 	    (collect-defines! mod (-> mod body))
 	    (collect-classes! mod)
 	    ;; bind all the classes
