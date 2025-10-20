@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Fxop/walk.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Fxop/walk.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Thu Jul  8 11:28:00 2021 (serrano)                */
-;*    Copyright   :  2010-21 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 09:15:47 2025 (serrano)                */
+;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Optimize tagged binary operators by avoid useless tagging        */
 ;*    untagging operations. Typically, replaces:                       */
@@ -59,12 +59,12 @@
 ;*---------------------------------------------------------------------*/
 (define (init-fxop-cache!)
    (unless (pair? *fxops*)
-      (set! *bint->long* (find-global '$bint->long 'foreign))
-      (set! *long->bint* (find-global '$long->bint 'foreign))
+      (set! *bint->long* (find-global (get-genv) '$bint->long 'foreign))
+      (set! *long->bint* (find-global (get-genv) '$long->bint 'foreign))
       (set! *fxops*
 	 (map (lambda (ut)
-		 (cons (find-global (car ut) 'foreign)
-		    (find-global (cadr ut) 'foreign)))
+		 (cons (find-global (get-genv) (car ut) 'foreign)
+		    (find-global (get-genv) (cadr ut) 'foreign)))
 	    '(($+fx $addfx)
 	      ($-fx $subfx)
 	      ($<fx $ltfx)

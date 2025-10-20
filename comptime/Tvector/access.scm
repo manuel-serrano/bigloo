@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 13:33:40 1995                          */
-;*    Last change :  Tue Dec 24 10:10:23 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:58:07 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We install all the coercer and accessor for `tvector' types.     */
 ;*=====================================================================*/
@@ -243,7 +243,7 @@
 ;*---------------------------------------------------------------------*/
 (define (get-tvector-length-type)
    (unless *tvector-length*
-      (set! *tvector-length* (get-global/module '$tvector-length 'foreign)))
+      (set! *tvector-length* (get-global/module (get-genv) '$tvector-length 'foreign)))
    (global-type *tvector-length*))
 
 ;*---------------------------------------------------------------------*/

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/library.scm          */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/library.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 16:05:09 1996                          */
-;*    Last change :  Thu Sep 19 11:52:46 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:50:35 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Library finalizer                                                */
 ;*=====================================================================*/
@@ -39,13 +39,14 @@
    ;; and, of course, the current module
    (putprop! *module* *key* #t)
    ;; first, we collect all the needed library modules
-   (for-each-global! (lambda (global)
-			(with-access::global global (occurrence module
-								library value)
-			   (when (and (>fx occurrence 0)
-				      library
-				      (not (or (cfun? value) (cvar? value))))
-			      (need-library-module! module)))))
+   (for-each-global! (get-genv)
+      (lambda (global)
+	 (with-access::global global (occurrence module
+					library value)
+	    (when (and (>fx occurrence 0)
+		       library
+		       (not (or (cfun? value) (cvar? value))))
+	       (need-library-module! module)))))
    ;; when compiling for bdb we must initialize the bdb module
    (if (and (>fx *bdb-debug* 0)
 	    (memq 'bdb (backend-debug-support (the-backend))))

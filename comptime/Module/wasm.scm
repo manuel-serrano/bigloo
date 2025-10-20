@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Tue Sep  3 07:44:28 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:51:07 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The wasm clauses compilation. Almost similar to extern clauses.  */
 ;*=====================================================================*/
@@ -79,7 +79,7 @@
 		(let ((id (vector-ref w 0))
 		      (name (vector-ref w 1))
 		      (deps (vector-ref w 2)))
-		   (let ((g (find-global/module id 'foreign)))
+		   (let ((g (find-global/module (get-genv) id 'foreign)))
 		      (if g
 			  (begin
 			     (global-qualified-type-name-set! g name)

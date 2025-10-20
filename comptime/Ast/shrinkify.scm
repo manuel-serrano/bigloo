@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Ast/shrinkify.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/shrinkify.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  5 11:09:52 1996                          */
-;*    Last change :  Fri Jul 12 19:11:27 2024 (serrano)                */
+;*    Last change :  Mon Oct 20 08:45:54 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We shrink all the ast to get rid off all the pass info for the   */
 ;*    following passes.                                                */
@@ -24,7 +24,7 @@
 ;*    shrinkify! ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (shrinkify! globals)
-   (for-each-global! shrink-variable!)
+   (for-each-global! (get-genv) shrink-variable!)
    (for-each (lambda (global)
 		(let ((sfun (global-value global)))
 		   (for-each shrink-variable! (sfun-args sfun))

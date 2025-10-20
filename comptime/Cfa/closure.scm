@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Tue Sep 24 09:26:06 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:55:17 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
 ;*                                                                     */
@@ -627,14 +627,14 @@
 ;*    start-closure-cache ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (start-closure-cache)
-   (set! *procedure-ref* (get-global/module 'procedure-ref 'foreign))
-   (set! *procedure-set!* (get-global/module 'procedure-set! 'foreign))
-   (set! *procedure-l-ref* (get-global/module 'procedure-l-ref 'foreign))
-   (set! *procedure-l-set!* (get-global/module 'procedure-l-set! 'foreign))
-   (set! *procedure-el-ref* (get-global/module 'procedure-el-ref 'foreign))
-   (set! *procedure-el-set!* (get-global/module 'procedure-el-set! 'foreign))
-   (set! *make-el-procedure* (get-global/module 'make-el-procedure 'foreign))
-   (set! *make-l-procedure* (get-global/module 'make-l-procedure 'foreign)))
+   (set! *procedure-ref* (get-global/module (get-genv) 'procedure-ref 'foreign))
+   (set! *procedure-set!* (get-global/module (get-genv) 'procedure-set! 'foreign))
+   (set! *procedure-l-ref* (get-global/module (get-genv) 'procedure-l-ref 'foreign))
+   (set! *procedure-l-set!* (get-global/module (get-genv) 'procedure-l-set! 'foreign))
+   (set! *procedure-el-ref* (get-global/module (get-genv) 'procedure-el-ref 'foreign))
+   (set! *procedure-el-set!* (get-global/module (get-genv) 'procedure-el-set! 'foreign))
+   (set! *make-el-procedure* (get-global/module (get-genv) 'make-el-procedure 'foreign))
+   (set! *make-l-procedure* (get-global/module (get-genv) 'make-l-procedure 'foreign)))
 
 ;*---------------------------------------------------------------------*/
 ;*    stop-closure-cache ...                                           */

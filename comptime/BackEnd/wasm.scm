@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Sep 25 07:34:02 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:02:50 2025 (serrano)                */
 ;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -661,7 +661,7 @@ esac")
    
    (for-each-type! (lambda (t) (type-occurrence-set! t 0)))
    
-   (for-each-global!
+   (for-each-global! (get-genv)
       (lambda (global)
 	 (cond
 	    ((and (eq? (global-module global) *module*)
@@ -1163,7 +1163,7 @@ esac")
 (define (emit-prototypes)
    ;; set the proper name for bigloo-initialized! that is used
    ;; when a main is produced
-   (let ((init (find-global 'bigloo-initialized! '__param)))
+   (let ((init (find-global (get-genv) 'bigloo-initialized! '__param)))
       (when init (set-variable-name! init)))
    
    (let ((globals '()))
@@ -1177,7 +1177,7 @@ esac")
 		      (i32.const ,(get-cnst-offset))))
 	       globals)))
       
-      (for-each-global!
+      (for-each-global! (get-genv)
 	 (lambda (global)
 	    (when (and (require-prototype? global)
 		       (not (scnst? (global-value global)))
@@ -1193,7 +1193,7 @@ esac")
 ;*---------------------------------------------------------------------*/
 (define (emit-elements)
    (let ((ids *extra-ref-funcs*))
-      (for-each-global!
+      (for-each-global! (get-genv)
 	 (lambda (g)
 ;* 	    (tprint "g=" (shape g)                                     */
 ;* 	       " req=" (require-prototype? g)                          */
@@ -1256,7 +1256,7 @@ esac")
 ;*---------------------------------------------------------------------*/
 (define (emit-cnsts)
    (let ((cnsts '()))
-      (for-each-global!
+      (for-each-global! (get-genv)
 	 (lambda (global)
 	    (if (and (require-prototype? global)
 		     (scnst? (global-value global)))
@@ -1580,9 +1580,9 @@ esac")
 
    ;; $BUNSPEC is explicitly introduced by the wasm backend
    ;; so it needs to be marked as used
-   (let ((g (find-global/module '__unspec__ 'foreign)))
+   (let ((g (find-global/module (get-genv) '__unspec__ 'foreign)))
       (global-occurrence-set! g (+fx (global-occurrence g) 1)))
-   (for-each-global! import-global)
+   (for-each-global! (get-genv) import-global)
    imports)
 
 ;*---------------------------------------------------------------------*/
@@ -1706,7 +1706,7 @@ esac")
 ;*---------------------------------------------------------------------*/
 (define (get-imports)
    (let ((globals '()))
-      (for-each-global!
+      (for-each-global! (get-genv)
 	 (lambda (global)
 	    (with-access::global global (import)
 	       (when (memq import '(import foreign))

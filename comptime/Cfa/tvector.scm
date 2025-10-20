@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Sat Dec 28 05:40:25 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:55:07 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
 ;*=====================================================================*/
@@ -106,7 +106,7 @@
 (define (patch-vector-set!)
    (when (tvector-optimization?)
       (for-each (lambda (set)
-		   (let ((g (find-global set)))
+		   (let ((g (find-global (get-genv) set)))
 		      (if (global? g)
 			  (let ((fun (global-value g)))
 			     (cond
@@ -118,15 +118,15 @@
 				    (get-default-type))))))))
 	 '(vector-set! vector-set-ur! c-vector-set!
 	   $vector-set! $vector-set-ur!))
-      (let ((g (find-global 'c-vector?)))
+      (let ((g (find-global (get-genv) 'c-vector?)))
 	 (if (global? g)
 	     (let ((f (global-value g)))
 		(set-car! (cfun-args-type f) (get-default-type)))))
-      (let ((g (find-global '$vector?)))
+      (let ((g (find-global (get-genv) '$vector?)))
 	 (if (global? g)
 	     (let ((f (global-value g)))
 		(set-car! (cfun-args-type f) (get-default-type)))))
-      (let ((g (find-global 'vector?)))
+      (let ((g (find-global (get-genv) 'vector?)))
 	 (if (global? g)
 	     (let ((f (global-value g)))
 		(local-type-set! (car (sfun-args f)) (get-default-type)))))))
@@ -137,7 +137,7 @@
 (define (unpatch-vector-set!)
    (when (tvector-optimization?)
       (for-each (lambda (set)
-		   (let ((g (find-global set)))
+		   (let ((g (find-global (get-genv) set)))
 		      (if (global? g)
 			  (let ((fun (global-value g)))
 			     (cond
@@ -148,15 +148,15 @@
 				 (local-type-set! (caddr (sfun-args fun))
 				    *obj*)))))))
 	 '(vector-set! c-vector-set! vector-set-ur!))
-      (let ((g (find-global 'c-vector?)))
+      (let ((g (find-global (get-genv) 'c-vector?)))
 	 (if (global? g)
 	     (let ((f (global-value g)))
 		(set-car! (cfun-args-type f) *obj*))))
-      (let ((g (find-global '$vector?)))
+      (let ((g (find-global (get-genv) '$vector?)))
 	 (if (global? g)
 	     (let ((f (global-value g)))
 		(set-car! (cfun-args-type f) *obj*))))
-      (let ((g (find-global 'vector?)))
+      (let ((g (find-global (get-genv) 'vector?)))
 	 (if (global? g)
 	     (let ((f (global-value g)))
 		(local-type-set! (car (sfun-args f)) *obj*)))))
@@ -537,7 +537,7 @@
 ;*---------------------------------------------------------------------*/
 (define (get-tvector-length-type)
    (unless *tvector-length*
-      (set! *tvector-length* (get-global/module '$tvector-length 'foreign)))
+      (set! *tvector-length* (get-global/module (get-genv) '$tvector-length 'foreign)))
    (global-type *tvector-length*))
 
 ;*---------------------------------------------------------------------*/

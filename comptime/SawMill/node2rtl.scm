@@ -52,7 +52,7 @@
    (with-access::global var (alias module)
       (set-variable-name! var)
       (if alias
-	  (let ((unalias (find-global alias module)))
+	  (let ((unalias (find-global (get-genv) alias module)))
 	     (if (global? unalias)
 		 (begin
 		    (set-variable-name! unalias)

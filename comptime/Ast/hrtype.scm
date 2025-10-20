@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/hrtype.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/hrtype.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Wed Jun 16 15:52:04 2021 (serrano)                */
+;*    Last change :  Mon Oct 20 08:45:39 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This function hrtype-node! is used for inlined functions         */
 ;*    that are restored from additional heap. These bodies still       */
@@ -63,10 +63,12 @@
       ;; compiling the client code. This global has to be "rebound", this is
       ;; the purpose of this patch
       (when (and (global? variable)
-		 (global-bucket-position (global-id variable)
-					 (global-module variable)))
-	 (let ((n (find-global/module (global-id variable)
-				      (global-module variable))))
+		 (global-bucket-position (get-genv)
+		    (global-id variable)
+		    (global-module variable)))
+	 (let ((n (find-global/module (get-genv)
+		     (global-id variable)
+		     (global-module variable))))
 	    (when (global? n)
 	       (set! variable n)))))
    (call-next-method))
@@ -99,7 +101,7 @@
 	    (let ((value (variable-value variable)))
 	       (cond
 		  ((cfun? value)
-		   (let ((g (find-global (global-id variable)
+		   (let ((g (find-global (get-genv) (global-id variable)
 			       (global-module variable))))
 		      ;; MS 8dec2020: This correct a bug observed in
 		      ;; Hop hopscript library. An inlined hopscript function
@@ -125,16 +127,18 @@
 		       ;; the reference to the body with the reference of
 		       ;; the variable that is in the current Bigloo
 		       ;; environment.
-		       (let ((g (find-global (global-id variable)
-					     (global-module variable))))
+		       (let ((g (find-global (get-genv)
+				   (global-id variable)
+				   (global-module variable))))
 			  (if (not (variable? g))
-			      (let ((new-g (find-global (global-id variable)
-							*module*)))
+			      (let ((new-g (find-global (get-genv)
+					      (global-id variable)
+					      *module*)))
 				 (if (not (and (global? new-g)
 					       (eq? (global-import new-g) 'static)))
 				     (error "heap"
-					    "Can't find library variable"
-					    (global-id variable))
+					"Can't find library variable"
+					(global-id variable))
 				     (set! variable new-g)))
 			      (set! variable g)))))))))
       (hrtype-node*! args))

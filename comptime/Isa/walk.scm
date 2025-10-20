@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Sat Oct  4 09:18:22 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:06:58 2025 (serrano)                */
 ;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace isa? calls with specialized inlinable versions           */
@@ -57,10 +57,10 @@
 ;*---------------------------------------------------------------------*/
 (define (init-isa-cache!)
    (unless (global? *isa/cdepth*)
-      (set! *isa/cdepth* (find-global/module '%isa/cdepth? '__object))
-      (set! *isa-object/cdepth* (find-global/module '%isa-object/cdepth? '__object))
-      (set! *isa/final* (find-global/module '%isa/final? '__object))
-      (set! *isa-object/final* (find-global/module '%isa-object/final? '__object)))
+      (set! *isa/cdepth* (find-global/module (get-genv) '%isa/cdepth? '__object))
+      (set! *isa-object/cdepth* (find-global/module (get-genv) '%isa-object/cdepth? '__object))
+      (set! *isa/final* (find-global/module (get-genv) '%isa/final? '__object))
+      (set! *isa-object/final* (find-global/module (get-genv) '%isa-object/final? '__object)))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/

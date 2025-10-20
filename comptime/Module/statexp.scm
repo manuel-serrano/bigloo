@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Module/statexp.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/statexp.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 10:58:45 1996                          */
-;*    Last change :  Sun Apr 14 08:20:20 2019 (serrano)                */
-;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:28:17 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The static clauses compilation.                                  */
 ;*=====================================================================*/
@@ -24,6 +24,7 @@
 	    type_type
 	    object_class
 	    ast_var
+	    ast_env
 	    ast_ident
 	    ast_find-gdefs
 	    ast_glo-decl)
@@ -85,31 +86,31 @@
 	  (case (car proto)
 	     ((sfun sifun sgfun)
 	      (to-be-define!
-		 (declare-global-sfun! (cadr proto) #f (caddr proto) *module*
+		 (declare-global-sfun! (get-genv) (cadr proto) #f (caddr proto) *module*
 		    import (car proto) prototype #f)))
 	     ((svar)
 	      (to-be-define!
-		 (declare-global-svar! (cadr proto) #f *module*
+		 (declare-global-svar! (get-genv) (cadr proto) #f *module*
 		    import prototype #f)))
 	     ((class)
 	      (to-be-declare!
 		 (delay
-		    (declare-class! (cdr proto) *module* import
+		    (declare-class! (get-genv) (cdr proto) *module* import
 		       #f #f prototype #f))))
 	     ((abstract-class)
 	      (to-be-declare!
 		 (delay
-		    (declare-class! (cdr proto) *module* import
+		    (declare-class! (get-genv) (cdr proto) *module* import
 		       #f #t prototype #f))))
 	     ((final-class)
 	      (to-be-declare!
 		 (delay
-		    (declare-class! (cdr proto) *module* import
+		    (declare-class! (get-genv) (cdr proto) *module* import
 		       #t #f prototype #f))))
 	     ((wide-class)
 	      (to-be-declare!
 		 (delay
-		    (declare-wide-class! (cdr proto) *module* import
+		    (declare-wide-class! (get-genv) (cdr proto) *module* import
 		       prototype #f))))
 	     ((define-macro)
 	      (eval proto))

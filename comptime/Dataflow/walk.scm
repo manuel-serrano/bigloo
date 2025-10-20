@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Dataflow/walk.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Dataflow/walk.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Wed Jul 12 16:13:30 2023 (serrano)                */
-;*    Copyright   :  2010-23 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 08:53:25 2025 (serrano)                */
+;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
 ;*    For instance, for an expression such as (if (pair? x) then else),*/
@@ -44,9 +44,9 @@
 ;*---------------------------------------------------------------------*/
 (define (dataflow-walk! globals name)
    (pass-prelude name)
-   (set! *$null?* (find-global/module '$null? 'foreign))
-   (set! *$pair?* (find-global/module '$pair? 'foreign))
-   (set! *$epair?* (find-global/module '$epair? 'foreign))
+   (set! *$null?* (find-global/module (get-genv) '$null? 'foreign))
+   (set! *$pair?* (find-global/module (get-genv) '$pair? 'foreign))
+   (set! *$epair?* (find-global/module (get-genv) '$epair? 'foreign))
    (for-each dataflow-global! globals)
    (pass-postlude globals))
 

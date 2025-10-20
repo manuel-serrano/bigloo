@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/main.scm             */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/main.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 11:51:01 1996                          */
-;*    Last change :  Sun Jul 21 10:58:38 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:48:58 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The main clause compilation.                                     */
 ;*=====================================================================*/
@@ -58,7 +58,7 @@
        (duplicate-main-error clause)
        (match-case clause
 	  ((?- (and (? symbol?) ?main))
-	   (let ((global (find-global/module main *module*)))
+	   (let ((global (find-global/module (get-genv) main *module*)))
 	      (if (global? global)
 		  (if (not (correct-main? global))
 		      (user-error *module*
@@ -69,7 +69,7 @@
 				    (backend-debug-support (the-backend))))
 			 (produce-module-clause! `(export (,main argv::obj)))
 			 (produce-module-clause! `(export (,main argv::pair))))
-		     (set! *main* (find-global/module main *module*))))))
+		     (set! *main* (find-global/module (get-genv) main *module*))))))
 	  (else
 	   (user-error "Parse error" "Illegal \"main\" clause" clause '())))))
 

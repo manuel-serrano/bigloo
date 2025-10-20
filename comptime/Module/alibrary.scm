@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Module/alibrary.scm      */
+;*    .../prgm/project/bigloo/wasm/comptime/Module/alibrary.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Feb 28 10:20:55 1998                          */
-;*    Last change :  Fri Dec  3 16:47:21 2021 (serrano)                */
-;*    Copyright   :  1998-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:16:19 2025 (serrano)                */
+;*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler library clause compilation                          */
 ;*=====================================================================*/
@@ -113,7 +113,7 @@
 				`(pragma ,(format "~a()"
 					     (libinfo-init_s info))))
 			    ,(when (libinfo-module_s info)
-				(let ((v (find-global 'module-initialization
+				(let ((v (find-global (get-genv) 'module-initialization
 					    (libinfo-module_s info))))
 				   (if (global? v)
 				       (let ((f (if (string? (car *src-files*))

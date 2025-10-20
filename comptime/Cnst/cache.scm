@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cnst/cache.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cnst/cache.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 19 10:35:59 1995                          */
-;*    Last change :  Tue Oct  1 09:23:11 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:54:08 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A cache to be able to recognize function call very fast.         */
 ;*=====================================================================*/
@@ -88,61 +88,61 @@
        (begin
 	  (set! *cache-started?* #t)
 	  (set! *cnst-table-ref*
-		(get-global/module 'cnst-table-ref 'foreign))
+		(get-global/module (get-genv) 'cnst-table-ref 'foreign))
 	  (set! *cnst-table-set!*
-		(get-global/module 'cnst-table-set! 'foreign))
+		(get-global/module (get-genv) 'cnst-table-set! 'foreign))
 	  (set! *cons*
-		(get-global/module '$cons 'foreign))
+		(get-global/module (get-genv) '$cons 'foreign))
 	  (set! *btrue*
-		(get-global/module 'btrue 'foreign))
+		(get-global/module (get-genv) 'btrue 'foreign))
 	  (set! *bfalse*
-		(get-global/module 'bfalse 'foreign))
+		(get-global/module (get-genv) 'bfalse 'foreign))
 	  (set! *string->bstring*
-		(get-global/module '$string->bstring 'foreign))
+		(get-global/module (get-genv) '$string->bstring 'foreign))
 	  (set! *string->ucs2string*
-		(get-global/module 'c-utf8-string->ucs2-string 'foreign))
+		(get-global/module (get-genv) 'c-utf8-string->ucs2-string 'foreign))
 	  (set! *bstring->symbol*
- 		(get-global/module 'string->symbol '__r4_symbols_6_4))
+ 		(get-global/module (get-genv) 'string->symbol '__r4_symbols_6_4))
 	  (set! *bstring->keyword*
-		(get-global/module 'string->keyword '__r4_symbols_6_4))
+		(get-global/module (get-genv) 'string->keyword '__r4_symbols_6_4))
 	  (set! *bool->bbool*
-		(get-global/module '$bool->bbool 'foreign))
+		(get-global/module (get-genv) '$bool->bbool 'foreign))
 	  (set! *long->int*
-		(get-global/module '$long->int 'foreign))
+		(get-global/module (get-genv) '$long->int 'foreign))
 	  (set! *make-fx-procedure*
-		(get-global/module 'make-fx-procedure 'foreign))
+		(get-global/module (get-genv) 'make-fx-procedure 'foreign))
 	  (set! *make-va-procedure*
-		(get-global/module 'make-va-procedure 'foreign))
+		(get-global/module (get-genv) 'make-va-procedure 'foreign))
 	  (set! *make-l-procedure*
-		(get-global/module 'make-l-procedure 'foreign))
+		(get-global/module (get-genv) 'make-l-procedure 'foreign))
 	  (set! *long->bint*
-		(get-global/module '$long->bint 'foreign))
+		(get-global/module (get-genv) '$long->bint 'foreign))
 	  (set! *double->real*
-		(get-global/module '$double->real 'foreign))
+		(get-global/module (get-genv) '$double->real 'foreign))
 	  (set! *elong->belong*
-		(get-global/module '$elong->belong 'foreign))
+		(get-global/module (get-genv) '$elong->belong 'foreign))
 	  (set! *llong->bllong*
-		(get-global/module '$llong->bllong 'foreign))
+		(get-global/module (get-genv) '$llong->bllong 'foreign))
 	  (set! *int32->bint32*
-		(get-global/module '$int32->bint32 'foreign))
+		(get-global/module (get-genv) '$int32->bint32 'foreign))
 	  (set! *uint32->buint32*
-		(get-global/module '$uint32->buint32 'foreign))
+		(get-global/module (get-genv) '$uint32->buint32 'foreign))
 	  (set! *int64->bint64*
-		(get-global/module '$int64->bint64 'foreign))
+		(get-global/module (get-genv) '$int64->bint64 'foreign))
 	  (set! *uint64->buint64*
-		(get-global/module '$uint64->buint64 'foreign))
+		(get-global/module (get-genv) '$uint64->buint64 'foreign))
 	  (set! *list->vector*
-		(find-global 'list->vector))
+		(find-global (get-genv) 'list->vector))
 	  (set! *vector-tag-set!*
-		(find-global 'vector-tag-set!))
+		(find-global (get-genv) 'vector-tag-set!))
 	  (set! *list->struct*
-		(find-global 'list->struct))
+		(find-global (get-genv) 'list->struct))
 	  (set! *string->bignum*
-		(or (find-global '$string->bignum 'foreign)
-		    (get-global/module '$string->bignum '__bignum)))
+		(or (find-global (get-genv) '$string->bignum 'foreign)
+		    (get-global/module (get-genv) '$string->bignum '__bignum)))
 	  (set! *fixnum->bignum*
-		(or (find-global '$fixnum->bignum 'foreign)
-		    (get-global/module '$fixnum->bignum '__bignum)))
+		(or (find-global (get-genv) '$fixnum->bignum 'foreign)
+		    (get-global/module (get-genv) '$fixnum->bignum '__bignum)))
 	  #t)
        #t))
 

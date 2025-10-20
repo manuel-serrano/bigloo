@@ -80,7 +80,7 @@
    (code! me '(aload argv))
    (code! me '(invokestatic listargv))
    (code! me '(checkcast pair))
-   (call-global me (find-global 'bigloo_main *module*))
+   (call-global me (find-global (get-genv) 'bigloo_main *module*))
    (code! me '(pop))
    (code! me '(return))
    (when *jvm-catch*
@@ -126,7 +126,7 @@
       ;; Init the module right now! CARE use a flag
       (code! me '(iconst_0))
       (code! me '(aconst_null))
-      (call-global me (find-global 'module-initialization *module*))
+      (call-global me (find-global (get-genv) 'module-initialization *module*))
       (code! me '(pop)))
    (code! me '(return))
    (close-method me) )
@@ -249,7 +249,7 @@
    (declare-locals me '() '())
    (code! me '(iconst_0))
    (code! me '(aconst_null))
-   (call-global me (find-global 'module-initialization *module*))
+   (call-global me (find-global (get-genv) 'module-initialization *module*))
    (code! me '(pop))
    (code! me '(return))
    (close-method me) )

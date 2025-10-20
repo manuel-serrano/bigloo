@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/cond.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Reduce/cond.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Mon Sep 23 09:55:13 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:16:54 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
 ;*=====================================================================*/
@@ -54,8 +54,8 @@
 ;*    init-cond-cache! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (init-cond-cache!)
-   (set! *$eq* (find-global 'c-eq? 'foreign))
-   (set! *$=fx* (find-global '$=fx 'foreign)))
+   (set! *$eq* (find-global (get-genv) 'c-eq? 'foreign))
+   (set! *$=fx* (find-global (get-genv) '$=fx 'foreign)))
 
 ;*---------------------------------------------------------------------*/
 ;*    reset-cond-cache! ...                                            */

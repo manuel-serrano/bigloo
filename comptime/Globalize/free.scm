@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Tue Sep 16 13:28:41 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:15:56 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
@@ -347,7 +347,7 @@
    (define (global-alias-closure g)
       (with-access::global g (alias id module)
 	 (when (and alias (not (eq? id alias)))
-	    (let ((ag (find-global alias module)))
+	    (let ((ag (find-global (get-genv) alias module)))
 	       (when (global? ag)
 		  (the-global-closure ag loc))))))
    
@@ -382,7 +382,7 @@
 				       '()
 				       loc
 				       'value))
-		 (closure  (def-global-scnst! (symbol-append
+		 (closure  (def-global-scnst! (get-genv) (symbol-append
 						 (if (global-alias global)
 						     (global-alias global)
 						     (global-id global))

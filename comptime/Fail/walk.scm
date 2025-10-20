@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Fail/walk.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Fail/walk.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Wed Jun 16 16:00:49 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:14:45 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of fail in debugging mode.                      */
 ;*    -------------------------------------------------------------    */
@@ -39,7 +39,7 @@
 (define (fail-walk! globals)
    (pass-prelude "Fail"
 		 (lambda ()
-		    (set! *error* (find-global 'error '__error))))
+		    (set! *error* (find-global (get-genv) 'error '__error))))
    (for-each fail-fun! globals)
    (pass-postlude globals))
 

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Trace/walk.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Trace/walk.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Wed Jul  3 16:13:05 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:17:59 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -25,6 +25,7 @@
 	    backend_backend
 	    ast_sexp
 	    ast_ident
+	    ast_env
 	    module_module
 	    engine_param
 	    (mark-symbol-non-user! ast_ident)
@@ -44,7 +45,7 @@
    ;; before regular tracing because it only scans [begin] top level forms.
    ;; It stops before any nested expression.
    (let* ((id 'toplevel-init)
-	  (glo (find-global id *module*)))
+	  (glo (find-global (get-genv) id *module*)))
       (if (global? glo)
 	  (with-access::sfun (global-value glo) (body)
 	     (set! body (toplevel-trace-node body)))))

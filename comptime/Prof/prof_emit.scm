@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Prof/prof_emit.scm          */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Prof/prof_emit.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  8 17:32:59 1998                          */
-;*    Last change :  Thu Nov  3 14:28:38 2011 (serrano)                */
-;*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:02:04 2025 (serrano)                */
+;*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the Bdb identifier translation table.            */
 ;*=====================================================================*/
@@ -76,12 +76,13 @@
 	   *prof-table-name* "\", \"w\" );")
    (fprint port "   if( bprof_port ) {")
    ;; the library functions dump
-   (for-each-global! (lambda (g)
-			(when (and (or (>fx (global-occurrence g) 0)
-				       (eq? (global-module g) 'foreign))
-				   (global-library g)
-				   (global-user? g))
-			   (emit-global! g))))
+   (for-each-global! (get-genv)
+      (lambda (g)
+	 (when (and (or (>fx (global-occurrence g) 0)
+			(eq? (global-module g) 'foreign))
+		    (global-library g)
+		    (global-user? g))
+	    (emit-global! g))))
    ;; and then the non function global variables.
    (for-each (lambda (global)
 		(when (global-user? global)

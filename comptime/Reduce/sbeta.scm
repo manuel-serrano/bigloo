@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/sbeta.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Reduce/sbeta.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Wed Jun 16 17:11:59 2021 (serrano)                */
-;*    Copyright   :  2000-21 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 09:17:02 2025 (serrano)                */
+;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
 ;*    is simpler than the 1occ stage. It apply the following           */
@@ -52,9 +52,9 @@
    ;; then we start the 1-occurrence reduction. 
    (set! *removed* 0)
    ;; prepare the predicate beta reduction
-   (set! *$fixnum?* (find-global '$fixnum? 'foreign))
-   (set! *$flonum?* (find-global '$flonum? 'foreign))
-   (set! *c-string-length* (find-global '$string-length 'foreign))
+   (set! *$fixnum?* (find-global (get-genv) '$fixnum? 'foreign))
+   (set! *$flonum?* (find-global (get-genv) '$flonum? 'foreign))
+   (set! *c-string-length* (find-global (get-genv) '$string-length 'foreign))
    (set! *predicates* (list *$fixnum?* *$flonum?*))
    ;; start reducing
    (for-each (lambda (global)

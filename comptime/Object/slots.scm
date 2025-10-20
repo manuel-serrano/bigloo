@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Object/slots.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Object/slots.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Tue Sep  3 06:43:23 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:38:21 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 	    tvector_tvector
 	    engine_param
 	    object_class
+	    ast_env
 	    ast_var
 	    ast_ident
 	    ast_glo-decl)
@@ -347,7 +348,7 @@
 			  (cdr slot-id)))
 		(qc-id jname))
 	    (ensure-type-defined! t-id src)
-	    (let ((g (declare-global-cvar! l-id #f qc-id
+	    (let ((g (declare-global-cvar! (get-genv) l-id #f qc-id
 			(type-id t-id) reado? src #f)))
 	       (global-module-set! g (jclass-id class))
 	       (global-qualified-type-name-set! g (jclass-name class))

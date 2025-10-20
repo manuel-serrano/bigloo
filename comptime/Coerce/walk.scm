@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:43:37 1995                          */
-;*    Last change :  Wed Sep 24 10:22:30 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:52:46 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We perform now coercions.                                        */
@@ -43,11 +43,12 @@
 		(leave-function))
 	     ast)
    (reset-ppmarge!)
-   (for-each-global! (lambda (global)
-			(if (and (not (fun? (global-value global)))
-				 (or (eq? (global-import global) 'static)
-				     (eq? (global-import global) 'export)))
-			    (pvariable-proto 3 global))))
+   (for-each-global! (get-genv)
+      (lambda (global)
+	 (if (and (not (fun? (global-value global)))
+		  (or (eq? (global-import global) 'static)
+		      (eq? (global-import global) 'export)))
+	     (pvariable-proto 3 global))))
    (verbose 2 "      type tests introduced: " (get-stack-check) #\Newline)
    (pass-postlude (remove-var 'coerce ast)))
 

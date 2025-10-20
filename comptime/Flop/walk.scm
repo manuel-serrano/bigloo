@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Flop/walk.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Flop/walk.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Nov  9 11:53:27 2022 (serrano)                */
-;*    Copyright   :  2010-22 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 09:15:19 2025 (serrano)                */
+;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Optimize flonum operations by propagation ::real type in         */
 ;*    expressions. This optimization replaces generic operations with  */
@@ -62,15 +62,15 @@
 ;*---------------------------------------------------------------------*/
 (define (init-flop-cache!)
    (unless (pair? *flops*)
-      (set! *$flonum?* (find-global '$flonum? 'foreign))
-      (set! *flonum?* (find-global 'flonum? '__r4_numbers_6_5_flonum))
-      (set! *c-fixnum?* (find-global 'c-fixnum? 'foreign))
-      (set! *fixnum?* (find-global 'fixnum? '__r4_numbers_6_5_fixnum))
-      (set! *toflonum* (find-global 'number->flonum '__r4_numbers_6_5))
+      (set! *$flonum?* (find-global (get-genv) '$flonum? 'foreign))
+      (set! *flonum?* (find-global (get-genv) 'flonum? '__r4_numbers_6_5_flonum))
+      (set! *c-fixnum?* (find-global (get-genv) 'c-fixnum? 'foreign))
+      (set! *fixnum?* (find-global (get-genv) 'fixnum? '__r4_numbers_6_5_fixnum))
+      (set! *toflonum* (find-global (get-genv) 'number->flonum '__r4_numbers_6_5))
       (set! *flops*
 	 (map (lambda (op)
-		 (cons (find-global (symbol-append '|2| op) '__r4_numbers_6_5)
-		    (find-global (symbol-append op 'fl) '__r4_numbers_6_5_flonum)))
+		 (cons (find-global (get-genv) (symbol-append '|2| op) '__r4_numbers_6_5)
+		    (find-global (get-genv) (symbol-append op 'fl) '__r4_numbers_6_5_flonum)))
 	    '(+ - / *))))
    #unspecified)
 

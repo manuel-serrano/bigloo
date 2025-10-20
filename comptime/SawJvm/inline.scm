@@ -22,7 +22,7 @@
 (define *jvm-inlines* '())
 
 (define (check-jvm-inlines)
-   (let ((unresolved (filter (lambda (i) (not (find-global i)))
+   (let ((unresolved (filter (lambda (i) (not (find-global (get-genv) i)))
 			     *jvm-inlines*)))
       (when (pair? unresolved)
 	 (error 'SawJvm "Cannot find inlined functions" unresolved))))

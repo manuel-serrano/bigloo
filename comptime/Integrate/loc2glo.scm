@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Integrate/loc2glo.scm       */
+;*    .../prgm/project/bigloo/wasm/comptime/Integrate/loc2glo.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 15 17:29:48 1995                          */
-;*    Last change :  Wed Jun  1 17:45:25 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:59:07 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We translate a local function definition into a global one.      */
 ;*=====================================================================*/
@@ -74,7 +74,7 @@
    (let ((p (string-append (symbol->string (local-id local)) "~")))
       (let loop ((count 0))
 	 (let ((id (string->symbol (string-append p (integer->string count)))))
-	    (if (global? (find-global/module id *module*))
+	    (if (global? (find-global/module (get-genv) id *module*))
 		(loop (+fx count 1))
 		id)))))
 
@@ -86,7 +86,7 @@
       (if (global? (sfun/Iinfo-global value))
 	  (sfun/Iinfo-global value)
 	  (let* ((id     (local-id->global-id local))
-		 (global (def-global-sfun-no-warning! id
+		 (global (def-global-sfun-no-warning! (get-genv) id
 			   ;; we set dummy empty args-id 
 			   ;; and dummy empty args because a new-fun
 			   ;; will be allocated.

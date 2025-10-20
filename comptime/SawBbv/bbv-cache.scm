@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/SawBbv/bbv-cache.scm     */
+;*    .../prgm/project/bigloo/wasm/comptime/SawBbv/bbv-cache.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Tue Dec 10 08:30:44 2024 (serrano)                */
-;*    Copyright   :  2017-24 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 09:06:27 2025 (serrano)                */
+;*    Copyright   :  2017-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
 ;*=====================================================================*/
@@ -98,44 +98,44 @@
 (define (start-bbv-cache!)
    (unless *cache-started?*
       (set! *cache-started?* #t)
-      (set! *<fx* (get-global/module '$<fx 'foreign))
-      (set! *<=fx* (get-global/module '$<=fx 'foreign))
-      (set! *>fx* (get-global/module '$>fx 'foreign))
-      (set! *>=fx* (get-global/module '$>=fx 'foreign))
-      (set! *=fx* (get-global/module '$=fx 'foreign))
-      (set! *-fx* (get-global/module '$-fx 'foreign))
-      (set! *+fx* (get-global/module '$+fx 'foreign))
-      (set! **fx* (get-global/module '$*fx 'foreign))
-      (set! *subfx* (get-global/module '$subfx 'foreign))
-      (set! *addfx* (get-global/module '$addfx 'foreign))
-      (set! *-fx-safe* (get-global/module '-fx-safe 'foreign))
-      (set! *+fx-safe* (get-global/module '+fx-safe 'foreign))
-      (set! **fx-safe* (get-global/module '*fx-safe 'foreign))
-      (set! *$-fx/ov* (get-global/module '$-fx/ov 'foreign))
-      (set! *$+fx/ov* (get-global/module '$+fx/ov 'foreign))
-      (set! *$*fx/ov* (get-global/module '$*fx/ov 'foreign))
-      (set! *$-fx/w-ov* (get-global/module '$-fx/w-ov 'foreign))
-      (set! *$+fx/w-ov* (get-global/module '$+fx/w-ov 'foreign))
-      (set! *$*fx/w-ov* (get-global/module '$*fx/w-ov 'foreign))
-      (set! *<fl* (get-global/module '$<fl 'foreign))
-      (set! *<=fl* (get-global/module '$<=fl 'foreign))
-      (set! *>fl* (get-global/module '$>fl 'foreign))
-      (set! *>=fl* (get-global/module '$>=fl 'foreign))
-      (set! *=fl* (get-global/module '$=fl 'foreign))
-      (set! *-fl* (get-global/module '$-fl 'foreign))
-      (set! *+fl* (get-global/module '$+fl 'foreign))
-      (set! *2-* (get-global/module '2- '__r4_numbers_6_5))
-      (set! *2+* (get-global/module '2+ '__r4_numbers_6_5))
-      (set! *int->long* (get-global/module '$int->long 'foreign))
-      (set! *bint->long* (get-global/module '$bint->long 'foreign))
-      (set! *$int->long* (get-global/module '$int->long 'foreign))
-      (set! *long->bint* (get-global/module '$long->bint 'foreign))
-      (set! *vector-bound-check* (get-global/module '$vector-bound-check? 'foreign))
-      (set! *string-bound-check* (get-global/module '$string-bound-check? 'foreign))
-      (set! *string-length* (get-global/module '$string-length 'foreign))
-      (set! *error* (get-global/module 'error '__error))
-      (set! *number?* (get-global/module 'number? '__r4_numbers_6_5))
-      (set! *fast-flonum?* (get-global/module '$fast-flonum? 'foreign))))
+      (set! *<fx* (get-global/module (get-genv) '$<fx 'foreign))
+      (set! *<=fx* (get-global/module (get-genv) '$<=fx 'foreign))
+      (set! *>fx* (get-global/module (get-genv) '$>fx 'foreign))
+      (set! *>=fx* (get-global/module (get-genv) '$>=fx 'foreign))
+      (set! *=fx* (get-global/module (get-genv) '$=fx 'foreign))
+      (set! *-fx* (get-global/module (get-genv) '$-fx 'foreign))
+      (set! *+fx* (get-global/module (get-genv) '$+fx 'foreign))
+      (set! **fx* (get-global/module (get-genv) '$*fx 'foreign))
+      (set! *subfx* (get-global/module (get-genv) '$subfx 'foreign))
+      (set! *addfx* (get-global/module (get-genv) '$addfx 'foreign))
+      (set! *-fx-safe* (get-global/module (get-genv) '-fx-safe 'foreign))
+      (set! *+fx-safe* (get-global/module (get-genv) '+fx-safe 'foreign))
+      (set! **fx-safe* (get-global/module (get-genv) '*fx-safe 'foreign))
+      (set! *$-fx/ov* (get-global/module (get-genv) '$-fx/ov 'foreign))
+      (set! *$+fx/ov* (get-global/module (get-genv) '$+fx/ov 'foreign))
+      (set! *$*fx/ov* (get-global/module (get-genv) '$*fx/ov 'foreign))
+      (set! *$-fx/w-ov* (get-global/module (get-genv) '$-fx/w-ov 'foreign))
+      (set! *$+fx/w-ov* (get-global/module (get-genv) '$+fx/w-ov 'foreign))
+      (set! *$*fx/w-ov* (get-global/module (get-genv) '$*fx/w-ov 'foreign))
+      (set! *<fl* (get-global/module (get-genv) '$<fl 'foreign))
+      (set! *<=fl* (get-global/module (get-genv) '$<=fl 'foreign))
+      (set! *>fl* (get-global/module (get-genv) '$>fl 'foreign))
+      (set! *>=fl* (get-global/module (get-genv) '$>=fl 'foreign))
+      (set! *=fl* (get-global/module (get-genv) '$=fl 'foreign))
+      (set! *-fl* (get-global/module (get-genv) '$-fl 'foreign))
+      (set! *+fl* (get-global/module (get-genv) '$+fl 'foreign))
+      (set! *2-* (get-global/module (get-genv) '2- '__r4_numbers_6_5))
+      (set! *2+* (get-global/module (get-genv) '2+ '__r4_numbers_6_5))
+      (set! *int->long* (get-global/module (get-genv) '$int->long 'foreign))
+      (set! *bint->long* (get-global/module (get-genv) '$bint->long 'foreign))
+      (set! *$int->long* (get-global/module (get-genv) '$int->long 'foreign))
+      (set! *long->bint* (get-global/module (get-genv) '$long->bint 'foreign))
+      (set! *vector-bound-check* (get-global/module (get-genv) '$vector-bound-check? 'foreign))
+      (set! *string-bound-check* (get-global/module (get-genv) '$string-bound-check? 'foreign))
+      (set! *string-length* (get-global/module (get-genv) '$string-length 'foreign))
+      (set! *error* (get-global/module (get-genv) 'error '__error))
+      (set! *number?* (get-global/module (get-genv) 'number? '__r4_numbers_6_5))
+      (set! *fast-flonum?* (get-global/module (get-genv) '$fast-flonum? 'foreign))))
 
 ;*---------------------------------------------------------------------*/
 ;*    stop-bbv-cache! ...                                              */

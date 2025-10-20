@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Heap/restore.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Heap/restore.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Tue Sep  3 06:42:35 2024 (serrano)                */
-;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:47:03 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
 ;*=====================================================================*/
@@ -95,7 +95,7 @@
 			     ;; in jvm mode, we have to propagate
 			     ;; the package/module association
 			     (when (backend-qualified-types (the-backend))
-				(for-each-global!
+				(for-each-global! (get-genv)
 				 (lambda (new)
 				    (add-qualified-type!
 				     (global-module new)
@@ -103,7 +103,7 @@
 				     (shape new))))
 				Genv)
 			     ;; we add all the heap modules
-			     (for-each-global!
+			     (for-each-global! (get-genv)
 			      (lambda (new)
 				 (heap-module-list (global-module new))))
 			     #t)
@@ -116,12 +116,12 @@
 ;*    unbind-call/cc! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (unbind-call/cc!)
-   (if (find-global/module 'call/cc '__r4_control_features_6_9)
-       (unbind-global! 'call/cc '__r4_control_features_6_9))
-   (if (find-global/module 'call-with-current-continuation
-			   '__r4_control_features_6_9)
-       (unbind-global! 'call-with-current-continuation
-		       '__r4_control_features_6_9)))
+   (if (find-global/module (get-genv) 'call/cc '__r4_control_features_6_9)
+       (unbind-global! (get-genv) 'call/cc '__r4_control_features_6_9))
+   (if (find-global/module (get-genv) 'call-with-current-continuation
+	  '__r4_control_features_6_9)
+       (unbind-global! (get-genv) 'call-with-current-continuation
+	  '__r4_control_features_6_9)))
 
 ;*---------------------------------------------------------------------*/
 ;*    heap-file-name ...                                               */
@@ -208,7 +208,7 @@
 			  ;; in jvm mode, we have to propagate
 			  ;; the package/module association
 			  (when (backend-qualified-types (the-backend))
-			     (for-each-global!
+			     (for-each-global! (get-genv)
 				(lambda (new)
 				   (add-qualified-type!
 				      (global-module new)

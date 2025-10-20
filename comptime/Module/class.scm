@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Tue Sep 23 15:41:54 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:49:34 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -39,8 +39,8 @@
 	    object_coercion
 	    object_classgen
 	    object_slots)
-   (export  (declare-class! ::pair ::symbol ::symbol ::bool ::bool ::obj ::obj)
-	    (declare-wide-class! ::pair ::symbol ::symbol ::obj ::obj)
+   (export  (declare-class! env::obj ::pair ::symbol ::symbol ::bool ::bool ::obj ::obj)
+	    (declare-wide-class! env::obj ::pair ::symbol ::symbol ::obj ::obj)
 	    (get-object-unit)
 	    (get-method-unit)
 	    (get-generic-unit)
@@ -76,16 +76,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-class! ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (declare-class! class-def module import final? abstract? def-src decl-src)
+(define (declare-class! env class-def module import final? abstract? def-src decl-src)
    (cond
       ((memq import '(export static))
-       (declare-export-class!
+       (declare-export-class! env
 	  class-def module
 	  (if final? 'final 'plain)
 	  abstract?
 	  def-src decl-src import))
       (else
-       (declare-import-class!
+       (declare-import-class! env
 	  class-def module
 	  (if final? 'final 'plain)
 	  abstract?
@@ -94,21 +94,21 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-wide-class! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (declare-wide-class! class-def module import def-src decl-src)
+(define (declare-wide-class! env class-def module import def-src decl-src)
    (cond
       ((memq import '(export static))
-       (declare-export-class!
+       (declare-export-class! env
 	  class-def module 'wide #f
 	  def-src decl-src import))
       (else
-       (declare-import-class!
+       (declare-import-class! env
 	  class-def module 'wide #f
 	  def-src decl-src))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-export-class! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (declare-export-class! cdef module kind abstract? src-def src-decl import)
+(define (declare-export-class! env cdef module kind abstract? src-def src-decl import)
    (trace (ast 2) "declare-export-class!: " src-def #\Newline)
    ;; We create the class holder
    ;; and we create a type for this class
@@ -117,7 +117,7 @@
 	  (class-id  (id-of-id class-var loc))
 	  (holder (begin
 	 	     (produce-module-clause! `(,import ,class-id))
-		     (find-global/module class-id module)))
+		     (find-global/module env class-id module)))
 	  (final? (eq? kind 'final))
 	  (wide (if (eq? kind 'wide) 'widening #f))
 	  (tclass (module4-declare-class-type! cdef holder wide
@@ -138,7 +138,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-import-class! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (declare-import-class! cdef module kind abstract? src-def src-decl)
+(define (declare-import-class! env cdef module kind abstract? src-def src-decl)
    (trace (ast 2) "declare-import-class!: " src-def #\Newline)
    ;; We create the class holder
    ;; and we create a type for this class

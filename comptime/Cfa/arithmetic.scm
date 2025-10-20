@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Cfa/arithmetic.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/arithmetic.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 09:48:45 2000                          */
-;*    Last change :  Wed Sep 18 07:55:03 2024 (serrano)                */
-;*    Copyright   :  2000-24 Manuel Serrano, see LICENSE file          */
+;*    Last change :  Mon Oct 20 08:57:19 2025 (serrano)                */
+;*    Copyright   :  2000-25 Manuel Serrano, see LICENSE file          */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a refined estimate computations for       */
 ;*    generic operator. The key idea is that, if we call a function    */
@@ -267,7 +267,7 @@
 	  l)))
 
    (unless *eq?*
-      (set! *eq?* (find-global/module 'c-eq? 'foreign)))
+      (set! *eq?* (find-global/module (get-genv) 'c-eq? 'foreign)))
    
    (with-access::pre-arithmetic-app node (fun args spec-types)
       (let* ((f (var-variable fun))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Wed Sep 24 17:17:49 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:27:17 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
@@ -37,6 +37,7 @@
 	    ast_find-gdefs
 	    ast_glo-decl
 	    ast_ident
+	    ast_env
 	    engine_param
 	    init_main
 	    expand_eps)
@@ -358,19 +359,19 @@
 	     "Parse error" "Illegal prototype" prototype '())
 	  (case (car proto)
 	     ((sfun sifun sgfun)
-	      (declare-global-sfun! (cadr proto) alias (caddr proto)
+	      (declare-global-sfun! (get-genv) (cadr proto) alias (caddr proto)
 		 module 'import (car proto) prototype src))
 	     ((svar)
-	      (declare-global-svar! (cadr proto) alias
+	      (declare-global-svar! (get-genv) (cadr proto) alias
 		 module 'import prototype src))
 	     ((class)
-	      (declare-class! (cdr proto) module 'import #f #f prototype src))
+	      (declare-class! (get-genv) (cdr proto) module 'import #f #f prototype src))
 	     ((abstract-class)
-	      (declare-class! (cdr proto) module 'import #f #t prototype src))
+	      (declare-class! (get-genv) (cdr proto) module 'import #f #t prototype src))
 	     ((final-class)
-	      (declare-class! (cdr proto) module 'import #t #f prototype src))
+	      (declare-class! (get-genv) (cdr proto) module 'import #t #f prototype src))
 	     ((wide-class)
-	      (declare-wide-class! (cdr proto) module 'import prototype src))
+	      (declare-wide-class! (get-genv) (cdr proto) module 'import prototype src))
 	     ((define-macro)
 	      (eval proto))
 	     ((macro)

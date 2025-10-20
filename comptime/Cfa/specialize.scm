@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Cfa/specialize.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/specialize.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Wed Jun 16 15:57:38 2021 (serrano)                */
-;*    Copyright   :  1997-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:58:50 2025 (serrano)                */
+;*    Copyright   :  1997-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
 ;*    Malecki <johnm@vlibs.com>. What it does is, for each generic     */
@@ -218,8 +218,8 @@
 (define (install-specialized-type! type)
    (unless (pair? (assq type *specialized-types*))
       (set! *specialized-types* (cons (cons type 0) *specialized-types*))
-      (set! *boxed-eq?* (find-global 'c-boxed-eq? 'foreign))
-      (set! *c-eq?* (find-global 'c-eq? 'foreign))))
+      (set! *boxed-eq?* (find-global (get-genv) 'c-boxed-eq? 'foreign))
+      (set! *c-eq?* (find-global (get-genv) 'c-eq? 'foreign))))
 
 ;*---------------------------------------------------------------------*/
 ;*    add-specialized-type! ...                                        */
@@ -249,7 +249,7 @@
 	  (fixes (cddr spec))
 	  (gen-id (car gen))
 	  (gen-mod (cadr gen))
-	  (generic (find-global/module gen-id gen-mod)))
+	  (generic (find-global/module (get-genv) gen-id gen-mod)))
       (if (global? generic)
 	  (let loop ((fixes fixes)
 		     (res '()))
@@ -264,7 +264,7 @@
 		 (let* ((fix (car fixes))
 			(id (car fix))
 			(mod (cadr fix))
-			(global (find-global/module id mod)))
+			(global (find-global/module (get-genv) id mod)))
 		    (if (global? global)
 			(let ((val (global-value global)))
 			   (cond

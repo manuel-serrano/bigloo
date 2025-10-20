@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Sat Sep 27 07:28:25 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:14:35 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -76,7 +76,7 @@
 	  (if (not proto)
 	      (error (car x) "Illegal define-class" x)
 	      (begin
-		 (declare-class!
+		 (declare-class! (get-genv)
 		    (cdr proto) *module* 'static
 		    (eq? (car x) 'define-final-class)
 		    (eq? (car x) 'define-abstract-class) nx #f)
@@ -87,7 +87,7 @@
 	  (if (not proto)
 	      (error (car x) "Illegal define-class" x)
 	      (begin
-		 (declare-class!
+		 (declare-class! (get-genv)
 		    (cdr proto) *module* 'static
 		    (eq? (car x) 'define-final-class)
 		    (eq? (car x) 'define-abstract-class) nx #f)
@@ -223,7 +223,7 @@
 (define (instantiate-fill op provided class slots init x e)
    
    (define (inlinable-call? fun module)
-      (let ((g (find-global fun module)))
+      (let ((g (find-global (get-genv) fun module)))
 	 (when (and (global? g) (sfun? (global-value g)))
 	    (or (not (fun-side-effect (global-value g)))
 		(memq 'default-inline (global-pragma g))

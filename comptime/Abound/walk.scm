@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Fri Dec 27 10:10:57 2024 (serrano)                */
-;*    Copyright   :  2010-24 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 09:11:36 2025 (serrano)                */
+;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
 ;*=====================================================================*/
@@ -73,30 +73,30 @@
 ;*    init-cache! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (init-cache!)
-   (set! *string-ref* (find-global '$string-ref 'foreign))
-   (set! *string-set!* (find-global '$string-set! 'foreign))
-   (set! *struct-ref* (find-global '$struct-ref 'foreign))
-   (set! *struct-set!* (find-global '$struct-set! 'foreign))
-   (set! *s8vector-ref* (find-global '$s8vector-ref 'foreign))
-   (set! *u8vector-ref* (find-global '$u8vector-ref 'foreign))
-   (set! *s16vector-ref* (find-global '$s16vector-ref 'foreign))
-   (set! *u16vector-ref* (find-global '$u16vector-ref 'foreign))
-   (set! *s32vector-ref* (find-global '$s32vector-ref 'foreign))
-   (set! *u32vector-ref* (find-global '$u32vector-ref 'foreign))
-   (set! *s64vector-ref* (find-global '$s64vector-ref 'foreign))
-   (set! *u64vector-ref* (find-global '$u64vector-ref 'foreign))
-   (set! *f32vector-ref* (find-global '$f32vector-ref 'foreign))
-   (set! *f64vector-ref* (find-global '$f64vector-ref 'foreign))
-   (set! *s8vector-set!* (find-global '$s8vector-set! 'foreign))
-   (set! *u8vector-set!* (find-global '$u8vector-set! 'foreign))
-   (set! *s16vector-set!* (find-global '$s16vector-set! 'foreign))
-   (set! *u16vector-set!* (find-global '$u16vector-set! 'foreign))
-   (set! *s32vector-set!* (find-global '$s32vector-set! 'foreign))
-   (set! *u32vector-set!* (find-global '$u32vector-set! 'foreign))
-   (set! *s64vector-set!* (find-global '$s64vector-set! 'foreign))
-   (set! *u64vector-set!* (find-global '$u64vector-set! 'foreign))
-   (set! *f32vector-set!* (find-global '$f32vector-set! 'foreign))
-   (set! *f64vector-set!* (find-global '$f64vector-set! 'foreign))
+   (set! *string-ref* (find-global (get-genv) '$string-ref 'foreign))
+   (set! *string-set!* (find-global (get-genv) '$string-set! 'foreign))
+   (set! *struct-ref* (find-global (get-genv) '$struct-ref 'foreign))
+   (set! *struct-set!* (find-global (get-genv) '$struct-set! 'foreign))
+   (set! *s8vector-ref* (find-global (get-genv) '$s8vector-ref 'foreign))
+   (set! *u8vector-ref* (find-global (get-genv) '$u8vector-ref 'foreign))
+   (set! *s16vector-ref* (find-global (get-genv) '$s16vector-ref 'foreign))
+   (set! *u16vector-ref* (find-global (get-genv) '$u16vector-ref 'foreign))
+   (set! *s32vector-ref* (find-global (get-genv) '$s32vector-ref 'foreign))
+   (set! *u32vector-ref* (find-global (get-genv) '$u32vector-ref 'foreign))
+   (set! *s64vector-ref* (find-global (get-genv) '$s64vector-ref 'foreign))
+   (set! *u64vector-ref* (find-global (get-genv) '$u64vector-ref 'foreign))
+   (set! *f32vector-ref* (find-global (get-genv) '$f32vector-ref 'foreign))
+   (set! *f64vector-ref* (find-global (get-genv) '$f64vector-ref 'foreign))
+   (set! *s8vector-set!* (find-global (get-genv) '$s8vector-set! 'foreign))
+   (set! *u8vector-set!* (find-global (get-genv) '$u8vector-set! 'foreign))
+   (set! *s16vector-set!* (find-global (get-genv) '$s16vector-set! 'foreign))
+   (set! *u16vector-set!* (find-global (get-genv) '$u16vector-set! 'foreign))
+   (set! *s32vector-set!* (find-global (get-genv) '$s32vector-set! 'foreign))
+   (set! *u32vector-set!* (find-global (get-genv) '$u32vector-set! 'foreign))
+   (set! *s64vector-set!* (find-global (get-genv) '$s64vector-set! 'foreign))
+   (set! *u64vector-set!* (find-global (get-genv) '$u64vector-set! 'foreign))
+   (set! *f32vector-set!* (find-global (get-genv) '$f32vector-set! 'foreign))
+   (set! *f64vector-set!* (find-global (get-genv) '$f64vector-set! 'foreign))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/

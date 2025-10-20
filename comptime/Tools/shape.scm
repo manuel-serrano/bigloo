@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 17:02:04 1994                          */
-;*    Last change :  Wed Sep 24 08:00:16 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:59:24 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    In order to print human readable messages, we designed this      */
@@ -98,7 +98,7 @@
 	     (string-append str-id "@" module tshape ushape ashape)))
 	 (else
 	  (with-access::global var (id module)
-	     (case (global-bucket-position id module)
+	     (case (global-bucket-position (get-genv) id module)
 		((-1)
 		 (warning "global-shape:"
 		    "Can't find global anymore -- "
@@ -107,7 +107,7 @@
 		((0)
 		 (if (and *module*
 			  (not (eq? module *module*))
-			  (>fx (global-bucket-length id module) 1))
+			  (>fx (global-bucket-length (get-genv) id module) 1))
 		     (let ((sym (string->symbol
 				   (string-append str-id tshape ushape ashape))))
 			`(@ ,sym ,module))

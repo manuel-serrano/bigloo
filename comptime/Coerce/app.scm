@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Mon Sep 15 11:48:10 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:53:01 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
@@ -31,8 +31,8 @@
 ;*    init-app-cache! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (init-app-cache!)
-   (set! *eq* (find-global/module 'c-eq? 'foreign))
-   (set! *eqb* (find-global/module '$eqb? 'foreign)))
+   (set! *eq* (find-global/module (get-genv) 'c-eq? 'foreign))
+   (set! *eqb* (find-global/module (get-genv) '$eqb? 'foreign)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *eq* ...                                                         */

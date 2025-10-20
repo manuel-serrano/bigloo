@@ -22,7 +22,7 @@
 (define (names-initialization me::jvm)
    (reset-jvmstd-type!)
 ;*    (for-each-type! reset-type!)                                     */
-   (for-each-global! reset-global!)
+   (for-each-global! (get-genv) reset-global!)
    (for-each-type! saw_jvm-set-type-names!) )
 
 ;;

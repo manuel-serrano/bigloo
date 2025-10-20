@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Return/walk.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Return/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Thu Oct 21 13:48:37 2021 (serrano)                */
-;*    Copyright   :  2010-21 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 09:17:13 2025 (serrano)                */
+;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this pass   */
 ;*    is only executed when generating plain C code.                   */
@@ -63,15 +63,15 @@
 ;*---------------------------------------------------------------------*/
 (define (init-return-cache!)
    (unless (global? *get-exitd-top*)
-      (set! *current-dynamic-env* (find-global '$current-dynamic-env 'foreign))
-      (set! *get-exitd-top* (find-global '$get-exitd-top 'foreign))
-      (set! *exitd-protect-set!* (find-global '$exitd-protect-set! 'foreign))
-      (set! *env-get-exitd-top* (find-global '$env-get-exitd-top 'foreign))
-      (set! *unwind-until!* (find-global 'unwind-stack-until! '__bexit))
-      (set! *pop-exit!* (find-global 'pop-exit! 'foreign))
-      (set! *env-pop-exit!* (find-global '$env-pop-exit! 'foreign))
-      (set! *push-exit!* (find-global 'push-exit! 'foreign))
-      (set! *env-push-exit!* (find-global '$env-push-exit! 'foreign)))
+      (set! *current-dynamic-env* (find-global (get-genv) '$current-dynamic-env 'foreign))
+      (set! *get-exitd-top* (find-global (get-genv) '$get-exitd-top 'foreign))
+      (set! *exitd-protect-set!* (find-global (get-genv) '$exitd-protect-set! 'foreign))
+      (set! *env-get-exitd-top* (find-global (get-genv) '$env-get-exitd-top 'foreign))
+      (set! *unwind-until!* (find-global (get-genv) 'unwind-stack-until! '__bexit))
+      (set! *pop-exit!* (find-global (get-genv) 'pop-exit! 'foreign))
+      (set! *env-pop-exit!* (find-global (get-genv) '$env-pop-exit! 'foreign))
+      (set! *push-exit!* (find-global (get-genv) 'push-exit! 'foreign))
+      (set! *env-push-exit!* (find-global (get-genv) '$env-push-exit! 'foreign)))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/

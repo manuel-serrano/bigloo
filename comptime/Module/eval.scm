@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Thu Oct  9 14:38:42 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:49:47 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -84,7 +84,7 @@
       ((class (and (? symbol?) ?class))
        (set! *eval-classes* (cons proto *eval-classes*)))
       ((import (and (? symbol?) ?var))
-       (declare-global-svar! var #f 'eval 'eval clause #f))
+       (declare-global-svar! (get-genv) var #f 'eval 'eval clause #f))
       ((library . ?libs)
        (for-each (lambda (lib)
 		    (if (not (symbol? lib))
@@ -249,7 +249,7 @@
    (let ((info (get-library-info lib)))
       (if (and (libinfo? info) (libinfo-module_e info))
 	  (let* ((init (module-initialization-id (libinfo-module_e info)))
-		 (glo (declare-global-cfun! init
+		 (glo (declare-global-cfun! (get-genv) init
 			 init
 			 (libinfo-module_e info)
 			 (bigloo-module-mangle
@@ -292,7 +292,7 @@
 			     ((all) '(import static export))
 			     ((module) '(export))
 			     (else '(export)))))
-	    (for-each-global!
+	    (for-each-global! (get-genv)
 	       (lambda (g)
 		  (if (and (memq (global-import g) scope-lst)
 			   (global-evaluable? g)
@@ -304,9 +304,9 @@
 	     res
 	     (let ((var-module-pos (car eval-exported)))
 		(let ((g (if (cadr var-module-pos)
-			     (find-global/module (car var-module-pos)
-				(cadr var-module-pos))
-			     (find-global (car var-module-pos)))))
+			     (find-global/module (get-genv)
+				(car var-module-pos) (cadr var-module-pos))
+			     (find-global (get-genv) (car var-module-pos)))))
 		   (cond
 		      ((not (global? g))
 		       (user-error/location (find-location

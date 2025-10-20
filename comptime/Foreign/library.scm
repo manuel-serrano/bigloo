@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Foreign/library.scm         */
+;*    .../prgm/project/bigloo/wasm/comptime/Foreign/library.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 29 13:49:39 1999                          */
-;*    Last change :  Sun Jun 10 14:42:31 2001 (serrano)                */
-;*    Copyright   :  1999-2001 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:46:33 2025 (serrano)                */
+;*    Copyright   :  1999-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Library and foreign type management.                             */
 ;*=====================================================================*/
@@ -16,6 +16,7 @@
    (import engine_param
 	   ast_node
 	   ast_var
+	   ast_env
 	   type_type
 	   (find-global ast_env))
    (export (make-define-inline proto body)
@@ -74,7 +75,7 @@
 ;*---------------------------------------------------------------------*/
 (define (prepare-foreign-access!)
    (for-each (lambda (id)
-		(let ((g (find-global id)))
+		(let ((g (find-global (get-genv) id)))
 		   (if (global? g)
 		       (begin
 			  (global-import-set! g 'export)

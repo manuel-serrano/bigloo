@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Thu Oct  9 08:19:41 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:50:53 2025 (serrano)                */
 ;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -207,7 +207,7 @@
    (for-each (lambda (jmod)
 		(let* ((java (car jmod))
 		       (module (cdr jmod))
-		       (global (find-global (cadr java)))
+		       (global (find-global (get-genv) (cadr java)))
 		       (name (caddr java)))
 		   (cond
 		      ((not (global? global))
@@ -416,7 +416,7 @@
    (let* ((pid (parse-id id (find-location src)))
 	  (ln (car pid))
 	  (tid (type-id (cdr pid))))
-      (let ((g (declare-global-cfun! ln #f module jname tid args #f #f src #f)))
+      (let ((g (declare-global-cfun! (get-genv) ln #f module jname tid args #f #f src #f)))
 	 (cfun-method-set! (global-value g) modifiers)
 	 (global-qualified-type-name-set! g kname)
 	 g)))

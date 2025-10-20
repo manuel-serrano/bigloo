@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Fastfl/walk.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Fastfl/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Mon Jun 30 17:29:43 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:15:02 2025 (serrano)                */
 ;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Optimize fast flonum operations by removing useless conversions  */
@@ -57,8 +57,8 @@
 ;*    init-fastfl-cache! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (init-fastfl-cache!)
-   (set! *$fast-flonum?* (find-global '$fast-flonum? 'foreign))
-   (set! *$fast-real->double* (find-global '$fast-real->double 'foreign))
+   (set! *$fast-flonum?* (find-global (get-genv) '$fast-flonum? 'foreign))
+   (set! *$fast-real->double* (find-global (get-genv) '$fast-real->double 'foreign))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
-;*    Last change :  Fri Dec  6 17:47:49 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:16:10 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
 ;*=====================================================================*/
@@ -61,7 +61,7 @@
 ;*    make-opt/key-global-closure ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (make-opt/key-global-closure global)
-   (let ((gloclo (find-global (symbol-append '_ (global-id global))
+   (let ((gloclo (find-global (get-genv) (symbol-append '_ (global-id global))
 		    (global-module global))))
       (fill-gloclo! global gloclo)
       (sfun-the-closure-global-set! (global-value gloclo) global)
@@ -183,7 +183,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    gloclo ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (gloclo global env::local args)   
+(define (gloclo global cloenv::local args)   
    (let* ((arity  (fun-optional-arity (global-value global)))
 	  (id     (let ((str (string-append
 			      "&"
@@ -192,9 +192,9 @@
 			 (gensym (symbol-append '& (global-id global)))
 			 (symbol-append '& (global-id global)))))
 	  (tyid   (globalized-type-id global))
-	  (gloclo (def-global-sfun-no-warning! (make-typed-ident id tyid)
+	  (gloclo (def-global-sfun-no-warning! (get-genv) (make-typed-ident id tyid)
 		     (make-n-proto (+-arity arity 1))
-		     (cons env args)
+		     (cons cloenv args)
 		     (if (eq? (global-import global) 'foreign)
 			 *module*
 			 (global-module global))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Wed Sep 24 07:59:00 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:35:36 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -31,14 +31,14 @@
 	    (set-genv! <Genv>)
 	    (add-genv! <Genv>)
 	    (get-genv) 
-	    (find-global ::symbol . <symbol>)
-	    (find-global/module ::symbol ::symbol)
-	    (get-global/module ::symbol ::symbol)
-	    (bind-global!::global ::symbol ::obj ::symbol ::value ::symbol ::obj)
-	    (unbind-global! ::symbol ::symbol)
-	    (for-each-global! ::procedure . env)
-	    (global-bucket-position::long ::symbol ::symbol)
-	    (global-bucket-length::long ::symbol ::symbol)
+	    (find-global ::obj ::symbol . <symbol>)
+	    (find-global/module ::obj ::symbol ::symbol)
+	    (get-global/module ::obj ::symbol ::symbol)
+	    (bind-global!::global ::obj ::symbol ::obj ::symbol ::value ::symbol ::obj)
+	    (unbind-global! ::obj ::symbol ::symbol)
+	    (for-each-global! ::obj ::procedure)
+	    (global-bucket-position::long ::obj ::symbol ::symbol)
+	    (global-bucket-length::long ::obj ::symbol ::symbol)
 	    (restore-global! new)
 	    (additional-heap-restore-globals!)
 	    (already-restored? fun)))
@@ -236,9 +236,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    find-global ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (find-global id::symbol . module)
+(define (find-global env id::symbol . module)
    (assert (module) (or (null? module) (symbol? (car module))))
-   (let ((bucket (hashtable-get *Genv* id))
+   (let ((bucket (hashtable-get env id))
 	 (module (if (null? module) '() (car module))))
       (cond
 	 ((not (pair? bucket))
@@ -260,8 +260,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    find-global/module ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (find-global/module id::symbol module)
-   (let ((bucket (hashtable-get *Genv* id)))
+(define (find-global/module env id::symbol module)
+   (let ((bucket (hashtable-get env id)))
       (cond
 	 ((not (pair? bucket))
 	  #f)
@@ -282,12 +282,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-global/module ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (get-global/module id::symbol module)
-   (let ((global (find-global/module id module)))
+(define (get-global/module env id::symbol module)
+   (let ((global (find-global/module env id module)))
       (when (and (not (global? global)) (not *lib-mode*))
-	  (internal-error 'get-global/module
-			  "Cannot find global variable"
-			  (format "~a::~a" id module)))
+	 (internal-error 'get-global/module
+	    "Cannot find global variable"
+	    (format "~a::~a" id module)))
       global))
 
 ;*---------------------------------------------------------------------*/
@@ -341,11 +341,12 @@
 ;*       4- user library variables have a higher priority than system  */
 ;*          library variables.                                         */
 ;*---------------------------------------------------------------------*/
-(define (bind-global!::global id::symbol alias::obj module::symbol
-			      value::value import::symbol
-			      src::obj)
+(define (bind-global!::global env
+	   id::symbol alias::obj module::symbol
+	   value::value import::symbol
+	   src::obj)
    (let* ((ident (or alias id))
-	  (old (find-global ident module)))
+	  (old (find-global env ident module)))
       (if (global? old)
 	  (cond
 	     (*lib-mode*
@@ -355,7 +356,7 @@
 	      old)
 	     (else
 	      (error-rebind-global! old src)))
-	  (let* ((bucket (hashtable-get *Genv* ident))
+	  (let* ((bucket (hashtable-get env ident))
 		 (qtn (cond
 			 ((not (backend-qualified-types (the-backend))) "")
 			 ((eq? import 'eval) "eval")
@@ -373,7 +374,7 @@
 	     (cond
 		((or (not (pair? bucket)) (null? (cdr bucket)))
 		 ;; this is the firt time we see this identifier
-		 (hashtable-put! *Genv* ident (list ident new))
+		 (hashtable-put! env ident (list ident new))
 		 new)
 		(else
 		 (let* ((old* (cdr bucket))
@@ -396,11 +397,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    unbind-global! ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (unbind-global! id::symbol module::symbol)
-   (let ((global (find-global id module)))
+(define (unbind-global! env id::symbol module::symbol)
+   (let ((global (find-global env id module)))
       (if (not (global? global))
 	  (user-error "unbind-global!" "Can't find global" `(@ ,id ,module))
-	  (let ((bucket (hashtable-get *Genv* id)))
+	  (let ((bucket (hashtable-get env id)))
 	     (let loop ((cur  (cdr bucket))
 			(prev bucket))
 		(if (eq? (car cur) global)
@@ -410,15 +411,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    for-each-global! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (for-each-global! proc::procedure . env)
-   (hashtable-for-each (if (null? env) *Genv* (car env))
+(define (for-each-global! env proc::procedure)
+   (hashtable-for-each env
       (lambda (k bucket) (for-each proc (cdr bucket)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    global-bucket-position                                           */
 ;*---------------------------------------------------------------------*/
-(define (global-bucket-position id module)
-   (let ((bucket (hashtable-get *Genv* id)))
+(define (global-bucket-position env id module)
+   (let ((bucket (hashtable-get env id)))
       (if (not (pair? bucket))
 	  -1
 	  (let loop ((globals (cdr bucket))
@@ -431,8 +432,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    global-bucket-length                                             */
 ;*---------------------------------------------------------------------*/
-(define (global-bucket-length id module)
-   (let ((bucket (hashtable-get *Genv* id)))
+(define (global-bucket-length env id module)
+   (let ((bucket (hashtable-get env id)))
       (if (not (pair? bucket))
 	  0
 	  (length (cdr bucket)))))

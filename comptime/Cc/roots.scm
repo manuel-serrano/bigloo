@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cc/roots.scm         */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cc/roots.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 09:37:13 2016                          */
-;*    Last change :  Fri Jun 28 08:56:39 2024 (serrano)                */
-;*    Copyright   :  2016-24 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 08:46:17 2025 (serrano)                */
+;*    Copyright   :  2016-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Explicit GC roots registration                                   */
 ;*=====================================================================*/
@@ -47,7 +47,7 @@
    (display "#if defined( BGL_GC_ROOTS )\n" port)
    (display "#define ADD_ROOT( addr ) (addr > roots_max ? roots_max = addr : (addr < roots_min ? roots_min = addr : 0))\n" port)
    (display "void *roots_min = (void*)ULONG_MAX, *roots_max = 0;\n" port)
-   (for-each-global!
+   (for-each-global! (get-genv)
       (lambda (global)
 	 (when (is-local-gc-root? global)
 	    (emit-gc-registration global port))))

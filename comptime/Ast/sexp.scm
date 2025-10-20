@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Sun Oct  5 08:25:21 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:44:31 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -148,7 +148,7 @@
 	   =>
 	   (lambda (i) (variable->node i loc site)))
 	  (else
-	   (let ((global (find-global atom))
+	   (let ((global (find-global (get-genv) atom))
 		 (loc (find-location/loc atom loc)))
 	      (cond
 		 ((not (global? global))
@@ -162,7 +162,7 @@
       (((and (? symbol?)
 	     (? (lambda (x)
 		   (or (find-local x stack)
-		       (let ((g (find-global x)))
+		       (let ((g (find-global (get-genv) x)))
 			  (when g
 			     (not (eq? (global-module g)
 				     '__r4_control_features_6_9))))))))
@@ -175,7 +175,7 @@
        (let ((loc (find-location/loc exp loc)))
 	  (match-case exp
 	     ((@ (and (? symbol?) ?name) (and (? symbol?) ?module))
-	      (let ((global (find-global/module name module))
+	      (let ((global (find-global/module (get-genv) name module))
 		    (loc (find-location/loc name loc)))
 		 (cond
 		    ((not (global? global))

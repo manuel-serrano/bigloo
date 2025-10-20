@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/glo_def.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/glo_def.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Tue Apr  7 16:12:04 2020 (serrano)                */
+;*    Last change :  Mon Oct 20 08:43:50 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the functions used to def (define) a      */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -31,7 +31,7 @@
 	    tools_dsssl
 	    object_class
 	    engine_param)
-   (export  (def-global-sfun-no-warning!::global id::symbol
+   (export  (def-global-sfun-no-warning!::global env::obj id::symbol
 	       args::obj
 	       locals::obj
 	       module::symbol
@@ -39,7 +39,7 @@
 	       src::obj
 	       removable::symbol
 	       body)
-	    (def-global-sfun!::global id::symbol
+	    (def-global-sfun!::global env::obj id::symbol
 	       args::obj
 	       locals::obj
 	       module::symbol
@@ -47,16 +47,16 @@
 	       src::obj
 	       removable::symbol
 	       body)
-	    (def-global-svar!::global id::symbol
+	    (def-global-svar!::global env::obj id::symbol
 	       module::symbol
 	       src::obj
 	       removable::symbol)
-	    (def-global-scnst!::global id::symbol
+	    (def-global-scnst!::global env::obj id::symbol
 	       module::symbol
 	       node
 	       class::symbol
 	       loc)
-	    (check-method-definition::bool id args locals src)))
+	    (check-method-definition::bool env::obj id args locals src)))
 
 ;*---------------------------------------------------------------------*/
 ;*    def-global-sfun-no-warning! ...                                  */
@@ -64,10 +64,10 @@
 ;*    This function is a simple interface for DEF-GLOBAL-SFUN. It      */
 ;*    prevent the global declaration from emitting warning.            */
 ;*---------------------------------------------------------------------*/
-(define (def-global-sfun-no-warning! id args loc mod class src-exp rem node)
+(define (def-global-sfun-no-warning! env id args loc mod class src-exp rem node)
    (let ((warning (bigloo-warning)))
       (bigloo-warning-set! 0)
-      (let ((fun (def-global-sfun! id args loc mod class src-exp rem node)))
+      (let ((fun (def-global-sfun! env id args loc mod class src-exp rem node)))
 	 (bigloo-warning-set! warning)
 	 fun)))
    
@@ -77,29 +77,29 @@
 ;*    This function defines a global sfunction. It is used only when   */
 ;*    compiling a define expression.                                   */
 ;*---------------------------------------------------------------------*/
-(define (def-global-sfun! id args locals module class src-exp rem node)
+(define (def-global-sfun! env id args locals module class src-exp rem node)
    (trace (ast 3) "def-global-sfun!: "
-	  (shape id) " " (shape args) " " (shape locals) #\Newline
-	  "    src: " src-exp #\Newline
-	  "    loc: " (shape (find-location src-exp)) #\newline)
+      (shape id) " " (shape args) " " (shape locals) #\Newline
+      "    src: " src-exp #\Newline
+      "    loc: " (shape (find-location src-exp)) #\newline)
    (enter-function id)
-   (let* ((loc        (find-location src-exp))
-	  (id-type    (parse-id id loc))
-	  (type-res   (cdr id-type))
-	  (id         (car id-type))
-	  (import     (if (and (>=fx *bdb-debug* 3)
-			       (memq 'bdb (backend-debug-support (the-backend))))
-			  'export
-			  'static))
-	  (old-global (find-global/module id module))
-	  (global     (cond
-			 ((not (global? old-global))
-			  (declare-global-sfun! id #f args module
-			     import class src-exp #f))
-			 (else
-			  (check-sfun-definition old-global type-res
-			     args locals class src-exp))))
-	  (def-loc    (find-location src-exp)))
+   (let* ((loc (find-location src-exp))
+	  (id-type (parse-id id loc))
+	  (type-res (cdr id-type))
+	  (id (car id-type))
+	  (import (if (and (>=fx *bdb-debug* 3)
+			   (memq 'bdb (backend-debug-support (the-backend))))
+		      'export
+		      'static))
+	  (old-global (find-global/module (get-genv) id module))
+	  (global (cond
+		     ((not (global? old-global))
+		      (declare-global-sfun! env id #f args module
+			 import class src-exp #f))
+		     (else
+		      (check-sfun-definition old-global type-res
+			 args locals class src-exp))))
+	  (def-loc (find-location src-exp)))
       (if (sfun? (global-value global))
 	  ;; if global-value is not an sfun then it means that
 	  ;; check-sfun-definition has failed and so there is an error
@@ -110,7 +110,7 @@
 	     (most-defined-type! global type-res)
 	     ;; and the type of the formals
 	     (if (=fx (length locals)
-		      (length (sfun-args (global-value global))))
+		    (length (sfun-args (global-value global))))
 		 (let ((types (map (lambda (a)
 				      (cond
 					 ((local? a)
@@ -119,10 +119,10 @@
 					  a)
 					 (else
 					  (internal-error
-					   "check-method-definition"
-					   "unexpected generic arg"
-					   (shape a)))))
-				   (sfun-args (global-value global)))))
+					     "check-method-definition"
+					     "unexpected generic arg"
+					     (shape a)))))
+				 (sfun-args (global-value global)))))
 		    (for-each most-defined-type! locals types)))
 	     ;; we set the removable field
 	     (remove-var-from! rem global)
@@ -208,13 +208,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    def-global-scnst! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (def-global-scnst! id module node class loc)
+(define (def-global-scnst! env id module node class loc)
    (enter-function id)
-   (let* ((id-type    (parse-id id loc))
-	  (id-id      (car id-type))
-	  (old-global (find-global/module id-id module))
-	  (global     (declare-global-scnst! id #f module
-			 'static node class loc)))
+   (let* ((id-type (parse-id id loc))
+	  (id-id (car id-type))
+	  (old-global (find-global/module (get-genv) id-id module))
+	  (global (declare-global-scnst! env id #f module
+		     'static node class loc)))
       ;; we set the removable field
       (remove-var-from! 'now global)
       ;; and we return the global
@@ -224,11 +224,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    def-global-svar! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (def-global-svar! id module src-exp rem)
+(define (def-global-svar! env id module src-exp rem)
    (let* ((loc (find-location src-exp))
 	  (id-type (parse-id id loc))
 	  (id-id (car id-type))
-	  (old-global (find-global/module id-id module))
+	  (old-global (find-global/module (get-genv) id-id module))
 	  (import (if (and (>=fx *bdb-debug* 3)
 			   (memq 'bdb (backend-debug-support (the-backend))))
 		      'export
@@ -243,7 +243,7 @@
 		       type)))
 	  (global (cond
 		     ((not (global? old-global))
-		      (declare-global-svar! id #f module
+		      (declare-global-svar! env id #f module
 			 import src-exp #f))
 		     (else
 		      (check-svar-definition old-global type src-exp))))
@@ -304,11 +304,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    check-method-definition ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (check-method-definition id args locals src)
+(define (check-method-definition env id args locals src)
    (let* ((loc       (find-location src))
 	  (type-res  (type-of-id id loc))
 	  (method-id (id-of-id id loc))
-	  (generic   (find-global id)))
+	  (generic   (find-global (get-genv) id)))
       (cond
 	 ((null? args)
 	  (user-error id (shape src) "argument missing")

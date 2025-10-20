@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/BackEnd/c_main.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/c_main.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Thu Jul 18 13:09:53 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:39:32 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
 ;*=====================================================================*/
@@ -56,7 +56,7 @@
 	  (node (let ((node (sexp->node main-body args #f 'value)))
 		   (lvtype-node! node)
 		   node))
-	  (bigloo-main (def-global-sfun! 'bigloo_main::obj
+	  (bigloo-main (def-global-sfun! (get-genv) 'bigloo_main::obj
 			  '(argv::obj)
 			  args
 			  *module*

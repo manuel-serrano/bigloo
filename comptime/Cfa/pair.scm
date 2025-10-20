@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/pair.scm                */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/pair.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 30 08:11:10 2011                          */
-;*    Last change :  Sat Aug 25 06:33:19 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 08:55:56 2025 (serrano)                */
+;*    Copyright   :  2011-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The pair approximation manager                                   */
 ;*    -------------------------------------------------------------    */
@@ -61,7 +61,7 @@
    ;; when the cfa traces values inside pairs
    (when (pair-optim?)
       (for-each (lambda (id)
-		   (let* ((g (find-global/module (cadr id) (caddr id)))
+		   (let* ((g (find-global/module (get-genv) (cadr id) (caddr id)))
 			  (fun (global-value g)))
 		      (fun-top?-set! (global-value g) #f)
 		      (if (cfun? fun)
@@ -77,7 +77,7 @@
 	   (@ $cons foreign)
 	   (@ $set-car! foreign)
 	   (@ $set-cdr! foreign)))
-      (let ((g (find-global '$pair?)))
+      (let ((g (find-global (get-genv) '$pair?)))
 	 (if (global? g)
 	     (let ((f (global-value g)))
 		(set-car! (cfun-args-type f) (get-default-type)))))))
@@ -88,7 +88,7 @@
 (define (unpatch-pair-set!)
    (when (pair-optim?)
       (for-each (lambda (id)
-		   (let* ((g (find-global/module (cadr id) (caddr id)))
+		   (let* ((g (find-global/module (get-genv) (cadr id) (caddr id)))
 			  (fun (global-value g)))
 		      (if (cfun? fun)
 			  (let ((args (cfun-args-type fun)))
@@ -103,11 +103,11 @@
 	   (@ $cons foreign)
 	   (@ $set-car! foreign)
 	   (@ $set-cdr! foreign)))
-      (let ((g (find-global '$pair?)))
+      (let ((g (find-global (get-genv) '$pair?)))
 	 (if (global? g)
 	     (let ((f (global-value g)))
 		(set-car! (cfun-args-type f) *obj*))))
-      (let ((g (find-global 'pair?)))
+      (let ((g (find-global (get-genv) 'pair?)))
 	 (if (global? g)
 	     (let ((f (global-value g)))
 		(local-type-set! (car (sfun-args f)) *obj*)))))

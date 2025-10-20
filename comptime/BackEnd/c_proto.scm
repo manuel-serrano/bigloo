@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Tue Jul  1 07:00:15 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:02:33 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -61,10 +61,10 @@
 (define (emit-prototypes)
    ;; set the proper name for bigloo-initialized! that is used
    ;; when a main is produced
-   (let ((init (find-global 'bigloo-initialized! '__param)))
+   (let ((init (find-global (get-genv) 'bigloo-initialized! '__param)))
       (when init (set-variable-name! init)))
    ;; first, we print the prototype of non procedures
-   (for-each-global!
+   (for-each-global! (get-genv)
     (lambda (global)
        (if (and (require-prototype? global)
 		(not (scnst? (global-value global))))
@@ -106,7 +106,7 @@
 ;*    emit-cnsts ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnsts)
-   (for-each-global!
+   (for-each-global! (get-genv)
     (lambda (global)
        (if (and (require-prototype? global)
 		(scnst? (global-value global)))

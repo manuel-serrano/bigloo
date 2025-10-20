@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sat Sep 27 07:26:47 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:34:55 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -38,6 +38,7 @@
 	    engine_param
 	    expand_expander
 	    type_type
+	    ast_env
 	    ast_ident
 	    ast_let
 	    ast_labels
@@ -70,8 +71,8 @@
 (define (install-expanders)
    ;; In order to be able to install O-macros,
    ;; we first of all, we perform Oenv initialization
-   (initialize-Oenv!)
-   (initialize-Genv!)
+   (initialize-expander-Oenv!)
+   (initialize-expander-Genv!)
 
    ;; #meta
    (install-compiler-expander '|#meta|
@@ -1283,7 +1284,7 @@
 ;*---------------------------------------------------------------------*/
 (define (%append-2-define)
    (let ((proto `(,%append-2-id l1::pair-nil l2)))
-      (let ((g (declare-global-sfun! %append-2-id #f (cdr proto) *module*
+      (let ((g (declare-global-sfun! (get-genv) %append-2-id #f (cdr proto) *module*
 		  'static 'sfun proto #f)))
 	 (global-eval?-set! g #f)
 	 (global-evaluable?-set! g #f))

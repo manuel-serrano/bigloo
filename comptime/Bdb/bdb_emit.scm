@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Bdb/bdb_emit.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Bdb/bdb_emit.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  8 17:32:59 1998                          */
-;*    Last change :  Wed Jun 16 15:55:01 2021 (serrano)                */
-;*    Copyright   :  1992-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:01:48 2025 (serrano)                */
+;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the Bdb identifier translation table.            */
 ;*=====================================================================*/
@@ -85,12 +85,13 @@
 	     globals)
    ;; then the non function global variables.
    (fprint port "   /* Global variables */")
-   (for-each-global! (lambda (global)
-			(if (and (or (and (eq? (global-module global) *module*)
-					  (eq? (global-import global) 'export))
-				     (>fx (global-occurrence global) 0))
-				 (svar? (global-value global)))
-			    (bdb-global-svar! global))))
+   (for-each-global! (get-genv)
+      (lambda (global)
+	 (if (and (or (and (eq? (global-module global) *module*)
+			   (eq? (global-import global) 'export))
+		      (>fx (global-occurrence global) 0))
+		  (svar? (global-value global)))
+	     (bdb-global-svar! global))))
    (fprint port "   {0, 0},")
    ;; and at last, the Bigloo classes
    (emit-bdb-class-types port)

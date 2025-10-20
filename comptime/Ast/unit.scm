@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Sat Dec  7 06:32:31 2024 (serrano)                */
+;*    Last change :  Mon Oct 20 08:42:52 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -100,7 +100,7 @@
 						(unit-initializer-id id)))
 					  ,@(reverse! init*)))
 				  (normalize-progn (reverse! init*))))
-			(init (def-global-sfun-no-warning!
+			(init (def-global-sfun-no-warning! (get-genv)
 				 (make-typed-ident
 				  (unit-initializer-id id) 'obj)
 				 '()
@@ -128,7 +128,7 @@
 		    (when (unit-exported? unit)
 		       (let* ((id (make-typed-ident (unit-require-init-id id)
 						    'obj))
-			      (glo (def-global-svar! id *module*
+			      (glo (def-global-svar! (get-genv) id *module*
 				      *module-clause* 'now)))
 			  (global-user?-set! glo #f)
 			  (global-evaluable?-set! glo #f)))
@@ -180,7 +180,7 @@
 ;*---------------------------------------------------------------------*/
 (define (unit-initializers)
    (map (lambda (unit)
-	   (find-global/module (unit-initializer-id (car unit)) *module*))
+	   (find-global/module (get-genv) (unit-initializer-id (car unit)) *module*))
 	*unit-list*))
 
 ;*---------------------------------------------------------------------*/
@@ -231,7 +231,7 @@
       ((define (?var . ?args) . ?exp)
        (let* ((id (id-of-id var (find-location sexp)))
 	      (def (assq id gdefs))
-	      (global (find-global/module id *module*)))
+	      (global (find-global/module (get-genv) id *module*)))
 	  ;; exported variable are set to be written hence, we don't
 	  ;; have to check here if the variable has been declared has
 	  ;; exported (as a variable vs a function). We just have to
@@ -257,7 +257,7 @@
 	  (error-class-shadow var sexp))
        (let* ((id (id-of-id var (find-location sexp)))
 	      (def (assq id gdefs))
-	      (global (find-global/module id *module*)))
+	      (global (find-global/module (get-genv) id *module*)))
 	  ;; same remark as in the previous match (variables vs functions)
 	  (if (and (eq? (car (cdr def)) 'read)
 		   (or (not (global? global))
@@ -272,7 +272,7 @@
 	  (error-class-shadow var sexp))
        (let* ((id (id-of-id var (find-location sexp)))
 	      (def (assq id gdefs))
-	      (global (find-global/module id *module*)))
+	      (global (find-global/module (get-genv) id *module*)))
 	  ;; same remark as in the previous match (variables vs functions)
 	  (if (and (eq? (car (cdr def)) 'read)
 		   (or (not (global? global))
@@ -288,7 +288,7 @@
 	  (error-class-shadow var sexp))
        (let* ((id (id-of-id var (find-location sexp)))
 	      (def (assq id gdefs))
-	      (global (find-global/module id *module*))
+	      (global (find-global/module (get-genv) id *module*))
 	      (tlam (type-of-id lam #f)))
 	  ;; same remark as in the previous match (variables vs functions)
 	  (if (and (eq? (car (cdr def)) 'read)
@@ -309,7 +309,7 @@
 	  (error-class-shadow var sexp))
        (let ((def (assq (id-of-id var (find-location sexp)) gdefs)))
 	  (if (eq? (car (cdr def)) 'read)
-	      (let* ((g (find-global var2))
+	      (let* ((g (find-global (get-genv) var2))
 		     (arity (and (global? g)
 				 (fun? (global-value g))
 				 (fun-arity (global-value g)))))
@@ -335,7 +335,7 @@
 	  (error-class-shadow var sexp))
        (let ((def (assq (id-of-id var (find-location sexp)) gdefs)))
 	  (if (eq? (car (cdr def)) 'read)
-	      (let* ((g (find-global/module var2 module))
+	      (let* ((g (find-global/module (get-genv) var2 module))
 		     (arity (and (global? g)
 				 (fun? (global-value g))
 				 (global-arity g))))
@@ -389,7 +389,7 @@
       ((define-method (?var . ?args) . ?exp)
        (when (and (type-exists? var) (isa? (find-type var) tclass))
 	  (error-class-shadow var sexp))
-       (make-method-definition var
+       (make-method-definition (get-genv) var
 	  args
 	  (normalize-progn/error exp sexp (find-location (cddr sexp)))
 	  sexp))
@@ -418,8 +418,8 @@
 ;*---------------------------------------------------------------------*/
 (define (get-global-arity id module gdefs)
    (let ((global (if (symbol? module)
-		     (find-global/module id module)
-		     (find-global id))))
+		     (find-global/module (get-genv) id module)
+		     (find-global (get-genv) id))))
       (if (not (global? global))
 	  #f
 	  (if (fun? (global-value global))
@@ -482,7 +482,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-sfun-opt-definition optionals id module args body src class loc)
    (let* ((locals (parse-fun-opt-args args args loc))
-	  (glo (def-global-sfun! id args locals module class src 'now body))
+	  (glo (def-global-sfun! (get-genv) id args locals module class src 'now body))
 	  (clo (make-sfun-opt-closure glo optionals id module args body src class loc)))
       (list glo clo)))
 
@@ -550,7 +550,7 @@
 	      (envid (gensym 'env))
 	      (opt (make-local-svar optid *vector*))
 	      (env (make-local-svar envid *procedure*))
-	      (g (def-global-sfun! id (list envid optid)
+	      (g (def-global-sfun! (get-genv) id (list envid optid)
 		    (list env opt) module class
 		    src 'globalization
 		    (compile-expand (comptime-expand (funcall-vector optid))))))
@@ -562,7 +562,7 @@
 	      (envid (gensym 'env))
 	      (opt (make-local-svar optid *pair*))
 	      (env (make-local-svar envid *procedure*))
-	      (g (def-global-sfun! id (list envid optid)
+	      (g (def-global-sfun! (get-genv) id (list envid optid)
 		    (list env opt) module class
 		    src 'globalization
 		    (compile-expand (comptime-expand (funcall-pair optid))))))
@@ -589,7 +589,7 @@
 					 (type (cdr pid)))
 				     (make-user-local-svar id type)))
 			       keys)))
-	  (glo (def-global-sfun! id args locals module class src 'now body))
+	  (glo (def-global-sfun! (get-genv) id args locals module class src 'now body))
 	  (clo (make-sfun-key-closure glo keys id module args body src class loc)))
       (list glo clo)))
 
@@ -689,7 +689,7 @@
        (let* ((id (symbol-append '_ id))
 	      (opt (make-local-svar iopt *vector*))
 	      (env (make-local-svar ienv *procedure*))
-	      (g (def-global-sfun! id (list ienv iopt) (list env opt) module class
+	      (g (def-global-sfun! (get-genv) id (list ienv iopt) (list env opt) module class
 		    src 'globalization
 		    (compile-expand
 		       (comptime-expand (funcall-vector iopt))))))
@@ -699,7 +699,7 @@
        (let* ((id (symbol-append '_ id))
 	      (opt (make-local-svar iopt *pair*))
 	      (env (make-local-svar ienv *procedure*))
-	      (g (def-global-sfun! id (list ienv iopt) (list env opt) module class
+	      (g (def-global-sfun! (get-genv) id (list ienv iopt) (list env opt) module class
 		    src 'globalization
 		    (compile-expand
 		       (comptime-expand (funcall-pair iopt))))))
@@ -765,13 +765,13 @@
 (define (make-sfun-noopt-definition id module args body src class loc)
    (let ((locals (parse-fun-args args src loc))
 	 (body (make-dsssl-function-prelude id args body user-error)))
-      (list (def-global-sfun! id args locals module class src 'now body))))
+      (list (def-global-sfun! (get-genv) id args locals module class src 'now body))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-svar-definition ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (make-svar-definition id src)
-   (def-global-svar! id *module* src 'now)
+   (def-global-svar! (get-genv) id *module* src 'now)
    ;; without the Inline global variable optimization once should except
    ;; to find here `(set-car! src 'set!)'
    (set-car! (cdr src) (car (check-id (parse-id id (find-location src)) src)))
@@ -832,7 +832,7 @@
 (define (make-generic-opt-definition optionals id module args body src)
    (let* ((loc (find-location src))
 	  (gen (make-generic-noopt-definition id module args body src))
-	  (glo (find-global (fast-id-of-id id #f) module))
+	  (glo (find-global (get-genv) (fast-id-of-id id #f) module))
 	  (clo (make-sfun-opt-closure glo optionals id module args body src 'sfun loc)))
       (cons clo gen)))
 
@@ -842,7 +842,7 @@
 (define (make-generic-key-definition keys id module args body src)
    (let* ((loc (find-location src))
 	  (gen (make-generic-noopt-definition id module args body src))
-	  (glo (find-global (fast-id-of-id id #f) module))
+	  (glo (find-global (get-genv) (fast-id-of-id id #f) module))
 	  (clo (make-sfun-key-closure glo keys id module args body src 'sfun loc)))
       (cons clo gen)))
 
@@ -886,7 +886,7 @@
 	      (name (gensym (car pid)))
 	      (type (cdr pid))
 	      (gbody   (make-generic-body id locals args src))
-	      (generic (def-global-sfun! id args locals module 'sgfun src 'now gbody))
+	      (generic (def-global-sfun! (get-genv) id args locals module 'sgfun src 'now gbody))
 	      ;;(def `(labels ((,name ,(typed-args args generic)
 	      (def `(labels ((,name ,(if (and (dsssl-prototype? args)
 					      (pair? (dsssl-optionals args)))
@@ -925,7 +925,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-method-definition ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (make-method-definition id args body src)
+(define (make-method-definition env id args body src)
    (if (not (and (pair? args) (symbol? (car args))))
        (begin
 	  (error-sexp->node "Bad method formal argument" src
@@ -933,7 +933,7 @@
 	  (list #unspecified))
        (let* ((loc (find-location src))
 	      (locals (parse-fun-args args src loc)))
-	  (if (not (check-method-definition id args locals src))
+	  (if (not (check-method-definition env id args locals src))
 	      (list #unspecified)
 	      (let* ((o-unit (get-method-unit))
 		     (sexp* (make-method-body id args locals body src loc)))

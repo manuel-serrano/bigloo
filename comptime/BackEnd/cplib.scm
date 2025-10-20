@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Sun Dec 22 06:42:30 2024 (serrano)                */
-;*    Copyright   :  2003-24 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 09:00:13 2025 (serrano)                */
+;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
 ;*=====================================================================*/
@@ -293,12 +293,13 @@
 (define (get-declared-global-variables module)
    ;; Get the global variables (not functions) associated to a module
    (let ((r '()))
-      (for-each-global! (lambda (v)
-			   (if (and (eq? (global-module v) module)
-				    (not (cfun? (global-value v)))
-				    (not (sfun? (global-value v)))
-				    (not (eq? (global-id v) '__cnsts_table)))
-			       (set! r (cons v r)))))
+      (for-each-global! (get-genv)
+	 (lambda (v)
+	    (if (and (eq? (global-module v) module)
+		     (not (cfun? (global-value v)))
+		     (not (sfun? (global-value v)))
+		     (not (eq? (global-id v) '__cnsts_table)))
+		(set! r (cons v r)))))
       r))
 
 ;*---------------------------------------------------------------------*/
@@ -307,10 +308,11 @@
 (define (get-global-variables-to-be-initialized module)
    ;; Get the global variables that have a value assigned to.
    (let ((r '()))
-      (for-each-global! (lambda (global)
-			   (if (and (eq? (global-module global) module)
-				    ;; CARE lot of redondancy
-				    (require-prototype? global)
-				    (scnst? (global-value global)))
-			       (set! r (cons global r)))))
+      (for-each-global! (get-genv)
+	 (lambda (global)
+	    (if (and (eq? (global-module global) module)
+		     ;; CARE lot of redondancy
+		     (require-prototype? global)
+		     (scnst? (global-value global)))
+		(set! r (cons global r)))))
       r))

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Object/generic.scm          */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Object/generic.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 12:05:09 1996                          */
-;*    Last change :  Wed May  4 21:22:43 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:59:41 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The generic management                                           */
 ;*=====================================================================*/
@@ -34,7 +34,7 @@
 (define (make-generic-body id locals args src)
    (define (err msg)
       (user-error id msg src '()))
-   (let ((g (find-global/module id *module*)))
+   (let ((g (find-global/module (get-genv) id *module*)))
       (cond
 	 ((null? args)
 	  (err "Illegal generic definition (no formal arguments provided)"))

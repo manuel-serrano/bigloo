@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Type/misc.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Type/misc.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  5 12:50:52 2004                          */
-;*    Last change :  Fri Jan  5 19:08:02 2018 (serrano)                */
-;*    Copyright   :  2004-24 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 08:51:58 2025 (serrano)                */
+;*    Copyright   :  2004-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Misc type functions                                              */
 ;*=====================================================================*/
@@ -122,7 +122,7 @@
 (define (isa-of node::node)
    (when (app? node)
       (unless (global? *isa*)
-	 (set! *isa* (find-global/module 'isa? '__object)))
+	 (set! *isa* (find-global/module (get-genv) 'isa? '__object)))
       (with-access::app node (fun args)
 	 (when (pair? args)
 	    (when (and (or (eq? (var-variable fun) *isa*))

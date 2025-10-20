@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Thu Sep 25 10:18:28 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:01:30 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -585,7 +585,7 @@
    (with-access::cfail cop (proc msg obj loc)
       (emit-bdb-loc loc)
       (if (not *bfalse*)
-	  (set! *bfalse* (get-global/module 'bfalse 'foreign)))
+	  (set! *bfalse* (get-global/module (get-genv) 'bfalse 'foreign)))
       (cond
 	 ((and (varc? proc) (eq? (varc-variable proc) *bfalse*)
 	       (varc? msg) (eq? (varc-variable msg) *bfalse*)

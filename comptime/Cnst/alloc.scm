@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Tue Oct  1 14:16:05 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:56:29 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
 ;*=====================================================================*/
@@ -183,7 +183,7 @@
    ;; introduce `trace' expression when the variable *compiler-debug* is #t.
    ;; In order to avoid this, we force it to #f
    (set! *compiler-debug* 0)
-   (set! *cnst-table* (def-global-svar! (typed-cnst-table-id)
+   (set! *cnst-table* (def-global-svar! (get-genv) (typed-cnst-table-id)
 			 *module*
 			 'cnst-vector
 			 'now))
@@ -248,7 +248,7 @@
    
    (define (alloc-string-literal::ref)
       ;; in lib-mode string are statically allocated
-      (let ((var (def-global-scnst!
+      (let ((var (def-global-scnst! (get-genv)
 		    (make-typed-ident (gensym 'string) 'bstring)
 		    *module*
 		    string
@@ -296,7 +296,7 @@
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-ucs2-string string loc)
    (define (lib-alloc-ucs2string bstring)
-      (let ((var (def-global-svar!
+      (let ((var (def-global-svar! (get-genv)
 		    (make-typed-ident (gensym 'ucs2string) 'ucs2string)
 		    *module*
 		    'an-ucs2-string
@@ -349,7 +349,7 @@
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-symbol symbol loc)
    (define (lib-alloc-symbol)
-      (let ((var (def-global-svar! (make-typed-ident (gensym 'symbol) 'symbol)
+      (let ((var (def-global-svar! (get-genv) (make-typed-ident (gensym 'symbol) 'symbol)
 		    *module*
 		    'a-symbol
 		    'now))
@@ -412,7 +412,7 @@
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-keyword keyword loc)
    (define (lib-alloc-keyword)
-      (let ((var (def-global-svar! (make-typed-ident (gensym 'keyword)
+      (let ((var (def-global-svar! (get-genv) (make-typed-ident (gensym 'keyword)
 						     'keyword)
 		    *module*
 		    'a-keyword
@@ -509,7 +509,7 @@
 ;*    cnst-alloc-procedure ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-procedure procedure loc)
-   (let ((var (def-global-scnst! (make-typed-ident (gensym 'proc) 'procedure)
+   (let ((var (def-global-scnst! (get-genv) (make-typed-ident (gensym 'proc) 'procedure)
 		 *module*
 		 procedure
 		 'sfun
@@ -523,7 +523,7 @@
 ;*    cnst-alloc-l-procedure ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-l-procedure procedure loc)
-   (let ((var (def-global-scnst! (make-typed-ident (gensym 'proc) 'procedure)
+   (let ((var (def-global-scnst! (get-genv) (make-typed-ident (gensym 'proc) 'procedure)
 		 *module*
 		 procedure
 		 'slfun
@@ -539,7 +539,7 @@
 (define (cnst-alloc-integer integer loc)
    
    (define (lib-alloc-integer)
-      (let ((var (def-global-scnst! (make-typed-ident (gensym 'integer) 'bint)
+      (let ((var (def-global-scnst! (get-genv) (make-typed-ident (gensym 'integer) 'bint)
 		    *module*
 		    integer
 		    'sinteger
@@ -576,7 +576,7 @@
 (define (cnst-alloc-real real loc)
    
    (define (lib-alloc-real)
-      (let ((var (def-global-scnst! (make-typed-ident (gensym 'real) 'real)
+      (let ((var (def-global-scnst! (get-genv) (make-typed-ident (gensym 'real) 'real)
 		    *module*
 		    real
 		    'sreal
@@ -625,7 +625,7 @@
 (define (cnst-alloc-elong elong loc)
 
    (define (lib-alloc-elong)
-      (let ((var (def-global-scnst! (make-typed-ident (gensym 'elong) 'belong)
+      (let ((var (def-global-scnst! (get-genv) (make-typed-ident (gensym 'elong) 'belong)
 		    *module*
 		    elong
 		    'selong
@@ -662,7 +662,7 @@
 (define (cnst-alloc-llong llong loc)
 
    (define (lib-alloc-llong)
-      (let ((var (def-global-scnst! (make-typed-ident (gensym 'llong) 'bllong)
+      (let ((var (def-global-scnst! (get-genv) (make-typed-ident (gensym 'llong) 'bllong)
 		    *module*
 		    llong
 		    'sllong
@@ -699,7 +699,7 @@
 (define (cnst-alloc-int32 int32 loc)
 
    (define (lib-alloc-int32)
-      (let ((var (def-global-scnst! (make-typed-ident (gensym 'int32) 'bint32)
+      (let ((var (def-global-scnst! (get-genv) (make-typed-ident (gensym 'int32) 'bint32)
 		    *module*
 		    int32
 		    'sint32
@@ -736,7 +736,7 @@
 (define (cnst-alloc-uint32 uint32 loc)
 
    (define (lib-alloc-uint32)
-      (let ((var (def-global-scnst! (make-typed-ident (gensym 'uint32) 'buint32)
+      (let ((var (def-global-scnst! (get-genv) (make-typed-ident (gensym 'uint32) 'buint32)
 		    *module*
 		    uint32
 		    'suint32
@@ -773,7 +773,7 @@
 (define (cnst-alloc-int64 int64 loc)
 
    (define (lib-alloc-int64)
-      (let ((var (def-global-scnst! (make-typed-ident (gensym 'int64) 'bint64)
+      (let ((var (def-global-scnst! (get-genv) (make-typed-ident (gensym 'int64) 'bint64)
 		    *module*
 		    int64
 		    'sint64
@@ -810,7 +810,7 @@
 (define (cnst-alloc-uint64 uint64 loc)
 
    (define (lib-alloc-uint64)
-      (let ((var (def-global-scnst! (make-typed-ident (gensym 'uint64) 'buint64)
+      (let ((var (def-global-scnst! (get-genv) (make-typed-ident (gensym 'uint64) 'buint64)
 		    *module*
 		    uint64
 		    'suint64
@@ -876,7 +876,7 @@
 			 (loop (cdr pair)))))))))
 
    (define (lib-alloc-list)
-      (let ((var (def-global-svar! (make-typed-ident (gensym 'list) 'pair)
+      (let ((var (def-global-svar! (get-genv) (make-typed-ident (gensym 'list) 'pair)
 		    *module*
 		    'cnst-list
 		    'now)))
@@ -995,7 +995,7 @@
 	 (make-cnst-table-ref offset *vector* loc)))
    
    (define (lib-alloc-vector)
-      (let ((var (def-global-svar! (make-typed-ident (gensym 'vector) 'vector)
+      (let ((var (def-global-svar! (get-genv) (make-typed-ident (gensym 'vector) 'vector)
 		    *module*
 		    'cnst-vector
 		    'now)))
@@ -1072,7 +1072,7 @@
 			    (fun (instantiate::ref
 				    (loc loc)
 				    (type vec-type)
-				    (variable (find-global list->vector))))
+				    (variable (find-global (get-genv) list->vector))))
 			    (args (list
 				   (instantiate::kwote
 				      (loc loc)
@@ -1096,7 +1096,7 @@
 	    (make-cnst-table-ref offset vec-type loc)))
       
       (define (lib-alloc-vector)
-	 (let ((var (def-global-svar!
+	 (let ((var (def-global-svar! (get-genv)
 		       (make-typed-ident (gensym 'hvector) vec-type-id)
 		       *module*
 		       'cnst-vector
@@ -1141,7 +1141,7 @@
 (define (force-initialize-srfi4-library-module!)
    ;; this module will have to initialize the srfi4 module,
    ;; force its initialization
-   (let ((g (find-global 'make-s8vector)))
+   (let ((g (find-global (get-genv) 'make-s8vector)))
       ;; grab any variable defined in srfi4 module and mark its module
       (with-library-module! (global-module g))))
 
@@ -1150,7 +1150,7 @@
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-tvector tvec loc)
    (define (C-static-alloc-tvector)
-      (let ((var (def-global-scnst! (make-typed-ident (gensym 'tvec) 'tvector)
+      (let ((var (def-global-scnst! (get-genv) (make-typed-ident (gensym 'tvec) 'tvector)
 		    *module*
 		    tvec
 		    'stvector
@@ -1227,7 +1227,7 @@
 	     (set! *struct-env* (cons (cnst-info struct offset) *struct-env*)))
 	 (make-cnst-table-ref offset *struct* loc)))
    (define (lib-alloc-struct)
-      (let ((var (def-global-svar! (make-typed-ident (gensym 'struct) 'struct)
+      (let ((var (def-global-svar! (get-genv) (make-typed-ident (gensym 'struct) 'struct)
 		    *module*
 		    'cnst-struct
 		    'now)))

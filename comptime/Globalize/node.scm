@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Globalize/node.scm       */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Globalize/node.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Wed Jul  3 11:05:07 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:56:46 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
 ;*    remove the useless local functions (globalized or integrated     */
@@ -562,7 +562,7 @@
 	  (kaptured (sfun/Ginfo-kaptured (local-value local)))
 	  (loc #unspecified)
 	  (make-p (if (<fx arity 0) 'make-va-procedure 'make-fx-procedure))
-	  (v (find-global/module make-p 'foreign)))
+	  (v (find-global/module (get-genv) make-p 'foreign)))
       (instantiate::app
 	 (loc loc)
 	 (type (variable-type v))
@@ -619,7 +619,7 @@
 	 (if (local? alpha)
 	     (alpha-convert alpha)
 	     var)))
-   (let ((vf (find-global/module 'procedure-set! 'foreign))
+   (let ((vf (find-global/module (get-genv) 'procedure-set! 'foreign))
 	 (va (alpha-convert kaptured)))
       (instantiate::app
 	 (loc loc)
@@ -641,6 +641,3 @@
 			   (loc loc)
 			   (type (variable-type va))
 			   (variable va))))))))
-						       
-							     
-			    

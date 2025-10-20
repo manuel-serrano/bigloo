@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Initflow/walk.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Initflow/walk.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar 12 06:58:13 2011                          */
-;*    Last change :  Wed Jun 16 16:03:09 2021 (serrano)                */
-;*    Copyright   :  2011-21 Manuel Serrano                            */
+;*    Last change :  Mon Oct 20 08:52:31 2025 (serrano)                */
+;*    Copyright   :  2011-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the initialization property for global variables. The    */
 ;*    init property of a global can be one of:                         */
@@ -55,21 +55,21 @@
 		   (let ((value (global-value g)))
 		      (when (sfun? value)
 			 (global-init-set! g #t)))))
-	     globals)
+      globals)
    ;; depth first walk from the roots function
    (for-each (lambda (id)
-		(let ((root (find-global/module id *module*)))
+		(let ((root (find-global/module (get-genv) id *module*)))
 		   (when (global? root)
 		      (initflow-fun root #t)
 		      (let ((l (filter (lambda (g)
 					  (and (not (sfun? (global-value g)))
 					       (not (eq? (global-init g) #t))))
-				       globals)))
+				  globals)))
 			 (when (pair? l)
 			    (verbose 2 "      uninitialized globals : "
-				     (map shape l)
-				     #\newline))))))
-	     '(object-init toplevel-init generic-init method-init))
+			       (map shape l)
+			       #\newline))))))
+      '(object-init toplevel-init generic-init method-init))
    ;; return the unchanged list of globals
    (pass-postlude globals))
 

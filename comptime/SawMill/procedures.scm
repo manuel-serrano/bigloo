@@ -11,7 +11,8 @@
 ;;
 (define (get-procedures globals)
    (let ( (r '()) )
-      (for-each-global! (lambda (global)
+      (for-each-global! (get-genv)
+	 (lambda (global)
 			   (if (and (need-function-pointer global)
 				    (not (memq global r)) )
 			       (set! r (cons global r)) )))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Sun Sep 28 07:12:03 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:45:11 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrences number and compute the read/write        */
 ;*    property of local variables. The read/write property is          */
@@ -33,9 +33,10 @@
 ;*---------------------------------------------------------------------*/
 (define (occur-var globals)
    ;; first, we reste the counter.
-   (for-each-global! (lambda (global)
-			(global-occurrence-set! global 0)
-			(global-occurrencew-set! global 0)))
+   (for-each-global! (get-genv)
+      (lambda (global)
+	 (global-occurrence-set! global 0)
+	 (global-occurrencew-set! global 0)))
    ;; then we recompute the global occurrences.
    (for-each (lambda (global)
 		(occur-node-sfun! (global-value global) global))

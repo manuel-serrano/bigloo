@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Thu Sep 25 06:45:04 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:02:20 2025 (serrano)                */
 ;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -164,7 +164,7 @@
       (fprintf *c-port* "#define BGL_~a_TYPE_DEFINITIONS\n" name)
       (for-each-type!
 	 (lambda (t) (type-occurrence-set! t 0)))
-      (for-each-global!
+      (for-each-global! (get-genv)
 	 (lambda (global)
 	    (cond
 	       ((and (eq? (global-module global) *module*)

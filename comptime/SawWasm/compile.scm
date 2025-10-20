@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/comptime/SawWasm/compile.scm          */
+;*    .../prgm/project/bigloo/wasm/comptime/SawWasm/compile.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Mon Sep 16 08:29:49 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:04:25 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `C generation' pass.                                         */
 ;*=====================================================================*/
@@ -49,7 +49,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (backend-compile-functions me::wasm)
 	;; mangle names
-   (for-each-global! set-variable-name!)
+   (for-each-global! (get-genv) set-variable-name!)
    (let ((globals (cvm-functions me)))
       ;; we now emit the code for all the Scheme functions
       (map (lambda (v) (wasm-gen me v)) globals)))

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Peephole/walk.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Peephole/walk.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Sat Mar 15 12:21:12 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:07:19 2025 (serrano)                */
 ;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Various peephole optimizations:                                  */
@@ -56,12 +56,12 @@
 ;*    init-peephole-cache! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (init-peephole-cache!)
-   (set! *$string-ref* (find-global/module '$string-ref 'foreign))
-   (set! *string-ref* (find-global/module 'string-ref '__r4_strings_6_7))
-   (set! *string-ref-ur* (find-global/module 'string-ref '__r4_strings_6_7))
-   (set! *substring* (find-global/module 'substring '__r4_strings_6_7))
-   (set! *symbol->string* (find-global/module 'symbol->string '__r4_symbols_6_4))
-   (set! *symbol->string!* (find-global/module 'symbol->string! '__r4_symbols_6_4)))
+   (set! *$string-ref* (find-global/module (get-genv) '$string-ref 'foreign))
+   (set! *string-ref* (find-global/module (get-genv) 'string-ref '__r4_strings_6_7))
+   (set! *string-ref-ur* (find-global/module (get-genv) 'string-ref '__r4_strings_6_7))
+   (set! *substring* (find-global/module (get-genv) 'substring '__r4_strings_6_7))
+   (set! *symbol->string* (find-global/module (get-genv) 'symbol->string '__r4_symbols_6_4))
+   (set! *symbol->string!* (find-global/module (get-genv) 'symbol->string! '__r4_symbols_6_4)))
 
 ;*---------------------------------------------------------------------*/
 ;*    clear-peephole-cache! ...                                        */

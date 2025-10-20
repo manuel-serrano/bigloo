@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Nums/walk.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Nums/walk.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Mon Jun 30 09:00:31 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:16:31 2025 (serrano)                */
 ;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This pass replace double type predicate invokation with a single */
@@ -63,12 +63,12 @@
 ;*    init-cache! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (init-cache!)
-   (set! *$fixnum?* (find-global '$fixnum? 'foreign))
-   (set! *$flonum?* (find-global '$flonum? 'foreign))
-   (set! *$fast-flonum?* (find-global '$fast-flonum? 'foreign))
-   (set! *$fixnums?* (find-global '$fixnums? 'foreign))
-   (set! *$flonums?* (find-global '$flonums? 'foreign))
-   (set! *$fast-flonums?* (find-global '$fast-flonums? 'foreign)))
+   (set! *$fixnum?* (find-global (get-genv) '$fixnum? 'foreign))
+   (set! *$flonum?* (find-global (get-genv) '$flonum? 'foreign))
+   (set! *$fast-flonum?* (find-global (get-genv) '$fast-flonum? 'foreign))
+   (set! *$fixnums?* (find-global (get-genv) '$fixnums? 'foreign))
+   (set! *$flonums?* (find-global (get-genv) '$flonums? 'foreign))
+   (set! *$fast-flonums?* (find-global (get-genv) '$fast-flonums? 'foreign)))
 
 ;*---------------------------------------------------------------------*/
 ;*    nums-fun! ...                                                    */

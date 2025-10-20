@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Oct 19 07:49:25 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 07:29:21 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -622,8 +622,8 @@
 	    (when u (set! units (cons u units))))
 
 	 ;; imported inline units
-;* 	 (let ((u (module5-imported-inline-unit mod)))                 */
-;* 	    (when u (set! units (cons u units))))                      */
+	 (let ((u (module5-imported-inline-unit mod)))
+	    (when u (set! units (cons u units))))
 	 
 	 ;; ... and the global user-defined macro expansion
 	 (profile expand (expand-units units))

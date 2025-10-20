@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Tue Sep 16 21:37:00 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:56:09 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election (taking care of tvectors).                         */
@@ -246,7 +246,7 @@
 (define (mark-null-type-ctor! type)
    (with-access::type type (null)
       (when (symbol? null)
-	 (set! null (find-global null))
+	 (set! null (find-global (get-genv) null))
 	 (unless null
 	    (internal-error "cfg:null-type!"
 	       "Cannot find null-type variable" null)))

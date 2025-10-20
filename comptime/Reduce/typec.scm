@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Thu Jun 26 10:17:50 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:00:32 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
@@ -37,8 +37,8 @@
 ;*---------------------------------------------------------------------*/
 (define (reduce-type-check! globals)
    (verbose 2 #"      type check             ")
-   (set! *pair?* (find-global/module '$pair? 'foreign))
-   (set! *null?* (find-global/module '$null? 'foreign))
+   (set! *pair?* (find-global/module (get-genv) '$pair? 'foreign))
+   (set! *null?* (find-global/module (get-genv) '$null? 'foreign))
    (for-each (lambda (global)
 		(let* ((fun  (global-value global))
 		       (node (sfun-body fun))) 

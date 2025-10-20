@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/comptime/Globalize/loc2glo.scm         */
+;*    .../prgm/project/bigloo/wasm/comptime/Globalize/loc2glo.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Thu Jul  8 11:29:23 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:54:45 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
 ;*=====================================================================*/
@@ -243,10 +243,10 @@
       (if (global? (sfun/Ginfo-the-global value))
 	  (sfun/Ginfo-the-global value)
 	  (let* ((lid (symbol-append '& (local-id local)))
-		 (id (if (global? (find-global/module lid *module*))
+		 (id (if (global? (find-global/module (get-genv) lid *module*))
 			 (gensym lid)
 			 lid))
-		 (global (def-global-sfun-no-warning! id
+		 (global (def-global-sfun-no-warning! (get-genv) id
 			    ;; we set dummy empty args-id 
 			    ;; and dummy empty args because a new-fun
 			    ;; will be allocated.

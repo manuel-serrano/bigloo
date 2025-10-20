@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Prebox/walk.scm      */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Prebox/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Sat Mar 15 12:21:33 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:16:45 2025 (serrano)                */
 ;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Optimize box/unbox operations. Useful mostly for non C backends. */
@@ -94,16 +94,16 @@
 	 (list
 	    (cons *bool*
 	       (boxinfo *bool* *bbool*
-		  (find-global '$bbool->bool 'foreign)
-		  (find-global '$bool->bbool 'foreign)))
+		  (find-global (get-genv) '$bbool->bool 'foreign)
+		  (find-global (get-genv) '$bool->bbool 'foreign)))
 	    (cons *long*
 	       (boxinfo *long* *bint*
-		  (find-global '$bint->long 'foreign)
-		  (find-global '$long->bint 'foreign)))
+		  (find-global (get-genv) '$bint->long 'foreign)
+		  (find-global (get-genv) '$long->bint 'foreign)))
 	    (cons *char*
 	       (boxinfo *char* *bchar*
-		  (find-global '$bchar->char 'foreign)
-		  (find-global '$char->bchar 'foreign))))))
+		  (find-global (get-genv) '$bchar->char 'foreign)
+		  (find-global (get-genv) '$char->bchar 'foreign))))))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/

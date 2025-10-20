@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sun Oct 19 07:41:33 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 07:49:23 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -141,9 +141,9 @@
 	 (when (isa? decl Decl)
 	    (with-access::Decl decl (mod)
 	       (with-access::Module mod ((mid id))
-		  (unless (find-global/module id mid) 
+		  (unless (find-global/module (get-genv) id mid) 
 		     ;; a class declared in the module being compiled
-		     (let ((var (declare-global-svar! id id mid scope expr expr)))
+		     (let ((var (declare-global-svar! (get-genv) id id mid scope expr expr)))
 			(global-type-set! var (find-type/expr 'class expr))
 			(global-set-read-only! var)
 			(let* ((sup (and super (find-type/expr super expr)))
@@ -165,16 +165,16 @@
    (define (declare-definition! kind id alias mid scope expr def::Def)
       (case kind
 	 ((variable)
-	  (declare-global-svar! id alias
+	  (declare-global-svar! (get-genv) id alias
 	     mid scope expr expr))
 	 ((procedure)
-	  (declare-global-sfun! id alias (procedure-args expr id mid)
+	  (declare-global-sfun! (get-genv) id alias (procedure-args expr id mid)
 	     mid scope 'sfun expr expr))
 	 ((inline)
-	  (declare-global-sfun! id alias (procedure-args expr id mid)
+	  (declare-global-sfun! (get-genv) id alias (procedure-args expr id mid)
 	     mid scope 'sifun expr expr))
 	 ((generic)
-	  (declare-global-sfun! id alias (procedure-args expr id mid)
+	  (declare-global-sfun! (get-genv) id alias (procedure-args expr id mid)
 	     mid scope 'sgfun expr expr))
 	 ((macro)
 	  (with-access::Def def (expr)
@@ -184,11 +184,11 @@
 	     (add-macro-definition! expr id)))
 	 ((c-function)
 	  (with-access::CDef def (name type infix args macro)
-	     (declare-global-cfun! id alias 'foreign name type args
+	     (declare-global-cfun! (get-genv) id alias 'foreign name type args
 		#f macro expr expr)))
 	 ((c-variable)
 	  (with-access::CDef def (name type macro)
-	     (declare-global-cvar! id alias name type macro expr expr)))
+	     (declare-global-cvar! (get-genv) id alias name type macro expr expr)))
 	 ((c-type)
 	  ;; already processed so ignore
 	  #unspecified)
@@ -302,7 +302,7 @@
 (define (module5-main mod::Module)
    (with-access::Module mod (main id)
       (when main
-	 (let ((v (find-global/module main id)))
+	 (let ((v (find-global/module (get-genv) main id)))
 	    (if v
 		(with-access::global v (import)
 		   (set! import 'export)
@@ -322,7 +322,8 @@
 			     (if (=fx version 5)
 				 (module5-checksum! imod)
 				 (set! checksum (module-checksum expr '())))
-			     (declare-global-sfun! 'module-initialization
+			     (declare-global-sfun! (get-genv)
+				'module-initialization
 				'module-initialization
 				'(checksum::long path::string) id 'import 'sfun
 				#f #f)
@@ -361,14 +362,13 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-imported-inline-unit mod::Module)
    (with-access::Module mod (imports)
-      (let ((body (filter (lambda (x) x)
-		     (hashtable-map imports
-			(lambda (k decl)
-			   (with-access::Decl decl (def id)
-			      (when (isa? def Def)
-				 (with-access::Def def (kind expr)
-				    (when (eq? kind 'inline)
-				       expr)))))))))
+      (let ((body (hashtable-filter-map imports
+		     (lambda (k decl)
+			(with-access::Decl decl (def id)
+			   (when (isa? def Def)
+			      (with-access::Def def (kind expr)
+				 (when (eq? kind 'inline)
+				    expr))))))))
 	 (when (pair? body)
 	    (unit 'inline 0 body #t #f)))))
    
@@ -657,7 +657,7 @@
 	    (with-access::Decl d ((dmod mod) id attributes scope)
 	       (when (and (eq? dmod mod) (pair? attributes))
 		  (let* ((m (if (eq? scope 'extern) 'foreign mid))
-			 (g (find-global/module id m)))
+			 (g (find-global/module (get-genv) id m)))
 		     (if (isa? g global)
 			 (for-each (lambda (p)
 				      (set-global-pragma-property! g p p))

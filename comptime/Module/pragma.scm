@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Thu Oct  2 09:37:22 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:50:12 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
@@ -80,10 +80,10 @@
    (for-each (lambda (pragma)
 		(match-case pragma
 		   ((?id ?module ?prop* ?clause)
-		    (let ((global (let ((global (find-global/module id module)))
+		    (let ((global (let ((global (find-global/module (get-genv) id module)))
 				     (if (global? global)
 					 global
-					 (find-global/module id 'foreign)))))
+					 (find-global/module (get-genv) id 'foreign)))))
 		       (if (not (global? global))
 			   (when (eq? module *module*)
 			      (user-warning/location
@@ -94,9 +94,9 @@
 			   (set-pragma-properties! global prop* clause))))
 		   (else
 		    (internal-error "pragma-finalizer"
-				    "Illegal \"pragma\" finalizer form"
-				    pragma))))
-	     *pragma-list*)
+		       "Illegal \"pragma\" finalizer form"
+		       pragma))))
+      *pragma-list*)
    (set! *pragma-list* '())
    'void)
 

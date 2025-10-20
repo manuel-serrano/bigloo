@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Heap/make.scm               */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Heap/make.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:44:08 1995                          */
-;*    Last change :  Sun Feb 14 07:00:01 2016 (serrano)                */
-;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:47:58 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The creation of a library heap                                   */
 ;*=====================================================================*/
@@ -58,21 +58,22 @@
 ;*    static variables.                                                */
 ;*---------------------------------------------------------------------*/
 (define (prepare-globals!)
-   (for-each-global! (lambda (g)
-			;; we set importation slots
-			(cond
-			   ((eq? (global-import g) 'static)
-			    (unbind-global! (global-id g) (global-module g)))
-			   ((eq? (global-import g) 'export)
-			    (global-import-set! g 'import))
-			   (else
-			    #unspecified))
-			;; shrink global to be sure that we do not save extra
-			;; information
-			(when (wide-object? g) (shrink! g))
-			;; and occurrence ones
-			(global-occurrence-set! g 0)
-			(global-library-set! g *heap-library*)))
+   (for-each-global! (get-genv)
+      (lambda (g)
+	 ;; we set importation slots
+	 (cond
+	    ((eq? (global-import g) 'static)
+	     (unbind-global! (get-genv) (global-id g) (global-module g)))
+	    ((eq? (global-import g) 'export)
+	     (global-import-set! g 'import))
+	    (else
+	     #unspecified))
+	 ;; shrink global to be sure that we do not save extra
+	 ;; information
+	 (when (wide-object? g) (shrink! g))
+	 ;; and occurrence ones
+	 (global-occurrence-set! g 0)
+	 (global-library-set! g *heap-library*)))
    #t)
 
 ;*---------------------------------------------------------------------*/
@@ -131,20 +132,20 @@
 ;*    We remove static variables and library variables.                */
 ;*---------------------------------------------------------------------*/
 (define (prepare-additional-globals!)
-   (for-each-global! (lambda (g)
-			;; we set importation slots
-			(cond
-			   ((or (eq? (global-import g) 'static)
-				(global-library g))
-			    (unbind-global! (global-id g) (global-module g)))
-			   ((eq? (global-import g) 'export)
-			    (global-import-set! g 'import))
-			   (else
-			    #unspecified))
-			;; shrink global to be sure that we do not save extra
-			;; information
-			(when (wide-object? g) (shrink! g))
-			;; and occurrence ones
-			(global-occurrence-set! g 0)
-			(global-library-set! g *heap-library*)))
+   (for-each-global! (get-genv)
+      (lambda (g)
+	 ;; we set importation slots
+	 (cond
+	    ((or (eq? (global-import g) 'static) (global-library g))
+	     (unbind-global! (get-genv) (global-id g) (global-module g)))
+	    ((eq? (global-import g) 'export)
+	     (global-import-set! g 'import))
+	    (else
+	     #unspecified))
+	 ;; shrink global to be sure that we do not save extra
+	 ;; information
+	 (when (wide-object? g) (shrink! g))
+	 ;; and occurrence ones
+	 (global-occurrence-set! g 0)
+	 (global-library-set! g *heap-library*)))
    #t)

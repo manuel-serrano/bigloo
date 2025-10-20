@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/expander.scm         */
+;*    .../prgm/project/bigloo/wasm/comptime/Expand/expander.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 16:05:29 1994                          */
-;*    Last change :  Wed Dec  7 13:53:06 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 09:42:16 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The O-expander creation.                                         */
 ;*=====================================================================*/
@@ -17,13 +17,13 @@
    (import  tools_error
 	    engine_param
 	    tools_misc)
-   (export  (initialize-Oenv!)
+   (export  (initialize-expander-Oenv!)
+	    (initialize-expander-Genv!)
 	    (get-O-macro-toplevel)
 	    (add-O-macro-toplevel!       ::obj)
 	    (install-O-comptime-expander ::symbol ::procedure)
 	    (find-O-expander             ::symbol)
 	    (unbind-O-expander!          ::symbol)
-	    (initialize-Genv!)
 	    (install-G-comptime-expander ::symbol ::procedure)
 	    (find-G-expander             ::symbol)
 	    (unbind-G-expander!          ::symbol)
@@ -36,10 +36,21 @@
 (define *Oenv* '())
 
 ;*---------------------------------------------------------------------*/
-;*    initialize-Oenv! ...                                             */
+;*    initialize-expander-Oenv! ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (initialize-Oenv!)
+(define (initialize-expander-Oenv!)
    (set! *Oenv* (make-hashtable)))
+
+;*---------------------------------------------------------------------*/
+;*    *Genv* ...                                                       */
+;*---------------------------------------------------------------------*/
+(define *Genv* '())
+
+;*---------------------------------------------------------------------*/
+;*    initialize-expander-Genv! ...                                    */
+;*---------------------------------------------------------------------*/
+(define (initialize-expander-Genv!)
+   (set! *Genv* (make-hashtable)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *O-macro-toplevel* ...                                           */
@@ -94,17 +105,6 @@
 ;*---------------------------------------------------------------------*/
 (define (unbind-O-expander! symbol)
    (hashtable-remove! *Oenv* symbol))
-
-;*---------------------------------------------------------------------*/
-;*    *Genv* ...                                                       */
-;*---------------------------------------------------------------------*/
-(define *Genv* '())
-
-;*---------------------------------------------------------------------*/
-;*    initialize-Genv! ...                                             */
-;*---------------------------------------------------------------------*/
-(define (initialize-Genv!)
-   (set! *Genv* (make-hashtable)))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-G-comptime-expander ...                                  */

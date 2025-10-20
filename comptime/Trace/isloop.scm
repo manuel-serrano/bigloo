@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Trace/isloop.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Trace/isloop.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  8 13:51:43 2020                          */
-;*    Last change :  Wed Jan  8 16:29:52 2020 (serrano)                */
-;*    Copyright   :  2020 Manuel Serrano                               */
+;*    Last change :  Mon Oct 20 09:18:15 2025 (serrano)                */
+;*    Copyright   :  2020-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    implementation of the isloop? predicate                          */
 ;*=====================================================================*/
@@ -28,7 +28,6 @@
 	    module_module
 	    engine_param
 	    (mark-symbol-non-user! ast_ident)
-	    (find-global ast_env)
 	    (find-location tools_location))
    (export  (isloop?::bool ::let-fun)))
 

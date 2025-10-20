@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Object/method.scm        */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Object/method.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Tue Mar 17 06:08:17 2020 (serrano)                */
-;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 08:58:22 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
 ;*=====================================================================*/
@@ -47,7 +47,7 @@
 	 (else
 	  (let* ((holder (tclass-holder type))
 		 (module (global-module holder))
-		 (generic (find-global id)))
+		 (generic (find-global (get-genv) id)))
 	     (cond
 		((not (global? generic))
 		 (method-error id "Can't find generic for method" src))
@@ -106,7 +106,7 @@
 	 (else
 	  (let* ((holder (tclass-holder type))
 		 (module (global-module holder))
-		 (generic (find-global id)))
+		 (generic (find-global (get-genv) id)))
 	     (cond
 		((not (global? generic))
 		 (method-error id "Can't find generic for method" src))

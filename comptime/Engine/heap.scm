@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Mon Jun 16 12:44:38 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 08:40:36 2025 (serrano)                */
 ;*    Copyright   :  2007-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
@@ -91,7 +91,7 @@
 		       ;; in jvm mode, we have to propagate
 		       ;; the package/module association
 		       (when (backend-qualified-types (the-backend))
-			  (for-each-global!
+			  (for-each-global! (get-genv)
 			     (lambda (new)
 				(add-qualified-type!
 				   (global-module new)

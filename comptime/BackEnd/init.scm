@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Sun Jun 29 12:00:32 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 09:38:51 2025 (serrano)                */
 ;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
@@ -79,7 +79,7 @@
 		    ,tmp))
 	      #unspecified)))
    
-   (let* ((req  (def-global-svar! 'require-initialization::obj
+   (let* ((req  (def-global-svar! (get-genv) 'require-initialization::obj
 		   *module*
 		   'module-initalization
 		   'now))
@@ -105,7 +105,7 @@
 	  (node (let ((node (sexp->node body (list cvar nvar) '() 'value)))
 		   (lvtype-node! node)
 		   (coerce!  node req *obj* #f)))
-	  (init (def-global-sfun-no-warning!
+	  (init (def-global-sfun-no-warning! (get-genv)
 		   (module-initialization-id *module*)
 		   '(checksum from)
 		   (list cvar nvar)
