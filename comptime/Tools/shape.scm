@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 17:02:04 1994                          */
-;*    Last change :  Mon Oct 20 08:59:24 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 11:13:15 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    In order to print human readable messages, we designed this      */
@@ -94,6 +94,9 @@
 			 "{" (symbol->string (global-access var)) "}")))))
       (cond
 	 (*module-shape?*
+	  (string->symbol
+	     (string-append str-id "@" module tshape ushape ashape)))
+	 ((not (hashtable? (get-genv)))
 	  (string->symbol
 	     (string-append str-id "@" module tshape ushape ashape)))
 	 (else

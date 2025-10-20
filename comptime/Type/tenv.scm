@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Fri Oct 10 06:14:52 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 10:44:34 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -44,7 +44,7 @@
    (static  (bind-type!::type ::symbol ::bool loc)
 	    (uninitialized-types))
 
-   (export  (initialize-Tenv!)
+   (export  (initialize-tenv!)
 	    (set-tenv! <Tenv>)
 	    (add-tenv! <Tenv>)
 	    (get-tenv)
@@ -71,9 +71,9 @@
 (define *Tenv* 'the-global-environment)
 
 ;*---------------------------------------------------------------------*/
-;*    initialize-Tenv! ...                                             */
+;*    initialize-tenv! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (initialize-Tenv!)
+(define (initialize-tenv!)
    ;; the global environment
    (unless (hashtable? *Tenv*)
       (set! *Tenv* (make-hashtable))))
@@ -93,7 +93,7 @@
    ;; library of bigloo2.7 provides classes with slots (e.g. &exception).
    ;; the add-tenv! function takes care of defining the accessors of
    ;; the classes that are defined in a heap.
-   (initialize-Tenv!)
+   (initialize-tenv!)
    (add-tenv! Tenv))
 
 ;*---------------------------------------------------------------------*/

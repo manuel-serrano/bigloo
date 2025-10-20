@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Mon Oct 20 08:47:03 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 10:29:54 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -15,8 +15,8 @@
 (module heap_restore
    (include "Engine/pass.sch")
    (export  (restore-heap)
-	    (restore-additional-heaps)
-	    (restore-additional-heap ::bstring)
+	    (restore-additional-heaps ::obj)
+	    (restore-additional-heap ::obj ::bstring)
 	    (heap-file-name::bstring ::bstring)
 	    (heap-module-list . args))
    (import  engine_param
@@ -86,16 +86,15 @@
 				       (format "Heap is `~a', Bigloo is `~a'"
 					       specific
 					       *bigloo-specific-version*)))
-			     (set-genv! Genv)
 			     ;; for class handling see the note set
 			     ;; for add-Tenv!:
 			     ;; @ref restore.scm:heap class handling@
 			     (set-tenv! Tenv)
-			     (unless *call/cc?* (unbind-call/cc!))
+			     (unless *call/cc?* (unbind-call/cc! Genv))
 			     ;; in jvm mode, we have to propagate
 			     ;; the package/module association
 			     (when (backend-qualified-types (the-backend))
-				(for-each-global! (get-genv)
+				(for-each-global! Genv
 				 (lambda (new)
 				    (add-qualified-type!
 				     (global-module new)
@@ -103,10 +102,10 @@
 				     (shape new))))
 				Genv)
 			     ;; we add all the heap modules
-			     (for-each-global! (get-genv)
-			      (lambda (new)
-				 (heap-module-list (global-module new))))
-			     #t)
+			     (for-each-global! Genv
+				(lambda (new)
+				   (heap-module-list (global-module new))))
+			     Genv)
 			  (close-binary-port port)))))
 	     (let ((m (format "Cannot open heap file ~s" *heap-name*)))
 		(error "restore-heap" m *lib-dir*)
@@ -115,12 +114,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    unbind-call/cc! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (unbind-call/cc!)
-   (if (find-global/module (get-genv) 'call/cc '__r4_control_features_6_9)
-       (unbind-global! (get-genv) 'call/cc '__r4_control_features_6_9))
-   (if (find-global/module (get-genv) 'call-with-current-continuation
+(define (unbind-call/cc! env)
+   (if (find-global/module env 'call/cc '__r4_control_features_6_9)
+       (unbind-global! env 'call/cc '__r4_control_features_6_9))
+   (if (find-global/module env 'call-with-current-continuation
 	  '__r4_control_features_6_9)
-       (unbind-global! (get-genv) 'call-with-current-continuation
+       (unbind-global! env 'call-with-current-continuation
 	  '__r4_control_features_6_9)))
 
 ;*---------------------------------------------------------------------*/
@@ -132,14 +131,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    restore-additional-heaps ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (restore-additional-heaps)
+(define (restore-additional-heaps env)
    (when (pair? *additional-heap-names*)
       (pass-prelude "Library")
       (for-each (lambda (h)
 		   (unless (member h *restored-heap-names*)
 		      (set! *restored-heap-names*
 			 (cons h *restored-heap-names*))
-		      (restore-additional-heap (heap-file-name h))))
+		      (restore-additional-heap env (heap-file-name h))))
 	 (reverse *additional-heap-names*))))
 
 ;*---------------------------------------------------------------------*/
@@ -150,7 +149,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    restore-additional-heap ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (restore-additional-heap heap)
+(define (restore-additional-heap env heap)
    (let ((fname (find-file/path heap *lib-dir*)))
       (if (string? fname)
 	  (let ((port (open-input-binary-file fname)))
@@ -208,7 +207,7 @@
 			  ;; in jvm mode, we have to propagate
 			  ;; the package/module association
 			  (when (backend-qualified-types (the-backend))
-			     (for-each-global! (get-genv)
+			     (for-each-global! env
 				(lambda (new)
 				   (add-qualified-type!
 				      (global-module new)

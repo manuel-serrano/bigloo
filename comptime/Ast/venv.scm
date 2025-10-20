@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Mon Oct 20 08:35:36 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 10:33:17 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -27,9 +27,9 @@
 	    tools_location
 	    backend_backend
 	    inline_inline)
-   (export  (initialize-Genv!)
-	    (set-genv! <Genv>)
-	    (add-genv! <Genv>)
+   (export  (initialize-genv!)
+	    (set-genv! ::obj)
+	    (add-genv! ::obj)
 	    (get-genv) 
 	    (find-global ::obj ::symbol . <symbol>)
 	    (find-global/module ::obj ::symbol ::symbol)
@@ -39,8 +39,8 @@
 	    (for-each-global! ::obj ::procedure)
 	    (global-bucket-position::long ::obj ::symbol ::symbol)
 	    (global-bucket-length::long ::obj ::symbol ::symbol)
-	    (restore-global! new)
-	    (additional-heap-restore-globals!)
+	    (restore-global! new ::obj)
+	    (additional-heap-restore-globals! ::obj)
 	    (already-restored? fun)))
 
 ;*---------------------------------------------------------------------*/
@@ -103,24 +103,24 @@
 ;*---------------------------------------------------------------------*/
 ;*    additional-heap-restore-globals! ...                             */
 ;*---------------------------------------------------------------------*/
-(define (additional-heap-restore-globals!)
-   (for-each restore-global! *delayed-restored-global*)
+(define (additional-heap-restore-globals! env)
+   (for-each (lambda (g) (restore-global! g env)) *delayed-restored-global*)
    #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    restore-global! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (restore-global! new)
+(define (restore-global! new env)
    ;; we mark that the current global has been restored
    (mark-restored! new)
-   (let* ((id      (global-id new))
-	  (type    (global-type new))
-	  (value   (global-value new))
-	  (typeid  (type-id type)))
+   (let* ((id (global-id new))
+	  (type (global-type new))
+	  (value (global-value new))
+	  (typeid (type-id type)))
       ;; we restore type result
       (global-type-set! new (find-type typeid))
       ;; the parameters type
-      (restore-value-types! value id)
+      (restore-value-types! value id env)
       ;; we restore the jvm qualified type name
       (when (and (backend-qualified-types (the-backend))
 		 (not (eq? (global-module new) 'foreign)))
@@ -151,13 +151,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    restore-value-types! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-generic (restore-value-types! value::value id)
+(define-generic (restore-value-types! value::value id env)
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    restore-value-types! ::fun ...                                   */
 ;*---------------------------------------------------------------------*/
-(define-method (restore-value-types! value::fun id)
+(define-method (restore-value-types! value::fun id env)
    (with-access::fun value (predicate-of)
       (when (type? predicate-of)
          (set! predicate-of (find-type (type-id predicate-of))))))
@@ -165,7 +165,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    restore-value-types! ::sfun ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (restore-value-types! value::sfun id)
+(define-method (restore-value-types! value::sfun id env)
    (call-next-method)
    (with-access::sfun value (args)
       (let loop ((args args))
@@ -188,7 +188,7 @@
 		;; we still have to restore the body types
 		(if (node? body)
 		    (let ((tres (node-type body)))
-		       (hrtype-node! body)
+		       (hrtype-node! body env)
 		       (when (type? tres)
 			  (node-type-set! body (find-type (type-id tres))))))))
 	    (else
@@ -199,14 +199,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    restore-value-types! ::isfun ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-method (restore-value-types! value::isfun id)
+(define-method (restore-value-types! value::isfun id env)
    (call-next-method)
-   (hrtype-node! (isfun-original-body value)))
+   (hrtype-node! (isfun-original-body value) env))
 
 ;*---------------------------------------------------------------------*/
 ;*    restore-value-types! ::cfun ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (restore-value-types! value::cfun id)
+(define-method (restore-value-types! value::cfun id env)
    (call-next-method)
    (with-access::cfun value (args-type)
       (let loop ((args args-type))
@@ -228,9 +228,9 @@
    *Genv*)
 
 ;*---------------------------------------------------------------------*/
-;*    initialize-Genv! ...                                             */
+;*    initialize-genv! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (initialize-Genv!)
+(define (initialize-genv!)
    (set! *Genv* (make-hashtable)))
 
 ;*---------------------------------------------------------------------*/

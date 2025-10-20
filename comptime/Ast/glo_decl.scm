@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Mon Oct 20 08:41:26 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 10:04:51 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -33,16 +33,16 @@
 	    (module-initialization-id module_module)
 	    module_module
 	    ast_local)
-   (export  (declare-global-sfun!::global env::obj id::symbol alias::obj args::obj
-	       module::symbol import::symbol class::symbol
+   (export  (declare-global-sfun!::global env::obj id::symbol alias::obj
+	       args::obj module::symbol import::symbol class::symbol
 	       src::obj srci::obj)
-	    (declare-global-svar!::global env::obj id::symbol alias::obj module::symbol
-	       import::symbol src::obj srci)
-	    (declare-global-scnst!::global env::obj id::symbol alias::obj module::symbol
-	       import::symbol node class::symbol loc)
-	    (declare-global-cfun!::global env::obj id::symbol alias::obj module::symbol
-	       name::bstring type-res::symbol type-args::obj infix?::bool
-	       macro::bool srce::obj srci)
+	    (declare-global-svar!::global env::obj id::symbol alias::obj
+	       module::symbol import::symbol src::obj srci)
+	    (declare-global-scnst!::global env::obj id::symbol alias::obj
+	       module::symbol import::symbol node class::symbol loc)
+	    (declare-global-cfun!::global env::obj id::symbol alias::obj
+	       module::symbol name::bstring type-res::symbol type-args::obj
+	       infix?::bool macro::bool srce::obj srci)
 	    (declare-global-cvar!::global env::obj id::symbol alias::obj
 	       name::bstring type-id::symbol macro?::bool src::obj srci)))
 
@@ -67,18 +67,18 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-dsssl-sfun! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-dsssl-sfun! env opts keys id alias args module import class srce srci)
+(define (declare-global-dsssl-sfun! env opts keys id alias args module scope class srce srci)
    (trace (ast 3) "declare-global-dsssl-sfun!: "
 	  (shape id) " opts=" (shape opts) " keys=" (shape keys) #\newline)
    (let* ((arity (global-arity args))
-	  (export? (or (not (eq? import 'static))
+	  (export? (or (not (eq? scope 'static))
 		       (and (memq 'bdb (backend-debug-support (the-backend)))
 			    (>=fx *bdb-debug* 3))))
-	  (import (if (and (eq? import 'static)
+	  (scope (if (and (eq? scope 'static)
 			   (memq 'bdb (backend-debug-support (the-backend)))
 			   (>=fx *bdb-debug* 3))
 		      'export
-		      import))
+		      scope))
 	  (loc (find-location srce))
 	  (loci (find-location/loc srci loc))
 	  (args (if (pair? keys)
@@ -96,8 +96,8 @@
 			  (else
 			   (cons (car args) (loop (cdr args))))))
 		    args))
-	  (args-type (let loop ((args   args)
-				(res    '()))
+	  (args-type (let loop ((args args)
+				(res '()))
 			(cond
 			   ((null? args)
 			    (reverse! res))
@@ -139,8 +139,8 @@
 		   (class class)
 		   (optionals opts)
 		   (keys keys)))
-	  (old (find-global (get-genv) id))
-	  (global (bind-global! (get-genv) id alias module sfun import srce)))
+	  (old (find-global env id))
+	  (global (bind-global! env id alias module sfun scope srce)))
       (trace (ast 3) "*** declare-global-dsssl-sfun!: srce: " srce #\Newline)
       (trace (ast 3) "*** declare-global-dsssl-sfun!: loc: " (find-location srce)
 	     #\Newline)
@@ -160,31 +160,31 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-opt-sfun! ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-opt-sfun! env id alias args module import class srce srci)
+(define (declare-global-opt-sfun! env id alias args module scope class srce srci)
    (declare-global-dsssl-sfun! env (dsssl-optionals args) '()
-      id alias args module import class srce srci))
+      id alias args module scope class srce srci))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-key-sfun! ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-key-sfun! env id alias args module import class srce srci)
+(define (declare-global-key-sfun! env id alias args module scope class srce srci)
    (declare-global-dsssl-sfun! env '() (dsssl-keys args)
-      id alias args module import class srce srci))
+      id alias args module scope class srce srci))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-noopt-sfun! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-noopt-sfun! env id alias args module import class srce srci)
+(define (declare-global-noopt-sfun! env id alias args module scope class srce srci)
    (let* ((arity (global-arity args))
 	  (args (args*->args-list args))
-	  (export? (or (not (eq? import 'static))
+	  (export? (or (not (eq? scope 'static))
 		       (and (memq 'bdb (backend-debug-support (the-backend)))
 			    (>=fx *bdb-debug* 3))))
-	  (import (if (and (eq? import 'static)
+	  (scope (if (and (eq? scope 'static)
 			   (memq 'bdb (backend-debug-support (the-backend)))
 			   (>=fx *bdb-debug* 3))
 		      'export
-		      import))
+		      scope))
 	  (loc (find-location srce))
 	  (loci (find-location/loc srci loc))
 	  (args-type (let loop ((args args)
@@ -227,17 +227,17 @@
 			   (else
 			    (let ((a (fast-id-of-id (car args) loc)))
 			       (loop (cdr args) (cons a res)))))))
-	  (id-type   (parse-id/import-location id loc loci))
-	  (type-res  (cdr id-type))
-	  (id        (car id-type))
-	  (sfun      (instantiate::sfun
+	  (id-type (parse-id/import-location id loc loci))
+	  (type-res (cdr id-type))
+	  (id (car id-type))
+	  (sfun (instantiate::sfun
 			(arity arity)
 			(args  args-type)
 			(args-name args-name)
 			(dsssl-keywords (dsssl-formals args))
 			(class class)))
-	  (old       (find-global (get-genv) id))
-	  (global    (bind-global! (get-genv) id alias module sfun import srce)))
+	  (old (find-global env id))
+	  (global (bind-global! env id alias module sfun scope srce)))
       (trace (ast 3) "*** declare-global-sfun!: srce: " srce #\Newline)
       (trace (ast 3) "*** declare-global-sfun!: loc: " (find-location srce)
 	 #\Newline)
@@ -257,7 +257,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-svar! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-svar! env id alias module import srce srci)
+(define (declare-global-svar! env id alias module scope srce srci)
    (let* ((loc (find-location srce))
 	  (loci (find-location/loc srci loc))
 	  (id-type (parse-id/import-location id loc loci))
@@ -271,32 +271,32 @@
 					(shape type)
 					*_*))
 			   ((and (eq? type *_*)
-				 (or (memq import '(export import))
+				 (or (memq scope '(export import))
 				     (and (memq 'bdb
 						(backend-debug-support (the-backend)))
 					  (>fx *bdb-debug* 0))))
 			    *obj*)
 			   (else
 			    type))))
-	  (import (if (and (eq? import 'static)
+	  (scope (if (and (eq? scope 'static)
 			      (memq 'bdb (backend-debug-support (the-backend)))
 			      (>=fx *bdb-debug* 3))
 			 'export
-			 import))
+			 scope))
 	  (id (car id-type))
 	  (svar (instantiate::svar))
-	  (global (bind-global! (get-genv) id alias module svar import srce)))
+	  (global (bind-global! env id alias module svar scope srce)))
       ;; we set the type of the variable
       (global-type-set! global type)
       ;; we now set the access slot
-      (global-access-set! global (if (eq? import 'static) 'read 'write))
+      (global-access-set! global (if (eq? scope 'static) 'read 'write))
       ;; we return the global
       global))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-scnst! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-scnst! env id alias module import node class loc)
+(define (declare-global-scnst! env id alias module scope node class loc)
    (let* ((id-type   (parse-id id loc))
 	  (type      (let ((type (cdr id-type)))
 			;; we check that global exported variable are defined
@@ -312,7 +312,7 @@
 	  (scnst     (instantiate::scnst
 			(class class)
 			(node node)))
-	  (global    (bind-global! (get-genv) id alias module scnst import 'a-cnst)))
+	  (global    (bind-global! env id alias module scnst scope 'a-cnst)))
       ;; we set the type of the variable
       (global-type-set! global type)
       ;; we now set the access slot 
@@ -335,7 +335,7 @@
 		 			(args-type type-args)
 					(macro? macro?)
 					(infix? infix?)))
-	  (global (bind-global! (get-genv) id alias module cfun 'foreign srce)))
+	  (global (bind-global! env id alias module cfun 'foreign srce)))
       ;; we set the name of the global
       (global-name-set! global name)
       ;; we set the type of the variable
@@ -354,7 +354,7 @@
 	  (loci   (find-location/loc srci loc))
 	  (type   (use-foreign-type/import-loc! type-id loc loci))
 	  (cvar   (instantiate::cvar (macro? macro?)))
-	  (global (bind-global! (get-genv) id alias 'foreign cvar 'foreign srce)))
+	  (global (bind-global! env id alias 'foreign cvar 'foreign srce)))
       ;; we set the name of the global
       (global-name-set! global name)
       ;; we set the type of the variable

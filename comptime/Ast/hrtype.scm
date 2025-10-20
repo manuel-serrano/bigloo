@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Mon Oct 20 08:45:39 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 11:01:20 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This function hrtype-node! is used for inlined functions         */
 ;*    that are restored from additional heap. These bodies still       */
@@ -24,12 +24,12 @@
 	    ast_env
 	    ast_node
 	    ast_dump)
-   (export  (generic hrtype-node! ::node)))
+   (export  (generic hrtype-node! ::node ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-generic (hrtype-node! node::node)
+(define-generic (hrtype-node! node::node env)
    (with-access::node node (type)
       (when (type? type)
 	 (set! type (find-type (type-id type))))))
@@ -37,7 +37,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::var ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::var)
+(define-method (hrtype-node! node::var env)
    (with-access::var node (variable)
       ;; MS 15 apr 2010. It might be that a body contain a reference
       ;; to an unbound global variable. For instance, the camloo raise
@@ -63,10 +63,10 @@
       ;; compiling the client code. This global has to be "rebound", this is
       ;; the purpose of this patch
       (when (and (global? variable)
-		 (global-bucket-position (get-genv)
+		 (global-bucket-position env
 		    (global-id variable)
 		    (global-module variable)))
-	 (let ((n (find-global/module (get-genv)
+	 (let ((n (find-global/module env
 		     (global-id variable)
 		     (global-module variable))))
 	    (when (global? n)
@@ -76,32 +76,32 @@
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::sequence ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::sequence)
+(define-method (hrtype-node! node::sequence env)
    (with-access::sequence node (nodes)
-      (hrtype-node*! nodes))
+      (hrtype-node*! nodes env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::sync ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::sync)
+(define-method (hrtype-node! node::sync env)
    (with-access::sync node (mutex prelock body)
-      (hrtype-node! mutex)
-      (hrtype-node! prelock)
-      (hrtype-node! body))
+      (hrtype-node! mutex env)
+      (hrtype-node! prelock env)
+      (hrtype-node! body env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::app ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::app)
+(define-method (hrtype-node! node::app env)
    (with-access::app node (args fun type loc)
       (with-access::var fun (variable)
 	 (when (global? variable)
 	    (let ((value (variable-value variable)))
 	       (cond
 		  ((cfun? value)
-		   (let ((g (find-global (get-genv) (global-id variable)
+		   (let ((g (find-global env (global-id variable)
 			       (global-module variable))))
 		      ;; MS 8dec2020: This correct a bug observed in
 		      ;; Hop hopscript library. An inlined hopscript function
@@ -113,7 +113,7 @@
 		      ;; changer the restored foreign for the one pre-existing.
 		      (if g
 			  (set! variable g)
-			  (restore-global! variable))))
+			  (restore-global! variable env))))
 		  ((sfun? value)
 		   (if (and (eq? (sfun-class value) 'sifun)
 			    ;; @label already-restored@
@@ -121,17 +121,17 @@
 		       ;; because of possible recursive inlined functions
 		       ;; we have to prevent the compiler from looping
 		       ;; when clearing inlined called functions
-		       (restore-global! variable)
+		       (restore-global! variable env)
 		       ;; if we are calling a global variable from a
 		       ;; library inlined function, we have to substitute
 		       ;; the reference to the body with the reference of
 		       ;; the variable that is in the current Bigloo
 		       ;; environment.
-		       (let ((g (find-global (get-genv)
+		       (let ((g (find-global env
 				   (global-id variable)
 				   (global-module variable))))
 			  (if (not (variable? g))
-			      (let ((new-g (find-global (get-genv)
+			      (let ((new-g (find-global env
 					      (global-id variable)
 					      *module*)))
 				 (if (not (and (global? new-g)
@@ -141,39 +141,39 @@
 					(global-id variable))
 				     (set! variable new-g)))
 			      (set! variable g)))))))))
-      (hrtype-node*! args))
+      (hrtype-node*! args env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::app-ly ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::app-ly)
+(define-method (hrtype-node! node::app-ly env)
    (with-access::app-ly node (fun arg)
-      (hrtype-node! fun)
-      (hrtype-node! arg))
+      (hrtype-node! fun env)
+      (hrtype-node! arg env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::funcall ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::funcall)
+(define-method (hrtype-node! node::funcall env)
    (with-access::funcall node (fun args)
-      (hrtype-node! fun)
-      (hrtype-node*! args))
+      (hrtype-node! fun env)
+      (hrtype-node*! args env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::extern ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::extern)
+(define-method (hrtype-node! node::extern env)
    (with-access::extern node (expr*)
-      (hrtype-node*! expr*))
+      (hrtype-node*! expr* env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::getfield ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::getfield)
+(define-method (hrtype-node! node::getfield env)
    (with-access::getfield node (ftype otype)
       (set! ftype (find-type (type-id ftype)))
       (set! otype (find-type (type-id otype)))
@@ -182,7 +182,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::setfield ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::setfield)
+(define-method (hrtype-node! node::setfield env)
    (with-access::setfield node (ftype otype)
       (set! ftype (find-type (type-id ftype)))
       (set! otype (find-type (type-id otype)))
@@ -191,7 +191,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::widening ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::widening)
+(define-method (hrtype-node! node::widening env)
    (with-access::widening node (otype)
       (set! otype (find-type (type-id otype)))
       (call-next-method)))
@@ -199,7 +199,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::new ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::new)
+(define-method (hrtype-node! node::new env)
    (with-access::new node (args-type)
       (set! args-type (map! (lambda (t) (find-type (type-id t))) args-type))
       (call-next-method)))
@@ -207,7 +207,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::valloc ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::valloc)
+(define-method (hrtype-node! node::valloc env)
    (with-access::valloc node (ftype otype)
       (set! ftype (find-type (type-id ftype)))
       (set! otype (find-type (type-id otype)))
@@ -216,7 +216,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::vref ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::vref)
+(define-method (hrtype-node! node::vref env)
    (with-access::vref node (ftype otype vtype)
       (set! ftype (find-type (type-id ftype)))
       (set! otype (find-type (type-id otype)))
@@ -226,7 +226,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::vset! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::vset!)
+(define-method (hrtype-node! node::vset! env)
    (with-access::vset! node (ftype otype vtype)
       (set! ftype (find-type (type-id ftype)))
       (set! otype (find-type (type-id otype)))
@@ -236,7 +236,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::vlength ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::vlength)
+(define-method (hrtype-node! node::vlength env)
    (with-access::vlength node (ftype otype vtype)
       (set! vtype (find-type (type-id vtype)))
       (call-next-method)))
@@ -244,7 +244,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::instanceof ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::instanceof)
+(define-method (hrtype-node! node::instanceof env)
    (with-access::instanceof node (class)
       (set! class (find-type (type-id class))))
    (call-next-method))
@@ -252,56 +252,56 @@
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::cast ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::cast)
+(define-method (hrtype-node! node::cast env)
    (with-access::cast node (arg type)
-      (hrtype-node! arg))
+      (hrtype-node! arg env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::setq ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::setq)
+(define-method (hrtype-node! node::setq env)
    (with-access::setq node (var value)
-      (hrtype-node! value)
-      (hrtype-node! var))
+      (hrtype-node! value env)
+      (hrtype-node! var env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::conditional ...                                   */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::conditional)
+(define-method (hrtype-node! node::conditional env)
    (with-access::conditional node (test true false)
-       (hrtype-node! test)
-       (hrtype-node! true)
-       (hrtype-node! false))
+       (hrtype-node! test env)
+       (hrtype-node! true env)
+       (hrtype-node! false env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::fail ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::fail)
+(define-method (hrtype-node! node::fail env)
    (with-access::fail node (type proc msg obj)
-      (hrtype-node! proc)
-      (hrtype-node! msg)
-      (hrtype-node! obj))
+      (hrtype-node! proc env)
+      (hrtype-node! msg env)
+      (hrtype-node! obj env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::switch ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::switch)
+(define-method (hrtype-node! node::switch env)
    (with-access::switch node (clauses test item-type)
       (set! item-type (find-type (type-id item-type)))
-      (hrtype-node! test)
+      (hrtype-node! test env)
       (for-each (lambda (clause)
-		   (hrtype-node! (cdr clause)))
+		   (hrtype-node! (cdr clause) env))
 		clauses))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::let-fun ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::let-fun)
+(define-method (hrtype-node! node::let-fun env)
    (with-access::let-fun node (body locals)
       (for-each (lambda (local)
 		   (let ((sfun (local-value local)))
@@ -319,81 +319,81 @@
 					   (shape arg))))
 				(loop (cdr args)))))
 		      (restore-variable-type! local)
-		      (hrtype-node! (sfun-body sfun))))
+		      (hrtype-node! (sfun-body sfun) env)))
 		locals)
-      (hrtype-node! body))
+      (hrtype-node! body env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::let-var ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::let-var)
+(define-method (hrtype-node! node::let-var env)
    (with-access::let-var node (body bindings)
       (for-each (lambda (binding)
 		   (let ((var (car binding))
 			 (val (cdr binding)))
-		      (hrtype-node! val)
+		      (hrtype-node! val env)
 		      (restore-variable-type! var)))
 		bindings)
-      (hrtype-node! body))
+      (hrtype-node! body env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::set-ex-it ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::set-ex-it)
+(define-method (hrtype-node! node::set-ex-it env)
    (with-access::set-ex-it node (var body onexit)
       (restore-variable-type! (var-variable var))
-      (hrtype-node! body)
-      (hrtype-node! onexit)
-      (hrtype-node! var))
+      (hrtype-node! body env)
+      (hrtype-node! onexit env)
+      (hrtype-node! var env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::jump-ex-it ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::jump-ex-it)
+(define-method (hrtype-node! node::jump-ex-it env)
    (with-access::jump-ex-it node (exit value)
-      (hrtype-node! exit) 
-      (hrtype-node! value))
+      (hrtype-node! exit env) 
+      (hrtype-node! value env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::make-box ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::make-box)
+(define-method (hrtype-node! node::make-box env)
    (with-access::make-box node (value)
-      (hrtype-node! value))
+      (hrtype-node! value env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::box-set! ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::box-set!)
+(define-method (hrtype-node! node::box-set! env)
    (with-access::box-set! node (var value)
-      (hrtype-node! var)
-      (hrtype-node! value))
+      (hrtype-node! var env)
+      (hrtype-node! value env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node! ::box-ref ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::box-ref)
+(define-method (hrtype-node! node::box-ref env)
    (with-access::box-ref node (var)
-      (hrtype-node! var))
+      (hrtype-node! var env))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    hrtype-node*! ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (hrtype-node*! node*)
-   (for-each hrtype-node! node*))
+(define (hrtype-node*! node* env)
+   (for-each (lambda (n) (hrtype-node! n env)) node*))
    
 ;*---------------------------------------------------------------------*/
 ;*    restore-variable-type! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (restore-variable-type! variable::variable)
-   (let ((type (variable-type variable)))
-      (when (type? type)
-	 (variable-type-set! variable (find-type (type-id type))))))
+   (let ((ty (variable-type variable)))
+      (when (type? ty)
+	 (variable-type-set! variable (find-type (type-id ty))))))
 

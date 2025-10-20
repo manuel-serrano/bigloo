@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Mon Oct 20 08:40:36 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 10:43:14 2025 (serrano)                */
 ;*    Copyright   :  2007-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
@@ -34,8 +34,8 @@
    ;; we build the ad-hoc backend
    (set-backend! *target-language*)
    ;; initialize the environment otherwise we won't be able to read heap files
-   (initialize-Genv!)
-   (initialize-Tenv!)
+   (initialize-genv!)
+   (initialize-tenv!)
    ;; we dump all the heap specified on the command line
    (with-access::backend (the-backend) ((backend-dump-heap dump-heap))
       (let ((dump-heap (or backend-dump-heap generic-dump-heap)))

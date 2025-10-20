@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Oct 20 07:29:21 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 10:14:16 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -163,9 +163,9 @@
       (if *lib-mode*
 	  (profile env
 	     (begin
-		(initialize-Genv!)
-		(initialize-Tenv!)))
-	  (profile heap (restore-heap)))
+		(initialize-genv!)
+		(initialize-tenv!)))
+	  (profile heap (set-genv! (restore-heap))))
       
       ;; initialize the type caching system
       (profile itype (install-type-cache!))
@@ -214,7 +214,7 @@
       (register-srfi! 'bigloo-class-sans)
       
       ;; build the program ast
-      (let ((ast (src->ast src)))
+      (let ((ast (src->ast src (get-genv))))
 	 
 	 (stop-on-pass 'ast (lambda () (write-ast ast)))
 	 (check-sharing "ast" ast)
@@ -500,22 +500,22 @@
 ;*---------------------------------------------------------------------*/
 ;*    src->ast ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (src->ast src)
+(define (src->ast src env)
    (case *module-version*
       ((4)
-       (module4->ast src))
+       (module4->ast src env))
       ((5)
-       (module5->ast src))
+       (module5->ast src env))
       (else
        (match-case (car src)
-	  ((module ?- :version 4 . ?-) (module4->ast src))
-	  ((module ?- :version 5 . ?-) (module5->ast src))
-	  (else (module4->ast src))))))
+	  ((module ?- :version 4 . ?-) (module4->ast src env))
+	  ((module ?- :version 5 . ?-) (module5->ast src env))
+	  (else (module4->ast src env))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5->ast ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (module5->ast expr)
+(define (module5->ast expr genv)
    (with-trace 'compiler "module5->ast"
       (trace-item "expr=" expr)
       (pass-prelude "Module5")
@@ -548,7 +548,7 @@
 	 (trace-item "body=" expr-body)
 
 	 ;; imported module unit (before processing the module body)
-	 (set! units (cons (module5-imported-unit mod comptime-expand) units))
+	 (set! units (cons (module5-imported-unit mod comptime-expand genv) units))
 	 
 	 (with-access::Module mod (id body checksum main decls imports)
 
@@ -606,8 +606,8 @@
 	 
 	 ;; once library clauses have been parsed
 	 ;; we must restore again additional heaps
-	 (restore-additional-heaps)
-	 (additional-heap-restore-globals!)
+	 (restore-additional-heaps genv)
+	 (additional-heap-restore-globals! genv)
 	 (unit-sexp*-add-head! tu (get-alibrary-inits))
 
 	 ;; eval code
@@ -624,6 +624,8 @@
 	 ;; imported inline units
 	 (let ((u (module5-imported-inline-unit mod)))
 	    (when u (set! units (cons u units))))
+
+	 (module5-imported-inline mod genv)
 	 
 	 ;; ... and the global user-defined macro expansion
 	 (profile expand (expand-units units))
@@ -635,16 +637,16 @@
 	    (set! units (cons (make-gc-roots-unit) units)))
 
 	 ;; build the variable and function ast
-	 (module5-ast! mod)
+	 (module5-ast! mod genv)
 
-	 (let* ((m (module5-main mod))
+	 (let* ((m (module5-main mod genv))
 		(ast (profile ast (build-ast units))))
 
 	    ;; register main declaration
 	    (set! *main* m)
 
 	    ;; handle pragma declarations
-	    (module5-resolve-pragma! mod)
+	    (module5-resolve-pragma! mod genv)
 
 	    ;; check if inlined functions used by the backend
 	    ;; have all been defined
@@ -663,7 +665,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module4->ast ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (module4->ast src)
+(define (module4->ast src genv)
    (with-trace 'compiler "module4->ast"
       (trace-item "src=" src)
       (set! *module-version* 4)
@@ -671,9 +673,9 @@
       (let* ((exp0 (comptime-expand/error (car src)))
 	     (module (progn-first-expression exp0))
 	     (src-code (append (progn-tail-expressions exp0) (cdr src)))
-	     (units (profile module (produce-module! module)))
+	     (units (profile module (produce-module! module genv)))
 	     (tu (find (lambda (u) (eq? (unit-id u) 'toplevel)) units)))
-	 
+
 	 (stop-on-pass 'dump-module (lambda () (dump-module module)))
 	 
 	 ;; profiling initilization code
@@ -694,7 +696,7 @@
 	 ;; check for errors that might have already occurred
 	 ;; while building the ast and that could have been delayed
 	 (pass-postlude #unspecified)
-	 
+
 	 ;; check if all types are defined
 	 (profile ctype (check-types))
 	 
@@ -711,8 +713,8 @@
 	 
 	 ;; once library clauses have been parsed
 	 ;; we must restore again additional heaps
-	 (restore-additional-heaps)
-	 (additional-heap-restore-globals!)
+	 (restore-additional-heaps genv)
+	 (additional-heap-restore-globals! genv)
 	 (unit-sexp*-add-head! tu (get-alibrary-inits))
 	 
 	 ;; we perfom user pass

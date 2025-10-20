@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:29:03 1996                          */
-;*    Last change :  Fri Sep 26 05:22:13 2025 (serrano)                */
+;*    Last change :  Mon Oct 20 10:33:39 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of a Module clause                               */
@@ -39,6 +39,7 @@
 	    module_option
 	    module_alibrary
 	    (additional-heap-restore-globals! ast_env)
+	    (get-genv ast_env)
 	    read_include
 	    expand_eps
 	    read_inline)
@@ -57,7 +58,7 @@
 
 	    (install-module-clauses-compiler!)
 	    
-	    (produce-module! <module-clause>)
+	    (produce-module! <module-clause> ::obj)
 	    (produce-module-clause! <clause>)
 	    (consume-module! ::symbol <module-clause>)
 	    (consume-module-clause! ::symbol <clause>)
@@ -101,21 +102,21 @@
 ;*    restore the additional heaps (that may also be requested         */
 ;*    by compiler options) and we start the real module processing.    */
 ;*---------------------------------------------------------------------*/
-(define (produce-module! mod)
+(define (produce-module! mod env)
    (pass-prelude "Module")
    (let ((mclause (module-mclause mod)))
       (match-case mclause
 	 ((module (and (? symbol?) ?name) :version 4 . ?clauses)
-	  (do-module mclause name clauses))
+	  (do-module mclause name clauses env))
 	 ((module (and (? symbol?) ?name) . ?clauses)
-	  (do-module mclause name clauses))
+	  (do-module mclause name clauses env))
 	 (else
 	  (user-error "Parse error" "Illegal module form" mod)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-module ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (do-module mclause name clauses)
+(define (do-module mclause name clauses env)
    (let ((clauses (cons (early-with-clauses)
 		     (if (symbol? *main*)
 			 (cons `(main ,*main*) clauses)
@@ -133,13 +134,14 @@
 	     (let ((clauses (produce-library-clauses clauses)))
 		;; once library clauses have been parsed
 		;; we must restore additional heaps
-		(restore-additional-heaps)
+		(restore-additional-heaps env)
 		;; now we resume the module parsing process
 		(for-each produce-module-clause! clauses)
 		(set! *module-checksum* (checksum-module mclause))
 		(pass-postlude (finalize-clause-compilations)
 		   leave-function
-		   additional-heap-restore-globals!))))))
+		   (lambda ()
+		      (additional-heap-restore-globals! env))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    produce-library-clauses ...                                      */

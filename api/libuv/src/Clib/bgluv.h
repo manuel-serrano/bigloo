@@ -1,7 +1,7 @@
 /*===========================================================================*/
 /*   (Llib/uvtypes.scm)                                                      */
 /*   Bigloo (5.0a)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Thu Sep 18 10:34:39 PM CEST 2025    */
+/*   Inria -- Sophia Antipolis (c)       Mon Oct 20 12:34:34 PM CEST 2025    */
 /*===========================================================================*/
 /* COMPILATION: (/home/serrano/prgm/project/bigloo/wasm/bin/bigloo -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/wasm/lib/bigloo/5.0a -I Llib -lib-dir /home/serrano/prgm/project/bigloo/wasm/lib/bigloo/5.0a -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/wasm/libuv/libuv-v1.51.0/include -DBGL_DUMMY -safee -unsafe -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen) */
 

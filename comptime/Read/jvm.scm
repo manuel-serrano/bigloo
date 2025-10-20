@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Read/jvm.scm                */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Read/jvm.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Fri Mar  7 12:26:52 2014 (serrano)                */
-;*    Copyright   :  1993-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 20 11:09:57 2025 (serrano)                */
+;*    Copyright   :  1993-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
 ;*=====================================================================*/
@@ -67,13 +67,13 @@
 		 (string=? qtype "")
 		 (backend-qualified-types (the-backend)))
 	 (warning "add-qualified-type!"
-		  "empty name for module -- "
-		  module
-		  (if (and (pair? ident) (symbol? (car ident)))
-		      (string-append ", for identifier `"
-				     (symbol->string (car ident))
-				     "'")
-		      "")))
+	    "empty name for module -- "
+	    module
+	    (if (and (pair? ident) (symbol? (car ident)))
+		(string-append ", for identifier `"
+		   (symbol->string (car ident))
+		   "'")
+		"")))
       (let ((b (getprop module *jvm-mark*)))
 	 (if (not b)
 	     (putprop! module *jvm-mark* qtype)
@@ -82,14 +82,14 @@
 			(backend-qualified-types (the-backend)))
 		(putprop! module *jvm-mark* qtype)
 		(warning "add-qualified-type!"
-			 "qualified type redefinition:\n  module/class=" module
-			 (if (and (pair? ident) (symbol? (car ident)))
-			     (string-append "\n  identifier="
-					    (symbol->string (car ident)))
-			     "")
-			 "\n  old qualified type=" b
-			 "\n  new qualified type=" qtype
-			 "\n")
+		   "qualified type redefinition:\n  module/class=" module
+		   (if (and (pair? ident) (symbol? (car ident)))
+		       (string-append "\n  identifier="
+			  (symbol->string (car ident)))
+		       "")
+		   "\n  old qualified type=" b
+		   "\n  new qualified type=" qtype
+		   "\n")
 		(dump-trace-stack (current-error-port) 10))))))
 
 ;*---------------------------------------------------------------------*/
