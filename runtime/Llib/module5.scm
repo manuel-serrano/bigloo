@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Mon Oct 20 15:42:02 2025 (serrano)                */
+;*    Last change :  Wed Oct 22 09:10:09 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -113,6 +113,7 @@
 	   (module5-register-extern-plugin! ::bstring ::procedure)
 	   (module5-resolve-path ::bstring ::bstring)
 	   (module5-resolve-library ::symbol ::pair-nil)
+	   (module5-preload-cache! ::pair-nil)
 	   (module5-read::Module ::bstring #!key (lib-path '()) cache-dir expand)
 	   (module5-read-library::Module ::bstring ::obj ::Module)
 	   (module5-read-heap::Module ::bstring ::obj ::Module)
@@ -224,6 +225,16 @@
 (define *extern-plugins* '())
 
 ;*---------------------------------------------------------------------*/
+;*    module5-preload-cache! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (module5-preload-cache! modules::pair-nil)
+   (synchronize module-mutex
+      (for-each (lambda (m)
+		   (with-access::Module m (path)
+		      (hashtable-put! *modules-by-path* path m)))
+	 modules)))
+
+;*---------------------------------------------------------------------*/
 ;*    module5-register-plugin! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (module5-register-plugin! id::symbol plugin::procedure)
@@ -308,8 +319,8 @@
 ;*---------------------------------------------------------------------*/
 (define (serialize mod::Module)
 
-   (define (exports->list exports)
-      (hashtable-map (-> mod exports)
+   (define (decls->list decls)
+      (hashtable-map decls
 	 (lambda (k d::Decl)
 	    (with-access::Decl d (mod)
 	       (with-access::Module mod (path)
@@ -337,9 +348,9 @@
 	     (inits '())
 	     (body '())
 	     (decls #unspecified)
-	     (imports #unspecified)
 	     (defs #unspecified)
-	     (exports (exports->list (-> mod exports)))
+	     (imports (decls->list (-> mod imports)))
+	     (exports (decls->list (-> mod exports)))
 	     (classes (classes->list (-> mod classes) (-> mod exports)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -348,13 +359,12 @@
 (define (unserialize mod::Module lib-path cache-dir expand)
    
    (define (unserialize-decl d::Decl)
-      ;; link the module
       (set! (-> d mod)
 	 (module5-read (-> d mod)
 	    lib-path: lib-path :cache-dir cache-dir :expand expand))
       d)
    
-   (define (list->exports! env l)
+   (define (list->decls! env l)
       (for-each (lambda (e)
 		   (hashtable-put! env (car e) (unserialize-decl (cdr e))))
 	 l)
@@ -375,26 +385,41 @@
 		   (hashtable-put! env (car e) (cdr e)))
 	 l)
       env)
-   
-   (let ((m::Module (duplicate::Module mod
-		       (exports (create-hashtable :size 32 :weak 'open-string))
-		       (decls (create-hashtable :size 32 :weak 'open-string))
-		       (defs (create-hashtable :size 32 :weak 'open-string))
-		       (classes (create-hashtable :size 32 :weak 'open-string)))))
-      (hashtable-put! *modules-by-path* (-> mod path) m)
-      (list->exports! (-> m exports) (-> mod exports))
-      (list->defs! (-> m defs) (-> mod exports))
-      (list->classes! (-> m classes) (-> mod classes))
-      m))
+
+   (with-trace 'module5-cache "unserialize"
+      (trace-item "mod=" (-> mod id))
+      (trace-item "path=" (-> mod path))
+      (let ((m::Module (duplicate::Module mod
+			  (exports (create-hashtable :size 32 :weak 'open-string))
+			  (imports (create-hashtable :size 32 :weak 'open-string))
+			  (decls (create-hashtable :size 32 :weak 'open-string))
+			  (defs (create-hashtable :size 32 :weak 'open-string))
+			  (classes (create-hashtable :size 32 :weak 'open-string)))))
+	 (hashtable-put! *modules-by-path* (-> mod path) m)
+	 (list->decls! (-> m imports) (-> mod imports))
+	 (list->decls! (-> m exports) (-> mod exports))
+	 (list->defs! (-> m defs) (-> mod exports))
+	 (list->classes! (-> m classes) (-> mod classes))
+	 m)))
 
 ;*---------------------------------------------------------------------*/
 ;*    filecache-read ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (filecache-read path lib-path cache-dir expand)
-   (let ((p (open-input-binary-file path)))
-      (unwind-protect
-	 (unserialize (input-obj p) lib-path cache-dir expand)
-	 (close-binary-port p))))
+   (with-trace 'module5-cache "filecache-read"
+      (trace-item "path=" path)
+      (trace-item "lib-path=" lib-path)
+      (trace-item "cache-dir=" cache-dir)
+      (let ((p (open-input-binary-file path)))
+	 (unwind-protect
+	    (unserialize (input-obj p) lib-path cache-dir expand)
+	    (close-binary-port p)))))
+
+;*---------------------------------------------------------------------*/
+;*    lock-path ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (lock-path cache-dir)
+   (make-file-name cache-dir "LOCK"))
 
 ;*---------------------------------------------------------------------*/
 ;*    filecache-get ...                                                */
@@ -409,18 +434,25 @@
 	    (trace-item "apath=" apath)
 	    (trace-item "cname=" cname)
 	    (trace-item "cpath=" cpath)
-	    (when (and (file-exists? cpath)
-		       (>=elong (file-modification-time cpath)
-			  (file-modification-time apath)))
-	       (let ((m (filecache-read cpath
-			   lib-path cache-dir expand)))
-		  (with-access::Module m (classes exports decls defs)
-		     (trace-item "classes=" (hashtable-size classes))
-		     (trace-item "exports=" (hashtable-size exports))
-		     (trace-item "decls=" (typeof decls))
-		     (trace-item "defs=" (hashtable-size defs))
-		     (hashtable-put! *modules-by-path* path m)
-		     m)))))))
+	    (unless (directory? cache-dir)
+	       (make-directories cache-dir))
+	    (call-with-output-file (lock-path cache-dir)
+	       (lambda (lock)
+		  (lockf lock 'lock)
+		  (unwind-protect
+		     (when (and (file-exists? cpath)
+				(>=elong (file-modification-time cpath)
+				   (file-modification-time apath)))
+			(let ((m (filecache-read cpath
+				    lib-path cache-dir expand)))
+			   (with-access::Module m (classes exports decls defs)
+			      (trace-item "classes=" (hashtable-size classes))
+			      (trace-item "exports=" (hashtable-size exports))
+			      (trace-item "decls=" (typeof decls))
+			      (trace-item "defs=" (hashtable-size defs))
+			      (hashtable-put! *modules-by-path* path m)
+			      m)))
+		     (lockf lock 'ulock))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    filecache-put! ...                                               */
@@ -433,10 +465,15 @@
 	    (make-directories (-> mod cache-dir)))
 	 (multiple-value-bind (apath cname cpath)
 	    (filecache-dirs path (-> mod cache-dir))
-	    (let ((p (open-output-binary-file cpath)))
-	       (unwind-protect
-		  (output-obj p (serialize mod))
-		  (close-binary-port p)))))))
+	    (call-with-output-file (lock-path (-> mod cache-dir))
+	       (lambda (lock)
+		  (lockf lock 'lock)
+		  (unwind-protect
+		     (let ((p (open-output-binary-file cpath)))
+			(unwind-protect
+			   (output-obj p (serialize mod))
+			   (close-binary-port p)))
+		     (lockf lock 'ulock))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-read ...                                                  */

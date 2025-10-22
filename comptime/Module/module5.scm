@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Mon Oct 20 15:04:44 2025 (serrano)                */
+;*    Last change :  Wed Oct 22 08:35:11 2025 (serrano)                */
 ;*    Copyright   :  2025 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -20,7 +20,7 @@
    (import engine_param
 	   tools_error
 	   tools_shape
-	   tools_location
+ 	   tools_location
 	   module_module
 	   module_class
 	   module_checksum
@@ -31,6 +31,7 @@
 	   module_eval
 	   heap_restore
 	   expand_eps
+	   expand_object
 	   ast_node
 	   ast_var
 	   ast_env
@@ -47,11 +48,10 @@
 
    (export (module5-expand ::pair-nil)
 	   (module5-import-def ::Module ::Decl)
-	   (module5-ast! ::Module ::obj)
+	   (module5-ast! ::Module ::obj ::symbol)
 	   (module5-main ::Module ::obj)
 	   (module5-imported-unit ::Module ::procedure ::obj)
 	   (module5-object-unit ::Module)
-	   (module5-imported-inline-unit ::Module)
 	   (module5-imported-inline mod::Module ::obj)
 	   (module5-extern-plugin-c ::Module ::pair)
 	   (module5-extern-plugin-java ::Module ::pair)
@@ -105,7 +105,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-ast! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (module5-ast! mod::Module env)
+(define (module5-ast! mod::Module env mode::symbol)
    
    (define unsorted-classes '())
    
@@ -141,46 +141,71 @@
 	    (class-owner ty)
 	    (user-info #f)
 	    (type (find-type/expr (cdr (assq 'type p)) expr)))))
-   
+
+   (define (type-class-module id)
+      (let ((old (find-type id)))
+	 (when (isa? old tclass)
+	    (with-access::tclass old (holder)
+	       (global-module holder)))))
+
    (define (declare-class-definition! id alias mid scope src def::KDef)
       (with-access::KDef def (expr id decl super ctor kkind properties)
 	 (when (isa? decl Decl)
-	    (with-access::Decl decl (mod)
+	    (with-access::Decl decl (mod scope)
 	       (with-access::Module mod ((mid id))
-		  (unless (find-global/module env id mid) 
+		  (unless (find-global/module env id mid)
 		     ;; a class declared in the module being compiled
 		     (let ((var (declare-global-svar! env id id mid scope expr expr)))
 			(global-type-set! var (find-type/expr 'class expr))
 			(global-set-read-only! var)
-			(let* ((sup (and super (find-type/expr super expr)))
-			       (ty (declare-class-type! id sup
-				      ctor var #f
-				      (eq? kkind 'define-final-class)
-				      (eq? kkind 'define-abstract-class)
-				      (eq? kkind 'define-wide-class))))
-			   (gen-class-coercions! ty)
-			   (let* ((sslots (if sup (tclass-slots sup) '()))
-				  (nslots (map (lambda (p i)
-						  (make-class-slot p i ty src))
-					     properties
-					     (iota (length properties)
-						(length sslots)))))
-			      (tclass-slots-set! ty (append sslots nslots))))
-			var)))))))
-   
-   (define (declare-definition! kind id alias mid scope expr def::Def)
+			(cond
+			   ((not (type-exists? id))
+			    (let* ((sup (and super (find-type/expr super expr)))
+				   (ty (declare-class-type! id sup
+					  ctor var #f
+					  (eq? kkind 'define-final-class)
+					  (eq? kkind 'define-abstract-class)
+					  src)))
+			       (gen-class-coercions! ty)
+			       ty))
+			   ((not (eq? (type-class-module id) mid))
+			    (error mid
+			       (format "Illegal type redefinition \"~a\"" id)
+			       src))
+			   (else
+			    #f)))))))))
+
+   (define (declare-class-slots! id alias src def::KDef ty::tclass)
+      (with-access::KDef def (properties)
+	 (let* ((sup (tclass-its-super ty))
+		(sslots (if sup (tclass-slots sup) '()))
+		(nslots (map (lambda (p i)
+				(make-class-slot p i ty src))
+			   properties
+			   (iota (length properties) (length sslots)))))
+	    (tclass-slots-set! ty (append sslots nslots)))))
+
+   (define (make-typed-ident id type)
+      (if (string? type)
+	  (string->symbol (format "~a::~a" id type))
+	  id))
+      
+   (define (declare-definition! kind id type alias mid scope expr def::Def)
       (case kind
 	 ((variable)
-	  (declare-global-svar! env id alias
+	  (declare-global-svar! env (make-typed-ident id type) alias
 	     mid scope expr expr))
 	 ((procedure)
-	  (declare-global-sfun! env id alias (procedure-args expr id mid)
+	  (declare-global-sfun! env (make-typed-ident id type) alias
+	     (procedure-args expr id mid)
 	     mid scope 'sfun expr expr))
 	 ((inline)
-	  (declare-global-sfun! env id alias (procedure-args expr id mid)
+	  (declare-global-sfun! env (make-typed-ident id type) alias
+	     (procedure-args expr id mid)
 	     mid scope 'sifun expr expr))
 	 ((generic)
-	  (declare-global-sfun! env id alias (procedure-args expr id mid)
+	  (declare-global-sfun! env (make-typed-ident id type) alias
+	     (procedure-args expr id mid)
 	     mid scope 'sgfun expr expr))
 	 ((macro)
 	  (with-access::Def def (expr)
@@ -234,12 +259,14 @@
 	    (others '()))
 	 (hashtable-for-each defs
 	    (lambda (k def)
-	       (with-access::Def def (id)
-		  (let ((e (vector def mid id (def-scope def))))
-		     (cond
-			((isa? def KDef) (set! classes (cons e classes)))
-			((isa? def TDef) (set! types (cons e types)))
-			(else (set! others (cons e others))))))))
+	       (with-access::Def def (id type)
+		  (let ((scope (def-scope def)))
+		     (unless (eq? scope 'import)
+			(let ((e (vector def mid id scope)))
+			   (cond
+			      ((isa? def KDef) (set! classes (cons e classes)))
+			      ((isa? def TDef) (set! types (cons e types)))
+			      (else (set! others (cons e others))))))))))
 	 (values types classes others)))
 
    (define (split-imported-declarations mid decls)
@@ -279,18 +306,27 @@
 	    types)
 
 	 ;; declare all classes
-	 (for-each (lambda (e)
-		      (let ((def (vector-ref e 0))
-			    (alias (vector-ref e 2))
-			    (scope (vector-ref e 3)))
-			 (with-access::Def (vector-ref e 0) (expr kind id)
-			    (declare-class-definition! kind id alias
-			       scope expr def))))
-	    (sort (lambda (ex ey)
-		     (with-access::KDef (vector-ref ex 0) ((dx depth))
-			(with-access::KDef (vector-ref ey 0) ((dy depth))
-			   (<fx dx dy))))
-	       classes))
+	 (let* ((cs (sort (lambda (ex ey)
+			     (with-access::KDef (vector-ref ex 0) ((dx depth))
+				(with-access::KDef (vector-ref ey 0) ((dy depth))
+				   (<fx dx dy))))
+		       classes))
+		(ts (map (lambda (e)
+			    (let ((def (vector-ref e 0))
+				  (alias (vector-ref e 2))
+				  (scope (vector-ref e 3)))
+			       (with-access::KDef (vector-ref e 0) (expr kind id depth)
+				  (declare-class-definition! kind id alias
+				     scope expr def))))
+		       cs)))
+	    (when (eq? mode 'compile)
+	       (for-each (lambda (e ty)
+			    (when ty
+			       (let ((def (vector-ref e 0))
+				     (alias (vector-ref e 2)))
+				  (with-access::KDef (vector-ref e 0) (expr kind id depth)
+				     (declare-class-slots! id alias expr def ty)))))
+		  cs ts)))
 
 	 ;; other declarations
 	 (for-each (lambda (e)
@@ -298,8 +334,8 @@
 			    (mid (vector-ref e 1))
 			    (alias (vector-ref e 2))
 			    (scope (vector-ref e 3)))
-			 (with-access::Def def (expr kind id)
-			    (declare-definition! kind id alias mid scope expr def))))
+			 (with-access::Def def (expr kind id type)
+			    (declare-definition! kind id type alias mid scope expr def))))
 	    others))))
 
 ;*---------------------------------------------------------------------*/
@@ -363,38 +399,23 @@
 	    (unit 'object 19 body #f #f)))))
 
 ;*---------------------------------------------------------------------*/
-;*    module5-imported-inline-unit ...                                 */
+;*    *module5-envs* ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (module5-imported-inline-unit mod::Module)
-   (with-access::Module mod (imports)
-      (let ((body (hashtable-filter-map imports
-		     (lambda (k decl)
-			(with-access::Decl decl (def id)
-			   (when (isa? def Def)
-			      (with-access::Def def (kind expr)
-				 (when (eq? kind 'inline)
-				    expr))))))))
-	 (when (pair? body)
-	    (unit 'inline 0 body #t #f)))))
+(define *module5-envs* '())
 
 ;*---------------------------------------------------------------------*/
-;*    *module5-genvs* ...                                              */
+;*    module5-env ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define *module5-genvs* '())
-
-;*---------------------------------------------------------------------*/
-;*    module5-genv ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (module5-genv mod)
-   (let ((e (assq mod *module5-genvs*)))
+(define (module5-env mod)
+   (let ((e (assq mod *module5-envs*)))
       (if (pair? e)
-	  (cdr e)
-	  (let ((genv (if *lib-mode*
-			  (profile env (initialize-genv!))
-			  (profile heap (restore-heap)))))
-	     (module5-ast! mod genv)
-	     (set! *module5-genvs* (cons (cons mod genv) *module5-genvs*))
-	     genv))))
+	  (values (cadr e) (cddr e))
+	  (multiple-value-bind (env tenv)
+	     (restore-heap)
+	     (module5-ast! mod env 'import-inline)
+	     (set! *module5-envs*
+		(cons (cons mod (cons env tenv)) *module5-envs*))
+	     (values env tenv)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    module5-imported-inline ...                                      */
@@ -412,36 +433,21 @@
 		     (when (isa? def Def)
 			(with-access::Def def (kind expr)
 			   (when (eq? kind 'inline)
-			      (tprint "GOT ONE " id " expr=" expr " mid=" mid " kind=" kind)
-			      (tprint "mid=" mid " " resolved " id=" id " def=" (typeof def))
-			      (tprint "expr=" expr)
-			      (let* ((genv (module5-genv mod))
-				     (d (find-global env id)))
-				 (tprint "D=" (shape d))
-				 (toplevel->ast expr '() mid genv)
-				 
-				 (let* ((nd (find-global genv id))
-					(f (global-value nd)))
-				    (tprint "f=" (sfun-args f))
-				    (tprint "BODU=" (sfun-body f))
-				    (sfun-body-set! (global-value d)
-				       (sexp->node (sfun-body f)
-					  (sfun-args f)
-					  (find-location expr)
-					  'value
-					  genv))
-				    (tprint "nd=" (typeof nd)))
-				 
-				 #unspecified)))))))))))
-				 
-;* 				                                       */
-;* 				 (unbind-global! genv id mid)          */
-;* 				 (toplevel->ast expr '() mid genv)     */
-;* 				    (with-access::global nd (value)    */
-;* 				       (tprint "nd=" nd " " (typeof value) */
-;* 					  " " (shape (sfun-body value)))) */
-;* 				                                       */
-;* 				    expr))))))))))))                   */
+			      (multiple-value-bind (genv tenv)
+				 (module5-env mod)
+				 (let ((d (find-global env id))
+				       (e (find-global genv id)))
+				    (toplevel->ast expr '() mid genv)
+				    (let* ((nd (find-global genv id))
+					   (f (global-value nd))
+					   (args (sfun-args f))
+					   (body (sexp->node (sfun-body f)
+						    args
+						    (find-location expr)
+						    'value genv)))
+				       (sfun-body-set! (global-value d) body)
+				       (sfun-args-set! (global-value d) args))
+				    #unspecified))))))))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */
@@ -822,9 +828,7 @@
 ;*    module5-init-xenv! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (module5-init-xenv! xenv mod)
-   
-   
-   
+
    (define (define-expander x e)
       (match-case x
 	 ((?def ?proto ?body)
@@ -838,6 +842,7 @@
    (install-module5-expander xenv 'define-generic #f define-expander)
    (install-module5-expander xenv 'define-method #f define-expander)
    (install-module5-expander xenv 'cond-expand #f expand-compile-cond-expand)
+   (install-module5-expander xenv '$class-allocate #f expand-class-allocate)
    
    xenv)
 

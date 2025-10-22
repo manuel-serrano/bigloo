@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Mon Oct 20 14:49:26 2025 (serrano)                */
+#*    Last change :  Wed Oct 22 10:46:45 2025 (serrano)                */
 #*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -138,9 +138,11 @@ POPULATION	= $(SOURCE_FILES) \
 all: recette-c
 
 recette-c: .etags .afile-c objs_c objs5_c
-	@ $(MAKE) recette
+	@ $(MAKE) recette4
 	@ $(MAKE) recette5
 
+recette4: .etags .afile-c objs_c
+	$(MAKE) recette
 recette: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs_c/main.o
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $^
 	@ echo "\e[1;34m$@\e[0m done."

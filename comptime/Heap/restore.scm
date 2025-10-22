@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Mon Oct 20 10:29:54 2025 (serrano)                */
+;*    Last change :  Wed Oct 22 09:30:08 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -32,12 +32,104 @@
 	    backend_backend))
 
 ;*---------------------------------------------------------------------*/
+;*    correct-heap? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (correct-heap? heap)
+   (and (vector? heap) (=fx (vector-length heap) 5)))
+
+;*---------------------------------------------------------------------*/
+;*    compatible-bigloo-version? ...                                   */
+;*---------------------------------------------------------------------*/
+(define (compatible-bigloo-version? version)
+   (or *unsafe-heap* (equal? version *bigloo-version*)))
+
+;*---------------------------------------------------------------------*/
+;*    compatible-bigloo-specific-version? ...                          */
+;*---------------------------------------------------------------------*/
+(define (compatible-bigloo-specific-version? specific)
+   (or *unsafe-heap* (equal? specific *bigloo-specific-version*)))
+   
+;*---------------------------------------------------------------------*/
 ;*    backend-heap-compatible? ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (backend-heap-compatible? target)
    (with-access::backend (the-backend) (language heap-compatible)
       (or (eq? target language) (eq? target heap-compatible))))
-   
+
+;*---------------------------------------------------------------------*/
+;*    *heap-cache* ...                                                 */
+;*---------------------------------------------------------------------*/
+(define *heap-cache* '())
+
+;*---------------------------------------------------------------------*/
+;*    read-heap ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (read-heap fname)
+   (verbose 2 "      [reading " fname "]" #\Newline)
+   (let ((port (open-input-binary-file fname)))
+      (if (not (binary-port? port))
+	  (let ((m (format "Cannot open heap file ~s" fname)))
+	     (error "restore-heap" m *lib-dir*)
+	     (compiler-exit 5))
+	  (unwind-protect
+	     (let ((heap (input-obj port)))
+		(if (not (correct-heap? heap))
+		    (error *heap-name* "Corrupted heap" heap)
+		    (let* ((target (vector-ref heap 0))
+			   (version (vector-ref heap 1))
+			   (specific (vector-ref heap 2))
+			   (genv (vector-ref heap 3))
+			   (tenv (vector-ref heap 4)))
+		       ;; heap correctness
+		       (unless (backend-heap-compatible? target)
+			  (error *heap-name*
+			     "Target language mismatch"
+			     (format "~a vs. ~a"
+				target
+				(backend-language (the-backend)))))
+		       (unless (compatible-bigloo-version? version)
+			  (error *heap-name*
+			     "Release mismatch"
+			     (format "Heap is `~a', Bigloo is `~a'"
+				version
+				*bigloo-version*)))
+		       (unless (compatible-bigloo-specific-version? specific)
+			  (error *heap-name*
+			     "Specific version mismatch"
+			     (format "Heap is `~a', Bigloo is `~a'"
+				specific
+				*bigloo-specific-version*)))
+		       (unless *call/cc?* (unbind-call/cc! genv))
+		       ;; in jvm mode, we have to propagate
+		       ;; the package/module association
+		       (when (backend-qualified-types (the-backend))
+			  (for-each-global! genv
+			     (lambda (new)
+				(add-qualified-type!
+				   (global-module new)
+				   (global-qualified-type-name new)
+				   (shape new))))
+			  genv)
+		       ;; add all the heap modules
+		       (for-each-global! genv
+			  (lambda (new)
+			     (heap-module-list (global-module new))))
+		       (values genv tenv))))
+	     (close-binary-port port)))))
+
+;*---------------------------------------------------------------------*/
+;*    read-cache-heap ...                                              */
+;*---------------------------------------------------------------------*/
+(define (read-cache-heap fname::bstring)
+   (let ((cache (assoc fname *heap-cache*)))
+      (if (pair? cache)
+	  (values (cadr cache) (cddr cache))
+	  (multiple-value-bind (genv tenv)
+	     (read-heap fname)
+	     (set! *heap-cache*
+		(cons (cons fname (cons genv tenv)) *heap-cache*))
+	     (values genv tenv)))))
+
 ;*---------------------------------------------------------------------*/
 ;*    restore-heap ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -46,67 +138,15 @@
       (pass-prelude "Heap")
       (let ((fname (find-file/path *heap-name* *lib-dir*)))
 	 (if (string? fname)
-	     (let ((port (open-input-binary-file fname)))
-		(if (not (binary-port? port))
-		    (let ((m (format "Cannot open heap file ~s" fname)))
-		       (error "restore-heap" m *lib-dir*)
-		       (compiler-exit 5))
-		    (begin
-		       (verbose 2 "      [reading " fname "]" #\Newline)
-		       (unwind-protect
-			  (let* ((Envs (input-obj port))
-				 (_ (if (not (and (vector? Envs)
-						  (=fx (vector-length Envs) 5)))
-					(error *heap-name*
-					       "Corrupted heap"
-					       Envs)))
-				 (target (vector-ref Envs 0))
-				 (version (vector-ref Envs 1))
-				 (specific (vector-ref Envs 2))
-				 (Genv (vector-ref Envs 3))
-				 (Tenv (vector-ref Envs 4)))
-			     ;; check the target languages
-			     (unless (backend-heap-compatible? target)
-				(error *heap-name*
-				       "Target language mismatch"
-				       (format "~a vs. ~a"
-					       target
-					       (backend-language (the-backend)))))
-			     (unless (or *unsafe-heap*
-					 (equal? version *bigloo-version*))
-				(error *heap-name*
-				       "Release mismatch"
-				       (format "Heap is `~a', Bigloo is `~a'"
-					       version
-					       *bigloo-version*)))
-			     (unless (or *unsafe-heap*
-					 (equal? specific *bigloo-specific-version*))
-				(error *heap-name*
-				       "Specific version mismatch"
-				       (format "Heap is `~a', Bigloo is `~a'"
-					       specific
-					       *bigloo-specific-version*)))
-			     ;; for class handling see the note set
-			     ;; for add-Tenv!:
-			     ;; @ref restore.scm:heap class handling@
-			     (set-tenv! Tenv)
-			     (unless *call/cc?* (unbind-call/cc! Genv))
-			     ;; in jvm mode, we have to propagate
-			     ;; the package/module association
-			     (when (backend-qualified-types (the-backend))
-				(for-each-global! Genv
-				 (lambda (new)
-				    (add-qualified-type!
-				     (global-module new)
-				     (global-qualified-type-name new)
-				     (shape new))))
-				Genv)
-			     ;; we add all the heap modules
-			     (for-each-global! Genv
-				(lambda (new)
-				   (heap-module-list (global-module new))))
-			     Genv)
-			  (close-binary-port port)))))
+	     (multiple-value-bind (genv tenv)
+		(read-cache-heap fname)
+		(let ((ge (make-hashtable))
+		      (te (make-hashtable)))
+		   (hashtable-for-each genv
+		      (lambda (k e) (hashtable-put! ge k e)))
+		   (hashtable-for-each tenv
+		      (lambda (k e) (hashtable-put! te k e)))
+		   (values ge te)))
 	     (let ((m (format "Cannot open heap file ~s" *heap-name*)))
 		(error "restore-heap" m *lib-dir*)
 		(compiler-exit 5))))))
@@ -181,13 +221,13 @@
 				(format "~a vs. ~a"
 				   target
 				   (backend-language (the-backend)))))
-			  (unless (equal? version *bigloo-version*)
+			  (unless (compatible-bigloo-version? version)
 			     (error *heap-name*
 				"Release mismatch"
 				(format "Heap is `~a', Bigloo is `~a'"
 				   version
 				   *bigloo-version*)))
-			  (unless (equal? specific *bigloo-specific-version*)
+			  (unless (compatible-bigloo-specific-version? specific)
 			     (error *heap-name*
 				"Specific version mismatch"
 				(format "Heap is `~a', Bigloo is `~a'"

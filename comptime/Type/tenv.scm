@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Mon Oct 20 10:44:34 2025 (serrano)                */
+;*    Last change :  Wed Oct 22 13:47:35 2025 (serrano)                */
 ;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -47,6 +47,9 @@
    (export  (initialize-tenv!)
 	    (set-tenv! <Tenv>)
 	    (add-tenv! <Tenv>)
+	    (new-tenv)
+	    (push-tenv! ::obj)
+	    (pop-tenv!)
 	    (get-tenv)
 	    (find-type::type ::symbol)
 	    (find-type/expr::type ::symbol ::obj)
@@ -69,6 +72,13 @@
 ;*    The Global environment (for global variable definitions).        */
 ;*---------------------------------------------------------------------*/
 (define *Tenv* 'the-global-environment)
+(define *Tenvs* '())
+
+;*---------------------------------------------------------------------*/
+;*    new-tenv ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (new-tenv)
+   (make-hashtable))
 
 ;*---------------------------------------------------------------------*/
 ;*    initialize-tenv! ...                                             */
@@ -76,7 +86,21 @@
 (define (initialize-tenv!)
    ;; the global environment
    (unless (hashtable? *Tenv*)
-      (set! *Tenv* (make-hashtable))))
+      (set! *Tenv* (new-tenv))))
+
+;*---------------------------------------------------------------------*/
+;*    push-tenv! ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (push-tenv! tenv)
+   (set! *Tenvs* (cons *Tenv* *Tenvs*))
+   (set! *Tenv* tenv))
+
+;*---------------------------------------------------------------------*/
+;*    pop-tenv! ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (pop-tenv!)
+   (set! *Tenv* (car *Tenvs*))
+   (set! *Tenvs* (cdr *Tenvs*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-tenv ...                                                     */

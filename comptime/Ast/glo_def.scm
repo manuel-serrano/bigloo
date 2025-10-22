@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Mon Oct 20 17:48:41 2025 (serrano)                */
+;*    Last change :  Wed Oct 22 08:54:16 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the functions used to def (define) a      */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -46,7 +46,7 @@
 	       import::symbol
 	       src::obj
 	       removable::symbol
-	       body)
+	       expr)
 	    (def-global-svar!::global env::obj id::symbol
 	       module::symbol
 	       src::obj
@@ -64,10 +64,10 @@
 ;*    This function is a simple interface for DEF-GLOBAL-SFUN. It      */
 ;*    prevent the global declaration from emitting warning.            */
 ;*---------------------------------------------------------------------*/
-(define (def-global-sfun-no-warning! env id args locals mod class src-exp rem node)
+(define (def-global-sfun-no-warning! env id args locals mod class src-exp rem expr)
    (let ((warning (bigloo-warning)))
       (bigloo-warning-set! 0)
-      (let ((fun (def-global-sfun! env id args locals mod class src-exp rem node)))
+      (let ((fun (def-global-sfun! env id args locals mod class src-exp rem expr)))
 	 (bigloo-warning-set! warning)
 	 fun)))
    
@@ -77,7 +77,7 @@
 ;*    This function defines a global sfunction. It is used only when   */
 ;*    compiling a define expression.                                   */
 ;*---------------------------------------------------------------------*/
-(define (def-global-sfun! env id args locals module class src-exp rem node)
+(define (def-global-sfun! env id args locals module class src-exp rem expr)
    (trace (ast 3) "def-global-sfun!: "
       (shape id) " " (shape args) " " (shape locals) #\Newline
       "    src: " src-exp #\Newline
@@ -87,15 +87,15 @@
 	  (id-type (parse-id id loc))
 	  (type-res (cdr id-type))
 	  (id (car id-type))
-	  (import (if (and (>=fx *bdb-debug* 3)
+	  (scope (if (and (>=fx *bdb-debug* 3)
 			   (memq 'bdb (backend-debug-support (the-backend))))
 		      'export
 		      'static))
-	  (old-global (find-global/module (get-genv) id module))
+	  (old-global (find-global/module env id module))
 	  (global (cond
 		     ((not (global? old-global))
 		      (declare-global-sfun! env id #f args module
-			 import class src-exp #f))
+			 scope class src-exp #f))
 		     (else
 		      (check-sfun-definition old-global type-res
 			 args locals class src-exp))))
@@ -127,7 +127,7 @@
 	     ;; we set the removable field
 	     (remove-var-from! rem global)
 	     ;; we set the body field
-	     (sfun-body-set! (global-value global) node)
+	     (sfun-body-set! (global-value global) expr)
 	     ;; we set the arg field
 	     (sfun-args-set! (global-value global) locals)
 	     ;; we set the define location for this function
@@ -141,7 +141,7 @@
 ;*---------------------------------------------------------------------*/
 (define (check-sfun-definition::global old type-res args locals class src-exp)
    (trace (ast 3) "check-sfun-definition: " (shape old) " "
-	  (shape args) " " (shape locals) #\newline)
+      (shape args) " " (shape locals) #\newline)
    (let ((old-value (global-value old)))
       (cond
 	 ((not (sfun? old-value))
@@ -154,11 +154,12 @@
 	 ((not (=fx (sfun-arity old-value) (global-arity args)))
 	  (mismatch-error old src-exp "(arity differs)"))
 	 ((not (compatible-type? (eq? 'sgfun class)
-				 type-res
-				 (global-type old)))
+		  type-res
+		  (global-type old)))
 	  (mismatch-error old
-			  src-exp
-			  "(incompatible function type result)"))
+	     src-exp
+	     (format "(incompatible function type result (~a/~a))"
+		(shape type-res) (shape (global-type old)))))
 	 ((dsssl-prototype? args)
 	  (cond
 	     ((dsssl-optional-only-prototype? args)
@@ -212,7 +213,7 @@
    (enter-function id)
    (let* ((id-type (parse-id id loc))
 	  (id-id (car id-type))
-	  (old-global (find-global/module (get-genv) id-id module))
+	  (old-global (find-global/module env id-id module))
 	  (global (declare-global-scnst! env id #f module
 		     'static node class loc)))
       ;; we set the removable field
@@ -228,8 +229,8 @@
    (let* ((loc (find-location src-exp))
 	  (id-type (parse-id id loc))
 	  (id-id (car id-type))
-	  (old-global (find-global/module (get-genv) id-id module))
-	  (import (if (and (>=fx *bdb-debug* 3)
+	  (old-global (find-global/module env id-id module))
+	  (scope (if (and (>=fx *bdb-debug* 3)
 			   (memq 'bdb (backend-debug-support (the-backend))))
 		      'export
 		      'static))
@@ -244,7 +245,7 @@
 	  (global (cond
 		     ((not (global? old-global))
 		      (declare-global-svar! env id #f module
-			 import src-exp #f))
+			 scope src-exp #f))
 		     (else
 		      (check-svar-definition old-global type src-exp))))
 	  (def-loc (find-location src-exp)))
@@ -305,10 +306,10 @@
 ;*    check-method-definition ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (check-method-definition env id args locals src)
-   (let* ((loc       (find-location src))
-	  (type-res  (type-of-id id loc))
+   (let* ((loc (find-location src))
+	  (type-res (type-of-id id loc))
 	  (method-id (id-of-id id loc))
-	  (generic   (find-global (get-genv) id)))
+	  (generic (find-global env id)))
       (cond
 	 ((null? args)
 	  (user-error id (shape src) "argument missing")

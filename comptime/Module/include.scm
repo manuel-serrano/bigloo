@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/include.scm          */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/include.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 11:54:16 1996                          */
-;*    Last change :  Thu Apr 11 08:52:23 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Oct 22 16:43:35 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `include' clauses compilation                                */
 ;*=====================================================================*/
@@ -139,7 +139,6 @@
 ;*    get-toplevel-unit ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (get-toplevel-unit)
-   (assert (*toplevel-unit*) (unit? *toplevel-unit*))
    *toplevel-unit*)
 
 ;*---------------------------------------------------------------------*/

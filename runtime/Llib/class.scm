@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Wed Oct 15 02:48:49 2025 (serrano)                */
+;*    Last change :  Wed Oct 22 16:34:09 2025 (serrano)                */
 ;*    Copyright   :  2025 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -335,41 +335,42 @@
 		      (unless (match-case p (((? symbol?) ?e) #t) (else #f))
 			 (error/loc (car x) "Illegal property" p args)))
 	    args)
-	 `(let ((,to ($class-allocate ,(class-info-id class-info)
-			;; concrete properties
-			,@(filter-map (lambda (p)
-					 (cond
-					    ((prop-info-virtual? p)
-					     #f)
-					    ((assq (prop-info-id p) args)
-					     =>
-					     (lambda (arg)
-						(e (cadr arg) e)))
-					    ((prop-info-defv? p)
-					     (e (prop-info-value p) e))
-					    (else
-					     (error/loc (car x)
-						"Property missing"
-						(prop-info-id p)
-						(prop-info-expr p)))))
-			     (class-info-properties class-info)))))
-	     ;; constructor
-	     ,@(if (class-info-ctor class-info)
-		   (list (class-info-ctor class-info))
-		   '())
-	     ;; virtual propertys
-	     ,@(filter-map (lambda (p)
-			      (cond
-				 ((not (prop-info-virtual? p))
-				  #f)
-				 ((assq (prop-info-id p) args)
-				  =>
-				  (lambda (arg)
-				     `(class-instance-virtual-property-set! ,o
-					(e ,(cadr arg) e))))))
-		  (class-info-properties class-info))
-	     ;; done
-	     ,o))))
+	 (e `(let ((,to ($class-allocate ,(class-info-id class-info)
+			   ;; concrete properties
+			   ,@(filter-map (lambda (p)
+					    (cond
+					       ((prop-info-virtual? p)
+						#f)
+					       ((assq (prop-info-id p) args)
+						=>
+						(lambda (arg)
+						   (e (cadr arg) e)))
+					       ((prop-info-defv? p)
+						(e (prop-info-value p) e))
+					       (else
+						(error/loc (car x)
+						   "Property missing"
+						   (prop-info-id p)
+						   (prop-info-expr p)))))
+				(class-info-properties class-info)))))
+		;; constructor
+		,@(if (class-info-ctor class-info)
+		      (list (class-info-ctor class-info))
+		      '())
+		;; virtual propertys
+		,@(filter-map (lambda (p)
+				 (cond
+				    ((not (prop-info-virtual? p))
+				     #f)
+				    ((assq (prop-info-id p) args)
+				     =>
+				     (lambda (arg)
+					`(class-instance-virtual-property-set! ,o
+					    (e ,(cadr arg) e))))))
+		     (class-info-properties class-info))
+		;; done
+		,o)
+	    e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-access-expander ...                                         */

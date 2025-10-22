@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Oct 20 16:17:19 2025 (serrano)                */
+;*    Last change :  Wed Oct 22 09:20:19 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -165,8 +165,12 @@
 	     (begin
 		(initialize-genv!)
 		(initialize-tenv!)))
-	  (profile heap (set-genv! (restore-heap))))
-      
+	  (profile heap
+	     (multiple-value-bind (genv tenv)
+		(restore-heap)
+		(set-genv! genv)
+		(set-tenv! tenv))))
+
       ;; initialize the type caching system
       (profile itype (install-type-cache!))
       
@@ -535,6 +539,8 @@
       (module4-register-plugin! 'type module4-plugin-type)
       (module4-register-plugin! 'eval module4-plugin-eval)
 
+      (module5-preload-cache! (module5-heap4-modules))
+
       (let* ((expr-mod (car expr))
 	     (expr-body (cdr expr))
 	     (mod (module5-parse expr (car *src-files*)
@@ -543,7 +549,7 @@
 		     :cache-dir *module-cache-dir*))
 	     (tu (unit 'toplevel 100 '() #t #f))
 	     (units (list tu)))
-	 
+
 	 (trace-item "units=" units)
 	 (trace-item "body=" expr-body)
 
@@ -621,10 +627,6 @@
 	 (let ((u (module5-object-unit mod)))
 	    (when u (set! units (cons u units))))
 
-	 ;; imported inline units
-;* 	 (let ((u (module5-imported-inline-unit mod)))                 */
-;* 	    (when u (set! units (cons u units))))                      */
-
 	 ;; ... and the global user-defined macro expansion
 	 (profile expand (expand-units units))
 	 (stop-on-pass 'expand (lambda () (write-unit units)))
@@ -635,12 +637,14 @@
 	    (set! units (cons (make-gc-roots-unit) units)))
 
 	 ;; build the variable and function ast
-	 (module5-ast! mod genv)
+	 (module5-ast! mod genv 'compile)
 
 	 (module5-imported-inline mod genv)
 	 
 	 (let* ((m (module5-main mod genv))
+		(_ (tprint "D..."))
 		(ast (profile ast (build-ast units genv))))
+	 (tprint "E...")
 
 	    ;; register main declaration
 	    (set! *main* m)

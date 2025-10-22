@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 15 12:20:33 2002                          */
-;*    Last change :  Thu Oct  9 15:06:46 2025 (serrano)                */
+;*    Last change :  Wed Oct 22 09:22:48 2025 (serrano)                */
 ;*    Copyright   :  2002-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Lalr grammar tests                                               */
@@ -20,15 +20,15 @@
 (define rg
    (regular-grammar ((number (posix "[0-9]+"))
 		     (whitespace (+ (in "\r\n\t \v\f"))))
-      (number  (cons 'number (the-fixnum)))
+      (number (cons 'number (the-fixnum)))
       (whitespace (ignore))
-      (#\+     'op-add)
-      (#\-     'op-sub)
-      (#\*     'op-mult)
-      (#\/     'op-div)
-      (#\(     'op-lparen)
-      (#\)     'op-rparen)
-      (#\;     'op-semicolon)))
+      (#\+ 'op-add)
+      (#\- 'op-sub)
+      (#\* 'op-mult)
+      (#\/ 'op-div)
+      (#\( 'op-lparen)
+      (#\) 'op-rparen)
+      (#\; 'op-semicolon)))
 
 (define lalr-plain
    (lalr-grammar
@@ -71,8 +71,6 @@
        ((expr@a op-mult expr@b) (* a b))
        ((expr@a op-div expr@b) (/ a b))
        ((op-lparen expr op-rparen) expr))))
-
-
 
 ;*---------------------------------------------------------------------*/
 ;*    test-lalr ...                                                    */
