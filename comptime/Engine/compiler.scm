@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Oct 22 09:20:19 2025 (serrano)                */
+;*    Last change :  Wed Oct 22 17:08:48 2025 (serrano)                */
 ;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -642,9 +642,7 @@
 	 (module5-imported-inline mod genv)
 	 
 	 (let* ((m (module5-main mod genv))
-		(_ (tprint "D..."))
 		(ast (profile ast (build-ast units genv))))
-	 (tprint "E...")
 
 	    ;; register main declaration
 	    (set! *main* m)
