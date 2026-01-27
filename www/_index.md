@@ -91,8 +91,8 @@ $ ./flac sample1.flac sample2.flac sample3.flac
 ```
 
 This toy example rests on five builtin libraries to decode the flac
-format, to control the audio card and to play the music. This player
-is highly efficient. This player is highly efficient. It has been used
+format, to control the audio card and to play the music.
+This player is highly efficient. It has been used
 in production on small ARM 200Mhz using only 64MB. Today, installed on
 a Raspberry PI, it will deliver more performance than needed to
 implement of high quality music streaming system.
