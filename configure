@@ -657,7 +657,7 @@ while : ; do
       dlldir="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --mandir=*)
-      mandir="`echo $1 | sed 's/^[^=]*=//'`";;
+      mandir="`echo $1 | sed 's/^[^=]*=//'`/man1";;
 
     --infodir=*)
       infodir="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -1488,11 +1488,6 @@ $echo -n "# " >> $configurelog
 date >> $configurelog
 $echo "# $0 $logopt" >> $configurelog
 $echo >> $configurelog
-
-# the mandir
-if [ -d "$mandir/man1" ]; then
-  mandir=$mandir/man1;
-fi
 
 # buildtmpdir
 if [ "$buildtmp " = " " ]; then

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Thu Jun  5 08:31:27 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Tue Jan 27 16:08:27 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
 ;*    native support is available. Hence, its performance is           */
@@ -1176,7 +1176,12 @@
    (fixnum->bignum ($flonum->fixnum n)))
 
 (define ($bignum->flonum n)
-   ($fixnum->flonum ($bignum->fixnum n)))
+   (let loop ((r 0.0)
+	      (l (reverse! (bignum->fixnum-list n 9))))
+      (if (null? l)
+	  r
+	  (loop (+fl (*fl r 10.) ($fixnum->flonum (car l)))
+	     (cdr l))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bitwise operations                                               */
