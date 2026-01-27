@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Tue Jan 27 16:08:27 2026 (serrano)                */
+;*    Last change :  Tue Jan 27 16:38:04 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -1181,7 +1181,7 @@
       (if (null? l)
 	  r
 	  (loop (+fl (*fl r 10.) ($fixnum->flonum (car l)))
-	     (cdr l))))))
+	     (cdr l)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bitwise operations                                               */
