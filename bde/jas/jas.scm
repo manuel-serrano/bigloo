@@ -13,7 +13,10 @@
 	  ((?filein ?- ?fileout)
 	   (set! *jas-peephole* #f)
 	   (doit filein fileout) )
-	  (else (error 'jas "bad command line" a)) )))
+	  (else
+	   (error "jas"
+	      (format "bad command line (see \"~a --help\")" (car a))
+	      a) ))))
 
 (define (doit filein fileout)
    (let ( (def (call-with-input-file filein read)) )

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun Oct  5 10:36:32 2025 (serrano)                */
-;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan 28 17:41:35 2026 (serrano)                */
+;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -1118,6 +1118,7 @@
       (("-indent" (help "Produce an indented .c file"))
        (set! *pass* 'cindent))
       (("-jvmas" (help "Produce a JVM .jas file"))
+       (set! *heap-name* *heap-jvm-name*)
        (set! *target-language* 'jvm)
        (set! *pass* 'jvmas))
       

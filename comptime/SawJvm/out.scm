@@ -1,21 +1,21 @@
 (module saw_jvm_out
    (import type_type ast_var ast_node
-	   engine_param
-	   engine_configure
-	   module_module
-	   type_env
-	   foreign_jtype
-	   object_class
-	   object_slots
-	   tvector_tvector
-	   read_jvm
-	   backend_backend
-	   backend_bvm
-	   backend_jvm_class
-	   backend_cplib
-	   saw_defs
-	   saw_jvm_names 
-	   tools_shape)
+			     engine_param
+			     engine_configure
+			     module_module
+			     type_env
+			     foreign_jtype
+			     object_class
+			     object_slots
+			     tvector_tvector
+			     read_jvm
+			     backend_backend
+			     backend_bvm
+			     backend_jvm_class
+			     backend_cplib
+			     saw_defs
+			     saw_jvm_names 
+			     tools_shape)
    (export (open-class me::jvm class::type super)
 	   (close-class me::jvm class::type)
 	   (open-module me::jvm)
@@ -40,10 +40,13 @@
 	   (label me::jvm lab)
 	   (branch me::jvm cop lab)
 	   (open-lib-method me::jvm id)
-	   (compile-type me::jvm type::type)
-	   *perso*))
+	   (compile-type me::jvm type::type)))
 
-(define *perso* #f)
+(define bgl-module-root-class '(procedure (class () "bigloo.procedure")))
+(define bgl-module-implements '(serializable))
+
+;;(define bgl-module-root-class (cons obj "Object"))
+;;(define bgl-module-implements '(serializable callable))
 
 ;;
 ;; Classes & Modules
@@ -102,7 +105,7 @@
       (set! declarations
 	    (reverse (cons*
 		      `(me (class (public) ,(symbol->string qname)))
-		      `(super (class () "bigloo.procedure"))
+		      `(super (class () ,(caddr (cadr bgl-module-root-class))))
      		      (declare-lib 'module) )))
       (set! fields '())
       (set! methods '()) ))
@@ -112,7 +115,7 @@
       (let ( (file (car *src-files*)) )
 	 (let ( (bfile (if (string? file) (basename file) "-")) )
 	    ;; CARE May be some cleanup of me (decl fields methods classes)
-	    `((module me procedure (serializable)
+	    `((module me ,(car bgl-module-root-class) ,bgl-module-implements
 		      (declare ,@(reverse! declarations))
 		      (fields myname ,@fields)
 		      (sourcefile ,bfile)
@@ -137,6 +140,8 @@
      (obj (class () "java.lang.Object"))
      (string (class () "java.lang.String"))
      (serializable (class () "java.io.Serializable"))
+     ,bgl-module-root-class
+     ;;(callable (class () "bigloo.callable"))
      ;; BPS: changed 12 nov 09 (3.2c) (see, Fields/Methods of bigloo.foreign
      ;; (getbytes (method string () (vector byte) "getBytes"))
      (concat (method string () string "concat" string))
@@ -155,7 +160,7 @@
      (main (method me (public static) void "main" (vector string)))
      (dlopen (method me (public static) void ,(dload-init-sym)))
      ;; Fields/Methods of bigloo.procedure
-     (procedure (class () "bigloo.procedure"))
+
      (procenv (field procedure () (vector obj) "env"))
      (procarity (field procedure () int "arity"))
      (procindex (field procedure () int "index"))
@@ -298,54 +303,7 @@
      (java_exception_handler (method foreign () obj "java_exception_handler" throwable exit))
      (setexit (method foreign () exit "setexit"))
      (bgl_string_to_bignum (method foreign () bignum "bgl_string_to_bignum" string))
-     (BINT (method foreign () obj "BINT" int))
-     ;   (math (class () "java.lang.Math"))
-     ;   (bucs2_value (field j_bucs2 () char "value"))
-     ;   (j_llong (class () "bigloo.bllong"))
-     ;   (make_llong (method j_llong (static) j_llong "make_llong" string))
-     ;   (j_cnst (class () "bigloo.cnst"))
-     ;   (cnst_value (field j_cnst () int "value"))
-     ;   (key_string (field j_keyword () (vector byte) "string"))
-     ;   (j_procedure (class () "bigloo.procedure"))
-     ;   (j_keyword (class () "bigloo.keyword"))
-     ;   (j_bexception (class () "bigloo.bexception"))
-     ;   (j_exit (class () "bigloo.exit"))
-     ;   (j_struct (class () "bigloo.struct"))
-     ;   (struct_key (field j_struct () obj "key"))
-     ;   (struct_values (field j_struct () (vector obj) "values"))
-     ;   (j_input (class () "bigloo.input_port"))
-     ;   (io_name (field j_input () string "name"))
-     ;   (io_filepos (field j_input () int "filepos"))
-     ;   (io_bufsiz (field j_input () int "bufsiz"))
-     ;   (io_other_eof (field j_input () boolean "other_eof"))
-     ;   (io_start (field j_input () int "matchstart"))
-     ;   (io_stop (field j_input () int "matchstop"))
-     ;   (io_forward (field j_input () int "forward"))
-     ;   (io_lastchar (field j_input () byte "lastchar"))
-     ;   (io_abufsiz (field j_input () int "abufsiz"))
-     ;   (io_buffer (field j_input () (vector byte) "buffer"))
-     ;   (print (method j_foreign (static) void "print" string))
-     ;   (eqbint (method j_foreign (static) boolean "eqbint" obj obj))
-     ;   (internalerror (method j_foreign (static) void "internalerror" jthrowable))
-     ;   (listargv (method j_foreign (static) obj "listargv" (vector string)))
-     ;   (getbytes (method string () (vector byte) "getBytes"))
-     ;   (concat (method string () string "concat" string))
-     ;   (floor (method math (static) double "floor" double))
-     ;   (ceil (method math (static) double "ceil" double))
-     ;   (exp (method math (static) double "exp" double))
-     ;   (log (method math (static) double "log" double))
-     ;   (sin (method math (static) double "sin" double))
-     ;   (cos (method math (static) double "cos" double))
-     ;   (tan (method math (static) double "tan" double))
-     ;   (asin (method math (static) double "asin" double))
-     ;   (acos (method math (static) double "acos" double))
-     ;   (atan (method math (static) double "atan" double))
-     ;   (atan2 (method math (static) double "atan2" double double))
-     ;   (sqrt (method math (static) double "sqrt" double))
-     ;   (pow (method math (static) double "pow" double double))
-     ;   (jumpexit (method j_foreign (static) obj "jumpexit" obj obj))
-     ;   (setexit (method j_foreign (static) obj "setexit"))
-     ))
+     (BINT (method foreign () obj "BINT" int))))
 
 (define (declare-lib module-or-class::symbol)
    (if (eq? module-or-class 'module)
