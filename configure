@@ -45,7 +45,7 @@ lispdir=
 rpath=
 
 #*--- api -------------------------------------------------------------*/
-importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 crypto openpgp csv upnp libuv libbacktrace"
+importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar text srfi1 crypto openpgp csv upnp libuv libbacktrace"
 apis="$importantapis gstreamer alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat mqtt browser"
 
 #*--- bee configuration -----------------------------------------------*/
@@ -327,7 +327,8 @@ customgc=yes
 #gccustom=gc-8.0.4
 #gccustom=gc-8.2.2
 #gccustom=gc-8.2.4
-gccustom=gc-8.2.8
+#gccustom=gc-8.2.8
+gccustom=gc-8.2.10
 gcversion=
 gcbump=0
 cgcflags=
@@ -666,7 +667,7 @@ while : ; do
       dlldir="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --mandir=*)
-      mandir="`echo $1 | sed 's/^[^=]*=//'`";;
+      mandir="`echo $1 | sed 's/^[^=]*=//'`/man1";;
 
     --infodir=*)
       infodir="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -1521,11 +1522,6 @@ date >> $configurelog
 $echo "# $0 $logopt" >> $configurelog
 $echo >> $configurelog
 
-# the mandir
-if [ -d "$mandir/man1" ]; then
-  mandir=$mandir/man1;
-fi
-
 # buildtmpdir
 if [ "$buildtmp " = " " ]; then
   buildtmp=/tmp
@@ -1571,8 +1567,6 @@ if [ "$action" != "bigloo_config_el" ]; then
   # check apis cross dependencies
   srfi1_is_enabled=no
   packrat_is_enabled=no
-  pkgcomp_is_enabled=no
-  pkglib_is_enabled=no
   sqlite_is_enabled=no
   dbus_is_enabled=no
   fthread_is_enabled=no
@@ -1592,8 +1586,6 @@ if [ "$action" != "bigloo_config_el" ]; then
       srfi27) srfi27_is_enabled="yes";;
       packrat) packrat_is_enabled="yes";;
       sqlite) sqlite_is_enabled="yes";;
-      pkgcomp) pkgcomp_is_enabled="yes";;
-      pkglib) pkglib_is_enabled="yes";;
       dbus) dbus_is_enabled="yes";;
       pthread) pthread_is_enabled="yes";;
       srfi18) srfi18_is_enabled="yes";;
@@ -1610,14 +1602,6 @@ if [ "$action" != "bigloo_config_el" ]; then
   if [ $packrat_is_enabled = "yes" -a $srfi1_is_enabled = "no" ]; then
       $echo "*** ERROR: packrat library requires srfi1."
       $echo "Either disable packrat or enable srfi1."
-      $echo
-      $echo "Enabled apis: $apis"
-      exit 1
-  fi
-  
-  if [ $pkglib_is_enabled = "yes" -a $sqlite_is_enabled = "no" ]; then
-      $echo "*** ERROR: pkglib library requires sqlite."
-      $echo "Either disable pkglib or enable sqlite."
       $echo
       $echo "Enabled apis: $apis"
       exit 1
@@ -1654,67 +1638,6 @@ if [ "$action" != "bigloo_config_el" ]; then
       $echo "Enabled apis: $apis"
       exit 1
   fi
-fi
-
-# Check depends for bglpkg
-if [ "$enable_bglpkg " = "yes " ]; then
-    if [ $pkgcomp_is_enabled = "no" ]; then
-	$echo "*** WARNING: bglpkg binary requires pkgcomp library"
-	$echo "Disabling bglpkg."
-	enable_bglpkg="no"
-    fi
-    if [ $pkglib_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires pkglib library"
-	$echo "Disabling bglpkg."
-	enable_bglpkg="no"
-    fi
-    if [ $sqlite_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires sqlite library"
-	$echo "Disabling bglpkg."
-	enable_bglpkg="no"
-    fi
-    if [ $web_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires web library"
-	$echo "Disabling bglpkg."
-	enable_bglpkg="no"
-    fi
-fi
-
-if [ "$enable_bglpkg " = "force " ]; then
-    if [ $pkgcomp_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires pkgcomp library"
-	$echo "Either disable bglpkg, or enable pkgcomp."
-	$echo 
-	$echo "Enabled apis: $apis"
-	exit 1
-    fi
-    if [ $pkglib_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires pkglib library"
-	$echo "Either disable bglpkg, or enable pkglib."
-	$echo 
-	$echo "Enabled apis: $apis"
-	exit 1
-    fi
-    if [ $sqlite_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires sqlite library"
-	$echo "Either disable bglpkg, or enable sqlite."
-	$echo 
-	$echo "Enabled apis: $apis"
-	exit 1
-    fi
-    if [ $web_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires web library"
-	$echo "Either disable bglpkg, or enable web."
-	$echo 
-	$echo "Enabled apis: $apis"
-	exit 1
-    fi
-fi
-
-# Here, bglpkg has all its dependencies, setting it just to "yes"
-#  in order to have not to double test its value
-if [ "$enable_bglpkg " = "force " ]; then
-    enable_bglpkg="yes"
 fi
 
 #*---------------------------------------------------------------------*/
@@ -5112,7 +5035,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       >>  api/csv/src/Misc/csv.init
   cat api/csv/src/Llib/csv.sch \
       >>  api/csv/src/Misc/csv.init
-
   # BROWSER
   if [ " $browser " != " no" ]; then
     $echo "BROWSER=$browser" >> $makefile_cfg
@@ -5138,44 +5060,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo "BROWSER=" >> $makefile_cfg
   fi
 
-  # SCMPKG
-  configure=api/pkgcomp/src/Llib/configure.scm
-  rm -f $configure
-  $echo ";; automatically generated. Don't edit" >  $configure
-  cat $configure.in \
-    | sed -e "s|@PKGCOMPVERSION@|$scmpkgversion|g" \
-    >>  $configure
-  chmod a-w $configure
-
-  # pkgcomp.init
-  pkgcomp_init=api/pkgcomp/src/Misc/pkgcomp.init
-  rm -f $pkgcomp_init
-  $echo ";; automatically generated. Don't edit" >  $pkgcomp_init
-  cat api/pkgcomp/src/Misc/pkgcomp.init.in \
-      | sed -e "s|@PKGCOMPVERSION@|$scmpkgversion|g" \
-      >>  $pkgcomp_init
-  $echo "" >> $pkgcomp_init
-
-  for p in srfi89.sch interface.sch expanders.sch class.sch configure.sch; do
-    cat api/pkgcomp/src/Llib/$p >> $pkgcomp_init
-    $echo "" >> $pkgcomp_init
-  done
-
-  # pkgcomp startup
-  $echo "(cond-expand ((not bigloo-@expanders) (@install-expanders!)))" \
-     >> $pkgcomp_init
-
-  # bglpkg
-  configure=bglpkg/configure.scm
-  rm -f $configure
-  $echo ";; automatically generated. Don't edit" >  $configure
-  cat $configure.in \
-       | sed -e "s|@BGLPKGVERSION@|$release|g" \
-             -e "s|@BGLPKGNAME@|$bglpkg|g" \
-       >>  $configure
-  chmod a-w $configure
-  $echo "ENABLE_BGLPKG=$enable_bglpkg" >> $makefile_cfg
-  $echo "" >> $makefile_cfg
 
   # Does the system support strip
   $echo "STRIP=$strip" >> $makefile_cfg

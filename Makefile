@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Jul 30 20:24:47 2025 (serrano)                */
-#*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Jan 28 07:19:56 2026 (serrano)                */
+#*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -129,7 +129,6 @@ DIRECTORIES	= cigloo \
                   api \
                   srfi \
                   bdl \
-                  bglpkg \
                   gc \
                   gmp \
                   pcre \
@@ -151,7 +150,7 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 #*    Boot a new Bigloo system on a new host. This boot makes use      */
 #*    of the pre-compiled C files.                                     */
 #*---------------------------------------------------------------------*/
-.PHONY: checkconf boot boot-jvm boot-wasm boot-bde boot-api boot-bglpkg
+.PHONY: checkconf boot boot-jvm boot-wasm boot-bde boot-api
 
 build: checkconf $(BOOTMETHOD)
 
@@ -193,9 +192,6 @@ boot: boot-c
 	  $(MAKE) boot-wasm; \
         fi
 	$(MAKE) boot-bde WASMBACKEND=yes
-	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
-	  $(MAKE) boot-bglpkg; \
-        fi
 	@ echo "\e[1;34mboot\e[0m done..."
 
 boot-c: checkgmake
@@ -259,9 +255,6 @@ boot-bde:
 
 boot-api:
 	$(MAKE) -C api boot BFLAGS="$(BFLAGS)"
-
-boot-bglpkg:
-	$(MAKE) -C bglpkg BFLAGS="$(BFLAGS)"
 
 #*---------------------------------------------------------------------*/
 #*    cross-rts ...                                                    */
@@ -462,10 +455,6 @@ fullbootstrap-sans-configure:
 	  $(MAKE) -C runtime heap-wasm libs-wasm; \
         fi
 	$(MAKE) -C cigloo -i clean; $(MAKE) -C cigloo
-	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
-	  $(MAKE) -C bglpkg -i clean; \
-	  $(MAKE) -C bglpkg; \
-	fi
 	$(MAKE) -C api boot
 
 # only used for continuous integration, as of 4may2021, fullboostrap
@@ -753,9 +742,6 @@ install-progs: install-devel install-libs
 install-devel: install-dirs
 	$(MAKE) -C comptime install
 	$(MAKE) -C bde install
-	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
-	  $(MAKE) -C bglpkg install; \
-	fi
 	$(MAKE) -C autoconf install
 	$(MAKE) -C api install-devel
 
@@ -831,9 +817,6 @@ install-dirs:
          if [ ! -d $(DESTDIR)$(LIBDIR) ]; then \
             mkdir -p $(DESTDIR)$(LIBDIR) && chmod $(MODDIR) $(DESTDIR)$(LIBDIR); \
          fi && \
-         if [ ! -d $(DESTDIR)$(LIBDIR)/pkgconfig ]; then \
-            mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/pkgconfig; \
-         fi && \
          if [ ! -d $$bbase ]; then \
             mkdir -p $$bbase && chmod $(MODDIR) $$bbase; \
          fi && \
@@ -877,7 +860,6 @@ uninstall: uninstall-bee
 	$(MAKE) -C api uninstall
 	$(RM) -f $(DESTDIR)$(LIBDIR)/Makefile.config
 	$(RM) -f $(DESTDIR)$(LIBDIR)/Makefile.misc
-	$(MAKE) -C bglpkg uninstall
 	$(MAKE) -C api uninstall-devel
 
 uninstall-bee0:
@@ -935,7 +917,6 @@ clean:
 	(cd recette && $(MAKE) clean)
 	(cd api && $(MAKE) clean)
 	(cd bdl && $(MAKE) clean)
-	(cd bglpkg && $(MAKE) clean)
 
 cleanall: 
 	@ if [ "`pwd`" = "$$HOME/prgm/project/bigloo" ]; then \
@@ -961,7 +942,6 @@ cleanall:
         fi
 	(cd api && $(MAKE) cleanall)
 	(cd bdl && $(MAKE) cleanall)
-	(cd bglpkg && $(MAKE) cleanall)
 
 distclean: 
 	@ if [ "`pwd`" = "$$HOME/prgm/project/bigloo" ]; then \
@@ -982,7 +962,6 @@ distclean:
 	  fi; \
 	  (cd api && $(MAKE) distclean); \
 	  (cd bdl && $(MAKE) distclean); \
-	  (cd bglpkg && $(MAKE) distclean); \
 	  $(MAKE) unconfigure; \
 	  $(RM) -rf bin; \
 	  $(RM) -rf lib; \

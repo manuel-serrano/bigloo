@@ -1004,7 +1004,7 @@ Example:
 
 @deffn {bigloo procedure} lockf output-port command [len 0]
 Lock a file descriptor or an output port. It is an error to call
-@code{lockf} with an port whicis not open on a plain file (i.e., a port open
+@code{lockf} with an port which is not open on a plain file (i.e., a port open
 with @code{open-output-file}, or its variants).
 
 The @var{command} argument is one of:

@@ -1,23 +1,33 @@
+ANDROID CROSS COMPILATION GUIDE
+===============================
+
+_15 Nov 2025_
+
+
 This document explains how to cross compile applications for Android. This
-instructions have only been tested with host running a Linux machine
-and a target using an Arm architecture. 
+instructions have only been tested with hosts running Linux setup
+and targets using Arm architectures. 
 
 Note: in this document we use the following definitions for cross compiling [1]:
 
- * host: platform where everything will be compiled. usually
+ * host: the platform where everything will be compiled. usually
    i386/i686/amd64/x86_64+Linux or Mac.
- * target: platform which will run the resulting binary. arm+Android in this
+ * target: the platform which will run the resulting binary. arm+Android in this
    case.
 
 1. Status
 =========
 
-The current Bigloo port (as of 3.4b) on Android is complete but it
-does not support shared libraries yet.
+The current Bigloo port (as of 4.7a) on Android is core complete but
+not all libraries have been ported.
 
 
 2. Requirements
 ===============
+
+The development method used by Bigloo requires the devices to be 
+in [developper mode](https://developer.android.com/studio/debug/dev-options).
+
 
 Compiling Bigloo for Android requires several things:
 
@@ -27,6 +37,8 @@ Compiling Bigloo for Android requires several things:
   * Android SDK which is available at:
 
       http://developer.android.com/sdk/index.html
+
+    As of 2025, it is called "Command line tools only". 
 
   * Get Android source code (Elcair or Froyo), for which you'll need git. 
     See instructions below (Section 2.1).
@@ -41,7 +53,7 @@ Compiling Bigloo for Android requires several things:
     IMPORTANT: Once downloaded, apply droid-wrapper.diff shipped in this 
     directory and install.
 
-Also you will require:
+Also you will need:
 
  * An already compiled and running bigloo version for the host platform.
 
