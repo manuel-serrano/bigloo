@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 13 05:06:17 2008                          */
-;*    Last change :  Wed Jun  4 10:12:11 2025 (serrano)                */
-;*    Copyright   :  2008-25 Manuel Serrano                            */
+;*    Last change :  Wed Jan 28 11:22:34 2026 (serrano)                */
+;*    Copyright   :  2008-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test bignums                                                     */
 ;*=====================================================================*/
@@ -129,10 +129,10 @@
 			(-bx n m))
       #z-418186534408761824912469871331614554782)
    (test "bignum.40" (let ((n 9999999999999))
-			(bignum? (eval `(* (string->integer "9999999999999") ,n))))
+			(bignum? (eval `(* (string->number "9999999999999") ,n))))
       #t)
    (test "bignum.41" (let ((n 9999999999999))
-			(bignum? (eval `(2* (string->integer "9999999999999") ,n))))
+			(bignum? (eval `(2* (string->number "9999999999999") ,n))))
       #t))
 			
  
