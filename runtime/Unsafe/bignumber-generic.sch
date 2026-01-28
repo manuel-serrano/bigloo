@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Wed Jan 28 07:42:36 2026 (serrano)                */
+;*    Last change :  Wed Jan 28 08:44:00 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -40,8 +40,6 @@
 ;*---------------------------------------------------------------------*/
 (directives
 
-   (import __r4_output_6_10_3)
-   
    (extern
       (macro $fixnum->flonum::double (::long) "(double)")
       (macro $flonum->fixnum::long (::double) "(long)")
@@ -160,37 +158,36 @@
 ;*---------------------------------------------------------------------*/
 (define ($string->integer-obj str radix)
 
-   (define (loopfx v i)
-      (if (=fx i -1)
+   (define (loopfx v i len)
+      (if (=fx i len)
 	  v
 	  (let ((n (char->digit (string-ref str i) radix)))
 	     (when n
 		(let ((m (*fx/ov v radix)))
-		   (if m
+		   (if (fixnum? m)
 		       (let ((a (+fx/ov m n)))
-			  (if a
-			      (loopfx a (-fx i 1))
-			      (loopbx (fixnum->bignum v) i
+			  (if (fixnum? a)
+			      (loopfx a (+fx i 1) len)
+			      (loopbx (fixnum->bignum v) i len
 				 (fixnum->bignum radix))))
-		       (loopbx (fixnum->bignum v) i
+		       (loopbx (fixnum->bignum v) i len
 			  (fixnum->bignum radix))))))))
 
-   (define (loopbx v i r)
+   (define (loopbx v i len r)
       ;; entered on fixnum overflow
-      (if (=fx i -1)
+      (if (=fx i len)
 	  v
 	  (let ((n (char->digit (string-ref str i) radix)))
 	     (when n
-		(loopbx (+bx (*bx v r) (fixnum->bignum n))
-		   (-fx i 1)
+		(loopbx (+bx (*bx v r) (fixnum->bignum n)) (+fx i 1) len
 		   r)))))
 
    (let ((len (string-length str)))
-      (if (<fx len 6)
+      (if (<=fx len 4)
 	  ;; fast path, safe string, no overflow possible
 	  (string->integer str radix)
 	  ;; slow path
-	  (loopfx 0 len))))
+	  (loopfx 0 0 len))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expt ...                                                         */
