@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Tue Jan 27 16:38:04 2026 (serrano)                */
+;*    Last change :  Wed Jan 28 07:42:36 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -39,6 +39,8 @@
 ;*    The directives                                                   */
 ;*---------------------------------------------------------------------*/
 (directives
+
+   (import __r4_output_6_10_3)
    
    (extern
       (macro $fixnum->flonum::double (::long) "(double)")
@@ -104,7 +106,7 @@
       (export $negativebx? "BXNEGATIVE"))
    
    (export
-      (inline $string->integer-obj::obj ::string ::long)
+      ($string->integer-obj::obj ::string ::long)
       ($fixnum->bignum::bignum ::long)
       ($bignum->fixnum::long ::bignum)
       ($bignum->elong::elong ::bignum)
@@ -155,13 +157,40 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    $string->integer-obj ...                                         */
-;*    -------------------------------------------------------------    */
-;*    When no native bignum implementation is available, standard      */
-;*    aritmethic operations do not promote their result because        */
-;*    this would be too expensive.                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline ($string->integer-obj str radix)
-   (string->integer str radix))
+(define ($string->integer-obj str radix)
+
+   (define (loopfx v i)
+      (if (=fx i -1)
+	  v
+	  (let ((n (char->digit (string-ref str i) radix)))
+	     (when n
+		(let ((m (*fx/ov v radix)))
+		   (if m
+		       (let ((a (+fx/ov m n)))
+			  (if a
+			      (loopfx a (-fx i 1))
+			      (loopbx (fixnum->bignum v) i
+				 (fixnum->bignum radix))))
+		       (loopbx (fixnum->bignum v) i
+			  (fixnum->bignum radix))))))))
+
+   (define (loopbx v i r)
+      ;; entered on fixnum overflow
+      (if (=fx i -1)
+	  v
+	  (let ((n (char->digit (string-ref str i) radix)))
+	     (when n
+		(loopbx (+bx (*bx v r) (fixnum->bignum n))
+		   (-fx i 1)
+		   r)))))
+
+   (let ((len (string-length str)))
+      (if (<fx len 6)
+	  ;; fast path, safe string, no overflow possible
+	  (string->integer str radix)
+	  ;; slow path
+	  (loopfx 0 len))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expt ...                                                         */
@@ -947,23 +976,25 @@
        (convert-non-neg #\- ($negbx x))
        (convert-non-neg #f x)))
 
+(define (char->digit c rad)
+   
+   (define (check d)
+      (if (<fx d rad)
+	  d
+	  #f))
+   
+   (cond ((and (char>=? c #\0) (char<=? c #\9))
+	  (check (-fx (char->integer c) (char->integer #\0))))
+	 ((and (char>=? c #\a) (char<=? c #\z))
+	  (check (+fx 10 (-fx (char->integer c) (char->integer #\a)))))
+	 ((and (char>=? c #\A) (char<=? c #\Z))
+	  (check (+fx 10 (-fx (char->integer c) (char->integer #\A)))))
+	 (else
+	  #f)))
+
 (define ($string->bignum str radix) ;; 2 <= radix <= 36
    
-   (define (char->digit c rad)
-      
-      (define (check d)
-	 (if (<fx d rad)
-	     d
-	     #f))
-      
-      (cond ((and (char>=? c #\0) (char<=? c #\9))
-	     (check (-fx (char->integer c) (char->integer #\0))))
-	    ((and (char>=? c #\a) (char<=? c #\z))
-	     (check (+fx 10 (-fx (char->integer c) (char->integer #\a)))))
-	    ((and (char>=? c #\A) (char<=? c #\Z))
-	     (check (+fx 10 (-fx (char->integer c) (char->integer #\A)))))
-	    (else
-	     #f)))
+   
    
    (define (convert rad sign i)
       (if (<=fx (+fx i 1) (string-length str)) ;; need at least one digit
