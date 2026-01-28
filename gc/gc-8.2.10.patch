@@ -1,0 +1,566 @@
+diff -Naur gc-8.2.10.orig/alloc.c gc-8.2.10/alloc.c
+--- gc-8.2.10.orig/alloc.c	2025-10-18 22:23:23.000000000 +0200
++++ gc-8.2.10/alloc.c	2026-01-28 07:10:46.809438801 +0100
+@@ -765,6 +765,40 @@
+     RESTORE_CANCEL(cancel_state);
+ }
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++static void (*GC_gcollect_hook)(unsigned long, unsigned long) = 0;
++void GC_add_gc_hook(void (*f)(unsigned long, unsigned long)) {
++   GC_gcollect_hook = f;
++}
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: stop                                 */
++/*---------------------------------------------------------------------*/
++
++/*---------------------------------------------------------------------*/
++/*    Bigloo start                                                     */
++/*---------------------------------------------------------------------*/
++static long allocated_bytes = 0;
++
++long GC_get_allocated_bytes() {
++   return allocated_bytes;
++}
++
++void GC_reset_allocated_bytes() {
++   GC_gcollect();
++   allocated_bytes = 0;
++}
++
++#ifdef KEEP_BACK_PTRS
++int GC_heap_info_available = 1;
++#else
++int GC_heap_info_available = 0;
++#endif
++/*---------------------------------------------------------------------*/
++/*    Bigloo stop                                                      */
++/*---------------------------------------------------------------------*/
++
+ GC_INNER void (*GC_check_heap)(void) = 0;
+ GC_INNER void (*GC_print_all_smashed)(void) = 0;
+ 
+@@ -1134,6 +1168,16 @@
+         GC_check_tls();
+ #   endif
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo start                                                     */
++/*---------------------------------------------------------------------*/
++#   ifdef KEEP_BACK_PTRS
++    allocated_bytes += GC_get_bytes_since_gc();
++#   endif
++/*---------------------------------------------------------------------*/
++/*    Bigloo stop                                                      */
++/*---------------------------------------------------------------------*/
++
+ #   ifndef NO_CLOCK
+       if (GC_print_stats)
+         GET_TIME(start_time);
+@@ -1231,6 +1275,18 @@
+                           COMMA_IF_USE_MUNMAP((unsigned long)
+                                               GC_unmapped_bytes));
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++    if (GC_gcollect_hook) {
++       GC_gcollect_hook((unsigned long)GC_heapsize,
++			(unsigned long)(GC_atomic_in_use) +
++			(unsigned long)(GC_composite_in_use));
++    }
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++    
+     /* Reset or increment counters for next cycle */
+     GC_n_attempts = 0;
+     GC_is_full_gc = FALSE;
+diff -Naur gc-8.2.10.orig/Makefile.am gc-8.2.10/Makefile.am
+--- gc-8.2.10.orig/Makefile.am	2025-10-18 22:23:23.000000000 +0200
++++ gc-8.2.10/Makefile.am	2026-01-28 07:10:46.809438801 +0100
+@@ -65,11 +65,18 @@
+ else
+ 
+ EXTRA_DIST += extra/gc.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
+ libgc_la_SOURCES = \
+     allchblk.c alloc.c blacklst.c dbg_mlc.c \
+     dyn_load.c finalize.c gc_dlopen.c headers.c \
+     mach_dep.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+-    obj_map.c os_dep.c ptr_chck.c reclaim.c specific.c typd_mlc.c
++    obj_map.c os_dep.c ptr_chck.c reclaim.c specific.c typd_mlc.c \
++    inline_alloc.c gc_intf.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ 
+ # C Library: Architecture Dependent
+ # ---------------------------------
+diff -Naur gc-8.2.10.orig/Makefile.am.orig gc-8.2.10/Makefile.am.orig
+--- gc-8.2.10.orig/Makefile.am.orig	1970-01-01 01:00:00.000000000 +0100
++++ gc-8.2.10/Makefile.am.orig	2025-10-18 22:23:23.000000000 +0200
+@@ -0,0 +1,246 @@
++# Copyright (c) 1999-2001 by Red Hat, Inc. All rights reserved.
++#
++# THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
++# OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
++#
++# Permission is hereby granted to use or copy this program
++# for any purpose,  provided the above notices are retained on all copies.
++# Permission to modify the code and to distribute modified code is granted,
++# provided the above notices are retained, and a notice that the code was
++# modified is included with the above copyright notice.
++
++## Process this file with automake to produce Makefile.in.
++
++# Info (current:revision:age) for the Libtool versioning system.
++# These numbers should be updated at most once just before the release,
++# and, optionally, at most once during the development (after the release).
++LIBGC_VER_INFO = 6:5:5
++LIBGCCPP_VER_INFO = 6:0:5
++
++# We currently use the source files directly from libatomic_ops, if we
++# use the internal version.  This is done since libatomic_ops doesn't
++# use libtool, since it has no real use for it.  But that seems to make
++# it hard to use either the resulting object files or libraries.
++# Thus there seems to be no real reason to recursively build in the
++# libatomic_ops directory.
++# if USE_INTERNAL_LIBATOMICS_OPS
++# SUBDIRS = @maybe_libatomic_ops@
++# else
++# SUBDIRS =
++# endif
++SUBDIRS =
++
++ACLOCAL_AMFLAGS = -I m4
++AM_CPPFLAGS = \
++    -I$(top_builddir)/include -I$(top_srcdir)/include \
++    $(ATOMIC_OPS_CFLAGS)
++
++## Initialize variables so that we can declare files locally.
++EXTRA_DIST =
++lib_LTLIBRARIES =
++include_HEADERS =
++pkginclude_HEADERS =
++dist_noinst_HEADERS =
++check_PROGRAMS =
++check_LTLIBRARIES =
++TESTS =
++
++pkgconfigdir = $(libdir)/pkgconfig
++pkgconfig_DATA = bdw-gc.pc
++
++# C Library
++# ---------
++
++lib_LTLIBRARIES += libgc.la
++
++if SINGLE_GC_OBJ
++
++libgc_la_SOURCES = extra/gc.c
++
++if PTHREAD_START_STANDALONE
++AM_CPPFLAGS += -DGC_PTHREAD_START_STANDALONE
++libgc_la_SOURCES += pthread_start.c
++endif
++
++else
++
++EXTRA_DIST += extra/gc.c
++libgc_la_SOURCES = \
++    allchblk.c alloc.c blacklst.c dbg_mlc.c \
++    dyn_load.c finalize.c gc_dlopen.c headers.c \
++    mach_dep.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
++    obj_map.c os_dep.c ptr_chck.c reclaim.c specific.c typd_mlc.c
++
++# C Library: Architecture Dependent
++# ---------------------------------
++
++if WIN32_THREADS
++libgc_la_SOURCES += win32_threads.c
++else
++if PTHREADS
++# Not Cygwin or MinGW.
++libgc_la_SOURCES += pthread_start.c pthread_support.c
++if DARWIN_THREADS
++libgc_la_SOURCES += darwin_stop_world.c
++else
++libgc_la_SOURCES += pthread_stop_world.c
++endif
++endif
++endif
++
++if THREAD_LOCAL_ALLOC
++libgc_la_SOURCES += thread_local_alloc.c
++endif
++
++if MAKE_BACK_GRAPH
++libgc_la_SOURCES += backgraph.c
++endif
++
++if CHECKSUMS
++libgc_la_SOURCES += checksums.c
++endif
++
++if ENABLE_GCJ_SUPPORT
++libgc_la_SOURCES += gcj_mlc.c
++endif
++
++if ENABLE_DISCLAIM
++libgc_la_SOURCES += fnlz_mlc.c
++endif
++
++## End of !SINGLE_GC_OBJ
++endif
++
++if PTHREADS
++pkginclude_HEADERS += include/gc_pthread_redirects.h
++endif
++
++if ENABLE_GCJ_SUPPORT
++pkginclude_HEADERS += include/gc_gcj.h
++endif
++
++if ENABLE_DISCLAIM
++pkginclude_HEADERS += include/gc_disclaim.h
++endif
++
++if USE_INTERNAL_LIBATOMIC_OPS
++nodist_libgc_la_SOURCES = libatomic_ops/src/atomic_ops.c
++if NEED_ATOMIC_OPS_ASM
++nodist_libgc_la_SOURCES += libatomic_ops/src/atomic_ops_sysdeps.S
++endif
++endif
++
++# Include THREADDLLIBS here to ensure that the correct versions of
++# linuxthread semaphore (and clock_gettime) functions get linked:
++libgc_la_LIBADD = @addobjs@ $(THREADDLLIBS) $(UNWINDLIBS) $(ATOMIC_OPS_LIBS)
++libgc_la_DEPENDENCIES = @addobjs@
++libgc_la_LDFLAGS = $(extra_ldflags_libgc) -version-info $(LIBGC_VER_INFO) \
++    -no-undefined
++
++EXTRA_libgc_la_SOURCES = ia64_save_regs_in_stack.s sparc_mach_dep.S \
++    sparc_netbsd_mach_dep.s
++
++if CPLUSPLUS
++# C++ Interface
++# -------------
++lib_LTLIBRARIES += libgccpp.la
++pkginclude_HEADERS += include/gc_allocator.h include/gc_cpp.h
++include_HEADERS += include/extra/gc_cpp.h
++libgccpp_la_SOURCES = gc_badalc.cc gc_cpp.cc
++libgccpp_la_LIBADD = libgc.la
++libgccpp_la_LDFLAGS = -version-info $(LIBGCCPP_VER_INFO) -no-undefined
++if GC_TBA_LIBRARY
++# The same as libgccpp but contains only gc_badalc.o.
++lib_LTLIBRARIES += libgctba.la
++libgctba_la_SOURCES = gc_badalc.cc
++libgctba_la_LIBADD = libgc.la
++# Set the same version as for libgccpp.
++libgctba_la_LDFLAGS = -version-info $(LIBGCCPP_VER_INFO) -no-undefined
++endif
++endif
++
++## FIXME: If Visual C++ users use Makefile.am, this should go into
++## pkginclude_HEADERS with proper AM_CONDITIONALization.  Otherwise
++## delete this comment.
++EXTRA_DIST += gc_badalc.cpp gc_cpp.cpp
++
++
++# Misc
++# ----
++
++AM_CXXFLAGS = @GC_CFLAGS@
++AM_CFLAGS = $(WERROR_CFLAGS) @GC_CFLAGS@
++
++CFLAGS += $(CFLAGS_EXTRA)
++CXXFLAGS += $(CFLAGS_EXTRA)
++
++## FIXME: relies on internal code generated by automake.
++## FIXME: ./configure --enable-dependency-tracking should be used
++#all_objs = @addobjs@ $(libgc_la_OBJECTS)
++#$(all_objs) : include/private/gcconfig.h include/private/gc_priv.h \
++#include/private/gc_hdrs.h include/gc.h include/gc_gcj.h \
++#include/gc_pthread_redirects.h include/gc_config_macros.h \
++#include/private/thread_local_alloc.h include/private_support.h \
++#include/private/pthread_stop_world.h \
++#include/gc_mark.h @addincludes@
++
++## FIXME: we shouldn't have to do this, but automake forces us to.
++## We use -Wp,-P to strip #line directives.  Irix `as' chokes on
++## these.
++if ASM_WITH_CPP_UNSUPPORTED
++  ASM_CPP_OPTIONS =
++else
++  ASM_CPP_OPTIONS = -Wp,-P -x assembler-with-cpp
++endif
++
++.s.lo:
++	$(LTCOMPILE) $(ASM_CPP_OPTIONS) -c $<
++
++.S.lo:
++	$(LTCOMPILE) $(ASM_CPP_OPTIONS) -c $<
++
++## We need to add DEFS to assembler flags
++## :FIXME: what if assembler does not accept -D... ?
++## (use Autoconf to prepare ASDEFS?)
++
++CCASFLAGS += $(DEFS)
++
++# headers which are not installed
++# (see include/include.am for more)
++#
++
++# documentation which is not installed
++#
++EXTRA_DIST += README.QUICK
++
++# other makefiles
++EXTRA_DIST += NT_MAKEFILE OS2_MAKEFILE PCR-Makefile digimars.mak \
++    Makefile.direct SMakefile.amiga WCC_MAKEFILE autogen.sh CMakeLists.txt \
++    Config.cmake.in build/s60v3/bld.inf build/s60v3/libgc.mmp
++
++# files used by makefiles other than Makefile.am
++#
++EXTRA_DIST += tools/if_mach.c tools/if_not_there.c tools/setjmp_t.c \
++    tools/threadlibs.c extra/MacOS.c extra/AmigaOS.c \
++    extra/symbian/global_end.cpp extra/symbian/global_start.cpp \
++    extra/symbian/init_global_static_roots.cpp extra/symbian.cpp \
++    extra/pcr_interface.c extra/real_malloc.c \
++    extra/Mac_files/datastart.c extra/Mac_files/dataend.c \
++    extra/Mac_files/MacOS_config.h \
++    include/private/msvc_dbg.h extra/msvc_dbg.c tools/callprocs.sh
++
++#
++# :GOTCHA: GNU make rule for making .s out of .S is flawed,
++# it will not remove dest if building fails
++.S.s:
++	if $(CPP) $< >$@ ; then :; else rm -f $@; fi
++
++include include/include.am
++include cord/cord.am
++include tests/tests.am
++include doc/doc.am
++## Putting these at the top causes cord to be built first, and not find
++## libgc.a on HP/UX.  There may be a better fix.
++
++# A dummy target for mono build.
++test-bundle:
+diff -Naur gc-8.2.10.orig/Makefile.direct gc-8.2.10/Makefile.direct
+--- gc-8.2.10.orig/Makefile.direct	2025-10-18 22:23:23.000000000 +0200
++++ gc-8.2.10/Makefile.direct	2026-01-28 07:16:55.353449204 +0100
+@@ -166,17 +166,17 @@
+ 
+ bsd-libgc.a bsd-libgccpp.a bsd-libgctba.a:
+ 	$(MAKE) -f Makefile.direct CFLAGS="$(CFLAGS)" clean c++-t
+-	mv gc.a bsd-libgc.a
++	mv $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a bsd-lib$(BOOTLIBDIR)/libbigloogc-$(RELEASE).a
+ 	mv gccpp.a bsd-libgccpp.a
+ 	mv gctba.a bsd-libgctba.a
+ 
+ bsd-libleak.a:
+ 	$(MAKE) -f Makefile.direct CFLAGS="$(LEAKFLAGS)" clean c++-nt
+-	mv gc.a bsd-libleak.a
++	mv $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a bsd-libleak.a
+ 
+ BSD-pkg-install: BSD-pkg-all
+-	${CP} bsd-libgc.a libgc.a
+-	${INSTALL_DATA} libgc.a ${PREFIX}/lib
++	${CP} bsd-lib$(BOOTLIBDIR)/libbigloogc-$(RELEASE).a lib$(BOOTLIBDIR)/libbigloogc-$(RELEASE).a
++	${INSTALL_DATA} lib$(BOOTLIBDIR)/libbigloogc-$(RELEASE).a ${PREFIX}/lib
+ 	${CP} bsd-libgccpp.a libgccpp.a
+ 	${INSTALL_DATA} libgccpp.a ${PREFIX}/lib
+ 	${CP} bsd-libgctba.a libgctba.a
+@@ -211,16 +211,15 @@
+ 	$(CC) $(CFLAGS) -c $(srcdir)/tests/test.c
+ 	mv test.o tests/test.o
+ 
+-base_lib gc.a: $(OBJS) dyn_load.o $(UTILS) \
+-  $(AO_SRC_DIR)/src/atomic_ops_sysdeps.S
++base_lib $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a: $(OBJS) dyn_load.o $(UTILS)
+ 	rm -f dont_ar_1
+ 	./if_mach SPARC SOLARIS touch dont_ar_1
+ 	./if_mach SPARC SOLARIS $(CC) $(CFLAGS) -c -o atomic_ops_sysdeps.o $(AO_SRC_DIR)/src/atomic_ops_sysdeps.S
+-	./if_mach SPARC SOLARIS $(AR) rus gc.a $(OBJS) atomic_ops_sysdeps.o dyn_load.o
++	./if_mach SPARC SOLARIS $(AR) rus  $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(OBJS) $(OBJS) atomic_ops_sysdeps.o dyn_load.o
+ 	./if_mach M68K AMIGA touch dont_ar_1
+-	./if_mach M68K AMIGA $(AR) -vrus gc.a $(OBJS) dyn_load.o
+-	./if_not_there dont_ar_1 || $(AR) ru gc.a $(OBJS) dyn_load.o
+-	./if_not_there dont_ar_1 || $(RANLIB) gc.a || cat /dev/null
++	./if_mach M68K AMIGA $(AR) -vrus $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(OBJS) dyn_load.o
++	./if_not_there dont_ar_1 || $(AR) ru $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(OBJS) dyn_load.o
++	./if_not_there dont_ar_1 || $(RANLIB) $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a || cat /dev/null
+ 	echo > base_lib
+ #    Ignore ranlib failure; that usually means it doesn't exist, and
+ #    isn't needed.
+@@ -245,8 +244,8 @@
+ test_cpp$(EXEEXT): $(srcdir)/tests/test_cpp.cc $(srcdir)/include/gc_cpp.h \
+   $(srcdir)/include/gc_allocator.h $(srcdir)/include/gc.h c++ base_lib $(UTILS)
+ 	rm -f test_cpp$(EXEEXT)
+-	./if_mach HP_PA HPUX $(CXX) $(CXXFLAGS) -o test_cpp $(srcdir)/tests/test_cpp.cc gc.a gccpp.a -ldld `./threadlibs`
+-	./if_not_there test_cpp$(EXEEXT) || $(CXX) $(CXXFLAGS) -DGC_NOT_DLL -o test_cpp$(EXEEXT) $(srcdir)/tests/test_cpp.cc gc.a gccpp.a `./threadlibs`
++	./if_mach HP_PA HPUX $(CXX) $(CXXFLAGS) -o test_cpp $(srcdir)/tests/test_cpp.cc $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a gccpp.a -ldld `./threadlibs`
++	./if_not_there test_cpp$(EXEEXT) || $(CXX) $(CXXFLAGS) -DGC_NOT_DLL -o test_cpp$(EXEEXT) $(srcdir)/tests/test_cpp.cc $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a gccpp.a `./threadlibs`
+ 
+ check-cpp: test_cpp$(EXEEXT)
+ 	./test_cpp
+@@ -358,22 +357,22 @@
+ 
+ cordtest$(EXEEXT): $(srcdir)/cord/tests/cordtest.c cords base_lib $(UTILS)
+ 	rm -f cordtest$(EXEEXT)
+-	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o cordtest $(srcdir)/cord/tests/cordtest.c cord.a gc.a -lucb
+-	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o cordtest $(srcdir)/cord/tests/cordtest.c cord.a gc.a -ldld `./threadlibs`
+-	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o cordtest $(srcdir)/cord/tests/cordtest.c cord.a gc.a `./threadlibs`
+-	./if_not_there cordtest$(EXEEXT) || $(CC) $(CFLAGS) -o cordtest$(EXEEXT) $(srcdir)/cord/tests/cordtest.c cord.a gc.a `./threadlibs`
++	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o cordtest $(srcdir)/cord/tests/cordtest.c $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a cord.a -lucb
++	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o cordtest $(srcdir)/cord/tests/cordtest.c $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a cord.a -ldld `./threadlibs`
++	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o cordtest $(srcdir)/cord/tests/cordtest.c $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a cord.a `./threadlibs`
++	./if_not_there cordtest$(EXEEXT) || $(CC) $(CFLAGS) -o cordtest$(EXEEXT) $(srcdir)/cord/tests/cordtest.c $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a cord.a `./threadlibs`
+ 
+ cord/de: de$(EXEEXT)
+ 
+ de$(EXEEXT): $(srcdir)/cord/tests/de.c $(srcdir)/cord/tests/de_win.c \
+   $(srcdir)/cord/tests/de_win.h cords base_lib $(UTILS)
+ 	rm -f de$(EXEEXT)
+-	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o de $(srcdir)/cord/tests/de.c cord.a gc.a -lcurses -ltermlib -lucb `./threadlibs`
+-	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o de $(srcdir)/cord/tests/de.c cord.a gc.a -lcurses -ltermlib -ldld `./threadlibs`
+-	./if_mach POWERPC AIX $(CC) $(CFLAGS) -o de $(srcdir)/cord/tests/de.c cord.a gc.a -lcurses
+-	./if_mach POWERPC DARWIN $(CC) $(CFLAGS) -o de $(srcdir)/cord/tests/de.c cord.a gc.a
+-	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o de $(srcdir)/cord/tests/de.c cord.a gc.a -lcurses
+-	./if_not_there de$(EXEEXT) || $(CC) $(CFLAGS) -o de$(EXEEXT) $(srcdir)/cord/tests/de.c $(srcdir)/cord/tests/de_win.c cord.a gc.a $(CURSES) `./threadlibs`
++	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o de $(srcdir)/cord/tests/de.c $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a cord.a -lcurses -ltermlib -lucb `./threadlibs`
++	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o de $(srcdir)/cord/tests/de.c $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a cord.a -lcurses -ltermlib -ldld `./threadlibs`
++	./if_mach POWERPC AIX $(CC) $(CFLAGS) -o de $(srcdir)/cord/tests/de.c $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a cord.a -lcurses
++	./if_mach POWERPC DARWIN $(CC) $(CFLAGS) -o de $(srcdir)/cord/tests/de.c $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a cord.a
++	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o de $(srcdir)/cord/tests/de.c $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a cord.a -lcurses
++	./if_not_there de$(EXEEXT) || $(CC) $(CFLAGS) -o de$(EXEEXT) $(srcdir)/cord/tests/de.c $(srcdir)/cord/tests/de_win.c $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a cord.a $(CURSES) `./threadlibs`
+ 
+ if_mach$(EXEEXT): $(srcdir)/tools/if_mach.c \
+   $(srcdir)/include/private/gcconfig.h
+@@ -395,10 +394,10 @@
+ 
+ gctest$(EXEEXT): tests/test.o base_lib $(UTILS)
+ 	rm -f gctest$(EXEEXT)
+-	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o gctest tests/test.o gc.a -lucb
+-	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o gctest tests/test.o gc.a -ldld `./threadlibs`
+-	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o gctest  tests/test.o gc.a `./threadlibs`
+-	./if_not_there gctest$(EXEEXT) || $(CC) $(CFLAGS) -o gctest$(EXEEXT) tests/test.o gc.a `./threadlibs`
++	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o gctest tests/test.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -lucb
++	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o gctest tests/test.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -ldld `./threadlibs`
++	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o gctest  tests/test.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a `./threadlibs`
++	./if_not_there gctest$(EXEEXT) || $(CC) $(CFLAGS) -o gctest$(EXEEXT) tests/test.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a `./threadlibs`
+ 
+ # If an optimized setjmp_test generates a segmentation fault,
+ # odds are your compiler is broken.  Gctest may still work.
+diff -Naur gc-8.2.10.orig/Makefile.in gc-8.2.10/Makefile.in
+--- gc-8.2.10.orig/Makefile.in	2025-10-18 22:24:24.000000000 +0200
++++ gc-8.2.10/Makefile.in	2026-01-28 07:10:46.809438801 +0100
+@@ -263,13 +263,20 @@
+ 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+ 	$(libcord_la_LDFLAGS) $(LDFLAGS) -o $@
+ am__DEPENDENCIES_1 =
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
+ am__libgc_la_SOURCES_DIST = allchblk.c alloc.c blacklst.c dbg_mlc.c \
+ 	dyn_load.c finalize.c gc_dlopen.c headers.c mach_dep.c \
+ 	malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+ 	obj_map.c os_dep.c ptr_chck.c reclaim.c specific.c typd_mlc.c \
+ 	win32_threads.c pthread_start.c pthread_support.c \
+ 	darwin_stop_world.c pthread_stop_world.c thread_local_alloc.c \
+-	backgraph.c checksums.c gcj_mlc.c fnlz_mlc.c extra/gc.c
++	backgraph.c checksums.c gcj_mlc.c fnlz_mlc.c extra/gc.c \
++        inline_alloc.c gc_intf.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ @SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_TRUE@am__objects_1 =  \
+ @SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_TRUE@	win32_threads.lo
+ @PTHREADS_TRUE@@SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_FALSE@am__objects_2 = pthread_start.lo \
+@@ -285,7 +292,11 @@
+ @ENABLE_DISCLAIM_TRUE@@SINGLE_GC_OBJ_FALSE@am__objects_9 =  \
+ @ENABLE_DISCLAIM_TRUE@@SINGLE_GC_OBJ_FALSE@	fnlz_mlc.lo
+ @PTHREAD_START_STANDALONE_TRUE@@SINGLE_GC_OBJ_TRUE@am__objects_10 = pthread_start.lo
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
+ @SINGLE_GC_OBJ_FALSE@am_libgc_la_OBJECTS = allchblk.lo alloc.lo \
++@SINGLE_GC_OBJ_FALSE@	inline_alloc.lo gc_intf.lo \
+ @SINGLE_GC_OBJ_FALSE@	blacklst.lo dbg_mlc.lo dyn_load.lo \
+ @SINGLE_GC_OBJ_FALSE@	finalize.lo gc_dlopen.lo headers.lo \
+ @SINGLE_GC_OBJ_FALSE@	mach_dep.lo malloc.lo mallocx.lo mark.lo \
+@@ -303,6 +314,9 @@
+ @SINGLE_GC_OBJ_TRUE@	$(am__objects_4) $(am__objects_5) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__objects_6) $(am__objects_7) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__objects_8) $(am__objects_9)
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ @NEED_ATOMIC_OPS_ASM_TRUE@@USE_INTERNAL_LIBATOMIC_OPS_TRUE@am__objects_11 = libatomic_ops/src/atomic_ops_sysdeps.lo
+ @USE_INTERNAL_LIBATOMIC_OPS_TRUE@nodist_libgc_la_OBJECTS = libatomic_ops/src/atomic_ops.lo \
+ @USE_INTERNAL_LIBATOMIC_OPS_TRUE@	$(am__objects_11)
+@@ -476,7 +490,11 @@
+ DEFAULT_INCLUDES = 
+ depcomp = $(SHELL) $(top_srcdir)/depcomp
+ am__maybe_remake_depfiles = depfiles
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (27 oct 2022)                                       */
++#*---------------------------------------------------------------------*/
+ am__depfiles_remade = ./$(DEPDIR)/allchblk.Plo ./$(DEPDIR)/alloc.Plo \
++	./$(DEPDIR)/inline_alloc.Plo ./$(DEPDIR)/gc_intf.Plo \
+ 	./$(DEPDIR)/backgraph.Plo ./$(DEPDIR)/blacklst.Plo \
+ 	./$(DEPDIR)/checksums.Plo ./$(DEPDIR)/darwin_stop_world.Plo \
+ 	./$(DEPDIR)/dbg_mlc.Plo ./$(DEPDIR)/dyn_load.Plo \
+@@ -516,6 +534,9 @@
+ 	tests/$(DEPDIR)/thread_leak_test.Po \
+ 	tests/$(DEPDIR)/threadkey_test.Po \
+ 	tests/$(DEPDIR)/trace_test.Po
++#*---------------------------------------------------------------------*/
++#*    Bigloo end (27 oct 2022)                                         */
++#*---------------------------------------------------------------------*/
+ am__mv = mv -f
+ CPPASCOMPILE = $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+ 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS)
+@@ -1132,7 +1153,10 @@
+ 	$(am__append_32)
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = bdw-gc.pc
+-@SINGLE_GC_OBJ_FALSE@libgc_la_SOURCES = allchblk.c alloc.c blacklst.c \
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++@SINGLE_GC_OBJ_FALSE@libgc_la_SOURCES = allchblk.c alloc.c inline_alloc.c gc_intf.c blacklst.c \
+ @SINGLE_GC_OBJ_FALSE@	dbg_mlc.c dyn_load.c finalize.c \
+ @SINGLE_GC_OBJ_FALSE@	gc_dlopen.c headers.c mach_dep.c malloc.c \
+ @SINGLE_GC_OBJ_FALSE@	mallocx.c mark.c mark_rts.c misc.c \
+@@ -1143,6 +1167,9 @@
+ @SINGLE_GC_OBJ_FALSE@	$(am__append_8) $(am__append_9) \
+ @SINGLE_GC_OBJ_FALSE@	$(am__append_10) $(am__append_11) \
+ @SINGLE_GC_OBJ_FALSE@	$(am__append_12)
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ @SINGLE_GC_OBJ_TRUE@libgc_la_SOURCES = extra/gc.c $(am__append_2) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__append_4) $(am__append_5) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__append_6) $(am__append_7) \
+@@ -1608,6 +1635,15 @@
+ 
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/allchblk.Plo@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alloc.Plo@am__quote@ # am--include-marker
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inline_alloc.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gc_intf.Plo@am__quote@
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backgraph.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backgraph.Plo@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/blacklst.Plo@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/checksums.Plo@am__quote@ # am--include-marker
