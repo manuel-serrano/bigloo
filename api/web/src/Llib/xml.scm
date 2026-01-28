@@ -245,7 +245,7 @@
 ;*    attribute-grammar ...                                            */
 ;*---------------------------------------------------------------------*/
 (define attribute-grammar
-   (regular-grammar ((id (: (in ("azAZ") "_") (* (in ("azAZ09") ":_-"))))
+   (regular-grammar ((id (: (in ("azAZ") "_") (* (in ("azAZ09") ":_-."))))
 		     tag
 		     strict
 		     decoder)

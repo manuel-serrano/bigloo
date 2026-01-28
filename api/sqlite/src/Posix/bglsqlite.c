@@ -94,7 +94,8 @@ bgl_sqlite_exec(sqlite3 *db, char *str, obj_t odb) {
   obj_t result = BFALSE;
   int rc;
 
-  rc = sqlite3_exec(db, str, (int (*)())sqlite_callback_exec, &result, &msg);
+  rc = sqlite3_exec(db, str, (int (*)(void *, int, char **, char **))sqlite_callback_exec,
+                    &result, &msg);
 
   if (rc != SQLITE_OK) {
      char *buf = (char *)alloca(strlen(str) + 16);
@@ -457,7 +458,9 @@ bgl_sqlite_eval(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
   obj_t result[] = { proc, BFALSE };
   int rc;
 
-  rc = sqlite3_exec(db, str, (int (*)())sqlite_callback_eval, result, &msg);
+  rc = sqlite3_exec(db, str,
+                    (int (*)(void *, int, char **, char **))sqlite_callback_eval,
+                    result, &msg);
 
   if (rc != SQLITE_OK) {
      char *buf = (char *)alloca(strlen(str) + 16);
@@ -501,7 +504,8 @@ bgl_sqlite_get(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
   char *msg;
   int rc;
 
-  rc = sqlite3_exec(db, str, (int (*)())sqlite_callback_get, proc, &msg);
+  rc = sqlite3_exec(db, str, (int (*)(void *, int, char **, char **))sqlite_callback_get,
+                    proc, &msg);
 
   if (rc != SQLITE_OK && rc != SQLITE_ABORT) {
      char *buf = (char *)alloca(strlen(str) + strlen(msg) + 17);
@@ -543,7 +547,9 @@ bgl_sqlite_map(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
   obj_t result[] = { proc, BNIL };
   int rc;
 
-  rc = sqlite3_exec(db, str, (int (*)())sqlite_callback_map, result, &msg);
+  rc = sqlite3_exec(db, str,
+                    (int (*)(void *, int, char **, char **))sqlite_callback_map,
+                    result, &msg);
 
   if (rc != SQLITE_OK) {
      char *buf = (char *)alloca(strlen(str) + 16);
@@ -588,7 +594,8 @@ bgl_sqlite_for_each(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
   obj_t tmp[] = { proc, 0L };
   int rc;
 
-  rc = sqlite3_exec(db, str, (int (*)())sqlite_callback_for_each, tmp, &msg);
+  rc = sqlite3_exec(db, str, (int (*)(void *, int, char **, char **))sqlite_callback_for_each,
+                    tmp, &msg);
 
   if (rc != SQLITE_OK) {
      char *buf = (char *)alloca(strlen(str) + 16);

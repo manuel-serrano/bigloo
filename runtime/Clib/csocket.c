@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/flt/runtime/Clib/csocket.c           */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csocket.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Fri Nov 15 07:32:47 2024 (serrano)                */
+/*    Last change :  Sat Jun 28 10:18:26 2025 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1410,13 +1410,13 @@ set_socket_io_ports(int s, obj_t sock, const char *who, obj_t inb, obj_t outb) {
 
    /* Create output port */
    SOCKET(sock).output = bgl_make_output_port(sock,
-						 (bgl_stream_t)t,
-						 BGL_STREAM_TYPE_FD,
-						 KINDOF_SOCKET,
-						 outb,
-						 bgl_syswrite,
-						 (long (*)())&lseek,
-						 &bgl_sclose_wd);
+                                              (bgl_stream_t)t,
+                                              BGL_STREAM_TYPE_FD,
+                                              KINDOF_SOCKET,
+                                              outb,
+                                              (ssize_t (*)(void*, void*, size_t))bgl_syswrite,
+                                              (long (*)(void*, long, int))&lseek,
+                                              (int (*)(void*)) &bgl_sclose_wd);
    OUTPUT_PORT(SOCKET(sock).output).sysflush = (obj_t (*)(void *))&bgl_socket_flush;
       
    if (STRING_LENGTH(outb) <= 1)
@@ -1818,11 +1818,11 @@ bgl_server_unix_socket_close_hook(obj_t env, obj_t s) {
    return s;
 }
 
-DEFINE_STATIC_BGL_PROCEDURE(server_unix_socket_close_hook, _7, bgl_server_unix_socket_close_hook, 0L, BUNSPEC, 1);
+BGL_DEFINE_STATIC_PROCEDURE(server_unix_socket_close_hook, _7, bgl_server_unix_socket_close_hook, 0L, BUNSPEC, 1);
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    bgl_make_server_unix_socket ...                                         */
+/*    bgl_make_server_unix_socket ...                                  */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_make_server_unix_socket(obj_t path, int backlog) {
@@ -1838,6 +1838,10 @@ bgl_make_server_unix_socket(obj_t path, int backlog) {
        ? offsetof(struct sockaddr_un, sun_path) + namelen 
        : sizeof(saddr));
 
+   if (!server_unix_socket_close_hook) {
+      BGL_BIND_PROCEDURE(server_unix_socket_close_hook, _7);
+   }
+   
    if (namelen > (sizeof(saddr) - 1)) {
       socket_error(msg, "path too long", path);
    }
@@ -2884,9 +2888,9 @@ bgl_make_datagram_client_socket(obj_t hostname, int port, bool_t broadcast, obj_
 			    BGL_STREAM_TYPE_CHANNEL,
 			    KINDOF_SOCKET,
 			    make_string_sans_fill(0),
-			    &datagram_socket_write,
+                           (ssize_t (*)(void*, void*, size_t))&datagram_socket_write,
 			    0L,
-			    &bgl_sclose_wd);
+                           (int (*)(void*))&bgl_sclose_wd);
    OUTPUT_PORT(a_socket->datagram_socket.port).sysflush = (obj_t (*)(void *))&bgl_socket_flush;
    OUTPUT_PORT(a_socket->datagram_socket.port).bufmode = BGL_IONB;
    

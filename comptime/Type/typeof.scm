@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Mon May 27 10:40:46 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 24 10:48:12 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
 ;*=====================================================================*/
@@ -185,7 +185,7 @@
       ((or (eq? t2 *_*) (eq? t1 *_*))
        #t)
       ((eq? t2 *pair-nil*)
-       (or (eq? t1 *pair*) (eq? t1 *epair*) (eq? t1 *nil*)))
+       (or (eq? t1 *pair*) (eq? t1 *epair*) (eq? t1 *bnil*)))
       ((eq? t2 *pair*)
        (eq? t1 *epair*))
       ((or (tclass? t1) (tclass? t2))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Sep 25 11:23:29 2024 (serrano)                */
-;*    Copyright   :  2006-24 Marc Feeley                               */
+;*    Last change :  Mon Jun 23 18:38:49 2025 (serrano)                */
+;*    Copyright   :  2006-25 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
 ;*=====================================================================*/
@@ -43,7 +43,7 @@
 	    __r4_control_features_6_9)
    
    (cond-expand
-      (enable-gmp
+      ((and enable-gmp (not boot))
        (include "./Unsafe/bignumber-gmp.sch"))
       (else
        (include "./Unsafe/bignumber-generic.sch")))
@@ -51,7 +51,7 @@
    (extern
       (macro $bignum?::bool (::obj) "BIGNUMP")
       
-      (macro $bignum->fixnum-safe::obj (::obj) "BGL_SAFE_BX_TO_FX")
+      (macro $bignum->fixnum-safe::obj (::bignum) "BGL_SAFE_BX_TO_FX")
       (macro +fx-safe::obj (::long ::long) "BGL_SAFE_PLUS_FX")
       (macro -fx-safe::obj (::long ::long) "BGL_SAFE_MINUS_FX")
       (macro *fx-safe::obj (::long ::long) "BGL_SAFE_MUL_FX")

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Tue Sep 24 07:52:36 2024 (serrano)                */
-;*    Copyright   :  2003-24 Manuel Serrano                            */
+;*    Last change :  Sun Jun 29 12:32:07 2025 (serrano)                */
+;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
 ;*=====================================================================*/
@@ -53,7 +53,8 @@
 	      (force-register-gc-roots::bool (default #t))
 	      (string-literal-support::bool (default #t))
 	      (boxed-fixnums::bool (default #f))
-	      (typed-closures::bool (default #t))))
+	      (typed-closures::bool (default #t))
+	      (retblock::bool (default #t))))
    
    (export (generic backend-initialize! ::backend)
 	   (generic backend-compile ::backend)
@@ -64,7 +65,8 @@
 	   (generic backend-link-objects ::backend ::pair-nil)
 	   (generic backend-instr-reset-registers::pair-nil ::backend ::obj)
 	   (generic backend-check-inlines ::backend)
-	   (generic backend-gc-init ::backend))
+	   (generic backend-gc-init ::backend)
+	   (generic backend-constant-bindings ::backend))
 
    (export (set-backend! ::symbol)
 	   (the-backend)
@@ -154,4 +156,10 @@
 ;*    backend-gc-init ::backend ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-generic (backend-gc-init b::backend)
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    backend-constant-bindings ::backend ...                          */
+;*---------------------------------------------------------------------*/
+(define-generic (backend-constant-bindings b::backend)
    #unspecified)

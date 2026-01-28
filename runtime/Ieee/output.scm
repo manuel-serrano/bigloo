@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon Sep  9 18:15:47 2024 (serrano)                */
+;*    Last change :  Thu Jun  5 08:34:45 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -27,7 +27,13 @@
       ((and (not bigloo-c) (not bigloo-jvm))
        (include "Ieee/output-generic.sch")))
    
-    (import  __error
+   (cond-expand
+      (enable-gmp
+       (use __bignum))
+      (else
+       (import __bignum)))
+
+   (import  __error
 	    __bexit
 	    __r4_ports_6_10_1
 	    __r4_numbers_6_5_flonum_dtoa
@@ -55,7 +61,6 @@
 	    __object
 	    __bigloo
 	    __binary
-	    __bignum
 	    __regexp
 	    __pp_circle
 	    __bit

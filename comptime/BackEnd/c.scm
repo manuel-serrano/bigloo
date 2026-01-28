@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Fri Jul  5 11:13:33 2024 (serrano)                */
-;*    Copyright   :  2003-24 Manuel Serrano                            */
+;*    Last change :  Thu Sep 25 10:40:18 2025 (serrano)                */
+;*    Copyright   :  2003-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
 ;*=====================================================================*/
@@ -207,6 +207,7 @@
    
    ;; then we emit the constants values
    (emit-cnsts)
+   (emit-cnsts-bindings)
    
    ;; emit the GC roots, when demanded
    (when *gc-force-register-roots?*
@@ -397,3 +398,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (backend-gc-init b::cvm)
    '(pragma "BGL_GC_INIT()"))
+
+;*---------------------------------------------------------------------*/
+;*    backend-constant-bindings ::cvm ...                              */
+;*---------------------------------------------------------------------*/
+(define-method (backend-constant-bindings b::cvm)
+   '(pragma "bgl_constant_bindings()"))

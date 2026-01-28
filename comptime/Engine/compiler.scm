@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Dec 13 05:36:36 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Jun 30 17:14:50 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -85,6 +85,8 @@
 	    prof_walk
 	    return_walk
 	    uncell_walk
+	    nums_walk
+	    fastfl_walk
 	    isa_walk
 	    cc_cc
 	    cc_ld
@@ -444,6 +446,13 @@
 	    (check-sharing "abound" ast)
 	    (check-type "abound" ast #t #f)
 
+	    ;; fast flonum optimization
+	    (when *optim-fastfl?*
+	       (set! ast (profile fastfl (fastfl-walk! ast)))
+	       (stop-on-pass 'fastfl (lambda () (write-ast ast)))
+	       (check-sharing "fastfl" ast)
+	       (check-type "fastfl" ast #t #t))
+	       
 	    ;; we introduce type coercion and checking
 	    (set! ast (profile coerce (coerce-walk! ast)))
 	    (stop-on-pass 'coerce (lambda () (write-ast ast)))
@@ -501,8 +510,7 @@
 	    (check-type "cnst" ast #t #t)
 	    
 	    ;; the set-exit=>return transformation pass
-	    (when (and *optim-return?*
-		       (backend-pragma-support (the-backend)))
+	    (when (and *optim-return?* (backend-retblock (the-backend)))
 	       (set! ast (profile return (return-walk! ast)))
 	       (set! ast (lvtype-ast! ast)))
 	    (stop-on-pass 'return (lambda () (write-ast ast)))
@@ -538,6 +546,13 @@
 		  (stop-on-pass 'uncell (lambda () (write-ast ast)))
 		  (check-sharing "uncell" ast)
 		  (check-type "uncell" ast #t #f))
+	    
+	       ;; double fix/flo predicates optimization
+	       (when *optim-nums?*
+		  (set! ast (profile uncell (nums-walk! ast)))
+		  (stop-on-pass 'nums (lambda () (write-ast ast)))
+		  (check-sharing "nums" ast)
+		  (check-type "nums" ast #t #f))
 	    
 	       (backend-walk (remove-var 'now ast2)))
 	    

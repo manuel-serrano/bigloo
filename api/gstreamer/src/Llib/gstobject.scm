@@ -32,7 +32,7 @@
 
 	    (generic %gst-object-init ::gst-object)
 
-	    (%gst-object->gobject::$gst-object ::gst-object)
+	    (%gst-object->gobject::$gst-object ::obj)
 
 	    (%gst-object-ref! ::gst-object)
 	    (%gst-object-unref! ::gst-object)
@@ -71,7 +71,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    %gst-object->gobject ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (%gst-object->gobject o::gst-object)
+(define (%gst-object->gobject o::obj)
    (with-access::gst-object o ($builtin)
       $builtin))
 

@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/flt/runtime/Include/bigloo_vector.h      */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_vector.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Dec 11 08:28:56 2024 (serrano)                */
-/*    Copyright   :  2016-24 Manuel Serrano                            */
+/*    Last change :  Mon Jun 30 15:41:08 2025 (serrano)                */
+/*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
 /*=====================================================================*/
@@ -35,8 +35,11 @@ BGL_RUNTIME_DECL obj_t bgl_saw_vector_copy(obj_t);
 /*---------------------------------------------------------------------*/
 /*    BGL_VECTOR_LENGTH_FIELDP ...                                     */
 /*---------------------------------------------------------------------*/
-#define BGL_VECTOR_LENGTH_FIELDP \
-   (defined(TAG_VECTOR) || (BGL_HEADER_DATA_BIT_SIZE == 0))
+#if (defined(TAG_VECTOR))
+#  define BGL_VECTOR_LENGTH_FIELDP 1
+#else
+#  define BGL_VECTOR_LENGTH_FIELDP (BGL_HEADER_DATA_BIT_SIZE == 0)
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    bgl_vector ...                                                   */
@@ -153,15 +156,29 @@ struct bgl_hvector {
 /*---------------------------------------------------------------------*/
 /*    Typed vectors                                                    */
 /*---------------------------------------------------------------------*/
-#define DEFINE_TVECTOR_START(aux, len, itype) \
+#define BGL_CREATE_TVECTOR_START(aux, len, itype) \
    static struct { __CNST_ALIGN header_t header; \
 		   unsigned long length; \
 		   obj_t descr; \
 		   itype items[len]; } \
       aux = { __CNST_FILLER BGL_MAKE_HEADER(TVECTOR_TYPE, 0), len, 0L,
+
+#if BGL_CNST_TWO_STEPS_INIT
+#  define BGL_CREATE_TVECTOR_STOP(name, aux) \
+   }; static obj_t name = 0L
+#  define BGL_BIND_TVECTOR(name, aux) \
+      name = BREF(&(aux.header))
+#else
+#  define BGL_CREATE_TVECTOR_STOP(name, aux) \
+      }; static obj_t name = BREF(&(aux.header))
+#  define BGL_BIND_TVECTOR(name, aux)
+#endif
+
+#define DEFINE_TVECTOR_START(aux, len, itype) \
+   BGL_CREATE_TVECTOR_START(aux, len, itype)
 	      
 #define DEFINE_TVECTOR_STOP(name, aux) \
-	   }; static obj_t name = BREF(&(aux.header))
+   BGL_CREATE_TVECTOR_STOP(name, aux)
 
 #ifdef __GNUC__
 # define ALLOCATE_TVECTOR_MALLOC(MALLOC, _item_name, _item_type, _len, _descr)   \
@@ -207,7 +224,7 @@ struct bgl_hvector {
 /*    HVECTOR                                                          */
 /*---------------------------------------------------------------------*/
 #define STVECTOR(o, type) \
-   ((struct { header_t header; unsigned long length; type obj[8]; } *)(CREF(o)))
+   ((struct { header_t header; unsigned long length; type obj[]; } *)(CREF(o)))
    
 #define BGL_HVECTOR_LENGTH(v) (HVECTOR(v).length)
 
@@ -230,7 +247,7 @@ struct bgl_hvector {
 #define BGL_S8VSET(v, i, o) (BGL_S8VREF(v, i) = o, BUNSPEC)
 #define BGL_U8VREF(v, i) (&(STVECTOR(v, uint8_t)->obj[0]))[i]
 #define BGL_U8VSET(v, i, o) (BGL_S8VREF(v, i) = o, BUNSPEC)
-   
+
 #define BGL_S16VREF(v, i) (&(STVECTOR(v, int16_t)->obj[0]))[i]
 #define BGL_S16VSET(v, i, o) (BGL_S16VREF(v, i) = o, BUNSPEC)
 #define BGL_U16VREF(v, i) (&(STVECTOR(v, uint16_t)->obj[0]))[i]
@@ -241,9 +258,9 @@ struct bgl_hvector {
 #define BGL_U32VREF(v, i) (&(STVECTOR(v, uint32_t)->obj[0]))[i]
 #define BGL_U32VSET(v, i, o) (BGL_U32VREF(v, i) = o, BUNSPEC)
 
-#define BGL_S64VREF(v, i) (&(STVECTOR(v, BGL_LONGLONG_T)->obj[0]))[i]
+#define BGL_S64VREF(v, i) (&(STVECTOR(v, int64_t)->obj[0]))[i]
 #define BGL_S64VSET(v, i, o) (BGL_S64VREF(v, i) = o, BUNSPEC)
-#define BGL_U64VREF(v, i) (&(STVECTOR(v, unsigned BGL_LONGLONG_T)->obj[0]))[i]
+#define BGL_U64VREF(v, i) (&(STVECTOR(v, uint64_t)->obj[0]))[i]
 #define BGL_U64VSET(v, i, o) (BGL_U64VREF(v, i) = o, BUNSPEC)
 
 #define BGL_F32VREF(v, i) (&(STVECTOR(v, float)->obj[0]))[i]

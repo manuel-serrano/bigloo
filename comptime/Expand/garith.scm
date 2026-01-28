@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/flt/comptime/Expand/garith.scm.new       */
+;*    .../prgm/project/bigloo/bigloo/comptime/Expand/garith.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Tue Dec 10 09:56:46 2024 (serrano)                */
-;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jul  1 09:35:10 2025 (serrano)                */
+;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
 ;*=====================================================================*/
@@ -50,31 +50,61 @@
       (symbol-append id 'fl))
    
    (match-case x
-      ((?id (and ?a (? fixnum?)) (and ?b (? symbol?)))
-       (let ((nx `(if ($fixnum? ,b)
-		      (,(fx id) ,a ,b)
-		      (,(symbol-append '|2| id) ,a ,b))))
-	  (e nx e)))
-      ((?id (and ?a (? symbol?)) (and ?b (? fixnum?)))
-       (let ((nx `(if ($fixnum? ,a)
-		      (,(fx id) ,a ,b)
-		      (,(symbol-append '|2| id) ,a ,b))))
-	  (e nx e)))
-      ((?id (and ?a (? flonum?)) (and ?b (? symbol?)))
-       (let ((nx `(if ($fast-flonum? ,b)
-		      (,(fl id) ,a ($fast-real->double ,b))
-		      (,(symbol-append '|2| id) ,a ,b))))
-	  (e nx e)))
-      ((?id (and ?a (? symbol?)) (and ?b (? flonum?)))
-       (let ((nx `(if ($fast-flonum? ,a)
-		      (,(fl id) ($fast-real->double ,a) ,b)
-		      (,(symbol-append '|2| id) ,a ,b))))
-	  (e nx e)))
-      ((?id (and ?a (or (? fixnum?) (? flonum?))) ?b)
-       (let ((bid (gensym 'b)))
-	  (let ((nx `(let ((,bid ,b))
-			(,id ,a ,bid))))
-	     (e nx e))))
+      ((?id (and ?a (? fixnum?)) ?b)
+       (cond
+	  ((fixnum? b)
+	   (let ((nx `(,(fx id) ,a ,b)))
+	      (e nx e)))
+	  ((symbol? b)
+	   (let ((nx `(if ($fixnum? ,b)
+			  (,(fx id) ,a ,b)
+			  (,(symbol-append '|2| id) ,a ,b))))
+	      (e nx e)))
+	  (else
+	   (let ((bid (gensym 'b)))
+	      (let ((nx `(let ((,bid ,b))
+			    (,id ,a ,bid))))
+		 (e nx e))))))
+      ((?id (and ?a (? flonum?)) ?b)
+       (cond
+	  ((flonum? b)
+	   (let ((nx `(,(fl id) ,a ,b)))
+	      (e nx e)))
+	  ((symbol? b)
+	   (let ((nx `(if ($fast-flonum? ,b)
+			  (,(fl id) ,a ($fast-real->double ,b))
+			  (,(symbol-append '|2| id) ,a ,b))))
+	      (e nx e)))
+	  (else
+	   (let ((bid (gensym 'b)))
+	      (let ((nx `(let ((,bid ,b))
+			    (,id ,a ,bid))))
+		 (e nx e))))))
+      ((?id (and ?a (? symbol?)) ?b)
+       (cond
+	  ((fixnum? b)
+	   (let ((nx `(if ($fixnum? ,a)
+			  (,(fx id) ,a ,b)
+			  (,(symbol-append '|2| id) ,a ,b))))
+	      (e nx e)))
+	  ((flonum? b)
+	   (let ((nx `(if ($fast-flonum? ,a)
+			  (,(fl id) ($fast-real->double ,a) ,b)
+			  (,(symbol-append '|2| id) ,a ,b))))
+	      (e nx e)))
+	  ((symbol? b)
+	   (let ((nx `(if (and ($fixnum? ,a) ($fixnum? ,b))
+			  (,(fx id) ,a ,b)
+			  ,(if *arithmetic-expand-flonum*
+			       `(if (and ($fast-flonum? ,a) ($fast-flonum? ,b))
+				    (,(fl id) ($fast-real->double ,a) ($fast-real->double ,b))
+				    ((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b))
+			       `((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b)))))
+	      (e nx e)))
+	  (else
+	   (let* ((tmp (gensym 'b))
+		  (nx `(let ((,tmp ,b)) (,id ,a ,tmp))))
+	      (e nx e)))))
       ((?id ?a (and ?b (or (? fixnum?) (? flonum?))))
        (let ((aid (gensym 'a)))
 	  (let ((nx `(let ((,aid ,a))
@@ -88,19 +118,6 @@
 				(,(fl id) ($fast-real->double ,a) ($fast-real->double ,a))
 				((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,a))
 			   `((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,a)))))
-	  (e nx e)))
-      ((?id (and ?a (? symbol?)) (and ?b (? symbol?)))
-       (let ((nx `(if (and ($fixnum? ,a) ($fixnum? ,b))
-		      (,(fx id) ,a ,b)
-		      ,(if *arithmetic-expand-flonum*
-			   `(if (and ($fast-flonum? ,a) ($fast-flonum? ,b) )
-				(,(fl id) ($fast-real->double ,a) ($fast-real->double ,b))
-				((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b))
-			   `((@ ,(symbol-append '|2| id) __r4_numbers_6_5) ,a ,b)))))
-	  (e nx e)))
-      ((?id (and ?a (? symbol?)) ?b)
-       (let* ((tmp (gensym 'b))
-	      (nx `(let ((,tmp ,b)) (,id ,a ,tmp))))
 	  (e nx e)))
       ((?id ?a (and ?b (? symbol?)))
        (let* ((tmp (gensym 'a))
@@ -166,7 +183,7 @@
 (define (expand-g/ x e)
    (match-case x
       ((?- . (?x . ()))
-       `(2/ 1 ,(e x e)))
+       `(/ 1 ,(e x e)))
       ((?- ?a . (?b . ()))
        (cond
 	  ((and (expand-g-number? a) (expand-g-number? b))
@@ -176,7 +193,7 @@
 	  (else
 	   (e `(2/ ,a ,b) e))))
       ((?- ?a . ?b)
-       (e `(2/ ,a (* ,@b)) e))))
+       (e `(/ ,a (* ,@b)) e))))
       
 ;*---------------------------------------------------------------------*/
 ;*    expand-g= ...                                                    */
@@ -188,7 +205,7 @@
       ((?- ?-)
        (error "=" "Illegal form" x))
       ((?- ?x . ?y)
-       (e `(and (2= ,x ,(car y)) (= ,@y)) e))))
+       (e `(and (= ,x ,(car y)) (= ,@y)) e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-g< ...                                                    */
@@ -200,7 +217,7 @@
       ((?- ?-)
        (error "<" "Illegal form" x))
       ((?- ?x . ?y)
-       (e `(and (2< ,x ,(car y)) (< ,@y)) e))))
+       (e `(and (< ,x ,(car y)) (< ,@y)) e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-g> ...                                                    */
@@ -212,7 +229,7 @@
       ((?- ?-)
        (error ">" "Illegal form" x))
       ((?- ?x . ?y)
-       (e `(and (2> ,x ,(car y)) (> ,@y)) e))))
+       (e `(and (> ,x ,(car y)) (> ,@y)) e))))
      
 ;*---------------------------------------------------------------------*/
 ;*    expand-g<= ...                                                   */
@@ -224,7 +241,7 @@
       ((?- ?-)
        (error "<=" "Illegal form" x))
       ((?- ?x . ?y)
-       (e `(and (2<= ,x ,(car y)) (<= ,@y)) e))))
+       (e `(and (<= ,x ,(car y)) (<= ,@y)) e))))
       
 ;*---------------------------------------------------------------------*/
 ;*    expand-g>= ...                                                   */
@@ -236,7 +253,7 @@
       ((?- ?-)
        (error ">=" "Illegal form" x))
       ((?- ?x . ?y)
-       (e `(and (2>= ,x ,(car y)) (>= ,@y)) e))))
+       (e `(and (>= ,x ,(car y)) (>= ,@y)) e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-gmax ...                                                  */

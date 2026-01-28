@@ -50,7 +50,7 @@
 /*---------------------------------------------------------------------*/
 /*    Various types                                                    */
 /*---------------------------------------------------------------------*/
-typedef void *(*fun_t)();
+typedef void* fun_t;
 
 typedef struct gc_info {
    unsigned long number;
@@ -183,12 +183,12 @@ extern void *(*____GC_malloc)(size_t);
 extern void *(*____GC_realloc)(void *, size_t);
 extern void *(*____GC_malloc_atomic)(size_t);
 extern void *(*____GC_malloc_uncollectable)(size_t);
-extern void *(*____GC_add_gc_hook)(void (*)());
+extern void *(*____GC_add_gc_hook)(void (*)(int, long));
 extern BGL_LONGLONG_T (*____bgl_current_nanoseconds)();
 
 extern void (*____bgl_init_objects)();
 
-extern void (*____bgl_init_trace_register)();
+extern void (*____bgl_init_trace_register)(void (*i)(obj_t), obj_t (*g)(int), void (*w)(obj_t));
 extern obj_t (*____bgl_get_trace_stack)(int);
 
 extern void *(*____register_class)(void *, void *, void *,

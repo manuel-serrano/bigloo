@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 13 05:06:17 2008                          */
-;*    Last change :  Sun Sep  8 12:22:24 2024 (serrano)                */
-;*    Copyright   :  2008-24 Manuel Serrano                            */
+;*    Last change :  Wed Jan 28 11:22:34 2026 (serrano)                */
+;*    Copyright   :  2008-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test bignums                                                     */
 ;*=====================================================================*/
@@ -49,6 +49,7 @@
    (test "write.1" (with-output-to-string (lambda () (write #z123457)))
       "#z123457")
    (test "read.1" (with-input-from-string "#z123457" read) (+ #z123456 1))
+   (test "read.2" (number? (cadr (with-input-from-string "(i64.const 9223372036854775807)" read))) #t)
    (test "string->bignum.1" (string->bignum "1000111010110000111110101111101010101" 2) #z76606824277)
    (test "string->bignum.2" (string->bignum "160756243201251221" 8)
       #z3974619006849681)
@@ -128,10 +129,10 @@
 			(-bx n m))
       #z-418186534408761824912469871331614554782)
    (test "bignum.40" (let ((n 9999999999999))
-			(bignum? (eval `(* (string->integer "9999999999999") ,n))))
+			(bignum? (eval `(* (string->number "9999999999999") ,n))))
       #t)
    (test "bignum.41" (let ((n 9999999999999))
-			(bignum? (eval `(2* (string->integer "9999999999999") ,n))))
+			(bignum? (eval `(2* (string->number "9999999999999") ,n))))
       #t))
 			
  

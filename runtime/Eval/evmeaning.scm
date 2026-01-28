@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evmeaning.scm           */
+;*    .../prgm/project/bigloo/bigloo/runtime/Eval/evmeaning.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Sat Jul 20 10:44:40 2013 (serrano)                */
+;*    Last change :  Fri Aug 22 12:01:35 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -87,7 +87,7 @@
    ;; Enabing JVM inlining is required for the same reason.
    (option (set! *user-inlining?* #f)
 	   ;;(set! *inlining-kfactor* (lambda (x) 1))
-	   (set! *saw-register-allocation?* #t)
+	   (set! *saw-register-allocation* #t)
 	   (set! *saw-register-allocation-max-size* 8000)))
 
 ;*---------------------------------------------------------------------*/

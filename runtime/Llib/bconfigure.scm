@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/nanh/runtime/Llib/bconfigure.scm     */
+;*    .../prgm/project/bigloo/bigloo/runtime/Llib/bconfigure.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Thu Oct 31 14:10:13 2024 (serrano)                */
-;*    Copyright   :  2000-24 Manuel Serrano                            */
+;*    Last change :  Tue Aug 26 13:33:48 2025 (serrano)                */
+;*    Copyright   :  2000-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -67,7 +67,7 @@
 	   (macro $configure-c-strict-stdc::bool "BGL_STRICT_STDC")
 	   (macro $configure-c-pic-flag::string "C_PICFLAGS")
 	   (macro $configure-c-nan-flag::string "C_NANFLAGS")
-	   (macro $configure-c-flt-flag::string "C_FLTFLAGS")
+	   (macro $configure-c-fst-flag::string "C_FSTFLAGS")
 	   (macro $configure-c-strip-flag::string "C_STRIP_FLAGS")
 	   (macro $configure-c-prof-flag::string "C_PROFILE_FLAGS")
            (macro $configure-c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
@@ -111,9 +111,11 @@
 	   (macro $configure-big-endian::bool "BGL_BIG_ENDIAN")
 	   (macro $configure-regexp-family::string "BGL_REGEXP_FAMILY")
 	   (macro $configure-nan-tagging::bool "BGL_NAN_TAGGING")
+	   (macro $configure-nun-tagging::bool "BGL_NUN_TAGGING")
 	   (macro $configure-fl-tagging::bool "BGL_FL_TAGGING")
 	   (macro $configure-int-size::int "BGL_INT_BIT_SIZE")
 	   (macro $configure-elong-size::int "BGL_ELONG_BIT_SIZE")
+	   (macro $configure-ptr-alignment::int "PTR_ALIGNMENT")
 	   (macro $configure-have-unistring::bool "BGL_HAVE_UNISTRING")
 	   (macro $configure-have-syslog::bool "BGL_HAVE_SYSLOG")
 	   (macro $configure-have-getrlimit::bool "BGL_HAVE_GETRLIMIT")
@@ -151,7 +153,7 @@
 	      (field static c-strict-stdc::bool "STRICT_STDCC")
 	      (field static c-pic-flag::string "C_PICFLAGS")
 	      (field static c-nan-flag::string "C_NANFLAGS")
-	      (field static c-flt-flag::string "C_FLTFLAGS")
+	      (field static c-fst-flag::string "C_FSTFLAGS")
 	      (field static c-strip-flag::string "C_STRIP_FLAGS")
 	      (field static c-prof-flag::string "C_PROFILE_FLAGS")
               (field static c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
@@ -195,7 +197,9 @@
 	      (field static regexp-family::string "BGL_REGEXP_FAMILY")
 	      (field static int-size::int "BGL_INT_BIT_SIZE")
 	      (field static elong-size::int "BGL_ELONG_BIT_SIZE")
+	      (field static ptr-alignment::int "PTR_ALIGNMENT")
 	      (field static nan-tagging::bool "BGL_NAN_TAGGING")
+	      (field static nun-tagging::bool "BGL_NUN_TAGGING")
 	      (field static fl-tagging::bool "BGL_FL_TAGGING")
 	      (field static have-unistring::bool "BGL_HAVE_UNISTRING")
 	      (field static have-syslog::bool "BGL_HAVE_SYSLOG")
@@ -243,7 +247,7 @@
      (strict-stdc . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-strict-stdc) (else $$configure-c-strict-stdc)))
      (c-pic-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-pic-flag) (else $$configure-c-pic-flag)))
      (c-nan-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-nan-flag) (else $$configure-c-nan-flag)))
-     (c-flt-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-flt-flag) (else $$configure-c-flt-flag)))
+     (c-fst-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-fst-flag) (else $$configure-c-fst-flag)))
      (c-strip-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-strip-flag) (else $$configure-c-strip-flag)))
      (c-prof-flag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-prof-flag) (else $$configure-c-prof-flag)))
      (c-object-file-extension . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-object-file-extension) (else $$configure-c-object-file-extension)))
@@ -290,7 +294,9 @@
      (regexp . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-regexp-family) (else $$configure-regexp-family)))
      (int-size . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-int-size) (else $$configure-int-size)))
      (elong-size . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-elong-size) (else $$configure-elong-size)))
+     (ptr-alignment . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-ptr-alignment) (else $$configure-ptr-alignment)))
      (nan-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-nan-tagging) (else $$configure-nan-tagging)))
+     (nun-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-nun-tagging) (else $$configure-nun-tagging)))
      (fl-tagging . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-fl-tagging) (else $$configure-fl-tagging)))
      (have-unistring . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-have-unistring) (else $$configure-have-unistring)))
      (have-syslog . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-have-syslog) (else $$configure-have-syslog)))

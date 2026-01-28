@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Tue Mar  4 10:48:54 2025 (serrano)                */
+;*    Last change :  Sat Mar 15 12:21:12 2025 (serrano)                */
 ;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Various peephole optimizations:                                  */
@@ -38,7 +38,7 @@
 ;*    peephole-walk! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (peephole-walk! globals)
-   (pass-prelude "peephole" init-peephole-cache!) 
+   (pass-prelude "Peephole" init-peephole-cache!) 
    (for-each peephole-fun! globals)
    (pass-postlude globals clear-peephole-cache!))
 

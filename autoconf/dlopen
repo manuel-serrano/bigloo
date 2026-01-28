@@ -54,9 +54,9 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-extern void *dlopen();
-extern int dlclose();
-extern void *dlsym();
+extern void *dlopen(const char* filename, int flags);
+extern int dlclose(void* handle);
+extern void *dlsym(void* handle, char* symbol);
 
 int main( int argc, char *argv[] ) {
    void *handle = dlopen( "/dev/null", 0 );

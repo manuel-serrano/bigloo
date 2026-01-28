@@ -2,6 +2,7 @@ package bigloo;
 
 import java.io.*;
 import java.lang.reflect.*;
+import java.math.BigInteger;
 import java.util.*;
 import java.lang.Runtime;
 import java.net.*;
@@ -393,6 +394,10 @@ public final class foreign
    public static boolean INTEGERP(Object o)
       {
 	 return (o instanceof bint);
+      }
+   public static boolean INTEGERSP(Object o, Object p)
+      {
+	 return (o instanceof bint) && (p instanceof bint);
       }
 
    public static boolean ELONGP(Object o)
@@ -1617,6 +1622,11 @@ public final class foreign
 	 return (long)(a1 | a2);
       }
 
+  public static bignum BITOR_BIGNUM(bignum a1, bignum a2)
+      {
+        return new bignum(a1.value.or(a2.value));
+      }
+
    public static int BITAND(int a1, int a2)
       {
 	 return (a1 & a2);
@@ -1650,6 +1660,11 @@ public final class foreign
    public static long BITANDINT64(long a1, long a2)
       {
 	 return (long)(a1 & a2);
+      }
+
+  public static bignum BITAND_BIGNUM(bignum a1, bignum a2)
+      {
+        return new bignum(a1.value.and(a2.value));
       }
 
    public static int BITXOR(int a1, int a2)
@@ -1687,6 +1702,11 @@ public final class foreign
 	 return (long)(a1 ^ a2);
       }
 
+  public static bignum BITXOR_BIGNUM(bignum a1, bignum a2)
+      {
+        return new bignum(a1.value.xor(a2.value));
+      }
+
    public static int BITNOT(int a)
       {
 	 return ~a;
@@ -1722,6 +1742,11 @@ public final class foreign
 	 return (long)~a;
       }
 
+   public static bignum BITNOT_BIGNUM(bignum a1)
+      {
+        return new bignum(a1.value.not());
+      }
+
    public static int BITRSH(int a1, int a2)
       {
 	 return (a1 >> a2);
@@ -1750,6 +1775,11 @@ public final class foreign
    public static long BITURSHLLONG(long a1, int a2)
       {
 	 return (a1 >>> a2);
+      }
+
+  public static bignum BITRSH_BIGNUM(bignum a1, int a2)
+      {
+        return new bignum(a1.value.shiftRight(a2));
       }
 
    public static int BITLSH(int a1, int a2)
@@ -1787,6 +1817,11 @@ public final class foreign
 	 return (long)(a1 << a2);
       }
 
+   public static bignum BITLSH_BIGNUM(bignum a1, int a2)
+      {
+        return new bignum(a1.value.shiftLeft(a2));
+      }
+   
    public static byte BITRSHINT8(byte a1, int a2)
       {
 	 return (byte)(a1 >> a2);
@@ -1827,6 +1862,13 @@ public final class foreign
 	 return (a1 >>> a2);
       }
 
+   public static bignum BITMASK_BIGNUM(bignum x, int n)
+      {
+        BigInteger mask
+          = BigInteger.ONE.shiftLeft(n).subtract(BigInteger.ONE);
+        return new bignum(x.value.and(mask));
+      }
+  
    //////
    // FLOAT
    //////
@@ -1839,9 +1881,19 @@ public final class foreign
 	 return (o instanceof real);
       }
 
+   public static boolean BGL_REALSP(Object o, Object p)
+      {
+	 return (o instanceof real) && (p instanceof real);
+      }
+
    public static boolean BGL_FAST_REALP(Object o)
       {
 	 return (o instanceof real);
+      }
+
+   public static boolean BGL_FAST_REALSP(Object o, Object p)
+      {
+	 return (o instanceof real) && (p instanceof real);
       }
 
    // Conversions

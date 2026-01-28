@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Thu Sep 19 10:43:45 2024 (serrano)                */
-;*    Copyright   :  2010-24 Manuel Serrano                            */
+;*    Last change :  Sat Mar 15 12:21:33 2025 (serrano)                */
+;*    Copyright   :  2010-25 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Optimize box/unbox operations. Useful mostly for non C backends. */
 ;*    Typically, replaces:                                             */
@@ -58,7 +58,7 @@
 ;*    prebox-walk! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (prebox-walk! globals)
-   (pass-prelude "prebox" init-prebox-cache!) 
+   (pass-prelude "Prebox" init-prebox-cache!) 
    (for-each prebox-fun! globals)
    (pass-postlude globals clear-prebox-cache!))
 

@@ -20,6 +20,7 @@
 ;*---------------------------------------------------------------------*/
 (defvar bmacs-emacs-version
   (cond
+   ((string-match "GNU Emacs 30" (emacs-version)) 30)
    ((string-match "GNU Emacs 29" (emacs-version)) 29)
    ((string-match "GNU Emacs 28" (emacs-version)) 28)
    ((string-match "GNU Emacs 27" (emacs-version)) 27)

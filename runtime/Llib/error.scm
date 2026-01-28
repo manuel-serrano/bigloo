@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Nov 29 17:19:37 2024 (serrano)                */
+;*    Last change :  Fri Jun 27 08:57:52 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -196,6 +196,12 @@
    (import  __r4_input_6_10_2
 	    __object)
 
+   (cond-expand
+      (enable-gmp
+       (use __bignum))
+      (else
+       (import __bignum)))
+
    (use     __type
 	    __bigloo
 	    __param
@@ -212,7 +218,6 @@
 	    __ucs2
 	    __thread
 	    __bexit
-	    __bignum
 	    __date
 	    __srfi4
 	    __regexp
@@ -743,7 +748,7 @@
    (let ((len (string-length string)))
       (if (>fx len 256)
 	  (let* ((ncol 60)
-		 (nstring (substring string (maxfx 0 (-fx col ncol)) (+fx col 10))))
+		 (nstring (substring string (maxfx 0 (-fx col ncol)) (minfx (+fx col 10)))))
 	     (notify-&error/location-loc err fname line loc
 		(string-append "..." nstring "...")
 		(+fx ncol 3)))

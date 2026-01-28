@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/number.scm                   */
+;*    serrano/prgm/project/bigloo/bigloo/recette/number.scm            */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Sat Dec  9 10:46:07 2017 (serrano)                */
+;*    Last change :  Wed Jan 28 10:49:10 2026 (serrano)                */
 ;*                                                                     */
 ;*    On test les operateurs generiques sur les nombres                */
 ;*---------------------------------------------------------------------*/
@@ -279,8 +279,8 @@
    (test "string->number.16" (string->number "-1") -1)
    (test "string->number.17" (string->number "+") #f)
    (test "string->number.18" (string->number "+1") 1)
-   (test "string->number.10" (string->number "ABCDEF" 16) #xABCDEF)
-   (test "string->number.11" (string->number "E3") #f)
+   (test "string->number.19" (string->number "ABCDEF" 16) #xABCDEF)
+   (test "string->number.20" (string->number "E3") #f)
    (test "number->string" (number->string 0 2) "0")
    (test "number->string" (number->string 0 8) "0")
    (test "number->string" (number->string 0 10) "0")

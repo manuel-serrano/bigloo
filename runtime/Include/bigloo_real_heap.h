@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/flt/runtime/Include/bigloo_real_heap.h        */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_real_heap.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Dec 10 10:49:50 2024 (serrano)                */
-/*    Copyright   :  2016-24 Manuel Serrano                            */
+/*    Last change :  Tue Jul 15 09:01:22 2025 (serrano)                */
+/*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
 /*=====================================================================*/
@@ -51,11 +51,10 @@ struct bgl_real {
 #   define BREAL(p) ((obj_t)((long)p + TAG_REAL))
 #   define CREAL(p) ((obj_t)((long)p - TAG_REAL))
 #   define BGL_REAL_CNST(name) name
-#   define DEFINE_REAL(name, aux, flonum) \
-      static struct { double real; } aux = { flonum }; \
-      static const obj_t name = BREAL(&aux)
-
-#   define FLONUMP(c) ((c && ((((long)c) & TAG_MASK) == TAG_REAL)))
+#   define BGL_CREATE_REAL(aux, flonum) \
+      static struct { double val; } aux = { flonum }
+      
+#   define FLONUMP(c) BGL_TAGGED_PTRP(c, TAG_REAL, TAG_MASK)
 #   define REALP(c) FLONUMP(c)
 
 #   define BGL_REAL_SET(o, v) ((REAL(o).val = v), o)
@@ -63,18 +62,53 @@ struct bgl_real {
 #   define BREAL(p) BREF(p)
 #   define CREAL(p) CREF(p)
 #   define BGL_REAL_CNST(name) name
-#   define DEFINE_REAL(name, aux, flonum) \
-      static struct { __CNST_ALIGN header_t header; double real; } \
-	 aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }; \
-      static const obj_t name = BREAL(&(aux.header))
-
+#   define BGL_CREATE_REAL(aux, flonum) \
+      static struct { __CNST_ALIGN header_t header; double val; } \
+	 aux = { __CNST_FILLER BGL_MAKE_HEADER(REAL_TYPE, 0), flonum }
+      
 #   define FLONUMP(c) (POINTERP(c) && (TYPE(c) == REAL_TYPE))
 #   define REALP(c) FLONUMP(c)
    
 #   define BGL_REAL_SET(o, v) ((REAL(o).val = v), o)
 #endif
 
+#define BGL_REALSP(c, d) REALP(c) && REALP(d)
+
+#if BGL_CNST_TWO_STEPS_INIT
+#  define BGL_DECLARE_REAL(name, aux) \
+     obj_t name = 0L
+#  if (defined(TAG_REAL))   
+#    define BGL_BIND_REAL(name, aux) \
+       name = BREAL(&(aux.val))
+#  else
+#    define BGL_BIND_REAL(name, aux) \
+       name = BREAL(&(aux.header))
+#  endif
+#else
+#  if (defined(TAG_REAL))   
+#    define BGL_DECLARE_REAL(name, aux) \
+       const obj_t name = BREAL(&(aux.val))
+#  else
+#    define BGL_DECLARE_REAL(name, aux) \
+       const obj_t name = BREAL(&(aux.header))
+#  endif
+#  define BGL_BIND_REAL(name, aux)
+#endif
+
+#define BGL_DEFINE_REAL(name, aux, flonum) \
+   BGL_CREATE_REAL(aux, flonum); \
+   BGL_DECLARE_REAL(name, aux)
+
+#define DEFINE_REAL(name, aux, flonum) \
+   BGL_DEFINE_REAL(name, aux, flonum)
+
 #define BGL_FAST_REALP(c) FLONUMP(c)
+
+#if (defined(TAG_REAL))
+#  define BGL_FAST_REALSP(c, d) ((((unsigned long)CREAL(c) | (unsigned long)CREAL(d)) & TAG_REAL) == 0)
+#else
+#  define BGL_FAST_REALSP(c, d) (FLONUMP(c) && FLONUMP(d))
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    alloc                                                            */

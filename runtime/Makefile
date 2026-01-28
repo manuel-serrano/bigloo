@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/nanh/runtime/Makefile                */
+#*    serrano/prgm/project/bigloo/bigloo/runtime/Makefile              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Nov 27 12:30:01 2024 (serrano)                */
-#*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Jan 27 15:24:39 2026 (serrano)                */
+#*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -330,8 +330,8 @@ SRC_FILES	= $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_UNSAFE_SRC) \
 #*---------------------------------------------------------------------*/
 INCLUDE_FILE	= Include/bigloo.h Include/bigloo_saw.h \
                   Include/bigloo_pair.h Include/bigloo_real.h \
-                  Include/bigloo_real_heap.h \
-                  Include/bigloo_real_nan.h Include/bigloo_real_flt.h \
+                  Include/bigloo_real_heap.h Include/bigloo_real_nan.h \
+                  Include/bigloo_real_nun.h Include/bigloo_real_fst.h \
                   Include/bigloo_vector.h Include/bigloo_string.h \
                   Include/bigloo_struct.h Include/bigloo_cell.h \
                   Include/bigloo_int.h Include/bigloo_semaphore.h \
@@ -512,7 +512,9 @@ lib-c_p: includes
 
 one-lib-c: $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a
 	$(MAKE) one-share-lib-c LIBSUFFIXTHREAD=
-	$(MAKE) one-share-lib-c LIBSUFFIXTHREAD=_mt
+	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
+	  $(MAKE) one-share-lib-c LIBSUFFIXTHREAD=_mt; \
+	fi
 
 $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a: $(OBJECTS) $(GCSTDOBJECTS)
 	@ $(RM) -f $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBSUFFIX)-$(RELEASE).a
@@ -817,11 +819,29 @@ objs/saw_u/$(SCMOBJSUFFIX): %.scm
 objs/saw_s/$(SCMOBJSUFFIX): %.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_USR) $(SAWFLAGS) $(EFLAGS) -c $< -o $@
 
-objs/obj_u/Eval/evaluate_comp$(SCMOBJSUFFIX): Eval/evaluate_comp.scm
-	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+objs/class_u/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
 
-objs/saw_u/Eval/evaluate_comp$(SCMOBJSUFFIX): Eval/evaluate_comp.scm
-	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(SAWFLAGS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+objs/class_s/bigloo/runtime/Eval/%.class: Eval/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
+
+objs/class_s/bigloo/runtime/Read/%.class: Read/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Rgc/%.class: Rgc/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Pp/%.class: Pp/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Match/%.class: Match/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Lalr/%.class: Lalr/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
+
+objs/class_s/bigloo/runtime/Unsafe/%.class: Unsafe/%.scm
+	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -c $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*     .c --> .o                                                       */
@@ -928,10 +948,6 @@ objs/class_p/bigloo/runtime/$(SCMCLASSSUFFIX): %.scm
 
 objs/class_s/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
 	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
-
-objs/class_u/bigloo/runtime/Eval/evaluate_comp.class: Eval/evaluate_comp.scm
-	$(BIGLOO) -jvm $(BGLJFLAGS) $(BFLAGS_SYS) $(EFLAGS) -fno-arithmetic-overflow -c $< -o $@
-
 
 #*---------------------------------------------------------------------*/
 #*    objs                                                             */

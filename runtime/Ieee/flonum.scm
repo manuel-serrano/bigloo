@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/flt/runtime/Ieee/flonum.scm          */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/flonum.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Tue Dec 10 07:32:59 2024 (serrano)                */
+;*    Last change :  Tue Jul  1 09:48:28 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -34,8 +34,10 @@
    
    (extern  (macro $modf::double (::double ::void*) "modf")
 	    (macro $flonum?::bool (::obj) "REALP")
+	    (macro $flonums?::bool (::obj ::obj) "BGL_REALSP")
 	    (macro $fast-flonum?::bool (::obj) "BGL_FAST_REALP")
-	    (macro $fast-real->double::double (::obj) "BGL_FAST_REAL_TO_DOUBLE")
+	    (macro $fast-flonums?::bool (::obj ::obj) "BGL_FAST_REALSP")
+	    (macro $fast-real->double::double (::real) "BGL_FAST_REAL_TO_DOUBLE")
 	    (infix macro $=fl::bool (::double ::double) "==")
 	    (infix macro $<fl::bool (::double ::double) "<")
 	    (infix macro $<=fl::bool (::double ::double) "<=")
@@ -89,8 +91,12 @@
    (java    (class foreign
 	       (method static $flonum?::bool (::obj)
 		  "REALP")
+	       (method static $flonums?::bool (::obj ::obj)
+		  "BGL_REALSP")
 	       (method static $fast-flonum?::bool (::obj)
 		  "BGL_FAST_REALP")
+	       (method static $fast-flonums?::bool (::obj ::obj)
+		  "BGL_FAST_REALSP")
 	       (method static $fast-real->double::double (::obj)
 		  "BGL_FAST_REAL_TO_DOUBLE")
 	       (method static $=fl::bool (::double ::double)
@@ -245,8 +251,9 @@
 	    (inline int-bits->float::float ::int)
 	    (inline randomfl::double))
    
-   (pragma  ($flonum? no-alloc side-effect-free (predicate-of double) no-cfa-top nesting fail-safe)
-	    ($fast-flonum? no-alloc side-effect-free no-cfa-top nesting fail-safe)
+   (pragma  ($flonum? no-alloc side-effect-free (predicate-of real) no-cfa-top nesting fail-safe)
+	    ($fast-flonum? no-alloc side-effect-free (predicate-of real) no-cfa-top nesting fail-safe)
+	    ($fast-flonums? no-alloc side-effect-free no-cfa-top nesting fail-safe)
 	    (real? no-alloc side-effect-free no-cfa-top nesting fail-safe)
 	    ($=fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    ($>fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)

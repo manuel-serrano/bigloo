@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Thu Nov 14 05:24:13 2024 (serrano)                */
+;*    Last change :  Thu Jun  5 08:33:29 2025 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -19,6 +19,12 @@
 	    __object
 	    __thread)
    
+   (cond-expand
+      (enable-gmp
+       (use __bignum))
+      (else
+       (import __bignum)))
+   
    (use     __type
 	    __bigloo
 	    __param
@@ -30,7 +36,6 @@
 	    __bexit
 	    __binary
 	    __srfi4
-	    __bignum
 	    __bit
 
 	    __r4_numbers_6_5_fixnum

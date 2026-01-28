@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Tue Jul  9 10:23:56 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jul  1 07:00:15 2025 (serrano)                */
+;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
 ;*=====================================================================*/
@@ -41,6 +41,7 @@
    (export  (require-prototype?::bool ::global)
 	    (emit-prototypes)
 	    (emit-cnsts)
+	    (emit-cnsts-bindings)
 	    (emit-class-types ::pair-nil ::output-port)))
 
 ;*---------------------------------------------------------------------*/
@@ -90,6 +91,18 @@
    (newline *c-port*))
 
 ;*---------------------------------------------------------------------*/
+;*    *constant-bindings* ...                                          */
+;*---------------------------------------------------------------------*/
+(define *constant-bindings* '())
+
+;*---------------------------------------------------------------------*/
+;*    add-constant-binding! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (add-constant-binding! binder var tmp)
+   (set! *constant-bindings*
+      (cons (format "~a(~a, ~a);" binder var tmp) *constant-bindings*)))
+
+;*---------------------------------------------------------------------*/
 ;*    emit-cnsts ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnsts)
@@ -99,6 +112,15 @@
 		(scnst? (global-value global)))
 	   (emit-cnst (global-value global) global))))
    (newline *c-port*))
+
+;*---------------------------------------------------------------------*/
+;*    emit-cnsts-bindings ...                                          */
+;*---------------------------------------------------------------------*/
+(define (emit-cnsts-bindings)
+   (display "/* contant bindings */\n" *c-port*)
+   (fprintf *c-port* "static void bgl_constant_bindings() {\n~(\n)\n}\n\n"
+      *constant-bindings*)
+   #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-prototype ...                                               */
@@ -294,8 +316,8 @@
 	  (emit-cnst-stvector node variable))
 	 (else
 	  (internal-error "backend:emit-cnst"
-			  (format "Unknown cnst class \"~a\"" class)
-			  (shape node))))))
+	     (format "Unknown cnst class \"~a\"" class)
+	     (shape node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-string ...                                             */
@@ -305,52 +327,54 @@
    (if (and (> (string-length ostr) *max-c-token-length*)
             *c-split-string*)
        ;; weak C compiler (e.g., VisualC++) ...
-       (let ((aux (id->name (gensym (global-name global))))) 
+       (let ((aux (id->name (gensym (global-name global)))))
+	  (add-constant-binding! "BGL_BIND_STRING" (global-name global) aux)
 	  (fprint *c-port*
-		  "DEFINE_STRING_START( "
-		  (global-name global)
-		  ", "
-		  aux
-		  ", "
-		  (string-length ostr)
-		  "), ")
+	     "BGL_DEFINE_STRING_START("
+	     (global-name global)
+	     ", "
+	     aux
+	     ", "
+	     (string-length ostr)
+	     "), ")
 	  (display "{" *c-port*)
 	  (let ((rlen (string-length ostr)))
 	     (let laap ((i 0))
 		(if (=fx i rlen)
 		    (fprint *c-port*
-			    "0 } \n"
-			    "DEFINE_STRING_STOP( "
-			    (global-name global)
-			    ", "
-			    aux
-			    ");")
+		       "0 } \n"
+		       "BGL_DEFINE_STRING_STOP("
+		       (global-name global)
+		       ", "
+		       aux
+		       ");")
 		    (begin
 		       (display (char->integer (string-ref ostr i)) *c-port*)
 		       (display "," *c-port*)
 		       (laap (+fx i 1)))))))
-       (let ((str (string-for-read ostr)))
+       (let ((str (string-for-read ostr))
+	     (aux (id->name (gensym (global-name global)))))
+	  (add-constant-binding! "BGL_BIND_STRING" (global-name global) aux)
 	  ;; regular C compilers
 	  (fprin *c-port*
-		 "DEFINE_STRING( "
-		 (global-name global)
-		 ", "
-		 (id->name (gensym (global-name global)))
-		 ", \"")
+	     "BGL_DEFINE_STRING("
+	     (global-name global)
+	     ", "
+	     aux
+	     ", \"")
 	  (let loop ((read 0)
 		     (rlen (string-length str)))
 	     (cond
 		((<=fx rlen *max-c-token-length*)
 		 (display (untrigraph (substring str read (+fx read rlen)))
-			  *c-port*)
+		    *c-port*)
 		 (fprint *c-port* "\", " (string-length ostr) " );"))
 		(else
 		 (let laap ((offset (+fx read *max-c-token-length*)))
 		    (cond
 		       ((>=fx (+fx read 3) offset)
 			(internal-error "emit-cnst-string"
-					"Can't emit string"
-					ostr))
+			   "Can't emit string" ostr))
 		       ((char=? (string-ref str (-fx offset 1)) #\\)
 			(laap (-fx offset 1)))
 		       ((and (char=? (string-ref str (-fx offset 2)) #\\)
@@ -362,9 +386,9 @@
 			(laap (-fx offset 3)))
 		       (else
 			(fprin *c-port* (substring str read offset)
-			       #"\"\n\"")
+			   #"\"\n\"")
 			(loop offset
-			      (-fx rlen (-fx offset read))))))))))))
+			   (-fx rlen (-fx offset read))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-real ...                                               */
@@ -379,94 +403,70 @@
       ((infinitefl? real)
        (fprint *c-port* "#define " (global-name global) " bigloo_minfinity"))
       (else
-       (fprint *c-port* "DEFINE_REAL( "
-	       (global-name global)
-	       ", " (id->name (gensym (global-name global)))
-	       ", " real " );"))))
+       (let ((tmp (id->name (gensym (global-name global)))))
+	  (add-constant-binding! "BGL_BIND_REAL" (global-name global) tmp)
+	  (fprint *c-port* "BGL_DEFINE_REAL("
+	     (global-name global) ", " tmp ", " real ");")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-elong ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-elong elong global)
    (set-variable-name! global)
-   (fprint *c-port*
-	   "DEFINE_ELONG( "
-	   (global-name global)
-	   ", "
-	   (id->name (gensym (global-name global)))
-	   ", "
-	   (elong->string elong)
-	   " );"))
+   (let ((tmp (id->name (gensym (global-name global)))))
+      (add-constant-binding! "BGL_BIND_ELONG" (global-name global) tmp)
+      (fprint *c-port* "BGL_DEFINE_ELONG("
+	 (global-name global) ", " tmp ", " (elong->string elong) ");")))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-llong ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-llong llong global)
    (set-variable-name! global)
-   (fprint *c-port*
-	   "DEFINE_LLONG( "
-	   (global-name global)
-	   ", "
-	   (id->name (gensym (global-name global)))
-	   ", "
-	   (llong->c-iso llong)
-	   " );"))
+   (let ((tmp (id->name (gensym (global-name global)))))
+      (add-constant-binding! "BGL_BIND_LLONG" (global-name global) tmp)
+      (fprint *c-port* "BGL_DEFINE_LLONG("
+	 (global-name global) ", " tmp ", " (llong->c-iso llong) ");")))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-int32 ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-int32 int32 global)
    (set-variable-name! global)
-   (fprint *c-port*
-	   "DEFINE_INT32( "
-	   (global-name global)
-	   ", "
-	   (id->name (gensym (global-name global)))
-	   ", "
-	   int32
-	   " );"))
+   (let ((tmp (id->name (gensym (global-name global)))))
+      (add-constant-binding! "BGL_BIND_INT32" (global-name global) tmp)
+      (fprint *c-port* "BGL_DEFINE_INT32("
+	 (global-name global) ", " tmp ", " int32 ");")))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-uint32 ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-uint32 uint32 global)
    (set-variable-name! global)
-   (fprint *c-port*
-	   "DEFINE_UINT32( "
-	   (global-name global)
-	   ", "
-	   (id->name (gensym (global-name global)))
-	   ", "
-	   uint32
-	   " );"))
+   (let ((tmp (id->name (gensym (global-name global)))))
+      (add-constant-binding! "BGL_BIND_UINT32" (global-name global) tmp)
+      (fprint *c-port* "BGL_DEFINE_UINT32("
+	 (global-name global) ", " tmp ", " uint32 ");")))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-int64 ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-int64 int64 global)
    (set-variable-name! global)
-   (fprint *c-port*
-	   "DEFINE_INT64( "
-	   (global-name global)
-	   ", "
-	   (id->name (gensym (global-name global)))
-	   ", "
-	   int64
-	   " );"))
+   (let ((tmp (id->name (gensym (global-name global)))))
+      (add-constant-binding! "BGL_BIND_INT64" (global-name global) tmp)
+      (fprint *c-port* "BGL_DEFINE_INT64("
+	 (global-name global) ", " tmp ", " int64 ");")))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-uint64 ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-uint64 uint64 global)
    (set-variable-name! global)
-   (fprint *c-port*
-	   "DEFINE_UINT64( "
-	   (global-name global)
-	   ", "
-	   (id->name (gensym (global-name global)))
-	   ", "
-	   uint64
-	   " );"))
+   (let ((tmp (id->name (gensym (global-name global)))))
+      (add-constant-binding! "BGL_BIND_UINT64" (global-name global) tmp)
+      (fprint *c-port* "BGL_DEFINE_UINT64("
+	 (global-name global) ", " tmp ", " uint64 ");")))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-sfun ...                                               */
@@ -487,10 +487,12 @@
    (if (eq? (global-import global) 'import)
        (emit-prototype (global-value global) global)
        (let* ((actuals (app-args fun))
-	      (entry   (car actuals))
-	      (arity   (get-node-atom-value (cadr actuals)))
-	      (vname   (set-variable-name! global))
-	      (name    (set-variable-name! (var-variable entry))))
+	      (entry (car actuals))
+	      (arity (get-node-atom-value (cadr actuals)))
+	      (vname (set-variable-name! global))
+	      (name (set-variable-name! (var-variable entry)))
+	      (tmp (id->name (gensym name))))
+	  (add-constant-binding! "BGL_BIND_PROCEDURE" vname tmp)
 	  (cond
 	     ((and (var? entry)
 		   (global? (var-variable entry))
@@ -499,39 +501,39 @@
 		    (global-key? (sfun-the-closure-global (global-value (var-variable entry))))))
 	      (fprint *c-port*
 		      (if (eq? (global-import global) 'static)
-			  (string-append "DEFINE_STATIC_BGL_" kind "( ")
-			  (string-append "DEFINE_EXPORT_BGL_" kind "( "))
+			  (string-append "DEFINE_STATIC_BGL_" kind "(")
+			  (string-append "DEFINE_EXPORT_BGL_" kind "("))
 		      vname
 		      ", "
-		      (id->name (gensym name))
+		      tmp
 		      ", opt_generic_entry"
 		      ", "
 		      name
 		      ", BFALSE, "
 		      ;; arity check is implemented in the function body
 		      -1
-		      " );"))
+		      ");"))
 	     ((>=fx arity 0)
 	      (fprint *c-port*
 		      (if (eq? (global-import global) 'static)
-			  (string-append "DEFINE_STATIC_BGL_" kind "( ")
-			  (string-append "DEFINE_EXPORT_BGL_" kind "( "))
+			  (string-append "DEFINE_STATIC_BGL_" kind "(")
+			  (string-append "DEFINE_EXPORT_BGL_" kind "("))
 		      vname
 		      ", "
-		      (id->name (gensym name))
+		      tmp
 		      ", "
 		      name
 		      ", 0L, BUNSPEC, "
 		      arity
-		      " );"))
+		      ");"))
 	     (else
 	      (fprint *c-port*
 		      (if (eq? (global-import global) 'static)
-			  (string-append "DEFINE_STATIC_BGL_" kind "( ")
-			  (string-append "DEFINE_EXPORT_BGL_" kind "( "))
+			  (string-append "DEFINE_STATIC_BGL_" kind "(")
+			  (string-append "DEFINE_EXPORT_BGL_" kind "("))
 		      vname
 		      ", "
-		      (id->name (gensym name))
+		      tmp
 		      (if (and (var? entry)
 			       (fun-va-stackable? (var-variable entry)))
 			  ", bgl_va_stack_entry"
@@ -540,7 +542,7 @@
 		      name
 		      ", BUNSPEC, "
 		      arity
-		      " );"))))))
+		      ");"))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    fun-va-stackable? ...                                            */
@@ -569,15 +571,11 @@
    (let* ((actuals (app-args fun))
 	  (entry   (car actuals))
 	  (vname (set-variable-name! global))
-	  (name (set-variable-name! (var-variable entry))))
-      (fprint *c-port*
-	      "DEFINE_BGL_L_PROCEDURE("
-	      vname
-	      ", "
-	      (id->name (gensym name))
-	      ", "
-	      name 
-	      " );")))
+	  (name (set-variable-name! (var-variable entry)))
+	  (aux (id->name (gensym name))))
+      (add-constant-binding! "BGL_BIND_L_PROCEDURE" vname aux)
+      (fprint *c-port* "BGL_DEFINE_L_PROCEDURE("
+	 vname ", " aux ", " name ");")))
    
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnst-stvector ...                                           */
@@ -588,20 +586,12 @@
 	  (c-vec (tvector->c-vector tvec)))
       (set-variable-name! global)
       (let ((aux (id->name (gensym (global-name global)))))
-	 (fprint *c-port*
-		 "DEFINE_TVECTOR_START( "
-		 aux
-		 ", "
-		 (vector-length vec)
-		 ", "
-		 (string-sans-$ (type-name itype))
-		 " ) "
-		 c-vec
-		 " DEFINE_TVECTOR_STOP( "
-		 (global-name global)
-		 ", "
-		 aux
-		 " );"))))
+	 (add-constant-binding! "BGL_BIND_TVECTOR" (global-name global) aux)
+	 (fprint *c-port* "DEFINE_TVECTOR_START("
+	    aux ", " (vector-length vec) ", "
+	    (string-sans-$ (type-name itype))
+	    ") " c-vec " DEFINE_TVECTOR_STOP(" (global-name global)
+	    ", " aux ");"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-c-scope ...                                                  */

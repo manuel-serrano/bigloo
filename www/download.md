@@ -34,9 +34,8 @@ ${<div class="row">
   </div>
 </div>}
 
-Older Bigloo source files are all available bundled in
-tarball files at:
-[ftp://ftp-sop.inria.fr/indes/fp/Bigloo](ftp://ftp-sop.inria.fr/indes/fp/Bigloo)
+Older Bigloo source files are all available bundled in tarball files at:
+[https://www-sop.inria.fr/indes/fp/Bigloo/download](https://www-sop.inria.fr/indes/fp/Bigloo/download)
 
 
 ${ hopdoc.include( "../INSTALL.md" ) }

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Mar  3 12:48:47 2025 (serrano)                */
+#*    Last change :  Tue Aug 26 09:04:01 2025 (serrano)                */
 #*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -42,7 +42,7 @@ lispdir=
 rpath=
 
 #*--- api -------------------------------------------------------------*/
-importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 crypto openpgp csv upnp libuv libbacktrace"
+importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar text srfi1 crypto openpgp csv upnp libuv libbacktrace"
 apis="$importantapis gstreamer phidget alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat mqtt"
 
 #*--- bee configuration -----------------------------------------------*/
@@ -86,7 +86,7 @@ cpicflags="demanded" # Possible values for cpicflags are:
              #  - blank (uninitalized) for automatic configuration of the
 #    position independent code compiler option
 cnanflags=-DBGL_NAN_TAGGING=0
-cfltflags=$CFLTFLAGS
+cfstflags=$CFSTFLAGS
 as=          # left blank for autoconfiguration
 ar=          # left blank for autoconfiguration
 ranlib=      # left blank for autoconfiguration
@@ -108,12 +108,15 @@ belong_prealloc_min=-10
 belong_prealloc_max=100
 
 #bgltagging=BGL_TAGGING_HEAP
-bgltagging=BGL_TAGGING_FL
+bgltagging=BGL_TAGGING_FL1
 bglnantagging=0
-#bglfltagging=0
-bglfltagging=1
+bglnuntagging=0
+#bglfstagging=0
+bglfstagging=4
 bglsmi=0
       
+# cnst double initialization (to workaround nan boxing cnst declarations)
+cnsttwostepsinit=0
 
 #*--- Java back-end user configuration --------------------------------*/
 jvmbackend=no # set to "no" not to install the Jvm back-end
@@ -160,7 +163,8 @@ gmpforce=no
 customgmp=
 gmpsrc=$GMPSRC
 gmpconfigureopt=
-gmpcustomversion=6.2.1
+#gmpcustomversion=6.2.1
+gmpcustomversion=6.3.0
 
 if [ "$gmpsrc " = " " ]; then
   gmpsrc=gmp/gmp-$gmpcustomversion.tgz
@@ -181,7 +185,8 @@ unistringconfigureopt=
 
 if [ "$unistringsrc " = " " ]; then
   #unistringversion=0.9.10
-  unistringversion=1.1
+  #unistringversion=1.1
+  unistringversion=1.3
   unistringsrc=libunistring/libunistring-$unistringversion.tgz
 fi  
 
@@ -286,7 +291,8 @@ libuvconfigureopt=
 #* libuvversion=v1.44.2                                                */
 #* libuvversion=v1.47.0
 #* libuvversion=v1.48.0                                                */
-libuvversion=v1.49.2
+#* libuvversion=v1.49.2                                                */
+libuvversion=v1.51.0
 
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
 phidget=
@@ -314,7 +320,8 @@ customgc=yes
 #gccustom=gc-8.0.4
 #gccustom=gc-8.2.2
 #gccustom=gc-8.2.4
-gccustom=gc-8.2.8
+#gccustom=gc-8.2.8
+gccustom=gc-8.2.10
 gcversion=
 gcbump=0
 cgcflags=
@@ -465,7 +472,7 @@ pcre2src=$PCRE2SRC
 pcre2configureopt=
 
 if [ "$pcre2src " = " " ]; then
-  pcre2version=10.42
+  pcre2version=10.45
   pcre2src=pcre2/pcre2-$pcre2version.tgz
 fi  
 
@@ -544,8 +551,8 @@ while : ; do
       havebdb=1;
       pthreadlocalstorage=;
       pthreadsetname=;
-      bgltagging=BGL_TAGGING_FL;
-      bglfltagging=1;
+      bgltagging=BGL_TAGGING_FL1;
+      bglfstagging=4;
       action="all";;
 
     --bootdir=*)
@@ -651,7 +658,7 @@ while : ; do
       dlldir="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --mandir=*)
-      mandir="`echo $1 | sed 's/^[^=]*=//'`";;
+      mandir="`echo $1 | sed 's/^[^=]*=//'`/man1";;
 
     --infodir=*)
       infodir="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -897,7 +904,7 @@ while : ; do
       cstrip="no";
       strip="no";;
 
-    --customgc=yes|--customgc)
+    --customgc=yes|--customgc|--custom-gc)
       customgc=yes;;
 
     --customgc=no)
@@ -936,11 +943,14 @@ while : ; do
       mode=benchmark;;
 
     --debug)
+      cstrip="no";
+      strip="no";
       cflags="$cflags -g";
       bflags="$bflags -cg";;
 
     --debug2)
-      cstrip="";
+      cstrip="no";
+      strip="no";
       cflags="$cflags -g";
       bflags="-cg -q";;
 
@@ -961,36 +971,52 @@ while : ; do
 
     --heap-tagging)
       bgltagging=BGL_TAGGING_HEAP;
-      bglfltagging=0;
-      bglnantagging=0;;
+      bglfstagging=0;
+      bglnantagging=0;
+      bglnuntagging=0;;
       
     --nan-tagging)
       bgltagging=BGL_TAGGING_NAN;
-      bglfltagging=0;
-      bglnantagging=1;;
+      bglfstagging=0;
+      bglnantagging=1;
+      bglnuntagging=0;;
       
+    --nun-tagging)
+      bgltagging=BGL_TAGGING_NUN;
+      bglfstagging=0;
+      bglnantagging=0;
+      bglnuntagging=1;;
+    
     --fl-tagging)
       bgltagging=BGL_TAGGING_FL;
       bglnantagging=0;
-      bglfltagging=1;;
+      bglnuntagging=0;
+      bglfstagging=1;;
       
     --fl-tagging-lb)
       bgltagging=BGL_TAGGING_FLLB;
       bglnantagging=0;
-      bglfltagging=2;;
+      bglnuntagging=0;
+      bglfstagging=2;;
       
     --fl-tagging-nz)
       bgltagging=BGL_TAGGING_FLNZ;
       bglnantagging=0;
-      bglfltagging=3;;
+      bglnuntagging=0;
+      bglfstagging=3;;
       
     --fl-tagging-1)
       bgltagging=BGL_TAGGING_FL1;
-      bglfltagging=4;;
+      bglnantagging=0;
+      bglnuntagging=0;
+      bglfstagging=4;;
       
     --smi)
       bglsmi=1;;
-      
+
+    --cnst-two-steps-init)
+      cnsttwostepsinit=1;;
+    
     --enable-thread|--enable-threads)
       threadsupport=yes;
       addp=1;
@@ -1050,7 +1076,7 @@ while : ; do
       gmpversion=""
       gmpforce="yes";;
 
-    --customgmp=yes|--customgmp)
+    --customgmp=yes|--customgmp|--custom-gmp)
       customgmp=yes;;
 
     --customgmp=no)
@@ -1076,7 +1102,7 @@ while : ; do
       unistring=""
       unistringforce="yes";;
 
-    --customunistring=yes)
+    --customunistring=yes|--custom-unistring)
       customunistring=yes;;
 
     --customunistring=no)
@@ -1095,7 +1121,7 @@ while : ; do
       libbacktrace=""
       libbacktraceforce="yes";;
 
-    --customlibbacktrace=yes)
+    --customlibbacktrace=yes|--custom-libbacktrace)
       customlibbacktrace=yes;;
 
     --customlibbacktrace=no)
@@ -1104,7 +1130,7 @@ while : ; do
     --libbacktraceconfigureopt=*)
       libbacktraceconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
 
-    --customlibuv=yes|--customlibuv)
+    --customlibuv=yes|--customlibuv|--custom-libuv)
       customlibuv=yes;;
 
     --customlibuv=no)
@@ -1125,7 +1151,7 @@ while : ; do
     --no-pcre|--disable-pcre)
       enable_configure_pcre="no";;
 
-    --custompcre=yes|--custompcre)
+    --custompcre=yes|--custompcre|--custom-pcre)
       custompcre=yes;;
 
     --pcreconfigureopt=*)
@@ -1137,7 +1163,7 @@ while : ; do
     --no-pcre2|--disable-pcre2)
       enable_configure_pcre2="no";;
 
-    --custompcre2=yes|--custompcre2)
+    --custompcre2=yes|--custompcre2|--custom-pcre2)
       custompcre2=yes;;
 
     --pcre2configureopt=*)
@@ -1344,12 +1370,14 @@ while : ; do
       echo "Experimental features:"  >&2;
       echo "   --gcbump=[yes|no] (configure the gc for bump allocation)" >&2;
       echo "   --nan-tagging (nan-tagging schema)" >&2;
+      echo "   --nun-tagging (nun-tagging schema)" >&2;
       echo "   --heap-tagging (heap-tagging schema)" >&2;
-      echo "   --fl-tagging (default $bglfltagging)" >&2;
+      echo "   --fl-tagging (default $bglfstagging)" >&2;
       echo "   --fl-tagging-1 (for experiment only, don't use because slow)" >&2;
       echo "   --fl-tagging-lb (for experiment only, don't use because slow)" >&2;
       echo "   --fl-tagging-nz (for experiment only, don't use because slow)" >&2;
       echo "   --smi (32 bit wide integers for 64 bit architectures)" >&2;
+      echo "   --cnst-two-steps-init (force two steps init for constants)" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;
       echo "CC         C compiler command" >&2;
@@ -1396,8 +1424,9 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_pair_h=lib/bigloo/$release/bigloo_pair.h
   bigloo_real_h=lib/bigloo/$release/bigloo_real.h
   bigloo_real_heap_h=lib/bigloo/$release/bigloo_real_heap.h
-  bigloo_real_flt_h=lib/bigloo/$release/bigloo_real_flt.h
+  bigloo_real_fst_h=lib/bigloo/$release/bigloo_real_fst.h
   bigloo_real_nan_h=lib/bigloo/$release/bigloo_real_nan.h
+  bigloo_real_nun_h=lib/bigloo/$release/bigloo_real_nun.h
   bigloo_bignum_h=lib/bigloo/$release/bigloo_bignum.h
   bigloo_int_h=lib/bigloo/$release/bigloo_int.h
   bigloo_vector_h=lib/bigloo/$release/bigloo_vector.h
@@ -1461,11 +1490,6 @@ date >> $configurelog
 $echo "# $0 $logopt" >> $configurelog
 $echo >> $configurelog
 
-# the mandir
-if [ -d "$mandir/man1" ]; then
-  mandir=$mandir/man1;
-fi
-
 # buildtmpdir
 if [ "$buildtmp " = " " ]; then
   buildtmp=/tmp
@@ -1511,8 +1535,6 @@ if [ "$action" != "bigloo_config_el" ]; then
   # check apis cross dependencies
   srfi1_is_enabled=no
   packrat_is_enabled=no
-  pkgcomp_is_enabled=no
-  pkglib_is_enabled=no
   sqlite_is_enabled=no
   dbus_is_enabled=no
   fthread_is_enabled=no
@@ -1531,8 +1553,6 @@ if [ "$action" != "bigloo_config_el" ]; then
       srfi27) srfi27_is_enabled="yes";;
       packrat) packrat_is_enabled="yes";;
       sqlite) sqlite_is_enabled="yes";;
-      pkgcomp) pkgcomp_is_enabled="yes";;
-      pkglib) pkglib_is_enabled="yes";;
       dbus) dbus_is_enabled="yes";;
       pthread) pthread_is_enabled="yes";;
       srfi18) srfi18_is_enabled="yes";;
@@ -1548,14 +1568,6 @@ if [ "$action" != "bigloo_config_el" ]; then
   if [ $packrat_is_enabled = "yes" -a $srfi1_is_enabled = "no" ]; then
       $echo "*** ERROR: packrat library requires srfi1."
       $echo "Either disable packrat or enable srfi1."
-      $echo
-      $echo "Enabled apis: $apis"
-      exit 1
-  fi
-  
-  if [ $pkglib_is_enabled = "yes" -a $sqlite_is_enabled = "no" ]; then
-      $echo "*** ERROR: pkglib library requires sqlite."
-      $echo "Either disable pkglib or enable sqlite."
       $echo
       $echo "Enabled apis: $apis"
       exit 1
@@ -1592,67 +1604,6 @@ if [ "$action" != "bigloo_config_el" ]; then
       $echo "Enabled apis: $apis"
       exit 1
   fi
-fi
-
-# Check depends for bglpkg
-if [ "$enable_bglpkg " = "yes " ]; then
-    if [ $pkgcomp_is_enabled = "no" ]; then
-	$echo "*** WARNING: bglpkg binary requires pkgcomp library"
-	$echo "Disabling bglpkg."
-	enable_bglpkg="no"
-    fi
-    if [ $pkglib_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires pkglib library"
-	$echo "Disabling bglpkg."
-	enable_bglpkg="no"
-    fi
-    if [ $sqlite_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires sqlite library"
-	$echo "Disabling bglpkg."
-	enable_bglpkg="no"
-    fi
-    if [ $web_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires web library"
-	$echo "Disabling bglpkg."
-	enable_bglpkg="no"
-    fi
-fi
-
-if [ "$enable_bglpkg " = "force " ]; then
-    if [ $pkgcomp_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires pkgcomp library"
-	$echo "Either disable bglpkg, or enable pkgcomp."
-	$echo 
-	$echo "Enabled apis: $apis"
-	exit 1
-    fi
-    if [ $pkglib_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires pkglib library"
-	$echo "Either disable bglpkg, or enable pkglib."
-	$echo 
-	$echo "Enabled apis: $apis"
-	exit 1
-    fi
-    if [ $sqlite_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires sqlite library"
-	$echo "Either disable bglpkg, or enable sqlite."
-	$echo 
-	$echo "Enabled apis: $apis"
-	exit 1
-    fi
-    if [ $web_is_enabled = "no" ]; then
-	$echo "*** ERROR: bglpkg binary requires web library"
-	$echo "Either disable bglpkg, or enable web."
-	$echo 
-	$echo "Enabled apis: $apis"
-	exit 1
-    fi
-fi
-
-# Here, bglpkg has all its dependencies, setting it just to "yes"
-#  in order to have not to double test its value
-if [ "$enable_bglpkg " = "force " ]; then
-    enable_bglpkg="yes"
 fi
 
 #*---------------------------------------------------------------------*/
@@ -1779,26 +1730,34 @@ bootbigloo="`echo $_bootmethod | awk -F: '{print $2}'`"
 bootbigloobindir=`dirname $bootbigloo 2> /dev/null`
 
 if [ $bootmethod = "source" ]; then
-  mkdir -p download
-  if [ ! -f download/bigloo-$buildrelease.tar.gz ]; then
-    echo "downloading bigloo $buildrelease from $bigloohttp"
-    wget $bigloohttp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
-  else
-    echo "using downloaded image \"download/bigloo-$buildrelease.tar.gz\""
-  fi
-
-  if [ $? != 0 ]; then
-    echo "command failed \"wget $bigloohttp/bigloo-$buildrelease -o download/bigloo-$buildrelease.tar.gz\""
-    rm -f download/bigloo-$buildrelease.tar.gz
-    wget --help > /dev/null 2> /dev/null
-    
-    if [ $? != 0 ]; then
-      echo "probably because \"wget\" is missing."
+  if [ "$BGLBUILDBINDIR " =  " " ]; then
+    echo "!!! NOTE: set BGLBUILDBINDIR=<bigloo-bin-dir> to cross compile"
+    echo "with an already installed bigloo and to avoid downloading and"
+    echo "installing a fresh bigloo environment."
+    mkdir -p download
+    if [ ! -f download/bigloo-$buildrelease.tar.gz ]; then
+      echo "downloading bigloo $buildrelease from $bigloohttp"
+      wget $bigloohttp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
+    else
+      echo "using downloaded image \"download/bigloo-$buildrelease.tar.gz\""
     fi
-    
-    exit 1
+
+    if [ $? != 0 ]; then
+      echo "command failed \"wget $bigloohttp/bigloo-$buildrelease -o download/bigloo-$buildrelease.tar.gz\""
+      rm -f download/bigloo-$buildrelease.tar.gz
+      wget --help > /dev/null 2> /dev/null
+      
+      if [ $? != 0 ]; then
+	echo "probably because \"wget\" is missing."
+      fi
+      
+      exit 1
+    else
+      bootbindir=$PWD/download/bin
+      bootbigloo=$bootbindir/bigloo
+    fi
   else
-    bootbindir=$PWD/download/bin
+    bootbindir=$BGLBUILDBINDIR
     bootbigloo=$bootbindir/bigloo
   fi
 fi
@@ -1899,6 +1858,8 @@ if [ "$alignment" = "3" ]; then
     intsize=32
   elif [ "$bglsmi " != "0 " ]; then
     intsize=32
+  elif [ "$bglnuntagging " != "0 " ]; then
+    intsize=32
   else
     intsize=61
   fi
@@ -1908,8 +1869,9 @@ else
   elongsize=32
   # force float heap tagging on 32-bit architectures
   bgltagging=BGL_TAGGING_HEAP
-  bglfltagging=0
+  bglfstagging=0
   bglnantagging=0
+  bglnuntagging=0
 fi
 
 #*---------------------------------------------------------------------*/
@@ -2014,7 +1976,7 @@ case $hostos in
       sharedbde=yes
       ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress"
       #customgmp=yes
-      customgmpmakefile=Makefile.macosx
+      #customgmpmakefile=Makefile.macosx
       #customunistring=yes
       customlibuv=yes
       customgc=yes
@@ -2033,7 +1995,7 @@ case $hostos in
         if [ "$threadsupport " = "no " ]; then
           threadsupport=no
           pthreadlibs=no
-          ldcomplibs="\$(GCCLOSELIB) -lc -lm"
+          ldcomplibs="-lc -lm"
         else
           extralibs="$extralibs $pthreadlibs"
         fi
@@ -2048,6 +2010,12 @@ case $hostos in
       # crashes so we disable it by default
       musttail="0"
       tuning="MacOS X"
+
+      # as of June 2025 bglnantagging on macosx requires cnst two steps init
+      # to workaround a bug in MacOS XCode linker
+      if [ " $bglnantagging" = " 1" ]; then
+	cnsttwostepsinit=1
+      fi
     fi
 
     if [ "$tuning " = "MacOS X " ]; then
@@ -2218,6 +2186,13 @@ if [ "$threadsupport " = "no " ]; then
    pthreadlibs=no;
    gcthread=no;
    pthreadhastls=0
+   pthreadspinlock=0
+   pthreadmutexrec=0
+   pthreadcondvtimedwait=0
+   pthreadtimedjoin=0
+   pthreadsetname=0
+   avahi=no
+   mqtt=no
 elif [ $hostos = "mingw" ]; then
   # MinGW pre-test
   if [ "$threadsupport " = " " ]; then
@@ -2351,7 +2326,7 @@ if [ "$action" != "bigloo_config_el" ]; then
     fi
   fi
   
-  if [ "$bglfltagging " != "0 " ]; then
+  if [ "$bglfstagging " != "0 " ]; then
     if [ "$alignment" = "3" ]; then 
       customgc=yes;
     else
@@ -2877,7 +2852,7 @@ if [ "$regexp " = " " ]; then
     extralibs="-l$extrapcre $extralibs"
     regexp=pcre
 
-    if [ `$autoconf pcrefreestudy` = "yes" ]; then
+    if [ `$autoconf pcrefreestudy --cflags=$cflags` = "yes" ]; then
       regexphasfreestudy=1
     fi
   else
@@ -3748,7 +3723,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@ELONG_BIT_SIZE@|$elongsize|" \
               -e "s|@BGL_TAGGING@|$bgltagging|" \
               -e "s|@BGL_NAN_TAGGING@|$bglnantagging|" \
-              -e "s|@BGL_FL_TAGGING@|$bglfltagging|" \
+              -e "s|@BGL_NUN_TAGGING@|$bglnuntagging|" \
+              -e "s|@BGL_FL_TAGGING@|$bglfstagging|" \
               -e "s|@BGL_SMI@|$bglsmi|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
               -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
@@ -3855,7 +3831,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_FLAGS@|$cflags|" \
               -e "s|@C_PICFLAGS@|$cpicflags|" \
               -e "s|@C_NANFLAGS@|$cnanflags|" \
-              -e "s|@C_FLTFLAGS@|$cfltflags|" \
+              -e "s|@C_FSTFLAGS@|$cfstflags|" \
+	      -e "s|@BGL_CNST_TWO_STEPS_INIT@|$cnsttwostepsinit|" \
               -e "s|@C_COMPILER_O_OPTION@|-o |" \
               -e "s|@C_COMPILER_FP_OPTION@|$cfpflags|" \
               -e "s|@C_COMPILER_DEBUG_OPTION@|-g|" \
@@ -3986,8 +3963,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_pair_h` $bigloo_pair_h
   cp runtime/Include/`basename $bigloo_real_h` $bigloo_real_h
   cp runtime/Include/`basename $bigloo_real_heap_h` $bigloo_real_heap_h
-  cp runtime/Include/`basename $bigloo_real_flt_h` $bigloo_real_flt_h
+  cp runtime/Include/`basename $bigloo_real_fst_h` $bigloo_real_fst_h
   cp runtime/Include/`basename $bigloo_real_nan_h` $bigloo_real_nan_h
+  cp runtime/Include/`basename $bigloo_real_nun_h` $bigloo_real_nun_h
   cp runtime/Include/`basename $bigloo_bignum_h` $bigloo_bignum_h
   cp runtime/Include/`basename $bigloo_int_h` $bigloo_int_h
   cp runtime/Include/`basename $bigloo_vector_h` $bigloo_vector_h
@@ -4325,7 +4303,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
   $echo "CBUILDFLAGS=$cbuildflags" >> $makefile_cfg
   $echo "CNANFLAGS=$cnanflags" >> $makefile_cfg
-  $echo "CFLTFLAGS=$cfltflags" >> $makefile_cfg
+  $echo "CFSTFLAGS=$cfstflags" >> $makefile_cfg
   $echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
   $echo "LDBUILDOPTS=$ldbuildopts" >> $makefile_cfg
   
@@ -4881,6 +4859,22 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     $echo "AVAHICFLAGS=" >> $makefile_cfg
   fi
 
+  # MQTT
+  $echo "MQTT=$mqtt" >> $makefile_cfg
+  if [ "$mqtt " = "no " ]; then
+    napis=;
+    for a in $apis; do
+       if [ "mqtt" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+  fi
+  
   # LIBUV
   $echo "LIBUV=$libuv" >> $makefile_cfg
   if [ "$libuv_is_enabled " = "yes " -a "$libuv " != "no " ]; then
@@ -5026,45 +5020,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       >>  api/csv/src/Misc/csv.init
   cat api/csv/src/Llib/csv.sch \
       >>  api/csv/src/Misc/csv.init
-
-  # SCMPKG
-  configure=api/pkgcomp/src/Llib/configure.scm
-  rm -f $configure
-  $echo ";; automatically generated. Don't edit" >  $configure
-  cat $configure.in \
-    | sed -e "s|@PKGCOMPVERSION@|$scmpkgversion|g" \
-    >>  $configure
-  chmod a-w $configure
-
-  # pkgcomp.init
-  pkgcomp_init=api/pkgcomp/src/Misc/pkgcomp.init
-  rm -f $pkgcomp_init
-  $echo ";; automatically generated. Don't edit" >  $pkgcomp_init
-  cat api/pkgcomp/src/Misc/pkgcomp.init.in \
-      | sed -e "s|@PKGCOMPVERSION@|$scmpkgversion|g" \
-      >>  $pkgcomp_init
-  $echo "" >> $pkgcomp_init
-
-  for p in srfi89.sch interface.sch expanders.sch class.sch configure.sch; do
-    cat api/pkgcomp/src/Llib/$p >> $pkgcomp_init
-    $echo "" >> $pkgcomp_init
-  done
-
-  # pkgcomp startup
-  $echo "(cond-expand ((not bigloo-@expanders) (@install-expanders!)))" \
-     >> $pkgcomp_init
-
-  # bglpkg
-  configure=bglpkg/configure.scm
-  rm -f $configure
-  $echo ";; automatically generated. Don't edit" >  $configure
-  cat $configure.in \
-       | sed -e "s|@BGLPKGVERSION@|$release|g" \
-             -e "s|@BGLPKGNAME@|$bglpkg|g" \
-       >>  $configure
-  chmod a-w $configure
-  $echo "ENABLE_BGLPKG=$enable_bglpkg" >> $makefile_cfg
-  $echo "" >> $makefile_cfg
 
   # Does the system support strip
   $echo "STRIP=$strip" >> $makefile_cfg
@@ -5384,7 +5339,7 @@ $echo "  options for debugging/profiling....... $cfpflags" >> $configurelog
 $echo "  options for stripping................. $csflags" >> $configurelog
 $echo "  options for PIC code.................. $cpicflags" >> $configurelog
 $echo "  options for NAN code.................. $cnanflags" >> $configurelog
-$echo "  options for FLT code.................. $cfltflags" >> $configurelog
+$echo "  options for FST code.................. $cfstflags" >> $configurelog
 $echo "  options for profiling................. $cpflags" >> $configurelog
 $echo "  options for linking................... $extralibs" >> $configurelog
 $echo "  assembly.............................. $as" >> $configurelog
@@ -5505,13 +5460,14 @@ if [ "$summary" = "yes" ]; then
   $echo "  tuning...................... $mode $tuning"
   $echo "  cc.......................... $cc ($coflags)"
   $echo "  tagging..................... $bgltagging"
+  $echo "  cnst two steps init......... $cnsttwostepsinit"
   if [ $customgc = "yes" ];then
      $echo "  gc.......................... custom ($gclib-$release, v$gcversion)"
   else
      $echo "  gc.......................... standard ($gclib, $gcincdir, v$gcversion)"
   fi
   if [ "$java_configured " = "yes " ]; then
-    $echo "  Java version................ $java_version"
+    $echo "  java version................ $java_version"
   fi
   if [ "$gmpversion" = "no" ]; then
     $echo "  bignum support.............. scheme implementation"

@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/flt/runtime/Include/bigloo_object.h      */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_object.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Dec 11 08:28:28 2024 (serrano)                */
-/*    Copyright   :  2016-24 Manuel Serrano                            */
+/*    Last change :  Mon Mar 10 18:57:28 2025 (serrano)                */
+/*    Copyright   :  2016-25 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
 /*=====================================================================*/
@@ -118,7 +118,7 @@ typedef struct BgL_objectz00_bgl {
 /*---------------------------------------------------------------------*/
 /*    BGL_ISA                                                          */
 /*---------------------------------------------------------------------*/
-#if (PTR_ALIGNMENT >= 3 && (BGL_TAGGING != BGL_TAGGING_NAN))
+#if (PTR_ALIGNMENT >= 3 && (BGL_TAGGING != BGL_TAGGING_NAN) && (BGL_TAGGING != BGL_TAGGING_NUN))
 #  define BGL_CONDEXPAND_ISA_ARCH64() 1
 #else
 #  define BGL_CONDEXPAND_ISA_ARCH64() 0

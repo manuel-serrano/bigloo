@@ -60,14 +60,14 @@ void *(*____GC_realloc)(void *, size_t) = 0;
 void *(*____GC_malloc_atomic)(size_t) = 0;
 void *(*____GC_malloc_uncollectable)(size_t) = 0;
 void (*____GC_gcollect)() = 0;
-void *(*____GC_add_gc_hook)(void (*)()) = 0;
+void *(*____GC_add_gc_hook)(void (*)(int, long)) = 0;
 char **____executable_name = 0;
 void *____command_line = 0;
 void (*____GC_reset_allocated_bytes)() = 0;
 BGL_LONGLONG_T (*____bgl_current_nanoseconds)() = 0;
 
 /* trace */
-void (*____bgl_init_trace_register)(void (*i)(), obj_t (*g)(int), void (*w)(obj_t));
+void (*____bgl_init_trace_register)(void (*i)(obj_t), obj_t (*g)(int), void (*w)(obj_t));
 obj_t (*____bgl_get_trace_stack)(int);
 
 /* thread */
@@ -356,9 +356,9 @@ bglpth_setup_bmem() {
 
    ____bglthread_setup_bmem =(void(*)())get_function(hdl, "bglpth_setup_bmem");
    ____pthread_getspecific = get_function(hdl, "bglpth_pthread_getspecific");
-   ____pthread_setspecific =(int(*)())get_function(hdl, "bglpth_pthread_setspecific");
-   ____pthread_key_create =(int(*)())get_function(hdl, "bglpth_pthread_key_create");
-   ____pthread_mutex_init =(int(*)())get_function(hdl, "bglpth_pthread_mutex_init");
+   ____pthread_setspecific =(int (*)(pthread_key_t,  void *))get_function(hdl, "bglpth_pthread_setspecific");
+   ____pthread_key_create =(int (*)(pthread_key_t *, void (*)(void *)))get_function(hdl, "bglpth_pthread_key_create");
+   ____pthread_mutex_init =(int (*)(pthread_mutex_t *, void *))get_function(hdl, "bglpth_pthread_mutex_init");
 
    if (____pthread_key_create(&bmem_key, 0L)) {
       FAIL(IDENT, "Can't get thread key", "bmem_key");
@@ -473,12 +473,12 @@ bmem_init_inner() {
    ____executable_name = get_variable(hdl, "executable_name");
    ____command_line = get_variable(hdl, "command_line");
    ____bgl_init_objects =(void(*)())get_function(hdl, "bgl_init_objects");
-   ____get_hash_power_number =(long(*)())get_function(hdl, "get_hash_power_number");
-   ____get_hash_power_number_len =(long(*)())get_function(hdl, "get_hash_power_number_len");
+   ____get_hash_power_number =(long int (*)(char *, long unsigned int))get_function(hdl, "get_hash_power_number");
+   ____get_hash_power_number_len =(long int (*)(char *, long unsigned int,  long int))get_function(hdl, "get_hash_power_number_len");
    ____bgl_get_symtab = get_function(hdl, "bgl_get_symtab");
    ____bgl_current_nanoseconds =(BGL_LONGLONG_T(*)())get_function(hdl, "bgl_current_nanoseconds");
 
-   ____bgl_init_trace_register =(void(*)())get_function(hdl, "bgl_init_trace_register");
+   ____bgl_init_trace_register =(void (*)(void (*)(obj_t), obj_t (*)(int), void (*)(obj_t)))get_function(hdl, "bgl_init_trace_register");
    
    /* class */
    ____register_class = get_function(hdl, "BGl_registerzd2classz12zc0zz__objectz00");

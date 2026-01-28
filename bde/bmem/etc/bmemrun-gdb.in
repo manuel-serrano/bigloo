@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    .../project/bigloo/bigloo/bde/bmem-ng/etc/bmemrun-gdb.in         */
+#*    .../prgm/project/bigloo/bigloo/bde/bmem/etc/bmemrun-gdb.in       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:35:07 2003                          */
-#*    Last change :  Sun Dec  5 09:40:02 2021 (serrano)                */
-#*    Copyright   :  2003-21 Manuel Serrano                            */
+#*    Last change :  Sat Mar 15 07:17:18 2025 (serrano)                */
+#*    Copyright   :  2003-25 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The script shell to monitor memory allocations of Bigloo prgms   */
 #*=====================================================================*/
@@ -112,6 +112,9 @@ if [ "$thread " != " " ]; then
   export BMEMTHREAD=$thread
 fi  
 
-libbacktrace=$bmemdir/libbacktrace.so
-
-gdb --args env "LD_PRELOAD=\"$lib$libextra $libbacktrace\"" $exe $args
+if [ -f $bmemdir/libbacktrace.so ]; then
+  echo "*** ERROR, cannot support multiple-preload."
+  exit 1
+else
+  gdb -ex "set env LD_PRELOAD $lib" -args $exe $args
+fi

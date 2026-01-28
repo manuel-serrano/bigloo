@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/flt/Makefile                         */
+#*    serrano/prgm/project/bigloo/bigloo/Makefile                      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Dec  9 17:30:36 2024 (serrano)                */
-#*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Jan 28 07:19:56 2026 (serrano)                */
+#*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -129,7 +129,6 @@ DIRECTORIES	= cigloo \
                   api \
                   srfi \
                   bdl \
-                  bglpkg \
                   gc \
                   gmp \
                   pcre \
@@ -151,7 +150,7 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 #*    Boot a new Bigloo system on a new host. This boot makes use      */
 #*    of the pre-compiled C files.                                     */
 #*---------------------------------------------------------------------*/
-.PHONY: checkconf boot boot-jvm boot-bde boot-api boot-bglpkg
+.PHONY: checkconf boot boot-jvm boot-bde boot-api
 
 build: checkconf $(BOOTMETHOD)
 
@@ -169,7 +168,7 @@ cross:
 source:
 	if [ ! -x download/bin/bigloo ]; then \
 	  (cd download; tar xvfz bigloo-$(BOOTBUILDRELEASE).tar.gz); \
-	  (pwd=`pwd`; cd download/bigloo-$(BOOTBUILDRELEASE); ./configure --prefix=$$pwd/download && make && make install); \
+	  (pwd=`pwd`; cd download/bigloo-$(BOOTBUILDRELEASE); ./configure --prefix=$$pwd/download --disable-libunistring --disable-pcre2 --disable-pcre --disable-libuv --disable-thread --disable-gmp --disable-libbacktrace --cc=$(CC) && make && make install); \
         fi
 	$(MAKE) cross BOOTBIGLOOBINDIR=$$PWD/download/bin
 
@@ -185,9 +184,6 @@ boot: boot-c
         fi
 	$(MAKE) boot-bde
 	$(MAKE) boot-api
-	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
-	  $(MAKE) boot-bglpkg; \
-        fi
 	@ echo "\e[1;34mboot\e[0m done..."
 
 boot-c: checkgmake
@@ -248,9 +244,6 @@ boot-bde:
 
 boot-api:
 	$(MAKE) -C api boot BFLAGS="$(BFLAGS)"
-
-boot-bglpkg:
-	$(MAKE) -C bglpkg BFLAGS="$(BFLAGS)"
 
 #*---------------------------------------------------------------------*/
 #*    cross-rts ...                                                    */
@@ -342,7 +335,7 @@ dohostboot:
 	$(MAKE) -C bde clean boot BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) boot-bde BIGLOO=$(BOOTBINDIR)/bigloo
 	$(MAKE) -C api clean-quick BIGLOO=$(BOOTBINDIR)/bigloo
-	$(MAKE) $(HOSTBOOTMAKEOPT) fullbootstrap-sans-configure BGLBUILDBINDIR=$(BOOTBINDIR) JVMBACKEND=no ENABLE_BGLPKG=no
+	$(MAKE) $(HOSTBOOTMAKEOPT) fullbootstrap-sans-configure BGLBUILDBINDIR=$(BOOTBINDIR) JVMBACKEND=no
 	@ echo "\e[1;34mhostboot\e[0m done..."
 
 #*---------------------------------------------------------------------*/
@@ -446,10 +439,6 @@ fullbootstrap-sans-configure:
 	$(MAKE) -C bde -i clean; $(MAKE) -C bde
 	$(MAKE) -C api fullbootstrap
 	$(MAKE) -C cigloo -i clean; $(MAKE) -C cigloo
-	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
-	  $(MAKE) -C bglpkg -i clean; \
-	  $(MAKE) -C bglpkg; \
-	fi
 
 # only used for continuous integration, as of 4may2021, fullboostrap
 # is became too long and travis stops the job before it completes!
@@ -736,9 +725,6 @@ install-progs: install-devel install-libs
 install-devel: install-dirs
 	$(MAKE) -C comptime install
 	$(MAKE) -C bde install
-	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
-	  $(MAKE) -C bglpkg install; \
-	fi
 	$(MAKE) -C autoconf install
 	$(MAKE) -C api install-devel
 
@@ -814,9 +800,6 @@ install-dirs:
          if [ ! -d $(DESTDIR)$(LIBDIR) ]; then \
             mkdir -p $(DESTDIR)$(LIBDIR) && chmod $(MODDIR) $(DESTDIR)$(LIBDIR); \
          fi && \
-         if [ ! -d $(DESTDIR)$(LIBDIR)/pkgconfig ]; then \
-            mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/pkgconfig; \
-         fi && \
          if [ ! -d $$bbase ]; then \
             mkdir -p $$bbase && chmod $(MODDIR) $$bbase; \
          fi && \
@@ -860,7 +843,6 @@ uninstall: uninstall-bee
 	$(MAKE) -C api uninstall
 	$(RM) -f $(DESTDIR)$(LIBDIR)/Makefile.config
 	$(RM) -f $(DESTDIR)$(LIBDIR)/Makefile.misc
-	$(MAKE) -C bglpkg uninstall
 	$(MAKE) -C api uninstall-devel
 
 uninstall-bee0:
@@ -918,7 +900,6 @@ clean:
 	(cd recette && $(MAKE) clean)
 	(cd api && $(MAKE) clean)
 	(cd bdl && $(MAKE) clean)
-	(cd bglpkg && $(MAKE) clean)
 
 cleanall: 
 	@ if [ "`pwd`" = "$$HOME/prgm/project/bigloo" ]; then \
@@ -944,7 +925,6 @@ cleanall:
         fi
 	(cd api && $(MAKE) cleanall)
 	(cd bdl && $(MAKE) cleanall)
-	(cd bglpkg && $(MAKE) cleanall)
 
 distclean: 
 	@ if [ "`pwd`" = "$$HOME/prgm/project/bigloo" ]; then \
@@ -965,7 +945,6 @@ distclean:
 	  fi; \
 	  (cd api && $(MAKE) distclean); \
 	  (cd bdl && $(MAKE) distclean); \
-	  (cd bglpkg && $(MAKE) distclean); \
 	  $(MAKE) unconfigure; \
 	  $(RM) -rf bin; \
 	  $(RM) -rf lib; \

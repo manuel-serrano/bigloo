@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/init.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/BackEnd/init.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Fri Aug 28 08:41:36 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jun 29 12:00:32 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
 ;*=====================================================================*/
@@ -56,6 +56,7 @@
       `(if require-initialization
 	   (begin
 	      (set! require-initialization #f)
+	      ,(backend-constant-bindings (the-backend))
 	      ,(when *dlopen-init-gc* (backend-gc-init (the-backend)))
 	      ,@(unit-init-calls))
 	   #unspecified))

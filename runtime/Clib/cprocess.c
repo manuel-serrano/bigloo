@@ -653,9 +653,9 @@ c_run_process(obj_t bhost, obj_t bfork, obj_t bwaiting,
 					      BGL_STREAM_TYPE_FD,
 					      KINDOF_PROCPIPE,
 					      make_string_sans_fill(80),
-					      bgl_syswrite,
-					      (long (*)())lseek,
-					      close);
+                                             (ssize_t (*)(void*, void*, size_t))bgl_syswrite,
+                                             (long (*)(void*, long, int))lseek,
+                                             (int (*)(void*))close);
 					      
 		  else
 		     PROCESS(proc).stream[ i ] =

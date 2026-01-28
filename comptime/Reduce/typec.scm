@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Thu Nov  3 11:06:44 2022 (serrano)                */
-;*    Copyright   :  1995-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jun 26 10:17:50 2025 (serrano)                */
+;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -356,7 +356,7 @@
 	       (else
 		(set! *type-checks-remaining* (+fx 1 *type-checks-remaining*))
 		node)))))
-   
+
    (with-access::app node (fun args)
       (node-typec*! args)
       (let* ((var   (var-variable fun))
