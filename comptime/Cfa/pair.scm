@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/pair.scm           */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/pair.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 30 08:11:10 2011                          */
-;*    Last change :  Mon Oct 20 08:55:56 2025 (serrano)                */
-;*    Copyright   :  2011-25 Manuel Serrano                            */
+;*    Last change :  Thu Jan 29 17:05:07 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The pair approximation manager                                   */
 ;*    -------------------------------------------------------------    */
@@ -222,7 +222,7 @@
 	 ;; we check if we have top on the pair
 	 (if (approx-top? cons-approx)
 	     ;; yes, we have, hence we loose every thing.
-	     (loose! val-approx 'all)
+	     (loose! val-approx)
 	     ;; no, then we scan the allocations.
 	     (for-each-approx-alloc
 		(lambda (app)

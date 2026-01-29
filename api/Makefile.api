@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/api/Makefile.api                */
+#*    serrano/prgm/project/bigloo/5.0a/api/Makefile.api                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Tue Oct  7 07:29:10 2025 (serrano)                */
-#*    Copyright   :  2010-25 Manuel Serrano                            */
+#*    Last change :  Thu Jan 29 10:08:13 2026 (serrano)                */
+#*    Copyright   :  2010-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
 #*=====================================================================*/
@@ -175,12 +175,10 @@ heap-c: $(BOOTLIBDIR)/$(API).heap
 heap5-c: $(BOOTLIBDIR)/$(API).heap5
 $(BOOTLIBDIR)/$(API).heap: .afile $(MISC_SRC_DIR)/make_lib.scm
 	$(RM) -f $(BOOTLIBDIR)/$(API).heap
-	$(BIGLOO) -module4 $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
-             $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).heap
+	$(BIGLOO) -module4 $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).heap
 $(BOOTLIBDIR)/$(API).heap5: .afile $(MISC_SRC_DIR)/make_lib5.scm
 	$(RM) -f $(BOOTLIBDIR)/$(API).heap5
-	$(BIGLOO) -module5 $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
-             $(MISC_SRC_DIR)/make_lib5.scm -addheap $(BOOTLIBDIR)/$(API).heap5
+	$(BIGLOO) -module5 $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make_lib5.scm -addheap $(BOOTLIBDIR)/$(API).heap5
 
 api-c-static: $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).a \
               $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).a \

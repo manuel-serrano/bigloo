@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/arithmetic.scm     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/arithmetic.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 09:48:45 2000                          */
-;*    Last change :  Mon Oct 20 08:57:19 2025 (serrano)                */
-;*    Copyright   :  2000-25 Manuel Serrano, see LICENSE file          */
+;*    Last change :  Thu Jan 29 17:06:23 2026 (serrano)                */
+;*    Copyright   :  2000-26 Manuel Serrano, see LICENSE file          */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a refined estimate computations for       */
 ;*    generic operator. The key idea is that, if we call a function    */
@@ -395,7 +395,7 @@
 				      (approx-set-type! p *obj*))))
 		      args args-approx)))
 	       (else
-		(for-each (lambda (a) (loose! a 'all)) args-approx)
+		(for-each (lambda (a) (loose! a)) args-approx)
 		(approx-set-type! approx *obj*)))))
       ;; we are done
       (trace (cfa 4) "<<< arithmetic: " (shape approx) #\Newline)

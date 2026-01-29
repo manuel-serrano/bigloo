@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/sexp.scm           */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/sexp.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Oct 20 17:14:05 2025 (serrano)                */
+;*    Last change :  Thu Jan 29 11:48:50 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -148,7 +148,7 @@
 	   =>
 	   (lambda (i) (variable->node i loc site genv)))
 	  (else
-	   (let ((global (find-global (get-genv) atom))
+	   (let ((global (find-global genv atom))
 		 (loc (find-location/loc atom loc)))
 	      (cond
 		 ((not (global? global))

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/box.scm                 */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/box.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Sat Jul  7 08:41:12 2001 (serrano)                */
-;*    Copyright   :  1996-2001 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 17:06:07 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
 ;*=====================================================================*/
@@ -121,7 +121,7 @@
 	 ;; we check if we have top on the vector
 	 (if (approx-top? box-approx)
 	     ;; yes, we have, hence we loose every thing.
-	     (loose! val-approx 'all)
+	     (loose! val-approx)
 	     (for-each-approx-alloc
 	      (lambda (box)
 		 (cond

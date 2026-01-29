@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/module5.scm        */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/module5.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Oct 22 09:10:09 2025 (serrano)                */
-;*    Copyright   :  2025 manuel serrano                               */
+;*    Last change :  Thu Jan 29 09:23:57 2026 (serrano)                */
+;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
 ;*=====================================================================*/
@@ -323,9 +323,9 @@
       (hashtable-map decls
 	 (lambda (k d::Decl)
 	    (with-access::Decl d (mod)
-	       (with-access::Module mod (path)
+	       (with-access::Module mod (path version)
 		  (let ((decl::Decl (duplicate::Decl d
-				       (mod path))))
+				       (mod (cons version path)))))
 		     (when (isa? (-> d def) Def)
 			(let ((def::Def (object-copy (-> d def))))
 			   (set! (-> decl def) def)
@@ -340,18 +340,21 @@
 	       (when d
 		  (cons k ci))))))
 
-   (if (eq? (-> mod decls) #unspecified)
-       mod
-       (begin
-	  (module5-checksum! mod)
-	  (duplicate::Module mod
-	     (inits '())
-	     (body '())
-	     (decls #unspecified)
-	     (defs #unspecified)
-	     (imports (decls->list (-> mod imports)))
-	     (exports (decls->list (-> mod exports)))
-	     (classes (classes->list (-> mod classes) (-> mod exports)))))))
+   (with-trace 'module5-serialize "serialize"
+      (trace-item "mod=" (-> mod id))
+      (trace-item "path=" (-> mod path))
+      (if (eq? (-> mod decls) #unspecified)
+	  mod
+	  (begin
+	     (module5-checksum! mod)
+	     (duplicate::Module mod
+		(inits '())
+		(body '())
+		(decls #unspecified)
+		(defs #unspecified)
+		(imports (decls->list (-> mod imports)))
+		(exports (decls->list (-> mod exports)))
+		(classes (classes->list (-> mod classes) (-> mod exports))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unserialize ...                                                  */
@@ -359,10 +362,21 @@
 (define (unserialize mod::Module lib-path cache-dir expand)
    
    (define (unserialize-decl d::Decl)
-      (set! (-> d mod)
-	 (module5-read (-> d mod)
-	    lib-path: lib-path :cache-dir cache-dir :expand expand))
-      d)
+      (with-trace 'module5-serialize "unserialize-decl"
+	 (trace-item "id="(-> d id))
+	 (trace-item "mod=" (-> d mod))
+	 (match-case (-> d mod)
+	    ((5 . ?path)
+	     (set! (-> d mod)
+		(module5-read path
+		   lib-path: lib-path :cache-dir cache-dir :expand expand)))
+	    ((4 . ?path)
+	     (set! (-> d mod)
+		(module4-read path
+		   lib-path: lib-path :cache-dir cache-dir :expand expand)))
+	    (else
+	     (error "unserialize" "Illegal serialized declaration" (-> mod id))))
+	 d))
    
    (define (list->decls! env l)
       (for-each (lambda (e)
@@ -386,7 +400,7 @@
 	 l)
       env)
 
-   (with-trace 'module5-cache "unserialize"
+   (with-trace 'module5-serialize "unserialize"
       (trace-item "mod=" (-> mod id))
       (trace-item "path=" (-> mod path))
       (let ((m::Module (duplicate::Module mod
@@ -511,26 +525,29 @@
 ;*    module5-read-library ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (module5-read-library path::bstring expr mod)
-   (let ((init (call-with-input-file path read)))
-      (match-case init 
-	 ((declare-library! (quote ?id) . ?rest)
-	  (let ((srfi (member :srfi rest)))
-	     (match-case srfi
-		((:srfi (quote ?srfis) . ?-)
-		 (for-each register-srfi! srfis))))
-	  (let ((heap (member :heap rest)))
-	     (match-case heap
-		((:heap (and (? string?) ?file . ?-))
-		 (module5-read-heap
-		    (make-file-name (dirname path) file)
-		    expr mod))
-		(else
-		 (module5-read-heap
-		    (make-file-name (dirname path)
-		       (string-append (prefix (basename path)) ".heap5"))
-		    expr mod)))))
-	 (else
-	  (error/loc mod "Illegal library" path init)))))
+   (with-trace 'module5 "module5-read-library"
+      (trace-item "path=" path)
+      (trace-item "expr=" expr)
+      (let ((init (call-with-input-file path read)))
+	 (match-case init 
+	    ((declare-library! (quote ?id) . ?rest)
+	     (let ((srfi (member :srfi rest)))
+		(match-case srfi
+		   ((:srfi (quote ?srfis) . ?-)
+		    (for-each register-srfi! srfis))))
+	     (let ((heap (member :heap rest)))
+		(match-case heap
+		   ((:heap (and (? string?) ?file . ?-))
+		    (module5-read-heap
+		       (make-file-name (dirname path) file)
+		       expr mod))
+		   (else
+		    (module5-read-heap
+		       (make-file-name (dirname path)
+			  (string-append (prefix (basename path)) ".heap5"))
+		       expr mod)))))
+	    (else
+	     (error/loc mod "Illegal library" path init))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-read-heap ...                                            */
@@ -549,12 +566,16 @@
 ;*    module5-write-heap ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (module5-write-heap path::bstring mod::Module)
-   (let ((port (open-output-binary-file path)))
-      (if (not (binary-port? port))
-	  (error/loc mod "Cannot write heap file" path path)
-	  (unwind-protect
-	     (output-obj port (module5->heap mod))
-	     (close-binary-port port)))))
+   (with-trace 'module5 "module5-write-heap"
+      (trace-item "heap=" path)
+      (trace-item "mod=" (-> mod id))
+      (trace-item "mod-path=" (-> mod path))
+      (let ((port (open-output-binary-file path)))
+	 (if (not (binary-port? port))
+	     (error/loc mod "Cannot write heap file" path path)
+	     (unwind-protect
+		(output-obj port (module5->heap mod))
+		(close-binary-port port))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *heap-signature* ...                                             */
@@ -565,23 +586,28 @@
 ;*    heap->module5 ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (heap->module5::Module heap path expr mod)
-   (cond
-      ((or (not (vector? heap))
-	   (not (=fx (vector-length heap) 4))
-	   (not (=fx (vector-ref-ur heap 0) *heap-signature*)))
-       (error/loc mod "Corrupted head" path expr))
-      ((not (equal? (vector-ref-ur heap 1) (bigloo-config 'release-number)))
-       (error/loc mod
-	  (format "Heap incompatible, build-release ~s vs ~s"
-	     (vector-ref-ur heap 1) (bigloo-config 'release-number))
-	  path expr))
-      ((not (equal? (vector-ref-ur heap 2) (bigloo-config 'specific-version)))
-       (error/loc mod
-	  (format "Heap incompatible, build-specific ~s vs ~s"
-	     (vector-ref-ur heap 2) (bigloo-config 'specific-version))
-	  path expr))
-      (else
-       (vector-ref-ur heap 3))))
+   (with-trace 'module5 "heap->module5"
+      (trace-item "path=" path)
+      (trace-item "expr=" expr)
+      (cond
+	 ((or (not (vector? heap))
+	      (not (=fx (vector-length heap) 4))
+	      (not (=fx (vector-ref-ur heap 0) *heap-signature*)))
+	  (error/loc mod "Corrupted head" path expr))
+	 ((not (equal? (vector-ref-ur heap 1)
+		  (bigloo-config 'release-number)))
+	  (error/loc mod
+	     (format "Heap incompatible, build-release ~s vs ~s"
+		(vector-ref-ur heap 1) (bigloo-config 'release-number))
+	     path expr))
+	 ((not (equal? (vector-ref-ur heap 2)
+		  (bigloo-config 'specific-version)))
+	  (error/loc mod
+	     (format "Heap incompatible, build-specific ~s vs ~s"
+		(vector-ref-ur heap 2) (bigloo-config 'specific-version))
+	     path expr))
+	 (else
+	  (vector-ref-ur heap 3)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5->heap ...                                                */
@@ -623,7 +649,7 @@
 				 (with-access::Module y ((yid id))
 				    (eq? xid yid)))))))
 	 mod))
-   
+
    (with-trace 'module5-parse "module5-parse"
       (trace-item "path=" path)
       (trace-item "exprs=" exprs)
@@ -892,6 +918,8 @@
 	     (error/loc mod "No extern plugin" name clause))))
       
    (with-trace 'module5-parse "module5-parse-clause"
+      (trace-item "mod=" (-> mod id))
+      (trace-item "mod-path=" (-> mod path))
       (trace-item "clause=" clause)
       (trace-item "lib-path=" lib-path)
       (match-case clause
@@ -1044,7 +1072,7 @@
 	    ;; Macro and class definitions are disgarded by the macro-expansion.
 	    ;; Because these definitions are needed to resolve the module
 	    ;; exports, INSTALL-MODULE5-EXPANDER (runtime/macro.scm),
-	    ;; stores these definition in XENV.
+	    ;; stores these definitions in XENV.
 	    (let ((dm (hashtable-filter-map xenv (lambda (k e) (car e)))))
 	       (collect-defines! mod dm))
 	    (collect-defines! mod (-> mod body))

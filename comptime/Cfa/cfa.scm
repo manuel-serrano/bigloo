@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/cfa.scm          */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/cfa.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Thu Jan 11 09:29:23 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 17:04:45 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
 ;*=====================================================================*/
@@ -156,8 +156,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::app-ly/Cinfo)
    (with-access::app-ly/Cinfo node (fun arg approx) 
-      (loose! (cfa! arg) 'all)
-      (loose! (cfa! fun) 'all)
+      (loose! (cfa! arg))
+      (loose! (cfa! fun))
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -165,7 +165,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::pragma/Cinfo)
    (with-access::pragma/Cinfo node (approx expr*)
-      (for-each (lambda (a) (loose! (cfa! a) 'all)) expr*)
+      (for-each (lambda (a) (loose! (cfa! a))) expr*)
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -173,7 +173,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::genpatchid/Cinfo)
    (with-access::genpatchid/Cinfo node (approx expr*)
-      (for-each (lambda (a) (loose! (cfa! a) 'all)) expr*)
+      (for-each (lambda (a) (loose! (cfa! a))) expr*)
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -181,7 +181,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::getfield/Cinfo)
    (with-access::getfield/Cinfo node (approx expr*)
-      (for-each (lambda (a) (loose! (cfa! a) 'all)) expr*)
+      (for-each (lambda (a) (loose! (cfa! a))) expr*)
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -189,7 +189,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::setfield/Cinfo)
    (with-access::setfield/Cinfo node (approx expr*)
-      (for-each (lambda (a) (loose! (cfa! a) 'all)) expr*)
+      (for-each (lambda (a) (loose! (cfa! a))) expr*)
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -197,7 +197,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::new/Cinfo)
    (with-access::new/Cinfo node (approx expr*)
-      (for-each (lambda (a) (loose! (cfa! a) 'all)) expr*)
+      (for-each (lambda (a) (loose! (cfa! a))) expr*)
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -256,9 +256,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::fail/Cinfo)
    (with-access::fail/Cinfo node (approx proc msg obj)
-      (loose! (cfa! proc) 'all)
-      (loose! (cfa! msg) 'all)
-      (loose! (cfa! obj) 'all)
+      (loose! (cfa! proc))
+      (loose! (cfa! msg))
+      (loose! (cfa! obj))
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -316,7 +316,7 @@
 			       ": -----> setting top "
 			       (shape val-approx) "\n")
 			    (approx-set-top! val-approx)
-			    (loose! val-approx 'all)))))
+			    (loose! val-approx)))))
 	 bindings)
       (let ((approx (cfa! body)))
 	 (trace (cfa 3) (shape (cfa-current)) ":let-var <- "
@@ -328,8 +328,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::set-ex-it/Cinfo)
    (with-access::set-ex-it/Cinfo node (approx body onexit)
-      (loose! (cfa! body) 'all)
-      (loose! (cfa! onexit) 'all)
+      (loose! (cfa! body))
+      (loose! (cfa! onexit))
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -339,7 +339,7 @@
    (with-access::jump-ex-it/Cinfo node (approx exit value)
       (cfa! exit)
       (let ((val-approx (cfa! value)))
-	 (loose! val-approx 'all)
+	 (loose! val-approx)
 	 approx)))
 
 ;*---------------------------------------------------------------------*/
@@ -349,7 +349,7 @@
    (with-access::make-box/Cinfo node (approx value)
       (trace (cfa 3) (shape (cfa-current)) ": make-box), "
 	 (shape value) #\Newline)
-      (loose! (cfa! value) 'all)
+      (loose! (cfa! value))
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -360,7 +360,7 @@
       (cfa! var)
       (let ((val-approx (cfa! value)))
 	 (union-approx! approx val-approx))
-      (loose! (cfa! value) 'all)
+      (loose! (cfa! value))
       approx))
 
 ;*---------------------------------------------------------------------*/

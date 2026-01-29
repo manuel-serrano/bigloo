@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 26 08:48:52 2003                          */
 ;*    Last change :  Wed Jun 16 16:00:13 2021 (serrano)                */
-;*    Copyright   :  2003-21 Manuel Serrano                            */
+;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The effect of the functions (i.e. does a function read a pair,   */
 ;*    does it set a vector or a global variable, ...).                 */

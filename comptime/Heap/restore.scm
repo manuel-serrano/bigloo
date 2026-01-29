@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Heap/restore.scm       */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Heap/restore.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Wed Oct 22 09:30:08 2025 (serrano)                */
-;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 11:34:54 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
 ;*=====================================================================*/
@@ -69,7 +69,7 @@
    (let ((port (open-input-binary-file fname)))
       (if (not (binary-port? port))
 	  (let ((m (format "Cannot open heap file ~s" fname)))
-	     (error "restore-heap" m *lib-dir*)
+	     (error "read-heap" m *lib-dir*)
 	     (compiler-exit 5))
 	  (unwind-protect
 	     (let ((heap (input-obj port)))

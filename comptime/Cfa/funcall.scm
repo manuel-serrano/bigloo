@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/funcall.scm             */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/funcall.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 07:47:42 1996                          */
-;*    Last change :  Tue Aug  9 08:56:03 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 17:06:15 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The funcall management.                                          */
 ;*=====================================================================*/
@@ -64,7 +64,7 @@
 	 (cond
 	    ((or (approx-top? fapprox)
 		 (not (eq? (approx-type fapprox) *procedure*)))
-	     (for-each (lambda (approx) (loose! approx 'all)) aapprox)
+	     (for-each (lambda (approx) (loose! approx)) aapprox)
 	     (for-each-approx-alloc
 		(lambda (alloc)
 		   (if (make-procedure-app? alloc)
@@ -160,7 +160,7 @@
 	      (global-key? (sfun-the-closure-global fun)))
 	  ;; optional/key function, we loose everything
 	  (trace (cfa 3) "  funcall! opt/key app!: " #\Newline)
-	  (for-each (lambda (approx) (loose! approx 'all)) args-approx)
+	  (for-each (lambda (approx) (loose! approx)) args-approx)
 	  (make-type-approx *obj*))
 	 ((>=fx arity 0)
 	  ;; fix arity call
@@ -174,7 +174,7 @@
 		     (arity           arity))
 	     (if (=fx arity -1)
 		 (begin
-		    (for-each (lambda (approx) (loose! approx 'all))
+		    (for-each (lambda (approx) (loose! approx))
 			      old-args-approx)
 		    (app! fun
 			  callee

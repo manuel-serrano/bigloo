@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/iterate.scm        */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/iterate.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Mon Oct 20 14:19:46 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 16:34:18 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
 ;*=====================================================================*/
@@ -39,31 +39,33 @@
 ;*    cfa-iterate-to-fixpoint! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (cfa-iterate-to-fixpoint! globals)
-   (trace cfa "================== iterate ===========================\n")
-   ;; we reset the global stamp
-   (set! *cfa-stamp* -1)
-   ;; we collect all the exported variables (both functions and
-   ;; variables). They are the root of the iteration process.
-   (let ((glodefs '()))
-      (for-each (lambda (g)
-		   (if (or (eq? (global-import g) 'export)
-			   (exported-closure? g))
-		       (set! glodefs (cons g glodefs))))
-	 globals)
-      ;; add the top level forms
-      (set! glodefs (append (unit-initializers (get-genv)) glodefs))
-      ;; start iterations
-      (continue-cfa! 'init)
-      ;; and loop
-      (verbose 3 "      ")
-      (let loop ((i 0))
-	 (verbose 3 "." i)
-	 (if (continue-cfa?)
-	     (begin
-		(cfa-iterate! glodefs)
-		(loop (+fx i 1)))
-	     glodefs))
-      (verbose 3 "\n")))
+   (with-trace 'cfa "cfa-iterate-to-fixpoint!"
+      (trace-item "global=" (map shape globals))
+      (trace cfa "================== iterate ===========================\n")
+      ;; we reset the global stamp
+      (set! *cfa-stamp* -1)
+      ;; we collect all the exported variables (both functions and
+      ;; variables). They are the root of the iteration process.
+      (let ((glodefs '()))
+	 (for-each (lambda (g)
+		      (if (or (eq? (global-import g) 'export)
+			      (exported-closure? g))
+			  (set! glodefs (cons g glodefs))))
+	    globals)
+	 ;; add the top level forms
+	 (set! glodefs (append (unit-initializers (get-genv)) glodefs))
+	 ;; start iterations
+	 (continue-cfa! 'init)
+	 ;; and loop
+	 (verbose 3 "      ")
+	 (let loop ((i 0))
+	    (verbose 3 "." i)
+	    (if (continue-cfa?)
+		(begin
+		   (cfa-iterate! glodefs)
+		   (loop (+fx i 1)))
+		glodefs))
+	 (verbose 3 "\n"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exported-closure? ...                                            */
@@ -79,19 +81,18 @@
 ;*    cfa-iterate! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (cfa-iterate! globals)
-   (stop-cfa!)
-   (set! *cfa-stamp* (+fx 1 *cfa-stamp*))
-   (verbose 4 " [")
-   (trace cfa #\Newline "=======> Cfa iteration!: " *cfa-stamp* #\Newline)
-   (for-each (lambda (g)
-		(trace (cfa 2) "Exporting " (shape g) #\: #\Newline)
-		(with-trace 'cfa "cfa-iterate!"
-		   (trace-item "g=" (shape g))
+   (with-trace 'cfa "cfa-iterate!"
+      (stop-cfa!)
+      (set! *cfa-stamp* (+fx 1 *cfa-stamp*))
+      (verbose 4 " [")
+      (trace cfa #\Newline "=======> Cfa iteration!: " *cfa-stamp* #\Newline)
+      (for-each (lambda (g)
+		   (trace (cfa 2) "Exporting " (shape g) #\: #\Newline)
 		   (cfa-export-var! (global-value g) g)
-		   (trace (cfa 2) #\Newline)) )
-      globals)
-   (verbose 4 "]")
-   (trace cfa #\Newline))
+		   (trace (cfa 2) #\Newline))
+	 globals)
+      (verbose 4 "]")
+      (trace cfa #\Newline)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cfa-export-var! ...                                              */
@@ -102,44 +103,48 @@
 ;*    cfa-export-var! ::svar ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (cfa-export-var! value::svar/Cinfo owner)
-   (with-access::svar/Cinfo value (stamp)
-      (trace (cfa 3) "~~~ cfa-export/var!::svar/Cinfo[stamp: " stamp
-	 " *cfa-stamp*: " *cfa-stamp*
-	 "]" #\Newline)
-      (if (=fx stamp *cfa-stamp*)
-	  (cfa-variable-value-approx value)
-	  (begin
-	     (set! stamp *cfa-stamp*)
-	     (loose! (cfa-variable-value-approx value) 'all)))))
+   (with-trace 'cfa "cfa-export-var ::svar/Cinfo"
+      (trace-item "owner=" (shape owner))
+      (with-access::svar/Cinfo value (stamp)
+	 (trace (cfa 3) "~~~ cfa-export/var!::svar/Cinfo[stamp: " stamp
+	    " *cfa-stamp*: " *cfa-stamp*
+	    "]" #\Newline)
+	 (if (=fx stamp *cfa-stamp*)
+	     (cfa-variable-value-approx value)
+	     (begin
+		(set! stamp *cfa-stamp*)
+		(loose! (cfa-variable-value-approx value)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cfa-export-var! ::intern-sfun/Cinfo ...                          */
 ;*---------------------------------------------------------------------*/
 (define-method (cfa-export-var! value::intern-sfun/Cinfo owner)
-   (with-access::intern-sfun/Cinfo value (stamp args approx)
-      (trace (cfa 3) "  ~~~ cfa-export-var!::intern-sfun/Cinfo[stamp: " stamp 
-	 " *cfa-stamp*: " *cfa-stamp*
-	 "] " (shape owner) #\Newline)
-      (if (=fx stamp *cfa-stamp*)
-	  (begin
-	     (set! stamp *cfa-stamp*)
-	     approx)
-	  (begin
-	     ;; For each iteration, we re-loose the approximation of
-	     ;; the formal parameters. Doing this, we don't have to do
-	     ;; check when we add an approximation of a previous set
-	     ;; if this new set contains `top' or not.
-	     (for-each (lambda (local)
-			  (let ((val (local-value local)))
-			     (trace (cfa 3) " ~~~ formal " (shape local)
-				" clo-env?: " (svar/Cinfo-clo-env? val)
-				" val: " (shape (svar/Cinfo-approx val))
-				#\Newline)
-			     (unless (svar/Cinfo-clo-env? val)
-				(approx-set-top! (svar/Cinfo-approx val)))))
-		args)
-	     ;; after the formals, we loose the result.
-	     (loose! (cfa-intern-sfun! value owner) 'all)))))
+   (with-trace 'cfa "cfa-export-var ::intern-sfun/Cinfo"
+      (trace-item "owner=" (shape owner))
+      (with-access::intern-sfun/Cinfo value (stamp args approx)
+	 (trace (cfa 3) "  ~~~ cfa-export-var!::intern-sfun/Cinfo[stamp: " stamp 
+	    " *cfa-stamp*: " *cfa-stamp*
+	    "] " (shape owner) #\Newline)
+	 (if (=fx stamp *cfa-stamp*)
+	     (begin
+		(set! stamp *cfa-stamp*)
+		approx)
+	     (begin
+		;; For each iteration, we re-loose the approximation of
+		;; the formal parameters. Doing this, we don't have to do
+		;; check when we add an approximation of a previous set
+		;; if this new set contains `top' or not.
+		(for-each (lambda (local)
+			     (let ((val (local-value local)))
+				(trace (cfa 3) " ~~~ formal " (shape local)
+				   " clo-env?: " (svar/Cinfo-clo-env? val)
+				   " val: " (shape (svar/Cinfo-approx val))
+				   #\Newline)
+				(unless (svar/Cinfo-clo-env? val)
+				   (approx-set-top! (svar/Cinfo-approx val)))))
+		   args)
+		;; after the formals, we loose the result.
+		(loose! (cfa-intern-sfun! value owner)))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    cfa-intern-sfun! ::intern-sfun/Cinfo ...                         */
@@ -153,32 +158,25 @@
 	       (set! type (get-bigloo-type type))))
 	 approx))
    
-   (with-access::intern-sfun/Cinfo sfun (stamp body approx args)
-      (with-trace 'cfa "cfa-intern-sfun"
+   (with-access::intern-sfun/Cinfo sfun (stamp body approx args the-closure)
+      (with-trace 'cfa "cfa-intern-sfun!"
+	 (trace-item "owner=" (shape owner))
+	 (trace-item "stamp=" stamp "/" *cfa-stamp*)
 	 (if (=fx stamp *cfa-stamp*)
 	     (begin
 		(trace (cfa 2) "<<< " (shape owner)
 		   " <- " (shape approx) #\Newline)
 		(polymorphic approx))
-	     (multiple-value-bind (res rtime stime utime)
-		(time
-		   (lambda ()
-		      (if (global? owner)
-			  (verbose 4 "<" (variable-id owner) "> ")
-			  (verbose 4 (variable-id owner) " "))
-		      (trace-item (shape owner)
-			 " stamp=" stamp " cfa-stamp=" *cfa-stamp*)
-		      (trace (cfa 2) ">>> " (shape owner) #\Newline)
-		      (set! stamp *cfa-stamp*)
-		      (let ((cur *cfa-current*))
-			 (set! *cfa-current* (format "~a[~a]" (variable-id owner) stamp))
-			 (union-approx-filter! approx (cfa! body))
-			 (trace (cfa 3) "<<< " (shape owner) " <= " (shape approx)
-			    #\Newline)
-			 (set! *cfa-current* cur))
-		      (polymorphic approx)))
-		(trace-item "rtime=" rtime)
-		res)))))
+	     (begin
+		(trace (cfa 2) ">>> " (shape owner) #\Newline)
+		(set! stamp *cfa-stamp*)
+		(let ((cur *cfa-current*))
+		   (set! *cfa-current* (format "~a[~a]" (variable-id owner) stamp))
+		   (union-approx-filter! approx (cfa! body))
+		   (trace (cfa 3) "<<< " (shape owner) " <= " (shape approx)
+		      #\Newline)
+		   (set! *cfa-current* cur))
+		(polymorphic approx))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    The iteration process control                                    */

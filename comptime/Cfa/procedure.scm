@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Cfa/procedure.scm        */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/procedure.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Sat Sep  4 17:37:23 2021 (serrano)                */
-;*    Copyright   :  1996-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 17:06:00 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
 ;*=====================================================================*/
@@ -226,7 +226,7 @@
 	 ;; do we have top in the proc approximation ?
 	 (if (approx-top? proc-approx)
 	     ;; yes, we have, hence we loose every thing.
-	     (loose! vapprox 'all)
+	     (loose! vapprox)
 	     (if (fixnum? offset)
 		 ;; if the offset is a fixnum, we compute an accurate approx
 		 (for-each-approx-alloc
@@ -279,17 +279,18 @@
 ;*    vectors).                                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (loose-alloc! alloc::make-procedure-app)
-   (with-access::make-procedure-app alloc (lost-stamp)
-      (unless (=fx lost-stamp *cfa-stamp*)
-	 (trace (cfa 2) "     loose-alloc::make-procedure-app: " (shape alloc) #\Newline)
-	 (set! lost-stamp *cfa-stamp*)
-	 (set-procedure-approx-polymorphic! alloc)
-	 (let* ((callee (car (make-procedure-app-args alloc)))
-		(v (var-variable callee))
-		(fun (variable-value v)))
-	    (cfa-export-var! fun v)
-	    (when *optim-cfa-unbox-closure-args*
-	       (for-each loose-arg! (cdr (sfun-args fun))))))))
+   (with-trace 'cfa "loose-alloc"
+      (with-access::make-procedure-app alloc (lost-stamp)
+	 (unless (=fx lost-stamp *cfa-stamp*)
+	    (trace (cfa 2) "     loose-alloc::make-procedure-app: " (shape alloc) #\Newline)
+	    (set! lost-stamp *cfa-stamp*)
+	    (set-procedure-approx-polymorphic! alloc)
+	    (let* ((callee (car (make-procedure-app-args alloc)))
+		   (v (var-variable callee))
+		   (fun (variable-value v)))
+	       (cfa-export-var! fun v)
+	       (when *optim-cfa-unbox-closure-args*
+		  (for-each loose-arg! (cdr (sfun-args fun)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-procedure-approx-polymorphic! ...                            */

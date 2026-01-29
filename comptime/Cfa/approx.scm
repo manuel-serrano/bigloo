@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/approx.scm       */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/approx.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Thu Jan 11 09:37:33 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 16:58:50 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
 ;*=====================================================================*/
@@ -158,43 +158,44 @@
 			     (set! res #t)))
 	    (approx-allocs src))
 	 res))
-   
-   (when (approx-top? src)
-      (approx-set-top! dst))
-   (when (bigloo-type? ty)
-      (cond
-	 ((eq? ty *vector*)
-	  (when (set-union/type! dst src vector-approx?)
-	     (continue-cfa! 'union)))
-	 ((eq? ty *procedure*)
-	  (when (approx-has-procedure? src)
-	     (approx-has-procedure?-set! dst #t))
-	  (when (set-union/type! dst src procedure-approx?)
-	     (continue-cfa! 'union)))
-	 ((or (eq? ty *pair*)
-	      (eq? ty *epair*)
-	      (eq? ty *pair-nil*)
-	      (eq? ty *list*))
-	  (when (set-union/type! dst src cons-approx?)
-	     (continue-cfa! 'union)))
-	 ((eq? ty *struct*)
-	  (when (set-union/type! dst src struct-approx?)
-	     (continue-cfa! 'union)))
-	 ((not (or (eq? ty *symbol*)
-		   (eq? ty *keyword*)
-		   (eq? ty *unspec*)
-		   (eq? ty *bstring*)
-		   (eq? ty *bint*)
-		   (eq? ty *belong*)
-		   (eq? ty *bllong*)
-		   (eq? ty *bignum*)
-		   (eq? ty *real*)
-		   (eq? ty *bchar*)
-		   (eq? ty *nil*)
-		   (eq? ty *bbool*)))
-	  (when (set-union! (approx-allocs dst) (approx-allocs src))
-	     (continue-cfa! 'union)))))
-   dst)
+
+   (with-trace 'cfa "union-approx/type!"
+      (when (approx-top? src)
+	 (approx-set-top! dst))
+      (when (bigloo-type? ty)
+	 (cond
+	    ((eq? ty *vector*)
+	     (when (set-union/type! dst src vector-approx?)
+		(continue-cfa! 'union)))
+	    ((eq? ty *procedure*)
+	     (when (approx-has-procedure? src)
+		(approx-has-procedure?-set! dst #t))
+	     (when (set-union/type! dst src procedure-approx?)
+		(continue-cfa! 'union)))
+	    ((or (eq? ty *pair*)
+		 (eq? ty *epair*)
+		 (eq? ty *pair-nil*)
+		 (eq? ty *list*))
+	     (when (set-union/type! dst src cons-approx?)
+		(continue-cfa! 'union)))
+	    ((eq? ty *struct*)
+	     (when (set-union/type! dst src struct-approx?)
+		(continue-cfa! 'union)))
+	    ((not (or (eq? ty *symbol*)
+		      (eq? ty *keyword*)
+		      (eq? ty *unspec*)
+		      (eq? ty *bstring*)
+		      (eq? ty *bint*)
+		      (eq? ty *belong*)
+		      (eq? ty *bllong*)
+		      (eq? ty *bignum*)
+		      (eq? ty *real*)
+		      (eq? ty *bchar*)
+		      (eq? ty *nil*)
+		      (eq? ty *bbool*)))
+	     (when (set-union! (approx-allocs dst) (approx-allocs src))
+		(continue-cfa! 'union)))))
+      dst))
 
 ;*---------------------------------------------------------------------*/
 ;*    union-approx-filter! ...                                         */
@@ -205,10 +206,12 @@
 ;*    destination type. See cfa-intern-sfun! and cfa! ::let-var        */
 ;*---------------------------------------------------------------------*/
 (define (union-approx-filter!::approx dst::approx src::approx)
-   (let ((ty (approx-type dst)))
-      (if (or (not (approx-type-locked? dst)) (eq? ty *_*) (eq? ty *obj*))
-	  (union-approx! dst src)
-	  (union-approx/type! dst src ty))))
+   (with-trace 'cfa "union-approx-filter!"
+      (let ((ty (approx-type dst)))
+	 (trace-item "ty=" (shape ty))
+	 (if (or (not (approx-type-locked? dst)) (eq? ty *_*) (eq? ty *obj*))
+	     (union-approx! dst src)
+	     (union-approx/type! dst src ty)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-approx? ...                                               */

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/app.scm                 */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/app.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 17:36:29 1996                          */
-;*    Last change :  Sat Jun  4 06:51:29 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 17:05:30 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa on `app' node                                            */
 ;*=====================================================================*/
@@ -20,6 +20,7 @@
 	    type_cache
 	    ast_var
 	    ast_node
+	    module_module
 	    cfa_info
 	    cfa_info2
 	    cfa_cfa
@@ -51,41 +52,53 @@
 ;*    app! ::intern-sfun/Cinfo ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (app! fun::intern-sfun/Cinfo var::var args-approx)
-   (with-access::intern-sfun/Cinfo fun (args polymorphic?)
-      (trace (cfa 3)
-	 (cfa-current)
-	 ": >>> app(intern-sfun/Cinfo)!" " polymorphic?=" polymorphic?
-	 #\Newline)
-      (trace (cfa 3) (cfa-current) ": ~~~   app, formals="
-	 (map shape args) #\Newline)
-      (trace (cfa 3) (cfa-current) ": ~~~   app, approx="
-	 (map shape args-approx) #\Newline)
-      ;; we set the new formals approximation
-      (for-each (lambda (formal approx)
-		   (union-approx! (svar/Cinfo-approx (local-value formal))
-		      approx))
-	 args
-	 args-approx)
-      (trace (cfa 3)
-	 (cfa-current)
-	 ": --- app(intern-sfun/Cinfo)!" " polymorphic?=" polymorphic?
-	 #\Newline)
-      (trace (cfa 3) (cfa-current) ": ~~~   app, formals="
-	 (map shape args) #\Newline)
-      ;; and we jump to the function body
-      (if (or (not (global? (var-variable var)))
-	      (and (global? (var-variable var))
-		   (eq? (global-import (var-variable var)) 'static)))
-	  ;; this is a unexported function 
-	  (let ((a (cfa-intern-sfun! fun (var-variable var))))
-	     (trace (cfa 3) (cfa-current)
-		": <<< app " (shape var) " <- (intern) " (shape a) "\n")
-	     a)
-	  ;; this is an exported function
-	  (let ((a (cfa-export-var! fun (var-variable var))))
-	     (trace (cfa 3) (cfa-current)
-		": <<< app " (shape var) " <- (export) " (shape a) "\n")
-	     a))))
+   (with-trace 'cfa "app! ::intern-sfun/Cinfo"
+      (trace-item "var=" (shape var))
+      (trace-item "scope=" (if (local? (var-variable var))
+			       "local"
+			       (global-import (var-variable var))))
+      (with-access::intern-sfun/Cinfo fun (args polymorphic? approx)
+	 (trace (cfa 3)
+	    (cfa-current)
+	    ": >>> app(intern-sfun/Cinfo)!" " polymorphic?=" polymorphic?
+	    #\Newline)
+	 (trace (cfa 3) (cfa-current) ": ~~~   app, formals="
+	    (map shape args) #\Newline)
+	 (trace (cfa 3) (cfa-current) ": ~~~   app, approx="
+	    (map shape args-approx) #\Newline)
+	 ;; we set the new formals approximation
+	 (for-each (lambda (formal approx)
+		      (union-approx! (svar/Cinfo-approx (local-value formal))
+			 approx))
+	    args
+	    args-approx)
+	 (trace (cfa 3)
+	    (cfa-current)
+	    ": --- app(intern-sfun/Cinfo)!" " polymorphic?=" polymorphic?
+	    #\Newline)
+	 (trace (cfa 3) (cfa-current) ": ~~~   app, formals="
+	    (map shape args) #\Newline)
+	 ;; and we jump to the function body
+	 (cond
+	    ((or (not (global? (var-variable var)))
+		 (and (global? (var-variable var))
+		      (eq? (global-import (var-variable var)) 'static)))
+	     ;; this is a unexported function 
+	     (let ((a (cfa-intern-sfun! fun (var-variable var))))
+		(trace (cfa 3) (cfa-current)
+		   ": <<< app " (shape var) " <- (intern) " (shape a) "\n")
+		a))
+	    ((and (eq? (global-import (var-variable var)) 'export)
+		  ;; using module5, a variable might be exported but
+		  ;; declared in another module
+		  (eq? (global-module (var-variable var)) *module*))
+	     ;; this is an exported function
+	     (let ((a (cfa-export-var! fun (var-variable var))))
+		(trace (cfa 3) (cfa-current)
+		   ": <<< app " (shape var) " <- (export) " (shape a) "\n")
+		a))
+	    (else
+	     approx)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    app! ::extern-sfun ...                                           */
@@ -97,7 +110,7 @@
       ;; we set the new formals approximation
       (if top?
 	  ;; calling a random extern function, loose everyting
-	  (for-each (lambda (a) (loose! a 'all)) args-approx)
+	  (for-each (lambda (a) (loose! a)) args-approx)
 	  ;; don't loose but mark functions as not candidate to X/T optim
 	  (for-each (lambda (a) (disable-X-T! a "extern call")) args-approx))
       (when polymorphic?
@@ -119,7 +132,7 @@
    (with-access::cfun/Cinfo fun (top? approx)
       ;; we set the new formals approximation
       (if top?
-	  (for-each (lambda (a) (loose! a 'all)) args-approx)
+	  (for-each (lambda (a) (loose! a)) args-approx)
 	  ;; don't loose but mark functions as not candidate to X/T optim
 	  (for-each (lambda (a) (disable-X-T! a "extern call")) args-approx))
       (trace (cfa 3) (cfa-current)

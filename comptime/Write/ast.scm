@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Write/ast.scm          */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Write/ast.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:29:03 1994                          */
-;*    Last change :  Thu Oct  2 08:19:30 2025 (serrano)                */
-;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 11:17:10 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast pretty-printer                                           */
 ;*=====================================================================*/
@@ -46,32 +46,31 @@
 		   (if (not *ast-case-sensitive*)
 		       (set! *pp-case* 'lower))
 		   (write-scheme-file-header port
-					     (string-append "The AST ("
-							    *current-pass*
-							    ")"))
+		      (string-append "The AST ("
+			 *current-pass*
+			 ")"))
 		   (for-each
-		    (lambda (g)
-		       (let ((fun (global-value g)))
-			  (write-scheme-comment port (shape g))
-			  (write-scheme-comment port
-						(function-type->string g))
-			  (write-scheme-comment port (make-sfun-sinfo g))
-			  (pp `(,(case (sfun-class fun)
-				    ((sgfun)
-				     'define-generic)
-				    ((sifun)
-				     'define-inline)
-				    ((smfun)
-				     'define-method)
-				    (else
-				     'define))
-				,(cons (shape g)
-				       (args-list->args*
-					(map shape (sfun-args fun))
-					(sfun-arity fun)))
-				,(shape (sfun-body fun)))
-			      port)))
-		    globals))
+		      (lambda (g)
+			 (let ((fun (global-value g)))
+			    (write-scheme-comment port (shape g))
+			    (write-scheme-comment port (function-type->string g))
+			    (write-scheme-comment port (make-sfun-sinfo g))
+			    (pp `(,(case (sfun-class fun)
+				      ((sgfun)
+				       'define-generic)
+				      ((sifun)
+				       'define-inline)
+				      ((smfun)
+				       'define-method)
+				      (else
+				       'define))
+				  ,(cons (shape g)
+				      (args-list->args*
+					 (map shape (sfun-args fun))
+					 (sfun-arity fun)))
+				  ,(shape (sfun-body fun)))
+			       port)))
+		      globals))
 		(close-output-port port))))))
 
 ;*---------------------------------------------------------------------*/

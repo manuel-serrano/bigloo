@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/api/browser/src/Makefile        */
+#*    serrano/prgm/project/bigloo/5.0a/api/browser/src/Makefile        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Oct  8 14:01:27 2025 (serrano)                */
+#*    Last change :  Thu Jan 29 09:16:32 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -53,7 +53,7 @@ EOBJECTS	= objs/make_lib.o
 
 
 WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) \
-   objs/make_lib5.wat Wlib/wbrowser.wat
+                  objs/make_lib5.wat Wlib/wbrowser.wat
 WEOBJECTS	= objs/make_lib.wat
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)

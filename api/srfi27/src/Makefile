@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/srfi27/src/Makefile       */
+#*    serrano/prgm/project/bigloo/5.0a/api/srfi27/src/Makefile         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Nov 16 11:13:02 2022 (serrano)                */
+#*    Last change :  Thu Jan 29 08:20:54 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -35,7 +35,7 @@ JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
 DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options (cannot use BFLAGS because of -fcfa-arithmetic)
-BAPIFLAGS	= -O3 -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
+BAPIFLAGS	= -O3 -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee -module4
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)

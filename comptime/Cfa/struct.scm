@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/struct.scm              */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/struct.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:06:51 1995                          */
-;*    Last change :  Wed Mar 30 09:22:59 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 17:05:15 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The struct approximation management                              */
 ;*    -------------------------------------------------------------    */
@@ -117,7 +117,7 @@
 	 ;; we check if we have top on the structure
 	 (if (approx-top? struct-approx)
 	     ;; yes, we have, hence we loose every thing.
-	     (loose! val-approx 'all)
+	     (loose! val-approx)
 	     (for-each-approx-alloc
 	      (lambda (app)
 		 (if (make-struct-app? app)

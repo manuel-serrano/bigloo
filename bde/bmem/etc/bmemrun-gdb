@@ -20,7 +20,7 @@ exe=a.out
 bmon=
 thread=
 
-bmemdir=/home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.7a
+bmemdir=/home/serrano/prgm/project/bigloo/5.0a/lib/bigloo/5.0a
 
 #*---------------------------------------------------------------------*/
 #*    Argument parsing                                                 */

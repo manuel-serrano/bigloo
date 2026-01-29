@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/mail/src/Makefile                */
+#*    serrano/prgm/project/bigloo/5.0a/api/mail/src/Makefile           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:13:27 2017 (serrano)                */
+#*    Last change :  Thu Jan 29 08:12:48 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -36,12 +36,9 @@ JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
 DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options
-BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
-SPIFLAGS	= 
-EAFLAGS		= --suffix spi --module-keyword interface
-EJFLAGS		= --suffix spi --module-keyword interface
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee -module4
 # Flags to build a heap
-BHEAPFLAGS	= $(SPIFLAGS) -unsafe -q \
+BHEAPFLAGS	= -unsafe -q \
                   -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 
@@ -123,19 +120,19 @@ include ../../Makefile.api
 #*    The implicit rules                                               */
 #*---------------------------------------------------------------------*/
 objs/%.o: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.stk
-	$(BIGLOO) $(SPIFLAGS) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
+	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
 
 objs/%.o: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.scm
-	$(BIGLOO) $(SPIFLAGS) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
+	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
 
 objs/%.o: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.stk
 	$(BIGLOO) -suffix stk $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c
 
 $(CLASS_DIR)/%.class: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.stk
-	$(BIGLOO) -jvm $(SPIFLAGS) $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
+	$(BIGLOO) -jvm $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
 $(CLASS_DIR)/%.class: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.scm
-	$(BIGLOO) -jvm $(SPIFLAGS) $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
+	$(BIGLOO) -jvm $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
 $(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.stk
 	$(BIGLOO) -suffix stk -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@

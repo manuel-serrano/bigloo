@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/Makefile                        */
+#*    serrano/prgm/project/bigloo/5.0a/Makefile                        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Jan 28 07:19:56 2026 (serrano)                */
+#*    Last change :  Thu Jan 29 08:22:09 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -977,7 +977,6 @@ pop:
 	@ echo LICENSE COPYING \
                configure INSTALL.md INSTALL.jvm README.md \
                Makefile Makefile.misc \
-               Makefile.mercurial \
                Makefile.git \
                .hgignore \
                .gitignore \

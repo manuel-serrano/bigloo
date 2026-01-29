@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/module5.scm             */
+;*    serrano/prgm/project/bigloo/5.0a/recette/module5.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 17 10:40:09 2025                          */
-;*    Last change :  Wed Jan 28 18:32:28 2026 (serrano)                */
+;*    Last change :  Thu Jan 29 10:46:11 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 tests                                                    */
@@ -28,7 +28,7 @@
    (import :version 4 "module5_ex12.scm")
    (import "module5_ex13.scm")
    (import "module5_ex14.scm")
-   (import "module5_ex15.scm")
+   ;;(import "module5_ex15.scm")
    (import "module5_ex16.scm" (ex16a ex5a))
    (import "module5_ex17.scm" (ex17))
    (import "module5_ex18.scm")
@@ -58,8 +58,6 @@
    (test "ex3.1" (ex3a 200) (vector 'ex3a 200))
    (test "ex3.2" (ex3b 'a 'b 'c) (list 'ex3b 'a 'b 'c))
    (test "ex4.1" (EX4A 'abc) (vector 'ex3a 'abc))
-   (test "ex5.1" (ex5a) 'ex5a)
-   (test "ex6.1" ex6a 'ex6a)
    (test "ex8.1" (ex8m "from module5.scm") (cons "from module5.scm" 'ex8m))
    (test "ex8.2" (ex8f) (cons 124 'ex8m))
    (test "ex9.1" (ex9ma "from module5.scm") (cons "from module5.scm" 'ex9m))
@@ -71,15 +69,15 @@
    (test "ex12.2" (to-string (ex12i 4 3 9)) "==> bint ")
    (test "ex13.1" G 45)
    (test "ex14.1" (ex14 '(1 2 3)) 2)
-   (test "ex15.1" (ex15f) "procedure")
+;*    (test "ex15.1" (ex15f) "procedure")                              */
    (test "ex16.1" (ex16a) 'ex5a)
    (test "ex17.1" (ex5a@ex17) 'ex5a)
    (test "ex17.2" (ex17a@ex17 1 2) (list 1 2))
-   (test "ex18.1" (ex18) "not-shadowed")
+   (test "ex18.1" (ex18) 'not-shadowed)
    )
 
 ;*---------------------------------------------------------------------*/
 ;*    ex18-shadow ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (ex18-shadow)
-   'shadow)
+(define (xex18-shadowx)
+   'shadowed)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/var.scm            */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/var.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Tue Sep  3 06:41:25 2024 (serrano)                */
+;*    Last change :  Thu Jan 29 17:41:31 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -49,7 +49,7 @@
 	      ;;    @ref ../Foreign/library.scm:module change@
 	      module::symbol
 	      ;; the global's importation (is mutated in make_heap@heap_make)
-	      ;; should be STATIC, EXPORT, EVAL or FOREIGN.
+	      ;; should be IMPORT, STATIC, EXPORT, EVAL, or FOREIGN.
 	      import
 	      ;; is this global can be known by eval?
 	      (evaluable?::bool (default #t))

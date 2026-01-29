@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/venv.scm           */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/venv.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Mon Oct 20 10:33:17 2025 (serrano)                */
+;*    Last change :  Thu Jan 29 17:55:59 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -34,6 +34,7 @@
 	    (find-global ::obj ::symbol . <symbol>)
 	    (find-global/module ::obj ::symbol ::symbol)
 	    (get-global/module ::obj ::symbol ::symbol)
+	    (add-global! ::obj ::global ::symbol)
 	    (bind-global!::global ::obj ::symbol ::obj ::symbol ::value ::symbol ::obj)
 	    (unbind-global! ::obj ::symbol ::symbol)
 	    (for-each-global! ::obj ::procedure)
@@ -335,7 +336,7 @@
 ;*       1- if the two declarations concerns the same module, an error */
 ;*          is notified.                                               */
 ;*       2- the variable defined in the current module has the highest */
-;*          priority (it override the others definitions).             */
+;*          priority (it overrides the others definitions).            */
 ;*       3- imported variables have a higher priority than library     */
 ;*          variables.                                                 */
 ;*       4- user library variables have a higher priority than system  */
@@ -356,8 +357,7 @@
 	      old)
 	     (else
 	      (error-rebind-global! old src)))
-	  (let* ((bucket (hashtable-get env ident))
-		 (qtn (cond
+	  (let* ((qtn (cond
 			 ((not (backend-qualified-types (the-backend))) "")
 			 ((eq? import 'eval) "eval")
 			 (else (module->qualified-type module))))
@@ -371,29 +371,29 @@
 			 (src src)
 			 (user? #t)
 			 (import import))))
-	     (cond
-		((or (not (pair? bucket)) (null? (cdr bucket)))
-		 ;; this is the firt time we see this identifier
-		 (hashtable-put! env ident (list ident new))
-		 new)
-		(else
-		 (let* ((old* (cdr bucket))
-			(mid (module-initialization-id
-			      (global-module (car old*)))))
-		    (cond
-		       ((eq? (global-module (car old*)) *module*)
-			;; hidden by a local variable
-			(if (and (not (eq? ident mid)) (not *lib-mode*))
-			    (warning-override-global! (car old*) new src))
-			(set-cdr! (cdr bucket) (cons new (cddr bucket)))
-			new)
-		       (else
-			(let ((new* (cons new old*)))
-			   (if (and (not (eq? ident mid)) (not *lib-mode*))
-			       (warning-override-global! new (car old*) src))
-			   (set-cdr! bucket new*)
-			   new))))))))))
+	     (add-global! env new ident)
+	     new))))
 
+;*---------------------------------------------------------------------*/
+;*    add-global! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (add-global! env g::global ident::symbol)
+   (let ((bucket (hashtable-get env ident)))
+      (cond
+	 ((or (not (pair? bucket)) (null? (cdr bucket)))
+	  ;; this is the first time we see this identifier
+	  (hashtable-put! env ident (list ident g)))
+	 (else
+	  (let* ((old* (cdr bucket))
+		 (mid (module-initialization-id
+			 (global-module (car old*)))))
+	     (cond
+		((eq? (global-module (car old*)) *module*)
+		 (set-cdr! (cdr bucket) (cons g (cddr bucket))))
+		(else
+		 (let ((new* (cons g old*)))
+		    (set-cdr! bucket new*)))))))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    unbind-global! ...                                               */
 ;*---------------------------------------------------------------------*/

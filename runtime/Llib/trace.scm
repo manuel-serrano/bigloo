@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/trace.scm          */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/trace.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Fri Sep 19 12:35:44 2025 (serrano)                */
-;*    Copyright   :  2003-25 Manuel Serrano                            */
+;*    Last change :  Thu Jan 29 09:37:10 2026 (serrano)                */
+;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
 ;*=====================================================================*/
@@ -97,7 +97,7 @@
    (let ((c (assq key alist)))
       (if (pair? c)
 	  (cdr c)
-	  (error 'trace-alist-get "Can't find trace-value" key))))
+	  (error "trace-alist-get" "Can't find trace-value" key))))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-alist-set! ...                                             */
@@ -106,7 +106,7 @@
    (let ((c (assq key alist)))
       (if (pair? c)
 	  (set-cdr! c val)
-	  (error 'trace-alist-set! "Can't find trace-value" key))))
+	  (error "trace-alist-set!" "Can't find trace-value" key))))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-port ...                                                   */
@@ -217,6 +217,9 @@
 	     (unwind-protect
 		(thunk)
 		(begin
+		   (display (trace-alist-get al 'margin) (current-error-port))
+		   (newline (current-error-port))
+		   (flush-output-port (current-error-port))
 		   (trace-alist-set! al 'depth d)
 		   (trace-alist-set! al 'margin om)
 		   (trace-alist-set! al 'margin-level ol))))

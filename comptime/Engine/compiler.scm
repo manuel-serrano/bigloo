@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/Engine/compiler.scm        */
+;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Oct 22 17:08:48 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 09:10:40 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -577,7 +577,7 @@
 	    
 	    (stop-on-pass 'dump-module (lambda () (dump-module mod)))
 	    
-	    ;; profiling initilization code
+	    ;; profiling initialization code
 	    (when (>=fx *profile-mode* 1)
 	       (set! units (cons (make-prof-unit) units)))
 	    
@@ -658,10 +658,10 @@
 	    (with-access::Module mod (libraries)
 	       (for-each (lambda (l) (use-library! (car l))) libraries))
 
-	    ;; generate a heap5 ondemande
+	    ;; generate a heap5 on demande
 	    (stop-on-pass 'make-add-heap
 	       (lambda () (module5-write-heap *additional-heap-name* mod)))
-	    
+
 	    ast))))
 
 ;*---------------------------------------------------------------------*/

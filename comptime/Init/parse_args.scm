@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/Init/parse_args.scm        */
+;*    .../prgm/project/bigloo/5.0a/comptime/Init/parse_args.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jan 28 17:41:35 2026 (serrano)                */
+;*    Last change :  Thu Jan 29 07:58:57 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1213,6 +1213,11 @@
 		   (=fx (string-length suf) 0)
 		   (null? *src-files*))
 	      (set! *src-files* (list else)))
+	     ((string=? suf "bgl")
+	      ;; bgl (the new official suffix) implies module5 by default
+	      (when (=fx *module-version* 0)
+		 (set! *module-version* 5))
+	      (set! *src-files* (cons else *src-files*)))
 	     ((member suf *src-suffix*)
 	      (set! *src-files* (cons else *src-files*)))
 	     ((assoc suf *auto-mode*)

@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/runtime/Makefile                */
+#*    serrano/prgm/project/bigloo/5.0a/runtime/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Jan 28 13:52:35 2026 (serrano)                */
+#*    Last change :  Thu Jan 29 09:01:55 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -678,7 +678,6 @@ libs-wasm:
 
 lib-wasm: lib-wasm_s
 lib-wasm_s: includes validate-wasm
-	$(MAKE) $(BOOTLIBDIR)/types.wat
 	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS)" \
@@ -686,7 +685,6 @@ lib-wasm_s: includes validate-wasm
                 LIBSUFFIX=_s
 
 lib-wasm_u: includes validate-wasm
-	$(MAKE) $(BOOTLIBDIR)/types.wat
 	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \
@@ -725,8 +723,8 @@ objs/wasm$(LIBSUFFIX)/$(LIBRARYNAME)$(LIBSUFFIX).wat: \
 	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w $^ -o $@
 	@ echo "\e[1;33m$(@)\e[0m done"
 
-objs/wasm_s/%.v: Wlib/%.wat
-	$(BGLWATIB) -v $< $(BOOTLIBDIR)/types.wat && date > $@
+objs/wasm_s/%.v: $(BOOTLIBDIR)/types.wat Wlib/%.wat
+	$(BGLWATIB) -v $< && date > $@
 
 objs/wasm_s/bigloo_s.v: objs/wasm_s/bigloo_s.wat
 	$(BGLWATIB) -k -v $< && date > $@

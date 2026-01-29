@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/vector.scm              */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/vector.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:06:51 1995                          */
-;*    Last change :  Fri Feb  3 14:33:23 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 17:05:02 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The vector approximation management                              */
 ;*    -------------------------------------------------------------    */
@@ -156,7 +156,7 @@
 (define-method (cfa!::approx node::valloc/Cinfo)
    (with-access::valloc/Cinfo node (expr* approx)
       (trace (cfa 4) " create-vector: " (shape node) #\Newline)
-      (for-each (lambda (x) (loose! (cfa! x) 'all)) expr*)
+      (for-each (lambda (x) (loose! (cfa! x))) expr*)
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -167,7 +167,7 @@
       (trace (cfa 4) " vector-length: " (shape node) #\Newline)
       (let ((vec-approx (cfa! (car expr*))))
 	 (unless (vector-optim?)
-	    (loose! vec-approx 'all)))
+	    (loose! vec-approx)))
       approx))
 
 ;*---------------------------------------------------------------------*/
@@ -209,7 +209,7 @@
 			(approx-set-type! value-approx (approx-type approx))))))
 	      vec-approx))
 	    (else
-	     (loose! vec-approx 'all)))
+	     (loose! vec-approx)))
 	 approx)))
 
 ;*---------------------------------------------------------------------*/
@@ -234,7 +234,7 @@
 	     ;; we check if we have top on the vector
 	     (if (approx-top? vec-approx)
 		 ;; yes, we have, hence we loose every thing.
-		 (loose! val-approx 'all)
+		 (loose! val-approx)
 		 ;; no, then we scan the allocations.
 		 (for-each-approx-alloc
 		  (lambda (app)
@@ -249,8 +249,8 @@
 			    (union-approx! value-approx val-approx)))))
 		  vec-approx)))
 	    (else
-		(loose! vec-approx 'all)
-		(loose! val-approx 'all))))
+		(loose! vec-approx)
+		(loose! val-approx))))
       approx))
       
 ;*---------------------------------------------------------------------*/

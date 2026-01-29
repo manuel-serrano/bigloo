@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/module5.scm     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/module5.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Oct 22 08:35:11 2025 (serrano)                */
-;*    Copyright   :  2025 manuel serrano                               */
+;*    Last change :  Thu Jan 29 11:28:52 2026 (serrano)                */
+;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
 ;*=====================================================================*/
@@ -424,30 +424,40 @@
 ;*    but build the inline body in the imported module environment.    */
 ;*---------------------------------------------------------------------*/
 (define (module5-imported-inline mod::Module env)
-   (with-access::Module mod (imports)
-      (hashtable-for-each imports
-	 (lambda (k decl)
-	    (with-access::Decl decl (def id mod)
-	       (with-access::Module mod ((mid id) resolved)
-		  (let ((def (module5-get-export-def mod id)))
-		     (when (isa? def Def)
-			(with-access::Def def (kind expr)
-			   (when (eq? kind 'inline)
-			      (multiple-value-bind (genv tenv)
-				 (module5-env mod)
-				 (let ((d (find-global env id))
-				       (e (find-global genv id)))
-				    (toplevel->ast expr '() mid genv)
-				    (let* ((nd (find-global genv id))
-					   (f (global-value nd))
-					   (args (sfun-args f))
-					   (body (sexp->node (sfun-body f)
-						    args
-						    (find-location expr)
-						    'value genv)))
-				       (sfun-body-set! (global-value d) body)
-				       (sfun-args-set! (global-value d) args))
-				    #unspecified))))))))))))
+   (with-trace 'module5 "module5-imported-inline"
+      (with-access::Module mod (imports)
+	 (hashtable-for-each imports
+	    (lambda (k decl)
+	       (with-access::Decl decl (def id (imod mod))
+		  (with-access::Module mod ((mid id) resolved)
+		     (let ((def (module5-get-export-def imod id)))
+			(when (isa? def Def)
+			   (with-access::Def def (kind expr)
+			      (when (eq? kind 'inline)
+				 (multiple-value-bind (genv tenv)
+				    (module5-env imod)
+				    ;; force all globals of imod
+				    ;; to be considered as imported in mod
+				    (for-each-global! genv
+				       (lambda (g)
+					  (when (eq? (global-import g) 'export)
+					     (global-import-set! g 'import)
+					     (add-global! env g (global-id g)))))
+				    (let ((d (find-global env id))
+					  (e (find-global genv id)))
+				       (trace-item "inline id=" id "@" mid)
+				       (toplevel->ast expr '() mid genv)
+				       (let* ((nd (find-global genv id))
+					      (f (global-value nd))
+					      (args (sfun-args f))
+					      (body (sexp->node (sfun-body f)
+						       args
+						       (find-location expr)
+						       'value genv)))
+					  (trace-item "body=" (shape body))
+					  (sfun-body-set! (global-value d) body)
+					  (sfun-args-set! (global-value d) args))
+				       #unspecified)))))))))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */

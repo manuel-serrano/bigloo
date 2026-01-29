@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/loose.scm        */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/loose.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:02:51 1996                          */
-;*    Last change :  Wed Sep 18 07:41:48 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 29 17:02:35 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Loosing approximations means values are going outside.           */
 ;*    Toping approximations means add top the sets.                    */
@@ -26,20 +26,21 @@
 	    cfa_info2
 	    cfa_approx
 	    cfa_procedure)
-   (export  (loose!::approx ::approx ::obj)
+   (export  (loose!::approx ::approx)
 	    (generic loose-alloc! ::node)
 	    (global-loose! ::global ::approx)))
  
 ;*---------------------------------------------------------------------*/
 ;*    loose! ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (loose!::approx approx::approx owner)
-   (trace (cfa 4) "loose!: " (shape approx) #\Newline)
-   (with-access::approx approx (lost-stamp)
-      (when (<fx lost-stamp *cfa-stamp*)
-	 (set! lost-stamp *cfa-stamp*)
-	 (for-each-approx-alloc loose-alloc! approx)))
-   approx)
+(define (loose!::approx approx::approx)
+   (with-trace 'cfa "loose!"
+      (trace (cfa 4) "loose!: " (shape approx) #\Newline)
+      (with-access::approx approx (lost-stamp)
+	 (when (<fx lost-stamp *cfa-stamp*)
+	    (set! lost-stamp *cfa-stamp*)
+	    (for-each-approx-alloc loose-alloc! approx)))
+      approx))
 
 ;*---------------------------------------------------------------------*/
 ;*    loose-alloc! ...                                                 */
@@ -59,5 +60,5 @@
    (trace (cfa 2)
 	  "global-loose!: " (shape global) " " (shape approx) #\Newline)
    (if (memq (global-import global) '(import export))
-       (loose! approx 'all)
+       (loose! approx)
        (disable-X-T! approx "global track is lost")))
