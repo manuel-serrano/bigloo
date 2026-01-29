@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 17 10:40:09 2025                          */
-;*    Last change :  Thu Jan 29 10:46:11 2026 (serrano)                */
+;*    Last change :  Thu Jan 29 18:07:40 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 tests                                                    */
@@ -28,7 +28,7 @@
    (import :version 4 "module5_ex12.scm")
    (import "module5_ex13.scm")
    (import "module5_ex14.scm")
-   ;;(import "module5_ex15.scm")
+   (import "module5_ex15.scm")
    (import "module5_ex16.scm" (ex16a ex5a))
    (import "module5_ex17.scm" (ex17))
    (import "module5_ex18.scm")
@@ -69,7 +69,7 @@
    (test "ex12.2" (to-string (ex12i 4 3 9)) "==> bint ")
    (test "ex13.1" G 45)
    (test "ex14.1" (ex14 '(1 2 3)) 2)
-;*    (test "ex15.1" (ex15f) "procedure")                              */
+   (test "ex15.1" (ex15f) "procedure")
    (test "ex16.1" (ex16a) 'ex5a)
    (test "ex17.1" (ex5a@ex17) 'ex5a)
    (test "ex17.2" (ex17a@ex17 1 2) (list 1 2))

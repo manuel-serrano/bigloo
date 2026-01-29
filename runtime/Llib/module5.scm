@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Jan 29 09:23:57 2026 (serrano)                */
+;*    Last change :  Thu Jan 29 18:19:31 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -531,11 +531,11 @@
       (let ((init (call-with-input-file path read)))
 	 (match-case init 
 	    ((declare-library! (quote ?id) . ?rest)
-	     (let ((srfi (member :srfi rest)))
+	     (let ((srfi (memq :srfi rest)))
 		(match-case srfi
 		   ((:srfi (quote ?srfis) . ?-)
 		    (for-each register-srfi! srfis))))
-	     (let ((heap (member :heap rest)))
+	     (let ((heap (memq :heap rest)))
 		(match-case heap
 		   ((:heap (and (? string?) ?file . ?-))
 		    (module5-read-heap
@@ -553,14 +553,16 @@
 ;*    module5-read-heap ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (module5-read-heap path::bstring expr mod)
-   (let ((port (open-input-binary-file path)))
-      (if (not (binary-port? port))
-	  (if (file-exists? path)
-	      (error/loc mod "Cannot read heap file" path expr)
-	      (error/loc mod "Cannot find heap file" path expr))
-	  (unwind-protect
-	     (heap->module5 (input-obj port) path expr mod)
-	     (close-binary-port port)))))
+   (with-trace 'module5 "module5-read-heap"
+      (trace-item "path=" path)
+      (let ((port (open-input-binary-file path)))
+	 (if (not (binary-port? port))
+	     (if (file-exists? path)
+		 (error/loc mod "Cannot read heap file" path expr)
+		 (error/loc mod "Cannot find heap file" path expr))
+	     (unwind-protect
+		(heap->module5 (input-obj port) path expr mod)
+		(close-binary-port port))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-write-heap ...                                           */
