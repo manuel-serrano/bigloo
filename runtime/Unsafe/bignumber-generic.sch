@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Wed Jan 28 08:44:00 2026 (serrano)                */
+;*    Last change :  Fri Jan 30 06:58:17 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -157,7 +157,7 @@
 ;*    $string->integer-obj ...                                         */
 ;*---------------------------------------------------------------------*/
 (define ($string->integer-obj str radix)
-
+   
    (define (loopfx v i len)
       (if (=fx i len)
 	  v
@@ -172,7 +172,7 @@
 				 (fixnum->bignum radix))))
 		       (loopbx (fixnum->bignum v) i len
 			  (fixnum->bignum radix))))))))
-
+   
    (define (loopbx v i len r)
       ;; entered on fixnum overflow
       (if (=fx i len)
@@ -181,13 +181,22 @@
 	     (when n
 		(loopbx (+bx (*bx v r) (fixnum->bignum n)) (+fx i 1) len
 		   r)))))
-
+   
    (let ((len (string-length str)))
       (if (<=fx len 4)
 	  ;; fast path, safe string, no overflow possible
 	  (string->integer str radix)
 	  ;; slow path
-	  (loopfx 0 0 len))))
+	  (let ((c (string-ref str 0)))
+	     (cond
+		((char=? c #\-)
+		 (let ((n (loopfx 0 1 len)))
+		    (when n
+		       (- n))))
+		((char=? c #\+)
+		 (loopfx 0 1 len))
+		(else
+		 (loopfx 0 0 len)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expt ...                                                         */
@@ -990,8 +999,6 @@
 	  #f)))
 
 (define ($string->bignum str radix) ;; 2 <= radix <= 36
-   
-   
    
    (define (convert rad sign i)
       (if (<=fx (+fx i 1) (string-length str)) ;; need at least one digit
