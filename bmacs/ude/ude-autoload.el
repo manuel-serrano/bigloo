@@ -124,7 +124,7 @@
 (autoload 'ude-checkin-project "ude-version" "Version manager." t)
 (autoload 'ude-tar-gz-project "ude-version" "Version manager." t)
 ;; ude-balloon
-(autoload 'ude-add-ballon-action "ude-balloon" "Bdb balloon system." t)
+(autoload 'ude-add-balloon-action "ude-balloon" "Bdb balloon system." t)
 (autoload 'ude-balloon-start "ude-balloon" "Bdb balloon system." t)
 (autoload 'ude-balloon-stop "ude-balloon" "Bdb balloon system." t)
 (autoload 'ude-balloon-get-buffer "ude-balloon" "Bdb balloon system." t)
