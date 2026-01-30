@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug 29 07:41:07 2024                          */
-;*    Last change :  Fri Jan 30 06:58:17 2026 (serrano)                */
+;*    Last change :  Fri Jan 30 07:14:38 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -158,29 +158,32 @@
 ;*---------------------------------------------------------------------*/
 (define ($string->integer-obj str radix)
    
-   (define (loopfx v i len)
+   (define (loopfx v i len p)
       (if (=fx i len)
-	  v
+	  (if p v (negfx v))
 	  (let ((n (char->digit (string-ref str i) radix)))
 	     (when n
 		(let ((m (*fx/ov v radix)))
 		   (if (fixnum? m)
 		       (let ((a (+fx/ov m n)))
 			  (if (fixnum? a)
-			      (loopfx a (+fx i 1) len)
+			      (loopfx a (+fx i 1) len p)
 			      (loopbx (fixnum->bignum v) i len
-				 (fixnum->bignum radix))))
+				 (fixnum->bignum radix)
+				 p)))
 		       (loopbx (fixnum->bignum v) i len
-			  (fixnum->bignum radix))))))))
+			  (fixnum->bignum radix)
+			  p)))))))
    
-   (define (loopbx v i len r)
+   (define (loopbx v i len r p)
       ;; entered on fixnum overflow
       (if (=fx i len)
-	  v
+	  (if p v (-bx (bignum-zero) v))
 	  (let ((n (char->digit (string-ref str i) radix)))
 	     (when n
 		(loopbx (+bx (*bx v r) (fixnum->bignum n)) (+fx i 1) len
-		   r)))))
+		   r
+		   p)))))
    
    (let ((len (string-length str)))
       (if (<=fx len 4)
@@ -190,13 +193,11 @@
 	  (let ((c (string-ref str 0)))
 	     (cond
 		((char=? c #\-)
-		 (let ((n (loopfx 0 1 len)))
-		    (when n
-		       (- n))))
+		 (loopfx 0 1 len #f))
 		((char=? c #\+)
-		 (loopfx 0 1 len))
+		 (loopfx 0 1 len #t))
 		(else
-		 (loopfx 0 0 len)))))))
+		 (loopfx 0 0 len #t)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expt ...                                                         */

@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Fri Jan 30 06:54:46 2026 (serrano)                */
+;*    Last change :  Fri Jan 30 07:18:03 2026 (serrano)                */
 ;*                                                                     */
 ;*    On test les operateurs generiques sur les nombres                */
 ;*---------------------------------------------------------------------*/
@@ -283,6 +283,8 @@
    (test "string->number.20" (string->number "E3") #f)
    (test "string->number.21" (string->number "-0123") -123)
    (test "string->number.22" (string->number "-00000000000000000123") -123)
+   (test "string->number.23" (string->number "+00000000000000000123") +123)
+   (test "string->number.24" (string->number "-9000000000000000000123") #z-9000000000000000000123)
    (test "number->string" (number->string 0 2) "0")
    (test "number->string" (number->string 0 8) "0")
    (test "number->string" (number->string 0 10) "0")
