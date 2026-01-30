@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Fri Oct 10 07:13:51 2025 (serrano)                */
-;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jan 30 18:16:10 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
 ;*    -------------------------------------------------------------    */
@@ -33,6 +33,7 @@
 	   tools_error
 	   tools_misc
 	   module_module
+	   module_alibrary
 	   expand_eps
 	   expand_install
 	   read_include))
@@ -123,6 +124,44 @@
 ;*    find-libraries ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (find-libraries clauses)
+   (case *module-version*
+      ((5) (find-libraries5 clauses))
+      ((4) (find-libraries4 clauses))
+      (else (find-libraries4 clauses))))
+
+;*---------------------------------------------------------------------*/
+;*    find-libraries5 ...                                              */
+;*---------------------------------------------------------------------*/
+(define (find-libraries5 clauses)
+   (let loop ((clauses clauses)
+	      (libraries '()))
+      (match-case clauses
+	 (()
+	  (reverse! libraries))
+	 (((library ?lib . ?-) . ?rest)
+	  (loop rest (cons `(library ,lib) libraries)))
+	 (((eval . ?evclauses) . ?rest)
+	  (let ((evlibs (filter-map (lambda (clause)
+				       (match-case clause
+					  ((library . ?libs) `(eval ,clause))
+					  (else #f)))
+			   evclauses)))
+	     (loop rest (append evlibs libraries))))
+	 (((include . ?includes) . ?rest)
+	  (let ((directives (append-map (lambda (include)
+					   (read-directives include))
+			       includes)))
+	     (loop (append directives rest) libraries)))
+	 (((cond-expand . ?-) . ?rest)
+	  (loop (list (comptime-expand/error (car clauses)))
+	     (loop rest libraries)))
+	 (else
+	  (loop (cdr clauses) libraries)))))
+
+;*---------------------------------------------------------------------*/
+;*    find-libraries4 ...                                              */
+;*---------------------------------------------------------------------*/
+(define (find-libraries4 clauses)
    (let loop ((clauses clauses)
 	      (libraries '()))
       (match-case clauses
@@ -135,16 +174,16 @@
 				       (match-case clause
 					  ((library . ?libs) `(eval ,clause))
 					  (else #f)))
-			     evclauses)))
+			   evclauses)))
 	     (loop rest (append evlibs libraries))))
 	 (((include . ?includes) . ?rest)
 	  (let ((directives (append-map (lambda (include)
 					   (read-directives include))
-					includes)))
+			       includes)))
 	     (loop (append directives rest) libraries)))
 	 (((cond-expand . ?-) . ?rest)
 	  (loop (list (comptime-expand/error (car clauses)))
-		(loop rest libraries)))
+	     (loop rest libraries)))
 	 (else
 	  (loop (cdr clauses) libraries)))))
 

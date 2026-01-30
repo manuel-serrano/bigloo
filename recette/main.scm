@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Fri Oct 17 10:41:21 2025 (serrano)                */
+;*    Last change :  Fri Jan 30 17:05:28 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -15,7 +15,7 @@
    (cond-expand
       (bigloo-module5 (include "./main5.sch"))
       (bigloo-module4 (include "./main4.sch"))
-      (else (error "main" "Missing bigloo-moduleXXX" #f))))
+      (else (error "main" "Missing bigloo-module" #f))))
    
 ;*---------------------------------------------------------------------*/
 ;*    Des variables statiques                                          */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Jan 30 07:43:20 2026 (serrano)                */
+;*    Last change :  Fri Jan 30 18:05:58 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -564,7 +564,7 @@
 	    
 	    (hashtable-for-each decls
 	       (lambda (k d)
-		  (with-access::Decl d (scope alias)
+		  (with-access::Decl d (scope alias id)
 		     (when (eq? scope 'import)
 			(let ((def (module5-import-def mod d)))
 			   (with-access::Def def (expr kind)

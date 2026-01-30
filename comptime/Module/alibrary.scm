@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Feb 28 10:20:55 1998                          */
-;*    Last change :  Mon Oct 20 09:16:19 2025 (serrano)                */
-;*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jan 30 18:24:35 2026 (serrano)                */
+;*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler library clause compilation                          */
 ;*=====================================================================*/
@@ -27,7 +27,8 @@
 	    ast_env)
    (export  (make-alibrary-compiler)
             (load-library-init)
-	    (use-library! library::symbol)
+	    (use-library! ::symbol)
+	    (used-libraries::pair-nil)
 	    (get-alibrary-inits))
    (eval    (export use-library!)))
 
@@ -76,6 +77,12 @@
 	 (set! *additional-heap-names*
 	    (cons heap-name *additional-heap-names*))
 	 library)))
+
+;*---------------------------------------------------------------------*/
+;*    used-libraries ...                                               */
+;*---------------------------------------------------------------------*/
+(define (used-libraries)
+   *additional-bigloo-libraries*)
 
 ;*---------------------------------------------------------------------*/
 ;*    make-alibrary-compiler ...                                       */

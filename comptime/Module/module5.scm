@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/module5.scm     */
+;*    serrano/prgm/project/bigloo/wasm/comptime/Module/module5.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Jan 29 11:28:52 2026 (serrano)                */
+;*    Last change :  Fri Jan 30 17:13:38 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -97,10 +97,12 @@
 ;*    module5-import-def ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (module5-import-def mod::Module decl::Decl)
-   (with-access::Decl decl ((dmod mod) def id)
-      (if (eq? mod dmod)
-	  def
-	  (module5-get-export-def dmod id))))
+   (with-trace 'module5 "modulet5-import-def"
+      (trace-item "id=" (-> decl id))
+      (with-access::Decl decl ((dmod mod) def xid id)
+	 (if (eq? mod dmod)
+	     def
+	     (module5-get-export-def dmod (or xid id))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-ast! ...                                                 */
@@ -275,9 +277,9 @@
 	    (others '()))
 	 (hashtable-for-each decls
 	    (lambda (k decl)
-	       (with-access::Decl decl (mod id alias)
+	       (with-access::Decl decl (mod xid id alias)
 		  (with-access::Module mod ((mid id))
-		     (let* ((d (module5-get-export-def mod id))
+		     (let* ((d (module5-get-export-def mod (or xid id)))
 			    (e (vector d mid alias 'import)))
 			(cond
 			   ((isa? d KDef) (set! classes (cons e classes)))
@@ -428,9 +430,9 @@
       (with-access::Module mod (imports)
 	 (hashtable-for-each imports
 	    (lambda (k decl)
-	       (with-access::Decl decl (def id (imod mod))
+	       (with-access::Decl decl (def xid id (imod mod))
 		  (with-access::Module mod ((mid id) resolved)
-		     (let ((def (module5-get-export-def imod id)))
+		     (let ((def (module5-get-export-def imod (or xid id))))
 			(when (isa? def Def)
 			   (with-access::Def def (kind expr)
 			      (when (eq? kind 'inline)

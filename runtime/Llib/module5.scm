@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Jan 30 07:52:45 2026 (serrano)                */
+;*    Last change :  Fri Jan 30 13:31:36 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -84,6 +84,7 @@
 	   
 	   (class Decl
 	      (id::symbol read-only)
+	      (xid read-only (default #f))
 	      (alias::symbol read-only)
 	      mod::Module
 	      (modinfo (default #unspecified))
@@ -519,7 +520,13 @@
 (define (module-read path::bstring lib-path cache-dir expand parse)
    (with-trace 'module5 "module-read"
       (synchronize module-mutex
-	 (trace-item "path=" path)
+	 (trace-item "path=" path
+	    (if (hashtable-get *modules-by-path* path) " [in-mem-cache]" ""))
+	 (if (hashtable-get *modules-by-path* path)
+	     (with-access::Module (hashtable-get *modules-by-path* path) (exports)
+		(trace-item "exports=" (hashtable-map exports
+					  (lambda (k d::Decl)
+					     (cons (-> d id) (-> d xid)))))))
 	 (or (hashtable-get *modules-by-path* path)
 	     (filecache-get path lib-path cache-dir expand parse)
 	     (let ((exprs (call-with-input-file path
@@ -747,7 +754,38 @@
 	 ((? symbol?)
 	  (let ((idecl (hashtable-symbol-get (-> imod exports) b)))
 	     (if (isa? idecl Decl)
-		 (let ((d (duplicate::Decl idecl
+		 (let* ((i::Decl idecl)
+			(d (duplicate::Decl idecl
+			      (id b)
+			      (alias b)
+			      (scope 'import))))
+		    (hashtable-symbol-put! (-> mod decls) b d)
+		    (hashtable-symbol-put! (-> mod imports) b d)
+		    d)
+		 (unbound-error (-> imod path) b clause))))
+	 (((and (? symbol?) ?alias) (and (? symbol?) ?id))
+	  (let ((idecl (hashtable-symbol-get (-> imod exports) id)))
+	     (if (isa? idecl Decl)
+		 (let* ((i::Decl idecl)
+			(d (duplicate::Decl idecl
+			      (id id)
+			      (alias alias)
+			      (scope 'import))))
+		    (hashtable-symbol-put! (-> mod decls) alias d)
+		    (hashtable-symbol-put! (-> mod imports) alias d)
+		    d)
+		 (unbound-error (-> imod path) id clause))))
+	 (else
+	  (error/loc mod "Illegal import binding" b clause))))
+
+   (define (parse-reexport-binding b imod::Module expr::pair mod::Module expand)
+      (match-case b
+	 ((? symbol?)
+	  (let ((idecl (hashtable-symbol-get (-> imod exports) b)))
+	     (if (isa? idecl Decl)
+		 (let* ((i::Decl idecl)
+			(d (duplicate::Decl idecl
+			     (xid (-> i id))
 			     (id b)
 			     (alias b)
 			     (scope 'import))))
@@ -758,12 +796,14 @@
 	 (((and (? symbol?) ?alias) (and (? symbol?) ?id))
 	  (let ((idecl (hashtable-symbol-get (-> imod exports) id)))
 	     (if (isa? idecl Decl)
-		 (let ((d (duplicate::Decl idecl
+		 (let* ((i::Decl idecl)
+		       (d (duplicate::Decl idecl
+			     (xid id)
 			     (id id)
 			     (alias alias)
 			     (scope 'import))))
-		    (hashtable-symbol-put! (-> mod decls) alias d)
-		    (hashtable-symbol-put! (-> mod imports) alias d)
+		    (hashtable-symbol-put! (-> mod decls) id d)
+		    (hashtable-symbol-put! (-> mod imports) id d)
 		    d)
 		 (unbound-error (-> imod path) id clause))))
 	 (else
@@ -807,12 +847,13 @@
 				    :cache-dir cache-dir
 				    :expand expand)))
 		(for-each (lambda (b)
-			     (let ((d::Decl (parse-import-binding b
+			     (let ((d::Decl (parse-reexport-binding b
 					       imod expr mod expand)))
-				(with-access::Decl d (scope id alias (dmod mod))
-				   (hashtable-put! (-> mod exports)
-				      (symbol->string! alias)
-				      d))
+				(with-access::Decl d (scope id xid alias (dmod mod))
+				   (tprint "re-export expr=" expr
+				      " id=" id " xid=" xid " alias=" alias
+				      " mod=" (-> dmod id))
+				   (hashtable-symbol-put! (-> mod exports) alias d))
 				d))
 		   bindings)
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
@@ -829,7 +870,7 @@
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
 	     (error/loc mod "Cannot find file" path clause))))
    
-   (define (parse-import-all id clause::pair expr::pair mod::Module expand)
+   (define (parse-import-all id::symbol clause::pair expr::pair mod::Module expand)
       (let* ((path (cadr clause))
 	     (rfrom (module5-resolve-path path (-> mod path))))
 	 (if (string? rfrom)
@@ -839,10 +880,8 @@
 				    :expand expand)))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
-		      (let* ((alias (if id
-					(string->symbol
-					   (format "~a@~a" (-> d alias) id))
-					(-> d alias)))
+		      (let* ((alias (string->symbol
+				       (format "~a@~a" (-> d alias) id)))
 			     (nd (duplicate::Decl d
 				    (alias alias)
 				    (scope 'import))))
@@ -854,7 +893,7 @@
    
    (define (parse-import-some clause::pair expr::pair mod::Module expand)
       (let* ((path (cadr clause))
-	     (bindings (cddr clause))
+	     (bindings (caddr clause))
 	     (rfrom (module5-resolve-path path (-> mod path))))
 	 (if (string? rfrom)
 	     (let ((imod::Module (module5-read rfrom
@@ -937,15 +976,18 @@
 	 (when (epair? ec)
 	    (module5-parse-clause ec expr mod lib-path cache-dir expand))))
 
-   (define (parse-library-all clause expr::pair mod::Module expand)
+   (define (parse-library-all id::symbol clause expr::pair mod::Module expand)
       (let* ((lib (cadr clause))
 	     (rlib (module5-resolve-library lib lib-path)))
 	 (if (string? rlib)
 	     (let ((lmod::Module (module5-read-library rlib clause mod)))
 		(hashtable-for-each (-> lmod exports)
 		   (lambda (k d::Decl)
-		      (let ((nd (duplicate::Decl d
-				   (scope 'import))))
+		      (let* ((alias (string->symbol
+				       (format "~a@~a" (-> d alias) id)))
+			     (nd (duplicate::Decl d
+				    (alias alias)
+				    (scope 'import))))
 			 (hashtable-put! (-> mod decls) k nd)
 			 (hashtable-put! (-> mod imports) k nd)
 			 )))
@@ -956,9 +998,8 @@
 	     (error/loc mod "Cannot find library" lib clause))))
    
    (define (parse-library-some clause expr::pair mod::Module expand)
-      (let* ((rclause (reverse (cdr clause)))
-	     (lib (car clause))
-	     (bindings (cdr rclause))
+      (let* ((lib (cadr clause))
+	     (bindings (caddr clause))
 	     (rlib (module5-resolve-library lib lib-path)))
 	 (if (string? rlib)
 	     (let ((lmod::Module (module5-read-library rlib clause mod)))
@@ -994,13 +1035,11 @@
 	  (module5-parse-clause
 	     (localize `(import ,@rest) clause)
 	     expr mod lib-path cache-dir expand))
-	 ((import (? string?))
-	  (parse-import-all #f clause expr mod expand))
 	 ((import (? string?) ())
 	  (parse-import-init clause expr mod expand))
-	 ((import (? string?) ((and (? symbol?) ?id)))
+	 ((import (? string?) (and (? symbol?) ?id))
 	  (parse-import-all id clause expr mod expand))
-	 ((import (? string?) . ?-)
+	 ((import (? string?) (? list?))
 	  (parse-import-some clause expr mod expand))
 	 ((import :version 4 (? string?))
 	  (parse-import4-all clause expr mod expand))
@@ -1012,9 +1051,9 @@
 	  (parse-main main expr mod expand))
 	 ((include . ?-)
 	  (parse-include clause expr mod expand))
-	 ((library (? symbol?))
-	  (parse-library-all clause expr mod expand))
-	 ((library (? symbol?) . ?-)
+	 ((library (? symbol?) (and (? symbol?) ?id))
+	  (parse-library-all id clause expr mod expand))
+	 ((library (? symbol?) (? list?))
 	  (parse-library-some clause expr mod expand))
 	 ((extern (and (? string?) ?name) . ?clauses)
 	  (parse-extern clause expr mod expand))
@@ -1062,8 +1101,8 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-expand-and-resolve! mod::Module init-xenv #!key (heap-modules '()))
    (unless (-> mod resolved)
-      (with-trace 'module5-expand-and-resolve "module5-expand-and-resolve!"
-	 (trace-item mod " resolved=" (-> mod resolved))
+      (with-trace 'module5-resolve "module5-expand-and-resolve!"
+	 (trace-item (-> mod id) " resolved=" (-> mod resolved))
 	 (trace-item "decls="
 	    (hashtable-map (-> mod decls)
 	       (lambda (k d::Decl)
@@ -1102,16 +1141,21 @@
 	       '(include) ki)
 	    (hashtable-for-each (-> mod decls)
 	       (lambda (k d::Decl)
-		  (with-access::Decl d ((imod mod) alias id def)
+		  (with-access::Decl d ((imod mod) alias id xid def scope)
+		     (trace-item "d=" id " xid=" xid
+			" alias=" alias
+			" mod=" (-> imod id)
+			" scope=" scope
+			" def=" (typeof def))
 		     (unless (eq? imod mod)
 			(module5-expand-and-resolve! imod init-xenv
 			   :heap-modules heap-modules)
-			(let ((idef (module5-get-export-def imod id)))
+			(let ((idef (module5-get-export-def imod (or xid id))))
 			   (with-access::Def idef (kind expr ci)
 			      (case kind
 				 ((macro)
 				  (trace-item "bind-macro alias="
-				     alias " id=" id)
+ 				     alias " id=" id)
 				  (install-module5-expander xenv alias expr
 				     (eval! (macro->expander expr))))
 				 ((expander)
@@ -1866,16 +1910,19 @@
 ;*    module5-get-export-def ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (module5-get-export-def mod::Module id)
-   (with-access::Module mod (exports (mid id) resolved defs decls)
-      (unless resolved
-	 (error/loc mod "Module definitions not resolved yet" id #f))
-      (let ((decl (hashtable-get exports (symbol->string! id))))
-	 (if (isa? decl Decl)
-	     (with-access::Decl decl (def expr (dmod mod))
-		(if (isa? def Def)
-		    def
-		    (error/loc mod "Cannot find exported definition" id expr)))
-	     (error/loc mod "Cannot find declaration" id #f)))))
+   (with-trace 'module5-resolve "module5-get-export-def"
+      (trace-item "mod=" (-> mod id))
+      (trace-item "id=" id)
+      (with-access::Module mod (exports (mid id) resolved defs decls)
+	 (unless resolved
+	    (error/loc mod "Module definitions not resolved yet" id #f))
+	 (let ((decl (hashtable-get exports (symbol->string! id))))
+	    (if (isa? decl Decl)
+		(with-access::Decl decl (def expr (dmod mod))
+		   (if (isa? def Def)
+		       def
+		       (error/loc mod "Cannot find exported definition" id expr)))
+		(error/loc mod "Cannot find exported declaration" id #f))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-class-expander ...                                        */
@@ -1947,7 +1994,7 @@
 ;*    module5-bind-class! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (module5-bind-class! mod::Module id::symbol ci)
-   (with-trace 'module5-expand-and-resolve "module5-bind-class!"
+   (with-trace 'module5-resolve "module5-bind-class!"
       (trace-item "class=" id " module=" (-> mod id))
       (hashtable-put! (-> mod classes) (symbol->string! id) ci)))
 

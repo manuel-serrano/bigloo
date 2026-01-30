@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Wed Oct  8 14:12:11 2025                          */
-;*    Last change :  Sat Oct 18 14:29:11 2025 (serrano)                */
-;*    Copyright   :  2025 manuel serrano                               */
+;*    Last change :  Fri Jan 30 17:04:45 2026 (serrano)                */
+;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 include file                                             */
 ;*=====================================================================*/
@@ -84,7 +84,7 @@
 (import :version 4 "crc.scm")
 (import :version 4 "ssr.scm")
 
-(import :version 5 "module5.scm")
+(import :version 5 "module5.scm" (test-module5))
 
 (cond-expand
    (bigloo-jvm (import external_jvm)))
