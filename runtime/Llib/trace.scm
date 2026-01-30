@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/trace.scm          */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/trace.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Thu Jan 29 09:37:10 2026 (serrano)                */
+;*    Last change :  Fri Jan 30 08:23:35 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
@@ -86,6 +86,7 @@
 	  (let ((new-al (list (cons 'port (current-error-port))
 			      (cons 'depth 0)
 			      (cons 'margin "")
+			      (cons 'return "")
 			      (cons 'margin-level 0))))
 	     ($debug-alist-set! new-al)
 	     new-al))))
@@ -202,7 +203,9 @@
       (if (trace-active? lvl)
 	  (let* ((d (trace-alist-get al 'depth))
 		 (om (trace-alist-get al 'margin))
-		 (ma (tty-trace-color d "  |")))
+		 (or (trace-alist-get al 'return))
+		 (ma (tty-trace-color d "  |"))
+		 (mr (tty-trace-color d "<-+")))
 	     (synchronize (trace-mutex)
 		(with-output-to-port (trace-port)
 		   (lambda ()
@@ -214,14 +217,16 @@
 		      (flush-output-port (current-output-port)))))
 	     (trace-alist-set! al 'depth (+fx d 1))
 	     (trace-alist-set! al 'margin (string-append om ma))
+	     (trace-alist-set! al 'return (string-append om mr))
 	     (unwind-protect
 		(thunk)
 		(begin
-		   (display (trace-alist-get al 'margin) (current-error-port))
+		   (display (trace-alist-get al 'return) (current-error-port))
 		   (newline (current-error-port))
 		   (flush-output-port (current-error-port))
 		   (trace-alist-set! al 'depth d)
 		   (trace-alist-set! al 'margin om)
+		   (trace-alist-set! al 'return or)
 		   (trace-alist-set! al 'margin-level ol))))
 	  (unwind-protect
 	     (thunk)

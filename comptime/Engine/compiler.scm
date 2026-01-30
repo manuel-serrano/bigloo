@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
+;*    .../prgm/project/bigloo/wasm/comptime/Engine/compiler.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Jan 29 09:10:40 2026 (serrano)                */
+;*    Last change :  Fri Jan 30 07:43:20 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -605,13 +605,13 @@
 	 ;; C header generation
 	 (stop-on-pass 'hgen hgen-walk)
 	 
-	 ;; we load the library init files. This must be done after
+	 ;; load the library init files. This must be done after
 	 ;; regular macros have been installed in order to enable these
 	 ;; macro redefinitions
 	 (load-library-init)
 	 
 	 ;; once library clauses have been parsed
-	 ;; we must restore again additional heaps
+	 ;; restore again additional heaps
 	 (restore-additional-heaps genv)
 	 (additional-heap-restore-globals! genv)
 	 (unit-sexp*-add-head! tu (get-alibrary-inits))
@@ -708,7 +708,7 @@
 	 ;; C header generation
 	 (stop-on-pass 'hgen hgen-walk)
 	 
-	 ;; we load the library init files. This must be done after
+	 ;; load the library init files. This must be done after
 	 ;; regular macros have been installed in order to enable these
 	 ;; macro redefinitions
 	 (load-library-init)

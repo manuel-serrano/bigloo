@@ -2910,7 +2910,7 @@ bgl_make_datagram_server_socket(int portnum, obj_t family) {
    int s;
    struct addrinfo hints, *servinfo, *p;
    int rv;
-   char service[ 10 ];
+   char service[ 12 ];
    obj_t sock, buf, inb, iport;
    FILE *fs;
    int fam = bgl_symbol_to_family(family);

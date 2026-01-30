@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/module5.scm        */
+;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/module5.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Jan 29 18:19:31 2026 (serrano)                */
+;*    Last change :  Fri Jan 30 07:52:45 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -79,12 +79,14 @@
 	      (libraries::pair-nil (default '()))
 	      (body::obj (default '()))
 	      (resolved::bool (default #f))
-	      (cache-dir (default #f)))
+	      (cache-dir (default #f))
+	      (heap (default #f)))
 	   
 	   (class Decl
 	      (id::symbol read-only)
 	      (alias::symbol read-only)
-	      mod
+	      mod::Module
+	      (modinfo (default #unspecified))
 	      (def (default #unspecified))
 	      (expr (default #unspecified))
 	      (ronly (default #unspecified))
@@ -218,8 +220,10 @@
 ;*    *modules-by-path* ...                                            */
 ;*---------------------------------------------------------------------*/
 (define module-mutex (make-mutex "modules"))
+(define heap-mutex (make-mutex "heaps"))
 (define *modules-by-path* (create-hashtable :weak 'open-string))
 (define *modules-by-id* (create-hashtable :weak 'open-string))
+(define *heaps-by-path* (create-hashtable :weak 'open-string))
 (define *plugins* '())
 (define *plugins4* '())
 (define *extern-plugins* '())
@@ -272,17 +276,20 @@
 ;*    module5-resolve-path ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (module5-resolve-path rel::bstring base::bstring)
-   (let ((path (if (absolute-file-name? rel)
-		   rel
-		   (make-file-name (dirname base) rel))))
-      (synchronize module-mutex
-	 (let ((m (hashtable-get *modules-by-path* path)))
-	    (cond
-	       ((isa? m Module)
-		(with-access::Module m (path)
-		   path))
-	       ((file-exists? path)
-		(file-name-unix-canonicalize! path)))))))
+   (with-trace 'module5 "module5-resolve-path"
+      (trace-item "rel=" rel)
+      (trace-item "base=" base)
+      (let ((path (if (absolute-file-name? rel)
+		      rel
+		      (make-file-name (dirname base) rel))))
+	 (synchronize module-mutex
+	    (let ((m (hashtable-get *modules-by-path* path)))
+	       (cond
+		  ((isa? m Module)
+		   (with-access::Module m (path)
+		      path))
+		  ((file-exists? path)
+		   (file-name-unix-canonicalize! path))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-resolve-library ...                                      */
@@ -323,9 +330,10 @@
       (hashtable-map decls
 	 (lambda (k d::Decl)
 	    (with-access::Decl d (mod)
-	       (with-access::Module mod (path version)
+	       (with-access::Module mod (path version id heap)
 		  (let ((decl::Decl (duplicate::Decl d
-				       (mod (cons version path)))))
+				       (mod (class-nil Module))
+				       (modinfo (cons (or heap version) path)))))
 		     (when (isa? (-> d def) Def)
 			(let ((def::Def (object-copy (-> d def))))
 			   (set! (-> decl def) def)
@@ -360,20 +368,36 @@
 ;*    unserialize ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (unserialize mod::Module lib-path cache-dir expand)
+
+   (define (cannot-find d::Decl path)
+      (error (-> mod id)
+	 (format "Cannot find \"~a\" module source file" (-> d id))
+	 path))
+
+   (define (unserialize-resolve-path d path)
+      (if (or (file-exists? path) (absolute-file-name? path))
+	  path
+	  (cannot-find d path)))
    
    (define (unserialize-decl d::Decl)
       (with-trace 'module5-serialize "unserialize-decl"
 	 (trace-item "id="(-> d id))
-	 (trace-item "mod=" (-> d mod))
-	 (match-case (-> d mod)
+	 (trace-item "modinfo=" (-> d modinfo))
+	 (match-case (-> d modinfo)
 	    ((5 . ?path)
 	     (set! (-> d mod)
-		(module5-read path
+		(module5-read (unserialize-resolve-path d path)
 		   lib-path: lib-path :cache-dir cache-dir :expand expand)))
 	    ((4 . ?path)
 	     (set! (-> d mod)
-		(module4-read path
+		(module4-read (unserialize-resolve-path d path)
 		   lib-path: lib-path :cache-dir cache-dir :expand expand)))
+	    ((?heap . ?path)
+	     (let* ((hmod::Module (module5-read-heap heap
+				     (-> d id) mod))
+		    (def::Def (module5-get-export-def hmod (-> d id)))
+		    (decl::Decl (-> def decl)))
+		(set! (-> d mod) (-> decl mod))))
 	    (else
 	     (error "unserialize" "Illegal serialized declaration" (-> mod id))))
 	 d))
@@ -494,8 +518,8 @@
 ;*---------------------------------------------------------------------*/
 (define (module-read path::bstring lib-path cache-dir expand parse)
    (with-trace 'module5 "module-read"
-      (trace-item "path=" path)
       (synchronize module-mutex
+	 (trace-item "path=" path)
 	 (or (hashtable-get *modules-by-path* path)
 	     (filecache-get path lib-path cache-dir expand parse)
 	     (let ((exprs (call-with-input-file path
@@ -528,7 +552,7 @@
    (with-trace 'module5 "module5-read-library"
       (trace-item "path=" path)
       (trace-item "expr=" expr)
-      (let ((init (call-with-input-file path read)))
+      (let ((init (module5-read-library-init! path)))
 	 (match-case init 
 	    ((declare-library! (quote ?id) . ?rest)
 	     (let ((srfi (memq :srfi rest)))
@@ -550,19 +574,47 @@
 	     (error/loc mod "Illegal library" path init))))))
 
 ;*---------------------------------------------------------------------*/
+;*    module5-read-library-init! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (module5-read-library-init! path)
+   (let ((init (call-with-input-file path read)))
+      (module5-declare-library! init)
+      init))
+	
+;*---------------------------------------------------------------------*/
+;*    module5-declare-library! ...                                     */
+;*    -------------------------------------------------------------    */
+;*    Calling declare-library! is mandatory as it stores information   */
+;*    about the library that is used by the compier, for instance,     */
+;*    for associating the actual .so or .a file to the Bigloo          */
+;*    library name.                                                    */
+;*---------------------------------------------------------------------*/
+(define (module5-declare-library! init)
+   (apply declare-library!
+      (map (lambda (e)
+	      (match-case e
+		 ((quote ?x) x)
+		 (else e)))
+	 (cdr init))))
+
+;*---------------------------------------------------------------------*/
 ;*    module5-read-heap ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (module5-read-heap path::bstring expr mod)
    (with-trace 'module5 "module5-read-heap"
       (trace-item "path=" path)
-      (let ((port (open-input-binary-file path)))
-	 (if (not (binary-port? port))
-	     (if (file-exists? path)
-		 (error/loc mod "Cannot read heap file" path expr)
-		 (error/loc mod "Cannot find heap file" path expr))
-	     (unwind-protect
-		(heap->module5 (input-obj port) path expr mod)
-		(close-binary-port port))))))
+      (synchronize heap-mutex
+	 (or (hashtable-get *heaps-by-path* path)
+	     (let ((port (open-input-binary-file path)))
+		(if (not (binary-port? port))
+		    (if (file-exists? path)
+			(error/loc mod "Cannot read heap file" path expr)
+			(error/loc mod "Cannot find heap file" path expr))
+		    (unwind-protect
+		       (let ((m (heap->module5 (input-obj port) path expr mod)))
+			  (hashtable-put! *heaps-by-path* path m)
+			  m)
+		       (close-binary-port port))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-write-heap ...                                           */
@@ -609,7 +661,13 @@
 		(vector-ref-ur heap 2) (bigloo-config 'specific-version))
 	     path expr))
 	 (else
-	  (vector-ref-ur heap 3)))))
+	  (let ((mod::Module (vector-ref-ur heap 3)))
+	     (set! (-> mod heap) path)
+	     (hashtable-for-each (-> mod exports)
+		(lambda (key d::Decl)
+		   (let ((imod::Module (-> d mod)))
+		      (set! (-> imod heap) path))))
+	     mod)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5->heap ...                                                */
@@ -644,12 +702,13 @@
 	 (for-each (lambda (c)
 		      (module5-parse-clause c expr mod lib-path cache-dir expand))
 	    clauses)
-	 (with-access::Module mod (inits)
+	 (with-access::Module mod (inits libraries)
 	    (set! inits (delete-duplicates! inits
 			   (lambda (x y)
 			      (with-access::Module x ((xid id))
 				 (with-access::Module y ((yid id))
-				    (eq? xid yid)))))))
+				    (eq? xid yid))))))
+	    (trace-item "libraries=" libraries))
 	 mod))
 
    (with-trace 'module5-parse "module5-parse"
@@ -922,8 +981,8 @@
    (with-trace 'module5-parse "module5-parse-clause"
       (trace-item "mod=" (-> mod id))
       (trace-item "mod-path=" (-> mod path))
-      (trace-item "clause=" clause)
       (trace-item "lib-path=" lib-path)
+      (trace-item "clause=" clause)
       (match-case clause
 	 ((export (? string?))
 	  (parse-reexport-all clause expr mod expand))
@@ -993,6 +1052,7 @@
 ;*---------------------------------------------------------------------*/
 (define (module-add-libraries! mod::Module libs::pair-nil)
    (for-each (lambda (l)
+		(module5-read-library-init! (cdr l))
 		(unless (assq (car l) (-> mod libraries))
 		   (set! (-> mod libraries) (cons l (-> mod libraries)))))
       libs))

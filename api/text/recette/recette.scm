@@ -159,4 +159,5 @@
 		 (format " ~a succeeded\n ~a failed ~a"
 			 *success*
 			 (length *failure*)
-			 (reverse *failure*))))))
+			 (reverse *failure*))))
+      (exit (length *failure*))))
