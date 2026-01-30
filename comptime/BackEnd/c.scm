@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Fri Jan 30 18:26:22 2026 (serrano)                */
+;*    Last change :  Fri Jan 30 18:59:06 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -312,7 +312,6 @@
 	  (if (null? sources)
 	      (if (or main (not *auto-link-main*) (eq? *pass* 'so))
 		  (let ((first (prefix (car *o-files*))))
-		     (tprint "LIBS=" libraries)
 		     ;; if libraries are used by some module we add them
 		     ;; to the link
 		     (for-each (lambda (lib)

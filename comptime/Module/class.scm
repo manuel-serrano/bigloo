@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Mon Oct 20 08:49:34 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jan 30 18:58:10 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
 ;*=====================================================================*/
@@ -199,6 +199,7 @@
 	  ;; install the coercion between the new-class and obj
 	  ;; and the class and all its super classes
 	  (gen-class-coercions! class)
+
 	  (let* ((classid (type-id class))
 		 (classmod (global-module (tclass-holder class)))
 		 (super (tclass-its-super class))

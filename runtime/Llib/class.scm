@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Wed Oct 22 16:34:09 2025 (serrano)                */
-;*    Copyright   :  2025 Manuel Serrano                               */
+;*    Last change :  Fri Jan 30 18:58:47 2026 (serrano)                */
+;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
 ;*=====================================================================*/
@@ -201,6 +201,23 @@
 ;*    allocator-expand ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (allocator-expand class-info mod)
+   `($class-allocate ,(class-info-id class-info)
+       ,@(filter-map (lambda (p)
+			(cond
+			   ((prop-info-virtual? p)
+			    #f)
+			   ((prop-info-defv? p)
+			    (prop-info-value p))
+			   (else
+			    (let ((ty (prop-info-type p)))
+			       (cond
+				  ((module5-get-class mod ty)
+				   `(class-nil ,ty))
+				  (else
+				   `(cast-null ,(prop-info-type p))))))))
+	    (class-info-properties class-info))))
+
+(define (allocator-expand-TBR class-info mod)
    `($class-allocate ,(class-info-id class-info)
        ,@(filter-map (lambda (p)
 			(cond
