@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Jan 30 13:31:36 2026 (serrano)                */
+;*    Last change :  Sat Jan 31 07:00:25 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -807,7 +807,7 @@
 		    d)
 		 (unbound-error (-> imod path) id clause))))
 	 (else
-	  (error/loc mod "Illegal import binding" b clause))))
+	  (error/loc mod "Illegal reexport binding" b clause))))
    
    (define (parse-reexport-all clause::pair expr::pair mod::Module expand)
       (let* ((path (cadr clause))

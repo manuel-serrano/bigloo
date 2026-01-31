@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 17 10:40:09 2025                          */
-;*    Last change :  Fri Jan 30 13:43:53 2026 (serrano)                */
+;*    Last change :  Sat Jan 31 06:57:24 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 tests                                                    */
@@ -18,7 +18,7 @@
    (import "module5_ex1.scm" ex1)
    (import "module5_ex1.scm" (ex1a EX1b))
    (import "module5_ex2.scm" ((EX2A EX2a)))
-   (import "module5_ex3.scm" (ex3a))
+   (import "module5_ex3.scm" (ex3a ex3b))
    (import "module5_ex4.scm" ex4)
    (import "module5_ex7.scm" ())
    (import "module5_ex8.scm" (ex8m ex8f))
@@ -56,6 +56,8 @@
    (test "ex2.1" (typeof EX2A) "procedure")
    (test "ex2.2" (EX2A 100 200) (list 'ex2a 100 200))
    (test "ex3.1" (ex3a 200) (vector 'ex3a 200))
+   (test "ex3.2" (ex3b 'x 'y 'z) (list 'ex3b 'x 'y 'z))
+   (test "ex3.3" (ex3b@ex4 'a 'b 'c) (list 'ex3b 'a 'b 'c))
    (test "ex4i.1" (EX4A@ex4 'abc) (vector 'ex3a 'abc))
    (test "ex8.1" (ex8m "from module5.scm") (cons "from module5.scm" 'ex8m))
    (test "ex8.2" (ex8f) (cons 124 'ex8m))
