@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Mon Feb  2 07:14:05 2026 (serrano)                */
+;*    Last change :  Mon Feb  2 09:57:21 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1721,11 +1721,25 @@
 		      (with-access::Decl decl (expr) expr))
 		   (let ((def (klass-def ci)))
 		      (hashtable-put! defs name def)
-		      (when decl
+		      (if decl
 			 (with-access::Decl decl (scope ronly (ddef def))
 			    (set! ronly #t)
 			    (with-access::Def def ((ddecl decl))
 			       (set! ddef def)
+			       (set! ddecl decl)))
+			 ;; class needs to preserve the invariable that
+			 ;; all class definition has an associated declation
+			 (let* ((id (class-info-id ci))
+				(decl (instantiate::Decl
+					(id id)
+					(alias id)
+					(expr (class-info-expr ci))
+					(mod mod)
+					(scope 'static)
+					(ronly #t)
+					(def def))))
+			    (hashtable-put! decls (symbol->string! id) decl)
+			    (with-access::Def def ((ddecl decl))
 			       (set! ddecl decl))))
 		      def)))))))
 

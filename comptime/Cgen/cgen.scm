@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Sun Sep 28 06:56:37 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Feb  2 10:32:10 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
 ;*=====================================================================*/

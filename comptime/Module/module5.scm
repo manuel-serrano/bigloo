@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Jan 30 17:13:38 2026 (serrano)                */
+;*    Last change :  Mon Feb  2 12:00:36 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -153,7 +153,7 @@
    (define (declare-class-definition! id alias mid scope src def::KDef)
       (with-access::KDef def (expr id decl super ctor kkind properties)
 	 (when (isa? decl Decl)
-	    (with-access::Decl decl (mod scope)
+	    (with-access::Decl decl (mod)
 	       (with-access::Module mod ((mid id))
 		  (unless (find-global/module env id mid)
 		     ;; a class declared in the module being compiled
