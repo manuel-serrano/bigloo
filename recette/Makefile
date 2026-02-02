@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Wed Oct 22 10:46:45 2025 (serrano)                */
-#*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Feb  2 08:24:20 2026 (serrano)                */
+#*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
 #*=====================================================================*/
@@ -288,6 +288,7 @@ distclean: lintclean
 	@ echo "-------------------------------"
 
 clean: distclean
+	$(BIGLOO) -cache-clean
 	@- $(RM) -f .jfile-jvm
 
 cleanall: clean

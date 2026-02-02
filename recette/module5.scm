@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 17 10:40:09 2025                          */
-;*    Last change :  Sat Jan 31 06:57:24 2026 (serrano)                */
+;*    Last change :  Mon Feb  2 08:12:19 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 tests                                                    */
@@ -14,24 +14,24 @@
 ;*---------------------------------------------------------------------*/
 (module module5
    (import :version 4 "./utils.scm")
-   (import "module5_ex0.scm" (ex0a ex0b ex0c))
-   (import "module5_ex1.scm" ex1)
-   (import "module5_ex1.scm" (ex1a EX1b))
-   (import "module5_ex2.scm" ((EX2A EX2a)))
-   (import "module5_ex3.scm" (ex3a ex3b))
-   (import "module5_ex4.scm" ex4)
-   (import "module5_ex7.scm" ())
-   (import "module5_ex8.scm" (ex8m ex8f))
-   (import "module5_ex9.scm" (ex9ma (EX9MB ex9mb) ex9f))
-   (import "module5_ex10.scm" (ex10i))
-   (import "module5_ex11.scm" (C1 C2 ex11f))
+   (import "module5_ex0.scm" ex0a ex0b ex0c)
+   (import "module5_ex1.scm" . ex1)
+   (import "module5_ex1.scm" ex1a EX1b)
+   (import "module5_ex2.scm" (EX2A EX2a))
+   (import "module5_ex3.scm" ex3a ex3b)
+   (import "module5_ex4.scm" . ex4)
+   (import "module5_ex7.scm")
+   (import "module5_ex8.scm" ex8m ex8f)
+   (import "module5_ex9.scm" ex9ma (EX9MB ex9mb) ex9f)
+   (import "module5_ex10.scm" ex10i)
+   (import "module5_ex11.scm" C1 C2 ex11f)
    (import :version 4 "module5_ex12.scm")
-   (import "module5_ex13.scm" (G))
-   (import "module5_ex14.scm" (ex14))
-   (import "module5_ex15.scm" (ex15f))
-   (import "module5_ex16.scm" ((ex16a ex5a)))
-   (import "module5_ex17.scm" ex17)
-   (import "module5_ex18.scm" (ex18 ex18-shadow))
+   (import "module5_ex13.scm" G)
+   (import "module5_ex14.scm" ex14)
+   (import "module5_ex15.scm" ex15f)
+   (import "module5_ex16.scm" (ex16a ex5a))
+   (import "module5_ex17.scm" . ex17)
+   (import "module5_ex18.scm" ex18 ex18-shadow)
    (export test-module5))
 
 ;*---------------------------------------------------------------------*/
