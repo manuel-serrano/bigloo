@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Mon Oct 20 09:14:35 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Feb  2 16:50:24 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
 ;*=====================================================================*/
@@ -51,7 +51,6 @@
 ;*    expand-define-class ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (expand-define-class x e)
-   (tprint "EXPAND_DEFINE_CLASS x=" x)
    (case *module-version*
       ((4) (expand-define-class-module4 x e))
       ((5) (expand-define-class-module5 x e))

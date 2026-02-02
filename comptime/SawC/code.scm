@@ -615,3 +615,14 @@
 			  (the-failure)))))
 	  (read/rp parser sport)
 	  #t)))
+
+;*---------------------------------------------------------------------*/
+;*    gen-expr ::rtl_new ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (gen-expr fun::rtl_new args)
+   (with-access::rtl_new fun (type)
+      (display "((")
+      (gen-type type)
+      (display ")BOBJECT(BGL_CLASS_ALLOC_INSTANCE(")
+      (gen-type type)
+      (display ")))")))

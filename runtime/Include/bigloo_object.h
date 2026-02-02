@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Sep 27 09:15:37 2025 (serrano)                */
-/*    Copyright   :  2016-25 Manuel Serrano                            */
+/*    Last change :  Mon Feb  2 17:16:50 2026 (serrano)                */
+/*    Copyright   :  2016-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
 /*=====================================================================*/
@@ -94,6 +94,9 @@ typedef struct BgL_objectz00_bgl {
 
 #define BGL_OBJECT_CLASS_NUM_SET(_obj, _cnum) \
    (((obj_t)COBJECT(_obj))->header = BGL_MAKE_HEADER(_cnum, 0), BUNSPEC)
+   
+#define BGL_OBJECT_CLASS_NUM_INIT(_obj, _clazz) \
+   BGL_OBJECT_CLASS_NUM_SET(_obj, BGL_CLASS_NUM(_clazz))
    
 #define BGL_OBJECT_WIDENING(_obj) \
    (((object_bglt)(COBJECT(_obj)))->widening)

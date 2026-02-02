@@ -3,9 +3,11 @@
 	    "SawMill/node2rtl.sch")
    (import type_type	;; needed for ast_var !!
 	   type_typeof  ;; needed for ::new
+	   type_cache
 	   ast_var	;; local/global
 	   ast_node	;; node
 	   ast_env
+	   ast_local
 	   object_class
 	   object_slots
 	   sync_node
@@ -299,7 +301,7 @@
       (let ( (a (single #f (instantiate::rtl_mov) r)) )
 	 (adestination! a (local->reg v))
 	 a ))
-   (let ( (regs (map (lambda (a) (new-reg a)) args)) )
+   (let ( (regs (map new-reg args)) )
       (let ( (params (sfun-args (local-value v))) )
 	 ;; Prepare arguments
 	 (link (link* (map (lambda (e r) (node->rtl/in e r)) args regs))
@@ -405,9 +407,82 @@
 
 ;;
 (define-method (node->rtl::area e::new) ; ()
-   (with-access::new e (expr* args-type)
-      (call* e (instantiate::rtl_new (type (get-type e #f)) (constr args-type))
-	     expr* )))
+   
+   (define (new4->rtl::area e)
+      (with-access::new e (expr* args-type type loc)
+	 (call* e (instantiate::rtl_new
+		     (type (get-type e #f))
+		     (constr (take args-type (length expr*))))
+	    expr* )))
+   
+   (define (new5->rtl::area e)
+      (with-access::new e (expr* args-type type loc)
+	 (let* ((tmp (make-local-svar (gensym 'new) type))
+		(vref (instantiate::ref
+			 (loc loc)
+			 (type type)
+			 (variable tmp)))
+		(new4 (duplicate::new e
+			 (expr* '())))
+		(slots (cond
+			  ((isa? type tclass)
+			   (tclass-slots type))
+			  ((isa? type jclass)
+			   (jclass-slots type))
+			  (else
+			   (error "node->rtl ::new"
+			      "bad class" (typeof type)))))
+		(init (if (isa? type tclass)
+			  (list
+			     (instantiate::app
+				(type *obj*)
+				(fun (instantiate::ref
+					(variable (find-global (get-genv)
+						     '$object-class-num-init!
+						     'foreign))
+					(type *obj*)))
+				(args (list
+					 (instantiate::ref
+					    (loc loc)
+					    (type type)
+					    (variable tmp))
+					 (instantiate::ref
+					    (loc loc)
+					    (type (get-class-type))
+					    (variable (tclass-holder type)))))))
+			  '()))
+		(vsets (map (lambda (s e)
+			       (let ((v (instantiate::ref
+					   (loc loc)
+					   (type type)
+					   (variable tmp))))
+				  (instantiate::setfield
+				     (type *obj*)
+				     (ftype (slot-type s))
+				     (otype type)
+				     (fname (slot-name s))
+				     (side-effect #t)
+				     (expr* (list v e))
+				     (c-format "not-used"))))
+			  slots
+			  
+			  expr*)))
+	    (node->rtl
+	       (instantiate::let-var
+		  (loc loc)
+		  (type type)
+		  (bindings (list (cons tmp new4)))
+		  (body (instantiate::sequence
+			   (loc loc)
+			   (type type)
+			   (nodes (append init vsets (list vref))))))))))
+   
+   (with-access::new e (expr* args-type type loc)
+      (if (pair? expr*)
+	  ;; module5 syntax
+	  (new5->rtl e)
+	  ;; module4 syntax
+	  (new4->rtl e))))
 
 ;;
 (define-method (node->rtl::area e::valloc) ; ()

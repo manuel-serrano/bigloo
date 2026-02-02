@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Oct 17 07:30:30 2025 (serrano)                */
+;*    Last change :  Mon Feb  2 17:26:03 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -79,6 +79,8 @@
 		   "BGL_OBJECT_CLASS_NUM")
 	    (macro %object-class-num-set!::obj (::object ::long)
 		   "BGL_OBJECT_CLASS_NUM_SET")
+	    (macro $object-class-num-init!::obj (::object ::long)
+		   "BGL_OBJECT_CLASS_NUM_INIT")
 	    (macro $object-inheritance-num::long (::object)
 		   "BGL_OBJECT_INHERITANCE_NUM")
 	    ($bigloo-generic-mutex::mutex "bigloo_generic_mutex")
@@ -206,6 +208,8 @@
 		  "BGL_OBJECT_CLASS_NUM")
 	       (method static %object-class-num-set!::obj (::object ::long)
 		  "BGL_OBJECT_CLASS_NUM_SET")
+	       (method static $object-class-num-init!::obj (::object ::class)
+		  "BGL_OBJECT_CLASS_NUM_INIT")
 	       (method static $make-generic::procedure (::procedure)
 		  "bgl_make_generic")
 	       (method static %object-hashnumber::int (::obj)
