@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:50:33 2008                          */
-/*    Last change :  Tue Feb  3 11:02:03 2026 (serrano)                */
+/*    Last change :  Tue Feb  3 13:02:41 2026 (serrano)                */
 /*    Copyright   :  2008-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java auto-configuration                                          */
@@ -27,31 +27,37 @@ public abstract class JDK {
    private static JDK impl;
    
    static {
+      // Android
+      try {
+	 Class.forName("android.os.Build");
+	 impl = getImpl("bigloo.JDKAndroid");
+      } catch (Exception x) {}
+
       // are we 1.6?
       try {
 	 Class.forName("java.text.spi.BreakIteratorProvider");
 	 impl = getImpl("bigloo.JDK16");
-      } catch(Exception x) {}
+      } catch (Exception x) {}
 
       // are we 1.5?
       if (impl == null)
 	 try {
 	    Class.forName("java.lang.ProcessBuilder");
 	    impl = getImpl("bigloo.JDK15");
-	 } catch(Exception x) {}
+	 } catch (Exception x) {}
       
       if (impl == null)
 	 // try 1.4
 	 try {
 	    Class.forName("java.nio.Buffer");
 	    impl = getImpl("bigloo.JDK14");
-	 } catch(Exception x) {}
+	 } catch (Exception x) {}
     
       // default is 1.3
       if (impl == null)
 	 try {
 	    impl = getImpl("bigloo.JDK13");
-	 } catch(Exception x) {}
+	 } catch (Exception x) {}
    }
 
    private static JDK getImpl(String classname) {
@@ -64,7 +70,6 @@ public abstract class JDK {
    }
 
    // Static methods
-
    public static Method getDeclaredMethod(Class c, byte[] m)
       throws Exception {
       return impl.getDeclaredMethodImpl(c, m);
@@ -93,10 +98,13 @@ public abstract class JDK {
       return impl.acceptImpl(sock, blocking);
    }
 
-   public static byte[] password( byte[] prompt ) {
-      return impl.passwordImpl( prompt );
+   public static byte[] password(byte[] prompt) {
+      return impl.passwordImpl(prompt);
    }
 
+   public static void exit(int n) {
+      impl.exitImpl(n);
+   }
    public abstract Method getDeclaredMethodImpl(Class c, byte[] m)
       throws Exception;
    
@@ -109,17 +117,25 @@ public abstract class JDK {
    public abstract ServerSocket makeServerSocketImpl(String name, int port) throws IOException;
    public abstract Socket acceptImpl(ServerSocket sock, boolean blocking) throws IOException;
    
-   public byte[] passwordImpl( byte[] prompt ) {
+   public byte[] passwordImpl(byte[] prompt) {
       BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-      System.err.print( prompt );
+      System.err.print(prompt);
       try {
 	 return in.readLine().getBytes();
-      } catch( Exception _e ) {
+      } catch (Exception _e) {
 	 return "".getBytes();
       }
    }
 
-   public static boolean truncate( FileOutputStream stream, long size ) {
-      return impl.truncate( stream, size );
+   public static boolean truncate(FileOutputStream stream, long size) {
+      return impl.truncate(stream, size);
+   }
+
+   public void exitImpl(int n) {
+      try {
+	 Class.forName("android.os.Build");
+      } catch (Exception x) {
+	 System.exit(n);
+      }
    }
 }

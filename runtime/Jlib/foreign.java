@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/runtime/Jlib/foreign.java       */
+/*    serrano/prgm/project/bigloo/5.0a/runtime/Jlib/foreign.java       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :                                                    */
+/*    Last change :  Tue Feb  3 13:09:29 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -76,7 +76,7 @@ public final class foreign {
 
    public static void Error(String msg) {
       System.err.println(msg);
-      System.exit(-1);
+      JDK.exit(-1);
    }
 
    public static byte[] FOREIGN_TYPE_NAME(Object o) {
@@ -4292,7 +4292,7 @@ public final class foreign {
    }
 
    public static void exit(int n) {
-      System.exit(n);
+      JDK.exit(n);
    }
 
    public static Object BGL_EXITD_TOP() {
@@ -4471,9 +4471,9 @@ public final class foreign {
       final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
 
       if (v instanceof bint)
-	 System.exit(CINT((bint) v));
+	 JDK.exit(CINT((bint) v));
       else
-	 System.exit(1);
+	 JDK.exit(1);
 
       return e;
    }
@@ -4494,9 +4494,9 @@ public final class foreign {
       final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
 
       if (v instanceof bint)
-	 System.exit(CINT((bint) v));
+	 JDK.exit(CINT((bint) v));
       else
-	 System.exit(1);
+	 JDK.exit(1);
 
       return e;
    }
@@ -4513,9 +4513,9 @@ public final class foreign {
       final Object v = bigloo.runtime.Llib.bigloo.bigloo_exit_apply(BINT(1));
 
       if (v instanceof bint)
-	 System.exit(CINT((bint) v));
+	 JDK.exit(CINT((bint) v));
       else
-	 System.exit(1);
+	 JDK.exit(1);
       
       return e;
    }
@@ -4537,7 +4537,7 @@ public final class foreign {
       }
 	 
       bigloo_abort();
-      System.exit(1);
+      JDK.exit(1);
    }
 
    public static Object PUSH_ENV_EXIT(bgldynamic env, exit v, int protect) {
@@ -5143,7 +5143,7 @@ public final class foreign {
 
       trace_exit();
 
-      System.exit((exitv instanceof bint) ? ((bint) exitv).value : 0);
+      JDK.exit((exitv instanceof bint) ? ((bint) exitv).value : 0);
 
       return null;
    }
