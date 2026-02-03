@@ -160,7 +160,6 @@
      (main (method me (public static) void "main" (vector string)))
      (dlopen (method me (public static) void ,(dload-init-sym)))
      ;; Fields/Methods of bigloo.procedure
-
      (procenv (field procedure () (vector obj) "env"))
      (procarity (field procedure () int "arity"))
      (procindex (field procedure () int "index"))

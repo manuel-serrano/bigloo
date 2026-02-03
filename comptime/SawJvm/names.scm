@@ -60,7 +60,8 @@
 	       (epair         . extended_pair)
 	       (dynamic-env   . bgldynamic)
 	       (procedure     . procedure)
-	       (procedure-l   . procedure))))
+	       (procedure-l   . procedure)
+	       (String        . string))))
 
 ;;
 ;; Associate jvmtype to a type

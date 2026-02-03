@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/convert.scm     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Coerce/convert.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Mon Oct 20 14:17:45 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  3 16:05:33 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -341,7 +341,7 @@
 ;*    make-one-type-conversion ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (make-one-type-conversion from to check-op coerce-op node)
-   (with-trace 'convert "make-one-type-concversion"
+   (with-trace 'convert "make-one-type-conversion"
       (trace-item "node=" (shape node))
       (trace-item "from=" (shape from))
       (trace-item "to=" (shape to))

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Tue Feb  3 13:09:29 2026 (serrano)                */
+/*    Last change :  Tue Feb  3 15:26:00 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -2223,7 +2223,11 @@ public final class foreign {
       return res;
    }
    
-   public static byte[] string_to_bstring(byte[]o) {
+   public static String bstring_to_String(byte[] o) {
+      return new String(o);
+   }
+   
+   public static byte[] String_to_bstring(byte[]o) {
       return o;
    }
 
