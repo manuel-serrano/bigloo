@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/module5.scm     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/module5.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Mon Feb  2 12:00:36 2026 (serrano)                */
+;*    Last change :  Tue Feb  3 10:41:10 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -671,8 +671,9 @@
 ;*    parse-extern-java-clause ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (parse-extern-java-clause c mod::Module x)
+   (install-module-clauses-compiler!)
    (with-access::Module mod (id)
-      (parse-java-clause id c)))
+      (parse-java-clause id `(java ,c))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-wasm ...                                   */

@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 25 11:52:25 2000                          */
 ;*    Last change :  Sat Oct 11 11:50:55 2025 (serrano)                */
-;*    Copyright   :  2000-25 Manuel Serrano                            */
+;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Jvm foreign interface tests                                  */
 ;*=====================================================================*/

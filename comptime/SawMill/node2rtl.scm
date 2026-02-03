@@ -478,7 +478,7 @@
 			   (nodes (append init vsets (list vref))))))))))
    
    (with-access::new e (expr* args-type type loc)
-      (if (pair? expr*)
+      (if (and (pair? expr*) (isa? type tclass))
 	  ;; module5 syntax
 	  (new5->rtl e)
 	  ;; module4 syntax

@@ -1,14 +1,17 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Jlib/JDK.java                */
+/*    serrano/prgm/project/bigloo/5.0a/runtime/Jlib/JDK.java           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:50:33 2008                          */
-/*    Last change :  Mon Oct 24 13:41:19 2016 (serrano)                */
-/*    Copyright   :  2008-16 Manuel Serrano                            */
+/*    Last change :  Tue Feb  3 11:02:03 2026 (serrano)                */
+/*    Copyright   :  2008-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java auto-configuration                                          */
 /*=====================================================================*/
 
+/*---------------------------------------------------------------------*/
+/*    The package                                                      */
+/*---------------------------------------------------------------------*/
 package bigloo;
 
 import java.lang.*;
@@ -17,9 +20,13 @@ import java.io.IOException;
 import java.net.*;
 import java.lang.reflect.*;
 
+/*---------------------------------------------------------------------*/
+/*    JDK                                                              */
+/*---------------------------------------------------------------------*/
 public abstract class JDK {
    private static JDK impl;
-   static{
+   
+   static {
       // are we 1.6?
       try {
 	 Class.forName("java.text.spi.BreakIteratorProvider");

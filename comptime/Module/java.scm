@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/java.scm        */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/java.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Mon Oct 20 08:50:53 2025 (serrano)                */
-;*    Copyright   :  2000-25 Manuel Serrano                            */
+;*    Last change :  Tue Feb  3 10:48:04 2026 (serrano)                */
+;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
 ;*=====================================================================*/
