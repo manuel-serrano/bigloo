@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Tue Feb  3 10:48:04 2026 (serrano)                */
+;*    Last change :  Tue Feb  3 14:28:09 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -41,11 +41,13 @@
 	    foreign_jtype
 	    foreign_access)
    (export  (make-java-compiler)
+	    (java-finalizer)
 	    (find-java-class ::symbol)
 	    ;; heap-add-jclass is untyped other it force the module
 	    ;; object-module to be imported in too many places.
 	    (heap-add-jclass! jclass)
-	    (parse-java-clause ::symbol ::pair))
+	    (parse-java-clause ::symbol ::pair)
+	    (java-parser ::pair ::symbol))
    (static  (class jklass
 	       (bind-jklass!)
 	       (src::pair read-only)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Feb  3 10:41:10 2026 (serrano)                */
+;*    Last change :  Tue Feb  3 14:16:11 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -635,6 +635,19 @@
        (error/loc mod "Illegal extern \"C\" module clause" clause x))))
    
 ;*---------------------------------------------------------------------*/
+;*    parse-extern-java-clause ...                                     */
+;*---------------------------------------------------------------------*/
+(define (parse-extern-java-clause clause mod::Module x::pair)
+   (match-case clause
+      ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
+       (java-parser clause (-> mod id)))
+      ((or (class ?ident . ?rest)
+	   (abstract-class ?ident . ?rest))
+       (java-parser clause (-> mod id)))
+      (else
+       (error/loc mod "Illegal extern \"C\" module clause" clause x))))
+   
+;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-c ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (module5-extern-plugin-c mod::Module x::pair)
@@ -655,25 +668,10 @@
    '())
 
 ;*---------------------------------------------------------------------*/
-;*    module4-plugin-type ...                                          */
-;*---------------------------------------------------------------------*/
-(define (module4-plugin-type mod::Module x::pair)
-   (for-each (lambda (c) (type-parser #f c x)) (cdr x))
-   '())
-
-;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-java ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (module5-extern-plugin-java mod::Module x::pair)
    (for-each (lambda (c) (parse-extern-java-clause c mod x)) (cddr x)))
-
-;*---------------------------------------------------------------------*/
-;*    parse-extern-java-clause ...                                     */
-;*---------------------------------------------------------------------*/
-(define (parse-extern-java-clause c mod::Module x)
-   (install-module-clauses-compiler!)
-   (with-access::Module mod (id)
-      (parse-java-clause id `(java ,c))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-wasm ...                                   */
@@ -735,6 +733,13 @@
 ;*---------------------------------------------------------------------*/
 (define (module4-plugin-eval mod::Module expr::pair)
    (module5-plugin-eval mod expr)
+   '())
+
+;*---------------------------------------------------------------------*/
+;*    module4-plugin-type ...                                          */
+;*---------------------------------------------------------------------*/
+(define (module4-plugin-type mod::Module x::pair)
+   (for-each (lambda (c) (type-parser #f c x)) (cdr x))
    '())
 
 ;*---------------------------------------------------------------------*/
@@ -847,10 +852,11 @@
 	 ((?def ?proto ?body)
 	  (localize `(,def ,proto ,(e body e)) x))
 	 ((?def ?proto . ?body)
-	  (localize `(,def ,proto ,(map (lambda (x) (e x e)) body)) x))
+	  (localize `(,def ,proto ,@(map (lambda (x) (e x e)) body)) x))
 	 (else
 	  (error "expand" "Illegal form" x))))
    
+   (install-module5-expander xenv 'define #f define-expander)
    (install-module5-expander xenv 'define-inline #f define-expander)
    (install-module5-expander xenv 'define-generic #f define-expander)
    (install-module5-expander xenv 'define-method #f define-expander)

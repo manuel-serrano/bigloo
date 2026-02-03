@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/Engine/compiler.scm        */
+;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Jan 30 18:05:58 2026 (serrano)                */
+;*    Last change :  Tue Feb  3 14:33:33 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -53,6 +53,7 @@
 	    module_alibrary
 	    module_foreign
 	    module_eval
+	    module_java
 	    expand_eps
 	    expand_install
 	    init_main
@@ -618,7 +619,7 @@
 
 	 ;; eval code
 	 (eval-finalizer)
-	 
+
 	 ;; user pass
 	 (user-walk tu)
 	 (stop-on-pass 'user (lambda () (write-unit units)))
@@ -640,6 +641,10 @@
 	 (module5-ast! mod genv 'compile)
 
 	 (module5-imported-inline mod genv)
+	 
+	 ;; java code
+	 (when (eq? *target-language* 'jvm)
+	    (java-finalizer))
 	 
 	 (let* ((m (module5-main mod genv))
 		(ast (profile ast (build-ast units genv))))
