@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/module5.scm        */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/module5.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Mon Feb  2 09:57:21 2026 (serrano)                */
+;*    Last change :  Tue Feb  3 07:35:08 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -229,6 +229,13 @@
 (define *plugins4* '())
 (define *extern-plugins* '())
 
+;*---------------------------------------------------------------------*/
+;*    module5-qualified-name ...                                       */
+;*---------------------------------------------------------------------*/
+(define (module5-qualified-name::symbol alias::symbol id::symbol)
+   ;;(string->symbol (format "~a.~a" id alias))
+   (string->symbol (format "~a@~a" alias id)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    module5-preload-cache! ...                                       */
 ;*---------------------------------------------------------------------*/
@@ -909,8 +916,7 @@
 				       :expand expand)))
 		   (hashtable-for-each (-> imod exports)
 		      (lambda (key d::Decl)
-			 (let* ((alias (string->symbol
-					  (format "~a@~a" (-> d alias) id)))
+			 (let* ((alias (module5-qualified-name (-> d alias) id))
 				(nd (duplicate::Decl d
 				       (alias alias)
 				       (id (-> d alias))
@@ -1020,8 +1026,7 @@
 	     (let ((lmod::Module (module5-read-library rlib clause mod)))
 		(hashtable-for-each (-> lmod exports)
 		   (lambda (k d::Decl)
-		      (let* ((alias (string->symbol
-				       (format "~a@~a" (-> d alias) id)))
+		      (let* ((alias (module5-qualified-name (-> d alias) id))
 			     (nd (duplicate::Decl d
 				    (alias alias)
 				    (scope 'import))))
@@ -1206,7 +1211,7 @@
 				  (set! def idef)
 				  (with-access::KDef idef (ci decl)
 				     (module5-bind-class! mod id ci)
-				     (install-class-expanders ci xenv))))))))))
+				     (install-class-expanders ci xenv mod))))))))))
 	    (when (pair? (-> mod body))
 	       (trace-item "body before-expand=" (-> mod body))
 	       (set! (-> mod body)
@@ -1998,13 +2003,36 @@
 		      (class-info-super-set! ci si)
 		      (class-info-properties-set! ci
 			 (append (class-info-properties si)
-			    (class-info-properties ci))))
+			    (class-info-properties ci)))
+		      (cond
+			 ((class-info-ctor ci)
+			  ;; use the class ctor
+			  (class-info-register-ctor-set! ci
+			     (class-info-ctor ci)))
+			 ((class-info-register-ctor si)
+			  ;; use the super class ctor
+			  (if (hashtable-contains? (-> mod imports)
+				 (symbol->string! (class-info-id si)))
+			      ;; imported class
+			      (begin
+				 (class-info-ctor-set! ci
+				    `((@ class-constructor __object)
+				      ,(class-info-id ci)))
+				 (class-info-register-ctor-set! ci
+				    `((@ class-constructor __object)
+				      ,(class-info-id si))))
+			      ;; local class
+			      (begin
+				 (class-info-ctor-set! ci
+				    (class-info-ctor si))
+				 (class-info-register-ctor-set! ci
+				    (class-info-ctor si)))))))
 		   (error/loc mod
 		      (format "Cannot find \"~a\" super class"
 			 (class-info-id ci))
 		      (class-info-super ci) x))))
 	 ;; install the expanders
-	 (install-class-expanders ci xenv)
+	 (install-class-expanders ci xenv mod)
 	 ;; expanded class registration form
 	 (class-info-registration-set! ci (e (registration-expand ci mod) e))
 	 #unspecified)))
@@ -2012,14 +2040,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    install-class-expanders ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (install-class-expanders ci xenv)
-   ;; install the expanders
+(define (install-class-expanders ci xenv mod)
    (install-module5-expander xenv
       (string->symbol (format "instantiate::~a" (class-info-id ci)))
-      #f (instantiate-expander ci))
+      #f (instantiate-expander ci mod))
    (install-module5-expander xenv
       (string->symbol (format "with-access::~a" (class-info-id ci)))
-      #f (with-access-expander ci)))
+      #f (with-access-expander ci mod)))
 
 ;*---------------------------------------------------------------------*/
 ;*    include-expander ...                                             */

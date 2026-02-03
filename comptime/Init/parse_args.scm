@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Jan 29 07:58:57 2026 (serrano)                */
+;*    Last change :  Tue Feb  3 07:57:35 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -386,7 +386,9 @@
       (section "Dialect")
       ;; module language version
       (("-module?version" (help "Set the module language version (4 or 5)"))
-       (set! *module-version* (string->integer version)))
+       (set! *module-version* (string->integer version))
+       (unless (memv *module-version* '(4 5))
+	  (error "-module" "Illegal module version" version)))
       ;; nil
       (("-nil" (help "Evaluate '() as #f in `if' expression"))
        (set! *nil* #f))

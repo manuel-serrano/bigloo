@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/object.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/object.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon Feb  2 17:26:03 2026 (serrano)                */
+;*    Last change :  Tue Feb  3 09:33:22 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1092,16 +1092,16 @@
 		       shrink
 		       depth
 		       #f)))
-	 ;; we set the sub field of the super class
+	 ;; set the sub field of the super class
 	 (when (class? super)
 	    ;; add the class to its super subclasses list
 	    (class-subclasses-set!
 	       super (cons class (class-subclasses super))))
-	 ;; we add the class in the *classes* vector (we declare the class)
+	 ;; add the class in the *classes* vector
 	 (vector-set! *classes* *nb-classes* class)
-	 ;; we increment the global class number
+	 ;; increment the global class number
 	 (set! *nb-classes* (+fx *nb-classes* 1))
-	 ;; on 64bit platforms that supports header data, store the
+	 ;; on 64bit platforms that support header data, store the
 	 ;; class super classes in the inheritance vector
 	 (cond-expand
 	    ((and bigloo-c bint61)
@@ -1125,7 +1125,7 @@
 			     (class-ancestors-ref class i))
 			  (loop (+fx i 1) (+fx j 1)))
 		       (set! *inheritance-cnt* j))))))
-	 ;; and we adjust the method arrays of all generic functions
+	 ;; and adjust the method arrays of all generic functions
 	 (generics-add-class! num (if (class? super) (class-index super) num))
 	 class))
    

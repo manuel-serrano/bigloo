@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/class.scm          */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/class.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Fri Jan 30 18:58:47 2026 (serrano)                */
+;*    Last change :  Tue Feb  3 08:00:45 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -66,8 +66,8 @@
 	   (nil-creator-expand::pair ::struct ::obj)
 	   (properties-expand::pair ::struct ::bool)
 	   (registration-expand::pair ::struct ::Module)
-	   (instantiate-expander::procedure ::struct)
-	   (with-access-expander::procedure ::struct)
+	   (instantiate-expander::procedure ::struct ::Module)
+	   (with-access-expander::procedure ::struct ::Module)
 	   (co-instantiate-expander::procedure ::Module)))
 
 ;*---------------------------------------------------------------------*/
@@ -103,12 +103,12 @@
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
 	  (class-info id (class-depth super) super kind
-	     ctor (parse-properties props id) #unspecified x)))
+	     ctor (parse-properties props id) #unspecified x #unspecified)))
       (((and (? class-kind?) ?kind) ?ident . ?props)
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
 	  (class-info id (class-depth super) super kind
-	     #f (parse-properties props id) #unspecified x)))
+	     #f (parse-properties props id) #unspecified x #unspecified)))
       (else
        (error/loc "parse" "Illegal class definition" x x))))
 
@@ -326,7 +326,7 @@
      ;; allocator
      (lambda () ,(allocator-expand ci mod))
      ;; ctor
-     ,(class-info-ctor ci)
+     ,(class-info-register-ctor ci)
      ;; nil
      ,(nil-creator-expand ci mod)
      ;; shrink
@@ -342,17 +342,22 @@
 ;*    Create an instantiate expander, suitable for the interpreter     */
 ;*    and the compiler. Called during the expansion of a module 5.     */
 ;*---------------------------------------------------------------------*/
-(define (instantiate-expander class-info)
+(define (instantiate-expander class-info mod::Module)
    (lambda (x e)
       (let* ((args (cdr x))
 	     (o (gensym 'o))
-	     (to (make-typed-ident o (class-info-id class-info))))
+	     (cid (class-info-id class-info))
+	     (mid (-> mod id))
+	     (to (make-typed-ident o cid)))
 	 ;; syntactic check
-	 (for-each (lambda (p)
-		      (unless (match-case p (((? symbol?) ?e) #t) (else #f))
-			 (error/loc (car x) "Illegal property" p args)))
+	 (for-each (lambda (a)
+		      (unless (match-case a (((? symbol?) ?e) #t) (else #f))
+			 (error/loc (car x) "Illegal property" a args))
+		      (unless (find (lambda (p) (eq? (prop-info-id p) (car a)))
+				 (class-info-properties class-info))
+			 (error/loc (car x) "Illegal property" (car a) args)))
 	    args)
-	 (e `(let ((,to ($class-allocate ,(class-info-id class-info)
+	 (e `(let ((,to ($class-allocate ,cid
 			   ;; concrete properties
 			   ,@(filter-map (lambda (p)
 					    (cond
@@ -372,7 +377,7 @@
 				(class-info-properties class-info)))))
 		;; constructor
 		,@(if (class-info-ctor class-info)
-		      (list (class-info-ctor class-info))
+		      (list `(,(class-info-ctor class-info) ,o))
 		      '())
 		;; virtual propertys
 		,@(filter-map (lambda (p)
@@ -392,7 +397,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    with-access-expander ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (with-access-expander class-info)
+(define (with-access-expander class-info mod::Module)
    (lambda (x e)
       (match-case x
 	 ((?w ?o (and (? list?) ?bindings) . ?body)
