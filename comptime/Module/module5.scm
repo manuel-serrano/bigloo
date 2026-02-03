@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/module5.scm     */
+;*    serrano/bigloo/5.0a/comptime/Module/module5.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Feb  3 14:16:11 2026 (serrano)                */
+;*    Last change :  Tue Feb  3 19:01:32 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -21,6 +21,7 @@
 	   tools_error
 	   tools_shape
  	   tools_location
+	   read_jvm
 	   module_module
 	   module_class
 	   module_checksum
@@ -638,14 +639,45 @@
 ;*    parse-extern-java-clause ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (parse-extern-java-clause clause mod::Module x::pair)
+
+   (define (parse-class5-ident ident)
+      (let* ((name (symbol->string ident))
+	     (i (string-index-right name #\.)))
+	 (if i
+	     (let ((id (substring name (+fx i 1) (string-length name))))
+		(values name (string->symbol id)))
+	     (values name ident))))
+
+   (define (field5->field4 field)
+      (match-case field
+	 ((method ?ident ?args)
+	  (multiple-value-bind (id type)
+	     (parse-ident ident field mod)
+	     `(method ,ident ,args ,(symbol->string id))))
+	 ((method static ?ident ?args)
+	  (multiple-value-bind (id type)
+	     (parse-ident ident field mod)
+	     `(method static ,ident ,args ,(symbol->string id))))
+	 (else
+	  (error/loc mod "Illegal class field" field x))))
+      
+   (define (class5->class4 keyword ident rest)
+      (multiple-value-bind (name id)
+	 (parse-class5-ident ident)
+	 `(,keyword ,id
+	     ,@(map field5->field4 rest)
+	     ,name)))
+      
    (match-case clause
+      ((package (and (? symbol?) ?pkg))
+       (add-qualified-type! (-> mod id) (format "~a.~a" pkg (-> mod id))))
       ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
        (java-parser clause (-> mod id)))
       ((or (class ?ident . ?rest)
 	   (abstract-class ?ident . ?rest))
-       (java-parser clause (-> mod id)))
+       (java-parser (class5->class4 (car clause) ident rest) (-> mod id)))
       (else
-       (error/loc mod "Illegal extern \"C\" module clause" clause x))))
+       (error/loc mod "Illegal extern \"java\" module clause" clause x))))
    
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-c ...                                      */
