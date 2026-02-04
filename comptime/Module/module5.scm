@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Feb  4 06:55:48 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 08:03:52 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -98,7 +98,7 @@
 ;*    module5-import-def ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (module5-import-def mod::Module decl::Decl)
-   (with-trace 'module5 "modulet5-import-def"
+   (with-trace 'module5-resolve "modulet5-import-def"
       (trace-item "id=" (-> decl id))
       (with-access::Decl decl ((dmod mod) def xid id)
 	 (if (eq? mod dmod)
@@ -152,31 +152,33 @@
 	       (global-module holder)))))
 
    (define (declare-class-definition! id alias mid scope src def::KDef)
-      (with-access::KDef def (expr id decl super ctor kkind properties)
-	 (when (isa? decl Decl)
-	    (with-access::Decl decl (mod)
-	       (with-access::Module mod ((mid id))
-		  (unless (find-global/module env id mid)
-		     ;; a class declared in the module being compiled
-		     (let ((var (declare-global-svar! env id id mid scope expr expr)))
-			(global-type-set! var (find-type/expr 'class expr))
-			(global-set-read-only! var)
-			(cond
-			   ((not (type-exists? id))
-			    (let* ((sup (and super (find-type/expr super expr)))
-				   (ty (declare-class-type! id sup
-					  ctor var #f
-					  (eq? kkind 'define-final-class)
-					  (eq? kkind 'define-abstract-class)
-					  src)))
-			       (gen-class-coercions! ty)
-			       ty))
-			   ((not (eq? (type-class-module id) mid))
-			    (error mid
-			       (format "Illegal type redefinition \"~a\"" id)
-			       src))
-			   (else
-			    #f)))))))))
+      (with-trace 'module5 "declare-class-definition!"
+	 (trace-item "id=" id)
+	 (with-access::KDef def (expr id decl super ctor kkind properties)
+	    (when (isa? decl Decl)
+	       (with-access::Decl decl (mod)
+		  (with-access::Module mod ((mid id))
+		     (unless (find-global/module env id mid)
+			;; a class declared in the module being compiled
+			(let ((var (declare-global-svar! env id id mid scope expr expr)))
+			   (global-type-set! var (find-type/expr 'class expr))
+			   (global-set-read-only! var)
+			   (cond
+			      ((not (type-exists? id))
+			       (let* ((sup (and super (find-type/expr super expr)))
+				      (ty (declare-class-type! id sup
+					     ctor var #f
+					     (eq? kkind 'define-final-class)
+					     (eq? kkind 'define-abstract-class)
+					     src)))
+				  (gen-class-coercions! ty)
+				  ty))
+			      ((not (eq? (type-class-module id) mid))
+			       (error mid
+				  (format "Illegal type redefinition \"~a\"" id)
+				  src))
+			      (else
+			       #f))))))))))
 
    (define (declare-class-slots! id alias src def::KDef ty::tclass)
       (with-access::KDef def (properties)
@@ -194,45 +196,48 @@
 	  id))
       
    (define (declare-definition! kind id type alias mid scope expr def::Def)
-      (case kind
-	 ((variable)
-	  (declare-global-svar! env (make-typed-ident id type) alias
-	     mid scope expr expr))
-	 ((procedure)
-	  (declare-global-sfun! env (make-typed-ident id type) alias
-	     (procedure-args expr id mid)
-	     mid scope 'sfun expr expr))
-	 ((inline)
-	  (declare-global-sfun! env (make-typed-ident id type) alias
-	     (procedure-args expr id mid)
-	     mid scope 'sifun expr expr))
-	 ((generic)
-	  (declare-global-sfun! env (make-typed-ident id type) alias
-	     (procedure-args expr id mid)
-	     mid scope 'sgfun expr expr))
-	 ((macro)
-	  (with-access::Def def (expr)
-	     (add-macro-definition! expr id)))
-	 ((expander)
-	  (with-access::Def def (expr)
-	     (add-macro-definition! expr id)))
-	 ((c-function)
-	  (with-access::CDef def (name type infix args macro)
-	     (declare-global-cfun! env id alias 'foreign name type args
-		#f macro expr expr)))
-	 ((c-variable)
-	  (with-access::CDef def (name type macro)
-	     (declare-global-cvar! env id alias name type macro expr expr)))
-	 ((c-type)
-	  ;; already processed so ignore
-	  #unspecified)
-	 ((class)
-	  ;; postponed classes, do nothing
-	  #unspecified)
-	 (else
-	  (error "module5-ast"
-	     (format "Unsupported definition kind \"~a\"" kind)
-	     id))))
+      (with-trace 'module5 "declare-definition!"
+	 (trace-item "id=" id)
+	 (trace-item "kind=" kind)
+	 (case kind
+	    ((variable)
+	     (declare-global-svar! env (make-typed-ident id type) alias
+		mid scope expr expr))
+	    ((procedure)
+	     (declare-global-sfun! env (make-typed-ident id type) alias
+		(procedure-args expr id mid)
+		mid scope 'sfun expr expr))
+	    ((inline)
+	     (declare-global-sfun! env (make-typed-ident id type) alias
+		(procedure-args expr id mid)
+		mid scope 'sifun expr expr))
+	    ((generic)
+	     (declare-global-sfun! env (make-typed-ident id type) alias
+		(procedure-args expr id mid)
+		mid scope 'sgfun expr expr))
+	    ((macro)
+	     (with-access::Def def (expr)
+		(add-macro-definition! expr id)))
+	    ((expander)
+	     (with-access::Def def (expr)
+		(add-macro-definition! expr id)))
+	    ((c-function)
+	     (with-access::CDef def (name type infix args macro)
+		(declare-global-cfun! env id alias 'foreign name type args
+		   #f macro expr expr)))
+	    ((c-variable)
+	     (with-access::CDef def (name type macro)
+		(declare-global-cvar! env id alias 'foreign name type macro expr expr)))
+	    ((c-type)
+	     ;; already processed so ignore
+	     #unspecified)
+	    ((class)
+	     ;; postponed classes, do nothing
+	     #unspecified)
+	    (else
+	     (error "module5-ast"
+		(format "Unsupported definition kind \"~a\"" kind)
+		id)))))
    
    (define (def-scope def::Def)
       (with-access::Def def (decl)
@@ -296,50 +301,52 @@
 	    (values (append declt deft)
 	       (append declc defc)
 	       (append declo defo)))))
-      
-   (with-access::Module mod (defs imports (mid id))
 
-      (multiple-value-bind (types classes others)
-	 (split-definitions mid defs imports)
-
-	 ;; declare all C types
-	 (for-each (lambda (e)
-		      (with-access::TDef (vector-ref e 0) (id name)
-			 (declare-type! id name 'C)))
-	    types)
-
-	 ;; declare all classes
-	 (let* ((cs (sort (lambda (ex ey)
-			     (with-access::KDef (vector-ref ex 0) ((dx depth))
-				(with-access::KDef (vector-ref ey 0) ((dy depth))
-				   (<fx dx dy))))
-		       classes))
-		(ts (map (lambda (e)
-			    (let ((def (vector-ref e 0))
-				  (alias (vector-ref e 2))
-				  (scope (vector-ref e 3)))
-			       (with-access::KDef (vector-ref e 0) (expr kind id depth)
-				  (declare-class-definition! kind id alias
-				     scope expr def))))
-		       cs)))
-	    (when (eq? mode 'compile)
-	       (for-each (lambda (e ty)
-			    (when ty
+   (with-trace 'module5 "module5-ast!"
+      (with-access::Module mod (defs imports (mid id))
+	 (trace-item "mid=" mid)
+	 
+	 (multiple-value-bind (types classes others)
+	    (split-definitions mid defs imports)
+	    
+	    ;; declare all C types
+	    (for-each (lambda (e)
+			 (with-access::TDef (vector-ref e 0) (id name)
+			    (declare-type! id name 'C)))
+	       types)
+	    
+	    ;; declare all classes
+	    (let* ((cs (sort (lambda (ex ey)
+				(with-access::KDef (vector-ref ex 0) ((dx depth))
+				   (with-access::KDef (vector-ref ey 0) ((dy depth))
+				      (<fx dx dy))))
+			  classes))
+		   (ts (map (lambda (e)
 			       (let ((def (vector-ref e 0))
-				     (alias (vector-ref e 2)))
+				     (alias (vector-ref e 2))
+				     (scope (vector-ref e 3)))
 				  (with-access::KDef (vector-ref e 0) (expr kind id depth)
-				     (declare-class-slots! id alias expr def ty)))))
-		  cs ts)))
-
-	 ;; other declarations
-	 (for-each (lambda (e)
-		      (let ((def (vector-ref e 0))
-			    (mid (vector-ref e 1))
-			    (alias (vector-ref e 2))
-			    (scope (vector-ref e 3)))
-			 (with-access::Def def (expr kind id type)
-			    (declare-definition! kind id type alias mid scope expr def))))
-	    others))))
+				     (declare-class-definition! kind id alias
+					scope expr def))))
+			  cs)))
+	       (when (eq? mode 'compile)
+		  (for-each (lambda (e ty)
+			       (when ty
+				  (let ((def (vector-ref e 0))
+					(alias (vector-ref e 2)))
+				     (with-access::KDef (vector-ref e 0) (expr kind id depth)
+					(declare-class-slots! id alias expr def ty)))))
+		     cs ts)))
+	    
+	    ;; other declarations
+	    (for-each (lambda (e)
+			 (let ((def (vector-ref e 0))
+			       (mid (vector-ref e 1))
+			       (alias (vector-ref e 2))
+			       (scope (vector-ref e 3)))
+			    (with-access::Def def (expr kind id type)
+			       (declare-definition! kind id type alias mid scope expr def))))
+	       others)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-main ...                                                 */
@@ -676,20 +683,36 @@
    (define (parse-clause clause mod::Module x::pair pkg)
       
       (define (parse-class5-ident ident)
-	 (let* ((name (symbol->string ident))
-		(i (string-index-right name #\.)))
-	    (if i
-		(let ((id (substring name (+fx i 1) (string-length name))))
-		   (values name (string->symbol id)))
-		(values #f ident))))
+	 (let ((name (symbol->string ident)))
+	    (if (char=? (string-ref name 0) #\.)
+		(let ((name (substring name 1)))
+		   (values #f name (string->symbol name)))
+		(let ((i (string-index-right name #\.)))
+		   (if i
+		       (let ((pkg (substring name 0 i))
+			     (id (substring name (+fx i 1))))
+			  (values pkg name (string->symbol id)))
+		       (values #f name ident))))))
       
       (define (field5->field4 field)
 	 (match-case field
-	    ((method ?ident ?args)
+	    ;; instance field
+	    ((? symbol?)
+	     (multiple-value-bind (id type)
+		(parse-ident field field mod)
+		`(field ,field ,(symbol->string id))))
+	    ;; static field
+	    ((static (and (? symbol?) ?ident))
+	     (multiple-value-bind (id type)
+		(parse-ident ident field mod)
+		`(field static ,ident ,(symbol->string id))))
+	    ((?ident (and (? list?) ?args))
+	     ;; virtual method
 	     (multiple-value-bind (id type)
 		(parse-ident ident field mod)
 		`(method ,ident ,args ,(symbol->string id))))
-	    ((method static ?ident ?args)
+	    ((static ?ident (and (? list?) ?args))
+	     ;; static method
 	     (multiple-value-bind (id type)
 		(parse-ident ident field mod)
 		`(method static ,ident ,args ,(symbol->string id))))
@@ -697,14 +720,14 @@
 	     (error/loc mod "Illegal class field" field x))))
       
       (define (class5->class4 keyword ident rest)
-	 (multiple-value-bind (name id)
+	 (multiple-value-bind (cpkg name id)
 	    (parse-class5-ident ident)
 	    `(,keyword ,id
 		,@(map field5->field4 rest)
 		,(cond
-		    (name name)
+		    (cpkg name)
 		    (pkg (format "~a.~a" pkg id))
-		    (else (symbol->string ident))))))
+		    (else id)))))
       
       (match-case clause
 	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))

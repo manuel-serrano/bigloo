@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/comptime/Init/parse_args.scm        */
+;*    serrano/bigloo/5.0a/comptime/Init/parse_args.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Feb  3 07:57:35 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 08:12:36 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1017,7 +1017,7 @@
        (set! *pass* 'syntax))
       (("-expand" (help "Stop after the preprocessing stage"))
        (set! *pass* 'expand))
-      (("-expand-module" (help "Produce the expanded module clause"))
+      (("-expand-module" (help "Stop after the expanded module clause"))
        (set! *pass* 'dump-module))
       (("-ast" (help "Stop after the ast construction stage"))
        (set! *pass* 'ast))

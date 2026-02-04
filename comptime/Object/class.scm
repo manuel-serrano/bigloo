@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Object/class.scm       */
+;*    serrano/bigloo/5.0a/comptime/Object/class.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Sat Oct  4 09:18:36 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Feb  4 10:02:35 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
 ;*=====================================================================*/
@@ -145,52 +145,55 @@
 ;*    declare-class-type! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (declare-class-type! id super ctor var widening final? abstract? src)
-   (let* ((super super)
-	  (name (id->name id))
-	  (sizeof (string-append "struct " name "_bgl"))
-	  (t-name (string-append name "_bglt"))
-	  (ty (declare-type! id t-name 'bigloo)))
-      ;; By now we make the assumption that super is a correct class.
-      ;; Super will be checked in `make-class-accesses!' (see module
-      ;; object_access).
-      (widen!::tclass ty
-	 (its-super super)
-	 (depth 0)
-	 (holder var)
-	 (widening widening)
-	 (final? final?)
-	 (abstract? abstract?)
-	 (constructor ctor)
-	 (src src))
-      (when (isa? super tclass)
-	 (with-access::tclass super (subclasses)
-	    (set! subclasses (cons ty subclasses))))
-      ;; wide classes creates a new type denoting the wide chunk of the
-      ;; wide class. In addition, the type name of a wide classes is the
-      ;; type name of its super class.
-      (if (eq? widening 'widening)
-	  (let* ((wtid (wide-chunk-class-id id))
-		 (wt (widen!::wclass (declare-type! wtid t-name 'bigloo)
-			(its-class ty))))
-	     (if (string? (type-name super))
-		 (begin
-		    (wclass-size-set! wt sizeof)
-		    (tclass-wide-type-set! ty wt)
-		    (type-name-set! ty (type-name super))
-		    (type-size-set! ty (type-size super))
-		    (gen-coercion-clause! ty wtid super #f)
-		    (gen-class-coercers! wt super))
-		 (user-error/location
-		    (find-location src)
-		    (symbol->string (type-id super))
-		    (format "\"~a\" must be declared or imported before wide class \"~a\"" (type-id super) id)
-		    src
-		    ty)))
-	  (type-size-set! ty sizeof))
-      ;; we add the class for the C type emission
-      (set! *class-type-list* (cons ty *class-type-list*))
-      ;; we are done
-      ty))
+   (with-trace 'jvm "declare-class-type!"
+      (trace-item "id=" id)
+      (trace-item "super=" super)
+      (let* ((super super)
+	     (name (id->name id))
+	     (sizeof (string-append "struct " name "_bgl"))
+	     (t-name (string-append name "_bglt"))
+	     (ty (declare-type! id t-name 'bigloo)))
+	 ;; By now we make the assumption that super is a correct class.
+	 ;; Super will be checked in `make-class-accesses!' (see module
+	 ;; object_access).
+	 (widen!::tclass ty
+	    (its-super super)
+	    (depth 0)
+	    (holder var)
+	    (widening widening)
+	    (final? final?)
+	    (abstract? abstract?)
+	    (constructor ctor)
+	    (src src))
+	 (when (isa? super tclass)
+	    (with-access::tclass super (subclasses)
+	       (set! subclasses (cons ty subclasses))))
+	 ;; wide classes creates a new type denoting the wide chunk of the
+	 ;; wide class. In addition, the type name of a wide classes is the
+	 ;; type name of its super class.
+	 (if (eq? widening 'widening)
+	     (let* ((wtid (wide-chunk-class-id id))
+		    (wt (widen!::wclass (declare-type! wtid t-name 'bigloo)
+			   (its-class ty))))
+		(if (string? (type-name super))
+		    (begin
+		       (wclass-size-set! wt sizeof)
+		       (tclass-wide-type-set! ty wt)
+		       (type-name-set! ty (type-name super))
+		       (type-size-set! ty (type-size super))
+		       (gen-coercion-clause! ty wtid super #f)
+		       (gen-class-coercers! wt super))
+		    (user-error/location
+		       (find-location src)
+		       (symbol->string (type-id super))
+		       (format "\"~a\" must be declared or imported before wide class \"~a\"" (type-id super) id)
+		       src
+		       ty)))
+	     (type-size-set! ty sizeof))
+	 ;; we add the class for the C type emission
+	 (set! *class-type-list* (cons ty *class-type-list*))
+	 ;; we are done
+	 ty)))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-java-class-type! ...                                     */
@@ -199,22 +202,22 @@
 ;*    a class in order to help the error management.                   */
 ;*---------------------------------------------------------------------*/
 (define (declare-java-class-type!::type class-id super jname package src)
-   (let ((super (cond
-		   ((eq? (type-id super) class-id)
-		    #f)
-		   ((eq? super *_*)
-		    #f)
-		   (else
-		    super)))
-	 (type  (declare-type! class-id jname 'java)))
-      ;; By now we make the assumption that super is a correct class.
-      ;; Super will be checked in `make-class-accesses!' (see module
-      ;; object_access).
-      (widen!::jclass type
-	 (its-super super)
-	 (package package))
-      ;; we are done
-      type))
+   (with-trace 'jvm "declare-java-class-type!"
+      (trace-item "class-id=" class-id)
+      (trace-item "super=" super)
+      (let ((super (cond
+		      ((eq? (type-id super) class-id) #f)
+		      ((eq? super *_*) #f)
+		      (else super)))
+	    (typ (declare-type! class-id jname 'java)))
+	 ;; By now we make the assumption that super is a correct class.
+	 ;; Super will be checked in `make-class-accesses!' (see module
+	 ;; object_access).
+	 (widen!::jclass typ
+	    (its-super super)
+	    (package package))
+	 ;; we are done
+	 typ)))
 
 ;*---------------------------------------------------------------------*/
 ;*    final-class? ...                                                 */

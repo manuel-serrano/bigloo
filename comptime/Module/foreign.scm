@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/foreign.scm     */
+;*    serrano/bigloo/5.0a/comptime/Module/foreign.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Mon Oct 20 08:48:41 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Feb  4 08:39:37 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign and extern clauses compilation. Foreign and extern   */
 ;*    clauses only differs by their syntax. They play the same role    */
@@ -141,7 +141,7 @@
 		     (symbol? type)
 		     (symbol? l-name)))
 	   (user-error "Parse error" "Illegal `macro' form" foreign '())
-	   (declare-global-cvar! (get-genv) l-name #f c-name type #t foreign foreign)))
+	   (declare-global-cvar! (get-genv) l-name #f 'foreign c-name type #t foreign foreign)))
       ((macro . ?-)
        (user-error "Parse error" "Illegal foreign form" foreign '()))
       ((?type ?l-name ?proto ?c-name)
@@ -157,7 +157,7 @@
 		     (symbol? type)
 		     (symbol? l-name)))
 	   (user-error "Parse error" "Illegal `variable' form" foreign '())
-	   (declare-global-cvar! (get-genv) l-name #f c-name type #f foreign #f)))
+	   (declare-global-cvar! (get-genv) l-name #f 'foreign c-name type #f foreign #f)))
       (else
        (user-error "Parse error" "Illegal foreign form" foreign '()))))
 
@@ -191,7 +191,8 @@
 	      (type   (type-id (default-c-type (cdr pid) extern))))
 	  (if (not (check-id pid extern))
 	      (user-error "Parse error" "Illegal extern form" extern '())
-	      (declare-global-cvar! (get-genv) l-name #f c-name type #t extern #f))))
+	      (declare-global-cvar! (get-genv) l-name #f 'foreign
+		 c-name type #t extern #f))))
       ((macro . ?-)
        (user-error "Parse error" "Illegal extern form" extern '()))
       (((and (? symbol?) ?id) ?proto (and (? string?) ?cn))
@@ -211,7 +212,8 @@
 	      (type   (type-id (default-c-type (cdr pid) extern))))
 	  (if (not (check-id pid extern))
 	      (user-error "Parse error" "Illegal extern form" extern '())
-	      (declare-global-cvar! (get-genv) l-name #f c-name type #f extern #f))))
+	      (declare-global-cvar! (get-genv) l-name #f 'foreign
+		 c-name type #f extern #f))))
       (else
        (user-error "Parse error" "Illegal extern form" extern '()))))
 

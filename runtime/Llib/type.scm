@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/type.scm           */
+;*    serrano/bigloo/5.0a/runtime/Llib/type.scm                        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Tue Feb  3 15:30:07 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 07:41:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -812,12 +812,11 @@
       ;; opaque
       (coerce opaque bool () ((lambda (x) #t)))
       
-      
       ;; java specific to be fixed
       (subtype String "char *" (cobj))
       (coerce obj String ($string?) ($bstring->String))
-      (coerce String obj () ($String->bstring))
-      (coerce String obj () ($String->obj))
+      (coerce bstring String () ($bstring->String))
+      (coerce String bstring () ($String->bstring))
       )
    
    (extern

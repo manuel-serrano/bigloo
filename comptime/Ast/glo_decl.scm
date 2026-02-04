@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/glo_decl.scm       */
+;*    serrano/bigloo/5.0a/comptime/Ast/glo_decl.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Mon Oct 20 17:34:26 2025 (serrano)                */
+;*    Last change :  Wed Feb  4 08:36:36 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -44,7 +44,7 @@
 	       module::symbol name::bstring type-res::symbol type-args::obj
 	       infix?::bool macro::bool srce::obj srci)
 	    (declare-global-cvar!::global env::obj id::symbol alias::obj
-	       name::bstring type-id::symbol macro?::bool src::obj srci)))
+	       module::symbol name::bstring type-id::symbol macro?::bool src::obj srci)))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-sfun! ...                                         */
@@ -330,7 +330,7 @@
 	  (type-res  (use-foreign-type/import-loc! tres-id loc loci))
 	  (type-args (map (lambda (t)
 			     (use-foreign-type/import-loc! t loc loci))
-			  (args*->args-list targs-id)))
+			(args*->args-list targs-id)))
 	  (cfun      (instantiate::cfun (arity arity)
 		 			(args-type type-args)
 					(macro? macro?)
@@ -349,12 +349,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-cvar! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-cvar! env id alias name type-id macro? srce srci)
+(define (declare-global-cvar! env id alias module name type-id macro? srce srci)
    (let* ((loc    (find-location srce))
 	  (loci   (find-location/loc srci loc))
 	  (type   (use-foreign-type/import-loc! type-id loc loci))
 	  (cvar   (instantiate::cvar (macro? macro?)))
-	  (global (bind-global! env id alias 'foreign cvar 'foreign srce)))
+	  (global (bind-global! env id alias module cvar 'foreign srce)))
       ;; we set the name of the global
       (global-name-set! global name)
       ;; we set the type of the variable

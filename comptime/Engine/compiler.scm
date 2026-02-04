@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
+;*    serrano/bigloo/5.0a/comptime/Engine/compiler.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Feb  3 14:33:33 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 11:05:50 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -637,14 +637,14 @@
 		    (backend-force-register-gc-roots (the-backend)))
 	    (set! units (cons (make-gc-roots-unit) units)))
 
+	 ;; java code
+	 (when (eq? *target-language* 'jvm)
+	    (java-finalizer))
+	 
 	 ;; build the variable and function ast
 	 (module5-ast! mod genv 'compile)
 
 	 (module5-imported-inline mod genv)
-	 
-	 ;; java code
-	 (when (eq? *target-language* 'jvm)
-	    (java-finalizer))
 	 
 	 (let* ((m (module5-main mod genv))
 		(ast (profile ast (build-ast units genv))))

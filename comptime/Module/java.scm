@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Wed Feb  4 07:06:49 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 08:31:16 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -61,6 +61,12 @@
 	       (constructors::pair-nil (default '()))
 	       (abstract?::bool (default #f))
 	       (module (default #unspecified)))
+	    (class jfield
+	       (src::pair read-only)
+	       (id::symbol read-only)
+	       (qid::symbol read-only)
+	       (jname::bstring read-only)
+	       (modifiers::pair-nil read-only (default '())))
 	    (class jmethod
 	       (src::pair read-only)
 	       (id::symbol read-only)
@@ -134,16 +140,6 @@
 (define *jklasses* '())
 
 ;*---------------------------------------------------------------------*/
-;*    *jclasses*                                                       */
-;*    -------------------------------------------------------------    */
-;*    This local variable is used to implement the checking of the     */
-;*    Java class super-class. As soon as it is checked that each       */
-;*    Java class has a Java class for super class, this variable       */
-;*    is reset to '().                                                 */
-;*---------------------------------------------------------------------*/
-(define *jclasses* '())
-
-;*---------------------------------------------------------------------*/
 ;*    *jexported* ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define *jexported* '())
@@ -168,67 +164,61 @@
 ;*    to create associated Bigloo types.                               */
 ;*---------------------------------------------------------------------*/
 (define (java-finalizer)
-   ;; First, we check for the foreign class. If defined but bound (i.e.,
-   ;; we have seen fields or methods but not the declaration of the
-   ;; class itself), we bind it
-   (let ((jklass (find-jklass *jvm-foreign-class-id*)))
-      (if (jklass? jklass)
-	  (if (not (string? (jklass-jname jklass)))
-	      (begin
-		 (jklass-abstract?-set! jklass #t)
-		 (jklass-jname-set! jklass *jvm-foreign-class-name*))
-	      (if (not (eq? (jklass-jname jklass) *jvm-foreign-class-name*))
-		  (java-error (jklass-src jklass)
-			      "Illegal foreign class definition")))))
-   ;; we declare all the Java classes
-   (for-each (lambda (jklass)
-		(with-access::jklass jklass (id jname src package)
-		   (remprop! (jklass-id jklass) 'jklass)
-		   (if (not (string? jname))
-		       (begin
-			  (set! *jclasses* '())
-			  (java-error src "Can't find main class declaration"))
-		       (let ((prefix (prefix jname)))
-			  (if (string=? prefix jname)
-			      (set! package "")
-			      (set! package prefix))
-			  (set! *jclasses* (cons (declare-jklass jklass)
-						 *jclasses*))))))
-	     *jklasses*)
-   ;; we check that each Java class has a correct super class
-   (if (pair? *jclasses*)
-       (for-each (lambda (jklass jclass)
-		    (with-access::jclass jclass (its-super)
-		       (if (and its-super (not (jclass? its-super)))
-			   (java-error
-			    (jklass-src jklass)
-			    "Super class is not a Java class"))))
-		 *jklasses* (reverse! *jclasses*)))
-   (set! *jclasses* '())
-   ;; we patch bigloo java exported variables name
-   (for-each (lambda (jmod)
-		(let* ((java (car jmod))
-		       (module (cdr jmod))
-		       (global (find-global (get-genv) (cadr java)))
-		       (name (caddr java)))
-		   (cond
-		      ((not (global? global))
-		       (if (and (not (or (eq? *pass* 'make-add-heap)
-					 (eq? *pass* 'make-heap)))
-				(eq? module *module*))
-			   (java-error java
-				       "Unbound (or static) global variable")))
-		      ((string? (global-name global))
-		       (user-warning
-			"Java"
-			"Re-exportation of global variable (ignored)"
-			java))
-		      (else
-		       (global-name-set! global name)))))
-	     *jexported*)
-   ;; reset the whole stuff
-   (set! *jexported* '())
-   (set! *jklasses* '()))
+   (with-trace 'jvm "java-finalizer"
+      ;; First, we check for the foreign class. If defined but bound (i.e.,
+      ;; we have seen fields or methods but not the declaration of the
+      ;; class itself), we bind it
+      (let ((jklass (find-jklass *jvm-foreign-class-id*)))
+	 (if (jklass? jklass)
+	     (if (not (string? (jklass-jname jklass)))
+		 (begin
+		    (jklass-abstract?-set! jklass #t)
+		    (jklass-jname-set! jklass *jvm-foreign-class-name*))
+		 (if (not (eq? (jklass-jname jklass) *jvm-foreign-class-name*))
+		     (java-error (jklass-src jklass)
+			"Illegal foreign class definition")))))
+      ;; declare all the associated types
+      (let ((jclasses (map jklass->jclass *jklasses*)))
+	 ;; declare all the Java classes
+	 (for-each (lambda (jklass jclass)
+		      (with-access::jklass jklass (id jname src package)
+			 (remprop! (jklass-id jklass) 'jklass)
+			 (unless (string? jname)
+			    (java-error src "Can't find class declaration"))
+			 (declare-jklass-properties! jklass jclass)))
+	    *jklasses* jclasses)
+	 ;; check that each Java class has a correct super class
+	 (for-each (lambda (jklass jclass)
+		      (with-access::jclass jclass (its-super)
+			 (if (and its-super (not (jclass? its-super)))
+			     (java-error
+				(jklass-src jklass)
+				"Super class is not a Java class"))))
+	    *jklasses* jclasses))
+      ;; patch bigloo java exported variables name
+      (for-each (lambda (jmod)
+		   (let* ((java (car jmod))
+			  (module (cdr jmod))
+			  (global (find-global (get-genv) (cadr java)))
+			  (name (caddr java)))
+		      (cond
+			 ((not (global? global))
+			  (if (and (not (or (eq? *pass* 'make-add-heap)
+					    (eq? *pass* 'make-heap)))
+				   (eq? module *module*))
+			      (java-error java
+				 "Unbound (or static) global variable")))
+			 ((string? (global-name global))
+			  (user-warning
+			     "Java"
+			     "Re-exportation of global variable (ignored)"
+			     java))
+			 (else
+			  (global-name-set! global name)))))
+	 *jexported*)
+      ;; cleanup
+      (set! *jexported* '())
+      (set! *jklasses* '())))
       
 ;*---------------------------------------------------------------------*/
 ;*    java-parse-class ...                                             */
@@ -296,18 +286,14 @@
 ;*    java-declare-component ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (java-declare-component j jklass::jklass component separator::symbol)
-
+   
    (define (every pred? lst)
       (let loop ((lst lst))
 	 (cond
-	    ((null? lst)
-	     #t)
-	    ((not (pair? lst))
-	     #f)
-	    ((pred? (car lst))
-	     (loop (cdr lst)))
-	    (else
-	     #f))))
+	    ((null? lst) #t)
+	    ((not (pair? lst)) #f)
+	    ((pred? (car lst)) (loop (cdr lst)))
+	    (else #f))))
    
    (define (arg-list? lst)
       (every (lambda (s) (and (symbol? s) (type-ident? s))) lst))
@@ -318,10 +304,15 @@
 		     (memq s '(public private protected
 			       static final synchronized
 			       abstract))))
-	      lst))
-
+	 lst))
+   
    (define (make-ident base id)
-      (symbol-append base separator id))
+      (let* ((b (symbol->string! base))
+	     (j (string-index-right b #\$)))
+	 (if (and j (>fx j 0))
+	     (let ((baseid (string-replace b #\$ #\.)))
+		(string->symbol (format "~a~a~a" baseid separator id)))
+	     (symbol-append base separator id))))
    
    (match-case component
       ((field . ?rest)
@@ -329,8 +320,16 @@
 	  (((and (? string?) ?jname) (and (? symbol?) ?id) . ?mod)
 	   (if (not (modifier-list? mod))
 	       (java-error component "Illegal Java field (wrong modifiers)")
-	       (with-access::jklass jklass (fields)
-		  (set! fields (cons (list component id jname mod) fields)))))
+	       (with-access::jklass jklass (fields idd)
+		  (let ((jfield (instantiate::jfield
+				   (src component)
+				   (id id)
+				   (qid (if (eq? idd 'foreign)
+					    id
+					    (make-ident idd id)))
+				   (jname jname)
+				   (modifiers mod))))
+		     (set! fields (cons jfield fields))))))
 	  (else
 	   (java-error component "Illegal Java field"))))
       ((method . ?rest)
@@ -376,96 +375,164 @@
 					"'"))))))
 
 ;*---------------------------------------------------------------------*/
-;*    declare-jklass ...                                               */
+;*    jklass->jclass ...                                               */
+;*---------------------------------------------------------------------*/
+(define (jklass->jclass jklass::jklass)
+   (with-trace 'jvm "jklass->jclass"
+      (with-access::jklass jklass (id jname package src loc)
+	 (trace-item "id=" id)
+	 (trace-item "jname=" jname)
+	 (let ((prefix (prefix jname)))
+	    ;; set the java class package
+	    (if (string=? prefix jname)
+		(set! package "")
+		(set! package prefix)))
+	 ;; add a qualified type so Bigloo won't complain when fetching
+	 ;; slots or calling methods of this class
+	 (add-qualified-type! id jname)
+	 (add-qualified-type! (fast-id-of-id id loc) jname)
+	 ;; construct the associated jclass
+	 (declare-java-class! jklass))))
+   
+;*---------------------------------------------------------------------*/
+;*    declare-jklass-properties! ...                                   */
 ;*    -------------------------------------------------------------    */
 ;*    This function is called in the Java finalization stage.          */
 ;*---------------------------------------------------------------------*/
-(define (declare-jklass jklass::jklass)
-   (with-access::jklass jklass (id jname constructors methods src loc)
-      (define (declare-java-static-method jmet)
-	 (with-access::jmethod jmet (id args jname src modifiers)
-	    (declare-java-method! id (jklass-id jklass)
-				  jname args modifiers
-				  (jklass-jname jklass)
-				  src)))
-      (define (declare-java-virtual-method jmet)
-	 (with-access::jmethod jmet (id args jname src modifiers)
-	    (if (and (not (jconstructor? jmet))
-		     (not (and (pair? args)
-			       (eq? (type-id (type-of-id (car args) loc))
-				    (jklass-idd jklass)))))
-		(java-error src "Illegal first argument of virtual method")
-		(declare-java-method! id (jklass-id jklass)
-				      jname args modifiers
-				      (jklass-jname jklass)
-				      src))))
-      (define (declare-java-method jmet::jmethod)
-	 (with-access::jmethod jmet (modifiers)
-	    (if (memq 'static modifiers)
-		(declare-java-static-method jmet)
-		(declare-java-virtual-method jmet))))
-      ;; we add a qualified type so Bigloo won't complain when fetching
-      ;; slots or calling methods of this class
-      (add-qualified-type! id jname)
-      (add-qualified-type! (fast-id-of-id id loc) jname)
-      (for-each declare-java-method methods)
-      (let ((jclass (declare-java-class! jklass)))
+(define (declare-jklass-properties! jklass::jklass jclass::jclass)
+   (with-trace 'jvm "declare-jklass-properties!"
+      (with-access::jklass jklass (id jname constructors methods fields src loc)
+	 
+	 (define (is-class? a jklass)
+	    (with-access::jklass jklass (id idd)
+	       (let ((aid (string->symbol (substring (symbol->string! a) 2))))
+		  (or (eq? aid id) (eq? aid idd)))))
+	 
+	 (define (declare-java-static-method jmet)
+	    (with-trace 'jvm "declare-java-static-method"
+	       (with-access::jmethod jmet (id args jname src modifiers)
+		  (declare-java-method! id (jklass-id jklass)
+		     jname args modifiers
+		     (jklass-jname jklass)
+		     src))))
+	 
+	 (define (declare-java-virtual-method jmet)
+	    (with-trace 'jvm "declare-java-virtual-method"
+	       (with-access::jmethod jmet (id args jname src modifiers)
+		  (if (and (not (jconstructor? jmet))
+			   (not (and (pair? args) (is-class? (car args) jklass))))
+		      (java-error src "Illegal first argument of virtual method")
+		      (declare-java-method! id (jklass-id jklass)
+			 jname args modifiers
+			 (jklass-jname jklass)
+			 src)))))
+	 
+	 (define (declare-java-method jmet::jmethod)
+	    (with-trace 'jvm "declarel-java-method"
+	       (with-access::jmethod jmet (id modifiers jname args)
+		  (trace-item "id=" id)
+		  (trace-item "modifiers=" modifiers)
+		  (trace-item "jname=" jname)
+		  (trace-item "args=" (map shape args))
+		  (if (memq 'static modifiers)
+		      (declare-java-static-method jmet)
+		      (declare-java-virtual-method jmet)))))
+	 
+	 (define (declare-java-field jfd::jfield)
+	    (with-trace 'jvm "declarel-java-field"
+	       (with-access::jfield jfd (qid jname src modifiers)
+		  (trace-item "qid=" qid)
+		  (trace-item "jname=" jname)
+		  (when (memq 'static modifiers)
+		     (declare-java-static-field qid (jklass-id jklass) jname
+			modifiers (jklass-jname jklass) src)))))
+	 
+	 (trace-item "id=" id)
+	 (trace-item "jname=" jname)
+	 
+	 ;; we add a qualified type so Bigloo won't complain when fetching
+	 ;; slots or calling methods of this class
+	 (for-each declare-java-method methods)
+	 (for-each declare-java-field fields)
 	 (with-access::jclass jclass (its-super)
+	    (trace-item "its-super=" its-super)
 	    (if its-super
-		(let ((type (cond
-			       ((jclass? its-super)
-				its-super)
-			       ((type? its-super)
-				its-super)
-			       (else
-				(find-type its-super)))))
-		   (set! its-super type)))
+		(let ((typ (cond
+			      ((jclass? its-super) its-super)
+			      ((type? its-super) its-super)
+			      (else (find-type its-super)))))
+		   (set! its-super typ)))
 	    jclass))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-java-method! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (declare-java-method! id module jname args modifiers kname src)
+   (with-trace 'jvm "declare-java-method!"
+      (trace-item "id=" id)
+      (trace-item "jname=" jname)
+      (let* ((pid (parse-id id (find-location src)))
+	     (ln (car pid))
+	     (tid (type-id (cdr pid))))
+	 (trace-item "pid=" pid)
+	 (trace-item "tid=" tid)
+	 (let ((g (declare-global-cfun! (get-genv) ln #f module jname tid args #f #f src #f)))
+	    (cfun-method-set! (global-value g) modifiers)
+	    (global-qualified-type-name-set! g kname)
+	    g))))
+
+;*---------------------------------------------------------------------*/
+;*    declare-java-static-field ...                                    */
+;*---------------------------------------------------------------------*/
+(define (declare-java-static-field id module jname modifiers kname src)
    (let* ((pid (parse-id id (find-location src)))
 	  (ln (car pid))
 	  (tid (type-id (cdr pid))))
-      (let ((g (declare-global-cfun! (get-genv) ln #f module jname tid args #f #f src #f)))
-	 (cfun-method-set! (global-value g) modifiers)
+      (let ((g (declare-global-cvar! (get-genv) ln #f module jname tid #f src #f)))
 	 (global-qualified-type-name-set! g kname)
+	 (tprint "G=" (shape g) " kname=" kname " id=" id " jname=" jname)
 	 g)))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-java-class! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (declare-java-class!::jclass jklass::jklass)
-   (with-access::jklass jklass (src id jname package loc
-				    fields constructors
-				    abstract?
-				    module)
-      (let* ((pid (parse-id id loc))
-	     (jid (car pid))
-	     (super (cdr pid)))
-	 (register-java-class! jid jname)
-	 ;; We create the class holder
-	 ;; and we create a type for this class
-	 (let ((jclass (declare-java-class-type! jid super jname package src)))
-	    ;; some paranoid checking
-	    (assert (jclass) (jclass? jclass))
-	    ;; we store the src-import location in order to print a nice error
-	    ;; message if that tclass is not defined
-	    (type-import-location-set! jclass loc)
-	    ;; when importing a class, we import the accessors...
-	    (delay-class-accessors!
-	     jclass
-	     (delay (import-java-class-accessors!
-		     fields
-		     constructors
-		     jclass
-		     abstract?
-		     module
-		     src)))
-	    ;; we are done
-	    jclass))))
+   
+   (define (jfield->lfield jfd::jfield)
+      (with-access::jfield jfd ((component src) id jname (mod modifiers))
+	 (list component id jname mod)))
+   
+   (with-trace 'jvm "declare-java-class!"
+      (with-access::jklass jklass (src id jname package loc
+				     fields constructors
+				     abstract?
+				     module)
+	 (trace-item "id=" id)
+	 (trace-item "jname=" jname)
+	 (trace-item "package=" package)
+	 (let* ((pid (parse-id id loc))
+		(jid (car pid))
+		(super (cdr pid)))
+	    (register-java-class! jid jname)
+	    ;; create the class holder
+	    ;; and create a type for this class
+	    (let ((jclass (declare-java-class-type! jid super jname package src)))
+	       ;; some paranoid checking
+	       (assert (jclass) (jclass? jclass))
+	       ;; store the src-import location in order to print a nice error
+	       ;; message if that tclass is not defined
+	       (type-import-location-set! jclass loc)
+	       ;; when importing a class, import the accessors...
+	       (delay-class-accessors!
+		  jclass
+		  (delay (import-java-class-accessors!
+			    (map jfield->lfield fields)
+			    constructors
+			    jclass
+			    abstract?
+			    module
+			    src)))
+	       jclass)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *java-classes* ...                                               */
