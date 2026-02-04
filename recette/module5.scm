@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/recette/module5.scm             */
+;*    serrano/bigloo/5.0a/recette/module5.scm                          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 17 10:40:09 2025                          */
-;*    Last change :  Tue Feb  3 07:42:58 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 07:22:36 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 tests                                                    */
@@ -52,13 +52,13 @@
    (test "ex1.1" (typeof ex1a) "procedure")
    (test "ex1.2" (typeof EX1b) "procedure")
    (test "ex1.3" (EX1b 100 200) (cons* 'ex1b 100 200))
-   (test "ex1.4" (ex1c@ex1 100 200) (cons* 'ex1c 100 200))
+   (test "ex1.4" (ex1.ex1c 100 200) (cons* 'ex1c 100 200))
    (test "ex2.1" (typeof EX2A) "procedure")
    (test "ex2.2" (EX2A 100 200) (list 'ex2a 100 200))
    (test "ex3.1" (ex3a 200) (vector 'ex3a 200))
    (test "ex3.2" (ex3b 'x 'y 'z) (list 'ex3b 'x 'y 'z))
-   (test "ex3.3" (ex3b@ex4 'a 'b 'c) (list 'ex3b 'a 'b 'c))
-   (test "ex4i.1" (EX4A@ex4 'abc) (vector 'ex3a 'abc))
+   (test "ex3.3" (ex4.ex3b 'a 'b 'c) (list 'ex3b 'a 'b 'c))
+   (test "ex4i.1" (ex4.EX4A 'abc) (vector 'ex3a 'abc))
    (test "ex8.1" (ex8m "from module5.scm") (cons "from module5.scm" 'ex8m))
    (test "ex8.2" (ex8f) (cons 124 'ex8m))
    (test "ex9.1" (ex9ma "from module5.scm") (cons "from module5.scm" 'ex9m))
@@ -74,8 +74,8 @@
    (test "ex14.1" (ex14 '(1 2 3)) 2)
    (test "ex15.1" (ex15f) "procedure")
    (test "ex16.1" (ex16a) 'ex5a)
-   (test "ex17.1" (ex5a@ex17) 'ex5a)
-   (test "ex17.2" (ex17a@ex17 1 2) (list 1 2))
+   (test "ex17.1" (ex17.ex5a) 'ex5a)
+   (test "ex17.2" (ex17.ex17a 1 2) (list 1 2))
    (test "ex18.1" (ex18) 'not-shadowed)
    )
 

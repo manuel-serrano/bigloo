@@ -10,6 +10,7 @@
 ;; set to #t to enable large function warning
 ;;
 (define *jas-warning* #f)
+(define *jas-warning-size-limit* 16000)
 
 ;;
 ;; Generate char info for the debugger (in addition to line info)
@@ -361,10 +362,12 @@
 	   (bytecode (get-bytecode l3)) )
       (set! **all-lines** (append! **all-lines** lines0))
       (let ( (n (length bytecode)) )
-	 (if (and (>=fx n 8000) (not *jas-warning*))
-	     (warning (classfile-current-method classfile) "Method too large. This may cause some troubles to Jvm jits (current size: " n
-		      #", limit size: 8000).\n"
-		      "You should consider splitting this function in small pieces.") ))
+	 (if (and (>=fx n *jas-warning-size-limit*) (not *jas-warning*))
+	     (warning (classfile-current-method classfile)
+		(format "Large method, which may disable jit optimizations (current size: ~a, warning size: ~a).\n"
+		   n
+		   *jas-warning-size-limit*)
+		"You should consider splitting it in small pieces.") ))
       ;; No line attribute makes JDI crazy!!
       (if (null? lines) (set! lines (cons (list 0 0 0) '())))
       (instantiate::attribute

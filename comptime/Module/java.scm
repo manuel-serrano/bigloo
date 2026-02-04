@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/java.scm        */
+;*    serrano/bigloo/5.0a/comptime/Module/java.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Tue Feb  3 14:28:09 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 07:06:49 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -47,7 +47,7 @@
 	    ;; object-module to be imported in too many places.
 	    (heap-add-jclass! jclass)
 	    (parse-java-clause ::symbol ::pair)
-	    (java-parser ::pair ::symbol))
+	    (java-parser ::pair ::symbol ::symbol))
    (static  (class jklass
 	       (bind-jklass!)
 	       (src::pair read-only)
@@ -95,7 +95,7 @@
    (if (memq 'java (backend-foreign-clause-support (the-backend)))
        (match-case clause
 	  ((?- . ?protos)
-	   (for-each (lambda (p) (java-parser p module)) protos)
+	   (for-each (lambda (p) (java-parser p module '-)) protos)
 	   '())
 	  (else
 	   (java-error clause "Illegal `java' clause")))
@@ -104,7 +104,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    java-parser ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (java-parser java module)
+(define (java-parser java module separator::symbol)
    (trace (ast 2) "java parser: " java " " module #\Newline)
    (match-case java
       ;; export clauses
@@ -114,10 +114,10 @@
        (java-error java "Illegal java export form"))
       ;; a java class
       ((class ?ident . ?rest)
-       (java-parse-class java ident rest #f module))
+       (java-parse-class java ident rest #f module separator))
       ;; an abstract java class
       ((abstract-class ?ident . ?rest)
-       (java-parse-class java ident rest #t module))
+       (java-parse-class java ident rest #t module separator))
       ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
        (java-declare-array java ident of))
       (else
@@ -233,43 +233,44 @@
 ;*---------------------------------------------------------------------*/
 ;*    java-parse-class ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (java-parse-class java ident rest abstract? module)
+(define (java-parse-class java ident rest abstract? module separator)
    (let* ((tser (reverse rest))
 	  (jname (if (pair? tser) (car tser) #f)))
       (cond
 	 ((not (symbol? ident))
 	  (java-error java "Illegal java class"))
 	 ((string? jname)
-	  (java-declare-class java ident jname (cdr tser) abstract? module))
+	  (java-declare-class java ident jname (cdr tser) abstract? module separator))
 	 (else
-	  (java-refine-class java ident rest module)))))
+	  (java-refine-class java ident rest module separator)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    java-declare-class ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (java-declare-class j id::symbol jname::bstring comp::pair-nil a::bool
-			    module)
+(define (java-declare-class j id::symbol jname::bstring
+	   comp::pair-nil a::bool module::symbol separator::symbol)
    (let* ((loc (find-location j))
 	  (jklass (let ((jklass (find-jklass id)))
-		    (cond
-		       ((not (jklass? jklass))
-			(instantiate::jklass
-			   (src j)
-			   (loc loc)
-			   (id id)
-			   (idd (fast-id-of-id id loc))
-			   (jname jname)
-			   (abstract? a)
-			   (module module)))
-		       ((not (eq? (jklass-abstract? jklass) a))
-			(java-error j "Illegal Java class redefinition"))
-		       ((not (string? (jklass-jname jklass)))
-			(jklass-jname-set! jklass jname))
-		       ((string=? (jklass-jname jklass) jname)
-			jklass)
-		       (else
-			(java-error j "Illegal Java class redefinition"))))))
-      (for-each (lambda (c) (java-declare-component j jklass c)) comp)))
+		     (cond
+			((not (jklass? jklass))
+			 (instantiate::jklass
+			    (src j)
+			    (loc loc)
+			    (id id)
+			    (idd (fast-id-of-id id loc))
+			    (jname jname)
+			    (abstract? a)
+			    (module module)))
+			((not (eq? (jklass-abstract? jklass) a))
+			 (java-error j "Illegal Java class redefinition"))
+			((not (string? (jklass-jname jklass)))
+			 (jklass-jname-set! jklass jname))
+			((string=? (jklass-jname jklass) jname)
+			 jklass)
+			(else
+			 (java-error j "Illegal Java class redefinition"))))))
+      (for-each (lambda (c) (java-declare-component j jklass c separator))
+	 comp)))
 
 ;*---------------------------------------------------------------------*/
 ;*    java-refine-class ...                                            */
@@ -277,7 +278,8 @@
 ;*    This function is used when someone refine the declaration        */
 ;*    of a Java class.                                                 */
 ;*---------------------------------------------------------------------*/
-(define (java-refine-class j ident::symbol comp::pair-nil module)
+(define (java-refine-class j ident::symbol comp::pair-nil
+	   module::symbol separator::symbol)
    (let ((jklass (let ((jklass (find-jklass ident)))
 		    (if (jklass? jklass)
 			jklass
@@ -287,12 +289,14 @@
 			   (idd (fast-id-of-id ident (find-location j)))
 			   (id ident)
 			   (module module))))))
-      (for-each (lambda (c) (java-declare-component j jklass c)) comp)))
+      (for-each (lambda (c) (java-declare-component j jklass c separator))
+	 comp)))
 
 ;*---------------------------------------------------------------------*/
 ;*    java-declare-component ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (java-declare-component j jklass::jklass component)
+(define (java-declare-component j jklass::jklass component separator::symbol)
+
    (define (every pred? lst)
       (let loop ((lst lst))
 	 (cond
@@ -304,8 +308,10 @@
 	     (loop (cdr lst)))
 	    (else
 	     #f))))
+   
    (define (arg-list? lst)
       (every (lambda (s) (and (symbol? s) (type-ident? s))) lst))
+   
    (define (modifier-list? lst)
       (every (lambda (s)
 		(and (symbol? s)
@@ -313,6 +319,10 @@
 			       static final synchronized
 			       abstract))))
 	      lst))
+
+   (define (make-ident base id)
+      (symbol-append base separator id))
+   
    (match-case component
       ((field . ?rest)
        (match-case (reverse rest)
@@ -337,7 +347,7 @@
 				  (src component)
 				  (id (if (eq? idd 'foreign)
 					  id
-					  (symbol-append idd '- id)))
+					  (make-ident idd id)))
 				  (args args)
 				  (jname jname)
 				  (modifiers mod))))
@@ -349,8 +359,9 @@
        (with-access::jklass jklass (constructors methods idd)
 	  (let ((jconstr (instantiate::jconstructor
 			    (src component)
-			    (id (make-typed-ident (symbol-append '%% idd '- id)
-						  idd))
+			    (id (make-typed-ident
+				   (symbol-append '%% (make-ident idd id))
+				   idd))
 			    (args args)
 			    (jname "<init>"))))
 	     (set! methods (cons jconstr methods))

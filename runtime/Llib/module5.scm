@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/module5.scm        */
+;*    serrano/bigloo/5.0a/runtime/Llib/module5.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Feb  3 07:35:08 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 06:48:58 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -233,8 +233,8 @@
 ;*    module5-qualified-name ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (module5-qualified-name::symbol alias::symbol id::symbol)
-   ;;(string->symbol (format "~a.~a" id alias))
-   (string->symbol (format "~a@~a" alias id)))
+   ;; (string->symbol (format "~a@~a" alias id))
+   (string->symbol (format "~a.~a" id alias)))
    
 ;*---------------------------------------------------------------------*/
 ;*    module5-preload-cache! ...                                       */
