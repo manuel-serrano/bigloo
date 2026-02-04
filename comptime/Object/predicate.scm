@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Object/predicate.scm        */
+;*    serrano/bigloo/5.0a/comptime/Object/predicate.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Wed Nov 21 07:20:11 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Feb  4 13:10:27 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class predicate                                      */
 ;*    -------------------------------------------------------------    */
@@ -137,9 +137,8 @@
 (define (import-java-class-pred! class::jclass src-def module)
    (if (inline-pred?)
        ;; if we compile for optimization, we inline class predicate
-       (gen-java-class-pred! class
-			     src-def
-			     (if (eq? module *module*) 'export 'static))
+       (gen-java-class-pred! class src-def
+	  (if (eq? module *module*) 'export 'static))
        ;; othwerise, we simply import it
        (let* ((id      (jclass-id class))
 	      (id?     (symbol-append id '?))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Wed Feb  4 10:02:35 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 11:40:35 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -82,9 +82,6 @@
 	    (find-class-constructor ::tclass)
 	    (find-common-super-class ::tclass ::tclass)
 	    (type-subclass?::bool ::type ::type)
-	    (class-make::obj ::tclass)
-	    (class-fill::obj ::tclass)
-	    (class-predicate::symbol ::tclass)
 	    (check-class-declaration?::bool ::tclass ::obj)
 	    (set-class-slots! ::tclass ::pair-nil ::pair-nil)))
 
@@ -209,15 +206,29 @@
 		      ((eq? (type-id super) class-id) #f)
 		      ((eq? super *_*) #f)
 		      (else super)))
-	    (typ (declare-type! class-id jname 'java)))
-	 ;; By now we make the assumption that super is a correct class.
-	 ;; Super will be checked in `make-class-accesses!' (see module
-	 ;; object_access).
-	 (widen!::jclass typ
+	    (ty (declare-type! class-id jname 'java)))
+	 ;; By now we make the assumption that super type is a correct class.
+	 ;; Super will be checked in `make-class-accesses!'
+	 ;; (see module object_access).
+	 (widen!::jclass ty
 	    (its-super super)
 	    (package package))
-	 ;; we are done
-	 typ)))
+	 ;; add implicit coercion ty->obj and obj->ty
+	 (let ((pred (symbol-append class-id '?)))
+	    ;; obj/ty coercion
+	    (add-coercion! ty *obj*
+	       (list (cons #t ty)) (list (cons #t *obj*)))
+	    (add-coercion! *obj* ty
+	       (list (cons pred *obj*)) (list (cons #t ty)))
+	    ;; ty/super* coercions
+	    (let loop ((super super))
+	       (when (isa? super jclass)
+		  (add-coercion! ty super
+		     (list (cons #t ty)) (list (cons #t super)))
+		  (add-coercion! super ty
+		     (list (cons pred super)) (list (cons #t ty)))
+		  (loop (jclass-its-super super)))))
+	 ty)))
 
 ;*---------------------------------------------------------------------*/
 ;*    final-class? ...                                                 */
@@ -303,34 +314,6 @@
 		(else
 		 (loop (cdr l)))))))))
       
-;*---------------------------------------------------------------------*/
-;*    class-make ...                                                   */
-;*    -------------------------------------------------------------    */
-;*    The name of the constructor                                      */
-;*---------------------------------------------------------------------*/
-(define (class-make t::tclass)
-   (if (tclass-abstract? t)
-       #f
-       (symbol-append 'make- (type-id t))))
-
-;*---------------------------------------------------------------------*/
-;*    class-fill ...                                                   */
-;*    -------------------------------------------------------------    */
-;*    The name of the filler                                           */
-;*---------------------------------------------------------------------*/
-(define (class-fill t::tclass)
-   (if (tclass-abstract? t)
-       #f
-       (symbol-append 'fill- (type-id t) '!)))
-
-;*---------------------------------------------------------------------*/
-;*    class-predicate ...                                              */
-;*    -------------------------------------------------------------    */
-;*    The name of the predicate                                        */
-;*---------------------------------------------------------------------*/
-(define (class-predicate::symbol t::tclass)
-   (symbol-append (type-id t) '?))
-
 ;*---------------------------------------------------------------------*/
 ;*    type-occurrence-increment! ::tclass ...                          */
 ;*---------------------------------------------------------------------*/

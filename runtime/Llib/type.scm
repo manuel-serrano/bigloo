@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Feb  4 07:41:20 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 15:00:07 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -817,6 +817,10 @@
       (coerce obj String ($string?) ($bstring->String))
       (coerce bstring String () ($bstring->String))
       (coerce String bstring () ($String->bstring))
+      (subtype CharSequence "char *" (cobj))
+      (coerce obj CharSequence ($string?) ($bstring->CharSequence))
+      (coerce bstring CharSequence () ($bstring->CharSequence))
+      (coerce CharSequence bstring () ($CharSequence->bstring))
       )
    
    (extern
@@ -1490,6 +1494,8 @@
 
 	 (method static $String->bstring::bstring (::String) "String_to_bstring")
 	 (method static $bstring->String::String (::bstring) "bstring_to_String")
+	 (method static $CharSequence->bstring::bstring (::CharSequence) "CharSequence_to_bstring")
+	 (method static $bstring->CharSequence::CharSequence (::bstring) "bstring_to_CharSequence")
 	 (method static $string->bstring::bstring (::string) "string_to_bstring")
 	 (method static $bstring->string::string (::bstring) "BSTRING_TO_STRING")
 	 

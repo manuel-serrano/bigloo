@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/external_jvm.scm        */
+;*    serrano/bigloo/5.0a/recette/external_jvm.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 25 11:52:25 2000                          */
-;*    Last change :  Sat Oct 11 11:50:55 2025 (serrano)                */
+;*    Last change :  Wed Feb  4 18:03:56 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Jvm foreign interface tests                                  */
@@ -79,7 +79,9 @@
 		       (foreign-eq? o o))
 	 #t)
    (test "Java static" point-num 15)
-   (test "java foreign?" (foreign? (point-new-default)) #t)
-   (test "Java null" (foreign-null? (point-new-default)) #f)
+   (test "java foreign?" (foreign? (car (list (point-new-default)))) #t)
+   (test "Java $foreign-null?" ($foreign-null? (car (list (point-new-default)))) #f)
+   (test "Java foreign-null.1" (foreign-null? (car (list (point-new-default)))) #f)
+   (test "Java foreign-null.2" (foreign-null? (point-new-default)) #f)
    (test "invoke interface" (intf-met (point-new-default)) 1)
    (test "invoke virtual" (point-met (point-new-default)) 1))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Feb  4 06:48:58 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 17:37:38 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1004,12 +1004,14 @@
 		      ((not (string? f))
 		       (error/loc mod "Illegal include clause" f clause))
 		      ((module5-resolve-path f (-> mod path))
-		       (call-with-input-file f
-			  (lambda (p)
-			     (for-each (lambda (c)
-					  (module5-parse-clause c clause mod
-					     lib-path cache-dir expand))
-				(port->sexp-list p #t)))))
+		       =>
+		       (lambda (f)
+			  (call-with-input-file f
+			     (lambda (p)
+				(for-each (lambda (c)
+					     (module5-parse-clause c clause mod
+						lib-path cache-dir expand))
+				   (port->sexp-list p #t))))))
 		      (else
 		       (error/loc mod "Cannot find file" f clause))))
 	 (cdr clause)))

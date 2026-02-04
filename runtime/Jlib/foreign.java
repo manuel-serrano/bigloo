@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0a/runtime/Jlib/foreign.java       */
+/*    serrano/bigloo/5.0a/runtime/Jlib/foreign.java                    */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Tue Feb  3 15:26:00 2026 (serrano)                */
+/*    Last change :  Wed Feb  4 15:01:52 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -2227,31 +2227,39 @@ public final class foreign {
       return new String(o);
    }
    
-   public static byte[] String_to_bstring(byte[]o) {
-      return o;
+   public static byte[] String_to_bstring(String o) {
+      return o.getBytes();
+   }
+
+   public static CharSequence bstring_to_CharSequence(byte[] o) {
+      return (CharSequence)new String(o);
+   }
+   
+   public static byte[] CharSequence_to_bstring(CharSequence o) {
+      return String_to_bstring(o.toString());
    }
 
    public static byte[] string_to_bstring_len(byte[] o, int len) {
       return o;
    }
 
-   public static byte[] BSTRING_TO_STRING(byte[]o) {
+   public static byte[] BSTRING_TO_STRING(byte[] o) {
       return o;
    }
 
-   public static int strtol(byte[]s, int i, int radix) {
+   public static int strtol(byte[] s, int i, int radix) {
       final int len = s.length;
 
       return ((len == 0) ? 0 : parseint(s, i, len, radix));
    }
 
-   public static int strtoul(byte[]s, int i, int radix) {
+   public static int strtoul(byte[] s, int i, int radix) {
       final int len = s.length;
 
       return ((len == 0) ? 0 : parseint(s, i, len, radix));
    }
 
-   public static long strtoll(byte[]s, int i, int radix) {
+   public static long strtoll(byte[] s, int i, int radix) {
       final int len = s.length;
 
       return ((len == 0) ? 0 : parselong(s, i, len, radix));
@@ -2326,7 +2334,7 @@ public final class foreign {
       return Long.toString(n, radix).getBytes();
    }
 
-   public static double strtod(byte[]s, int i) {
+   public static double strtod(byte[] s, int i) {
       // !!!!! JDK 1.2:  return Double.parseDouble( new String( s, i, (s.length - i) ) );
 
       final int len = s.length;
@@ -2335,24 +2343,24 @@ public final class foreign {
 	      ? 0 : Double.valueOf(new String(s, i, (len - i))).doubleValue());
    }
 
-   public static double strtod(byte[]s) {
+   public static double strtod(byte[] s) {
       // !!!!! JDK 1.2:  return Double.parseDouble( new String( s, i, (s.length - i) ) );
 
       return strtod( s, 0 );
    }
 
    // Open functions
-   public static int STRING_REF(byte[]s, int i) {
+   public static int STRING_REF(byte[] s, int i) {
       return (s[i] & 0xFF);
    }
 
-   public static Object STRING_SET(byte[]s, int i, int cn) {
+   public static Object STRING_SET(byte[] s, int i, int cn) {
       s[i] = (byte) cn;
       return unspecified.unspecified;
    }
 
    // Lib functions
-   public static int STRING_LENGTH(byte[]s) {
+   public static int STRING_LENGTH(byte[] s) {
       return s.length;
    }
 
@@ -2371,7 +2379,7 @@ public final class foreign {
       return new byte[n];
    }
 
-   public static byte[] bgl_string_shrink(byte[]src, int len) {
+   public static byte[] bgl_string_shrink(byte[] src, int len) {
       if (len < src.length) {
 	 return c_substring(src, 0, len);
       } else {
@@ -2379,7 +2387,7 @@ public final class foreign {
       }
    }
 
-   public static byte[] c_substring(byte[]src, int min, int max) {
+   public static byte[] c_substring(byte[] src, int min, int max) {
       final int len = max - min;
       final byte[] result = new byte[len];
 
@@ -2451,13 +2459,13 @@ public final class foreign {
    }
    
    // Side effects
-   public static Object blit_string(byte[]src, int i1, byte[]dst, int i2, int n) {
+   public static Object blit_string(byte[] src, int i1, byte[]dst, int i2, int n) {
       System.arraycopy(src, i1, dst, i2, n);
       return unspecified.unspecified;
    }
 
    // Comparisons
-   public static boolean bigloo_strcmp(byte[]s1, byte[]s2) {
+   public static boolean bigloo_strcmp(byte[] s1, byte[] s2) {
       final int n1 = s1.length;
       final int n2 = s2.length;
 
@@ -2529,7 +2537,7 @@ public final class foreign {
       return true;
    }
 
-   public static boolean bigloo_strncmp(byte[]s1, byte[]s2, int l) {
+   public static boolean bigloo_strncmp(byte[] s1, byte[] s2, int l) {
       final int n1 = s1.length;
       final int n2 = s2.length;
 
@@ -2544,7 +2552,7 @@ public final class foreign {
 	 return false;
    }
 
-   public static boolean bigloo_strncmp_ci(byte[]s1, byte[]s2, int l) {
+   public static boolean bigloo_strncmp_ci(byte[] s1, byte[] s2, int l) {
       final int n1 = s1.length;
       final int n2 = s2.length;
 
@@ -2559,7 +2567,7 @@ public final class foreign {
 	 return false;
    }
 
-   public static boolean strcicmp(byte[]s1, byte[]s2) {
+   public static boolean strcicmp(byte[] s1, byte[] s2) {
       final int n1 = s1.length;
       final int n2 = s2.length;
 
@@ -2571,7 +2579,7 @@ public final class foreign {
       return true;
    }
 
-   public static boolean string_le(byte[]s1, byte[]s2) {
+   public static boolean string_le(byte[] s1, byte[] s2) {
       final int n1 = s1.length;
       final int n2 = s2.length;
       final int min = (n1 < n2) ? n1 : n2;
@@ -2588,7 +2596,7 @@ public final class foreign {
       return (n1 <= n2);
    }
 
-   public static boolean string_lt(byte[]s1, byte[]s2) {
+   public static boolean string_lt(byte[] s1, byte[] s2) {
       final int n1 = s1.length;
       final int n2 = s2.length;
       final int min = (n1 < n2) ? n1 : n2;
@@ -2605,7 +2613,7 @@ public final class foreign {
       return (n1 < n2);
    }
 
-   public static boolean string_gt(byte[]s1, byte[]s2) {
+   public static boolean string_gt(byte[] s1, byte[] s2) {
       final int n1 = s1.length;
       final int n2 = s2.length;
       final int min = (n1 < n2) ? n1 : n2;
@@ -2622,7 +2630,7 @@ public final class foreign {
       return (n1 > n2);
    }
 
-   public static boolean string_ge(byte[]s1, byte[]s2) {
+   public static boolean string_ge(byte[] s1, byte[] s2) {
       final int n1 = s1.length;
       final int n2 = s2.length;
       final int min = (n1 < n2) ? n1 : n2;
@@ -2639,7 +2647,7 @@ public final class foreign {
       return (n1 >= n2);
    }
 
-   public static boolean string_cilt(byte[]s1, byte[]s2) {
+   public static boolean string_cilt(byte[] s1, byte[] s2) {
       final int n1 = s1.length;
       final int n2 = s2.length;
       final int min = (n1 < n2) ? n1 : n2;
@@ -2656,7 +2664,7 @@ public final class foreign {
       return (n1 < n2);
    }
 
-   public static boolean string_cile(byte[]s1, byte[]s2) {
+   public static boolean string_cile(byte[] s1, byte[] s2) {
       final int n1 = s1.length;
       final int n2 = s2.length;
       final int min = (n1 < n2) ? n1 : n2;
@@ -2673,7 +2681,7 @@ public final class foreign {
       return (n1 <= n2);
    }
 
-   public static boolean string_cigt(byte[]s1, byte[]s2) {
+   public static boolean string_cigt(byte[] s1, byte[] s2) {
       final int n1 = s1.length;
       final int n2 = s2.length;
       final int min = (n1 < n2) ? n1 : n2;
@@ -2690,7 +2698,7 @@ public final class foreign {
       return (n1 > n2);
    }
 
-   public static boolean string_cige(byte[]s1, byte[]s2) {
+   public static boolean string_cige(byte[] s1, byte[] s2) {
       final int n1 = s1.length;
       final int n2 = s2.length;
       final int min = (n1 < n2) ? n1 : n2;
@@ -2721,7 +2729,7 @@ public final class foreign {
    }
 
    // Lib functions
-   public static keyword string_to_keyword(byte[]s) {
+   public static keyword string_to_keyword(byte[] s) {
       return keyword.make_keyword(s);
    }
 
@@ -5522,7 +5530,7 @@ public final class foreign {
       return;
    }
    
-   public static Object bgl_open_input_file(byte[]s, byte[] b) {
+   public static Object bgl_open_input_file(byte[] s, byte[] b) {
       try {
 	 return (input_pipe_port.pipe_name_p(s)
 		 ? (Object) new input_pipe_port(s, b)
@@ -5536,11 +5544,11 @@ public final class foreign {
       return BFALSE;
    }
 
-   public static Object bgl_open_input_pipe(byte[]s, byte[] b) {
+   public static Object bgl_open_input_pipe(byte[] s, byte[] b) {
       return new input_pipe_port(new String(s), b);
    }
 
-   public static Object bgl_open_input_resource(byte[]s, byte[] b)
+   public static Object bgl_open_input_resource(byte[] s, byte[] b)
       throws IOException {
       return new input_resource_port(new String(s), b);
    }
@@ -5549,15 +5557,15 @@ public final class foreign {
       return p.buffer.length;
    }
 
-   public static input_port bgl_open_input_string(byte[]s, int start) {
+   public static input_port bgl_open_input_string(byte[] s, int start) {
       return new input_string_port(s, start, s.length);
    }
 
-   public static input_port bgl_open_input_substring(byte[]s, int start, int end) {
+   public static input_port bgl_open_input_substring(byte[] s, int start, int end) {
       return new input_string_port(s, start, end);
    }
 
-   public static input_port bgl_open_input_substring_bang(byte[]s, int start, int end) {
+   public static input_port bgl_open_input_substring_bang(byte[] s, int start, int end) {
       return new input_string_port( s, start, end, true );
    }
 
@@ -5586,11 +5594,11 @@ public final class foreign {
       }
    }
 
-   public static Object bgl_open_input_c_string(byte[]s) {
+   public static Object bgl_open_input_c_string(byte[] s) {
       return new input_string_port(s, 0, s.length);
    }
 
-   public static Object bgl_reopen_input_c_string(input_port p, byte[]s) {
+   public static Object bgl_reopen_input_c_string(input_port p, byte[] s) {
       ((input_string_port) p).reopen_input_c_string(s);
       return p;
    }
@@ -5832,7 +5840,7 @@ public final class foreign {
       }
    }
 
-   private static int rgc_do_blit(input_port p, byte[]s, int o, int l)
+   private static int rgc_do_blit(input_port p, byte[] s, int o, int l)
       throws IOException {
       RGC_START_MATCH(p);
 
@@ -5856,7 +5864,7 @@ public final class foreign {
       return l;
    }
 
-   public static int bgl_rgc_blit_string(input_port p, byte[]s, int o, int l)
+   public static int bgl_rgc_blit_string(input_port p, byte[] s, int o, int l)
       throws IOException {
       final int bs = p.buffer.length;
 
@@ -6334,7 +6342,7 @@ public final class foreign {
       return p;
    }
 
-   public static Object write_string(byte[]s, boolean b, output_port p) {
+   public static Object write_string(byte[] s, boolean b, output_port p) {
       if (b)
 	 p.write((byte) '#');
       p.write((byte) '\"');
@@ -6343,12 +6351,12 @@ public final class foreign {
       return p;
    }
 
-   public static Object display_string(byte[]s, output_port p) {
+   public static Object display_string(byte[] s, output_port p) {
       p.write(s);
       return p;
    }
 
-   public static Object display_substring(byte[]s, int start, int end, output_port p) {
+   public static Object display_substring(byte[] s, int start, int end, output_port p) {
       p.write(s, start, end);
       return p;
    }
@@ -6396,12 +6404,12 @@ public final class foreign {
       return p;
    }
 
-   public static Object write_utf8string(byte[]s, output_port p) {
+   public static Object write_utf8string(byte[] s, output_port p) {
       p.write(ucs2_string_to_utf8_string("#u\"" + new String(s) + "\""));
       return p;
    }
 
-   public static Object display_ucs2string(char[]s, output_port p) {
+   public static Object display_ucs2string(char[] s, output_port p) {
       p.write(new String(s));
       return p;
    }
@@ -6472,7 +6480,7 @@ public final class foreign {
       (byte) 203, (byte) 76, (byte) 120, (byte) 209
    };
 
-   public static int get_hash_number(byte[]s) {
+   public static int get_hash_number(byte[] s) {
       byte hash = 0;
 
       for (int i = 0; i < s.length; ++i)
@@ -6480,7 +6488,7 @@ public final class foreign {
       return (hash & 0xFF);
    }
 
-   public static int get_hash_power_number(byte[]str, int power) {
+   public static int get_hash_power_number(byte[] str, int power) {
       int result = 0;
 
       for (int i = 0; i < str.length; ++i)
@@ -6520,7 +6528,7 @@ public final class foreign {
       return (hash_code & ((1 << power) - 1));
    }
 
-   public static int bgl_string_hash(byte[]s, int start, int len) {
+   public static int bgl_string_hash(byte[] s, int start, int len) {
       int result = 5381;
 
       for (int i = start; i < len; i++)
@@ -6528,7 +6536,7 @@ public final class foreign {
       return result & ((1 << 29) - 1);
    }
 
-   public static int bgl_string_hash_number(byte[]s) {
+   public static int bgl_string_hash_number(byte[] s) {
       return bgl_string_hash( s, 0, s.length );
    }
    
@@ -6572,7 +6580,7 @@ public final class foreign {
       return res;
    }
 
-   public static double bgl_ieee_string_to_double(byte[]s) throws IOException {
+   public static double bgl_ieee_string_to_double(byte[] s) throws IOException {
       final ByteArrayInputStream bint = new ByteArrayInputStream(s);
       final DataInputStream in = new DataInputStream(bint);
       final double res = in.readDouble();

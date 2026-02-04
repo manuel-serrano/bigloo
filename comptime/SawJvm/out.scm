@@ -139,6 +139,7 @@
    `(;; Java lib classes/methods
      (obj (class () "java.lang.Object"))
      (string (class () "java.lang.String"))
+     (charsequence (class () "java.lang.CharSequence"))
      (serializable (class () "java.io.Serializable"))
      ,bgl-module-root-class
      ;;(callable (class () "bigloo.callable"))

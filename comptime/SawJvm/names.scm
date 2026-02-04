@@ -61,7 +61,8 @@
 	       (dynamic-env   . bgldynamic)
 	       (procedure     . procedure)
 	       (procedure-l   . procedure)
-	       (String        . string))))
+	       (String        . string)
+	       (CharSequence  . charsequence))))
 
 ;;
 ;; Associate jvmtype to a type

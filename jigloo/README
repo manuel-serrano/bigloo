@@ -35,6 +35,6 @@ compile Cigloo just enter `make'.
 
 To install Jigloo just enter `make install'. 
 
-To check Jigloo options, enter `java jigloo -help'.
+To check Jigloo options, enter `jigloo -help'.
 
 	

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Wed Feb  4 08:31:16 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 12:17:44 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -111,23 +111,24 @@
 ;*    java-parser ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (java-parser java module separator::symbol)
-   (trace (ast 2) "java parser: " java " " module #\Newline)
-   (match-case java
-      ;; export clauses
-      ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
-       (set! *jexported* (cons (cons java module) *jexported*)))
-      ((export . ?-)
-       (java-error java "Illegal java export form"))
-      ;; a java class
-      ((class ?ident . ?rest)
-       (java-parse-class java ident rest #f module separator))
-      ;; an abstract java class
-      ((abstract-class ?ident . ?rest)
-       (java-parse-class java ident rest #t module separator))
-      ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
-       (java-declare-array java ident of))
-      (else
-       (java-error java))))
+   (with-trace 'jvm "java-parser"
+      (trace-item "java=" java)
+      (match-case java
+	 ;; export clauses
+	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
+	  (set! *jexported* (cons (cons java module) *jexported*)))
+	 ((export . ?-)
+	  (java-error java "Illegal java export form"))
+	 ;; a java class
+	 ((class ?ident . ?rest)
+	  (java-parse-class java ident rest #f module separator))
+	 ;; an abstract java class
+	 ((abstract-class ?ident . ?rest)
+	  (java-parse-class java ident rest #t module separator))
+	 ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
+	  (java-declare-array java ident of))
+	 (else
+	  (java-error java)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *jklasses* ...                                                   */
@@ -178,6 +179,7 @@
 		     (java-error (jklass-src jklass)
 			"Illegal foreign class definition")))))
       ;; declare all the associated types
+      (set! *jklasses* (reverse! *jklasses*))
       (let ((jclasses (map jklass->jclass *jklasses*)))
 	 ;; declare all the Java classes
 	 (for-each (lambda (jklass jclass)
@@ -455,7 +457,7 @@
 	 (for-each declare-java-method methods)
 	 (for-each declare-java-field fields)
 	 (with-access::jclass jclass (its-super)
-	    (trace-item "its-super=" its-super)
+	    (trace-item "its-super=" (shape its-super))
 	    (if its-super
 		(let ((typ (cond
 			      ((jclass? its-super) its-super)
@@ -474,7 +476,7 @@
       (let* ((pid (parse-id id (find-location src)))
 	     (ln (car pid))
 	     (tid (type-id (cdr pid))))
-	 (trace-item "pid=" pid)
+	 (trace-item "ln=" ln)
 	 (trace-item "tid=" tid)
 	 (let ((g (declare-global-cfun! (get-genv) ln #f module jname tid args #f #f src #f)))
 	    (cfun-method-set! (global-value g) modifiers)
@@ -490,7 +492,6 @@
 	  (tid (type-id (cdr pid))))
       (let ((g (declare-global-cvar! (get-genv) ln #f module jname tid #f src #f)))
 	 (global-qualified-type-name-set! g kname)
-	 (tprint "G=" (shape g) " kname=" kname " id=" id " jname=" jname)
 	 g)))
 
 ;*---------------------------------------------------------------------*/
@@ -513,6 +514,7 @@
 	 (let* ((pid (parse-id id loc))
 		(jid (car pid))
 		(super (cdr pid)))
+	    (trace-item "jid=" jid)
 	    (register-java-class! jid jname)
 	    ;; create the class holder
 	    ;; and create a type for this class
@@ -523,8 +525,7 @@
 	       ;; message if that tclass is not defined
 	       (type-import-location-set! jclass loc)
 	       ;; when importing a class, import the accessors...
-	       (delay-class-accessors!
-		  jclass
+	       (delay-class-accessors! jclass
 		  (delay (import-java-class-accessors!
 			    (map jfield->lfield fields)
 			    constructors

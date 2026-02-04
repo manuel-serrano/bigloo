@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/jigloo/Makefile                      */
+#*    serrano/bigloo/5.0a/jigloo/Makefile                              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Sun Jul  9 10:26:28 2017 (serrano)                */
-#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Feb  4 15:20:07 2026 (serrano)                */
+#*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Jigloo. This makefile has to be processed  */
 #*    either by Gnu make or Sun make.                                  */
@@ -55,8 +55,9 @@ jigloo:
 #*---------------------------------------------------------------------*/
 $(JIGLOO_DEST): $(O_OBJECTS)
 	@ mv jigloo.class $@
-	@ echo "Jigloo Done..."
-	@ echo "-------------------------------"
+	@ cp jigloo.sh $(BOOTBINDIR)/jigloo
+	@ chmod $(MODEXE) $(BOOTBINDIR)/jigloo
+	@ echo "tool \e[1;34m$(BIGLOO_DEST)jigloo\e[0m done."
 
 #*---------------------------------------------------------------------*/
 #*    install                                                          */
@@ -67,10 +68,13 @@ install:
 	if [ $(DESTDIR)$(BINDIR) != $(BOOTBINDIR) ]; then \
 	   cp $(BOOTBINDIR)/jigloo.class $(DESTDIR)$(BINDIR); \
 	   chmod $(MODFILE) $(DESTDIR)$(BINDIR)/jigloo.class; \
+	   cp $(BOOTBINDIR)/jigloo $(DESTDIR)$(BINDIR)/jigloo; \
+	   chmod $(MODEXE) $(DESTDIR)$(BINDIR)/jigloo; \
         fi
 
 uninstall:
 	- $(RM) -f $(DESTDIR)$(BINDIR)/jigloo.class
+	- $(RM) -f $(DESTDIR)$(BINDIR)/jigloo
 
 #*---------------------------------------------------------------------*/
 #*    tags                                                             */

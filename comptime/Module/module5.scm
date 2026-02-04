@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Feb  4 08:03:52 2026 (serrano)                */
+;*    Last change :  Wed Feb  4 12:03:35 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -41,6 +41,7 @@
 	   ast_toplevel
 	   ast_build
 	   ast_sexp
+	   ast_private
 	   type_type
 	   type_env
 	   object_class
@@ -642,8 +643,6 @@
       (else
        (error/loc mod "Illegal extern \"C\" module clause" clause x))))
    
-
-   
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-c ...                                      */
 ;*---------------------------------------------------------------------*/
@@ -681,70 +680,98 @@
 (define (module5-extern-plugin-java mod::Module x::pair)
    
    (define (parse-clause clause mod::Module x::pair pkg)
+
+
+      (define modifier-list
+	 '(public private protected static final synchronized abstract))
+      
+      (define (class-name name)
+	 (let ((i (string-contains name "::")))
+	    (if i
+		(substring name 0 i)
+		name)))
       
       (define (parse-class5-ident ident)
 	 (let ((name (symbol->string ident)))
 	    (if (char=? (string-ref name 0) #\.)
 		(let ((name (substring name 1)))
-		   (values #f name (string->symbol name)))
+		   (values #f (class-name name) (string->symbol name)))
 		(let ((i (string-index-right name #\.)))
 		   (if i
 		       (let ((pkg (substring name 0 i))
 			     (id (substring name (+fx i 1))))
-			  (values pkg name (string->symbol id)))
-		       (values #f name ident))))))
+			  (values pkg (class-name name) (string->symbol id)))
+		       (values #f (class-name name) ident))))))
       
       (define (field5->field4 field)
-	 (match-case field
-	    ;; instance field
-	    ((? symbol?)
+	 (if (symbol? field)
 	     (multiple-value-bind (id type)
 		(parse-ident field field mod)
-		`(field ,field ,(symbol->string id))))
-	    ;; static field
-	    ((static (and (? symbol?) ?ident))
-	     (multiple-value-bind (id type)
-		(parse-ident ident field mod)
-		`(field static ,ident ,(symbol->string id))))
-	    ((?ident (and (? list?) ?args))
-	     ;; virtual method
-	     (multiple-value-bind (id type)
-		(parse-ident ident field mod)
-		`(method ,ident ,args ,(symbol->string id))))
-	    ((static ?ident (and (? list?) ?args))
-	     ;; static method
-	     (multiple-value-bind (id type)
-		(parse-ident ident field mod)
-		`(method static ,ident ,args ,(symbol->string id))))
-	    (else
-	     (error/loc mod "Illegal class field" field x))))
+		`(field ,field ,(symbol->string id)))
+	     (let loop ((f field)
+			(m '()))
+		(cond
+		   ((null? field)
+		    (error/loc mod "Illegal class field" field x))
+		   ((memq (car f) modifier-list)
+		    (loop (cdr f) (cons (car f) m)))
+		   (else
+		    (match-case f
+		       ;; field
+		       (((and (? symbol?) ?ident))
+			(multiple-value-bind (id type)
+			   (parse-ident ident field mod)
+			   `(field ,@(reverse! m)
+			       ,ident ,(symbol->string id))))
+		       ;; constructor
+		       ((constructor ?id . ?rest)
+			`(constructor ,@(reverse! m)
+			    ,id ,rest))
+		       ((?ident . (and (? list?) ?args))
+			;; method
+			(multiple-value-bind (id type)
+			   (parse-ident ident field mod)
+			   `(method ,@(reverse! m)
+			       ,ident ,args ,(symbol->string id))))
+		       (else
+			(error/loc mod "Illegal class field" field x))))))))
       
-      (define (class5->class4 keyword ident rest)
-	 (multiple-value-bind (cpkg name id)
-	    (parse-class5-ident ident)
-	    `(,keyword ,id
-		,@(map field5->field4 rest)
-		,(cond
-		    (cpkg name)
-		    (pkg (format "~a.~a" pkg id))
-		    (else id)))))
+      (define (class5->class4 keyword cpkg name id rest)
+	 `(,keyword ,id ,@(map field5->field4 rest)
+	     ,(cond
+		 (cpkg name)
+		 (pkg (format "~a.~a" pkg id))
+		 (else name))))
+
+      (define (class-predicate id x)
+	 (let ((o (gensym 'obj))
+	       (id (fast-id-of-id id (find-location x))))
+	    `(define (,(symbol-append id '?::bool) ,(symbol-append o '|::obj|))
+		,(make-private-sexp 'instanceof id o))))
       
       (match-case clause
 	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
 	  (java-parser clause (-> mod id) '|.|))
 	 ((or (class ?ident . ?rest)
 	      (abstract-class ?ident . ?rest))
-	  (let ((clazz (class5->class4 (car clause) ident rest)))
-	     (java-parser clazz (-> mod id) '|.|)))
+	  (multiple-value-bind (cpkg name id)
+	     (parse-class5-ident ident)
+	     (let ((clazz (class5->class4 (car clause) cpkg name id rest))
+		   (pred (class-predicate id clause)))
+		(trace-item "clazz=" clazz)
+		(java-parser clazz (-> mod id) '|.|)
+		(with-access::Module mod (body)
+		   (set! body (cons pred body))))))
 	 (else
 	  (error/loc mod "Illegal extern \"java\" module clause" clause x))))
-   
-   (match-case (cddr x)
-      (((package (and (? symbol?) ?pkg)) . ?other-clauses)
-       (add-qualified-type! (-> mod id) (format "~a.~a" pkg (-> mod id)))
-       (for-each (lambda (c) (parse-clause c mod x pkg)) other-clauses))
-      (else
-       (for-each (lambda (c) (parse-clause c mod x #f)) (cddr x)))))
+
+   (with-trace 'jvm "module5-extern-plugin-java"
+      (match-case (cddr x)
+	 (((package (and (? symbol?) ?pkg)) . ?other-clauses)
+	  (add-qualified-type! (-> mod id) (format "~a.~a" pkg (-> mod id)))
+	  (for-each (lambda (c) (parse-clause c mod x pkg)) other-clauses))
+	 (else
+	  (for-each (lambda (c) (parse-clause c mod x #f)) (cddr x))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-wasm ...                                   */

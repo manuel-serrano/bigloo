@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/foreign.scm        */
+;*    serrano/bigloo/5.0a/runtime/Llib/foreign.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  5 16:50:26 1995                          */
-;*    Last change :  Thu Sep 25 13:13:15 2025 (serrano)                */
+;*    Last change :  Wed Feb  4 18:08:14 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign object management.                                   */
 ;*    -------------------------------------------------------------    */
@@ -83,9 +83,7 @@
       ((or bigloo-c bigloo-jvm)
        (export (inline obj->cobj::cobj ::obj))))
    
-   (pragma  ($foreign? (predicate-of foreign) no-cfa-top nesting)
-	    (foreign? (predicate-of foreign) no-cfa-top nesting)
-	    ($foreign-null? side-effect-free no-cfa-top nesting)
+   (pragma  ($foreign-null? side-effect-free no-cfa-top nesting)
 	    (foreign-null? side-effect-free no-cfa-top nesting)
 	    ($foreign-eq? side-effect-free no-cfa-top nesting)
 	    (foreign-eq? side-effect-free no-cfa-top nesting)
