@@ -145,6 +145,7 @@ api/gstreamer/work/
 
 # libuv
 api/libuv/src/Misc/libuv.init
+api/libuv/src/Clib/bgluv.h
 
 # libbacktrace
 api/libbacktrace/src/Misc/libbacktrace.init
