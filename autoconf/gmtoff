@@ -55,7 +55,7 @@ cat > $file.c <<EOF
 #include <sys/time.h>
 
 int main( int argc, char *argv[] ) {
-   long s = time( 0 );
+   time_t s = time( 0 );
    struct tm *tm = localtime( &s );
    
    return tm->tm_gmtoff - tm->tm_gmtoff;
