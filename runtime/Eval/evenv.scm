@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evenv.scm          */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/evenv.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Tue Jun 17 13:31:33 2025 (serrano)                */
+;*    Last change :  Thu Feb  5 17:35:58 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 	    __os
 	    __param
 	    __thread
+	    __promise
 	    __bit
 	    
 	    __r4_numbers_6_5

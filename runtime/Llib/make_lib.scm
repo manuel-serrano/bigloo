@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/make_lib.scm       */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/make_lib.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Tue Sep 23 09:52:45 2025 (serrano)                */
+;*    Last change :  Thu Feb  5 17:33:26 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -42,6 +42,7 @@
 	    __regexp
 	    __date
 	    __thread
+	    __promise
 	    __mmap
 	    __semaphore
 	    __trace
