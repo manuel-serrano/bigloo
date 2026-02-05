@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Thu Feb  5 18:51:31 2026 (serrano)                */
+;*    Last change :  Thu Feb  5 19:02:35 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript like promise for Bigloo.                              */
@@ -61,7 +61,7 @@
 	    (run-promises)))
 
 ;*---------------------------------------------------------------------*/
-;*    make-promise ...                                                 */
+;*    make-delay-promise ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (make-promise executor::procedure)
    (let ((o (instantiate::promise)))
@@ -183,6 +183,7 @@
    (with-access::promise o (thens catches state val)
       (let ((fullfill (cons no (if (procedure? proc) proc 'identity)))
 	    (reject (cons no (if (procedure? fail) fail 'thrower))))
+	 (tprint "state=" state)
 	 (case state
 	    ((pending)
 	     (set! thens (cons fullfill thens))
@@ -190,10 +191,12 @@
 	    ((fullfilled)
 	     (push-action!
 		(lambda ()
+		   (tprint "IN ACT.1")
 		   (promise-reaction-job fullfill val))))
 	    ((rejected)
 	     (push-action!
 		(lambda ()
+		   (tprint "IN ACT.2")
 		   (promise-reaction-job reject val)))))
 	 no)))
 
@@ -218,6 +221,7 @@
    (let ((promise (car reaction))
 	 (handler (cdr reaction)))
       (with-access::promise promise (%this resolver)
+	 (tprint "promise-reaction-job handler=" handler " " resolver " arg=" arg)
 	 (cond
 	    ((eq? handler 'identity)
 	     (if (procedure? resolver)
@@ -251,6 +255,7 @@
    (let loop ()
       (let ((actions (cdr *actions*)))
 	 (set-cdr! *actions* '())
+	 (tprint "run " actions)
 	 (for-each (lambda (a) (a)) actions)
 	 (when (pair? (cdr *actions*))
 	    (loop)))))

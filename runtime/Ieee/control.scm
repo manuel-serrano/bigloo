@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/control.scm        */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/control.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:48:44 1995                          */
-;*    Last change :  Thu Jul 17 14:00:21 2025 (serrano)                */
+;*    Last change :  Thu Feb  5 19:05:58 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.9. Control features (page 27, r4)                              */
 ;*=====================================================================*/
@@ -72,7 +72,7 @@
 	    (filter::pair-nil ::procedure ::pair-nil)
 	    (filter!::pair-nil ::procedure ::pair-nil)
 	    (inline force promise)
-	    (make-promise ::procedure)
+	    (make-delay-promise ::procedure)
 	    (call/cc ::procedure)
 	    (inline call-with-current-continuation ::procedure)
 	    (dynamic-wind ::procedure ::procedure ::procedure))
@@ -326,9 +326,9 @@
    (promise))
 
 ;*---------------------------------------------------------------------*/
-;*    make-promise ...                                                 */
+;*    make-delay-promise ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (make-promise proc)
+(define (make-delay-promise proc)
    (let ((result-ready? #f)
 	 (result        #f))
       (lambda ()

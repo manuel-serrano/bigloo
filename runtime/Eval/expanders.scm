@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/expanders.scm      */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/expanders.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Sun Sep 21 22:38:48 2025 (serrano)                */
-;*    Copyright   :  2002-25 Manuel Serrano                            */
+;*    Last change :  Thu Feb  5 19:02:38 2026 (serrano)                */
+;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
 ;*=====================================================================*/
@@ -205,7 +205,7 @@
       (lambda (x e)
 	 (match-case x
 	    ((?- ?exp)
-	     `(make-promise (lambda () ,(e exp e))))
+	     `(make-delay-promise (lambda () ,(e exp e))))
 	    (else
 	     (expand-error "delay" "Illegal form" x)))))
    ;; regular-grammar
