@@ -3,7 +3,7 @@
 path=`realpath $0`
 dir=`dirname $path`
 
-classpath=$dir:$PWD
+classpath=$dir:$PWD:@ZIP_DIRECTORY@
 
 if [ " $1" = " -cp" ]; then
   classpath="$classpath:$2"
@@ -15,4 +15,4 @@ elif [ " $1" = " -classpath" ]; then
   shift
 fi
 
-java -cp $classpath  jigloo $@
+@BGL_JAVA@ -cp $classpath jigloo $@

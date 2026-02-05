@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/configure                       */
+#*    serrano/prgm/project/bigloo/5.0a/configure                       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Oct  1 15:50:30 2025 (serrano)                */
-#*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Feb  5 07:49:00 2026 (serrano)                */
+#*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*=====================================================================*/
@@ -347,8 +347,7 @@ unistdint=
 #*--- indent ----------------------------------------------------------*/
 indent="indent -npro -bap -bad -nbc -bl -ncdb -nce -nfc1 -ip0 -nlp -npcs -nsc -nsob -cli0.5 -di0 -l80 -d1 -c0 -ts2 -st"
 
-#*--- mask of Bigloo intalled files -----------------------------------*/
-# obsolete, don't use it, use modXXX instead
+#*--- mask of Bigloo installed files ----------------------------------*/
 bmask=755
 modexe=755
 moddir=755
@@ -1707,12 +1706,12 @@ case $hostos in
       | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
             -e "s|@DROID_TMP@|$droidtmp|" \
             -e "s|@DROID_ADB@|$droidadb|" \
-      > $hostsh && chmod u+x $hostsh || exit 1
+      > $hostsh && chmod $modexe $hostsh || exit 1
 
     doit=$pwd/arch/android/doit;
     cat $doit.in \
       | sed -e "s|@BGL_RELEASE@|$release|" \
-      > $doit && chmod u+x $doit || exit 1
+      > $doit && chmod $modexe $doit || exit 1
 
     # Use droid-gcc if no CC specified
     if [ "$cc " = " " ]; then
@@ -1724,7 +1723,7 @@ case $hostos in
               -e "s|@DROID_TARGET@|$droidtarget|" \
               -e "s|@DROID_TMP@|$droidtmp|" \
               -e "s|@DROID_ADB@|$droidadb|" \
-        > $cc && chmod u+x $cc || exit 1
+        > $cc && chmod $modexe $cc || exit 1
     fi
   
     # Add the correct cflags option
@@ -3639,7 +3638,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
 
     java_version=`$javac -version 2>&1 | head -n 1` || exit 1
-    if $echo "$java_version" | grep "20." > /dev/null
+    if $echo "$java_version" | grep "25." > /dev/null
+      then java_version=25
+    elif $echo "$java_version" | grep "20." > /dev/null
       then java_version=20
     elif $echo "$java_version" | grep "19." > /dev/null
       then java_version=19
@@ -3741,7 +3742,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bconfigure_generic_sch, bigloo.sh
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh bglwatib.sh; do
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh bglwatib.sh jigloo.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`$echo $release | sed -e "s|[.]|_|"`;
@@ -4031,8 +4032,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # bigloo.sh
   for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bgljas.sh bglpp.sh bglprof.sh bglwatib.sh; do
     mv $p $bootdir/bin/$p
-    chmod u+rx $bootdir/bin/$p
+    chmod $modexe $bootdir/bin/$p
   done
+
+  mv jigloo.sh $bootdir/bin/jigloo
+  chmod $modexe $bootdir/bin/jigloo
 
   # www/www.json
   date=`date +"%B %Y"`
@@ -5247,7 +5251,7 @@ for file in makedeb.sh makedebremote.sh; do
            -e "s|@MINOR@|$version|" \
            -e "s|@APIS@|$apis|" \
      >> $deb  
-  chmod a+rx $deb
+  chmod $modexe $deb
 done  
 
 #*---------------------------------------------------------------------*/
@@ -5263,7 +5267,7 @@ for file in makebrew.sh; do
      | sed -e "s|#!/bin/sh||" \
            -e "s|@VERSION@|$release|" \
      >> $brew  
-  chmod a+rx $brew
+  chmod $modexe $brew
 done  
 
 #*---------------------------------------------------------------------*/

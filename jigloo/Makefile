@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/bigloo/5.0a/jigloo/Makefile                              */
+#*    serrano/prgm/project/bigloo/5.0a/jigloo/Makefile                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Wed Feb  4 15:20:07 2026 (serrano)                */
+#*    Last change :  Thu Feb  5 07:49:16 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Jigloo. This makefile has to be processed  */
@@ -22,7 +22,7 @@ include ../Makefile.config
 # the shell to be used
 SHELL           = /bin/sh
 # the produced executable
-JIGLOO_DEST	= $(BOOTBINDIR)/jigloo.class
+JIGLOO_DEST	= $(BOOTLIBDIR)/jigloo.class
 
 #*---------------------------------------------------------------------*/
 #*    The source                                                       */
@@ -55,9 +55,7 @@ jigloo:
 #*---------------------------------------------------------------------*/
 $(JIGLOO_DEST): $(O_OBJECTS)
 	@ mv jigloo.class $@
-	@ cp jigloo.sh $(BOOTBINDIR)/jigloo
-	@ chmod $(MODEXE) $(BOOTBINDIR)/jigloo
-	@ echo "tool \e[1;34m$(BIGLOO_DEST)jigloo\e[0m done."
+	@ echo "class \e[1;34m$(JIGLOO_DEST)\e[0m done."
 
 #*---------------------------------------------------------------------*/
 #*    install                                                          */
@@ -66,14 +64,14 @@ $(JIGLOO_DEST): $(O_OBJECTS)
 
 install:
 	if [ $(DESTDIR)$(BINDIR) != $(BOOTBINDIR) ]; then \
-	   cp $(BOOTBINDIR)/jigloo.class $(DESTDIR)$(BINDIR); \
-	   chmod $(MODFILE) $(DESTDIR)$(BINDIR)/jigloo.class; \
-	   cp $(BOOTBINDIR)/jigloo $(DESTDIR)$(BINDIR)/jigloo; \
+	   cp $(JIGLOO_DEST) $(ZIPDIR); \
+	   chmod $(MODFILE) $(ZIPDIR)/jigloo.class; \
+	   cp $(BOOTBINDIR)/jigloo.sh $(DESTDIR)$(BINDIR)/jigloo; \
 	   chmod $(MODEXE) $(DESTDIR)$(BINDIR)/jigloo; \
         fi
 
 uninstall:
-	- $(RM) -f $(DESTDIR)$(BINDIR)/jigloo.class
+	- $(RM) -f $(ZIPDIR)/jigloo.class
 	- $(RM) -f $(DESTDIR)$(BINDIR)/jigloo
 
 #*---------------------------------------------------------------------*/
