@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/wasm/api/pthread/src/Posix/bglpmutex.c        */
+/*    .../project/bigloo/5.0a/api/pthread/src/Posix/bglpmutex.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Mon Sep 15 14:00:24 2025 (serrano)                */
-/*    Copyright   :  2004-25 Manuel Serrano                            */
+/*    Last change :  Fri Feb  6 17:24:37 2026 (serrano)                */
+/*    Copyright   :  2004-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
 /*=====================================================================*/

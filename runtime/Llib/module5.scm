@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/module5.scm        */
+;*    serrano/bigloo/5.0a/runtime/Llib/module5.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Feb  6 10:55:51 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 15:43:13 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1323,36 +1323,48 @@
       (let ((lnexpr (localize nexpr expr)))
 	 (multiple-value-bind (name type)
 	    (parse-ident id expr)
-	    (let ((decl (instantiate::Decl
-			   (id name)
-			   (alias name)
-			   (mod mod)
-			   (scope 'export)
-			   (ronly #t)
-			   (expr expr))))
+	    (let* ((attrs (if (eq? type #unspecified)
+			      '()
+			      (list (cons 'export-type type))))
+		   (decl (instantiate::Decl
+			    (id name)
+			    (alias name)
+			    (mod mod)
+			    (scope 'export)
+			    (ronly #t)
+			    (expr expr)
+			    (attributes attrs))))
 	       (values name decl)))))
    
    (define (inline4 expr id args)
       (multiple-value-bind (name type)
 	 (parse-ident id expr)
-	 (let ((decl (instantiate::Decl
-			(id name)
-			(alias name)
-			(mod mod)
-			(scope 'export)
-			(ronly #t)
-			(expr expr))))
-	 (values name decl))))
+	 (let* ((attrs (if (eq? type #unspecified)
+			   '()
+			   (list (cons 'export-type type))))
+		(decl (instantiate::Decl
+			 (id name)
+			 (alias name)
+			 (mod mod)
+			 (scope 'export)
+			 (ronly #t)
+			 (expr expr)
+			 (attributes attrs))))
+	    (values name decl))))
    
    (define (variable4 expr id)
       (multiple-value-bind (name type)
 	 (parse-ident id expr)
-	 (let ((decl (instantiate::Decl
-			(id name)
-			(alias name)
-			(mod mod)
-			(scope 'export)
-			(expr expr))))
+	 (let* ((attrs (if (eq? type #unspecified)
+			   '()
+			   (list (cons 'export-type type))))
+		(decl (instantiate::Decl
+			 (id name)
+			 (alias name)
+			 (mod mod)
+			 (scope 'export)
+			 (expr expr)
+			 (attributes attrs))))
 	    (values name decl))))
 
    (define (class4 expr id kind scope)
@@ -1691,6 +1703,16 @@
 ;*    collect-defines! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (collect-defines! mod body)
+
+   (define (find-export-type attributes)
+      (let loop ((attrs attributes))
+	 (cond
+	    ((not (pair? attrs))
+	     #f)
+	    ((and (pair? (car attrs)) (eq? (caar attrs) 'export-type))
+	     (cdar attrs))
+	    (else
+	     (loop (cdr attrs))))))
    
    (define (module-define! mod kind::symbol id::symbol type src)
       (with-access::Module mod (defs decls)
@@ -1709,8 +1731,19 @@
 				 (expr src))))
 		   (hashtable-put! defs name def)
 		   (when decl
-		      (with-access::Decl decl (scope (ddef def))
-			 (with-access::Def def ((ddecl decl))
+		      (with-access::Decl decl (scope (ddef def) attributes)
+			 (with-access::Def def ((ddecl decl) type)
+			    (let ((xtype (find-export-type attributes)))
+			       (when xtype
+				  (cond
+				     ((or (eq? type #unspecified)
+					  (string=? type "obj"))
+				      (set! type xtype))
+				     ((not (string=? type xtype))
+				      (error/loc mod
+					 (format "Declared type ~s more specific than export type ~s" type xtype)
+					 (with-access::Def def (expr) expr)
+					 (with-access::Decl decl (expr) expr))))))
 			    (case scope
 			       ((export)
 				(set! ddef def)

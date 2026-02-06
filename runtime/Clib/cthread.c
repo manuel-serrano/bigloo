@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/cthread.c          */
+/*    serrano/bigloo/5.0a/runtime/Clib/cthread.c                       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Wed Jun 18 10:38:34 2025 (serrano)                */
-/*    Copyright   :  2004-25 Manuel Serrano                            */
+/*    Last change :  Fri Feb  6 17:27:08 2026 (serrano)                */
+/*    Copyright   :  2004-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
 /*    -------------------------------------------------------------    */

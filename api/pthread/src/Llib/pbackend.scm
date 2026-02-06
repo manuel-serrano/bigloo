@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 24 06:42:48 2008                          */
-;*    Last change :  Fri Feb  6 10:39:08 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 16:43:55 2026 (serrano)                */
 ;*    Copyright   :  2008-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Posix thread backend                                         */
@@ -56,3 +56,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (tb-current-thread tb::pthread-backend)
    ($pthread-current-thread))
+
+;*---------------------------------------------------------------------*/
+;*    Initialization                                                   */
+;*---------------------------------------------------------------------*/
+(pthread-setup-backend!)

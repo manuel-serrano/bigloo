@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/private.scm        */
+;*    serrano/bigloo/5.0a/comptime/Ast/private.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Mon Oct 20 13:53:44 2025 (serrano)                */
-;*    Copyright   :  2000-25 Manuel Serrano                            */
+;*    Last change :  Fri Feb  6 15:21:52 2026 (serrano)                */
+;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
 ;*=====================================================================*/
@@ -125,7 +125,10 @@
 	     (type (use-type! type loc))
 	     (side-effect #t)
 	     (c-format "")
-	     (args-type (map slot-type slots))
+	     (args-type (filter-map (lambda (s)
+				       (unless (>=fx (slot-virtual-num s) 0)
+					  (slot-type s)))
+			   slots))
 	     (expr* (if (null? args)
 			'()
 			(sexp*->node args stack loc 'value genv)))

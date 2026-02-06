@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/coerce.scm      */
+;*    serrano/bigloo/5.0a/comptime/Coerce/coerce.scm                   */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Sat Sep 27 09:35:52 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  6 15:16:35 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce implicity type coercions                               */
 ;*=====================================================================*/
@@ -188,17 +188,20 @@
 ;*    coerce! ::new ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::new caller to safe)
-   (with-access::new node (expr* type args-type)
-      (let loop ((l expr*)
-		 (t args-type))
-	 (if (null? l)
-	     (convert! node type to safe)
-	     (let* ((v (car l))
-		    ;;(nv (coerce! v caller (get-type v #f) safe)))
-		    (nv (coerce! v caller (car t) safe)))
-		(set-car! l nv)
-		(loop (cdr l) (cdr t)))))
-      (convert! node type to safe)))
+   (with-trace 'coerce "coerce! ::new"
+      (with-access::new node (expr* type args-type)
+	 (trace-item "expr*=" (map (lambda (v) (shape (get-type v #f))) expr*))
+	 (trace-item "types=" (map shape args-type))
+	 (let loop ((l expr*)
+		    (t args-type))
+	    (if (null? l)
+		(convert! node type to safe)
+		(let* ((v (car l))
+		       ;;(nv (coerce! v caller (get-type v #f) safe)))
+		       (nv (coerce! v caller (car t) safe)))
+		   (set-car! l nv)
+		   (loop (cdr l) (cdr t)))))
+	 (convert! node type to safe))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::valloc ...                                             */

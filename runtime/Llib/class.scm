@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/class.scm          */
+;*    serrano/bigloo/5.0a/runtime/Llib/class.scm                       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Tue Feb  3 08:00:45 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 14:51:47 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -103,12 +103,12 @@
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
 	  (class-info id (class-depth super) super kind
-	     ctor (parse-properties props id) #unspecified x #unspecified)))
+	     ctor (parse-properties props id) #unspecified x #f)))
       (((and (? class-kind?) ?kind) ?ident . ?props)
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
 	  (class-info id (class-depth super) super kind
-	     #f (parse-properties props id) #unspecified x #unspecified)))
+	     #f (parse-properties props id) #unspecified x #f)))
       (else
        (error/loc "parse" "Illegal class definition" x x))))
 
@@ -359,22 +359,24 @@
 	    args)
 	 (e `(let ((,to ($class-allocate ,cid
 			   ;; concrete properties
-			   ,@(filter-map (lambda (p)
-					    (cond
-					       ((prop-info-virtual? p)
-						#f)
-					       ((assq (prop-info-id p) args)
-						=>
-						(lambda (arg)
-						   (e (cadr arg) e)))
-					       ((prop-info-defv? p)
-						(e (prop-info-value p) e))
-					       (else
-						(error/loc (car x)
-						   "Property missing"
-						   (prop-info-id p)
-						   (prop-info-expr p)))))
-				(class-info-properties class-info)))))
+			   ,@(map (lambda (p)
+				     (cond
+					((prop-info-virtual? p)
+					 #f)
+					((assq (prop-info-id p) args)
+					 =>
+					 (lambda (arg)
+					    (e (cadr arg) e)))
+					((prop-info-defv? p)
+					 (e (prop-info-value p) e))
+					(else
+					 (error/loc (car x)
+					    "Property missing"
+					    (prop-info-id p)
+					    (prop-info-expr p)))))
+				(filter (lambda (p)
+					   (not (prop-info-virtual? p)))
+				   (class-info-properties class-info))))))
 		;; constructor
 		,@(if (class-info-ctor class-info)
 		      (list `(,(class-info-ctor class-info) ,o))
@@ -387,8 +389,7 @@
 				    ((assq (prop-info-id p) args)
 				     =>
 				     (lambda (arg)
-					`(class-instance-virtual-property-set! ,o
-					    (e ,(cadr arg) e))))))
+					`(set! (-> ,o ,(prop-info-id p)) ,(e (cadr arg) e))))))
 		     (class-info-properties class-info))
 		;; done
 		,o)

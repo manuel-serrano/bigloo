@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/object.scm         */
+;*    serrano/bigloo/5.0a/runtime/Llib/object.scm                      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Tue Feb  3 09:33:22 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 18:41:56 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -641,7 +641,7 @@
 ;*---------------------------------------------------------------------*/
 (define (class-field? obj)
    (and (vector? obj)
-	(=fx (vector-length obj) 9)
+	(or (=fx (vector-length obj) 9) (=fx (vector-length obj) 10))
 	(eq? (vector-ref-ur obj 4) make-class-field)))
 	 
 ;*---------------------------------------------------------------------*/
@@ -1161,8 +1161,18 @@
    
    (define (fill-vector-with-virtuals!::vector vec::vector)
       (for-each (lambda (virtual)
-		   (let ((num (car virtual)))
-		      (vector-set! vec num (cdr virtual))))
+		   (cond
+		      ((pair? virtual)
+		       ;; module4 api
+		       (let ((num (car virtual)))
+			  (vector-set! vec num (cdr virtual))))
+		      ((class-field? virtual)
+		       ;; module5 api
+		       (tprint "TODO"))
+		      (else
+		       (error "make-class-virtual-slots-vector"
+			  "wrong virtual field descriptor"
+			  virtual))))
 		(vector->list virtuals))
       vec)
 

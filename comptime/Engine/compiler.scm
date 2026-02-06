@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
+;*    serrano/bigloo/5.0a/comptime/Engine/compiler.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Feb  6 10:21:11 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 16:28:12 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -610,7 +610,13 @@
 	 ;; load the library init files. This must be done after
 	 ;; regular macros have been installed in order to enable these
 	 ;; macro redefinitions
-	 (load-library-init)
+	 (with-access::Module mod (libraries)
+	    ;; load module5 libraries init
+	    (for-each (lambda (l)
+			 (loadq (cdr l)))
+	       libraries)
+	    ;; load module4 libraries init
+	    (load-library-init))
 	 
 	 ;; once library clauses have been parsed
 	 ;; restore again additional heaps

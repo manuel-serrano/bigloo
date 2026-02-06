@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/api/pthread/src/Llib/pthread.scm       */
+;*    .../project/bigloo/5.0a/api/pthread/src/Llib/pthread.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Sat May 13 08:40:16 2023 (serrano)                */
-;*    Copyright   :  2002-23 Manuel Serrano                            */
+;*    Last change :  Fri Feb  6 15:29:20 2026 (serrano)                */
+;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
 ;*=====================================================================*/
@@ -13,13 +13,13 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __pth_thread
-
+   
    (option (set! *dlopen-init-gc* #t))
    
    (import  __pth_backend)
    
    (include "pthread.sch")
-
+   
    (extern ($bgl_debug_top_stack::int () "bgl_debug_top_stack"))
    
    (export (class pthread::thread
@@ -33,16 +33,16 @@
 	      (end-exception (default #unspecified))
 	      ;; the actual native thread
 	      ($builtin::$pthread (default ($pthread-nil))))
-
+	   
 	   (class &thread-error::&error)
 	   
 	   (class uncaught-exception::&exception
 	      (reason::obj read-only))
-
+	   
 	   (class terminated-thread-exception::&exception)
-
+	   
 	   ($pthread-nil::$pthread))
-
+   
    (pragma ($pthread-nil side-effect-free)))
 
 ;*---------------------------------------------------------------------*/
@@ -90,6 +90,7 @@
       (warning "make-thread"
 	 "Thread created before module initialization completed -- "
 	 (typeof o)))
+   (tprint "******** thread initialize..." o)
    (with-access::pthread o ($builtin body end-result end-exception name)
       (let ((b (lambda ()
 		  (let ((id (if (symbol? name)
@@ -237,4 +238,4 @@
 ;*---------------------------------------------------------------------*/
 ;*    Initialization                                                   */
 ;*---------------------------------------------------------------------*/
-(pthread-setup-backend!)
+;;(pthread-setup-backend!)

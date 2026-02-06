@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/pthread/src/Llib/pmutex.scm      */
+;*    .../prgm/project/bigloo/5.0a/api/pthread/src/Llib/pmutex.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  3 08:14:49 2004                          */
-;*    Last change :  Wed Apr 10 17:28:45 2013 (serrano)                */
-;*    Copyright   :  2004-13 Manuel Serrano                            */
+;*    Last change :  Fri Feb  6 17:23:07 2026 (serrano)                */
+;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Mutex implementation.                           */
 ;*=====================================================================*/

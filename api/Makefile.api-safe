@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Fri Feb  6 08:36:28 2026 (serrano)                */
+#*    Last change :  Fri Feb  6 16:37:49 2026 (serrano)                */
 #*    Copyright   :  2010-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -342,6 +342,9 @@ objs/objs_s/%.o: $(BIGLOO_SRC_DIR)/%.scm
 
 objs/objs_s/%.o: $(MISC_SRC_DIR)/%.scm
 	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) $(BAPISAFEFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
+
+objs/objs_s/make_lib5.o: $(MISC_SRC_DIR)/make_lib5.scm
+	$(BIGLOO) -module5 $(EFLAGS) $(BAPIFLAGS) $(BAPISAFEFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
 
 objs/objs_s/%.o: $(C_SRC_DIR)/%.c
 	$(CC) $(CEFLAGS) $(CAPIFLAGS) $(CFLAGS) $(CPICFLAGS) -I. -I $(BOOTLIBDIR) $(GCINCLUDE) -I $(C_SRC_DIR) $< -o $@ -c

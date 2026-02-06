@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/promise.scm        */
+;*    serrano/bigloo/5.0a/runtime/Llib/promise.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Fri Feb  6 11:11:39 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 17:13:28 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript like promise for Bigloo.                              */
@@ -86,17 +86,25 @@
 		  (reject e)
 		  o)
 	       (begin
-		  
 		  (executor resolve reject)
 		  o))))))
 
 ;*---------------------------------------------------------------------*/
-;*    promise-notify ...                                               */
+;*    promise-inc! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (promise-notify)
+(define (promise-inc!)
    (synchronize *promise-mutex*
+      (tprint "promise-inc! " *promise-count*)
+      (set! *promise-count* (+fx *promise-count* 1))))
+
+;*---------------------------------------------------------------------*/
+;*    promise-dec! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (promise-dec!)
+   (tprint "promise decl mutex=" *promise-mutex*)
+   (synchronize *promise-mutex*
+      (tprint "promise-dec! " *promise-count*)
       (set! *promise-count* (-fx *promise-count* 1))
-      (tprint "promise-notify " *promise-count*)
       (condition-variable-broadcast! *promise-condv*)))
 
 ;*---------------------------------------------------------------------*/
@@ -129,7 +137,7 @@
    (with-access::promise o (thens catches state val)
       (let ((fullfill (cons no (if (procedure? proc) proc 'identity)))
 	    (reject (cons no (if (procedure? fail) fail 'thrower))))
-	 (tprint "state=" state)
+	 (tprint "promise-then-catch state=" state)
 	 (case state
 	    ((pending)
 	     (set! thens (cons fullfill thens))
@@ -151,18 +159,17 @@
 ;*---------------------------------------------------------------------*/
 (define (create-resolving-functions o::promise notify::bool)
    (tprint "create-resolving-functions notify=" notify)
-   (when notify
-      (synchronize *promise-mutex*
-	 (set! *promise-count* (+fx *promise-count* 1))))
+   (when notify (promise-inc!))
    (let* ((resolved #f)
 	  (resolve (lambda (resolution)
+		      (tprint "IN resolve function resolved=" resolved " notify=" notify)
 		      (unless resolved
-			 (when notify (promise-notify))
+			 (when notify (promise-dec!))
 			 (set! resolved #t)
 			 (promise-resolve o resolution))))
 	  (reject (lambda (reason)
 		     (unless resolved
-			(when notify (promise-notify))
+			(when notify (promise-dec!))
 			(set! resolved #t)
 			(promise-reject o reason)))))
       (values resolve reject)))

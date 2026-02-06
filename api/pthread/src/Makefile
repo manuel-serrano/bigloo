@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Feb  6 08:30:18 2026 (serrano)                */
+#*    Last change :  Fri Feb  6 16:34:08 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -56,7 +56,7 @@ _JAVA_CLASSES	= bglpmutex bglpcondvar bglpthread bglpdynamic \
                   bglpsemaphore
  
 
-_OBJECTS	= $(_POSIX_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_POSIX_OBJECTS) $(_BGL_OBJECTS) make_lib5
 SAFE_OBJECTS	= $(_OBJECTS:%=objs/objs_s/%.o)
 SAFE_EOBJECTS	= objs/objs_s/make_lib.o
 UNSAFE_OBJECTS	= $(_OBJECTS:%=objs/objs_u/%.o)

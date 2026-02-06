@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Coerce/convert.scm     */
+;*    serrano/bigloo/5.0a/comptime/Coerce/convert.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Tue Feb  3 16:05:33 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 15:12:57 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -96,16 +96,26 @@
 ;*    type-error/location ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (type-error/location loc function from to)
-   (user-error/location loc function "Type error"
-      (bigloo-type-error-msg "" (shape to) (shape from))))
+   (with-trace 'convert "type-error/location"
+      (trace-item "loc=" loc)
+      (trace-item "function=" function)
+      (trace-item "from=" (shape from))
+      (trace-item "to=" (shape to))
+      (user-error/location loc function "Type error"
+	 (bigloo-type-error-msg "" (shape to) (shape from)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-warning/location ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (type-warning/location loc function from to)
-   (when *warning-type-error*
-      (user-warning/location loc function "Type error"
-	 (bigloo-type-error-msg "" (shape to) (shape from)))))
+   (with-trace 'convert "type-warning/location"
+      (trace-item "loc=" loc)
+      (trace-item "function=" function)
+      (trace-item "from=" (shape from))
+      (trace-item "to=" (shape to))
+      (when *warning-type-error*
+	 (user-warning/location loc function "Type error"
+	    (bigloo-type-error-msg "" (shape to) (shape from))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    runtime-type-error/id ...                                        */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Cgen/cgen.scm          */
+;*    serrano/bigloo/5.0a/comptime/Cgen/cgen.scm                       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Mon Feb  2 10:32:10 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 16:02:52 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -535,135 +535,145 @@
 ;*    node->cop ::private ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::private kont inpushexit)
-   (trace (cgen 3)
-	  "(node->cop node::private kont): " (shape node) #\Newline
-	  "  kont: " kont #\Newline)
-   (with-access::private node (c-format)
-      (extern->cop c-format #t node kont inpushexit)))
+   (with-trace 'cgen "node->cop ::private"
+      (trace-item "node=" (typeof node))
+      (trace (cgen 3)
+	 "(node->cop node::private kont): " (shape node) #\Newline
+	 "  kont: " kont #\Newline)
+      (with-access::private node (c-format)
+	 (extern->cop c-format #t node kont inpushexit))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::cast-null ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::cast-null kont inpushexit)
-   (trace (cgen 3)
-      "(node->cop node::private kont): " (shape node) #\Newline
-      "  kont: " kont #\Newline)
-   
-   (define (null-type-expr type c-format)
-      (cond
-	 ((or (eq? type *int*) (eq? type *long*)
-	      (eq? type *elong*)
-	      (eq? type *llong*)
-	      (eq? type *int8*)
-	      (eq? type *uint8*)
-	      (eq? type *int16*)
-	      (eq? type *uint16*)
-	      (eq? type *int32*)
-	      (eq? type *uint32*)
-	      (eq? type *int64*)
-	      (eq? type *uint64*))
-	  "0")
-	 ((eq? type *bool*)
-	  "0")
-	 ((eq? type *real*)
-	  "0.0")
-	 ((or (eq? type *char*)
-	      (eq? type *schar*))
-	  "0")
-	 ((eq? type *string*)
-	  "0L")
-	 (else
-	  (format "~a((~a)0L)" c-format (type-name type)))))
-   
-   (with-access::cast-null node (c-format type)
-      (extern->cop (null-type-expr type c-format) #t node kont inpushexit)))
+   (with-trace 'cgen "node->cop ::cast-null"
+      (trace (cgen 3)
+	 "(node->cop node::private kont): " (shape node) #\Newline
+	 "  kont: " kont #\Newline)
+      
+      (define (null-type-expr type c-format)
+	 (cond
+	    ((or (eq? type *int*) (eq? type *long*)
+		 (eq? type *elong*)
+		 (eq? type *llong*)
+		 (eq? type *int8*)
+		 (eq? type *uint8*)
+		 (eq? type *int16*)
+		 (eq? type *uint16*)
+		 (eq? type *int32*)
+		 (eq? type *uint32*)
+		 (eq? type *int64*)
+		 (eq? type *uint64*))
+	     "0")
+	    ((eq? type *bool*)
+	     "0")
+	    ((eq? type *real*)
+	     "0.0")
+	    ((or (eq? type *char*)
+		 (eq? type *schar*))
+	     "0")
+	    ((eq? type *string*)
+	     "0L")
+	    (else
+	     (format "~a((~a)0L)" c-format (type-name type)))))
+      
+      (with-access::cast-null node (c-format type)
+	 (extern->cop (null-type-expr type c-format) #t node kont inpushexit))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::cast ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::cast kont inpushexit)
-   (trace (cgen 3)
-	  "(node->cop node::cast kont): " (shape node) #\Newline
-	  "  kont: " kont #\Newline)
-   (with-access::cast node (arg type loc type)
-      (node-args->cop type (list arg)
-	 #t
-	 loc
-	 (lambda (new-args)
-	    (kont (instantiate::ccast
-		     (type type)
-		     (loc loc)
-		     (arg (car new-args)))))
-	 inpushexit)))
+   (with-trace 'cgen "node->cop ::cast"
+      (trace (cgen 3)
+	 "(node->cop node::cast kont): " (shape node) #\Newline
+	 "  kont: " kont #\Newline)
+      (with-access::cast node (arg type loc type)
+	 (node-args->cop type (list arg)
+	    #t
+	    loc
+	    (lambda (new-args)
+	       (kont (instantiate::ccast
+			(type type)
+			(loc loc)
+			(arg (car new-args)))))
+	    inpushexit))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::new ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::new kont inpushexit)
-   (trace (cgen 3)
-      "(node->cop node::cast kont): " (shape node) #\Newline
-      "  kont: " kont #\Newline)
-
-   (define (set-instance-class-num o type loc)
-      (instantiate::cpragma
-	 (type *unspec*)
-	 (loc loc)
-	 (format "BGL_OBJECT_CLASS_NUM_SET(BOBJECT($1), BGL_CLASS_NUM($2))")
-	 (args (list
-		  (instantiate::varc
-		     (type type)
-		     (variable o)
-		     (loc loc))
-		  (with-access::tclass type (holder)
-		     (set-variable-name! holder)
-		     (instantiate::varc
-			(type (get-class-type))
-			(variable holder)
-			(loc loc)))))))
-   
-   (with-access::new node (arg type loc type expr*)
-      (let* ((o (make-local-svar/name (gensym 'o) type))
-	     (alloc (instantiate::pragma
-		       (type type)
-		       (format (format "BGL_CLASS_ALLOC_INSTANCE(~a)"
-				  (type-name type)))))
-	     (assig (node->cop (node-setq o alloc) *id-kont* inpushexit)))
-	 (set-variable-name! o)
-	 (instantiate::cblock
-	    (type type)
+   (with-trace 'cgen "node->cop ::new"
+      (trace-item "node=" (shape node))
+      (trace (cgen 3)
+	 "(node->cop node::cast kont): " (shape node) #\Newline
+	 "  kont: " kont #\Newline)
+      
+      (define (set-instance-class-num o type loc)
+	 (instantiate::cpragma
+	    (type *unspec*)
 	    (loc loc)
-	    (body
-	       (instantiate::csequence
-		  (type type)
-		  (loc loc)
-		  (cops
-		     `(,(instantiate::local-var
-			   (type *obj*)
-			   (vars (list o))
-			   (loc loc))
-		       ,assig
-		       ,(set-instance-class-num o type loc)
-		       ,@(map (lambda (x s)
-				 (instantiate::cpragma
-				    (type (slot-type s))
-				    (loc loc)
-				    (format (format "~a->~a = $1"
-					       (variable-name o)
-					       (slot-name s)))
-				    (args (list
-					     (node->cop x *id-kont* inpushexit)))))
-			    expr*
-			    (filter (lambda (s) (<fx (slot-virtual-num s) 0))
-			       (tclass-slots type)))
-		       ,(kont (instantiate::cpragma
-				 (type type)
-				 (loc loc)
-				 (format (format "((~a)BOBJECT($1))"
-					    (type-name type)))
-				 (args (list (instantiate::varc
-						(type type)
-						(variable o)
-						(loc loc))))))))))))))
+	    (format "BGL_OBJECT_CLASS_NUM_SET(BOBJECT($1), BGL_CLASS_NUM($2))")
+	    (args (list
+		     (instantiate::varc
+			(type type)
+			(variable o)
+			(loc loc))
+		     (with-access::tclass type (holder)
+			(set-variable-name! holder)
+			(instantiate::varc
+			   (type (get-class-type))
+			   (variable holder)
+			   (loc loc)))))))
+      
+      (with-access::new node (arg type loc type expr*)
+	 (node-args->cop type expr*
+	    #f
+	    loc
+	    (lambda (new-args)
+	       (let* ((o (make-local-svar/name (gensym 'o) type))
+		      (alloc (instantiate::pragma
+				(type type)
+				(format (format "BGL_CLASS_ALLOC_INSTANCE(~a)"
+					   (type-name type)))))
+		      (assig (node->cop (node-setq o alloc) *id-kont* inpushexit)))
+		  (set-variable-name! o)
+		  (instantiate::cblock
+		     (type type)
+		     (loc loc)
+		     (body
+			(instantiate::csequence
+			   (type type)
+			   (loc loc)
+			   (cops
+			      `(,(instantiate::local-var
+				    (type *obj*)
+				    (vars (list o))
+				    (loc loc))
+				,assig
+				,(set-instance-class-num o type loc)
+				,@(map (lambda (x s)
+					  (instantiate::cpragma
+					     (type (slot-type s))
+					     (loc loc)
+					     (format (format "~a->~a = $1"
+							(variable-name o)
+							(slot-name s)))
+					     (args (list x))))
+				     new-args
+				     (filter (lambda (s) (<fx (slot-virtual-num s) 0))
+					(tclass-slots type)))
+				,(kont (instantiate::cpragma
+					  (type type)
+					  (loc loc)
+					  (format (format "((~a)BOBJECT($1))"
+						     (type-name type)))
+					  (args (list (instantiate::varc
+							 (type type)
+							 (variable o)
+							 (loc loc)))))))))))))
+	    inpushexit))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::setq ...                                             */
