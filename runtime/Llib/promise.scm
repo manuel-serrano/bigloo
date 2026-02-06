@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Thu Feb  5 19:02:35 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 07:42:40 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript like promise for Bigloo.                              */
@@ -61,9 +61,18 @@
 	    (run-promises)))
 
 ;*---------------------------------------------------------------------*/
-;*    make-delay-promise ...                                           */
+;*    *promise-mutex* ...                                              */
+;*---------------------------------------------------------------------*/
+(define *promise-mutex* (make-mutex "promises"))
+(define *promise-condv* (make-condition-variable "promises"))
+(define *promise-count* 0)
+
+;*---------------------------------------------------------------------*/
+;*    make-promise ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (make-promise executor::procedure)
+   (synchronize *promise-mutex*
+      (set! *promise-count* (+fx 1 *promise-count*)))
    (let ((o (instantiate::promise)))
       (with-access::promise o (state resolver rejecter thens catches name)
 	 (set! state 'pending)
@@ -80,6 +89,14 @@
 	       (begin
 		  (executor resolve reject)
 		  o))))))
+
+;*---------------------------------------------------------------------*/
+;*    promise-notify ...                                               */
+;*---------------------------------------------------------------------*/
+(define (promise-notify)
+   (synchronize *promise-mutex*
+      (set! *promise-count* (-fx 1 *promise-count*))
+      (condition-variable-broadcast! *promise-condv*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    then ...                                                         */
@@ -109,6 +126,7 @@
 (define (promise-reject o::promise reason)
    (with-access::promise o (state)
       (when (eq? state 'pending)
+	 (promise-notify)
 	 (reject o reason))))
 
 ;*---------------------------------------------------------------------*/
@@ -124,6 +142,7 @@
 	       (reject e))
 	    (then resolve reject))))
    
+   (promise-notify)
    (with-access::promise o (%this worker)
       (cond
 	 ((eq? o resolution)
@@ -152,16 +171,18 @@
    (with-access::promise o (state val worker thens catches name)
       (push-action! 
 	 (lambda ()
-	    (set! val reason) 
-	    (set! thens '())
-	    (set! catches '())
-	    (set! state 'rejected)
-	    (if (null? catches)
-		(begin
-		   (when (isa? reason &exception)
-		      (exception-notify reason))
-		   reason)
-		(trigger-reactions catches reason))))))
+	    (let ((reactions catches))
+	       (set! val reason) 
+	       (set! thens '())
+	       (set! catches '())
+	       (set! state 'rejected)
+	       (if (null? reactions)
+		   (begin
+		      (when (isa? reason &exception)
+			 (exception-notify reason))
+		      reason)
+		   (begin
+		      (trigger-reactions reactions reason))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    fullfill ...                                                     */
@@ -170,12 +191,22 @@
    (with-access::promise o (state val worker thens catches)
       (push-action! 
 	 (lambda ()
-	    (set! val result)
-	    (set! thens '())
-	    (set! catches '())
-	    (set! state 'fullfilled)
-	    (trigger-reactions thens result)))))
+	    (let ((reactions thens))
+	       (set! val result)
+	       (set! thens '())
+	       (set! catches '())
+	       (set! state 'fullfilled)
+	       (trigger-reactions reactions result))))))
    
+;*---------------------------------------------------------------------*/
+;*    trigger-reactions ...                                            */
+;*---------------------------------------------------------------------*/
+(define (trigger-reactions reactions::pair-nil arg)
+   (for-each (lambda (reaction)
+		(promise-reaction-job reaction arg))
+      (reverse! reactions))
+   #unspecified)
+
 ;*---------------------------------------------------------------------*/
 ;*    promise-then-catch ...                                           */
 ;*---------------------------------------------------------------------*/
@@ -201,15 +232,6 @@
 	 no)))
 
 ;*---------------------------------------------------------------------*/
-;*    trigger-reactions ...                                            */
-;*---------------------------------------------------------------------*/
-(define (trigger-reactions reactions::pair-nil arg)
-   (for-each (lambda (reaction)
-		(promise-reaction-job reaction arg))
-      (reverse! reactions))
-   #unspecified)
-
-;*---------------------------------------------------------------------*/
 ;*    unresolved ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define unresolved (cons #f #t))
@@ -221,7 +243,7 @@
    (let ((promise (car reaction))
 	 (handler (cdr reaction)))
       (with-access::promise promise (%this resolver)
-	 (tprint "promise-reaction-job handler=" handler " " resolver " arg=" arg)
+	 (tprint "reaction-job " handler " " arg)
 	 (cond
 	    ((eq? handler 'identity)
 	     (if (procedure? resolver)
@@ -240,22 +262,41 @@
 ;*---------------------------------------------------------------------*/
 ;*    *actions* ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define *actions* (cons 'heap '()))
+(define *actions* (cons 'promises '()))
+(define *last-actions* *actions*)
 
 ;*---------------------------------------------------------------------*/
 ;*    push-action ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (push-action! action::procedure)
-   (set-cdr! *actions* (cons action '())))
+   (synchronize *promise-mutex*
+      (let ((last (cons action '())))
+	 (set-cdr! *last-actions* last)
+	 (set! *last-actions* last))))
 
 ;*---------------------------------------------------------------------*/
 ;*    run-promises ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (run-promises)
+   
+   (define (flush-actions)
+      (synchronize *promise-mutex*
+	 (let loop ()
+	    (let ((actions (cdr *actions*)))
+	       (cond
+		  ((pair? actions)
+		   (set-cdr! *actions* '())
+		   (set! *last-actions* *actions*)
+		   actions)
+		  ((>fx *promise-count* 0)
+		   (condition-variable-wait! *promise-condv* *promise-mutex*)
+		   (loop))
+		  (else
+		   '()))))))
+   
    (let loop ()
-      (let ((actions (cdr *actions*)))
-	 (set-cdr! *actions* '())
-	 (tprint "run " actions)
-	 (for-each (lambda (a) (a)) actions)
-	 (when (pair? (cdr *actions*))
+      (let ((actions (flush-actions)))
+	 (tprint "run-actions actions=" actions " " *promise-count*)
+	 (when (pair? actions)
+	    (for-each (lambda (a) (a)) actions)
 	    (loop)))))

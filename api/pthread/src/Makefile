@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/pthread/src/Makefile      */
+#*    serrano/prgm/project/bigloo/5.0a/api/pthread/src/Makefile        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Jan 21 09:03:37 2020 (serrano)                */
+#*    Last change :  Fri Feb  6 08:30:18 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -96,13 +96,15 @@ POPULATION	= $(SOURCES) $(INCLUDES) \
 all: 
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
              $(MAKE) build-c; \
+	     $(MAKE) heap5-c; \
 	  fi
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
+             $(MAKE) heap5-jvm; \
 	  fi
 
 c: build-c
-build-c: api-c_mt
+build-c: api-c_mt heap5-c
 
 jvm: build-jvm
 build-jvm: api-jvm

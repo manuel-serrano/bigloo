@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/module5.scm                  */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/module5.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Feb  4 12:03:35 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 08:53:51 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -634,10 +634,10 @@
        (parse-function #t #f ident args name clause mod))
       ((infix macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
        (parse-function #t #t ident args name clause mod))
-      (((and (? symbol?) ?ident) ?args (and (? string?) ?name))
-       (parse-function #f #f ident args name clause mod))
       ((macro (and (? symbol?) ?ident) (and (? string?) ?name))
        (parse-variable #t ident name clause mod))
+      (((and (? symbol?) ?ident) ?args (and (? string?) ?name))
+       (parse-function #f #f ident args name clause mod))
       (((and (? symbol?) ?ident) (and (? string?) ?name))
        (parse-variable #f ident name clause mod))
       (else

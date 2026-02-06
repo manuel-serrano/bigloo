@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Thu Feb  5 19:02:38 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 07:54:29 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -208,6 +208,7 @@
 	     `(make-delay-promise (lambda () ,(e exp e))))
 	    (else
 	     (expand-error "delay" "Illegal form" x)))))
+   
    ;; regular-grammar
    (install-module4-expander 'regular-grammar
       expand-regular-grammar)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/runtime/Llib/module5.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/module5.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Feb  4 17:37:38 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 08:51:41 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1410,8 +1410,11 @@
 	 (set! (-> mod inits)
 	    (append! (-> mod inits) (list imod)))))
    
-   (define (parse-import import::pair-nil expr::pair mod::Module expand)
+   (define (parse-import import expr::pair mod::Module expand)
       (match-case import
+	 ((and (? symbol?) ?id)
+	  (let ((path "NOT FOUND"))
+	     (parse-import-all id path)))
 	 (((and (? symbol?) ?id) (and (? string?) ?path))
 	  (parse-import-all id path))
 	 ((??- (and (? symbol?) ?id) (and (? string?) ?path))
@@ -1513,19 +1516,22 @@
 			((not (string? f))
 			 (error/loc mod "Illegal include clause" f clause))
 			((module5-resolve-path f (-> mod path))
-			 (let ((exprs (call-with-input-file f
-					 (lambda (p) (port->sexp-list p #t)))))
-			    (match-case exprs
-			       (((directives . ?clauses) . ?rest)
-				(append 
-				   (append-map (lambda (c)
-						  (module4-parse-clause c clause
-						     mod lib-path cache-dir
-						     expand))
-				      clauses)
-				   rest))
-			       (else
-				exprs))))
+			 =>
+			 (lambda (f)
+			    (let ((exprs (call-with-input-file f
+					    (lambda (p)
+					       (port->sexp-list p #t)))))
+			       (match-case exprs
+				  (((directives . ?clauses) . ?rest)
+				   (append 
+				      (append-map (lambda (c)
+						     (module4-parse-clause c clause
+							mod lib-path cache-dir
+							expand))
+					 clauses)
+				      rest))
+				  (else
+				   exprs)))))
 			(else
 			 (error/loc mod "Cannot find file" f clause))))
 	 (cdr clause)))

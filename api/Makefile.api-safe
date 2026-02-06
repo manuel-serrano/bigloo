@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/Makefile.api-safe         */
+#*    serrano/prgm/project/bigloo/5.0a/api/Makefile.api-safe           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Jun 25 17:33:21 2025 (serrano)                */
-#*    Copyright   :  2010-25 Manuel Serrano                            */
+#*    Last change :  Fri Feb  6 08:36:28 2026 (serrano)                */
+#*    Copyright   :  2010-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
 #*=====================================================================*/
@@ -123,10 +123,14 @@ api-c_mt: api-init $(TAGS) .afile heap-c
 	$(MAKE) api-c-shared_mt
 
 heap-c: $(BOOTLIBDIR)/$(API).heap
+heap5-c: $(BOOTLIBDIR)/$(API).heap5
 $(BOOTLIBDIR)/$(API).heap: .afile $(MISC_SRC_DIR)/make_lib.scm
 	$(RM) -f $(BOOTLIBDIR)/$(API).heap
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
              $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).heap
+$(BOOTLIBDIR)/$(API).heap5: .afile $(MISC_SRC_DIR)/make_lib5.scm
+	$(RM) -f $(BOOTLIBDIR)/$(API).heap5
+	$(BIGLOO) -module5 $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) $(MISC_SRC_DIR)/make_lib5.scm -addheap $(BOOTLIBDIR)/$(API).heap5
 
 api-c-static: $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).a \
               $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).a \
@@ -214,6 +218,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_eu$(LIBSUFFIXTHREAD)-$(RELEASE).$(SHAREDSUFFIX): .
 api-clean-c:
 	$(RM) -rf objs
 	$(RM) -f $(BOOTLIBDIR)/$(API).heap
+	$(RM) -f $(BOOTLIBDIR)/$(API).heap5
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX)
 	$(RM) -f $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX)
@@ -238,10 +243,15 @@ api-jvm: api-init $(TAGS) .jfile heap-jvm
 	$(MAKE) api.zip
 
 heap-jvm: $(BOOTLIBDIR)/$(API).jheap
+heap5-jvm: $(BOOTLIBDIR)/$(API).jheap5
 $(BOOTLIBDIR)/$(API).jheap: .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
 	@ $(RM) -f $(BOOTLIBDIR)/$(API).jheap
 	@ $(BIGLOO) -jvm  $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
             $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).jheap
+$(BOOTLIBDIR)/$(API).jheap5: .jfile .afile $(MISC_SRC_DIR)/make_lib5.scm
+	@ $(RM) -f $(BOOTLIBDIR)/$(API).jheap5
+	@ $(BIGLOO) -module5 -jvm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+            $(MISC_SRC_DIR)/make_lib5.scm -addheap $(BOOTLIBDIR)/$(API).jheap5
 
 api.zip: $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).zip \
          $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).zip \
@@ -271,6 +281,57 @@ api-clean-jvm:
 	$(RM) -rf $(CLASS_DIR)
 
 #*---------------------------------------------------------------------*/
+#*    WASM build                                                       */
+#*---------------------------------------------------------------------*/
+.PHONY: api-wasm heap-wasm api.zip api-clean-wasm
+
+api-wasm: api-init heap-wasm
+	mkdir -p objs
+	$(MAKE) api.wasm
+
+heap-wasm: $(BOOTLIBDIR)/$(API).wheap
+heap5-wasm: $(BOOTLIBDIR)/$(API).wheap5
+$(BOOTLIBDIR)/$(API).wheap: .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
+	@ $(RM) -f $(BOOTLIBDIR)/$(API).wheap
+	@ $(BIGLOO) -wasm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+            $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).wheap
+$(BOOTLIBDIR)/$(API).wheap5: .jfile .afile $(MISC_SRC_DIR)/make_lib5.scm
+	@ $(RM) -f $(BOOTLIBDIR)/$(API).wheap5
+	@ $(BIGLOO) -module5 -wasm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+            $(MISC_SRC_DIR)/make_lib5.scm -addheap $(BOOTLIBDIR)/$(API).wheap5
+
+api.wasm: $(BOOTLIBDIR)/bigloo$(API)_s.wasm \
+         $(BOOTLIBDIR)/bigloo$(API)_es.wasm
+	for e in $(WASMENGINES); do \
+	  if [ -f Wlib/bigloo$(API)-$$e.mjs ]; then \
+            cp Wlib/bigloo$(API)-$$e.mjs $(BOOTLIBDIR)/bigloo$(API)-$$e.mjs; \
+          fi; \
+        done
+
+$(BOOTLIBDIR)/bigloo$(API)_s.wasm: $(BOOTLIBDIR)/bigloo$(API)_s.wat
+	$(WASMAS) $< -o $@
+
+$(BOOTLIBDIR)/bigloo$(API)_es.wasm: $(BOOTLIBDIR)/bigloo$(API)_es.wat
+	$(WASMAS) $< -o $@
+
+$(BOOTLIBDIR)/bigloo$(API)_s.wat: $(WOBJECTS)
+	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w $^ -o $@
+
+$(BOOTLIBDIR)/bigloo$(API)_es.wat: $(WEOBJECTS)
+	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w $^ -o $@
+
+api-clean-wasm:
+	$(RM) -f $(BOOTLIBDIR)/$(API).wheap
+	$(RM) -f $(BOOTLIBDIR)/$(API).wheap5
+	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_s.wat
+	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_es.wat
+	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_u.wat
+	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_eu.wat
+	for e in $(WASMENGINES); do \
+	  $(RM) -f $(BOOTLIBDIR)/bigloo$(API)-$$e.mjs; \
+        done
+
+#*---------------------------------------------------------------------*/
 #*    Compilation rules                                                */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
@@ -294,6 +355,9 @@ objs/objs_u/%.o: $(MISC_SRC_DIR)/%.scm
 objs/objs_u/%.o: $(C_SRC_DIR)/%.c
 	$(CC) $(CEFLAGS) $(CAPIFLAGS) $(CFLAGS) $(CPICFLAGS) -I. -I $(BOOTLIBDIR) $(GCINCLUDE) -I $(C_SRC_DIR) $< -o $@ -c
 
+objs/objs_u/make_lib5.o: $(MISC_SRC_DIR)/make_lib5.scm
+	$(BIGLOO) -module5 $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
+
 $(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.scm
 	$(BIGLOO) -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
@@ -302,6 +366,21 @@ $(CLASS_DIR)/%.java: $(JAVA_SRC_DIR)/%.java
 
 $(CLASS_EDIR)/%.class: $(MISC_SRC_DIR)/%.scm
 	$(BIGLOO) -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
+
+objs/obj_s/%.wat: $(BIGLOO_SRC_DIR)/%.scm
+	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
+
+objs/obj_s/%.wat: $(MISC_SRC_DIR)/%.scm
+	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
+
+objs/obj_u/%.wat: $(BIGLOO_SRC_DIR)/%.scm
+	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
+
+objs/obj_u/%.wat: $(MISC_SRC_DIR)/%.scm
+	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
+
+objs/obj_u/make_lib5.wat: $(MISC_SRC_DIR)/make_lib5.scm
+	$(BIGLOO) -module5 -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
 
 #*---------------------------------------------------------------------*/
 #*    ude                                                              */

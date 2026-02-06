@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Thu Jan 29 10:08:13 2026 (serrano)                */
+#*    Last change :  Fri Feb  6 08:32:06 2026 (serrano)                */
 #*    Copyright   :  2010-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -290,10 +290,15 @@ api-jvm: api-init $(TAGS) .jfile heap-jvm
 	$(MAKE) api.zip
 
 heap-jvm: $(BOOTLIBDIR)/$(API).jheap
+heap5-jvm: $(BOOTLIBDIR)/$(API).jheap5
 $(BOOTLIBDIR)/$(API).jheap: .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
 	@ $(RM) -f $(BOOTLIBDIR)/$(API).jheap
 	@ $(BIGLOO) -jvm  $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
             $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).jheap
+$(BOOTLIBDIR)/$(API).jheap5: .jfile .afile $(MISC_SRC_DIR)/make_lib5.scm
+	@ $(RM) -f $(BOOTLIBDIR)/$(API).jheap5
+	@ $(BIGLOO) -module5 -jvm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+            $(MISC_SRC_DIR)/make_lib5.scm -addheap $(BOOTLIBDIR)/$(API).jheap5
 
 api.zip: $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).zip \
          $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).zip \
@@ -316,6 +321,7 @@ $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).zip: .afile .jfile $(BGL_ECLASSES)
 
 api-clean-jvm:
 	$(RM) -f $(BOOTLIBDIR)/$(API).jheap
+	$(RM) -f $(BOOTLIBDIR)/$(API).jheap5
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).zip
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).zip
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).zip
@@ -364,6 +370,7 @@ $(BOOTLIBDIR)/bigloo$(API)_es.wat: $(WEOBJECTS)
 
 api-clean-wasm:
 	$(RM) -f $(BOOTLIBDIR)/$(API).wheap
+	$(RM) -f $(BOOTLIBDIR)/$(API).wheap5
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_s.wat
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_es.wat
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_u.wat
