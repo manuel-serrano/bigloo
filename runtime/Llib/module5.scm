@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Feb  6 08:51:41 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 10:05:51 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1413,8 +1413,12 @@
    (define (parse-import import expr::pair mod::Module expand)
       (match-case import
 	 ((and (? symbol?) ?id)
-	  (let ((path "NOT FOUND"))
-	     (parse-import-all id path)))
+	  (let ((path (module4-resolve-module-path mod id)))
+	     (if (string? path)
+		 (parse-import-all id path)
+		 (error (-> mod id)
+		    (format "Cannot find \"~a\" module source file" (-> mod id))
+		    id))))
 	 (((and (? symbol?) ?id) (and (? string?) ?path))
 	  (parse-import-all id path))
 	 ((??- (and (? symbol?) ?id) (and (? string?) ?path))
@@ -1578,9 +1582,58 @@
 	  (let ((plugin (assq id *plugins4*)))
 	     (if plugin
 		 ((cdr plugin) mod clause) 
-		 (error/loc mod "Illegal module clause" clause expr))))
+		 (error/loc mod "Illegal module4 clause" clause expr))))
 	 (else
-	  (error/loc mod "Illegal module clause" clause expr)))))
+	  (error/loc mod "Illegal module4 clause" clause expr)))))
+
+;*---------------------------------------------------------------------*/
+;*    module4-resolve-module-path ...                                  */
+;*    -------------------------------------------------------------    */
+;*    Module4 module identifier resolution. Contrary to module5,       */
+;*    module4 path are relative to the direction from where the        */
+;*    compiler is invoked, as are module4 .afile files.                */
+;*---------------------------------------------------------------------*/
+(define (module4-resolve-module-path mod::Module ident::symbol)
+   
+   (define (fallback dir ident)
+      (any (lambda (suffix)
+	      (let ((p (make-file-name dir
+			  (format "~a.~a" ident suffix))))
+		 (when (file-exists? p)
+		    p)))
+	 '("scm" "bgl")))
+   
+   (let* ((dir (pwd))
+	  (afile (module4-load-afile (dirname (-> mod path)))))
+      (if (pair? afile)
+	  (let ((path (assq ident afile)))
+	     (if (pair? path)
+		 (cadr path)
+		 (fallback dir ident)))
+	  (fallback dir ident))))
+
+;*---------------------------------------------------------------------*/
+;*    *afiles* ...                                                     */
+;*---------------------------------------------------------------------*/
+(define *afiles* '())
+
+;*---------------------------------------------------------------------*/
+;*    module4-load-afile ...                                           */
+;*---------------------------------------------------------------------*/
+(define (module4-load-afile dir::bstring)
+   (synchronize module-mutex
+      (let loop ((dir dir))
+	 (if (string=? dir "/")
+	     '()
+	     (let ((afile (assoc dir *afiles*)))
+		(if (pair? afile)
+		    (cdr afile)
+		    (let ((aname (make-file-name dir ".afile")))
+		       (if (file-exists? aname)
+			   (let ((afile (call-with-input-file aname read)))
+			      (set! *afiles* (cons (cons dir afile) *afiles*))
+			      afile)
+			   (loop (dirname dir))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-unbounds ...                                               */

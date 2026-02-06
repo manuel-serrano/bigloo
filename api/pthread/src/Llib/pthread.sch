@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/api/pthread/src/Llib/pthread.sch       */
+;*    .../project/bigloo/5.0a/api/pthread/src/Llib/pthread.sch         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar  5 14:48:55 2005                          */
-;*    Last change :  Sat May 13 08:40:31 2023 (serrano)                */
-;*    Copyright   :  2005-23 Manuel Serrano                            */
+;*    Last change :  Fri Feb  6 10:37:39 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The native interfaces for threads                                */
 ;*=====================================================================*/

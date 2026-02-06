@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Feb  6 08:53:51 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 10:21:27 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -22,6 +22,7 @@
 	   tools_shape
  	   tools_location
 	   read_jvm
+	   backend_backend
 	   module_module
 	   module_class
 	   module_checksum
@@ -64,6 +65,7 @@
 	   (module4-extern-plugin-java ::Module ::pair)
 	   (module4-plugin-eval ::Module ::pair)
 	   (module4-plugin-type ::Module ::pair)
+	   (module4-plugin-pragma ::Module ::pair)
 	   (module5-resolve-pragma! ::Module ::obj)
 	   (module5-heap4-modules::pair-nil)
 	   (module5-init-xenv! xenv ::Module))
@@ -647,13 +649,16 @@
 ;*    module5-extern-plugin-c ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (module5-extern-plugin-c mod::Module x::pair)
-   (for-each (lambda (c) (parse-extern-c-clause c mod x)) (cddr x)))
+   (when (memq 'extern (backend-foreign-clause-support (the-backend)))
+      (for-each (lambda (c) (parse-extern-c-clause c mod x)) (cddr x)))
+   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    module4-extern-plugin-c ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (module4-extern-plugin-c mod::Module x::pair)
-   (for-each (lambda (c) (parse-extern-c-clause c mod x)) (cdr x))
+   (when (memq 'extern (backend-foreign-clause-support (the-backend)))
+      (for-each (lambda (c) (parse-extern-c-clause c mod x)) (cdr x)))
    '())
 
 ;*---------------------------------------------------------------------*/
@@ -671,7 +676,8 @@
 	 (else
 	  (error/loc mod "Illegal extern \"C\" module clause" clause x))))
    
-   (for-each parse-clause (cdr x))
+   (when (memq 'java (backend-foreign-clause-support (the-backend)))
+      (for-each parse-clause (cdr x)))
    '())
 
 ;*---------------------------------------------------------------------*/
@@ -680,8 +686,8 @@
 (define (module5-extern-plugin-java mod::Module x::pair)
    
    (define (parse-clause clause mod::Module x::pair pkg)
-
-
+      
+      
       (define modifier-list
 	 '(public private protected static final synchronized abstract))
       
@@ -742,7 +748,7 @@
 		 (cpkg name)
 		 (pkg (format "~a.~a" pkg id))
 		 (else name))))
-
+      
       (define (class-predicate id x)
 	 (let ((o (gensym 'obj))
 	       (id (fast-id-of-id id (find-location x))))
@@ -764,14 +770,16 @@
 		   (set! body (cons pred body))))))
 	 (else
 	  (error/loc mod "Illegal extern \"java\" module clause" clause x))))
-
+   
    (with-trace 'jvm "module5-extern-plugin-java"
-      (match-case (cddr x)
-	 (((package (and (? symbol?) ?pkg)) . ?other-clauses)
-	  (add-qualified-type! (-> mod id) (format "~a.~a" pkg (-> mod id)))
-	  (for-each (lambda (c) (parse-clause c mod x pkg)) other-clauses))
-	 (else
-	  (for-each (lambda (c) (parse-clause c mod x #f)) (cddr x))))))
+      (when (memq 'java (backend-foreign-clause-support (the-backend)))
+	 (match-case (cddr x)
+	    (((package (and (? symbol?) ?pkg)) . ?other-clauses)
+	     (add-qualified-type! (-> mod id) (format "~a.~a" pkg (-> mod id)))
+	     (for-each (lambda (c) (parse-clause c mod x pkg)) other-clauses))
+	    (else
+	     (for-each (lambda (c) (parse-clause c mod x #f)) (cddr x)))))
+      '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-wasm ...                                   */
@@ -798,7 +806,9 @@
 	 (else
 	  (error/loc mod "Illegal extern \"wasm\" module clause" clause expr))))
    
-   (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
+   (when (memq 'wasm (backend-foreign-clause-support (the-backend)))
+      (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
+   '())
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-plugin-pragma ...                                        */
@@ -840,6 +850,13 @@
 ;*---------------------------------------------------------------------*/
 (define (module4-plugin-type mod::Module x::pair)
    (for-each (lambda (c) (type-parser #f c x)) (cdr x))
+   '())
+
+;*---------------------------------------------------------------------*/
+;*    module4-plugin-pragma ...                                        */
+;*---------------------------------------------------------------------*/
+(define (module4-plugin-pragma mod::Module x::pair)
+   (for-each (lambda (c) (pragma-parser c (-> mod id) x)) (cdr x))
    '())
 
 ;*---------------------------------------------------------------------*/

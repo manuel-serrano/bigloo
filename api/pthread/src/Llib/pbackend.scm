@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/pthread/src/Llib/pbackend.scm        */
+;*    .../project/bigloo/5.0a/api/pthread/src/Llib/pbackend.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 24 06:42:48 2008                          */
-;*    Last change :  Tue Mar 12 11:58:00 2013 (serrano)                */
-;*    Copyright   :  2008-13 Manuel Serrano                            */
+;*    Last change :  Fri Feb  6 10:39:08 2026 (serrano)                */
+;*    Copyright   :  2008-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Posix thread backend                                         */
 ;*=====================================================================*/
@@ -14,8 +14,6 @@
 ;*---------------------------------------------------------------------*/
 (module __pth_backend
 
-   (include "pthread.sch")
-   
    (import __pth_thread)
    
    (export (class pthread-backend::thread-backend))

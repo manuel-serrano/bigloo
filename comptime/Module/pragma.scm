@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/pragma.scm      */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/pragma.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Mon Oct 20 08:50:12 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb  6 10:22:21 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
 ;*=====================================================================*/
@@ -28,6 +28,7 @@
 	   (find-location tools_location))
    (export (make-pragma-compiler)
 	   (pragma-finalizer)
+	   (pragma-parser proto module clause)
 	   (set-global-pragma-property! ::obj ::obj ::obj)))
 
 ;*---------------------------------------------------------------------*/

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Engine/compiler.scm                 */
+;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Feb  4 11:05:50 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 10:21:11 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -539,6 +539,7 @@
       (module4-register-plugin! 'java module4-extern-plugin-java)
       (module4-register-plugin! 'type module4-plugin-type)
       (module4-register-plugin! 'eval module4-plugin-eval)
+      (module4-register-plugin! 'pragma module4-plugin-pragma)
 
       (module5-preload-cache! (module5-heap4-modules))
 
