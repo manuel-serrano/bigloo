@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
 ;*    Last change :  Tue Sep 23 08:53:59 2025 (serrano)                */
-;*    Copyright   :  2006-25 Manuel Serrano                            */
+;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
 ;*=====================================================================*/

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/runtime/Llib/object.scm                      */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/object.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Feb  6 18:41:56 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 21:00:57 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -366,6 +366,7 @@
 	    (class-field-mutable?::bool ::class-field)
 	    (class-field-mutator::procedure ::class-field)
 	    (class-field-type::obj ::class-field)
+	    (class-field-index::long ::class-field)
 	    (register-class!::class ::symbol ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::obj ::vector)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
 	    (generic-add-method!::procedure ::procedure ::obj ::procedure ::obj)
@@ -634,7 +635,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-class-field name getter setter ronly virtual info default type)
    (vector name getter setter virtual make-class-field
-      info default type (not ronly)))
+      info default type (not ronly) -1))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field? ...                                                 */
@@ -685,6 +686,12 @@
 ;*---------------------------------------------------------------------*/
 (define (class-field-default-value? field)
    (procedure? (vector-ref-ur field 6)))
+
+;*---------------------------------------------------------------------*/
+;*    class-field-index ...                                            */
+;*---------------------------------------------------------------------*/
+(define (class-field-index field)
+   (vector-ref-ur field 9))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field-default-value ...                                    */
