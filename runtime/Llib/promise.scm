@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Fri Feb  6 07:42:40 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 11:11:39 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript like promise for Bigloo.                              */
@@ -58,6 +58,7 @@
 	       (rejecter (default #f)))
 	    (make-promise::promise ::procedure)
 	    (then ::promise ::procedure #!optional fail)
+	    (then* ::promise ::procedure . rest)
 	    (run-promises)))
 
 ;*---------------------------------------------------------------------*/
@@ -71,15 +72,13 @@
 ;*    make-promise ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (make-promise executor::procedure)
-   (synchronize *promise-mutex*
-      (set! *promise-count* (+fx 1 *promise-count*)))
    (let ((o (instantiate::promise)))
       (with-access::promise o (state resolver rejecter thens catches name)
 	 (set! state 'pending)
 	 (set! thens '())
 	 (set! catches '())
 	 (multiple-value-bind (resolve reject)
-	    (create-resolving-functions o)
+	    (create-resolving-functions o #t)
 	    (set! resolver resolve)
 	    (set! rejecter reject)
 	    (with-handler
@@ -87,6 +86,7 @@
 		  (reject e)
 		  o)
 	       (begin
+		  
 		  (executor resolve reject)
 		  o))))))
 
@@ -95,7 +95,8 @@
 ;*---------------------------------------------------------------------*/
 (define (promise-notify)
    (synchronize *promise-mutex*
-      (set! *promise-count* (-fx 1 *promise-count*))
+      (set! *promise-count* (-fx *promise-count* 1))
+      (tprint "promise-notify " *promise-count*)
       (condition-variable-broadcast! *promise-condv*)))
 
 ;*---------------------------------------------------------------------*/
@@ -106,16 +107,62 @@
       (promise-then-catch o proc fail no)))
 
 ;*---------------------------------------------------------------------*/
+;*    then* ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (then* o::promise proc::procedure . rest)
+   (cond
+      ((null? rest)
+       (then o proc))
+      ((null? (cdr rest))
+       (then o proc (car rest)))
+      (else
+       (let loop ((rest rest)
+		  (p (then o proc)))
+	  (if (null? (cddr rest))
+	      (then p (car rest) (cadr rest))
+	      (loop (cdr rest) (then p (car rest))))))))
+   
+;*---------------------------------------------------------------------*/
+;*    promise-then-catch ...                                           */
+;*---------------------------------------------------------------------*/
+(define (promise-then-catch::promise o::promise proc fail no::promise)
+   (with-access::promise o (thens catches state val)
+      (let ((fullfill (cons no (if (procedure? proc) proc 'identity)))
+	    (reject (cons no (if (procedure? fail) fail 'thrower))))
+	 (tprint "state=" state)
+	 (case state
+	    ((pending)
+	     (set! thens (cons fullfill thens))
+	     (set! catches (cons reject catches)))
+	    ((fullfilled)
+	     (push-action!
+		(lambda ()
+		   (tprint "IN ACT.1")
+		   (promise-reaction-job fullfill val))))
+	    ((rejected)
+	     (push-action!
+		(lambda ()
+		   (tprint "IN ACT.2")
+		   (promise-reaction-job reject val)))))
+	 no)))
+
+;*---------------------------------------------------------------------*/
 ;*    create-resolving-functions ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (create-resolving-functions o::promise)
+(define (create-resolving-functions o::promise notify::bool)
+   (tprint "create-resolving-functions notify=" notify)
+   (when notify
+      (synchronize *promise-mutex*
+	 (set! *promise-count* (+fx *promise-count* 1))))
    (let* ((resolved #f)
 	  (resolve (lambda (resolution)
 		      (unless resolved
+			 (when notify (promise-notify))
 			 (set! resolved #t)
 			 (promise-resolve o resolution))))
 	  (reject (lambda (reason)
 		     (unless resolved
+			(when notify (promise-notify))
 			(set! resolved #t)
 			(promise-reject o reason)))))
       (values resolve reject)))
@@ -126,7 +173,6 @@
 (define (promise-reject o::promise reason)
    (with-access::promise o (state)
       (when (eq? state 'pending)
-	 (promise-notify)
 	 (reject o reason))))
 
 ;*---------------------------------------------------------------------*/
@@ -136,13 +182,12 @@
    
    (define (promise-resolve-thenable o::promise thenable then)
       (multiple-value-bind (resolve reject)
-	 (create-resolving-functions o)
+	 (create-resolving-functions o #f)
 	 (with-handler
 	    (lambda (e)
 	       (reject e))
 	    (then resolve reject))))
    
-   (promise-notify)
    (with-access::promise o (%this worker)
       (cond
 	 ((eq? o resolution)
@@ -208,30 +253,6 @@
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
-;*    promise-then-catch ...                                           */
-;*---------------------------------------------------------------------*/
-(define (promise-then-catch::promise o::promise proc fail no::promise)
-   (with-access::promise o (thens catches state val)
-      (let ((fullfill (cons no (if (procedure? proc) proc 'identity)))
-	    (reject (cons no (if (procedure? fail) fail 'thrower))))
-	 (tprint "state=" state)
-	 (case state
-	    ((pending)
-	     (set! thens (cons fullfill thens))
-	     (set! catches (cons reject catches)))
-	    ((fullfilled)
-	     (push-action!
-		(lambda ()
-		   (tprint "IN ACT.1")
-		   (promise-reaction-job fullfill val))))
-	    ((rejected)
-	     (push-action!
-		(lambda ()
-		   (tprint "IN ACT.2")
-		   (promise-reaction-job reject val)))))
-	 no)))
-
-;*---------------------------------------------------------------------*/
 ;*    unresolved ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define unresolved (cons #f #t))
@@ -269,10 +290,9 @@
 ;*    push-action ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (push-action! action::procedure)
-   (synchronize *promise-mutex*
-      (let ((last (cons action '())))
-	 (set-cdr! *last-actions* last)
-	 (set! *last-actions* last))))
+   (let ((last (cons action '())))
+      (set-cdr! *last-actions* last)
+      (set! *last-actions* last)))
 
 ;*---------------------------------------------------------------------*/
 ;*    run-promises ...                                                 */

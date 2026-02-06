@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Feb  6 10:05:51 2026 (serrano)                */
+;*    Last change :  Fri Feb  6 10:55:51 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1021,14 +1021,16 @@
 	 (when (epair? ec)
 	    (module5-parse-clause ec expr mod lib-path cache-dir expand))))
 
-   (define (parse-library-all id::symbol clause expr::pair mod::Module expand)
+   (define (parse-library-all id clause expr::pair mod::Module expand)
       (let* ((lib (cadr clause))
 	     (rlib (module5-resolve-library lib lib-path)))
 	 (if (string? rlib)
 	     (let ((lmod::Module (module5-read-library rlib clause mod)))
 		(hashtable-for-each (-> lmod exports)
 		   (lambda (k d::Decl)
-		      (let* ((alias (module5-qualified-name (-> d alias) id))
+		      (let* ((alias (if id
+					(module5-qualified-name (-> d alias) id)
+					(-> d alias)))
 			     (nd (duplicate::Decl d
 				    (alias alias)
 				    (scope 'import))))
@@ -1095,8 +1097,10 @@
 	  (parse-main main expr mod expand))
 	 ((include . ?-)
 	  (parse-include clause expr mod expand))
-	 ((library (? symbol?) (and (? symbol?) ?id))
+	 ((library (? symbol?) . (and (? symbol?) ?id))
 	  (parse-library-all id clause expr mod expand))
+	 ((library (? symbol?))
+	  (parse-library-all #f clause expr mod expand))
 	 ((library (? symbol?) (? list?))
 	  (parse-library-some clause expr mod expand))
 	 ((extern (and (? string?) ?name) . ?clauses)
