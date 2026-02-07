@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/runtime/Llib/promise.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/promise.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Fri Feb  6 17:13:28 2026 (serrano)                */
+;*    Last change :  Sat Feb  7 17:24:27 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript like promise for Bigloo.                              */
@@ -57,8 +57,9 @@
 	       (resolver (default #f))
 	       (rejecter (default #f)))
 	    (make-promise::promise ::procedure)
-	    (then ::promise ::procedure #!optional fail)
+	    (then ::promise ::procedure)
 	    (then* ::promise ::procedure . rest)
+	    (catch ::promise ::procedure)
 	    (run-promises)))
 
 ;*---------------------------------------------------------------------*/
@@ -69,16 +70,34 @@
 (define *promise-count* 0)
 
 ;*---------------------------------------------------------------------*/
+;*    promise-inc! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (promise-inc! msg)
+   (synchronize *promise-mutex*
+      (tprint "promise-inc! " *promise-count* " " msg)
+      (set! *promise-count* (+fx *promise-count* 1))))
+
+;*---------------------------------------------------------------------*/
+;*    promise-dec! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (promise-dec! msg)
+   (synchronize *promise-mutex*
+      (tprint "promise-dec! " *promise-count* " " msg)
+      (set! *promise-count* (-fx *promise-count* 1))
+      (condition-variable-broadcast! *promise-condv*)))
+
+;*---------------------------------------------------------------------*/
 ;*    make-promise ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (make-promise executor::procedure)
    (let ((o (instantiate::promise)))
+      (promise-inc! "make-promise")
       (with-access::promise o (state resolver rejecter thens catches name)
 	 (set! state 'pending)
 	 (set! thens '())
 	 (set! catches '())
 	 (multiple-value-bind (resolve reject)
-	    (create-resolving-functions o #t)
+	    (create-resolving-functions o)
 	    (set! resolver resolve)
 	    (set! rejecter reject)
 	    (with-handler
@@ -90,86 +109,16 @@
 		  o))))))
 
 ;*---------------------------------------------------------------------*/
-;*    promise-inc! ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (promise-inc!)
-   (synchronize *promise-mutex*
-      (tprint "promise-inc! " *promise-count*)
-      (set! *promise-count* (+fx *promise-count* 1))))
-
-;*---------------------------------------------------------------------*/
-;*    promise-dec! ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (promise-dec!)
-   (tprint "promise decl mutex=" *promise-mutex*)
-   (synchronize *promise-mutex*
-      (tprint "promise-dec! " *promise-count*)
-      (set! *promise-count* (-fx *promise-count* 1))
-      (condition-variable-broadcast! *promise-condv*)))
-
-;*---------------------------------------------------------------------*/
-;*    then ...                                                         */
-;*---------------------------------------------------------------------*/
-(define (then o::promise proc::procedure #!optional fail)
-   (let ((no (instantiate::promise)))
-      (promise-then-catch o proc fail no)))
-
-;*---------------------------------------------------------------------*/
-;*    then* ...                                                        */
-;*---------------------------------------------------------------------*/
-(define (then* o::promise proc::procedure . rest)
-   (cond
-      ((null? rest)
-       (then o proc))
-      ((null? (cdr rest))
-       (then o proc (car rest)))
-      (else
-       (let loop ((rest rest)
-		  (p (then o proc)))
-	  (if (null? (cddr rest))
-	      (then p (car rest) (cadr rest))
-	      (loop (cdr rest) (then p (car rest))))))))
-   
-;*---------------------------------------------------------------------*/
-;*    promise-then-catch ...                                           */
-;*---------------------------------------------------------------------*/
-(define (promise-then-catch::promise o::promise proc fail no::promise)
-   (with-access::promise o (thens catches state val)
-      (let ((fullfill (cons no (if (procedure? proc) proc 'identity)))
-	    (reject (cons no (if (procedure? fail) fail 'thrower))))
-	 (tprint "promise-then-catch state=" state)
-	 (case state
-	    ((pending)
-	     (set! thens (cons fullfill thens))
-	     (set! catches (cons reject catches)))
-	    ((fullfilled)
-	     (push-action!
-		(lambda ()
-		   (tprint "IN ACT.1")
-		   (promise-reaction-job fullfill val))))
-	    ((rejected)
-	     (push-action!
-		(lambda ()
-		   (tprint "IN ACT.2")
-		   (promise-reaction-job reject val)))))
-	 no)))
-
-;*---------------------------------------------------------------------*/
 ;*    create-resolving-functions ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (create-resolving-functions o::promise notify::bool)
-   (tprint "create-resolving-functions notify=" notify)
-   (when notify (promise-inc!))
+(define (create-resolving-functions o::promise)
    (let* ((resolved #f)
 	  (resolve (lambda (resolution)
-		      (tprint "IN resolve function resolved=" resolved " notify=" notify)
 		      (unless resolved
-			 (when notify (promise-dec!))
 			 (set! resolved #t)
 			 (promise-resolve o resolution))))
 	  (reject (lambda (reason)
 		     (unless resolved
-			(when notify (promise-dec!))
 			(set! resolved #t)
 			(promise-reject o reason)))))
       (values resolve reject)))
@@ -187,13 +136,13 @@
 ;*---------------------------------------------------------------------*/
 (define (promise-resolve o::promise resolution)
    
-   (define (promise-resolve-thenable o::promise thenable then)
+   (define (promise-resolve-thenable o::promise thenable::promise)
       (multiple-value-bind (resolve reject)
-	 (create-resolving-functions o #f)
+	 (create-resolving-functions o)
 	 (with-handler
 	    (lambda (e)
 	       (reject e))
-	    (then resolve reject))))
+	    (promise-then-catch o resolve reject thenable))))
    
    (with-access::promise o (%this worker)
       (cond
@@ -203,6 +152,10 @@
 		(proc "promise")
 		(msg "self resolution error")
 		(obj o))))
+	 ((isa? resolution promise)
+	  (push-action!
+	     (lambda ()
+		(promise-resolve-thenable o resolution))))
 	 (else
 	  (fullfill o resolution)))))
 
@@ -260,18 +213,12 @@
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
-;*    unresolved ...                                                   */
-;*---------------------------------------------------------------------*/
-(define unresolved (cons #f #t))
-
-;*---------------------------------------------------------------------*/
 ;*    promise-reaction-job ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (promise-reaction-job reaction arg)
    (let ((promise (car reaction))
 	 (handler (cdr reaction)))
       (with-access::promise promise (%this resolver)
-	 (tprint "reaction-job " handler " " arg)
 	 (cond
 	    ((eq? handler 'identity)
 	     (if (procedure? resolver)
@@ -284,8 +231,52 @@
 		(lambda (e)
 		   (promise-reject promise e))
 		(let ((hresult (handler arg)))
-		   (unless (eq? hresult unresolved)
-		      (promise-resolve promise hresult)))))))))
+		   (promise-resolve promise hresult))))))))
+
+;*---------------------------------------------------------------------*/
+;*    then ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (then o::promise proc::procedure)
+   (promise-inc! "then")
+   (promise-then-catch o proc #f (instantiate::promise)))
+
+;*---------------------------------------------------------------------*/
+;*    then* ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (then* o::promise proc::procedure . rest)
+   (let loop ((rest rest)
+	      (p (then o proc)))
+      (if (null? rest)
+	  p
+	  (loop (cdr rest) (then p (car rest))))))
+   
+;*---------------------------------------------------------------------*/
+;*    catch ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (catch o::promise proc::procedure)
+   (promise-inc! "catch")
+   (promise-then-catch o #f proc (instantiate::promise)))
+
+;*---------------------------------------------------------------------*/
+;*    promise-then-catch ...                                           */
+;*---------------------------------------------------------------------*/
+(define (promise-then-catch::promise o::promise proc fail no::promise)
+   (with-access::promise o (thens catches state val)
+      (let ((fullfill (cons no (if (procedure? proc) proc 'identity)))
+	    (reject (cons no (if (procedure? fail) fail 'thrower))))
+	 (case state
+	    ((pending)
+	     (set! thens (cons fullfill thens))
+	     (set! catches (cons reject catches)))
+	    ((fullfilled)
+	     (push-action!
+		(lambda ()
+		   (promise-reaction-job fullfill val))))
+	    ((rejected)
+	     (push-action!
+		(lambda ()
+		   (promise-reaction-job reject val)))))
+	 no)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *actions* ...                                                    */
@@ -297,6 +288,7 @@
 ;*    push-action ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (push-action! action::procedure)
+   (promise-dec! "push-action")
    (let ((last (cons action '())))
       (set-cdr! *last-actions* last)
       (set! *last-actions* last)))
@@ -310,6 +302,8 @@
       (synchronize *promise-mutex*
 	 (let loop ()
 	    (let ((actions (cdr *actions*)))
+	       (tprint "flush-action actions=" (length actions)
+		  " " *promise-count*)
 	       (cond
 		  ((pair? actions)
 		   (set-cdr! *actions* '())
@@ -322,8 +316,9 @@
 		   '()))))))
    
    (let loop ()
+      (tprint "run-actions waiting..." *promise-count*)
       (let ((actions (flush-actions)))
-	 (tprint "run-actions actions=" actions " " *promise-count*)
+	 (tprint "run-actions executing..." actions " " *promise-count*)
 	 (when (pair? actions)
-	    (for-each (lambda (a) (a)) actions)
+	    (for-each (lambda (a) (promise-dec! "action") (a)) actions)
 	    (loop)))))
