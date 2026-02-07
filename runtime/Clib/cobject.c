@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cobject.c        */
+/*    serrano/prgm/project/bigloo/5.0a/runtime/Clib/cobject.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Oct 28 08:08:56 2012                          */
-/*    Last change :  Fri Nov 15 07:37:22 2024 (serrano)                */
-/*    Copyright   :  2012-24 Manuel Serrano                            */
+/*    Last change :  Sat Feb  7 09:29:25 2026 (serrano)                */
+/*    Copyright   :  2012-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C Bigloo object management.                                      */
 /*=====================================================================*/
@@ -40,8 +40,6 @@ bgl_make_class(obj_t name, obj_t module,
    klass->class.header = BGL_MAKE_HEADER(CLASS_TYPE, 0);
    klass->class.name = name;
    klass->class.index = num;
-   // only used no 64 bit platforms
-   //klass->class.inheritance_index = inheritance_num << (HEADER_TYPE_BIT_SIZE);
    klass->class.inheritance_index = inheritance_num << (BGL_HEADER_DATA_SHIFT - BGL_HEADER_TYPE_SHIFT);
    klass->class.super = super;
    klass->class.subclasses = sub;
@@ -66,6 +64,7 @@ bgl_make_class(obj_t name, obj_t module,
 	      sizeof(obj_t) * depth);
    }
    (&klass->class.ancestor0)[depth] = BREF(klass);
+
 
    return BREF(klass);
 }

@@ -625,4 +625,6 @@
       (gen-type type)
       (display ")BOBJECT(BGL_CLASS_ALLOC_INSTANCE(")
       (gen-type type)
+      (display ",")
+      (display (type-size type))
       (display ")))")))

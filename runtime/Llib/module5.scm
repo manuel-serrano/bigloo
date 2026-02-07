@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/runtime/Llib/module5.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/module5.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Feb  6 15:43:13 2026 (serrano)                */
+;*    Last change :  Sat Feb  7 08:41:30 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1808,7 +1808,8 @@
 					    (defvalue . ,(prop-info-defv? p))
 					    (value . ,(prop-info-value p))
 					    (get . ,(prop-info-get p))
-					    (set . ,(prop-info-set p)))))
+					    (set . ,(prop-info-set p))
+					    (vindex . ,(prop-info-vindex p)))))
 			   (class-info-properties ci))))))
 
    (hashtable-for-each (-> mod classes)

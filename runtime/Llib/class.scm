@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/runtime/Llib/class.scm                       */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/class.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Fri Feb  6 14:51:47 2026 (serrano)                */
+;*    Last change :  Sat Feb  7 06:36:24 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -89,26 +89,35 @@
 	    ((eq? id super) (values id #f))
 	    (else (values id super)))))
 
-   (define (class-depth k)
+   (define (class-depth-and-virtual-length k)
       (if (not k)
-	  0
+	  (values 0 0)
 	  (let ((ci (module5-get-class mod k)))
 	     (if (not ci)
 		 (error/loc "parse-class"
 		    "Cannot find super class" x x)
-		 (+fx 1 (class-info-depth ci))))))
+		 (values (+fx 1 (class-info-depth ci))
+		    (class-info-vlength ci))))))
    
    (match-case x
       (((and (? class-kind?) ?kind)  ?ident (?ctor) . ?props)
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
-	  (class-info id (class-depth super) super kind
-	     ctor (parse-properties props id) #unspecified x #f)))
+	  (multiple-value-bind (depth vlength)
+	     (class-depth-and-virtual-length super)
+	     (multiple-value-bind (props vlength)
+		(parse-properties props id vlength)
+		(class-info id depth super kind ctor
+		   props #unspecified x #f vlength)))))
       (((and (? class-kind?) ?kind) ?ident . ?props)
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
-	  (class-info id (class-depth super) super kind
-	     #f (parse-properties props id) #unspecified x #f)))
+	  (multiple-value-bind (depth vlength)
+	     (class-depth-and-virtual-length super)
+	     (multiple-value-bind (props vlength)
+		(parse-properties props id vlength)
+		(class-info id depth super kind #f
+		   props #unspecified x #f vlength)))))
       (else
        (error/loc "parse" "Illegal class definition" x x))))
 
@@ -139,7 +148,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    parse-properties ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (parse-properties props klass)
+(define (parse-properties props klass vindex)
 
    (define (ronly-error pi a)
       (error/loc klass
@@ -157,14 +166,20 @@
 	  (prop-info-defv?-set! pi #t)
 	  (prop-info-value-set! pi val))
 	 ((get ?get)
-	  (prop-info-virtual?-set! pi #t)
-	  (prop-info-get-set! pi get))
+	  (prop-info-get-set! pi get)
+	  (unless (prop-info-virtual? pi)
+	     (prop-info-virtual?-set! pi #t)
+	     (prop-info-vindex-set! pi vindex)
+	     (set! vindex (+fx vindex 1))))
 	 ((set ?set)
 	  (if (prop-info-ronly? pi)
 	      (ronly-error pi a)
 	      (begin
-		 (prop-info-virtual?-set! pi #t)
-		 (prop-info-get-set! pi set))))
+		 (prop-info-set-set! pi set)
+		 (unless (prop-info-virtual? pi)
+		    (prop-info-vindex-set! pi vindex)
+		    (prop-info-virtual?-set! pi #t)
+		    (set! vindex (+fx vindex 1))))))
 	 (else
 	  (error/loc (prop-info-id pi) "Illegal attribute" a x))))
       
@@ -175,7 +190,7 @@
 	     (parse-ident ident p)
 	     (let ((pi (prop-info id (or type 'obj) klass #f #f #f
 			  #unspecified #unspecified #unspecified
-			  p)))
+			  p -1)))
 		(for-each (lambda (a)
 			     (parse-attribute a pi p))
 		   attrs)
@@ -185,11 +200,12 @@
 	     (parse-ident p x)
 	     (prop-info id (or type 'obj) klass #f #f #f
 		#unspecified #unspecified #unspecified
-		p)))
+		p -1)))
 	 (else
 	  (error/loc klass "Illegal property" p props))))
    
-   (map (lambda (p) (parse-property p klass)) props))
+   (let ((props (map (lambda (p) (parse-property p klass)) props)))
+      (values props vindex)))
 
 ;*---------------------------------------------------------------------*/
 ;*    allocate-expand ...                                              */
@@ -279,34 +295,45 @@
 ;*    properties-expand ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (properties-expand class-info virtual?)
-   (let ((to (make-typed-ident 'o (class-info-id class-info))))
-      `(vector
-	  ,@(filter-map (lambda (p)
-			   (when (eq? (prop-info-virtual? p) virtual?)
-			      (let ((ty (prop-info-type p))
-				    (id (prop-info-id p)))
-				 `((@ make-class-field __object)
-				   ;; id
-				   ',id
-				   ;; get
-				   (lambda (,to) (-> o ,id))
-				   ;; set
-				   ,@(if (prop-info-ronly? p)
-					 '()
-					 (let ((tv (make-typed-ident 'v ty)))
-					    (list `(lambda (,to ,tv)
-						      (set! (-> o ,id) v)))))
-				   ;; ronly
-				   ,(prop-info-ronly? p)
-				   ;; virtual
-				   ,(prop-info-virtual? p)
-				   ;; info
-				   #f
-				   ;; default
-				   (lambda () ,(prop-info-value p))
-				   ;; type
-				   ',(prop-info-type p)))))
-	       (class-info-properties class-info)))))
+   
+   (define to (make-typed-ident 'o (class-info-id class-info)))
+   
+   (define (expand-property p)
+      (when (eq? (prop-info-virtual? p) virtual?)
+	 (let ((ty (prop-info-type p))
+	       (id (prop-info-id p)))
+	    `((@ make-class-field+ __object)
+	      ;; id
+	      ',id
+	      ;; get
+	      ,(if virtual?
+		   (prop-info-get p)
+		   `(lambda (,to) (-> o ,id)))
+	      ;; set
+	      ,@(cond
+		   ((prop-info-ronly? p)
+		    '())
+		   (virtual?
+		    (list (prop-info-set p)))
+		   (else
+		    (let ((tv (make-typed-ident 'v ty)))
+		       (list `(lambda (,to ,tv)
+				 (set! (-> o ,id) v))))))
+	      ;; ronly
+	      ,(prop-info-ronly? p)
+	      ;; virtual
+	      ,(prop-info-virtual? p)
+	      ;; info
+	      #f
+	      ;; default
+	      (lambda () ,(prop-info-value p))
+	      ;; type
+	      ',(prop-info-type p)
+	      ;; field-index
+	      ,(prop-info-vindex p)))))
+   `(vector
+       ,@(filter-map expand-property
+	    (class-info-properties class-info))))
 
 ;*---------------------------------------------------------------------*/
 ;*    registration-expand ...                                          */

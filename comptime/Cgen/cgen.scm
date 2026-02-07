@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Cgen/cgen.scm                       */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cgen/cgen.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Fri Feb  6 16:02:52 2026 (serrano)                */
+;*    Last change :  Sat Feb  7 15:22:47 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -635,8 +635,8 @@
 	       (let* ((o (make-local-svar/name (gensym 'o) type))
 		      (alloc (instantiate::pragma
 				(type type)
-				(format (format "BGL_CLASS_ALLOC_INSTANCE(~a)"
-					   (type-name type)))))
+				(format (format "BGL_CLASS_ALLOC_INSTANCE(~a, ~a)"
+					   (type-name type) (type-size type)))))
 		      (assig (node->cop (node-setq o alloc) *id-kont* inpushexit)))
 		  (set-variable-name! o)
 		  (instantiate::cblock

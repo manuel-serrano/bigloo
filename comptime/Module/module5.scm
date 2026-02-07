@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Feb  6 10:21:27 2026 (serrano)                */
+;*    Last change :  Sat Feb  7 08:43:47 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -138,6 +138,26 @@
 	     (else 'variable))))
    
    (define (make-class-slot p i ty expr)
+      (let ((virtual (assq 'vindex p)))
+	 (if (and (pair? virtual) (>=fx (cdr virtual) 0))
+	     (make-class-virtual-slot p i ty expr)
+	     (make-class-direct-slot p i ty expr))))
+
+   (define (make-class-virtual-slot p i ty expr)
+      (let ((id (cdr (assq 'id p))))
+	 (instantiate::slot
+	    (id id)
+	    (index i)
+	    (name (id->name id))
+	    (src (cdr (assq 'expr p)))
+	    (class-owner ty)
+	    (user-info #f)
+	    (virtual-num (cdr (assq 'vindex p)))
+	    (getter (cdr (assq 'get p)))
+	    (setter (cdr (assq 'set p)))
+	    (type (find-type/expr (cdr (assq 'type p)) expr)))))
+
+   (define (make-class-direct-slot p i ty expr)
       (let ((id (cdr (assq 'id p))))
 	 (instantiate::slot
 	    (id id)

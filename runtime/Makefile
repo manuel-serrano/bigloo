@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Feb  5 17:33:36 2026 (serrano)                */
+#*    Last change :  Sat Feb  7 08:02:18 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -1281,6 +1281,10 @@ objs/wasm_s/Llib/unicode.wat: Llib/unicode-generic.sch
 objs/wasm_u/Llib/unicode.wat: Llib/unicode-generic.sch
 objs/wasm_s/Llib/hash.wat: Llib/hash.sch
 objs/wasm_u/Llib/hash.wat: Llib/hash.sch
+objs/obj_s/Llib/class.wat: Llib/class.sch
+objs/obj_u/Llib/class.wat: Llib/class.sch
+objs/obj_s/Llib/module5.wat: Llib/class.sch
+objs/obj_u/Llib/module5.wat: Llib/class.sch
 
 Wlib/wfixnum.wat: Wlib/wfixnum$(WASMFIXNUM).wat.in $(BOOTLIBDIR)/bigloo_config.h
 	preallocs=`$(WASM_BINTS_PREALLOC)`; \
@@ -1328,3 +1332,7 @@ objs/obj_s/Clib/cregexp.o: Clib/cpcre.h Clib/cpcre2.h Clib/cregex.h
 objs/obj_u/Clib/cregexp.o: Clib/cpcre.h Clib/cpcre2.h Clib/cregex.h
 objs/obj_u/Llib/hash.o: Llib/hash.sch
 objs/obj_s/Llib/hash.o: Llib/hash.sch
+objs/obj_u/Llib/class.o: Llib/class.sch
+objs/obj_s/Llib/class.o: Llib/class.sch
+objs/obj_s/Llib/module5.o: Llib/class.sch
+objs/obj_u/Llib/module5.o: Llib/class.sch

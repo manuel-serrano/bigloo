@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Feb  6 21:00:57 2026 (serrano)                */
+;*    Last change :  Sat Feb  7 06:46:55 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -356,6 +356,7 @@
 	    (inline class-nil::obj ::class)
 	    (class-nil-init!::obj ::class)
 	    (make-class-field::class-field ::symbol ::obj ::obj ::bool ::bool ::obj ::obj ::obj)
+	    (make-class-field+::class-field ::symbol ::obj ::obj ::bool ::bool ::obj ::obj ::obj ::long)
 	    (class-field?::bool ::obj)
 	    (class-field-name::symbol ::class-field)
 	    (class-field-info::obj ::class-field)
@@ -636,6 +637,10 @@
 (define (make-class-field name getter setter ronly virtual info default type)
    (vector name getter setter virtual make-class-field
       info default type (not ronly) -1))
+
+(define (make-class-field+ name getter setter ronly virtual info default type index)
+   (vector name getter setter virtual make-class-field
+      info default type (not ronly) index))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-field? ...                                                 */
@@ -1084,7 +1089,7 @@
 		     (vector-append (class-all-fields super) plain)
 		     plain))
 	     (vs (make-class-virtual-slots-vector super virtual))
-	     (class (make-class name module
+	     (clazz (make-class name module
 		       num *inheritance-cnt*
 		       super
 		       '()
@@ -1099,13 +1104,14 @@
 		       shrink
 		       depth
 		       #f)))
-	 ;; set the sub field of the super class
+	 ;; as of 7feb2026, vs seems to be collected during initialization
+	 ;; although it is pointed to by clazz which is live
 	 (when (class? super)
 	    ;; add the class to its super subclasses list
 	    (class-subclasses-set!
-	       super (cons class (class-subclasses super))))
+	       super (cons clazz (class-subclasses super))))
 	 ;; add the class in the *classes* vector
-	 (vector-set! *classes* *nb-classes* class)
+	 (vector-set! *classes* *nb-classes* clazz)
 	 ;; increment the global class number
 	 (set! *nb-classes* (+fx *nb-classes* 1))
 	 ;; on 64bit platforms that support header data, store the
@@ -1129,14 +1135,13 @@
 		   (if (<=fx i depth)
 		       (begin
 			  (vector-set! *inheritances* j
-			     (class-ancestors-ref class i))
+			     (class-ancestors-ref clazz i))
 			  (loop (+fx i 1) (+fx j 1)))
 		       (set! *inheritance-cnt* j))))))
 	 ;; and adjust the method arrays of all generic functions
 	 (generics-add-class! num (if (class? super) (class-index super) num))
-	 class))
+	 clazz))
    
-
    (synchronize $bigloo-generic-mutex
 	
       (initialize-objects!)
@@ -1167,20 +1172,22 @@
 (define (make-class-virtual-slots-vector::vector super virtuals)
    
    (define (fill-vector-with-virtuals!::vector vec::vector)
-      (for-each (lambda (virtual)
-		   (cond
-		      ((pair? virtual)
-		       ;; module4 api
-		       (let ((num (car virtual)))
-			  (vector-set! vec num (cdr virtual))))
-		      ((class-field? virtual)
-		       ;; module5 api
-		       (tprint "TODO"))
-		      (else
-		       (error "make-class-virtual-slots-vector"
-			  "wrong virtual field descriptor"
-			  virtual))))
-		(vector->list virtuals))
+      (vector-for-each (lambda (virtual)
+			  (cond
+			     ((pair? virtual)
+			      ;; module4 api
+			      (let ((num (car virtual)))
+				 (vector-set! vec num (cdr virtual))))
+			     ((class-field? virtual)
+			      ;; module5 api
+			      (vector-set! vec (class-field-index virtual)
+				 (cons (class-field-accessor virtual)
+				    (class-field-mutator virtual))))
+			     (else
+			      (error "make-class-virtual-slots-vector"
+				 "wrong virtual field descriptor"
+				 virtual))))
+	 virtuals)
       vec)
 
    (if (not (class? super))

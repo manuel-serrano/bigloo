@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Engine/compiler.scm                 */
+;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Feb  6 16:28:12 2026 (serrano)                */
+;*    Last change :  Sat Feb  7 08:25:25 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -656,8 +656,20 @@
 	 (let* ((m (module5-main mod genv))
 		(ast (profile ast (build-ast units genv))))
 
-	    ;; register main declaration
-	    (set! *main* m)
+	    ;; check and register main declaration
+	    (when (isa? m global)
+	       (with-access::global m (value name)
+		  (unless (and (sfun? value))
+		     (error *module*
+			"main is not a function of argument" name))
+		  (cond
+		     ((eq? (global-type m) *_*)
+		      (global-type-set! m *obj*))
+		     ((not (eq? (global-type m) *obj*))
+		      (error *module*
+			 "incorrect main return type (should be \"obj\")"
+			 (type-id (global-type m)))))
+		  (set! *main* m)))
 
 	    ;; handle pragma declarations
 	    (module5-resolve-pragma! mod genv)

@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
 ;*    Last change :  Mon Oct 20 13:58:10 2025 (serrano)                */
-;*    Copyright   :  2011-25 Manuel Serrano                            */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
 ;*=====================================================================*/

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/recette/module5.scm                          */
+;*    serrano/prgm/project/bigloo/5.0a/recette/module5.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 17 10:40:09 2025                          */
-;*    Last change :  Wed Feb  4 07:22:36 2026 (serrano)                */
+;*    Last change :  Sat Feb  7 06:52:34 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 tests                                                    */
@@ -24,7 +24,7 @@
    (import "module5_ex8.scm" ex8m ex8f)
    (import "module5_ex9.scm" ex9ma (EX9MB ex9mb) ex9f)
    (import "module5_ex10.scm" ex10i)
-   (import "module5_ex11.scm" C1 C2 ex11f ex11g ex11-count)
+   (import "module5_ex11.scm" C1 C2 ex11f ex11g ex11-count ex11h)
    (import :version 4 "module5_ex12.scm")
    (import "module5_ex13.scm" G)
    (import "module5_ex14.scm" ex14)
@@ -68,6 +68,7 @@
    (test "ex11.1" (ex11f) (list 10 20 "C2"))
    (test "ex11.2" (isa? (ex11g) C1) #t)
    (test "ex11.3" ex11-count 40)
+   (test "ex11.4" (ex11h) #t)
    (test "ex12.1" (to-string (ex12 4)) "==> C12  4")
    (test "ex12.2" (to-string (ex12i 4 3 9)) "==> bint ")
    (test "ex13.1" G 45)
