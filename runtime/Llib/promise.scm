@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sat Feb  7 17:24:27 2026 (serrano)                */
+;*    Last change :  Sun Feb  8 08:07:01 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript like promise for Bigloo.                              */
@@ -57,6 +57,7 @@
 	       (resolver (default #f))
 	       (rejecter (default #f)))
 	    (make-promise::promise ::procedure)
+	    (make-thread-promise::promise ::procedure #!optional pool)
 	    (then ::promise ::procedure)
 	    (then* ::promise ::procedure . rest)
 	    (catch ::promise ::procedure)
@@ -73,23 +74,27 @@
 ;*    promise-inc! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (promise-inc! msg)
-   (synchronize *promise-mutex*
-      (tprint "promise-inc! " *promise-count* " " msg)
-      (set! *promise-count* (+fx *promise-count* 1))))
+   (with-trace 'promise "promise-inc!"
+      (trace-item "msg=" msg)
+      (trace-item "count=" *promise-count*)
+      (synchronize *promise-mutex*
+	 (set! *promise-count* (+fx *promise-count* 1)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    promise-dec! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (promise-dec! msg)
-   (synchronize *promise-mutex*
-      (tprint "promise-dec! " *promise-count* " " msg)
-      (set! *promise-count* (-fx *promise-count* 1))
-      (condition-variable-broadcast! *promise-condv*)))
+   (with-trace 'promise "promise-dec!"
+      (trace-item "msg=" msg)
+      (trace-item "count=" *promise-count*)
+      (synchronize *promise-mutex*
+	 (set! *promise-count* (-fx *promise-count* 1))
+	 (condition-variable-broadcast! *promise-condv*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-promise ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (make-promise executor::procedure)
+(define (make-promise::promise executor::procedure)
    (let ((o (instantiate::promise)))
       (promise-inc! "make-promise")
       (with-access::promise o (state resolver rejecter thens catches name)
@@ -107,6 +112,17 @@
 	       (begin
 		  (executor resolve reject)
 		  o))))))
+
+;*---------------------------------------------------------------------*/
+;*    make-thread-promise ...                                          */
+;*---------------------------------------------------------------------*/
+(define (make-thread-promise::promise executor::procedure #!optional pool)
+   (make-promise
+      (lambda (res rej)
+	 (let ((proc (lambda () (executor res rej))))
+	    (if (isa? pool thread-pool)
+		(thread-pool-run! pool proc)
+		(thread-start! (make-thread proc)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    create-resolving-functions ...                                   */
@@ -302,23 +318,28 @@
       (synchronize *promise-mutex*
 	 (let loop ()
 	    (let ((actions (cdr *actions*)))
-	       (tprint "flush-action actions=" (length actions)
-		  " " *promise-count*)
-	       (cond
-		  ((pair? actions)
-		   (set-cdr! *actions* '())
-		   (set! *last-actions* *actions*)
-		   actions)
-		  ((>fx *promise-count* 0)
-		   (condition-variable-wait! *promise-condv* *promise-mutex*)
-		   (loop))
-		  (else
-		   '()))))))
+	       (with-trace 'promise "flush-actions@run-promises"
+		  (trace-item "count=" *promise-count*)
+		  (trace-item "actions=" actions)
+		  (cond
+		     ((pair? actions)
+		      (set-cdr! *actions* '())
+		      (set! *last-actions* *actions*)
+		      actions)
+		     ((>fx *promise-count* 0)
+		      (condition-variable-wait! *promise-condv* *promise-mutex*)
+		      (loop))
+		     (else
+		      '())))))))
    
-   (let loop ()
-      (tprint "run-actions waiting..." *promise-count*)
-      (let ((actions (flush-actions)))
-	 (tprint "run-actions executing..." actions " " *promise-count*)
-	 (when (pair? actions)
-	    (for-each (lambda (a) (promise-dec! "action") (a)) actions)
-	    (loop)))))
+   (with-trace 'promise "run-promises"
+      (let loop ()
+	 (with-trace 'promise "loop@run-promises")
+	 (let ((actions (flush-actions)))
+	    (trace-item "count=" *promise-count*)
+	    (trace-item "actions=" actions)
+	    (when (pair? actions)
+	       (for-each (lambda (a) (promise-dec! "action") (a)) actions)
+	       (loop))))))
+
+

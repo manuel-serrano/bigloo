@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/thread.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/thread.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Thu Jul 17 14:12:13 2025 (serrano)                */
-;*    Copyright   :  2004-25 Manuel Serrano                            */
+;*    Last change :  Sun Feb  8 08:22:56 2026 (serrano)                */
+;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
 ;*    This is simply an implementation of lock and synchronization     */
@@ -181,6 +181,15 @@
 	       (end-result::obj (default #unspecified))
 	       (end-exception::obj (default #unspecified))
 	       (%name::bstring (default "bigloo")))
+
+	    (class thread-pool
+	       (thread-pool-initialize!)
+	       (size::int read-only (default 4))
+	       (name read-only (default (gensym 'thread-pool)))
+	       (mutex::mutex read-only (default (make-mutex)))
+	       (condv::condvar read-only (default (make-condition-variable)))
+	       (nfree::int (default 0))
+	       (free::pair-nil (default '())))
 	    
 	    ;; dynamic env (per thread env)
             (inline dynamic-env?::bool ::obj)
@@ -239,7 +248,10 @@
 	    (inline condition-variable-name::obj ::condvar)
 	    (inline condition-variable-wait!::bool ::condvar ::mutex #!optional (timeout::long 0))
 	    (inline condition-variable-signal!::bool ::condvar)
-	    (inline condition-variable-broadcast!::bool ::condvar))
+	    (inline condition-variable-broadcast!::bool ::condvar)
+
+	    (generic thread-pool-initialize! ::thread-pool)
+	    (generic thread-pool-run! ::thread-pool ::procedure . args))
 
    (pragma  ($current-dynamic-env nesting)
             ($dynamic-env? (predicate-of dynamic-env))
@@ -724,4 +736,99 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (condition-variable-broadcast! c)
    ($condvar-broadcast! c))
+
+;*---------------------------------------------------------------------*/
+;*    pth ...                                                          */
+;*---------------------------------------------------------------------*/
+(define-struct pth thread mutex condv freecell proc args exn exn-value)
+
+;*---------------------------------------------------------------------*/
+;*    thread-pool-initialize! ::thread-pool ...                        */
+;*---------------------------------------------------------------------*/
+(define-generic (thread-pool-initialize! pool::thread-pool)
+   (with-access::thread-pool pool (size free)
+      (set! free (map! (lambda (x) (make-pool-thread pool)) (make-list size)))
+      pool))
+
+;*---------------------------------------------------------------------*/
+;*    make-pool-thread ...                                             */
+;*---------------------------------------------------------------------*/
+(define (make-pool-thread pool::thread-pool)
+
+   (define (return pth::struct e v)
+      (pth-exn-set! pth v)
+      (pth-exn-value-set! pth v)
+      (with-access::thread-pool pool (mutex condv free)
+	 (let ((freecell (pth-freecell pth)))
+	    (synchronize mutex
+	       (set-cdr! freecell free)
+	       (set! free freecell)
+	       (condition-variable-signal! condv)))))
+   
+   (define (run pth::struct)
+      (let ((th::thread (pth-thread pth))
+	    (mutex::mutex (pth-mutex pth))
+	    (condv::condvar (pth-condv pth))
+	    (handler (lambda (e) (return pth #t e))))
+	 (signal sigsegv
+	    (lambda (n)
+	       (raise
+		  (instantiate::&error
+		     (proc (-> th name))
+		     (msg "Stack overflow")
+		     (obj #f)))))
+	 (synchronize mutex
+	    (let loop ()
+	       (condition-variable-wait! condv mutex)
+	       ;; complete the demanded task
+	       (with-handler
+		  handler
+		  (let ((watib-bug-fix (apply (pth-proc pth) (pth-args pth))))
+		     ;; 8feb26: if the result of the apply call is not used
+		     ;; watib produces the following error message
+		     ;; File "/home/serrano/prgm/project/bigloo/5.0a/lib/bigloo/5.0a/bigloo_s.wat", line 1063509, character 252751888:
+                     ;; (if
+                     ;; #                ^
+                     ;; *** ERROR:watib
+                     ;;  -- expected empty stack, got a value of type ref eq on top
+		     (return pth #f watib-bug-fix)))
+	       (loop)))))
+   
+   (with-access::thread-pool pool (name)
+      (letrec ((pth (make-pth
+		       (make-thread (lambda () (run pth)) (gensym name))
+		       (make-mutex)
+		       (make-condition-variable)
+		       #unspecified
+		       #unspecified
+		       #unspecified
+		       #f
+		       #unspecified)))
+	 (thread-start! (pth-thread pth))
+	 pth)))
+		   
+;*---------------------------------------------------------------------*/
+;*    thread-pool-run! ::thread-pool ...                               */
+;*---------------------------------------------------------------------*/
+(define-generic (thread-pool-run! pool::thread-pool p . args)
+   (with-trace 'thread "thread-pool-run!"
+      (with-access::thread-pool pool (mutex condv free)
+	 (let ((pth #f))
+	    (synchronize mutex
+	       (let loop ()
+		  (unless (pair? free)
+		     ;; we have to wait for a thread to complete
+		     (condition-variable-wait! condv mutex)
+		     (loop)))
+	       (set! pth (car free))
+	       (trace-item "pth=" pth)
+	       (pth-freecell-set! pth free)
+	       (set! free (cdr free))
+	       (when (pth-exn pth)
+		  (raise (pth-exn-value pth))))
+	    (pth-proc-set! pth p)
+	    (pth-args-set! pth args)
+	    (synchronize (pth-mutex pth)
+	       (condition-variable-signal! (pth-condv pth)))
+	    #unspecified))))
 

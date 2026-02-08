@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Fri Feb  6 15:29:20 2026 (serrano)                */
+;*    Last change :  Sun Feb  8 08:13:15 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -90,7 +90,6 @@
       (warning "make-thread"
 	 "Thread created before module initialization completed -- "
 	 (typeof o)))
-   (tprint "******** thread initialize..." o)
    (with-access::pthread o ($builtin body end-result end-exception name)
       (let ((b (lambda ()
 		  (let ((id (if (symbol? name)
