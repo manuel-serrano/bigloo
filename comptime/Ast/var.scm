@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Thu Jan 29 17:41:31 2026 (serrano)                */
+;*    Last change :  Sun Feb  8 16:36:40 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -141,7 +141,9 @@
 	      ;; should be ???, LIGHT, or ELIGHT
 	      (strength::symbol (default '???))
 	      ;; can this closure be stack allocated?: #unspecifed, #t, #f
-	      (stackable::obj (default #unspecified)))
+	      (stackable::obj (default #unspecified))
+	      ;; generator
+	      (generator::bool (default #f)))
 
 	   (final-class cfun::fun
 	      ;; the formal parameters' type
