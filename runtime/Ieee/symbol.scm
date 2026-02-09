@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/symbol.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/symbol.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Thu Jul 17 13:34:24 2025 (serrano)                */
+;*    Last change :  Mon Feb  9 13:42:56 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -235,7 +235,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    *gensym-counter* ...                                             */
 ;*---------------------------------------------------------------------*/
-(define *gensym-counter* 999)
+(define *gensym-counter* 1)
 
 ;*---------------------------------------------------------------------*/
 ;*    gensym ...                                                       */
@@ -255,9 +255,6 @@
 			((symbol? arg) (symbol->string arg))
 			((string? arg) arg)
 			(else (error "gensym" "Illegal argument" arg)))))
-		
-	  (when (>fx  *gensym-counter* 10)
-		#f)
 	  (let loop ()
 	     (set! *gensym-counter* (+fx *gensym-counter* 1))
 	     (let* ((n (integer->string *gensym-counter*))

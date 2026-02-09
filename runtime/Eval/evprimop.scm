@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evprimop.scm       */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/evprimop.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Tue Sep 23 09:53:45 2025 (serrano)                */
+;*    Last change :  Mon Feb  9 16:25:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -69,6 +69,8 @@
 	    __uuid
 	    __i18n
 	    __ssr
+	    __promise
+	    __generator
 	    
 	    __reader
   	    
@@ -166,7 +168,11 @@
 	    (class &ftp-error)
 	    (class &ftp-parse-error)
 
-	    (class tar-header)))
+	    (class tar-header)
+
+	    (class thread)
+	    (class promise)
+	    (class generator)))
 
 
  
