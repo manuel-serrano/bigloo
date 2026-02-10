@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Mon Feb  9 17:45:30 2026 (serrano)                */
+;*    Last change :  Tue Feb 10 09:06:49 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -71,6 +71,7 @@
 	    __ssr
 	    __promise
 	    __generator
+	    __async
 	    
 	    __reader
   	    

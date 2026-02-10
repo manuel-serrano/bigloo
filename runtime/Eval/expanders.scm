@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Mon Feb  9 18:02:18 2026 (serrano)                */
+;*    Last change :  Tue Feb 10 09:07:26 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -41,7 +41,9 @@
 	    __expand
 	    __evmodule
 	    __evobject
+	    __promise
 	    __generator
+	    __async
 
 	    __r5_macro_4_3_syntax)
    
@@ -296,6 +298,12 @@
    ;; lambda*
    (install-module4-expander 'lambda*
       expand-lambda*)
+
+   ;; async
+   (install-module4-expander 'async
+      expand-async)
+   (install-module4-expander 'define-async
+      expand-define-async)
 
 ;*---------------------------------------------------------------------*/
 ;*    Compiler macros                                                  */

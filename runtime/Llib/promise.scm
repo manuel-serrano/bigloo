@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sun Feb  8 08:07:01 2026 (serrano)                */
+;*    Last change :  Tue Feb 10 08:53:07 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript like promise for Bigloo.                              */
@@ -27,6 +27,8 @@
 	    __os
 	    __bit
 	    __thread
+	    __trace
+	    __param
 
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -61,6 +63,8 @@
 	    (then ::promise ::procedure)
 	    (then* ::promise ::procedure . rest)
 	    (catch ::promise ::procedure)
+	    (resolved::promise ::obj)
+	    (rejected::promise ::obj)
 	    (run-promises)))
 
 ;*---------------------------------------------------------------------*/
@@ -176,14 +180,22 @@
 	  (fullfill o resolution)))))
 
 ;*---------------------------------------------------------------------*/
-;*    promise-resolve-value ...                                        */
+;*    resolved ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (promise-resolve-value o::promise val)
+(define (resolved::promise val)
    (if (isa? val promise)
        val
-       (let ((promise (instantiate::promise (name "resolve"))))
+       (let ((promise (instantiate::promise (name "resolved"))))
 	  (promise-resolve promise val)
 	  promise)))
+
+;*---------------------------------------------------------------------*/
+;*    rejected ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (rejected::promise val)
+   (let ((promise (instantiate::promise (name "rejected"))))
+      (promise-reject promise val)
+      promise))
 
 ;*---------------------------------------------------------------------*/
 ;*    reject ...                                                       */
@@ -331,7 +343,7 @@
 		      (loop))
 		     (else
 		      '())))))))
-   
+
    (with-trace 'promise "run-promises"
       (let loop ()
 	 (with-trace 'promise "loop@run-promises")
