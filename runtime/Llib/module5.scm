@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Feb  7 08:41:30 2026 (serrano)                */
+;*    Last change :  Tue Feb 10 17:16:12 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -80,7 +80,9 @@
 	      (body::obj (default '()))
 	      (resolved::bool (default #f))
 	      (cache-dir (default #f))
-	      (heap (default #f)))
+	      (heap (default #f))
+	      (plugin-data::pair-nil (default '()))
+	      (extern-plugin-data::pair-nil (default '())))
 	   
 	   (class Decl
 	      (id::symbol read-only)
@@ -446,6 +448,12 @@
 	 (list->decls! (-> m exports) (-> mod exports))
 	 (list->defs! (-> m defs) (-> mod exports))
 	 (list->classes! (-> m classes) (-> mod classes))
+	 '(for-each (lambda (data)
+		      (let ((plugin (assoc (car data) *extern-plugins*)))
+			 (when plugin
+			    (for-each (lambda (clause) (plugin clause))
+			       (cdr data)))))
+	    (-> m extern-plugin-data))
 	 m)))
 
 ;*---------------------------------------------------------------------*/
