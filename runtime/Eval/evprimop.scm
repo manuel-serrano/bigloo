@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Mon Feb  9 16:25:20 2026 (serrano)                */
+;*    Last change :  Mon Feb  9 17:45:30 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -170,9 +170,10 @@
 
 	    (class tar-header)
 
-	    (class thread)
-	    (class promise)
-	    (class generator)))
+;* 	    (class thread)                                             */
+;* 	    (class promise)                                            */
+;* 	    (class generator)                                          */
+	    ))
 
 
  

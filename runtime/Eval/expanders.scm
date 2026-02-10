@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Feb  6 07:54:29 2026 (serrano)                */
+;*    Last change :  Mon Feb  9 18:02:18 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -41,6 +41,7 @@
 	    __expand
 	    __evmodule
 	    __evobject
+	    __generator
 
 	    __r5_macro_4_3_syntax)
    
@@ -291,6 +292,10 @@
       expand-letrec-syntax)
    (install-module4-expander 'let-syntax
       expand-let-syntax)
+
+   ;; lambda*
+   (install-module4-expander 'lambda*
+      expand-lambda*)
 
 ;*---------------------------------------------------------------------*/
 ;*    Compiler macros                                                  */
