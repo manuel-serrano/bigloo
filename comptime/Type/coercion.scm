@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:43:04 1994                          */
-;*    Last change :  Wed Feb  4 11:46:37 2026 (serrano)                */
+;*    Last change :  Tue Feb 10 16:27:31 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The coercion management                                          */
@@ -75,63 +75,66 @@
 ;*    `obj' and `foreign' since this link already exists.              */
 ;*---------------------------------------------------------------------*/
 (define (add-coercion! from to check coerce)
-   (assert (check coerce) (check-coercion? check coerce))
-   (trace (ast 2) "add-coercion!: " (shape from) " -> " (shape to)
-	  " check: " (shape check) " coerce: " (shape coerce) #\Newline)
+   (with-trace 'type "add-coercion!"
+      (trace-item "from=" (shape from))
+      (trace-item "to=" (shape to))
+      (trace-item "check=" check)
+      (trace-item "coerce=" coerce)
+      (assert (check coerce) (check-coercion? check coerce))
 ;*    (if (null? check) (set! check '(())))                            */
 ;*    (if (null? coerce) (set! coerce '(())))                          */
-   (let ((from (get-aliased-type from))
-	 (to (get-aliased-type to)))
-      (if (coercer? (find-coercer from to))
-	  (unless *lib-mode*
-	     (warning "add-coercion!"
-		      "Type coercion redefinition -- "
-		      (shape (list from to check coerce))))
-	  (begin
-	     ;; we set the coercion between `from' and `to'
-	     (let ((new (coercer from to check coerce)))
-		(type-coerce-to-set! from (cons new (type-coerce-to from))))
-	     ;; we set the coercion between `from' and `to's parents'
-	     (for-each
-	      (lambda (parent)
-		 (if (and (not (eq? from parent))
-			  (not (eq? to parent))
-			  (not (coercer? (find-coercer from parent))))
-		     (let ((coercer-p (find-coercer to parent)))
-			(if (not (coercer? coercer-p))
-			    (user-error "Can't find coercion"
-					(format "~a -> ~a"
-						(shape to) (shape parent))
-					(format "while adding: ~a -> ~a"
-						(shape from)
-						(shape to)))
-			    (let ((check-p (coercer-check-op coercer-p))
-				  (coerce-p (coercer-coerce-op coercer-p)))
-			       (add-coercion! from
-					      parent
-					      (append check check-p)
-					      (append coerce coerce-p)))))))
-	      (type-parents to))
-	     ;; we set the coercion between `from's parent' and `to'
-	     (for-each
-	      (lambda (parent)
-		 (if (and (not (eq? from parent))
-			  (not (eq? to parent))
-			  (not (coercer? (find-coercer parent to))))
-		     (let ((coercer-p (find-coercer parent from)))
-			(if (not (coercer? coercer-p))
-			    (user-error "Can't find coercion"
-					(format "~a -> ~a"
-						(shape parent) (shape from))
-					(format "while adding: ~a -> ~a"
-						(shape from) (shape to)))
-			    (let ((check-p (coercer-check-op coercer-p))
-				  (coerce-p (coercer-coerce-op coercer-p)))
-			       (add-coercion! parent
-					      to
-					      (append check-p check)
-					      (append coerce-p coerce)))))))
-		       (type-parents from))))))
+      (let ((from (get-aliased-type from))
+	    (to (get-aliased-type to)))
+	 (if (coercer? (find-coercer from to))
+	     (unless *lib-mode*
+		(warning "add-coercion!"
+		   "Type coercion redefinition -- "
+		   (shape (list from to check coerce))))
+	     (begin
+		;; we set the coercion between `from' and `to'
+		(let ((new (coercer from to check coerce)))
+		   (type-coerce-to-set! from (cons new (type-coerce-to from))))
+		;; we set the coercion between `from' and `to's parents'
+		(for-each
+		   (lambda (parent)
+		      (if (and (not (eq? from parent))
+			       (not (eq? to parent))
+			       (not (coercer? (find-coercer from parent))))
+			  (let ((coercer-p (find-coercer to parent)))
+			     (if (not (coercer? coercer-p))
+				 (user-error "Can't find coercion"
+				    (format "~a -> ~a"
+				       (shape to) (shape parent))
+				    (format "while adding: ~a -> ~a"
+				       (shape from)
+				       (shape to)))
+				 (let ((check-p (coercer-check-op coercer-p))
+				       (coerce-p (coercer-coerce-op coercer-p)))
+				    (add-coercion! from
+				       parent
+				       (append check check-p)
+				       (append coerce coerce-p)))))))
+		   (type-parents to))
+		;; we set the coercion between `from's parent' and `to'
+		(for-each
+		   (lambda (parent)
+		      (if (and (not (eq? from parent))
+			       (not (eq? to parent))
+			       (not (coercer? (find-coercer parent to))))
+			  (let ((coercer-p (find-coercer parent from)))
+			     (if (not (coercer? coercer-p))
+				 (user-error "Can't find coercion"
+				    (format "~a -> ~a"
+				       (shape parent) (shape from))
+				    (format "while adding: ~a -> ~a"
+				       (shape from) (shape to)))
+				 (let ((check-p (coercer-check-op coercer-p))
+				       (coerce-p (coercer-coerce-op coercer-p)))
+				    (add-coercion! parent
+				       to
+				       (append check-p check)
+				       (append coerce-p coerce)))))))
+		   (type-parents from)))))))
        
 ;*---------------------------------------------------------------------*/
 ;*    check-coercion? ...                                              */

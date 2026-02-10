@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/module5.scm        */
+;*    serrano/bigloo/5.0a/runtime/Llib/module5.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */

@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
+;*    serrano/bigloo/5.0a/comptime/Engine/compiler.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */

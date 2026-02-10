@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/type.scm        */
+;*    serrano/bigloo/5.0a/comptime/Module/type.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:05:27 1996                          */
-;*    Last change :  Wed Oct  8 14:44:31 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb 10 16:15:20 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type clauses compilation.                                    */
 ;*=====================================================================*/
@@ -55,102 +55,103 @@
 ;*    type-parser ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (type-parser import clause clauses)
-   (trace (ast 2) "type-parser: " clause " " clauses #\Newline)
-   (match-case clause
-      (((and ?id (? symbol?)) (and ?name (? string?)))
-       ;; the simple type declaration (with default class)
-       (declare-type! id name 'bigloo))
-      (((and ?id (? symbol?)) (and ?name (? string?)) (and ?class (? symbol?)))
-       ;; the simple type declaration
-       (declare-type! id name class))
-      ((magic (and ?id (? symbol?))
-	      (and ?name (? string?))
-	      (and ?class (? symbol?)))
-       ;; a magic type
-       (let ((type (declare-type! id name class)))
-	  (type-magic?-set! type #t)
-	  type))
-      ((subtype (and (? symbol?) ?child)
-	  (and ?name (? string?))
-	  (and ?parent (? pair?)))
-       (let loop ((walk  parent)
-		  (class #unspecified))
-	  (cond
-	     ((null? walk)
-	      (declare-subtype! child name parent class))
-	     ((not (symbol? (car walk)))
-	      (user-error "Parse error" "Illegal type declaration" clause))
-	     (else
-	      (let ((tparent (find-type (car walk))))
-		 (cond
-		    ((not (type? tparent))
-		     (user-error "Subtype" "Unknow parent type" clause))
-		    ((and (symbol? class)
-			  (not (eq? class (type-class tparent))))
-		     (user-error "Subtype"
-				 "Parents are of different classes"
-				 clause))
-		    (else
-		     (loop (cdr walk)
+   (with-trace 'module "type-parser"
+      (trace-item "clause=" clause)
+      (match-case clause
+	 (((and ?id (? symbol?)) (and ?name (? string?)))
+	  ;; the simple type declaration (with default class)
+	  (declare-type! id name 'bigloo))
+	 (((and ?id (? symbol?)) (and ?name (? string?)) (and ?class (? symbol?)))
+	  ;; the simple type declaration
+	  (declare-type! id name class))
+	 ((magic (and ?id (? symbol?))
+	     (and ?name (? string?))
+	     (and ?class (? symbol?)))
+	  ;; a magic type
+	  (let ((type (declare-type! id name class)))
+	     (type-magic?-set! type #t)
+	     type))
+	 ((subtype (and (? symbol?) ?child)
+	     (and ?name (? string?))
+	     (and ?parent (? pair?)))
+	  (let loop ((walk  parent)
+		     (class #unspecified))
+	     (cond
+		((null? walk)
+		 (declare-subtype! child name parent class))
+		((not (symbol? (car walk)))
+		 (user-error "Parse error" "Illegal type declaration" clause))
+		(else
+		 (let ((tparent (find-type (car walk))))
+		    (cond
+		       ((not (type? tparent))
+			(user-error "Subtype" "Unknow parent type" clause))
+		       ((and (symbol? class)
+			     (not (eq? class (type-class tparent))))
+			(user-error "Subtype"
+			   "Parents are of different classes"
+			   clause))
+		       (else
+			(loop (cdr walk)
 			   (type-class tparent)))))))))
-      ((subtype (and (? symbol?) ?child)
-	  (and ?name (? string?))
-	  (and ?parent (? pair?))
-	  (and ?null-value (? symbol?)))
-       ;; MS: 9 jul 2024 extension
-       (let ((t (type-parser import `(subtype ,child ,name ,parent) clauses)))
-	  (with-access::type t (null)
-	     (set! null null-value))))
-      ((tvector (and (? symbol?) ?id) ((and (? symbol?) ?item-type)))
-       (delay-tvector-type! id item-type clause import))
-      ((coerce (and (? symbol?) ?from) (and (? symbol?) ?to) ?check ?coerce)
-       (if (and (let loop ((check check))
-		   (cond
-		      ((null? check)
-		       #t)
-		      ((not (symbol? (car check)))
-		       (match-case (car check)
-			  ((lambda (?-) ?-)
-			   (loop (cdr check)))
-			  ((@ (? symbol?) (? symbol?))
-			   (loop (cdr check)))
-			  (else
-			   (user-error "Coercion"
-			      "Illegal coerce clause"
-			      clause #f))))
-		      (else
-		       (loop (cdr check)))))
-		(let loop ((coerce coerce))
-		   (cond
-		      ((null? coerce)
-		       #t)
-		      ((match-case (car coerce)
-			  ((? symbol?) #f)
-			  ((@ (? symbol?) (? symbol?)) #f)
-			  ((lambda (?-) . ?-) #f)
-			  (else #t))
-		       (user-error "Coercion" "Illegal clause" clause #f))
-		      (else
-		       (loop (cdr coerce))))))
-	   (let* ((loc (find-location clause))
-		  (tfrom (use-type! from loc))
-		  (tto (use-type! to loc))
-		  (checks (if (null? check)
-			      (list (cons #t tfrom))
-			      (map (lambda (c) (cons c tfrom)) check)))
-		  (coerces (if (null? coerce)
-			       (list (cons #t tto))
-			       (map (lambda (c) (cons c tto)) coerce))))
-	      (cond
-		 ((not (type? tfrom))
-		  (user-error "type coercion" "Unknow type" from '()))
-		 ((not (type? tto))
-		  (user-error "type coercion" "Unknow type" to '()))
-		 (else
-		  (add-coercion! tfrom tto checks coerces))))
-	   '()))
-      (else
-       (user-error "Parse error" "Illegal type declaration" clause '()))))
+	 ((subtype (and (? symbol?) ?child)
+	     (and ?name (? string?))
+	     (and ?parent (? pair?))
+	     (and ?null-value (? symbol?)))
+	  ;; MS: 9 jul 2024 extension
+	  (let ((t (type-parser import `(subtype ,child ,name ,parent) clauses)))
+	     (with-access::type t (null)
+		(set! null null-value))))
+	 ((tvector (and (? symbol?) ?id) ((and (? symbol?) ?item-type)))
+	  (delay-tvector-type! id item-type clause import))
+	 ((coerce (and (? symbol?) ?from) (and (? symbol?) ?to) ?check ?coerce)
+	  (if (and (let loop ((check check))
+		      (cond
+			 ((null? check)
+			  #t)
+			 ((not (symbol? (car check)))
+			  (match-case (car check)
+			     ((lambda (?-) ?-)
+			      (loop (cdr check)))
+			     ((@ (? symbol?) (? symbol?))
+			      (loop (cdr check)))
+			     (else
+			      (user-error "Coercion"
+				 "Illegal coerce clause"
+				 clause #f))))
+			 (else
+			  (loop (cdr check)))))
+		   (let loop ((coerce coerce))
+		      (cond
+			 ((null? coerce)
+			  #t)
+			 ((match-case (car coerce)
+			     ((? symbol?) #f)
+			     ((@ (? symbol?) (? symbol?)) #f)
+			     ((lambda (?-) . ?-) #f)
+			     (else #t))
+			  (user-error "Coercion" "Illegal clause" clause #f))
+			 (else
+			  (loop (cdr coerce))))))
+	      (let* ((loc (find-location clause))
+		     (tfrom (use-type! from loc))
+		     (tto (use-type! to loc))
+		     (checks (if (null? check)
+				 (list (cons #t tfrom))
+				 (map (lambda (c) (cons c tfrom)) check)))
+		     (coerces (if (null? coerce)
+				  (list (cons #t tto))
+				  (map (lambda (c) (cons c tto)) coerce))))
+		 (cond
+		    ((not (type? tfrom))
+		     (user-error "type coercion" "Unknow type" from '()))
+		    ((not (type? tto))
+		     (user-error "type coercion" "Unknow type" to '()))
+		    (else
+		     (add-coercion! tfrom tto checks coerces))))
+	      '()))
+	 (else
+	  (user-error "Parse error" "Illegal type declaration" clause '())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-tvector-clause ...                                         */

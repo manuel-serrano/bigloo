@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Jan 29 08:12:48 2026 (serrano)                */
+#*    Last change :  Tue Feb 10 15:59:37 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -47,9 +47,8 @@ BHEAPFLAGS	= -unsafe -q \
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= rfc2045 rfc2047 rfc2822 mailbox maildir vcard
 _STK_OBJECTS	= imap
-_PKG_OBJECTS	= 
 
-_OBJECTS	= $(_BGL_OBJECTS) $(_STK_OBJECTS) $(_PKG_OBJECTS)
+_OBJECTS	= $(_BGL_OBJECTS) $(_STK_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 
@@ -58,8 +57,7 @@ BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm) \
                   $(_STK_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.bgl) \
-                  $(_STK_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.stk) \
-		  $(_PKG_OBJECTS:%=$(PKG_SRC_DIR)/%.spi)
+                  $(_STK_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.stk)
 
 SOURCES		= $(_BGL_SOURCES)
  

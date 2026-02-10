@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/Object/coercion.scm        */
+;*    serrano/bigloo/5.0a/comptime/Object/coercion.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Fri Sep 26 05:22:45 2025 (serrano)                */
-;*    Copyright   :  2000-25 Manuel Serrano                            */
+;*    Last change :  Tue Feb 10 16:17:45 2026 (serrano)                */
+;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
 ;*    -------------------------------------------------------------    */
@@ -46,19 +46,23 @@
 ;*    gen-class-coercions! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (gen-class-coercions! class)
-   (install-module-clauses-compiler!)
-   (with-access::tclass class (id its-super)
-      (gen-coercion-clause! class id its-super)
-      (gen-class-coercers! class its-super)))
+   (with-trace 'object "gen-class-coercions!"
+      (trace-item "class=" (shape class))
+      (install-module-clauses-compiler!)
+      (with-access::tclass class (id its-super)
+	 (gen-coercion-clause! class id its-super)
+	 (gen-class-coercers! class its-super))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-java-class-coercions! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (gen-java-class-coercions! class)
-   (install-module-clauses-compiler!)
-   (with-access::jclass class (id its-super)
-      (gen-coercion-clause! class id its-super)
-      (gen-class-coercers! class its-super)))
+   (with-trace 'object "gen-java-class-coercions!"
+      (trace-item "class=" (shape class))
+      (install-module-clauses-compiler!)
+      (with-access::jclass class (id its-super)
+	 (gen-coercion-clause! class id its-super)
+	 (gen-class-coercers! class its-super))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-coercion-clause! ...                                         */
@@ -72,45 +76,49 @@
 ;*    will be stopped.                                                 */
 ;*---------------------------------------------------------------------*/
 (define (gen-coercion-clause! class c-id super . testing)
-   (produce-module-clause!
-      (make-coercion-clause class c-id super testing)))
+   (with-trace 'object "gen-coercion-clause!"
+      (produce-module-clause!
+	 (make-coercion-clause class c-id super testing))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-coercion-clause ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (make-coercion-clause class c-id super testing)
-   (let* ((class->obj `(lambda (x)
-			  ,(make-private-sexp 'cast 'obj 'x)))
-	  (obj->class `(lambda (x)
-			  ,(make-private-sexp 'cast c-id 'x)))
-	  (ttest (if (null? testing)
-		     (let ((o (gensym 'o)))
-			(if (jclass? class)
-			    `((lambda (,o)
-				 ,(make-private-sexp 'instanceof c-id o)))
-			    `((lambda (,o)
-				 ((@ isa? __object) ,o ,c-id)))))
-		     '()))
-	  (x (make-typed-ident 'x c-id)))
-      (let loop ((super super)
-		 (coercer (list `(coerce obj ,c-id ,ttest (,obj->class))
+   (with-trace 'object "make-coercion-clause"
+      (trace-item "class=" (shape class))
+      (trace-item "c-id=" c-id)
+      (let* ((class->obj `(lambda (x)
+			     ,(make-private-sexp 'cast 'obj 'x)))
+	     (obj->class `(lambda (x)
+			     ,(make-private-sexp 'cast c-id 'x)))
+	     (ttest (if (null? testing)
+			(let ((o (gensym 'o)))
+			   (if (jclass? class)
+			       `((lambda (,o)
+				    ,(make-private-sexp 'instanceof c-id o)))
+			       `((lambda (,o)
+				    ((@ isa? __object) ,o ,c-id)))))
+			'()))
+	     (x (make-typed-ident 'x c-id)))
+	 (let loop ((super super)
+		    (coercer (list `(coerce obj ,c-id ,ttest (,obj->class))
 				`(coerce ,c-id obj () (,class->obj))
 				`(coerce ,c-id bool () ((lambda (,x) #t))))))
-	 (if (not (or (jclass? super) (tclass? super)))
-	     `(type ,@coercer)
-	     (let* ((super-id (if (tclass? super)
-				  (tclass-id super)
-				  (jclass-id super)))
-		    (class->super `(lambda (x)
-				      ,(make-private-sexp 'cast super-id 'x)))
-		    (super->class `(lambda (x)
-				      ,(make-private-sexp 'cast c-id 'x))))
-		(loop (if (tclass? super)
-			  (tclass-its-super super)
-			  (jclass-its-super super))
+	    (if (not (or (jclass? super) (tclass? super)))
+		`(type ,@coercer)
+		(let* ((super-id (if (tclass? super)
+				     (tclass-id super)
+				     (jclass-id super)))
+		       (class->super `(lambda (x)
+					 ,(make-private-sexp 'cast super-id 'x)))
+		       (super->class `(lambda (x)
+					 ,(make-private-sexp 'cast c-id 'x))))
+		   (loop (if (tclass? super)
+			     (tclass-its-super super)
+			     (jclass-its-super super))
 		      (cons* `(coerce ,super-id ,c-id ,ttest (,super->class))
-			     `(coerce ,c-id ,super-id () (,class->super))
-			     coercer)))))))
+			 `(coerce ,c-id ,super-id () (,class->super))
+			 coercer))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-class-coercers! ...                                          */

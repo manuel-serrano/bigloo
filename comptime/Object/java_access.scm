@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Wed Feb  4 12:15:48 2026 (serrano)                */
+;*    Last change :  Tue Feb 10 16:20:21 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class accessors                                      */
@@ -47,28 +47,29 @@
 ;*    import-java-class-accessors! ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (import-java-class-accessors! pslots constrs class abstract? module src)
-   (trace (ast 2) "impport-java-class-accessors!: " src #\Newline)
-   (if (correct-java-class? class src)
-       (with-access::jclass class (id slots)
-	  ;; we store inside the class structure some information about
-	  ;; its slots
-	  (set-java-class-slots! pslots src class)
-	  ;; we install the coercion between the new-class and obj
-	  ;; and the class and all its super classes.
-	  (gen-java-class-coercions! class)
-	  ;; we produces the user access function
-	  (let ((fields (gen-java-class-slots-access! class slots src)))
-	     (if (eq? id 'foreign)
-		 fields
-		 (let ((pred (import-java-class-pred! class src module)))
-		    (if abstract?
-			(append pred fields)
-			(let* ((const (gen-java-class-constructors class
-					 constrs src))
-			       (creator (import-java-class-creator class
-					   constrs src)))
-			   `(,@pred ,@creator ,@fields ,@const)))))))
-       '()))
+   (with-trace 'jvm "import-java-class-accessors!"
+      (trace-item "class=" (shape class))
+      (if (correct-java-class? class src)
+	  (with-access::jclass class (id slots)
+	     ;; we store inside the class structure some information about
+	     ;; its slots
+	     (set-java-class-slots! pslots src class)
+	     ;; we install the coercion between the new-class and obj
+	     ;; and the class and all its super classes.
+	     ;(gen-java-class-coercions! class)
+	     ;; we produces the user access function
+	     (let ((fields (gen-java-class-slots-access! class slots src)))
+		(if (eq? id 'foreign)
+		    fields
+		    (let ((pred (import-java-class-pred! class src module)))
+		       (if abstract?
+			   (append pred fields)
+			   (let* ((const (gen-java-class-constructors class
+					    constrs src))
+				  (creator (import-java-class-creator class
+					      constrs src)))
+			      `(,@pred ,@creator ,@fields ,@const)))))))
+	  '())))
 
 ;*---------------------------------------------------------------------*/
 ;*    correct-java-class? ...                                          */

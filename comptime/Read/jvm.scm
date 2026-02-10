@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Read/jvm.scm           */
+;*    serrano/bigloo/5.0a/comptime/Read/jvm.scm                        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Mon Oct 20 11:09:57 2025 (serrano)                */
-;*    Copyright   :  1993-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb 10 13:48:27 2026 (serrano)                */
+;*    Copyright   :  1993-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
 ;*=====================================================================*/
@@ -187,9 +187,9 @@
 			      (symbol->string module))))
 	     (if (backend-qualified-types (the-backend))
 		 (warning
-		  (string-append "Can't find qualified type name for module `"
-				 (symbol->string module) "',")
-		  "Using name `" default "'."))
+		    (string-append "Can't find qualified type name for module `"
+		       (symbol->string module) "',")
+		    "Using name `" default "'."))
 	     (add-qualified-type! module default)
 	     default)))))
 

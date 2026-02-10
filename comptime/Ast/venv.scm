@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/venv.scm           */
+;*    serrano/bigloo/5.0a/comptime/Ast/venv.scm                        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */

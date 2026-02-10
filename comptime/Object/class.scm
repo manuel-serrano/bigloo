@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Wed Feb  4 11:40:35 2026 (serrano)                */
+;*    Last change :  Tue Feb 10 16:23:27 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -142,9 +142,9 @@
 ;*    declare-class-type! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (declare-class-type! id super ctor var widening final? abstract? src)
-   (with-trace 'jvm "declare-class-type!"
+   (with-trace 'module "declare-class-type!"
       (trace-item "id=" id)
-      (trace-item "super=" super)
+      (trace-item "super=" (shape super))
       (let* ((super super)
 	     (name (id->name id))
 	     (sizeof (string-append "struct " name "_bgl"))
@@ -201,7 +201,7 @@
 (define (declare-java-class-type!::type class-id super jname package src)
    (with-trace 'jvm "declare-java-class-type!"
       (trace-item "class-id=" class-id)
-      (trace-item "super=" super)
+      (trace-item "super=" (shape super))
       (let ((super (cond
 		      ((eq? (type-id super) class-id) #f)
 		      ((eq? super *_*) #f)
