@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/sexp.scm           */
+;*    serrano/bigloo/5.0a/comptime/Ast/sexp.scm                        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Sun Feb  8 16:34:00 2026 (serrano)                */
+;*    Last change :  Tue Feb 10 08:19:36 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -458,8 +458,6 @@
 ;*--- lambda ----------------------------------------------------------*/
       ((lambda . ?-)
        (lambda->node exp stack loc site "L" genv))
-      ((lambda* . ?-)
-       (lambda*->node exp stack loc site "L" genv))
 ;*--- pragma ----------------------------------------------------------*/
       ((pragma . ?-)
        (pragma/type->node #f #f *unspec* exp stack loc site genv))
@@ -601,17 +599,6 @@
        (error-sexp->node "Illegal `lambda' form"
 	  exp
 	  (find-location/loc exp loc) genv))))
-
-;*---------------------------------------------------------------------*/
-;*    lambda*->node ...                                                */
-;*---------------------------------------------------------------------*/
-(define (lambda*->node exp stack loc site prefname genv)
-   (let ((lfun (lambda->node exp stack loc site prefname genv)))
-      (with-access::let-fun lfun (locals)
-	 (with-access::local (car locals) (value)
-	    (with-access::sfun value (generator)
-	       (set! generator #t)))
-	 lfun)))
 
 ;*---------------------------------------------------------------------*/
 ;*    variable->node ...                                               */

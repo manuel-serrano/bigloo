@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/var.scm            */
+;*    serrano/bigloo/5.0a/comptime/Ast/var.scm                         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Sun Feb  8 16:36:40 2026 (serrano)                */
+;*    Last change :  Tue Feb 10 08:18:53 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -141,9 +141,7 @@
 	      ;; should be ???, LIGHT, or ELIGHT
 	      (strength::symbol (default '???))
 	      ;; can this closure be stack allocated?: #unspecifed, #t, #f
-	      (stackable::obj (default #unspecified))
-	      ;; generator
-	      (generator::bool (default #f)))
+	      (stackable::obj (default #unspecified)))
 
 	   (final-class cfun::fun
 	      ;; the formal parameters' type

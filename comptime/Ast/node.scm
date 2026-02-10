@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/node.scm           */
+;*    serrano/bigloo/5.0a/comptime/Ast/node.scm                        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Sun Feb  8 16:50:20 2026 (serrano)                */
+;*    Last change :  Tue Feb 10 08:18:32 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -50,9 +50,6 @@
 	   ;; the literal node
 	   (final-class literal::atom)
 
-	   ;; yield node
-	   (final-class yield::atom)
-	   
 	   ;; the patch node (patchable literals)
 	   (final-class patch::atom
 	      (ref::var read-only)
