@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Read/jvm.scm                        */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Read/jvm.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Tue Feb 10 13:48:27 2026 (serrano)                */
+;*    Last change :  Tue Feb 10 17:37:01 2026 (serrano)                */
 ;*    Copyright   :  1993-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
@@ -25,7 +25,8 @@
 	   (add-qualified-type! ::symbol ::bstring . obj)
 	   (read-jfile)
 	   (module->qualified-type::bstring ::symbol)
-	   (source->qualified-type file::bstring)))
+	   (source->qualified-type file::bstring)
+	   (module-qualified-name ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    jvm-class-sans-directory ...                                     */
@@ -208,3 +209,11 @@
 		(else
 		 #f))))
        #f))
+
+;*---------------------------------------------------------------------*/
+;*    module-qualified-name ...                                        */
+;*---------------------------------------------------------------------*/
+(define (module-qualified-name module::symbol)
+   (getprop module *jvm-mark*))
+
+
