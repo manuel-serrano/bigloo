@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/java.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/java.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Wed Feb  4 12:17:44 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 11:08:34 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -393,6 +393,8 @@
 	 ;; slots or calling methods of this class
 	 (add-qualified-type! id jname)
 	 (add-qualified-type! (fast-id-of-id id loc) jname)
+	 (tprint "AQT " id " " jname)
+	 (tprint "AQT " (fast-id-of-id id loc) " " jname)
 	 ;; construct the associated jclass
 	 (declare-java-class! jklass))))
    

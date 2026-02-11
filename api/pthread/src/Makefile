@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Feb 10 16:01:14 2026 (serrano)                */
+#*    Last change :  Wed Feb 11 10:48:40 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -62,7 +62,8 @@ SAFE_EOBJECTS	= objs/objs_s/make_lib.o
 UNSAFE_OBJECTS	= $(_OBJECTS:%=objs/objs_u/%.o)
 UNSAFE_EOBJECTS	= objs/objs_u/make_lib.o
 
-BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class)
+BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class) \
+                  $(_BGL5_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class)
 JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Feb 11 09:26:40 2026 (serrano)                */
+#*    Last change :  Wed Feb 11 10:50:51 2026 (serrano)                */
 #*    Copyright   :  2010-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -362,7 +362,10 @@ objs/objs_u/make_lib5.o: $(MISC_SRC_DIR)/make_lib5.scm
 	$(BIGLOO) -module5 $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
 
 $(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.scm
-	$(BIGLOO) -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
+	$(BIGLOO) -jvm $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
+
+$(CLASS_DIR)/make_lib5.class: $(MISC_SRC_DIR)/make_lib5.scm
+	$(BIGLOO) -module5 -jvm $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
 $(CLASS_DIR)/%.java: $(JAVA_SRC_DIR)/%.java
 	cp $< $@

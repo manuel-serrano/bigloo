@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Feb 11 09:34:01 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 11:21:57 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -336,6 +336,7 @@
 	    ;; declare all C types
 	    (for-each (lambda (e)
 			 (with-access::TDef (vector-ref e 0) (id name)
+			    (tprint "TDEf id=" id " name=" name)
 			    (declare-type! id name 'C)))
 	       types)
 	    

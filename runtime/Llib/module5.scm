@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Feb 11 09:20:30 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 11:40:42 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -119,10 +119,10 @@
 	   (module5-resolve-library ::symbol ::pair-nil)
 	   (module5-preload-cache! ::pair-nil)
 	   (module5-read::Module ::bstring #!key (lib-path '()) cache-dir expand)
-	   (module5-read-library::Module ::bstring ::obj ::Module)
+	   (module5-read-library::Module ::bstring ::obj ::Module ::bstring)
 	   (module5-read-heap::Module ::bstring ::obj ::Module)
 	   (module5-write-heap ::bstring ::Module)
-	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand)
+	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand (hsuffix ".heap5"))
 	   (module5-import-all! ::Module ::Module)
 	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()) (packages #f))
 	   (module5-checksum!::Module ::Module)
@@ -563,10 +563,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-read-library ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (module5-read-library path::bstring expr mod)
+(define (module5-read-library path::bstring expr mod hsuffix)
    (with-trace 'module5 "module5-read-library"
       (trace-item "path=" path)
       (trace-item "expr=" expr)
+      (trace-item "hsuffix=" hsuffix)
       (let ((init (module5-read-library-init! path)))
 	 (match-case init 
 	    ((declare-library! (quote ?id) . ?rest)
@@ -583,7 +584,7 @@
 		   (else
 		    (module5-read-heap
 		       (make-file-name (dirname path)
-			  (string-append (prefix (basename path)) ".heap5"))
+			  (string-append (prefix (basename path)) hsuffix))
 		       expr mod)))))
 	    (else
 	     (error/loc mod "Illegal library" path init))))))
@@ -696,7 +697,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (module5-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand)
+(define (module5-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand (hsuffix ".heap5"))
 
    (define (parse5 id path clauses expr body)
       (let ((mod (instantiate::Module
@@ -716,7 +717,7 @@
 		(hashtable-put! *modules-by-id* (symbol->string id) mod)))
 	 
 	 (for-each (lambda (c)
-		      (module5-parse-clause c expr mod lib-path cache-dir expand))
+		      (module5-parse-clause c expr mod lib-path cache-dir expand hsuffix))
 	    clauses)
 	 (with-access::Module mod (imports exports)
 	    (trace-item "imports="
@@ -758,7 +759,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse-clause ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (module5-parse-clause clause expr::pair mod::Module lib-path cache-dir expand)
+(define (module5-parse-clause clause expr::pair mod::Module lib-path cache-dir expand hsuffix)
 
    (define (unbound-error path id clause)
       (error/loc mod (format "Cannot find declaration in module \"~a\"" path)
@@ -1011,7 +1012,7 @@
 			     (lambda (p)
 				(for-each (lambda (c)
 					     (module5-parse-clause c clause mod
-						lib-path cache-dir expand))
+						lib-path cache-dir expand hsuffix))
 				   (port->sexp-list p #t))))))
 		      (else
 		       (error/loc mod "Cannot find file" f clause))))
@@ -1020,13 +1021,13 @@
    (define (parse-cond-expand clause expr::pair mod::Module expand)
       (let ((ec (expand clause)))
 	 (when (epair? ec)
-	    (module5-parse-clause ec expr mod lib-path cache-dir expand))))
+	    (module5-parse-clause ec expr mod lib-path cache-dir expand hsuffix))))
 
    (define (parse-library-all id clause expr::pair mod::Module expand)
       (let* ((lib (cadr clause))
 	     (rlib (module5-resolve-library lib lib-path)))
 	 (if (string? rlib)
-	     (let ((lmod::Module (module5-read-library rlib clause mod)))
+	     (let ((lmod::Module (module5-read-library rlib clause mod hsuffix)))
 		(hashtable-for-each (-> lmod exports)
 		   (lambda (k d::Decl)
 		      (let* ((alias (if id
@@ -1049,7 +1050,7 @@
 	     (bindings (caddr clause))
 	     (rlib (module5-resolve-library lib lib-path)))
 	 (if (string? rlib)
-	     (let ((lmod::Module (module5-read-library rlib clause mod)))
+	     (let ((lmod::Module (module5-read-library rlib clause mod hsuffix)))
 		(for-each (lambda (b)
 			     (parse-import-binding b lmod expr mod expand))
 		   bindings)
@@ -1081,7 +1082,7 @@
 	 ((import :version 5 . ?rest)
 	  (module5-parse-clause
 	     (localize `(import ,@rest) clause)
-	     expr mod lib-path cache-dir expand))
+	     expr mod lib-path cache-dir expand hsuffix))
 	 ((import (? string?))
 	  (parse-import-init clause expr mod expand))
 	 ((import (? string?) . (and (? symbol?) ?id))

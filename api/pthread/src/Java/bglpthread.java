@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../bigloo-unstable/api/pthread/src/Java/bglpthread.java         */
+/*    .../project/bigloo/5.0a/api/pthread/src/Java/bglpthread.java     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Mon Dec 18 21:57:50 2023 (serrano)                */
-/*    Copyright   :  2002-23 Manuel Serrano                            */
+/*    Last change :  Wed Feb 11 10:55:57 2026 (serrano)                */
+/*    Copyright   :  2002-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java utilities for native Bigloo fair threads implementation.    */
 /*=====================================================================*/
@@ -31,8 +31,8 @@ public class bglpthread extends Thread {
    // debug
    static private boolean debug = false;
 
-   static void debug( String msg ) {
-      if( debug ) System.out.println( msg );
+   static void debug(String msg) {
+      if (debug) System.out.println(msg);
    }
    
    // setup
@@ -47,7 +47,7 @@ public class bglpthread extends Thread {
       ;
    }
    
-   public bglpthread( procedure t ) {
+   public bglpthread(procedure t) {
       super();
       thunk = t;
    }
@@ -63,7 +63,7 @@ public class bglpthread extends Thread {
    }
 
    // public SPECIFIC set
-   public void SPECIFIC_SET( Object o ) {
+   public void SPECIFIC_SET(Object o) {
       specific = o;
    }
    
@@ -73,14 +73,14 @@ public class bglpthread extends Thread {
    }
 
    // public CLEANUP set
-   public void CLEANUP_SET( Object p ) {
+   public void CLEANUP_SET(Object p) {
       cleanup = p;
    }
    
    // The thread entry-point
-   public void start( Object t, boolean _b ) {
+   public void start(Object t, boolean _b) {
       thread = t;
-      env = new bglpdynamic( bgldynamic.abgldynamic.get() );
+      env = new bglpdynamic(bgldynamic.abgldynamic.get());
       start();
    }
 
@@ -88,17 +88,17 @@ public class bglpthread extends Thread {
    public void run() {
       try {
 	 thunk.funcall0();
-      } catch( Throwable e ) {
+      } catch(Throwable e) {
 	 try {
-	    foreign.internalerror( e );
-	 } catch( Throwable _t ) {
-	    System.exit( 1 );
+	    foreign.internalerror(e);
+	 } catch(Throwable _t) {
+	    System.exit(1);
 	 }
       } finally {
           mutexes_unlock();
 
-	 if( cleanup instanceof procedure ) {
-	    ((procedure)cleanup).funcall1( thread );
+	 if (cleanup instanceof procedure) {
+	    ((procedure)cleanup).funcall1(thread);
 	 }
       }
    }
@@ -109,13 +109,13 @@ public class bglpthread extends Thread {
    }
    
    // Terminate a thread
-   public static boolean terminate( bglpthread thread ) {
+   public static boolean terminate(bglpthread thread) {
       thread.interrupt();
       return true;
    }
 
    // send a signal
-   public static int kill( bglpthread thread, int n ) {
+   public static int kill(bglpthread thread, int n) {
       // not implemented
       return -1;
    }
@@ -123,7 +123,7 @@ public class bglpthread extends Thread {
    // Returns the current thread
    public static Object current_thread() {
       Thread t = currentThread();
-      if( t instanceof bglpthread ) {
+      if (t instanceof bglpthread) {
 	 return ((bglpthread)t).thread;
       } else {
 	 return bigloo.foreign.BFALSE;
@@ -137,18 +137,18 @@ public class bglpthread extends Thread {
    }
    
    // Join
-   public static void dojoin( bglpthread t, Object tmt ) {
+   public static void dojoin(bglpthread t, Object tmt) {
       try {
-	 if( bigloo.foreign.INTEGERP( tmt ) ) {
-	    t.join( bigloo.foreign.CINT( (bint)tmt ) );
+	 if (bigloo.foreign.INTEGERP(tmt)) {
+	    t.join(bigloo.foreign.CINT((bint)tmt));
 	 } else {
 	    t.join();
 	 }
-      } catch( Throwable e ) {
+      } catch(Throwable e) {
 	 try {
-	    foreign.internalerror( e );
-	 } catch( Throwable _t ) {
-	    System.exit( 1 );
+	    foreign.internalerror(e);
+	 } catch(Throwable _t) {
+	    System.exit(1);
 	 }
       }
    }
