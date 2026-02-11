@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Feb 11 11:40:42 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 11:46:39 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -122,7 +122,7 @@
 	   (module5-read-library::Module ::bstring ::obj ::Module ::bstring)
 	   (module5-read-heap::Module ::bstring ::obj ::Module)
 	   (module5-write-heap ::bstring ::Module)
-	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand (hsuffix ".heap5"))
+	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand (heap-suffix ".heap5"))
 	   (module5-import-all! ::Module ::Module)
 	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()) (packages #f))
 	   (module5-checksum!::Module ::Module)
@@ -697,7 +697,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (module5-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand (hsuffix ".heap5"))
+(define (module5-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand (heap-suffix ".heap5"))
 
    (define (parse5 id path clauses expr body)
       (let ((mod (instantiate::Module
@@ -717,7 +717,7 @@
 		(hashtable-put! *modules-by-id* (symbol->string id) mod)))
 	 
 	 (for-each (lambda (c)
-		      (module5-parse-clause c expr mod lib-path cache-dir expand hsuffix))
+		      (module5-parse-clause c expr mod lib-path cache-dir expand heap-suffix))
 	    clauses)
 	 (with-access::Module mod (imports exports)
 	    (trace-item "imports="

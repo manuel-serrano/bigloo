@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Feb 11 09:51:21 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 11:46:43 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -549,7 +549,9 @@
 		     :lib-path *lib-dir*
 		     :expand module5-expand
 		     :cache-dir (make-file-name *module-cache-dir*
-				   (backend-name (the-backend)))))
+				   (backend-name (the-backend)))
+		     :heap-suffix (format ".~a5"
+				     (backend-heap-suffix (the-backend)))))
 	     (tu (unit 'toplevel 100 '() #t #f))
 	     (units (list tu)))
 
