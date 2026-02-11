@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Wed Feb 11 08:07:53 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 09:27:48 2026 (serrano)                */
 ;*    Copyright   :  1993-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
@@ -27,12 +27,13 @@
 	   (module->qualified-type::bstring ::symbol)
 	   (source->qualified-type file::bstring)
 	   (module-qualified-name ::symbol)
-	   (module-jvm-packages::pair-nil)))
+	   (module-jvm-packages::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *module-jvm-packages* ...                                        */
 ;*---------------------------------------------------------------------*/
-(define *module-jvm-packages* '())
+(define *module-jvm-packages*
+   (create-hashtable :size 512 :weak 'open-string))
 
 ;*---------------------------------------------------------------------*/
 ;*    jvm-class-sans-directory ...                                     */
@@ -69,8 +70,8 @@
 ;*    add-qualified-type! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (add-qualified-type! module::symbol qtype::bstring . ident)
-   (set! *module-jvm-packages*
-      (cons (cons module (prefix qtype)) *module-jvm-packages*))
+   (hashtable-put! *module-jvm-packages*
+      (symbol->string! module) (string->symbol (prefix qtype)))
    (let ((bc (the-backend)))
       (when (and (backend? bc)
 		 (string=? qtype "")
@@ -105,6 +106,7 @@
 ;*    read-jfile ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (read-jfile)
+   
    (define (inner-read-qualified-type-file name::bstring)
       (let ((port (open-input-file name)))
 	 (verbose 2 "      [reading jfile " name "]" #\Newline)
@@ -113,6 +115,7 @@
 	     (unwind-protect
 		(do-read-jfile port name)
 		(close-input-port port)))))
+   
    ;; then, we try to read the actual jfile
    (cond
       ((not (string? *qualified-type-file*))

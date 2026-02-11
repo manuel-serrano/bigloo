@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Tue Feb 10 16:01:30 2026 (serrano)                */
+#*    Last change :  Wed Feb 11 09:26:40 2026 (serrano)                */
 #*    Copyright   :  2010-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -245,20 +245,20 @@ api-jvm: api-init $(TAGS) .jfile heap-jvm
 heap-jvm: $(BOOTLIBDIR)/$(API).jheap
 heap5-jvm: $(BOOTLIBDIR)/$(API).jheap5
 $(BOOTLIBDIR)/$(API).jheap: .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
-	@ $(RM) -f $(BOOTLIBDIR)/$(API).jheap
-	@ $(BIGLOO) -jvm  $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+	$(RM) -f $(BOOTLIBDIR)/$(API).jheap
+	$(BIGLOO) -jvm  $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
             $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).jheap
 $(BOOTLIBDIR)/$(API).jheap5: .jfile .afile $(MISC_SRC_DIR)/make_lib5.scm
-	@ $(RM) -f $(BOOTLIBDIR)/$(API).jheap5
-	@ $(BIGLOO) -module5 -jvm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+	$(RM) -f $(BOOTLIBDIR)/$(API).jheap5
+	$(BIGLOO) -module5 -jvm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
             $(MISC_SRC_DIR)/make_lib5.scm -addheap $(BOOTLIBDIR)/$(API).jheap5
 
 api.zip: $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).zip \
          $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).zip \
 
 $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).zip: .afile .jfile $(BGL_CLASSES) javac_s
-	@ $(RM) -f $@
-	@ (cd objs/class_s && \
+	$(RM) -f $@
+	(cd objs/class_s && \
 	  $(ZIP) -q $(ZFLAGS) $@ $(CLASS_DIR:objs/class_s/%=%)/*.class)
 
 javac_s: $(JAVA_CLASSES_SRC)
@@ -268,8 +268,8 @@ javac_s: $(JAVA_CLASSES_SRC)
         fi
 
 $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).zip: .afile .jfile $(BGL_ECLASSES)
-	@ $(RM) -f $@
-	@ (cd objs/class_es && \
+	$(RM) -f $@
+	(cd objs/class_es && \
 	  $(ZIP) -q $(ZFLAGS) $@ $(CLASS_EDIR:objs/class_es/%=%)/*.class)
 
 api-clean-jvm:
@@ -292,12 +292,12 @@ api-wasm: api-init heap-wasm
 heap-wasm: $(BOOTLIBDIR)/$(API).wheap
 heap5-wasm: $(BOOTLIBDIR)/$(API).wheap5
 $(BOOTLIBDIR)/$(API).wheap: .jfile .afile $(MISC_SRC_DIR)/make_lib.scm
-	@ $(RM) -f $(BOOTLIBDIR)/$(API).wheap
-	@ $(BIGLOO) -wasm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+	$(RM) -f $(BOOTLIBDIR)/$(API).wheap
+	$(BIGLOO) -wasm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
             $(MISC_SRC_DIR)/make_lib.scm -addheap $(BOOTLIBDIR)/$(API).wheap
 $(BOOTLIBDIR)/$(API).wheap5: .jfile .afile $(MISC_SRC_DIR)/make_lib5.scm
-	@ $(RM) -f $(BOOTLIBDIR)/$(API).wheap5
-	@ $(BIGLOO) -module5 -wasm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
+	$(RM) -f $(BOOTLIBDIR)/$(API).wheap5
+	$(BIGLOO) -module5 -wasm $(EFLAGS) $(BFLAGS) $(BHEAPFLAGS) \
             $(MISC_SRC_DIR)/make_lib5.scm -addheap $(BOOTLIBDIR)/$(API).wheap5
 
 api.wasm: $(BOOTLIBDIR)/bigloo$(API)_s.wasm \

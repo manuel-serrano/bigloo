@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Feb 11 08:05:29 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 09:51:21 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -648,6 +648,12 @@
 
 	 ;; java code
 	 (when (eq? *target-language* 'jvm)
+	    (with-access::Module mod (imports)
+	       (hashtable-for-each imports
+		  (lambda (k decl)
+		     (with-access::Decl decl (mod)
+			
+			(module5-add-qualified-type! mod)))))
 	    (java-finalizer))
 	 
 	 ;; build the variable and function ast

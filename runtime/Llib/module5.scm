@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Feb 11 08:11:18 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 09:20:30 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -124,7 +124,7 @@
 	   (module5-write-heap ::bstring ::Module)
 	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand)
 	   (module5-import-all! ::Module ::Module)
-	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()) (packages '()))
+	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()) (packages #f))
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol ::obj)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
@@ -1149,10 +1149,12 @@
 ;*    module5-expand-and-resolve! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (module5-expand-and-resolve! mod::Module init-xenv
-	   #!key (heap-modules '()) (packages '()))
+	   #!key (heap-modules '()) (packages #f))
    (unless (-> mod resolved)
       (with-trace 'module5-resolve "module5-expand-and-resolve!"
-	 (trace-item (-> mod id) " resolved=" (-> mod resolved))
+	 (trace-item (-> mod id)
+	    " resolved=" (-> mod resolved)
+	    " package=" (-> mod package))
 	 (trace-item "decls="
 	    (hashtable-map (-> mod decls)
 	       (lambda (k d::Decl)
@@ -1171,10 +1173,10 @@
 	       heap-modules))
 	 (set! (-> mod resolved) #t)
 	 ;; set the module package
-	 (when (eq? (-> mod package) #unspecified)
-	    (let ((c (assq (-> mod id) packages)))
-	       (when (pair? c)
-		  (set! (-> mod package) (cdr c)))))
+	 (when (and (eq? (-> mod package) #unspecified) packages)
+	    (let ((p (hashtable-get packages (symbol->string! (-> mod id)))))
+	       (when (symbol? p)
+		  (set! (-> mod package) p))))
 	 ;; force import the "heap-modules", i.e., the modules that
 	 ;; come from a Bigloo heap file
 	 (for-each (lambda (m) (module5-import-all! mod m)) heap-modules)
@@ -1204,7 +1206,7 @@
 			" def=" (typeof def))
 		     (unless (eq? imod mod)
 			(module5-expand-and-resolve! imod init-xenv
-			   :heap-modules heap-modules)
+			   :heap-modules heap-modules :packages packages)
 			(let ((idef (module5-get-export-def imod (or xid id))))
 			   (with-access::Def idef (kind expr ci)
 			      (case kind

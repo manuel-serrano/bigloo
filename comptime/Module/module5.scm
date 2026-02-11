@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Feb 11 08:18:12 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 09:34:01 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -52,6 +52,7 @@
    (export (module5-expand ::pair-nil)
 	   (module5-import-def ::Module ::Decl)
 	   (module5-ast! ::Module ::obj ::symbol)
+	   (module5-add-qualified-type! ::Module)
 	   (module5-main ::Module ::obj)
 	   (module5-imported-unit ::Module ::procedure ::obj)
 	   (module5-object-unit ::Module)
@@ -331,7 +332,7 @@
 	 
 	 (multiple-value-bind (types classes others)
 	    (split-definitions mid defs imports)
-	    
+
 	    ;; declare all C types
 	    (for-each (lambda (e)
 			 (with-access::TDef (vector-ref e 0) (id name)
@@ -372,6 +373,16 @@
 	       others)))))
 
 ;*---------------------------------------------------------------------*/
+;*    module5-add-qualified-type! ...                                  */
+;*---------------------------------------------------------------------*/
+(define (module5-add-qualified-type! mod::Module)
+   (when (symbol? (-> mod package))
+      (unless (string=? (dirname (-> mod path)) "/")
+	 (add-qualified-type! (-> mod id)
+	    (format "~a.~a" (-> mod package)
+	       (basename (prefix (-> mod path))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    module5-main ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (module5-main mod::Module env)
@@ -392,7 +403,9 @@
    (define (init-module! imod::Module path)
       (with-access::Module imod (id checksum version expr)
 	 (module5-expand-and-resolve! imod module5-init-xenv!
-	    :heap-modules (module5-heap4-modules))
+	    :heap-modules (module5-heap4-modules)
+	    :packages (module-jvm-packages))
+	 (module5-add-qualified-type! imod)
 	 (if (=fx version 5)
 	     (module5-checksum! imod)
 	     (set! checksum (module-checksum expr '())))
@@ -795,9 +808,8 @@
       (when (memq 'java (backend-foreign-clause-support (the-backend)))
 	 (match-case (cddr x)
 	    (((package (and (? symbol?) ?pkg)) . ?other-clauses)
-	     (add-qualified-type! (-> mod id)
-		(format "~a.~a" pkg
-		   (basename (prefix (-> mod path)))))
+	     (set! (-> mod package) pkg)
+	     (module5-add-qualified-type! mod)
 	     (for-each (lambda (c) (parse-clause c mod x pkg)) other-clauses))
 	    (else
 	     (for-each (lambda (c) (parse-clause c mod x #f)) (cddr x)))))
@@ -977,8 +989,10 @@
 
    (map (lambda (c)
 	   (let ((mi (cdr c)))
-	      (let ((m (module5-parse mi (symbol->path (car c)))))
-		 (module5-expand-and-resolve! m module5-init-xenv!))))
+	      (let ((m::Module (module5-parse mi (symbol->path (car c)))))
+		 (module5-expand-and-resolve! m module5-init-xenv!
+		    :packages (module-jvm-packages))
+		 m)))
       (reverse mods)))
 
 ;*---------------------------------------------------------------------*/
