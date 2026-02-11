@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/runtime/Llib/module5.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/module5.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Feb 10 17:38:16 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 07:35:39 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -124,7 +124,7 @@
 	   (module5-write-heap ::bstring ::Module)
 	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand)
 	   (module5-import-all! ::Module ::Module)
-	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()))
+	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()) (packages '()))
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol ::obj)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
@@ -1148,7 +1148,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-expand-and-resolve! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (module5-expand-and-resolve! mod::Module init-xenv #!key (heap-modules '()))
+(define (module5-expand-and-resolve! mod::Module init-xenv
+	   #!key (heap-modules '()) (packages '()))
    (unless (-> mod resolved)
       (with-trace 'module5-resolve "module5-expand-and-resolve!"
 	 (trace-item (-> mod id) " resolved=" (-> mod resolved))

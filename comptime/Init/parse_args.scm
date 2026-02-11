@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Init/parse_args.scm                 */
+;*    .../prgm/project/bigloo/5.0a/comptime/Init/parse_args.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Feb  4 08:12:36 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 07:29:33 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -55,6 +55,7 @@
    (set! *bigloo-cmd-name* (car args))
    (set! *bigloo-args* args)
    (do-parse-args (cdr args))
+   
    ;; debug
    (when (getenv "BIGLOOTRACE")
       (unless (> (bigloo-debug) 0)
@@ -152,6 +153,9 @@
 	 (set! *early-with-modules* (cons '__reader *early-with-modules*)))
       ;; initialize the libraries
       (for-each use-library! *libraries*)
+      ;; adujst the module cache depending on the target language
+      (set! *module-cache-dir*
+	 (make-file-name *module-cache-dir* (symbol->string *target-language*)))
       ;; we check with back-end we are using for defining the correct
       ;; srfi ressources
       (case *target-language*
