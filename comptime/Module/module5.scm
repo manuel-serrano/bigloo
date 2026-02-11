@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Feb 11 11:21:57 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 11:55:57 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -78,7 +78,11 @@
 	      (macro::bool read-only))
 
 	   (class TDef::Def
-	      (name::bstring read-only))))
+	      (name::bstring read-only))
+
+	   (class JDef::TDef
+	      (super::obj read-only)
+	      (package::bstring read-only))))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-copy ::CDef ...                                           */
@@ -335,9 +339,13 @@
 
 	    ;; declare all C types
 	    (for-each (lambda (e)
-			 (with-access::TDef (vector-ref e 0) (id name)
-			    (tprint "TDEf id=" id " name=" name)
-			    (declare-type! id name 'C)))
+			 (let ((t (vector-ref e 0)))
+			    (if (isa? t JDef)
+				(with-access::JDef t (id name super package expr)
+				   (declare-java-class-type! id
+				      (find-type super) name package expr))
+				(with-access::TDef t (id name)
+				   (declare-type! id name 'C)))))
 	       types)
 	    
 	    ;; declare all classes
@@ -696,6 +704,37 @@
    '())
 
 ;*---------------------------------------------------------------------*/
+;*    declare-java-type! ...                                           */
+;*---------------------------------------------------------------------*/
+(define (declare-java-type! j::jklass mod::Module clause)
+   (with-access::jklass j (id jname package src)
+      (multiple-value-bind (clazz super)
+	 (parse-ident id src mod)
+	 (co-instantiate
+	       ((def (instantiate::JDef
+			(id id)
+			(kind 'java-type)
+			(expr clause)
+			(ronly #t)
+			(expr src)
+			(decl decl)
+			(name jname)
+			(package (if (string? package) package "."))
+			(super (if (string? super) (string->symbol super) '_))))
+		(decl (instantiate::Decl
+			 (id id)
+			 (alias id)
+			 (mod mod)
+			 (expr clause)
+			 (ronly #t)
+			 (scope 'extern)
+			 (def def))))
+	    (with-access::Module mod (decls defs exports)
+	       (hashtable-put! exports (symbol->string! id) decl)
+	       (hashtable-put! decls (symbol->string! id) decl)
+	       (hashtable-put! defs (symbol->string! id) def))))))
+
+;*---------------------------------------------------------------------*/
 ;*    module4-extern-plugin-java ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (module4-extern-plugin-java mod::Module x::pair)
@@ -706,7 +745,7 @@
 	  (java-parser clause (-> mod id) '-))
 	 ((or (class ?ident . ?rest)
 	      (abstract-class ?ident . ?rest))
-	  (java-parser clause (-> mod id) '-))
+	  (declare-java-type! (java-parser clause (-> mod id) '-) mod clause))
 	 (else
 	  (error/loc mod "Illegal extern \"C\" module clause" clause x))))
    
@@ -788,7 +827,7 @@
 	       (id (fast-id-of-id id (find-location x))))
 	    `(define (,(symbol-append id '?::bool) ,(symbol-append o '|::obj|))
 		,(make-private-sexp 'instanceof id o))))
-      
+
       (match-case clause
 	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
 	  (java-parser clause (-> mod id) '|.|))
@@ -799,7 +838,8 @@
 	     (let ((clazz (class5->class4 (car clause) cpkg name id rest))
 		   (pred (class-predicate id clause)))
 		(trace-item "clazz=" clazz)
-		(java-parser clazz (-> mod id) '|.|)
+		(let ((jklazz (java-parser clazz (-> mod id) '|.|)))
+		   (declare-java-type! jklazz mod clause))
 		(with-access::Module mod (body)
 		   (set! body (cons pred body))))))
 	 (else

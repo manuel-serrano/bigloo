@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Wed Feb 11 11:08:34 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 11:54:30 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -40,15 +40,7 @@
 	    read_jvm
 	    foreign_jtype
 	    foreign_access)
-   (export  (make-java-compiler)
-	    (java-finalizer)
-	    (find-java-class ::symbol)
-	    ;; heap-add-jclass is untyped other it force the module
-	    ;; object-module to be imported in too many places.
-	    (heap-add-jclass! jclass)
-	    (parse-java-clause ::symbol ::pair)
-	    (java-parser ::pair ::symbol ::symbol))
-   (static  (class jklass
+   (export  (class jklass
 	       (bind-jklass!)
 	       (src::pair read-only)
 	       (loc read-only)
@@ -61,7 +53,16 @@
 	       (constructors::pair-nil (default '()))
 	       (abstract?::bool (default #f))
 	       (module (default #unspecified)))
-	    (class jfield
+
+	    (make-java-compiler)
+	    (java-finalizer)
+	    (find-java-class ::symbol)
+	    ;; heap-add-jclass is untyped other it force the module
+	    ;; object-module to be imported in too many places.
+	    (heap-add-jclass! jclass)
+	    (parse-java-clause ::symbol ::pair)
+	    (java-parser ::pair ::symbol ::symbol))
+   (static  (class jfield
 	       (src::pair read-only)
 	       (id::symbol read-only)
 	       (qid::symbol read-only)
@@ -239,7 +240,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    java-declare-class ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (java-declare-class j id::symbol jname::bstring
+(define (java-declare-class::jklass j id::symbol jname::bstring
 	   comp::pair-nil a::bool module::symbol separator::symbol)
    (let* ((loc (find-location j))
 	  (jklass (let ((jklass (find-jklass id)))
@@ -262,7 +263,8 @@
 			(else
 			 (java-error j "Illegal Java class redefinition"))))))
       (for-each (lambda (c) (java-declare-component j jklass c separator))
-	 comp)))
+	 comp)
+      jklass))
 
 ;*---------------------------------------------------------------------*/
 ;*    java-refine-class ...                                            */
@@ -270,7 +272,7 @@
 ;*    This function is used when someone refine the declaration        */
 ;*    of a Java class.                                                 */
 ;*---------------------------------------------------------------------*/
-(define (java-refine-class j ident::symbol comp::pair-nil
+(define (java-refine-class::jklass j ident::symbol comp::pair-nil
 	   module::symbol separator::symbol)
    (let ((jklass (let ((jklass (find-jklass ident)))
 		    (if (jklass? jklass)
@@ -282,7 +284,8 @@
 			   (id ident)
 			   (module module))))))
       (for-each (lambda (c) (java-declare-component j jklass c separator))
-	 comp)))
+	 comp)
+      jklass))
 
 ;*---------------------------------------------------------------------*/
 ;*    java-declare-component ...                                       */
@@ -393,8 +396,6 @@
 	 ;; slots or calling methods of this class
 	 (add-qualified-type! id jname)
 	 (add-qualified-type! (fast-id-of-id id loc) jname)
-	 (tprint "AQT " id " " jname)
-	 (tprint "AQT " (fast-id-of-id id loc) " " jname)
 	 ;; construct the associated jclass
 	 (declare-java-class! jklass))))
    
