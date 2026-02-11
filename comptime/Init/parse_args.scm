@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Feb 11 07:29:33 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 08:03:42 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -153,9 +153,6 @@
 	 (set! *early-with-modules* (cons '__reader *early-with-modules*)))
       ;; initialize the libraries
       (for-each use-library! *libraries*)
-      ;; adujst the module cache depending on the target language
-      (set! *module-cache-dir*
-	 (make-file-name *module-cache-dir* (symbol->string *target-language*)))
       ;; we check with back-end we are using for defining the correct
       ;; srfi ressources
       (case *target-language*

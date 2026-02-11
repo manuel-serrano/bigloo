@@ -1,5 +1,5 @@
 (module saw_procedures
-   (import type_type ast_var ast_node ast_env saw_elsewhere)
+   (import type_type tools_shape ast_var ast_node ast_env saw_elsewhere)
    (export (get-procedures globals)) )
 
 ;;
@@ -13,12 +13,12 @@
    (let ( (r '()) )
       (for-each-global! (get-genv)
 	 (lambda (global)
-			   (if (and (need-function-pointer global)
-				    (not (memq global r)) )
-			       (set! r (cons global r)) )))
+	    (if (and (need-function-pointer global)
+		     (not (memq global r)) )
+		(set! r (cons global r)) )))
       (for-each (lambda (global)
 		   (set! r (get (sfun-body (global-value global)) r)) )
-		globals )
+	 globals )
       r ))
 
 (define (get* l r)
@@ -124,7 +124,8 @@
 
 ;;
 (define-method (get e::new r) ; ()
-   r )
+   (with-access::new e (expr*)
+      (get* expr* r) ))
 
 ;;
 (define-method (get e::valloc r) ; ()

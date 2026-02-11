@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/module5.scm                  */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/module5.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sat Feb  7 08:43:47 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 08:18:12 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -795,7 +795,9 @@
       (when (memq 'java (backend-foreign-clause-support (the-backend)))
 	 (match-case (cddr x)
 	    (((package (and (? symbol?) ?pkg)) . ?other-clauses)
-	     (add-qualified-type! (-> mod id) (format "~a.~a" pkg (-> mod id)))
+	     (add-qualified-type! (-> mod id)
+		(format "~a.~a" pkg
+		   (basename (prefix (-> mod path)))))
 	     (for-each (lambda (c) (parse-clause c mod x pkg)) other-clauses))
 	    (else
 	     (for-each (lambda (c) (parse-clause c mod x #f)) (cddr x)))))

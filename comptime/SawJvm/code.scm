@@ -3,6 +3,7 @@
    (import type_type ast_var ast_node
 	   type_env
 	   type_typeof
+	   tools_shape
 	   engine_param
 	   module_module
 	   object_class

@@ -1,5 +1,5 @@
 (module saw_elsewhere
-   (import type_type ast_var ast_node
+   (import type_type tools_shape ast_var ast_node
 	   module_module
 	   backend_c_prototype )
    (export (need-function-pointer var::global)) )

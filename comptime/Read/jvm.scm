@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Tue Feb 10 17:37:01 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 08:07:53 2026 (serrano)                */
 ;*    Copyright   :  1993-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
@@ -26,7 +26,13 @@
 	   (read-jfile)
 	   (module->qualified-type::bstring ::symbol)
 	   (source->qualified-type file::bstring)
-	   (module-qualified-name ::symbol)))
+	   (module-qualified-name ::symbol)
+	   (module-jvm-packages::pair-nil)))
+
+;*---------------------------------------------------------------------*/
+;*    *module-jvm-packages* ...                                        */
+;*---------------------------------------------------------------------*/
+(define *module-jvm-packages* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    jvm-class-sans-directory ...                                     */
@@ -63,6 +69,8 @@
 ;*    add-qualified-type! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (add-qualified-type! module::symbol qtype::bstring . ident)
+   (set! *module-jvm-packages*
+      (cons (cons module (prefix qtype)) *module-jvm-packages*))
    (let ((bc (the-backend)))
       (when (and (backend? bc)
 		 (string=? qtype "")
@@ -216,4 +224,9 @@
 (define (module-qualified-name module::symbol)
    (getprop module *jvm-mark*))
 
+;*---------------------------------------------------------------------*/
+;*    module-jvm-packages ...                                          */
+;*---------------------------------------------------------------------*/
+(define (module-jvm-packages)
+   *module-jvm-packages*)
 

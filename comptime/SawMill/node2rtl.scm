@@ -464,8 +464,8 @@
 				     (side-effect #t)
 				     (expr* (list v e))
 				     (c-format "not-used"))))
-			  slots
-			  
+			  (filter (lambda (s) (<fx (slot-virtual-num s) 0))
+			     slots)
 			  expr*)))
 	    (node->rtl
 	       (instantiate::let-var
@@ -476,7 +476,7 @@
 			   (loc loc)
 			   (type type)
 			   (nodes (append init vsets (list vref))))))))))
-   
+
    (with-access::new e (expr* args-type type loc)
       (if (and (pair? expr*) (isa? type tclass))
 	  ;; module5 syntax

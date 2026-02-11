@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Feb 11 07:35:39 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 08:11:18 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1170,6 +1170,11 @@
 		    (with-access::Module m (id) id))
 	       heap-modules))
 	 (set! (-> mod resolved) #t)
+	 ;; set the module package
+	 (when (eq? (-> mod package) #unspecified)
+	    (let ((c (assq (-> mod id) packages)))
+	       (when (pair? c)
+		  (set! (-> mod package) (cdr c)))))
 	 ;; force import the "heap-modules", i.e., the modules that
 	 ;; come from a Bigloo heap file
 	 (for-each (lambda (m) (module5-import-all! mod m)) heap-modules)

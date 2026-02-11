@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Engine/compiler.scm                 */
+;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Feb  7 08:25:25 2026 (serrano)                */
+;*    Last change :  Wed Feb 11 08:05:29 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -548,7 +548,8 @@
 	     (mod (module5-parse expr (car *src-files*)
 		     :lib-path *lib-dir*
 		     :expand module5-expand
-		     :cache-dir *module-cache-dir*))
+		     :cache-dir (make-file-name *module-cache-dir*
+				   (backend-name (the-backend)))))
 	     (tu (unit 'toplevel 100 '() #t #f))
 	     (units (list tu)))
 
@@ -561,7 +562,8 @@
 	 (with-access::Module mod (id body checksum main decls imports)
 
 	    (module5-expand-and-resolve! mod module5-init-xenv!
-	       :heap-modules (module5-heap4-modules))
+	       :heap-modules (module5-heap4-modules)
+	       :packages (module-jvm-packages))
 	    (module5-checksum! mod)
 	    
 	    (hashtable-for-each decls
