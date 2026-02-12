@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0a/jigloo/jigloo.java                           */
+/*    serrano/prgm/project/bigloo/5.0a/jigloo/jigloo.java              */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan  1 17:24:51 2001                          */
-/*    Last change :  Wed Feb  4 15:15:22 2026 (serrano)                */
+/*    Last change :  Thu Feb 12 07:47:12 2026 (serrano)                */
 /*    Copyright   :  2001-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Automatic Bigloo Java module clause generation (by               */
@@ -65,6 +65,12 @@ public abstract class jigloo {
 	 return "pair";
       if (type.getName().equals("bigloo.procedure"))
 	 return "procedure";
+      if (type.getName().equals("java.lang.String"))
+	 return "String";
+      if (type.getName().equals("java.lang.Object"))
+	 return "obj";
+      if (type.getName().startsWith("java.lang"))
+	 return "obj";
       return unpackage(type.getName(), pkg);
    }
 
@@ -76,10 +82,11 @@ public abstract class jigloo {
    }
 
    static void jigloo_args(Class[] args, String pkg) {
-      for (int i = 0; i < args.length; i++) {
+      for (int i = 0; i < args.length - 1; i++) {
 	 jigloo_type(args[i], pkg);
 	 emit(" ");
       }
+	 jigloo_type(args[args.length - 1], pkg);
    }
 
    static void jigloo_args(Class first, Class[] args, String pkg) {
@@ -107,9 +114,7 @@ public abstract class jigloo {
       if (Modifier.isSynchronized(mod)) buf += "synchronized ";
       if (Modifier.isTransient(mod)) buf += "transient ";
       if (Modifier.isVolatile(mod)) buf += "volatile ";
-      if (buf.length() == 0) {
-	 emit(" ");
-      } else {
+      if (buf.length() != 0) {
 	 emit(buf);
       }
    }
@@ -297,7 +302,7 @@ public abstract class jigloo {
 	 String name = a_class.getName();
 	 String pkg = stripPackage ? a_class.getPackage().getName() : null;
 	 String cname = unpackage(name, pkg);
-	 Class[] all_classes = a_class.getClasses();
+	 Class[] all_classes = a_class.getDeclaredClasses();
 	 Constructor[] all_constructors = a_class.getDeclaredConstructors();
 	 //Constructor[] all_constructors = a_class.getConstructors();
 	 Field[] all_fields = a_class.getFields();
@@ -323,10 +328,10 @@ public abstract class jigloo {
 	 int mod = a_class.getModifiers();
 	 isInterface = (Modifier.isInterface(mod));
 
-	 if (moduleVersion == 5 && stripPackage && pkg != null && !pkgEmitted) {
-	    pkgEmitted = true;
-	    emit("   (package " + pkg + ")\n");
-	 }
+/* 	 if (moduleVersion == 5 && stripPackage && pkg != null && !pkgEmitted) { */
+/* 	    pkgEmitted = true;                                         */
+/* 	    emit("   (package " + pkg + ")\n");                        */
+/* 	 }                                                             */
 
 	 // start the class emission
 	 if (isInterface) {
@@ -334,7 +339,7 @@ public abstract class jigloo {
 	    // (otherwise java.lang.IncompatibleClassChangeError)
 	    emit("   (abstract-class " + cname + "\n");
 	 } else {
-	    emit("   (class " + cname + "\n");
+	    emit("   (class " + name + "\n");
 	 }
 
 	 for (int i = 0; i < all_constructors.length; i++) {

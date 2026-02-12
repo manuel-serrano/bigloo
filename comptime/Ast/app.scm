@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Mon Oct 20 13:50:22 2025 (serrano)                */
+;*    Last change :  Thu Feb 12 09:16:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -129,68 +129,74 @@
 				 "] args expected, "))
 			     (else
 			      (string-append (number->string arity)
-				 " arg(s) expected, "))))
+				 (if (>fx arity 1)
+				     " args expected, "
+				     " arg(s) expected, ")))))
 			 (else
 			  (string-append (number->string (negfx (+fx arity 1)))
-			     " or more arg(s) expected, "))))
+			     " or more args expected, "))))
 	     (provide (string-append (number->string (length args)) " provided")))
 	 (error-sexp->node
 	    (string-append "Illegal application: " expect provide)
 	    (shape exp)
 	    loc
 	    genv)))
-   
-   (let* ((loc (find-location/loc exp loc))
-	  (err-nb *nb-error-on-pass*)
-	  (debugstamp (gensym))
-	  (fun (sexp->node (car exp) stack loc 'app genv))
-	  (fun-err? (>fx *nb-error-on-pass* err-nb)))
-      (if (and (all-subexp-symbol? exp) (var? fun))
-	  (let* ((args  (cdr exp))
-		 (delta (check-user-app fun args)))
-	     (cond
-		((not (var? fun))
-		 (sexp->node ''() stack loc 'value genv))
-		((=fx delta 0)
-		 (make-app-node stack loc site fun args genv))
-		(else
-		 (wrong-number-of-arguments exp loc fun args))))
-	  (let loop ((old-args (cdr exp))
-		     (new-args '())
-		     (bindings '()))
-	     (cond
-		((null? old-args)
-		 (let ((old-fun      (car exp))
-		       (make-the-app (lambda (fun)
-					(if (pair? bindings)
-					    `(,(let-sym) ,(reverse! bindings)
-						(,fun ,@(reverse! new-args)))
-					    `(,fun ,@(reverse! new-args))))))
-		    (if (var? fun)
-			(begin
-			   (let ((node (sexp->node (make-the-app fun)
-					  stack loc site genv)))
-			      (clean-user-node! node)))
-			(let* ((new-fun (mark-symbol-non-user! (gensym 'fun)))
-			       (lexp `(,(let-sym) ((,new-fun ,(if fun-err?
-								  '(@ list __r4_pairs_and_lists_6_3)
-							   fun)))
-					 ,(make-the-app new-fun)))
-			       (node (sexp->node lexp stack loc site genv)))
-			   (clean-user-node! node)))))
-		((atomic? (car old-args))
-		 (loop (cdr old-args)
+
+   (with-trace 'ast "application->node"
+      (trace-item "exp=" exp)
+      (let* ((loc (find-location/loc exp loc))
+	     (err-nb *nb-error-on-pass*)
+	     (debugstamp (gensym))
+	     (fun (sexp->node (car exp) stack loc 'app genv))
+	     (fun-err? (>fx *nb-error-on-pass* err-nb)))
+	 (if (and (all-subexp-symbol? exp) (var? fun))
+	     (let* ((args  (cdr exp))
+		    (delta (check-user-app fun args)))
+		(cond
+		   ((not (var? fun))
+		    (sexp->node ''() stack loc 'value genv))
+		   ((=fx delta 0)
+		    (make-app-node stack loc site fun args genv))
+		   (else
+		    (wrong-number-of-arguments exp loc fun args))))
+	     (let loop ((old-args (cdr exp))
+			(new-args '())
+			(bindings '()))
+		(cond
+		   ((null? old-args)
+		    (let ((old-fun      (car exp))
+			  (make-the-app (lambda (fun)
+					   (if (pair? bindings)
+					       `(,(let-sym) ,(reverse! bindings)
+							    (,fun ,@(reverse! new-args)))
+					       `(,fun ,@(reverse! new-args))))))
+		       (if (var? fun)
+			   (begin
+			      (let ((node (sexp->node (make-the-app fun)
+					     stack loc site genv)))
+				 (clean-user-node! node)))
+			   (let* ((new-fun (mark-symbol-non-user! (gensym 'fun)))
+				  (lexp `(,(let-sym)
+					  ((,new-fun
+					      ,(if fun-err?
+						   '(@ list __r4_pairs_and_lists_6_3)
+						   fun)))
+					  ,(make-the-app new-fun)))
+				  (node (sexp->node lexp stack loc site genv)))
+			      (clean-user-node! node)))))
+		   ((atomic? (car old-args))
+		    (loop (cdr old-args)
 		       (if (epair? old-args)
 			   (econs (car old-args) new-args (cer old-args))
 			   (cons (car old-args) new-args))
 		       bindings))
-		(else
-		 (let ((new-arg (mark-symbol-non-user! (gensym 'arg))))
-		    (loop (cdr old-args)
+		   (else
+		    (let ((new-arg (mark-symbol-non-user! (gensym 'arg))))
+		       (loop (cdr old-args)
 			  (if (epair? old-args)
 			      (econs new-arg new-args (cer old-args))
 			      (cons new-arg new-args))
-			  (cons (list new-arg (car old-args)) bindings)))))))))
+			  (cons (list new-arg (car old-args)) bindings))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-user-app ...                                               */

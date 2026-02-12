@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Wed Feb 11 11:54:30 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 08:17:52 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -231,7 +231,7 @@
 	  (jname (if (pair? tser) (car tser) #f)))
       (cond
 	 ((not (symbol? ident))
-	  (java-error java "Illegal java class"))
+	  (java-error java "Illegal Java class"))
 	 ((string? jname)
 	  (java-declare-class java ident jname (cdr tser) abstract? module separator))
 	 (else
@@ -308,7 +308,7 @@
 		(and (symbol? s)
 		     (memq s '(public private protected
 			       static final synchronized
-			       abstract))))
+			       transient abstract))))
 	 lst))
    
    (define (make-ident base id)
@@ -481,6 +481,7 @@
 	     (tid (type-id (cdr pid))))
 	 (trace-item "ln=" ln)
 	 (trace-item "tid=" tid)
+	 (trace-item "args=" (map shape args))
 	 (let ((g (declare-global-cfun! (get-genv) ln #f module jname tid args #f #f src #f)))
 	    (cfun-method-set! (global-value g) modifiers)
 	    (global-qualified-type-name-set! g kname)
@@ -522,6 +523,11 @@
 	    ;; create the class holder
 	    ;; and create a type for this class
 	    (let ((jclass (declare-java-class-type! jid super jname package src)))
+	       (when (>fx (string-length package) 0)
+		  (let ((fqid (string->symbol jname)))
+		     (unless (eq? jid fqid)
+			;; declare an alias for the fully qualified type name
+			(declare-aliastype! fqid jname 'java jclass))))
 	       ;; some paranoid checking
 	       (assert (jclass) (jclass? jclass))
 	       ;; store the src-import location in order to print a nice error

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Feb 11 11:55:57 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 08:18:59 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -341,9 +341,11 @@
 	    (for-each (lambda (e)
 			 (let ((t (vector-ref e 0)))
 			    (if (isa? t JDef)
-				(with-access::JDef t (id name super package expr)
-				   (declare-java-class-type! id
-				      (find-type super) name package expr))
+				(with-access::JDef t (id name super package expr decl)
+				   (with-access::Decl decl ((dmod mod))
+				      (unless (eq? dmod mod)
+					 (declare-java-class-type! id
+					    (find-type super) name package expr))))
 				(with-access::TDef t (id name)
 				   (declare-type! id name 'C)))))
 	       types)
@@ -762,7 +764,7 @@
       
       
       (define modifier-list
-	 '(public private protected static final synchronized abstract))
+	 '(public private protected static final synchronized abstract transient))
       
       (define (class-name name)
 	 (let ((i (string-contains name "::")))
@@ -842,6 +844,8 @@
 		   (declare-java-type! jklazz mod clause))
 		(with-access::Module mod (body)
 		   (set! body (cons pred body))))))
+	 ((array . ?-)
+	  clause)
 	 (else
 	  (error/loc mod "Illegal extern \"java\" module clause" clause x))))
    

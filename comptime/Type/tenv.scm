@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Tue Feb  3 16:13:07 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 08:57:02 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -309,63 +309,70 @@
 ;*    bind-type! ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (bind-type!::type id::symbol init?::bool loc)
-   (let ((type (hashtable-get *Tenv* id)))
-      (if (type? type)
-	  (if (and (not *allow-type-redefinition*)
-		   (not *lib-mode*)
-		   (type-init? type))
-	      (user-error 'bind-type! "Type redefinition" (shape type))
-	      (begin
-		 (when (and (type? type)
-			    (not *lib-mode*)
-			    (type-init? type))
-		    (unless *allow-type-redefinition*
-		       (user-warning 'bind-type!
-			  "Type redefinition"
-			  (shape type))))
-		 ;; the type has already been allocated, we mark it
-		 ;; has initialized.
-		 (if init? (type-init?-set! type #t))
-		 ;; and we return it.
-		 type))
-	  (let ((new (instantiate::type (id id) (init? init?) (location loc))))
-	     (hashtable-put! *Tenv* id new)
-	     new))))
+   (with-trace 'type "bind-type!"
+      (trace-item "id=" id)
+      (let ((type (hashtable-get *Tenv* id)))
+	 (if (type? type)
+	     (if (and (not *allow-type-redefinition*)
+		      (not *lib-mode*)
+		      (type-init? type))
+		 (user-error 'bind-type! "Type redefinition" (shape type))
+		 (begin
+		    (when (and (type? type)
+			       (not *lib-mode*)
+			       (type-init? type))
+		       (unless *allow-type-redefinition*
+			  (user-warning 'bind-type!
+			     "Type redefinition"
+			     (shape type))))
+		    ;; the type has already been allocated, we mark it
+		    ;; has initialized.
+		    (if init? (type-init?-set! type #t))
+		    ;; and we return it.
+		    type))
+	     (let ((new (instantiate::type
+			   (id id)
+			   (init? init?)
+			   (location loc))))
+		(hashtable-put! *Tenv* id new)
+		new)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    use-type! ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (use-type!::type id::symbol loc)
-   (trace (ast 2) "~~~ use-type!: " id " loc: " loc #\Newline)
-   (let ((type (hashtable-get *Tenv* id)))
-      (cond
-	 ((type? type)
-	  (type-occurrence-increment! type)
-	  type)
-	 (*types-already-checked?*
-	  (user-error/location loc 'use-type! "Can't find type" id))
-	 (else
-	  (trace (ast 3) "    TYPE BOUND " id #\Newline)
-	  (let ((type (bind-type! id #f loc)))
+   (with-trace 'type "use-type"
+      (trace-item "id=" id)
+      (let ((type (hashtable-get *Tenv* id)))
+	 (cond
+	    ((type? type)
 	     (type-occurrence-increment! type)
-	     type)))))
+	     type)
+	    (*types-already-checked?*
+	     (user-error/location loc 'use-type! "Can't find type" id))
+	    (else
+	     (trace (ast 3) "    TYPE BOUND " id #\Newline)
+	     (let ((type (bind-type! id #f loc)))
+		(type-occurrence-increment! type)
+		type))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    use-type/import-loc! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (use-type/import-loc!::type id::symbol loc loci)
-   (trace (ast 2) "~~~ use-type!: " id " loc: " loc #\Newline)
-   (let ((type (hashtable-get *Tenv* id)))
-      (cond
-	 ((type? type)
-	  type)
-	 (*types-already-checked?*
-	  (user-error/location loc 'use-type! "Can't find type" id))
-	 (else
-	  (trace (ast 3) "    TYPE BOUND " id #\Newline)
-	  (let ((type (bind-type! id #f loc)))
-	     (type-import-location-set! type loci)
-	     type)))))
+   (with-trace 'type "use-type/import-loc!"
+      (trace-item "id=" id)
+      (let ((type (hashtable-get *Tenv* id)))
+	 (cond
+	    ((type? type)
+	     type)
+	    (*types-already-checked?*
+	     (user-error/location loc 'use-type! "Can't find type" id))
+	    (else
+	     (trace (ast 3) "    TYPE BOUND " id #\Newline)
+	     (let ((type (bind-type! id #f loc)))
+		(type-import-location-set! type loci)
+		type))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    use-foreign-type! ...                                            */
@@ -377,17 +384,18 @@
 ;*    two syntaxes. This function implement the compatibility.         */
 ;*---------------------------------------------------------------------*/
 (define (use-foreign-type!::type id::symbol loc)
-   (trace (ast 2) "~~~ use-foreign-type!: " id #\Newline)
-   (let ((tid (parse-id id loc)))
-      ;; parse-id calls  use-type! so, here we have to call use-type!
-      ;; if and only if parse-id did do it with a real type.
-      ;; That is, if the cdr of the result of parse-id is not
-      ;; the default type.
-      (if (eq? (cdr tid) (get-default-type))
-	  ;; This works only because the default type is not a legal type
-	  ;; that one can use in a foreign clause.
-	  (use-type! (car tid) loc)
-	  (cdr tid))))
+   (with-trace 'type "use-foreigh-type"
+      (trace-item "id=" id)
+      (let ((tid (parse-id id loc)))
+	 ;; parse-id calls  use-type! so, here we have to call use-type!
+	 ;; if and only if parse-id did do it with a real type.
+	 ;; That is, if the cdr of the result of parse-id is not
+	 ;; the default type.
+	 (if (eq? (cdr tid) (get-default-type))
+	     ;; This works only because the default type is not a legal type
+	     ;; that one can use in a foreign clause.
+	     (use-type! (car tid) loc)
+	     (cdr tid)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    use-foreign-type/import-loc! ...                                 */
@@ -399,32 +407,36 @@
 ;*    two syntaxes. This function implement the compatibility.         */
 ;*---------------------------------------------------------------------*/
 (define (use-foreign-type/import-loc!::type id::symbol loc loci)
-   (trace (ast 2) "~~~ use-foreign-type!: " id #\Newline)
-   (let ((tid (parse-id id loc)))
-      ;; parse-id calls  use-type! so, here we have to call use-type!
-      ;; if and only if parse-id did do it with a real type.
-      ;; That is, if the cdr of the result of parse-id is not
-      ;; the default type.
-      (if (eq? (cdr tid) (get-default-type))
-	  ;; This works only because the default type is not a legal type
-	  ;; that one can use in a foreign clause.
-	  (use-type/import-loc! (car tid) loc loci)
-	  (cdr tid))))
+   (with-trace 'type "use-foreigh-type/import-loc!"
+      (trace-item "id=" id)
+      (let ((tid (parse-id id loc)))
+	 ;; parse-id calls  use-type! so, here we have to call use-type!
+	 ;; if and only if parse-id did do it with a real type.
+	 ;; That is, if the cdr of the result of parse-id is not
+	 ;; the default type.
+	 (if (eq? (cdr tid) (get-default-type))
+	     ;; This works only because the default type is not a legal type
+	     ;; that one can use in a foreign clause.
+	     (use-type/import-loc! (car tid) loc loci)
+	     (cdr tid)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-type! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (declare-type!::type id::symbol name::bstring class::symbol)
-   (trace (ast 2) "~~~ declare-type!: " id #\Newline)
-   (if (not (memq class '(bigloo C _ java)))
-       (user-error "declare-type!"
-	  "Illegal type class"
-	  class)
-       (let ((type (bind-type! id #t #unspecified)))
-	  (type-name-set! type name)
-	  (type-$-set! type ($-in-name? name))
-	  (type-class-set! type class)
-	  type)))
+   (with-trace 'type "declare-type!"
+      (trace-item "id=" id)
+      (trace-item "name=" name)
+      (trace-item "class=" class)
+      (if (not (memq class '(bigloo C _ java)))
+	  (user-error "declare-type!"
+	     "Illegal type class"
+	     class)
+	  (let ((type (bind-type! id #t #unspecified)))
+	     (type-name-set! type name)
+	     (type-$-set! type ($-in-name? name))
+	     (type-class-set! type class)
+	     type))))
  
 ;*---------------------------------------------------------------------*/
 ;*    declare-subtype! ...                                             */
@@ -432,24 +444,32 @@
 ;*    Subtype inherit from coercion of their parents.                  */
 ;*---------------------------------------------------------------------*/
 (define (declare-subtype!::type id::symbol name::bstring parents class::symbol)
-   (trace (ast 2) "~~~ declare-subtype!: " id #\Newline)
-   (assert (parents) (list? parents))
-   (let ((type (bind-type! id #t #unspecified))
-	 (parents (map find-type parents)))
-      (type-name-set! type name)
-      (type-$-set! type ($-in-name? name))
-      (type-class-set! type class)
-      (type-parents-set! type parents)
-      type))
+   (with-trace 'type "declare-subtype!"
+      (trace-item "id=" id)
+      (trace-item "name=" name)
+      (trace-item "class=" class)
+      (trace-item "parents=" parents)
+      (assert (parents) (list? parents))
+      (let ((type (bind-type! id #t #unspecified))
+	    (parents (map find-type parents)))
+	 (type-name-set! type name)
+	 (type-$-set! type ($-in-name? name))
+	 (type-class-set! type class)
+	 (type-parents-set! type parents)
+	 type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-aliastype! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (declare-aliastype! id name class::symbol alias::type)
-   (trace (ast 2) "~~~ declare-aliastype!: " id #\Newline)
-   (let ((type (declare-type! id name class)))
-      (type-alias-set! type alias)
-      type)) 
+   (with-trace 'type "declare-aliastype!"
+      (trace-item "id=" id)
+      (trace-item "name=" name)
+      (trace-item "class=" class)
+      (trace-item "alias=" (type-id alias))
+      (let ((type (declare-type! id name class)))
+	 (type-alias-set! type alias)
+	 type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    for-each-type! ...                                               */

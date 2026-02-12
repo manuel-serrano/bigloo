@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Feb 11 11:46:39 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 08:34:41 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -762,12 +762,12 @@
 (define (module5-parse-clause clause expr::pair mod::Module lib-path cache-dir expand hsuffix)
 
    (define (unbound-error path id clause)
-      (error/loc mod (format "Cannot find declaration in module \"~a\"" path)
-	 id clause))
+      (error/loc mod (format "Can't find \"~a\" declaration in module" id)
+	 path clause))
 
    (define (scope-error path id clause)
-      (error/loc mod (format "Module \"~a\" does not export" path)
-	 id clause))
+      (error/loc mod (format "Variable \"~a\" is not exported by module" id)
+	 path clause))
 
    (define (hashtable-symbol-get table id)
       (hashtable-get table (symbol->string! id)))
@@ -1733,7 +1733,7 @@
 		(error/loc mod
 		   (format "Identifier ~s has already been declared" name)
 		   (with-access::Def old (expr) expr)
-		   (with-access::Decl decl (expr) expr))
+		   src)
 		(let ((def (instantiate::Def
 				 (id id)
 				 (type type)

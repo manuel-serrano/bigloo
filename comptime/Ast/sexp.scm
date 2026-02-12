@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Ast/sexp.scm                        */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/sexp.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Tue Feb 10 08:19:36 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 09:15:25 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -625,53 +625,55 @@
 ;*    call->node ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (call->node exp stack loc site genv)
-   (let ((caller (car exp))
-	 (loc (find-location/loc exp loc)))
-      (if (symbol? caller)
-	  ;; it might be a typed special forms (such as pragma or lambda)
-	  (let* ((pid (parse-id caller loc))
-		 (id (car pid))
-		 (type (cdr pid)))
-	     (case id
-		((pragma)
-		 (pragma/type->node #f #f type exp stack loc site genv))
-		((pragma/effect)
-		 (if (not (pair? (cdr exp)))
-		     (error-sexp->node
-			"Illegal pragma/effect"
-			exp (find-location/loc exp loc) genv)
-		     (pragma/type->node #f (parse-effect (cadr exp))
-			type `((car exp) ,@(cddr exp))
-			stack loc site genv)))
-		((free-pragma)
-		 (pragma/type->node #t #f type exp stack loc site genv))
-		((free-pragma/effect)
-		 (if (not (pair? (cdr exp)))
-		     (error-sexp->node
-			"Illegal free-pragma/effect"
-			exp (find-location/loc exp loc) genv)
-		     (pragma/type->node #t (parse-effect (cadr exp))
-			type `((car exp) ,@(cddr exp))
-			stack loc site genv)))
-		((lambda)
-		 (match-case exp
-		    ((?- ?args . ?body)
-		     (let* ((loc (find-location/loc exp loc))
-			    (fun (mark-symbol-non-user! (gensym 'lambda)))
-			    (tfun (if (bigloo-type? type)
-				      (make-typed-ident fun (type-id type))
-				      fun)))
-			(sexp->node
-			   `(,(labels-sym) ((,tfun ,args ,(normalize-progn body)))
-					   ,fun)
-			   stack
-			   loc
-			   site genv)))
-		    (else
-		     (error-sexp->node "Illegal lambda" exp loc genv))))
-		(else
-		 (application->node exp stack loc site genv))))
-	  (application->node exp stack loc site genv))))
+   (with-trace 'ast "call->node"
+      (trace-item "expr=" exp)
+      (let ((caller (car exp))
+	    (loc (find-location/loc exp loc)))
+	 (if (symbol? caller)
+	     ;; it might be a typed special forms (such as pragma or lambda)
+	     (let* ((pid (parse-id caller loc))
+		    (id (car pid))
+		    (type (cdr pid)))
+		(case id
+		   ((pragma)
+		    (pragma/type->node #f #f type exp stack loc site genv))
+		   ((pragma/effect)
+		    (if (not (pair? (cdr exp)))
+			(error-sexp->node
+			   "Illegal pragma/effect"
+			   exp (find-location/loc exp loc) genv)
+			(pragma/type->node #f (parse-effect (cadr exp))
+			   type `((car exp) ,@(cddr exp))
+			   stack loc site genv)))
+		   ((free-pragma)
+		    (pragma/type->node #t #f type exp stack loc site genv))
+		   ((free-pragma/effect)
+		    (if (not (pair? (cdr exp)))
+			(error-sexp->node
+			   "Illegal free-pragma/effect"
+			   exp (find-location/loc exp loc) genv)
+			(pragma/type->node #t (parse-effect (cadr exp))
+			   type `((car exp) ,@(cddr exp))
+			   stack loc site genv)))
+		   ((lambda)
+		    (match-case exp
+		       ((?- ?args . ?body)
+			(let* ((loc (find-location/loc exp loc))
+			       (fun (mark-symbol-non-user! (gensym 'lambda)))
+			       (tfun (if (bigloo-type? type)
+					 (make-typed-ident fun (type-id type))
+					 fun)))
+			   (sexp->node
+			      `(,(labels-sym) ((,tfun ,args ,(normalize-progn body)))
+					      ,fun)
+			      stack
+			      loc
+			      site genv)))
+		       (else
+			(error-sexp->node "Illegal lambda" exp loc genv))))
+		   (else
+		    (application->node exp stack loc site genv))))
+	     (application->node exp stack loc site genv)))))
  
 ;*---------------------------------------------------------------------*/
 ;*    sexp*->node ...                                                  */
