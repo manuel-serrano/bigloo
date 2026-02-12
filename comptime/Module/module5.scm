@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Feb 12 08:18:59 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 15:46:15 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -844,8 +844,8 @@
 		   (declare-java-type! jklazz mod clause))
 		(with-access::Module mod (body)
 		   (set! body (cons pred body))))))
-	 ((array . ?-)
-	  clause)
+	 ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
+ 	  (java-declare-array clause ident of (-> mod id)))
 	 (else
 	  (error/loc mod "Illegal extern \"java\" module clause" clause x))))
    

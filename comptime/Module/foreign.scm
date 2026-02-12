@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/foreign.scm                  */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/foreign.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Wed Feb  4 08:39:37 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 16:34:25 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign and extern clauses compilation. Foreign and extern   */
@@ -231,7 +231,8 @@
 	      ;; declare-c-type! can return otherthing than a type
 	      ;; (for instance on type redefinition).
 	      (if (type? ctype)
-		  (let ((accesses (make-ctype-accesses! ctype ctype loc)))
+		  (let ((accesses (make-ctype-accesses! ctype ctype loc
+				     *module*)))
 		     (foreign-accesses-add! accesses)
 		     ;; if the declared type is an alias to a structure
 		     ;; we automatically create the pending corresponding

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Foreign/cenum.scm           */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Foreign/cenum.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  6 12:23:13 1996                          */
-;*    Last change :  Wed Mar 30 21:10:16 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb 12 16:31:23 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C enum accessors creations                                   */
 ;*=====================================================================*/
@@ -25,7 +25,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-ctype-accesses! ::cenum ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-method (make-ctype-accesses! what::cenum who::type loc)
+(define-method (make-ctype-accesses! what::cenum who::type loc module)
    (let* ((btype       (cenum-btype what))
 	  (id          (type-id who))
 	  (wid         (type-id what))

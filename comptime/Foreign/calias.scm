@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Foreign/calias.scm          */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Foreign/calias.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  6 12:25:42 1996                          */
-;*    Last change :  Mon May 15 07:48:06 2000 (serrano)                */
-;*    Copyright   :  1996-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb 12 16:31:10 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C alias accessors creations.                                 */
 ;*=====================================================================*/
@@ -23,10 +23,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-ctype-accesses! ::calias ...                                */
 ;*---------------------------------------------------------------------*/
-(define-method (make-ctype-accesses! what::calias who::type loc)
+(define-method (make-ctype-accesses! what::calias who::type loc mod::symbol)
    (trace (expand 3)
 	  "make-ctype-accesses(calias): " (shape what) " " (shape who)
 	  #\Newline)
-   (make-ctype-accesses! (type-alias what) who loc))
+   (make-ctype-accesses! (type-alias what) who loc mod))
 
  

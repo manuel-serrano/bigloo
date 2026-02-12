@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Foreign/cptr.scm            */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Foreign/cptr.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  6 12:23:13 1996                          */
-;*    Last change :  Wed Mar 30 21:10:55 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb 12 16:31:49 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C ptr accessors creations                                    */
 ;*=====================================================================*/
@@ -28,7 +28,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-ctype-accesses! ::cptr ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (make-ctype-accesses! what::cptr who::type loc)
+(define-method (make-ctype-accesses! what::cptr who::type loc module)
    (trace (expand 3) "make-ctype-accesses(cptr): " (shape what) " " (shape who)
 	  #\Newline)
    (let* ((btype                (cptr-btype what))

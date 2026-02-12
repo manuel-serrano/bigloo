@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Thu Feb 12 08:57:02 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 16:34:43 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -219,7 +219,7 @@
 	       (when (ctype? old)
 		  (let ((l (type-location old)))
 		     (foreign-accesses-add!
-			(make-ctype-accesses! old old l)))))))
+			(make-ctype-accesses! old old l *module*)))))))
       ;; we have to walk thru the remember list in order to
       ;; setup the correct super class fields
       (for-each (lambda (new)

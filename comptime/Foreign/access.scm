@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Foreign/access.scm          */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Foreign/access.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Mon May 15 07:47:43 2000 (serrano)                */
-;*    Copyright   :  1996-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb 12 16:33:19 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the ctype accessors                                      */
 ;*    -------------------------------------------------------------    */
@@ -26,10 +26,10 @@
 	   foreign_cpointer
 	   foreign_cstruct)
    
-   (export (generic make-ctype-accesses! ::type ::type loc)))
+   (export (generic make-ctype-accesses! ::type ::type loc mod::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-ctype-accesses! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-generic (make-ctype-accesses! what::type who::type loc)
+(define-generic (make-ctype-accesses! what::type who::type loc mod::symbol)
    '())

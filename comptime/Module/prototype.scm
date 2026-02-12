@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/prototype.scm        */
+;*    .../prgm/project/bigloo/5.0a/comptime/Module/prototype.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 14:27:58 1996                          */
-;*    Last change :  Sat Mar  3 10:01:29 2007 (serrano)                */
-;*    Copyright   :  1996-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb 12 16:23:35 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The prototype management                                         */
 ;*=====================================================================*/
@@ -28,51 +28,55 @@
 ;*    parse-prototype ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (parse-prototype proto)
-   (match-case proto
-      (((and ?class (or class final-class wide-class abstract-class)) . ?-)
-       (parse-class class (cdr proto)))
-      ((generic . ?-)
-       (parse-function-prototype (cdr proto) 'sgfun))
-      ((inline . ?-)
-       (parse-function-prototype (cdr proto) 'sifun))
-      ((macro . ?-)
-       (parse-macro (cdr proto)))
-      ((syntax . ?-)
-       (parse-syntax (cdr proto)))
-      ((expander . ?-)
-       (parse-expander (cdr proto)))
-      ((?id . ?-)
-       (if (or (not *all-export-mutable?*)
-	       (memq id '(main module-initialization))
-	       (not (eq? (get-default-type)
-			 (type-of-id id (find-location proto)))))
-	   (parse-function-prototype proto 'sfun)
-	   (parse-variable-prototype id)))
-      (else
-       (parse-variable-prototype proto))))
+   (with-trace 'module "parse-prototype"
+      (trace-item "proto=" proto)
+      (match-case proto
+	 (((and ?class (or class final-class wide-class abstract-class)) . ?-)
+	  (parse-class class (cdr proto)))
+	 ((generic . ?-)
+	  (parse-function-prototype (cdr proto) 'sgfun))
+	 ((inline . ?-)
+	  (parse-function-prototype (cdr proto) 'sifun))
+	 ((macro . ?-)
+	  (parse-macro (cdr proto)))
+	 ((syntax . ?-)
+	  (parse-syntax (cdr proto)))
+	 ((expander . ?-)
+	  (parse-expander (cdr proto)))
+	 ((?id . ?-)
+	  (if (or (not *all-export-mutable?*)
+		  (memq id '(main module-initialization))
+		  (not (eq? (get-default-type)
+			  (type-of-id id (find-location proto)))))
+	      (parse-function-prototype proto 'sfun)
+	      (parse-variable-prototype id)))
+	 (else
+	  (parse-variable-prototype proto)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-function-prototype ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (parse-function-prototype proto class)
-   (match-case proto
-      (((and ?id (? symbol?)) . ?the-args)
-       (if (dsssl-check-prototype? the-args)
-	   (list class id the-args)
-	   (let loop ((args the-args))
-	      (cond
-		 ((null? args)
-		  (list class id the-args))
-		 ((symbol? args)
-		  (list class id the-args))
-		 ((not (pair? args))
-		  #f)
-		 ((not (symbol? (car args)))
-		  #f)
-		 (else
-		  (loop (cdr args)))))))
-      (else
-       #f)))
+   (with-trace 'module "parse-functionprototype"
+      (trace-item "proto=" proto)
+      (match-case proto
+	 (((and ?id (? symbol?)) . ?the-args)
+	  (if (dsssl-check-prototype? the-args)
+	      (list class id the-args)
+	      (let loop ((args the-args))
+		 (cond
+		    ((null? args)
+		     (list class id the-args))
+		    ((symbol? args)
+		     (list class id the-args))
+		    ((not (pair? args))
+		     #f)
+		    ((not (symbol? (car args)))
+		     #f)
+		    (else
+		     (loop (cdr args)))))))
+	 (else
+	  #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-variable-prototype ...                                     */

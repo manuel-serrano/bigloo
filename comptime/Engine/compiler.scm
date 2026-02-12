@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Feb 11 11:46:43 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 17:56:05 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -543,6 +543,11 @@
 
       (module5-preload-cache! (module5-heap4-modules))
 
+      ;; some module plugins (e.g., the java plugin), requires *module*
+      ;; to be a valid module name
+      (when (symbol? (cadr (car expr)))
+	 (set! *module* (cadr (car expr))))
+      
       (let* ((expr-mod (car expr))
 	     (expr-body (cdr expr))
 	     (mod (module5-parse expr (car *src-files*)

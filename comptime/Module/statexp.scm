@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/statexp.scm     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/statexp.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 10:58:45 1996                          */
-;*    Last change :  Mon Oct 20 09:28:17 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb 12 16:20:11 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The static clauses compilation.                                  */
 ;*=====================================================================*/
@@ -29,7 +29,8 @@
 	    ast_find-gdefs
 	    ast_glo-decl)
    (export  (make-static-compiler)
-	    (make-export-compiler)))
+	    (make-export-compiler)
+	    (statexp-parser ::obj ::symbol ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-static-compiler ...                                         */
@@ -56,7 +57,8 @@
    (let ((mode (car clause)))
       (match-case clause
 	 ((?- . ?protos)
-	  (for-each (lambda (proto) (statexp-parser proto mode)) protos)
+	  (for-each (lambda (proto) (statexp-parser proto mode *module*))
+	     protos)
 	  '())
 	 (else
 	  (user-error/location (find-location *module-clause*)
@@ -78,50 +80,53 @@
 ;*---------------------------------------------------------------------*/
 ;*    statexp-parser ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (statexp-parser prototype import)
-   (let ((proto (parse-prototype prototype)))
-      (if (not (pair? proto))
-	  (user-error/location (find-location *module-clause*)
-	     "Parse error" "Illegal prototype" prototype '())
-	  (case (car proto)
-	     ((sfun sifun sgfun)
-	      (to-be-define!
-		 (declare-global-sfun! (get-genv) (cadr proto) #f (caddr proto) *module*
-		    import (car proto) prototype #f)))
-	     ((svar)
-	      (to-be-define!
-		 (declare-global-svar! (get-genv) (cadr proto) #f *module*
-		    import prototype #f)))
-	     ((class)
-	      (to-be-declare!
-		 (delay
-		    (declare-class! (get-genv) (cdr proto) *module* import
-		       #f #f prototype #f))))
-	     ((abstract-class)
-	      (to-be-declare!
-		 (delay
-		    (declare-class! (get-genv) (cdr proto) *module* import
-		       #f #t prototype #f))))
-	     ((final-class)
-	      (to-be-declare!
-		 (delay
-		    (declare-class! (get-genv) (cdr proto) *module* import
-		       #t #f prototype #f))))
-	     ((wide-class)
-	      (to-be-declare!
-		 (delay
-		    (declare-wide-class! (get-genv) (cdr proto) *module* import
-		       prototype #f))))
-	     ((define-macro)
-	      (eval proto))
-	     ((macro)
-	      (to-be-macro! (cadr proto) prototype))
-	     ((syntax)
-	      (to-be-macro! (cadr proto) prototype))
-	     ((expander)
-	      (to-be-macro! (cadr proto) prototype))
-	     (else
-	      (user-error "Parse error" "Illegal prototype" prototype '()))))))
+(define (statexp-parser prototype import module)
+   (with-trace 'module "statexp-parser"
+      (trace-item "prototype=" prototype)
+      (trace-item "import=" import)
+      (let ((proto (parse-prototype prototype)))
+	 (if (not (pair? proto))
+	     (user-error/location (find-location *module-clause*)
+		"Parse error" "Illegal prototype" prototype '())
+	     (case (car proto)
+		((sfun sifun sgfun)
+		 (to-be-define!
+		    (declare-global-sfun! (get-genv) (cadr proto) #f (caddr proto) module
+		       import (car proto) prototype #f)))
+		((svar)
+		 (to-be-define!
+		    (declare-global-svar! (get-genv) (cadr proto) #f module
+		       import prototype #f)))
+		((class)
+		 (to-be-declare!
+		    (delay
+		       (declare-class! (get-genv) (cdr proto) module import
+			  #f #f prototype #f))))
+		((abstract-class)
+		 (to-be-declare!
+		    (delay
+		       (declare-class! (get-genv) (cdr proto) module import
+			  #f #t prototype #f))))
+		((final-class)
+		 (to-be-declare!
+		    (delay
+		       (declare-class! (get-genv) (cdr proto) module import
+			  #t #f prototype #f))))
+		((wide-class)
+		 (to-be-declare!
+		    (delay
+		       (declare-wide-class! (get-genv) (cdr proto) module import
+			  prototype #f))))
+		((define-macro)
+		 (eval proto))
+		((macro)
+		 (to-be-macro! (cadr proto) prototype))
+		((syntax)
+		 (to-be-macro! (cadr proto) prototype))
+		((expander)
+		 (to-be-macro! (cadr proto) prototype))
+		(else
+		 (user-error "Parse error" "Illegal prototype" prototype '())))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *local-classes* ...                                              */

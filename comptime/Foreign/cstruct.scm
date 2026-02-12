@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Foreign/cstruct.scm         */
+;*    .../prgm/project/bigloo/5.0a/comptime/Foreign/cstruct.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  6 12:23:13 1996                          */
-;*    Last change :  Wed Mar 30 21:09:53 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb 12 16:32:01 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C ptr accessors creations                                    */
 ;*=====================================================================*/
@@ -29,13 +29,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-ctype-accesses! ::cstruct ...                               */
 ;*---------------------------------------------------------------------*/
-(define-method (make-ctype-accesses! what::cstruct who::type loc)
+(define-method (make-ctype-accesses! what::cstruct who::type loc module)
    '())
 
 ;*---------------------------------------------------------------------*/
 ;*    make-ctype-accesses! ::cstruct* ...                              */
 ;*---------------------------------------------------------------------*/
-(define-method (make-ctype-accesses! what::cstruct* who::type loc)
+(define-method (make-ctype-accesses! what::cstruct* who::type loc module)
    (trace (expand 3) "make-ctype-accesses(cstruct*): " (shape what)
 	  " " (shape who) #\Newline)
    (let* ((btype          (cstruct*-btype what))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Thu Feb 12 08:17:52 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 15:45:12 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -53,7 +53,7 @@
 	       (constructors::pair-nil (default '()))
 	       (abstract?::bool (default #f))
 	       (module (default #unspecified)))
-
+	    
 	    (make-java-compiler)
 	    (java-finalizer)
 	    (find-java-class ::symbol)
@@ -61,7 +61,8 @@
 	    ;; object-module to be imported in too many places.
 	    (heap-add-jclass! jclass)
 	    (parse-java-clause ::symbol ::pair)
-	    (java-parser ::pair ::symbol ::symbol))
+	    (java-parser ::pair ::symbol ::symbol)
+	    (java-declare-array j::pair id::symbol of::symbol ::symbol))
    (static  (class jfield
 	       (src::pair read-only)
 	       (id::symbol read-only)
@@ -111,7 +112,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    java-parser ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (java-parser java module separator::symbol)
+(define (java-parser java module::symbol separator::symbol)
    (with-trace 'jvm "java-parser"
       (trace-item "java=" java)
       (match-case java
@@ -127,7 +128,7 @@
 	 ((abstract-class ?ident . ?rest)
 	  (java-parse-class java ident rest #t module separator))
 	 ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
-	  (java-declare-array java ident of))
+	  (java-declare-array java ident of module))
 	 (else
 	  (java-error java)))))
 
@@ -574,14 +575,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    java-declare-array ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (java-declare-array j::pair id::symbol of::symbol)
-   ;; Only arrays are explictly associated to types. Java classes
-   ;; are defined by jclasses.
-   (if (not (type-ident? of))
-       (java-error j "Illegal array item type")
-       (let* ((sof (symbol->string of))
-	      (tof (string->symbol (substring sof 2 (string-length sof))))
-	      (jtype (declare-jvm-type! id tof j)))
-	  (foreign-accesses-add!
-	   (make-ctype-accesses! jtype jtype (find-location j))))))
+(define (java-declare-array j::pair id::symbol of::symbol module::symbol)
+   (with-trace 'jvm "java-declare-array"
+      (trace-item "id=" id)
+      (trace-item "module=" module)
+      ;; Only arrays are explictly associated to types. Java classes
+      ;; are defined by jclasses.
+      (if (not (type-ident? of))
+	  (java-error j "Illegal array item type")
+	  (let* ((sof (symbol->string of))
+		 (tof (string->symbol (substring sof 2 (string-length sof))))
+		 (jtype (declare-jvm-type! id tof j)))
+	     (foreign-accesses-add!
+		(make-ctype-accesses! jtype jtype (find-location j) module))))))
       
