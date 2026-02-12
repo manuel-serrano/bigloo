@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/java.scm        */
+;*    serrano/bigloo/5.0a/comptime/Module/java.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Thu Feb 12 15:45:12 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 18:29:31 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -581,11 +581,19 @@
       (trace-item "module=" module)
       ;; Only arrays are explictly associated to types. Java classes
       ;; are defined by jclasses.
-      (if (not (type-ident? of))
-	  (java-error j "Illegal array item type")
+      (cond
+	 ((and (type-exists? id) (find-type id))
+	  =>
+	  (lambda (ty)
+	     (unless (and (isa? ty jarray)
+			  (not (eq? (type-id (jarray-item-type ty)) of)))
+		(java-error j "Illegal type redeclaration"))))
+	 ((not (type-ident? of))
+	  (java-error j "Illegal array item type"))
+	 (else
 	  (let* ((sof (symbol->string of))
 		 (tof (string->symbol (substring sof 2 (string-length sof))))
 		 (jtype (declare-jvm-type! id tof j)))
 	     (foreign-accesses-add!
-		(make-ctype-accesses! jtype jtype (find-location j) module))))))
+		(make-ctype-accesses! jtype jtype (find-location j) module)))))))
       

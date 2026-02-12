@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/module5.scm     */
+;*    serrano/bigloo/5.0a/comptime/Module/module5.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Feb 12 15:46:15 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 18:37:20 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -387,11 +387,16 @@
 ;*    module5-add-qualified-type! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (module5-add-qualified-type! mod::Module)
-   (when (symbol? (-> mod package))
-      (unless (string=? (dirname (-> mod path)) "/")
-	 (add-qualified-type! (-> mod id)
-	    (format "~a.~a" (-> mod package)
-	       (basename (prefix (-> mod path))))))))
+   (with-trace 'module "module5-add-qualified-type"
+      (trace-item "mod=" (-> mod id))
+      (trace-item "pkg=" (-> mod package))
+      (trace-item "path=" (-> mod path))
+      (when (symbol? (-> mod package))
+	 (unless (string=? (dirname (-> mod path)) "/")
+	    (add-qualified-type! (-> mod id)
+	       (format "~a.~a" (-> mod package)
+		  (basename (prefix (-> mod path))))
+	       #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-main ...                                                 */

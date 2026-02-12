@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Read/jvm.scm           */
+;*    serrano/bigloo/5.0a/comptime/Read/jvm.scm                        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Wed Feb 11 09:27:48 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 18:40:36 2026 (serrano)                */
 ;*    Copyright   :  1993-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
@@ -70,37 +70,40 @@
 ;*    add-qualified-type! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (add-qualified-type! module::symbol qtype::bstring . ident)
-   (hashtable-put! *module-jvm-packages*
-      (symbol->string! module) (string->symbol (prefix qtype)))
-   (let ((bc (the-backend)))
-      (when (and (backend? bc)
-		 (string=? qtype "")
-		 (backend-qualified-types (the-backend)))
-	 (warning "add-qualified-type!"
-	    "empty name for module -- "
-	    module
-	    (if (and (pair? ident) (symbol? (car ident)))
-		(string-append ", for identifier `"
-		   (symbol->string (car ident))
-		   "'")
-		"")))
-      (let ((b (getprop module *jvm-mark*)))
-	 (if (not b)
-	     (putprop! module *jvm-mark* qtype)
-	     (when (and (backend? bc)
-			(not (equal? b qtype))
-			(backend-qualified-types (the-backend)))
+   (with-trace 'jvm "add-qualified-type!"
+      (trace-item "module=" module)
+      (trace-item "qtype=" qtype)
+      (hashtable-put! *module-jvm-packages*
+	 (symbol->string! module) (string->symbol (prefix qtype)))
+      (let ((bc (the-backend)))
+	 (when (and (backend? bc)
+		    (string=? qtype "")
+		    (backend-qualified-types (the-backend)))
+	    (warning "add-qualified-type!"
+	       "empty name for module -- "
+	       module
+	       (if (and (pair? ident) (symbol? (car ident)))
+		   (string-append ", for identifier `"
+		      (symbol->string (car ident))
+		      "'")
+		   "")))
+	 (let ((b (getprop module *jvm-mark*)))
+	    (if (not b)
 		(putprop! module *jvm-mark* qtype)
-		(warning "add-qualified-type!"
-		   "qualified type redefinition:\n  module/class=" module
-		   (if (and (pair? ident) (symbol? (car ident)))
-		       (string-append "\n  identifier="
-			  (symbol->string (car ident)))
-		       "")
-		   "\n  old qualified type=" b
-		   "\n  new qualified type=" qtype
-		   "\n")
-		(dump-trace-stack (current-error-port) 10))))))
+		(when (and (backend? bc)
+			   (not (equal? b qtype))
+			   (backend-qualified-types (the-backend)))
+		   (putprop! module *jvm-mark* qtype)
+		   (warning "add-qualified-type!"
+		      "qualified type redefinition:\n  module/class=" module
+		      (if (and (pair? ident) (symbol? (car ident)))
+			  (string-append "\n  identifier="
+			     (symbol->string (car ident)))
+			  "")
+		      "\n  old qualified type=" b
+		      "\n  new qualified type=" qtype
+		      "\n")
+		   (dump-trace-stack (current-error-port) 10)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-jfile ...                                                   */
@@ -155,7 +158,9 @@
 ;*    add-current-module-qualified-type-name! ...                      */
 ;*---------------------------------------------------------------------*/
 (define (add-current-module-qualified-type-name!)
-   ;; then we add information specific to the current module
+   (with-trace 'jvm "add-current-module-qualified-type-name!"
+      (trace-item "module=" *module*)
+      ;; then we add information specific to the current module
    (let ((qtype (getprop *module* *jvm-mark*)))
       (if (not (string? qtype))
 	  ;; The current module is not present in loaded jfile, we
@@ -171,13 +176,13 @@
                                    (bigloo-mangle uqtype)
                                    uqtype))
 			    ".")))
-		 (add-qualified-type! *module* qt)
+		 (add-qualified-type! *module* (string-replace qt #\/ #\.))
 		 qt))
 	     (else
 	      (let ((qt (prefix *dest*)))
 		 ;; there is a destination
-		 (add-qualified-type! *module* qt)
-		 qt))))))
+		 (add-qualified-type! *module* (string-replace qt #\/ #\.))
+		 qt)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module->qualified-type ...                                       */
@@ -185,25 +190,27 @@
 ;*    From a module name, returns the Java qualified type name.        */
 ;*---------------------------------------------------------------------*/
 (define (module->qualified-type::bstring module::symbol)
-   (let ((b (getprop module *jvm-mark*)))
-      (cond
-	 ((string? b)
-	  b)
-	 ((eq? module *module*)
-	  (add-current-module-qualified-type-name!))
-	 (else
-	  (let* ((abase (map dirname *access-files*))
-		 (files ((bigloo-module-resolver) module '() abase))
-		 (default (if (pair? files)
-	 		      (prefix (basename (car files)))
-			      (symbol->string module))))
-	     (if (backend-qualified-types (the-backend))
-		 (warning
-		    (string-append "Can't find qualified type name for module `"
-		       (symbol->string module) "',")
-		    "Using name `" default "'."))
-	     (add-qualified-type! module default)
-	     default)))))
+   (with-trace 'jvm "module->qualified-type"
+      (trace-item "module=" module)
+      (let ((b (getprop module *jvm-mark*)))
+	 (cond
+	    ((string? b)
+	     b)
+	    ((eq? module *module*)
+	     (add-current-module-qualified-type-name!))
+	    (else
+	     (let* ((abase (map dirname *access-files*))
+		    (files ((bigloo-module-resolver) module '() abase))
+		    (default (if (pair? files)
+				 (prefix (basename (car files)))
+				 (symbol->string module))))
+		(if (backend-qualified-types (the-backend))
+		    (warning
+		       (string-append "Can't find qualified type name for module `"
+			  (symbol->string module) "',")
+		       "Using name `" default "'."))
+		(add-qualified-type! module (string-replace default #\/ #\.))
+		default))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    source->qualified-type ...                                       */

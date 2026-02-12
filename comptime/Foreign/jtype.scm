@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Foreign/jtype.scm      */
+;*    serrano/bigloo/5.0a/comptime/Foreign/jtype.scm                   */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan  2 10:58:27 2001                          */
-;*    Last change :  Thu Feb 12 16:11:34 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 18:42:59 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The JVM array type managment. I have tried to reuse as much as   */
@@ -46,7 +46,7 @@
 ;*    declare-jvm-type! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (declare-jvm-type!::type id::symbol of::symbol src::pair)
-   (with-trace 'foreign "declare-jvm-type"
+   (with-trace 'jvm "declare-jvm-type"
       (trace-item "id=" id)
       (trace-item "of=" of)
       (let* ((pointed (use-type! of (find-location src)))
@@ -74,7 +74,7 @@
 ;*    make-ctype-accesses! ::jarray ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (make-ctype-accesses! what::jarray who::type loc module::symbol)
-   (with-trace 'foreign "make-ctype-accesses ::jarray"
+   (with-trace 'jvm "make-ctype-accesses ::jarray"
       (trace-item "what=" (shape what))
       (trace-item "who=" (shape who))
       (let* ((id (jarray-id what))

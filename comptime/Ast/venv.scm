@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Thu Jan 29 17:55:59 2026 (serrano)                */
+;*    Last change :  Thu Feb 12 18:47:50 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -346,33 +346,35 @@
 	   id::symbol alias::obj module::symbol
 	   value::value import::symbol
 	   src::obj)
-   (let* ((ident (or alias id))
-	  (old (find-global env ident module)))
-      (if (global? old)
-	  (cond
-	     (*lib-mode*
-	      old)
-	     ((eq? module (global-module old))
-	      (warning-rebind-global! old src)
-	      old)
-	     (else
-	      (error-rebind-global! old src)))
-	  (let* ((qtn (cond
-			 ((not (backend-qualified-types (the-backend))) "")
-			 ((eq? import 'eval) "eval")
-			 (else (module->qualified-type module))))
-		 (new (instantiate::global
-			 (type *_*)
-			 (module module)
-			 (qualified-type-name qtn)
-			 (id ident)
-			 (alias (when alias id))
-			 (value value)
-			 (src src)
-			 (user? #t)
-			 (import import))))
-	     (add-global! env new ident)
-	     new))))
+   (with-trace 'ast "bind-global!"
+      (trace-item "id=" id)
+      (let* ((ident (or alias id))
+	     (old (find-global env ident module)))
+	 (if (global? old)
+	     (cond
+		(*lib-mode*
+		 old)
+		((eq? module (global-module old))
+		 (warning-rebind-global! old src)
+		 old)
+		(else
+		 (error-rebind-global! old src)))
+	     (let* ((qtn (cond
+			    ((not (backend-qualified-types (the-backend))) "")
+			    ((eq? import 'eval) "eval")
+			    (else (module->qualified-type module))))
+		    (new (instantiate::global
+			    (type *_*)
+			    (module module)
+			    (qualified-type-name qtn)
+			    (id ident)
+			    (alias (when alias id))
+			    (value value)
+			    (src src)
+			    (user? #t)
+			    (import import))))
+		(add-global! env new ident)
+		new)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    add-global! ...                                                  */
