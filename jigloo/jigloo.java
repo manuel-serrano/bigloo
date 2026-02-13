@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan  1 17:24:51 2001                          */
-/*    Last change :  Thu Feb 12 07:47:12 2026 (serrano)                */
+/*    Last change :  Fri Feb 13 17:11:22 2026 (serrano)                */
 /*    Copyright   :  2001-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Automatic Bigloo Java module clause generation (by               */
@@ -29,6 +29,9 @@ public abstract class jigloo {
    static int moduleVersion = 5;
    static boolean stripPackage = false;
    static boolean pkgEmitted = false;
+   static boolean superEmit = false;
+   static boolean direct = false;
+   static boolean inheritance = false;
    
    static boolean isInterface = false;
 
@@ -293,20 +296,48 @@ public abstract class jigloo {
 	 return name;
       }
    }
-   
+
+   static String classTypedName(Class a_class) {
+      String pkg = stripPackage ? a_class.getPackage().getName() : null;
+      String name = a_class.getName();
+
+      if (!superEmit) {
+	 return name;
+      } else {
+	 String cname = unpackage(name, pkg);
+	 Class the_super = a_class.getSuperclass();
+
+	 if (the_super == null) {
+	    return cname;
+	 } else {
+	    String super_name = the_super.getName();
+	    String spkg = the_super.getPackage().getName();
+	    String sup = unpackage(super_name, spkg);
+
+	    if (sup.equals("Object")) {
+	       return cname;
+	    } else {
+	       return cname + "::" + sup;
+	    }
+	 }
+      }
+   }
+      
    static void jigloo_class(Class a_class) {
       if (a_class.isArray()) {
 	 jigloo_array(a_class);
       } else {
-	 Class the_super = a_class.getSuperclass(); 
+	 Class the_super = a_class.getSuperclass();
 	 String name = a_class.getName();
 	 String pkg = stripPackage ? a_class.getPackage().getName() : null;
 	 String cname = unpackage(name, pkg);
 	 Class[] all_classes = a_class.getDeclaredClasses();
-	 Constructor[] all_constructors = a_class.getDeclaredConstructors();
-	 //Constructor[] all_constructors = a_class.getConstructors();
-	 Field[] all_fields = a_class.getFields();
-	 Method[] all_methods = a_class.getDeclaredMethods();
+	 Constructor[] all_constructors =
+	    direct ? a_class.getDeclaredConstructors() : a_class.getConstructors();
+	 Field[] all_fields =
+	    direct ? a_class.getDeclaredFields() : a_class.getFields();
+	 Method[] all_methods =
+	    direct ? a_class.getDeclaredMethods() : a_class.getMethods();
 	 //Method[] all_methods = a_class.getMethods();
 	 Hashtable overrides = new Hashtable();
 
@@ -328,18 +359,13 @@ public abstract class jigloo {
 	 int mod = a_class.getModifiers();
 	 isInterface = (Modifier.isInterface(mod));
 
-/* 	 if (moduleVersion == 5 && stripPackage && pkg != null && !pkgEmitted) { */
-/* 	    pkgEmitted = true;                                         */
-/* 	    emit("   (package " + pkg + ")\n");                        */
-/* 	 }                                                             */
-
 	 // start the class emission
 	 if (isInterface) {
             // must not do this for abstract classes!
 	    // (otherwise java.lang.IncompatibleClassChangeError)
-	    emit("   (abstract-class " + cname + "\n");
+	    emit("   (abstract-class " + classTypedName(a_class) + "\n");
 	 } else {
-	    emit("   (class " + name + "\n");
+	    emit("   (class " + classTypedName(a_class) + "\n");
 	 }
 
 	 for (int i = 0; i < all_constructors.length; i++) {
@@ -391,6 +417,8 @@ public abstract class jigloo {
 	    System.err.println("  --module4            --  Generate module4 syntax.");
 	    System.err.println("  -n|--no-directives   --  Do not emit directives header.");
 	    System.err.println("  -s|--strip-package   --  Remove the class package component.");
+	    System.err.println("  -u|--super-class     --  Add super class annotation.");
+	    System.err.println("  -d|--direct          --  Include only fields and methods of the class.");
 	    System.err.println("");
 	    System.err.println("Example: jigloo -cp obj org.foo.Utils");
 	    System.exit(0);
@@ -403,6 +431,10 @@ public abstract class jigloo {
 	       moduleVersion = 4;
 	    } else if (argv[i].equals("--strip-package") || argv[i].equals("-s")) {
 	       stripPackage = true;
+	    } else if (argv[i].equals("--super-class") || argv[i].equals("-u")) {
+	       superEmit = true;
+	    } else if (argv[i].equals("--direct") || argv[i].equals("-d")) {
+	       inheritance = true;
 	    } else {
 	       if (argv[i].equals("-o")) { 
 		  try {
