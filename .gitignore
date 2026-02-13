@@ -217,6 +217,8 @@ gc/gc-8.2.8
 gc/gc-8.2.8_mt
 gc/gc-8.2.10
 gc/gc-8.2.10_mt
+gc/gc-8.2.12
+gc/gc-8.2.12_mt
 gc/preinst
 
 # libuv
