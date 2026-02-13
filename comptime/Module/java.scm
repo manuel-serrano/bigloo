@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/java.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/java.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Fri Feb 13 10:46:05 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 12:18:13 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -186,6 +186,7 @@
 	 ;; declare all the Java classes
 	 (for-each (lambda (jklass jclass)
 		      (with-access::jklass jklass (id jname src package)
+			 (tprint "JKLASS id=" id)
 			 (remprop! (jklass-id jklass) 'jklass)
 			 (unless (string? jname)
 			    (java-error src "Can't find class declaration"))

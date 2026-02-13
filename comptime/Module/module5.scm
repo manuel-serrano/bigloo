@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/module5.scm                  */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/module5.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Feb 13 08:30:20 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 12:16:18 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -393,9 +393,7 @@
       (trace-item "path=" (-> mod path))
       (when (symbol? (-> mod package))
 	 (unless (string=? (dirname (-> mod path)) "/")
-	    (let ((pkg (format "~a.~a" (-> mod package)
-			  (basename (prefix (-> mod path))))))
-	       (module-package-set! (-> mod id) (string->symbol pkg)))))))
+	    (module-package-set! (-> mod id) (-> mod package))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-main ...                                                 */
