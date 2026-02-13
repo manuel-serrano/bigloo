@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/foreign.scm     */
+;*    serrano/bigloo/5.0a/comptime/Module/foreign.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Thu Feb 12 16:34:25 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 13:53:04 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign and extern clauses compilation. Foreign and extern   */
@@ -38,7 +38,8 @@
    (export  (make-foreign-compiler)
 	    (make-extern-compiler)
 	    (parse-c-foreign-type ::pair)
-	    (foreign-accesses-add! ::pair-nil)))
+	    (foreign-accesses-add! ::pair-nil)
+	    (foreign-finalizer)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-foreign-compiler ...                                        */

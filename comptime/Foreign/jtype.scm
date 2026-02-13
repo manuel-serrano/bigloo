@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan  2 10:58:27 2001                          */
-;*    Last change :  Thu Feb 12 18:42:59 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 13:45:13 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The JVM array type managment. I have tried to reuse as much as   */
@@ -77,6 +77,7 @@
    (with-trace 'jvm "make-ctype-accesses ::jarray"
       (trace-item "what=" (shape what))
       (trace-item "who=" (shape who))
+      (trace-item "module=" module)
       (let* ((id (jarray-id what))
 	     (oid (make-typed-ident 'o id))
 	     (tid (make-typed-formal id))

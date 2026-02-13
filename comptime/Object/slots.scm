@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Wed Feb  4 08:38:25 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 13:12:14 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -120,8 +120,8 @@
 ;*    ensure-type-defined! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (ensure-type-defined! type::type src)
-   (if (not (type-init? type))
-       (user-error "Can't find type definition" (type-id type) src)))
+   (unless (type-init? type)
+      (user-error "Can't find type definition" (type-id type) src)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-slots ...                                             */

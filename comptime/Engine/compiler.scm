@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
+;*    serrano/bigloo/5.0a/comptime/Engine/compiler.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Feb 13 12:21:29 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 13:52:49 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -54,6 +54,7 @@
 	    module_foreign
 	    module_eval
 	    module_java
+	    module_foreign
 	    expand_eps
 	    expand_install
 	    init_main
@@ -660,6 +661,10 @@
 		     (with-access::Decl decl (mod)
 			(module5-module-package-set! mod)))))
 	    (java-finalizer))
+
+	 ;; foreign unit
+	 (let ((u (foreign-finalizer)))
+	    (when (pair? u) (set! units (cons (car u) units))))
 	 
 	 ;; check if all types are defined
 	 (profile ctype (check-types))

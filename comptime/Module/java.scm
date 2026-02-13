@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/java.scm        */
+;*    serrano/bigloo/5.0a/comptime/Module/java.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Fri Feb 13 12:24:26 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 12:42:34 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -33,6 +33,7 @@
 	    type_cache
 	    object_class
 	    object_java-access
+	    object_slots
 	    ast_var
 	    ast_glo-decl
 	    ast_env
@@ -198,32 +199,79 @@
 			     (java-error
 				(jklass-src jklass)
 				"Super class is not a Java class"))))
-	    *jklasses* jclasses))
-      ;; patch bigloo java exported variables name
-      (for-each (lambda (jmod)
-		   (let* ((java (car jmod))
-			  (module (cdr jmod))
-			  (global (find-global (get-genv) (cadr java)))
-			  (name (caddr java)))
-		      (cond
-			 ((not (global? global))
-			  (if (and (not (or (eq? *pass* 'make-add-heap)
-					    (eq? *pass* 'make-heap)))
-				   (eq? module *module*))
-			      (java-error java
-				 "Unbound (or static) global variable")))
-			 ((string? (global-name global))
-			  (user-warning
-			     "Java"
-			     "Re-exportation of global variable (ignored)"
-			     java))
-			 (else
-			  (global-name-set! global name)))))
-	 *jexported*)
+	    *jklasses* jclasses)
+	 ;; patch bigloo java exported variables name
+	 (for-each (lambda (jmod)
+		      (let* ((java (car jmod))
+			     (mod (cdr jmod))
+			     (global (find-global (get-genv) (cadr java)))
+			     (name (caddr java)))
+			 (cond
+			    ((not (global? global))
+			     (if (and (not (or (eq? *pass* 'make-add-heap)
+					       (eq? *pass* 'make-heap)))
+				      (eq? mod *module*))
+				 (java-error java
+				    "Unbound (or static) global variable")))
+			    ((string? (global-name global))
+			     (user-warning
+				"Java"
+				"Re-exportation of global variable (ignored)"
+				java))
+			    (else
+			     (global-name-set! global name)))))
+	    *jexported*)
+	 ;; collect all the undeclared references type
+	 ;; bind all the undeclared field types (automatic class declaration)
+	 (for-each auto-declare-klass-types *jklasses*))
       ;; cleanup
       (set! *jexported* '())
       (set! *jklasses* '())))
-      
+
+;*---------------------------------------------------------------------*/
+;*    auto-declare-klass-types ...                                     */
+;*---------------------------------------------------------------------*/
+(define (auto-declare-klass-types jklass::jklass)
+   
+   (define (auto-declare-jklass ty::type jklass::jklass src)
+      (with-access::jklass jklass (package module)
+	 (let ((k (instantiate::jklass
+		     (src src)
+		     (loc (find-location src))
+		     (id (type-id ty))
+		     (idd (type-id ty))
+		     (jname (symbol->string (type-id ty)))
+		     (package package)
+		     (abstract? #t)
+		     (module module))))
+	    (declare-java-class! k))))
+
+   (define (type-declared? ty)
+      ;; can't use (get-type-object) because it would not work for
+      ;; library modules during bootstrap
+      (or (eq? (type-id ty) 'object) (type-init? ty)))
+   
+   (with-access::jklass jklass (fields methods loc id)
+      ;; field types
+      (for-each (lambda (f::jfield)
+		   (with-access::jfield f (id src)
+		      (let ((ty (cdr (parse-id id loc))))
+			 (unless (type-declared? ty)
+			    (auto-declare-jklass ty jklass src)))))
+	 fields)
+      ;; method types
+      (for-each (lambda (m::jmethod)
+		   (with-access::jmethod m (id args src)
+		      (let ((ty (cdr (parse-id id loc))))
+			 (unless (type-declared? ty)
+			    (auto-declare-jklass ty jklass src)))
+		      (for-each (lambda (a)
+				   (let ((ty (cdr (parse-id a loc))))
+				      (unless (type-declared? ty)
+					 (auto-declare-jklass ty jklass src))))
+			 args)))
+	 methods)))
+
 ;*---------------------------------------------------------------------*/
 ;*    java-parse-class ...                                             */
 ;*---------------------------------------------------------------------*/
@@ -536,13 +584,14 @@
 	       (type-import-location-set! jclass loc)
 	       ;; when importing a class, import the accessors...
 	       (delay-class-accessors! jclass
-		  (delay (import-java-class-accessors!
-			    (map jfield->lfield fields)
-			    constructors
-			    jclass
-			    abstract?
-			    module
-			    src)))
+		  (delay (begin
+			    (import-java-class-accessors!
+			       (map jfield->lfield fields)
+			       constructors
+			       jclass
+			       abstract?
+			       module
+			       src))))
 	       jclass)))))
 
 ;*---------------------------------------------------------------------*/
