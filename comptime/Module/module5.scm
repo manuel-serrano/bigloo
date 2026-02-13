@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Feb 12 18:37:20 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 08:30:20 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -52,7 +52,7 @@
    (export (module5-expand ::pair-nil)
 	   (module5-import-def ::Module ::Decl)
 	   (module5-ast! ::Module ::obj ::symbol)
-	   (module5-add-qualified-type! ::Module)
+	   (module5-module-package-set! ::Module)
 	   (module5-main ::Module ::obj)
 	   (module5-imported-unit ::Module ::procedure ::obj)
 	   (module5-object-unit ::Module)
@@ -384,19 +384,18 @@
 	       others)))))
 
 ;*---------------------------------------------------------------------*/
-;*    module5-add-qualified-type! ...                                  */
+;*    module5-module-package-set! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (module5-add-qualified-type! mod::Module)
-   (with-trace 'module "module5-add-qualified-type"
+(define (module5-module-package-set! mod::Module)
+   (with-trace 'module "module5-set-module-package!"
       (trace-item "mod=" (-> mod id))
       (trace-item "pkg=" (-> mod package))
       (trace-item "path=" (-> mod path))
       (when (symbol? (-> mod package))
 	 (unless (string=? (dirname (-> mod path)) "/")
-	    (add-qualified-type! (-> mod id)
-	       (format "~a.~a" (-> mod package)
-		  (basename (prefix (-> mod path))))
-	       #f)))))
+	    (let ((pkg (format "~a.~a" (-> mod package)
+			  (basename (prefix (-> mod path))))))
+	       (module-package-set! (-> mod id) (string->symbol pkg)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-main ...                                                 */
@@ -421,7 +420,8 @@
 	 (module5-expand-and-resolve! imod module5-init-xenv!
 	    :heap-modules (module5-heap4-modules)
 	    :packages (module-jvm-packages))
-	 (module5-add-qualified-type! imod)
+	 ;; See engine compiler
+	 ;;; (module5-module-package-set! imod)
 	 (if (=fx version 5)
 	     (module5-checksum! imod)
 	     (set! checksum (module-checksum expr '())))
@@ -859,7 +859,7 @@
 	 (match-case (cddr x)
 	    (((package (and (? symbol?) ?pkg)) . ?other-clauses)
 	     (set! (-> mod package) pkg)
-	     (module5-add-qualified-type! mod)
+	     (module5-module-package-set! mod)
 	     (for-each (lambda (c) (parse-clause c mod x pkg)) other-clauses))
 	    (else
 	     (for-each (lambda (c) (parse-clause c mod x #f)) (cddr x)))))

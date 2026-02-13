@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Inline/simple.scm      */
+;*    serrano/bigloo/5.0a/comptime/Inline/simple.scm                   */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Fri Dec 27 07:54:28 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb 13 10:42:34 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
 ;*=====================================================================*/
@@ -142,7 +142,7 @@
 	    (trace-item "callee-type=" (shape cty))
 	    (trace-item "alpha=" (shape alpha-body))
 	    (trace-item "alpha-type=" (shape (node-type alpha-body)))
-	    (trace-item "body-type=" (shape bty))
+	    (trace-item "body-type=" (shape nty))
 	    (let* ((inode (inline-node alpha-body new-kfactor
 			     (cons callee stack)))
 		   (ibody (instantiate::let-var

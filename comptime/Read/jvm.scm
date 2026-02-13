@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Thu Feb 12 18:40:36 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 08:10:31 2026 (serrano)                */
 ;*    Copyright   :  1993-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
@@ -20,20 +20,83 @@
 	   tools_error
 	   init_main
 	   tools_speek)
-   (export (jvm-class-sans-directory::bstring ::bstring)
+   (export (module-package-get ::symbol #!optional warn)
+	   (module-package-set! ::symbol ::symbol)
+	   (class-qualified-type-name-get::bstring ::symbol)
+	   (class-qualified-type-name-set! ::symbol ::bstring)
+           (module-jvm-packages::obj)
+	   (jvm-class-sans-directory::bstring ::bstring)
 	   (jvm-class-with-directory::bstring ::bstring)
-	   (add-qualified-type! ::symbol ::bstring . obj)
-	   (read-jfile)
-	   (module->qualified-type::bstring ::symbol)
-	   (source->qualified-type file::bstring)
-	   (module-qualified-name ::symbol)
-	   (module-jvm-packages::obj)))
+	   (read-jfile)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *module-jvm-packages* ...                                        */
 ;*---------------------------------------------------------------------*/
 (define *module-jvm-packages*
    (create-hashtable :size 512 :weak 'open-string))
+
+;*---------------------------------------------------------------------*/
+;*    *class-jvm-qualified-types* ...                                  */
+;*---------------------------------------------------------------------*/
+(define *class-jvm-qualified-types*
+   (create-hashtable :size 512 :weak 'open-string))
+
+;*---------------------------------------------------------------------*/
+;*    module-jvm-packages ...                                          */
+;*---------------------------------------------------------------------*/
+(define (module-jvm-packages)
+   *module-jvm-packages*)
+
+;*---------------------------------------------------------------------*/
+;*    module-package-get ...                                           */
+;*---------------------------------------------------------------------*/
+(define (module-package-get module::symbol #!optional warn)
+   (let ((name (symbol->string! module)))
+      (let ((pkg (hashtable-get *module-jvm-packages* name)))
+	 (when (and warn (not pkg))
+	    (warning
+	       (string-append "Can't find package for module `"
+		  (symbol->string module) "'.")))
+	 pkg)))
+
+;*---------------------------------------------------------------------*/
+;*    module-package-set! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (module-package-set! module::symbol pkg::symbol)
+   (let ((name (symbol->string! module)))
+      (let ((old (hashtable-get *module-jvm-packages* name)))
+	 (cond
+	    ((not old)
+	     (hashtable-put! *module-jvm-packages* name pkg))
+	    ((eq? old pkg)
+	     #unspecified)
+	    (else
+	     (warning name "module package redefinition"
+		"\n  old package=" old
+		"\n  new package=" pkg))))))
+
+;*---------------------------------------------------------------------*/
+;*    class-qualified-type-name-get ...                                */
+;*---------------------------------------------------------------------*/
+(define (class-qualified-type-name-get::bstring clazz::symbol)
+   (let ((name (symbol->string! clazz)))
+      (let ((qtn (hashtable-get *class-jvm-qualified-types* name)))
+	 (unless (string? qtn)
+	    (error "java" "Cannot find class qualified-type name" clazz))
+	 qtn)))
+
+;*---------------------------------------------------------------------*/
+;*    class-qualified-type-name-set! ...                               */
+;*---------------------------------------------------------------------*/
+(define (class-qualified-type-name-set! clazz::symbol qtn::bstring)
+   (let ((name (symbol->string! clazz)))
+      (let ((old (hashtable-get *class-jvm-qualified-types* name)))
+	 (cond
+	    ((not old)
+	     (hashtable-put! *class-jvm-qualified-types* name qtn))
+	    ((not (string=? old qtn))
+	     (error clazz "Using two different qualified names for class"
+		(format "~a vs ~a" qtn old)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    jvm-class-sans-directory ...                                     */
@@ -62,50 +125,6 @@
        (make-file-name *jvm-directory* class))))
 
 ;*---------------------------------------------------------------------*/
-;*    *jvm-mark* ...                                                   */
-;*---------------------------------------------------------------------*/
-(define *jvm-mark* 'jvm-qtype)
-
-;*---------------------------------------------------------------------*/
-;*    add-qualified-type! ...                                          */
-;*---------------------------------------------------------------------*/
-(define (add-qualified-type! module::symbol qtype::bstring . ident)
-   (with-trace 'jvm "add-qualified-type!"
-      (trace-item "module=" module)
-      (trace-item "qtype=" qtype)
-      (hashtable-put! *module-jvm-packages*
-	 (symbol->string! module) (string->symbol (prefix qtype)))
-      (let ((bc (the-backend)))
-	 (when (and (backend? bc)
-		    (string=? qtype "")
-		    (backend-qualified-types (the-backend)))
-	    (warning "add-qualified-type!"
-	       "empty name for module -- "
-	       module
-	       (if (and (pair? ident) (symbol? (car ident)))
-		   (string-append ", for identifier `"
-		      (symbol->string (car ident))
-		      "'")
-		   "")))
-	 (let ((b (getprop module *jvm-mark*)))
-	    (if (not b)
-		(putprop! module *jvm-mark* qtype)
-		(when (and (backend? bc)
-			   (not (equal? b qtype))
-			   (backend-qualified-types (the-backend)))
-		   (putprop! module *jvm-mark* qtype)
-		   (warning "add-qualified-type!"
-		      "qualified type redefinition:\n  module/class=" module
-		      (if (and (pair? ident) (symbol? (car ident)))
-			  (string-append "\n  identifier="
-			     (symbol->string (car ident)))
-			  "")
-		      "\n  old qualified type=" b
-		      "\n  new qualified type=" qtype
-		      "\n")
-		   (dump-trace-stack (current-error-port) 10)))))))
-
-;*---------------------------------------------------------------------*/
 ;*    read-jfile ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (read-jfile)
@@ -119,16 +138,17 @@
 		(do-read-jfile port name)
 		(close-input-port port)))))
    
-   ;; then, we try to read the actual jfile
-   (cond
-      ((not (string? *qualified-type-file*))
-       (if (file-exists? *qualified-type-file-default*)
-	   (inner-read-qualified-type-file *qualified-type-file-default*)
-	   'done))
-      ((not (file-exists? *qualified-type-file*))
-       (user-error 'read-jfile "Can't find jfile" *qualified-type-file*))
-      (else
-       (inner-read-qualified-type-file *qualified-type-file*))))
+   (with-trace 'jvm "read-jfile"
+      (trace-item "jfile=" *qualified-type-file*)
+      (cond
+	 ((not (string? *qualified-type-file*))
+	  (if (file-exists? *qualified-type-file-default*)
+	      (inner-read-qualified-type-file *qualified-type-file-default*)
+	      'done))
+	 ((not (file-exists? *qualified-type-file*))
+	  (user-error 'read-jfile "Can't find jfile" *qualified-type-file*))
+	 (else
+	  (inner-read-qualified-type-file *qualified-type-file*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-read-jfile ...                                                */
@@ -146,97 +166,13 @@
 	     (if (null? obj)
 		 'done
 		 (match-case (car obj)
-		    (((and (? symbol?) ?m) (and ?pckg (? string?)))
-		     (add-qualified-type! m pckg)
+		    (((and (? symbol?) ?mod) (and ?qtype (? string?)))
+		     (class-qualified-type-name-set! mod qtype)
+		     (let ((pqtn (prefix qtype)))
+			(if (string=? pqtn qtype)
+			    (module-package-set! mod '||)
+			    (module-package-set! mod (string->symbol pqtn))))
 		     (loop (cdr obj)))
 		    (else
 		     (user-error 'read-jfile
-				 "Illegal jfile format"
-				 (car obj))))))))))
-
-;*---------------------------------------------------------------------*/
-;*    add-current-module-qualified-type-name! ...                      */
-;*---------------------------------------------------------------------*/
-(define (add-current-module-qualified-type-name!)
-   (with-trace 'jvm "add-current-module-qualified-type-name!"
-      (trace-item "module=" *module*)
-      ;; then we add information specific to the current module
-   (let ((qtype (getprop *module* *jvm-mark*)))
-      (if (not (string? qtype))
-	  ;; The current module is not present in loaded jfile, we
-	  ;; have to infere a qualified type. For this, we look at
-	  ;; the name of the destination file.
-	  (cond
-	     ((or (not (string? *dest*)) (eq? *pass* 'ld))
-	      ;; there is no specified destination so the JVM package is
-	      ;; just bigloo
-	      (let ((qt (if (string? (car *src-files*))
-			    (let ((uqtype (prefix (basename (car *src-files*)))))
-                               (if (bigloo-need-mangling? uqtype)
-                                   (bigloo-mangle uqtype)
-                                   uqtype))
-			    ".")))
-		 (add-qualified-type! *module* (string-replace qt #\/ #\.))
-		 qt))
-	     (else
-	      (let ((qt (prefix *dest*)))
-		 ;; there is a destination
-		 (add-qualified-type! *module* (string-replace qt #\/ #\.))
-		 qt)))))))
-
-;*---------------------------------------------------------------------*/
-;*    module->qualified-type ...                                       */
-;*    -------------------------------------------------------------    */
-;*    From a module name, returns the Java qualified type name.        */
-;*---------------------------------------------------------------------*/
-(define (module->qualified-type::bstring module::symbol)
-   (with-trace 'jvm "module->qualified-type"
-      (trace-item "module=" module)
-      (let ((b (getprop module *jvm-mark*)))
-	 (cond
-	    ((string? b)
-	     b)
-	    ((eq? module *module*)
-	     (add-current-module-qualified-type-name!))
-	    (else
-	     (let* ((abase (map dirname *access-files*))
-		    (files ((bigloo-module-resolver) module '() abase))
-		    (default (if (pair? files)
-				 (prefix (basename (car files)))
-				 (symbol->string module))))
-		(if (backend-qualified-types (the-backend))
-		    (warning
-		       (string-append "Can't find qualified type name for module `"
-			  (symbol->string module) "',")
-		       "Using name `" default "'."))
-		(add-qualified-type! module (string-replace default #\/ #\.))
-		default))))))
-
-;*---------------------------------------------------------------------*/
-;*    source->qualified-type ...                                       */
-;*    -------------------------------------------------------------    */
-;*    From a file source name, returns the Java qualified type name.   */
-;*---------------------------------------------------------------------*/
-(define (source->qualified-type file::bstring)
-   (if (file-exists? file)
-       (with-input-from-file file
-	  (lambda ()
-	     (match-case (read)
-		((module ?mod . ?-)
-		 (module->qualified-type mod))
-		(else
-		 #f))))
-       #f))
-
-;*---------------------------------------------------------------------*/
-;*    module-qualified-name ...                                        */
-;*---------------------------------------------------------------------*/
-(define (module-qualified-name module::symbol)
-   (getprop module *jvm-mark*))
-
-;*---------------------------------------------------------------------*/
-;*    module-jvm-packages ...                                          */
-;*---------------------------------------------------------------------*/
-(define (module-jvm-packages)
-   *module-jvm-packages*)
-
+			"Illegal jfile format" (car obj))))))))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Thu Feb 12 18:47:50 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 08:08:41 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -121,13 +121,7 @@
       ;; we restore type result
       (global-type-set! new (find-type typeid))
       ;; the parameters type
-      (restore-value-types! value id env)
-      ;; we restore the jvm qualified type name
-      (when (and (backend-qualified-types (the-backend))
-		 (not (eq? (global-module new) 'foreign)))
-	 (add-qualified-type! (global-module new)
-	    (global-qualified-type-name new)
-	    (shape new)))))
+      (restore-value-types! value id env)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *restored* ...                                                   */
@@ -362,7 +356,7 @@
 	     (let* ((qtn (cond
 			    ((not (backend-qualified-types (the-backend))) "")
 			    ((eq? import 'eval) "eval")
-			    (else (module->qualified-type module))))
+			    (else (class-qualified-type-name-get module))))
 		    (new (instantiate::global
 			    (type *_*)
 			    (module module)

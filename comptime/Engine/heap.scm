@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Engine/heap.scm        */
+;*    serrano/bigloo/5.0a/comptime/Engine/heap.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Mon Oct 20 10:43:14 2025 (serrano)                */
-;*    Copyright   :  2007-25 Manuel Serrano                            */
+;*    Last change :  Fri Feb 13 09:34:27 2026 (serrano)                */
+;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
 ;*=====================================================================*/
@@ -88,15 +88,6 @@
 			   (begin
 			      (set-tenv! Tenv)
 			      (set-genv! Genv)))
-		       ;; in jvm mode, we have to propagate
-		       ;; the package/module association
-		       (when (backend-qualified-types (the-backend))
-			  (for-each-global! (get-genv)
-			     (lambda (new)
-				(add-qualified-type!
-				   (global-module new)
-				   (global-qualified-type-name new)
-				   (shape new)))))
 		       ;; we add all the heap modules
 		       (hashtable-for-each
 			  Genv
@@ -134,9 +125,9 @@
 ;*---------------------------------------------------------------------*/
 (define (dump-Genv Genv)
    (define (dump-var new)
-      (let* ((module (global-module new))
+      (let* ((mod (global-module new))
 	     (id (global-id new))
-	     (qt (module->qualified-type module))
+	     (pkg (module-package-get mod))
 	     (jt (global-qualified-type-name new))
 	     (val (global-value new)))
 	 (cond
@@ -146,11 +137,11 @@
 			      "\n    "
 			      (id ,id)
 			      "\n    "
-			      (module ,module)
+			      (module ,mod)
 			      "\n    "
 			      (name ,(format "~s" (global-name new)))
 			      "\n    "
-			      (qualified-type ,qt)
+			      (package ,pkg)
 			      ,(if (eq? (sfun-class val) 'sifun)
 				   `(inline ,(shape (sfun-body val)))
 				   "")
@@ -163,11 +154,11 @@
 			      "\n    "
 			      (id ,id)
 			      "\n    "
-			      (module ,module)
+			      (module ,mod)
 			      "\n    "
 			      (name ,(format "~s" (global-name new)))
 			      "\n    "
-			      (qualified-type ,qt)
+			      (package ,pkg)
 			      "\n    "
 			      (qualified-type-name ,jt) "\n   "
 			      (args ,(map shape (cfun-args-type val))))))
@@ -178,11 +169,11 @@
 				 "\n    "
 				 (id ,id)
 				 "\n    "
-				 (module ,module)
+				 (module ,mod)
 				 "\n    "
 				 (name ,(format "~s" (global-name new)))
 				 "\n    "
-				 (qualified-type ,qt)
+				 (package ,pkg)
 				 "\n    "
 				 (qualified-type-name ,jt))))))))
    (hashtable-for-each

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/SawJvm/NAMES.scm       */
+;*    serrano/bigloo/5.0a/comptime/SawJvm/names.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Fri Feb 13 07:39:10 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 08:07:25 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JVM standard names                                               */
@@ -117,7 +117,7 @@
 ;*    get-jvmtype ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (get-jvmtype type::type)
-   (let ( (name (type-name type)) )
+   (let ((name (type-name type)))
       (if (symbol? name)
 	  name
 	  (let ((jtype (build-type-name type)))
@@ -132,16 +132,16 @@
       ((tclass? type)
        (if (eq? (type-id type) 'object)
 	   'object
-	   (qualified-tclass-name type) ))
+	   (qualified-tclass-name type)))
       ((wclass? type)
-       (qualified-wclass-name type) )
+       (qualified-wclass-name type))
       ((jclass? type) (qualified-jclass-name type))
       ((tvec? type)
        (get-jvmtype (tvec-item-type type))
-       "Zector" )
+       "Zector")
       ((jarray? type)
        (get-jvmtype (jarray-item-type type))
-       "Zector" )
+       "Zector")
       (else
-       (qualified-type-name type)) ))
+       (qualified-type-name type))))
 

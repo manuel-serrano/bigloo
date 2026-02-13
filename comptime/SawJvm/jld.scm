@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/SawJvm/jld.scm         */
+;*    serrano/bigloo/5.0a/comptime/SawJvm/jld.scm                      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct 24 10:32:46 2000                          */
-;*    Last change :  Thu Oct  9 08:54:14 2025 (serrano)                */
-;*    Copyright   :  2000-25 Manuel Serrano                            */
+;*    Last change :  Fri Feb 13 09:01:41 2026 (serrano)                */
+;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The pseudo Jvm link (generation of a script shell that will run  */
 ;*    the application).                                                */
@@ -46,8 +46,7 @@
 		   *additional-bigloo-zips*)))
       (when *jvm-jar?*
 	 (let* ((manifest (make-manifest-name))
-		(o-files (append (map source->jvm-class *src-files*)
-			    *o-files*))
+		(o-files (append (map source->jvm-class *src-files*) *o-files*))
 		(all-objects (unique (objects->classes o-files))))
 	    (verbose 1 "   . jar")
 	    (verbose 2 " (" jarname ")")
@@ -66,11 +65,7 @@
 ;*    source->jvm-class ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (source->jvm-class s)
-   (let ((q (source->qualified-type s)))
-      (jvm-class-with-directory
-       (if (string? q)
-	   (string-append (string-replace! q #\. #\/) ".class")
-	   (string-append (prefix s) ".class")))))
+   (string-append (prefix s) ".class"))
    
 ;*---------------------------------------------------------------------*/
 ;*    find-jvm-mainclass ...                                           */
@@ -80,13 +75,13 @@
       ((string? *jvm-mainclass*)
        *jvm-mainclass*)
       (*main*
-       (module->qualified-type *module*))
+       (class-qualified-type-name-get *module*))
       ((symbol? link-main-module)
-       (module->qualified-type link-main-module))
+       (class-qualified-type-name-get link-main-module))
       (else
        (error "ld"
-	      "Can't established JVM main class"
-	      "see option -jvm-mainclass"))))
+	  "Can't established JVM main class"
+	  "see option -jvm-mainclass"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    library->zips ...                                                */
@@ -131,10 +126,9 @@
       (with-input-from-file f
 	 (lambda ()
 	    (let ((x (compiler-read)))
-	       (tprint "find in direcives x=" x)
 	       (match-case x
 		  ((directives ??- (main ?-) . ?-)
-		   (module->qualified-type mod))
+		   (class-qualified-type-name-get mod))
 		  ((include . ?files)
 		   (any (lambda (f) (find-main-in-directives mod f)) files))
 		  (else
@@ -142,7 +136,6 @@
 
    (define (find-main-in-include mod x)
       (let loop ((x x))
-	 (tprint "find in include x=" x)
 	 (when (pair? x)
 	    (match-case x
 	       ((include . ?files)
@@ -151,23 +144,20 @@
 		(loop (cdr x)))))))
 
    (define (find-main-in-module f::bstring)
-      (tprint "find in module f=" f)
       (with-input-from-file f
 	 (lambda ()
 	    (let ((x (compiler-read)))
 	       (match-case x
 		  ((module ?mod ??- (main ?-) . ?-)
-		   (module->qualified-type mod))
+		   (class-qualified-type-name-get mod))
 		  ((module ?mod . ?rest)
 		   (find-main-in-include mod rest))
 		  (else
 		   #f))))))
 
-   (tprint "M=" (typeof *main*))
    (if (global? *main*)
        (prefix (car *src-files*))
        (let loop ((o-files o-files))
-	  (tprint "ofiles=" o-files)
 	  (if (null? o-files)
 	      (error "jar" "No main clause found" o-files)
 	      (let* ((pref (unprof-src-name (prefix (car o-files))))
@@ -183,6 +173,7 @@
 ;*    objects->classes ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (objects->classes objects)
+   
    (define (untype-ident id)
       (let* ((string (symbol->string id))
 	     (len    (string-length string)))
@@ -196,6 +187,7 @@
 		(string->symbol (substring string 0 walker)))
 	       (else
 		(loop (+fx walker 1)))))))
+   
    (define (find-classes::pair-nil mod::symbol base clauses)
       (let loop ((clauses clauses)
 		 (classes '()))
@@ -207,30 +199,22 @@
 			    (classes classes))
 		    (if (null? statexp)
 			(loop (cdr clauses)
-			      classes)
+			   classes)
 			(match-case (car statexp)
 			   (((or class abstract-class final-class wide-class)
 			     ?ident . ?-)
 			    (let* ((id (untype-ident ident))
 				   (mgl (class-id->type-name id mod)))
 			       (liip (cdr statexp)
-				     (cons (make-file-name
-					    base
-					    (string-append mgl ".class"))
-					   classes))))
+				  (cons (make-file-name base
+					   (string-append mgl ".class"))
+				     classes))))
 			   (else
 			    (liip (cdr statexp)
-				  classes))))))
+			       classes))))))
 		(else
 		 (loop (cdr clauses) classes))))))
-   (define (module->package mod)
-      (let ((d (dirname
-		(string-replace! (module->qualified-type mod)
-				 #\.
-				 (file-separator)))))
-	 (if (string=? d ".")
-	     ""
-	     d)))
+   
    (define (source->classes::pair-nil source)
       (if (and (not (string=? (suffix source) "mco"))
 	       (file-exists? source))
@@ -243,9 +227,9 @@
 		      (match-case m
 			 ((module ?mod . ?clauses)
 			  (find-classes mod
-					(jvm-class-with-directory
-					 (module->package mod))
-					clauses))
+			     (jvm-class-with-directory
+				(or (module-package-get mod) ""))
+			     clauses))
 			 (else
 			  '()))))))
 	  '()))
@@ -259,10 +243,10 @@
 		 (scm-file (find-src-file pref bpref)))
 	     (if (and (string? scm-file) (file-exists? scm-file))
 		 (loop (cdr objects)
-		       (cons object
-			     (append (source->classes scm-file) classes)))
+		    (cons object
+		       (append (source->classes scm-file) classes)))
 		 (loop (cdr objects)
-		       (cons object classes)))))))
+		    (cons object classes)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unique ...                                                       */
@@ -343,7 +327,7 @@
        (generate-msdos-jvm-manifest fname main jarname))
       (else
        (warning "generate-jvm-manifest"
-		"Illegal shell `" *jvm-shell* "' -- using `sh'")
+	  "Illegal shell `" *jvm-shell* "' -- using `sh'")
        (generate-sh-jvm-manifest fname main zips))))
 
 ;*---------------------------------------------------------------------*/

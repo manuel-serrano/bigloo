@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Engine/link.scm        */
+;*    serrano/bigloo/5.0a/comptime/Engine/link.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Fri Jan 30 18:16:10 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 10:57:06 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -27,6 +27,8 @@
 	   (make-tmp-main ::bstring ::bool ::symbol ::pair-nil ::pair-nil))
    (import cc_ld
 	   read_reader
+	   read_access
+	   read_jvm
 	   backend_backend
 	   engine_param
 	   init_setrc
@@ -42,37 +44,41 @@
 ;*    link ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (link)
-   ;; register bigloo-compile srfi for library inclusion
-   (register-eval-srfi! 'bigloo-compile)
-   (case *module-version*
-      ((0 1 2 3 4) (register-srfi! 'bigloo-module4))
-      ((5) (register-srfi! 'bigloo-module5))
-      (else (register-srfi! 'bigloo-module5)))
-   ;; we install macros for expanding module clauses
-   (install-initial-expander)
-   ;; we build the ad-hoc backend
-   (set-backend! *target-language*)
-   ;; we start by looking for the source files
-   (let loop ((objects *o-files*)
-	      (sources '()))
-      (if (null? objects)
-	  ;; and we launch the linking process
-	  (with-handler
-	     (lambda (e)
-		(exception-notify e)
-		(exit 1))
-	     (backend-link-objects (the-backend) (reverse sources)))
-	  (let* ((object (car objects))
-		 (pref (unprof-src-name (prefix object)))
-		 (bpref (basename pref))
-		 (scm-file (find-src-file pref bpref)))
-	     (if (string? scm-file)
-		 (loop (cdr objects) (cons (cons scm-file object) sources))
-		 (begin
-		    (when (>=fx (bigloo-warning) 2)
-		       (warning  "link" "No Bigloo module found for -- "
-			  (car objects)))
-		    (loop (cdr objects) sources)))))))
+   (with-trace 'linker "link"
+      ;; register bigloo-compile srfi for library inclusion
+      (register-eval-srfi! 'bigloo-compile)
+      (case *module-version*
+	 ((0 1 2 3 4) (register-srfi! 'bigloo-module4))
+	 ((5) (register-srfi! 'bigloo-module5))
+	 (else (register-srfi! 'bigloo-module5)))
+      ;; we install macros for expanding module clauses
+      (install-initial-expander)
+      ;; we build the ad-hoc backend
+      (set-backend! *target-language*)
+      ;; read access files
+      (profile afile (read-access-files))
+      (profile package (read-jfile))
+      ;; we start by looking for the source files
+      (let loop ((objects *o-files*)
+		 (sources '()))
+	 (if (null? objects)
+	     ;; and we launch the linking process
+	     (with-handler
+		(lambda (e)
+		   (exception-notify e)
+		   (exit 1))
+		(backend-link-objects (the-backend) (reverse sources)))
+	     (let* ((object (car objects))
+		    (pref (unprof-src-name (prefix object)))
+		    (bpref (basename pref))
+		    (scm-file (find-src-file pref bpref)))
+		(if (string? scm-file)
+		    (loop (cdr objects) (cons (cons scm-file object) sources))
+		    (begin
+		       (when (>=fx (bigloo-warning) 2)
+			  (warning  "link" "No Bigloo module found for -- "
+			     (car objects)))
+		       (loop (cdr objects) sources))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unprof-src-name ...                                              */

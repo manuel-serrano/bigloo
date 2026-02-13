@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Fri Feb 13 07:06:48 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 08:09:12 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
@@ -61,13 +61,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    qualified-real-tclass-name ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (qualified-real-tclass-name::bstring class::tclass) 
-   (define (on-package pkgc name)
-      ;; name is already mangled.
+(define (qualified-real-tclass-name::bstring class::tclass)
+   
+   (define (on-package pkg::bstring name::bstring)
       (assert (name) (not (bigloo-need-mangling? name)))
-      (if (string=? pkgc "")
+      (if (string=? pkg "")
 	  name
-	  (string-append pkgc "." name)))
+	  (string-append pkg "." name)))
    
    (define (tclass-id-mangling::bstring class::tclass)
       (if (eq? class (get-object-type))
@@ -76,23 +76,19 @@
 	     (let ((mod (global-module holder)))
 		(class-id->type-name id mod)))))
    
-   (define (class-package name)
-      (let* ((s (module->qualified-type name))
-	     (pref (prefix s)))
-	 (if (string=? pref s)
-	     ""
-	     pref)))
+   (define (class-package module)
+      (let ((pkg (module-package-get module)))
+	 (if pkg
+	     (symbol->string! pkg)
+	     "")))
    
-   (define (super-package super)
+   (define (super-package::bstring super)
       (with-access::tclass super (its-super id)
 	 (if (or (not (tclass? its-super))
 		 (and (eq? super its-super)
 		      (not (eq? (type-id its-super) 'obj))))
 	     "bigloo"
 	     (let ((holder (tclass-holder super)))
-		(add-qualified-type! (global-module holder)
-				     (global-qualified-type-name holder)
-				     id)
 		(class-package (global-module holder))))))
    
    (on-package (super-package class) (tclass-id-mangling class)))

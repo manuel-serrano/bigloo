@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
+;*    serrano/bigloo/5.0a/comptime/Engine/compiler.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Feb 12 17:56:05 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 08:31:15 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -564,7 +564,8 @@
 	 (trace-item "body=" expr-body)
 
 	 ;; imported module unit (before processing the module body)
-	 (set! units (cons (module5-imported-unit mod comptime-expand genv) units))
+	 (set! units
+	    (cons (module5-imported-unit mod comptime-expand genv) units))
 	 
 	 (with-access::Module mod (id body checksum main decls imports)
 
@@ -655,12 +656,12 @@
 
 	 ;; java code
 	 (when (eq? *target-language* 'jvm)
+	    (module5-module-package-set! mod)
 	    (with-access::Module mod (imports)
 	       (hashtable-for-each imports
 		  (lambda (k decl)
 		     (with-access::Decl decl (mod)
-			
-			(module5-add-qualified-type! mod)))))
+			(module5-module-package-set! mod)))))
 	    (java-finalizer))
 	 
 	 ;; build the variable and function ast
@@ -717,6 +718,11 @@
 	     (units (profile module (produce-module! module genv)))
 	     (tu (find (lambda (u) (eq? (unit-id u) 'toplevel)) units)))
 
+	 ;; module package
+	 (when (backend-qualified-types (the-backend))
+	    (unless (module-package-get *module*)
+	       (module-package-set! *module* '||)))
+	 
 	 (stop-on-pass 'dump-module (lambda () (dump-module module)))
 	 
 	 ;; profiling initilization code

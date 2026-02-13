@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Feb 10 09:08:46 2026 (serrano)                */
+#*    Last change :  Fri Feb 13 11:43:22 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -1258,7 +1258,7 @@ afile: .afile
 #*---------------------------------------------------------------------*/
 jfile: .jfile
 .jfile:
-	$(BGLJFILE) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC) > .jfile
+	$(BGLJFILE) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC) Llib/make_lib.scm > .jfile
 
 #*---------------------------------------------------------------------*/
 #*    wasm dependencies                                                */

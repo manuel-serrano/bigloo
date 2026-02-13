@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Wed Jan 28 13:58:52 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 09:19:48 2026 (serrano)                */
 ;*    Copyright   :  2012-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -31,8 +31,8 @@
 	   backend_backend
 	   backend_bvm
 	   backend_jvm_class
-	   backend_c_main	; BAD make-bigloo-main
-	   read_jvm	; BAD module->qualified-type
+	   backend_c_main
+	   read_jvm
 	   jas_as
 	   jas_peep
 	   saw_jvm_compile
@@ -61,17 +61,25 @@
       (type-check #t)
       (force-register-gc-roots #f)
       (retblock #f)))
-   
+
+;*---------------------------------------------------------------------*/
+;*    backend-select! ::jvm ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (backend-select! me::jvm)
+   (let ((pkg (string->symbol (prefix *jvm-foreign-class-name*))))
+      (module-package-set! 'foreign pkg)
+      (class-qualified-type-name-set! 'foreign *jvm-foreign-class-name*)))
+
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-compile me::jvm)
    ;; the jvm prelude (hello message and *DEST* update)
    (pass-prelude "Jvm" start-jvm-emission!)
-   (verbose 2 "      [module: " *module* " qualified type name: "
-      (module->qualified-type *module*) "]"#\Newline)
+   (verbose 2 "      [module: " *module* " package: "
+      (module-package-get *module*) "]"#\Newline)
    ;; CARE: BPS, fix the backend qualified name !!
-   (jvm-qname-set! me (string->symbol (module->qualified-type *module*)))
+   (jvm-qname-set! me (class-qualified-type-name-get *module*))
    ;; if we are going to link and we have not found a main yet, we
    ;; have to produce a fake one
    (when (and (not *main*) *auto-link-main* (memq *pass* '(ld distrib)))
@@ -128,7 +136,8 @@
 ;*    We check that the class file name is compatible with the         */
 ;*    JVM qualified type name declared for the class.                  */
 ;*---------------------------------------------------------------------*/
-(define (jvm-check-package module path)
+(define (jvm-check-package module dir)
+   
    (define (compare-path? base path)
       (let ((lbase (string-length base))
 	    (lpath (string-length path)))
@@ -145,7 +154,8 @@
 				    (char=? cbase #\.)))
 			   (loop (-fx rpath 1) (-fx rbase 1))
 			   #f)))))))
-   (let* ((qtype (module->qualified-type module))
+   
+   (let* ((qtype (class-qualified-type-name-get module))
 	  (base (let ((pre (prefix qtype)))
 		   (cond
 		      ((string=? pre "")
@@ -154,10 +164,12 @@
 		       ".")
 		      (else
 		       pre)))))
-      (if (not (compare-path? (jvm-filename base) path))
-	  (warning "Incompatible package name and class path."
-		   "Package name for module " *module* " is `" base
-		   "', class path is `" path "'."))))
+      (unless (compare-path? (jvm-filename base) dir)
+	 (warning
+	    (format "Incompatible package name and class path for module \"~a\"."
+	       *module*)
+	    (format " class =~a\n" base)
+	    (format " dir   =~a\n" dir)))))
 
 (define *jvm-dir-name* ".")
 
@@ -265,96 +277,88 @@
       (read-jfile)
       (jvm-ld module))
 
-   (if (null? sources)
-       (let ((first (prefix (car *o-files*))))
-	  (warning "link" "No source file found" " -- " *o-files*)
-	  ;; we load the library init files.
-	  (load-library-init)
-	  (do-link first #f))
-       ;; on construit la clause du module
-       (let loop ((sources sources)
-		  (cls '())
-		  (main-module #f)
-		  (main #f)
-		  (fmain "")
-		  (libraries '()))
-	  (if (null? sources)
-	      (if main
-		  ;; ce n'est pas la peine de generer un main, il y en a
-		  ;; deja un
-		  (let ((first (prefix (car *o-files*))))
-		     ;; if libraries are used by some module we add them
-		     ;; to the link
-		     (for-each (lambda (lib)
-				  (match-case lib
-				     ((library . ?libs)
-				      (for-each use-library! libs))
-				     ((eval . ?clauses)
-				      (for-each (match-lambda
-						   ((library . ?libs)
-						    (for-each use-library! libs)
-						    (for-each add-eval-library! libs)))
-					 clauses))))
-			libraries)
-		     ;; we load the library init files.
-		     (load-library-init)
-		     (set! *src-files* (list fmain))
-		     (do-link first main-module))
-		  ;; on genere un main puis on link.
-		  (let ((tmp (make-tmp-file-name)))
-		     (make-tmp-main tmp main (make-link-module) cls libraries)
-		     (set! *src-files* (list tmp))
-		     ;; we have to remove extra mco files before compiler
-		     ;; otherwise the compiler will warn about that files.
-		     (let liip ((ra  *rest-args*)
-				(res '()))
-			(cond
-			   ((null? ra)
-			    (set! *rest-args* (reverse! res)))
-			   ((member (suffix (car ra)) *mco-suffix*)
-			    (liip (cdr ra) res))
-			   (else
-			    (liip (cdr ra) (cons (car ra) res)))))
-		     (unwind-protect
-			(compiler)
+   (define (link-sources sources)
+      (if (null? sources)
+	  (let ((first (prefix (car *o-files*))))
+	     (warning "link" "No source file found" " -- " *o-files*)
+	     ;; we load the library init files.
+	     (load-library-init)
+	     (do-link first #f))
+	  ;; build the module clause
+	  (let loop ((sources sources)
+		     (cls '())
+		     (main-module #f)
+		     (main #f)
+		     (fmain "")
+		     (libraries '()))
+	     (if (null? sources)
+		 (if main
+		     ;; no need to generate a main, one alread exists
+		     (let ((first (prefix (car *o-files*))))
+			;; if libraries are used by some module we add them
+			;; to the link
+			(for-each (lambda (lib)
+				     (match-case lib
+					((library . ?libs)
+					 (for-each use-library! libs))
+					((eval . ?clauses)
+					 (for-each (match-lambda
+						      ((library . ?libs)
+						       (for-each use-library! libs)
+						       (for-each add-eval-library! libs)))
+					    clauses))))
+			   libraries)
 			;; we load the library init files.
 			(load-library-init)
-			(let* ((pre        (prefix tmp))
-			       (class-file (string-append pre ".class")))
-			   (when *rm-tmp-files*
-			      (when (file-exists? tmp)
-				 (delete-file tmp)))))
-		     0))
-	      (let ((port (open-input-file (caar sources))))
-		 (if (not (input-port? port))
-		     (error "" "Illegal file" (caar sources))
-		     (let ((exp (compiler-read port)))
-			(close-input-port port)
-			(match-case exp
-			   ((module ?name . ?-)
-			    (let ((libs (find-libraries (cddr exp)))
-				  (nmain (find-main (cddr exp))))
-			       (add-qualified-type!
-				  name
-				  (string-replace (jvm-class-sans-directory
-						     (prefix (cdar sources)))
-				     (file-separator)
-				     #\.))
+			(set! *src-files* (list fmain))
+			(do-link first main-module))
+		     ;; generate a main an link
+		     (let ((tmp (make-tmp-file-name)))
+			(make-tmp-main tmp main (make-link-module) cls libraries)
+			(set! *src-files* (list tmp))
+			;; we have to remove extra mco files before compiler
+			;; otherwise the compiler will warn about that files.
+			(let liip ((ra  *rest-args*)
+				   (res '()))
+			   (cond
+			      ((null? ra)
+			       (set! *rest-args* (reverse! res)))
+			      ((member (suffix (car ra)) *mco-suffix*)
+			       (liip (cdr ra) res))
+			      (else
+			       (liip (cdr ra) (cons (car ra) res)))))
+			(unwind-protect
+			   (compiler)
+			   ;; we load the library init files.
+			   (load-library-init)
+			   (let* ((pre        (prefix tmp))
+				  (class-file (string-append pre ".class")))
+			      (when *rm-tmp-files*
+				 (when (file-exists? tmp)
+				    (delete-file tmp)))))
+			0))
+		 (let ((port (open-input-file (caar sources))))
+		    (if (not (input-port? port))
+			(error "" "Illegal file" (caar sources))
+			(let ((exp (compiler-read port)))
+			   (close-input-port port)
+			   (match-case exp
+			      ((module ?name . ?-)
+			       (let ((libs (find-libraries (cddr exp)))
+				     (nmain (find-main (cddr exp))))
+				  (loop (cdr sources)
+				     (cons (cons name (caar sources)) cls)
+				     (if nmain name main-module)
+				     (or nmain main)
+				     (if nmain (caar sources) fmain)
+				     (append libs libraries))))
+			      (else
 			       (loop (cdr sources)
-				  (cons (cons name (caar sources)) cls)
-				  (if nmain name main-module)
-				  (or nmain main)
-				  (if nmain (caar sources) fmain)
-				  (append libs libraries))))
-			   (else
-			    ;; ah, ce n'etait pas un fichier bigloo,
-			    ;; on saute (en meprisant :-)
-			    (loop (cdr sources)
-			       cls
-			       main-module
-			       main
-			       fmain
-			       libraries))))))))))
+				  cls main-module main fmain libraries))))))))))
+   
+   (with-trace 'linker "backend-line-objects ::jvm"
+      (trace-item "sources=" sources)
+      (link-sources sources)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-check-inlines ::jvm ...                                  */

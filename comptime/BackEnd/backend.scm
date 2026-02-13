@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/BackEnd/backend.scm        */
+;*    serrano/bigloo/5.0a/comptime/BackEnd/backend.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Thu Sep 25 07:34:38 2025 (serrano)                */
-;*    Copyright   :  2003-25 Manuel Serrano                            */
+;*    Last change :  Fri Feb 13 11:15:29 2026 (serrano)                */
+;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
 ;*=====================================================================*/
@@ -62,6 +62,7 @@
 	      (dump-heap::obj (default #f))))
    
    (export (generic backend-initialize! ::backend)
+	   (generic backend-select! ::backend)
 	   (generic backend-compile ::backend)
 	   (generic backend-compile-functions ::backend)
 	   (generic backend-link ::backend result)
@@ -89,7 +90,9 @@
    (let ((c (assq language *backends*)))
       (if (not (pair? c))
 	  (error "backend" "Unimplemented target language" language)
-	  (set! *the-backend* ((cdr c))))))
+	  (begin
+	     (set! *the-backend* ((cdr c)))
+	     (backend-select! *the-backend*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    the-backend ...                                                  */
@@ -112,6 +115,12 @@
 ;*    backend-initialize! ::backend ...                                */
 ;*---------------------------------------------------------------------*/
 (define-generic (backend-initialize! b::backend)
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    backend-select! ::backend ...                                    */
+;*---------------------------------------------------------------------*/
+(define-generic (backend-select! g::backend)
    #unspecified)
 
 ;*---------------------------------------------------------------------*/

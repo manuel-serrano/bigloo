@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/walk.scm       */
+;*    serrano/bigloo/5.0a/comptime/BackEnd/walk.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:12:02 2003                          */
-;*    Last change :  Fri Aug 30 12:09:05 2024 (serrano)                */
-;*    Copyright   :  2003-24 Manuel Serrano                            */
+;*    Last change :  Fri Feb 13 09:32:09 2026 (serrano)                */
+;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Drivers for code generator and linker                            */
 ;*=====================================================================*/
@@ -35,7 +35,6 @@
 ;*    backend-init ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (backend-init backend functions)
-   (backend-name-set! backend (module->qualified-type *module*))
    (backend-functions-set! backend functions) )
 
 

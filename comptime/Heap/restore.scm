@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Heap/restore.scm       */
+;*    serrano/bigloo/5.0a/comptime/Heap/restore.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Thu Jan 29 11:34:54 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 08:20:45 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -62,6 +62,18 @@
 (define *heap-cache* '())
 
 ;*---------------------------------------------------------------------*/
+;*    global-package-and-qualified-type-set! ...                       */
+;*---------------------------------------------------------------------*/
+(define (global-package-and-qualified-type-set! new::global)
+   (let* ((mod (global-module new))
+	  (qtn (global-qualified-type-name new))
+	  (pkg (if (string-index qtn #\.)
+		   (string->symbol (prefix qtn))
+		   '||)))
+      (module-package-set! mod pkg)
+      (class-qualified-type-name-set! mod qtn)))
+
+;*---------------------------------------------------------------------*/
 ;*    read-heap ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (read-heap fname)
@@ -104,11 +116,7 @@
 		       ;; the package/module association
 		       (when (backend-qualified-types (the-backend))
 			  (for-each-global! genv
-			     (lambda (new)
-				(add-qualified-type!
-				   (global-module new)
-				   (global-qualified-type-name new)
-				   (shape new))))
+			     global-package-and-qualified-type-set!)
 			  genv)
 		       ;; add all the heap modules
 		       (for-each-global! genv
@@ -248,11 +256,7 @@
 			  ;; the package/module association
 			  (when (backend-qualified-types (the-backend))
 			     (for-each-global! env
-				(lambda (new)
-				   (add-qualified-type!
-				      (global-module new)
-				      (global-qualified-type-name new)
-				      (shape new)))))
+				global-package-and-qualified-type-set!))
 			  ;; we add all the heap modules
 			  (hashtable-for-each
 			     Genv

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Thu Feb 12 18:29:31 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 10:46:05 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -395,8 +395,8 @@
 		(set! package prefix)))
 	 ;; add a qualified type so Bigloo won't complain when fetching
 	 ;; slots or calling methods of this class
-	 (add-qualified-type! id jname)
-	 (add-qualified-type! (fast-id-of-id id loc) jname)
+	 (class-qualified-type-name-set! id jname)
+	 (class-qualified-type-name-set! (fast-id-of-id id loc) jname)
 	 ;; construct the associated jclass
 	 (declare-java-class! jklass))))
    

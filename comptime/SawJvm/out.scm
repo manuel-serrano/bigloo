@@ -98,13 +98,14 @@
 (define (declare-module me::jvm module::symbol)
    (if (eq? module *module*)
        'me
-       (declare-class me (string->symbol (module->qualified-type module))) ))
+       (declare-class me
+	  (string->symbol (class-qualified-type-name-get module)))))
 
 (define (open-module me::jvm);
    (with-access::jvm me (declarations fields methods qname)
       (set! declarations
 	    (reverse (cons*
-		      `(me (class (public) ,(symbol->string qname)))
+		      `(me (class (public) ,qname))
 		      `(super (class () ,(caddr (cadr bgl-module-root-class))))
      		      (declare-lib 'module) )))
       (set! fields '())
