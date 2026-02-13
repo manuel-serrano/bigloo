@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/pragma.scm      */
+;*    serrano/bigloo/5.0a/comptime/Module/pragma.scm                   */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Fri Feb  6 10:22:21 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 07:04:38 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
@@ -230,8 +230,9 @@
 	   (args-noescape global val fun-args-noescape fun-args-noescape-set!))
 	  ((args-retescape)
 	   (args-noescape global val fun-args-retescape fun-args-retescape-set!))
-	  ((qualified-type-name)
-	   (global-qualified-type-name-set! global val))
+	  ;; MS: removed 13 feb 2026
+;* 	  ((qualified-type-name)                                       */
+;* 	   (global-qualified-type-name-set! global val))               */
 	  (else
 	   (user-error "Parse error" "Illegal \"pragma\" form" prop '()))))
       (else

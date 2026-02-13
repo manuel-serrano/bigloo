@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/wasm.scm       */
+;*    serrano/bigloo/5.0a/comptime/BackEnd/wasm.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Oct 20 09:02:50 2025 (serrano)                */
-;*    Copyright   :  2024-25 Hubert Gruniaux and Manuel Serrano        */
+;*    Last change :  Fri Feb 13 07:02:03 2026 (serrano)                */
+;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
 ;*=====================================================================*/
@@ -1595,7 +1595,7 @@ esac")
 	 (or (eq? import 'import)
 	     (and (eq? import 'foreign)
 		  (or (not (isa? value cvar)) (not (isa? value cfun)))
-		  (string-null? (global-qualified-type-name global)))))))
+		  (not (string? (global-macro-code global))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    wasm-module ...                                                  */

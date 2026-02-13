@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/wasm.scm        */
+;*    serrano/bigloo/5.0a/comptime/Module/wasm.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Mon Oct 20 08:51:07 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb 13 06:58:55 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The wasm clauses compilation. Almost similar to extern clauses.  */
 ;*=====================================================================*/
@@ -82,7 +82,7 @@
 		   (let ((g (find-global/module (get-genv) id 'foreign)))
 		      (if g
 			  (begin
-			     (global-qualified-type-name-set! g name)
+			     (global-macro-code-set! g name)
 			     (global-pragma-set! g
 				(cons (cons 'wasm deps) (global-pragma g))))
 			  (error "wasm" "Cannot find extern definition" id)))))

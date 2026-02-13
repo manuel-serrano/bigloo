@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Tue Feb 10 08:18:53 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 06:58:32 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -64,6 +64,9 @@
 	      ;; the qualified type the global belongs to
 	      ;; (for some backend only, see Backend/backend.scm)
 	      qualified-type-name::bstring
+	      ;; inline code to be used for the variable
+	      ;; (for  some backend only, see Backend/backend.scm)
+	      (macro-code (default #f))
 	      ;; is the global always initialized before used? #t means
 	      ;; that the variable is always initialized, #f means that
 	      ;; it is used before initialized, and #unspecified means that

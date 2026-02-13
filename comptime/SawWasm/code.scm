@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/SawWasm/code.scm       */
+;*    serrano/bigloo/5.0a/comptime/SawWasm/code.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Wed Oct  1 08:05:41 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Fri Feb 13 06:59:36 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
 ;*=====================================================================*/
@@ -1232,11 +1232,10 @@
 (define-method (gen-expr fun::rtl_loadg args)
    (let* ((var (rtl_loadg-var fun))
           (name (global-name var))
-          (macro-code (global-qualified-type-name var)))
+          (macro-code (global-macro-code var)))
       (with-fun-loc fun
 	 (cond
-	    ((and (isa? (global-value var) cvar)
-		  (not (string-null? macro-code)))
+	    ((and (isa? (global-value var) cvar) (string? macro-code))
 	     (expand-wasm-macro (call-with-input-string macro-code read)
 		(gen-args args)))
 	    (else
@@ -1346,10 +1345,9 @@
 (define-method (gen-expr fun::rtl_call args)
    (let* ((var (rtl_call-var fun))
           (name (global-name var))
-          (macro-code (global-qualified-type-name var)))
+          (macro-code (global-macro-code var)))
       (with-fun-loc fun
-	 (if (and (isa? (global-value var) cfun)
-		  (not (string-null? macro-code)))
+	 (if (and (isa? (global-value var) cfun) (string?  macro-code))
 	     (expand-wasm-macro (call-with-input-string macro-code read)
 		(gen-args args))
 	     (case (global-id var)

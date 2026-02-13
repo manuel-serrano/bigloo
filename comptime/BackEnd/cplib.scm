@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/cplib.scm      */
+;*    serrano/bigloo/5.0a/comptime/BackEnd/cplib.scm                   */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Mon Oct 20 09:00:13 2025 (serrano)                */
-;*    Copyright   :  2003-25 Manuel Serrano                            */
+;*    Last change :  Fri Feb 13 07:06:48 2026 (serrano)                */
+;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
 ;*=====================================================================*/
@@ -120,7 +120,7 @@
 ;*    qualified-type-name ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (qualified-type-name::bstring type::type)
-   (let ( (id (type-id type)) )
+   (let ((id (type-id type)))
       (if (eq? id 'foreign)
 	  *jvm-foreign-class-name*
 	  (let ((java-class (find-java-class id)))

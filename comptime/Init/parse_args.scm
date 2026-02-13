@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Feb 11 08:03:42 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 07:35:36 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -111,10 +111,13 @@
 	 (when (and (fixnum? *profile-mode*) (>fx *profile-mode* 0))
 	    (warning "Incompatible options" "-p/-gbdb" " disabling debug")
 	    (set! *bdb-debug* 0)))
+      ;; ----------------------------------------------------------------
+      ;; MS 13 feb 2026, commented out
       ;; we always add a jvm package name for FOREIGN thus, a heap that
       ;; is not compiled in -jvm mode can still be used later with -jvm
       ;; option (provided that the heap file does not use any java clause).
       (add-qualified-type! 'foreign *jvm-foreign-class-name*)
+      ;; ----------------------------------------------------------------
       ;; when compiling for the Java back-end, the call/cc mode must
       ;; always be disabled (because call/cc is only supported in the
       ;; dynamic extend of the compilation).
