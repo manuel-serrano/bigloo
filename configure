@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Aug 26 09:04:01 2025 (serrano)                */
-#*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Feb 13 15:19:48 2026 (serrano)                */
+#*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -321,7 +321,8 @@ customgc=yes
 #gccustom=gc-8.2.2
 #gccustom=gc-8.2.4
 #gccustom=gc-8.2.8
-gccustom=gc-8.2.10
+#gccustom=gc-8.2.10
+gccustom=gc-8.2.12
 gcversion=
 gcbump=0
 cgcflags=
