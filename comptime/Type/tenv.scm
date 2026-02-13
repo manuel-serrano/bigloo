@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Type/tenv.scm                       */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Type/tenv.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Fri Feb 13 12:19:30 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 12:23:49 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -506,6 +506,9 @@
 (define (check-types)
    (let ((ut (uninitialized-types)))
       (when (pair? ut)
+	 (error *module*
+	    "Undefined used types"
+	    (map shape ut))
 	 (newline (current-error-port))
 	 (fprint (current-error-port)
 	    (length ut)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Engine/compiler.scm                 */
+;*    .../prgm/project/bigloo/5.0a/comptime/Engine/compiler.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Feb 13 08:31:15 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 12:21:29 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -608,9 +608,6 @@
 	 ;; when building the ast but delayed
 	 (pass-postlude #unspecified)
 	 
-	 ;; check if all types are defined
-	 (profile ctype (check-types))
-	 
 	 ;; SCH class accessor generation
 	 (stop-on-pass 'classgen classgen-walk)
 	 
@@ -663,6 +660,9 @@
 		     (with-access::Decl decl (mod)
 			(module5-module-package-set! mod)))))
 	    (java-finalizer))
+	 
+	 ;; check if all types are defined
+	 (profile ctype (check-types))
 	 
 	 ;; build the variable and function ast
 	 (module5-ast! mod genv 'compile)
