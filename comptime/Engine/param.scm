@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Engine/param.scm       */
+;*    serrano/bigloo/5.0a/comptime/Engine/param.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Oct  1 07:12:35 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Feb 13 17:38:55 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -204,6 +204,7 @@
 	    *pass*
 	    *jvm-jar?*
 	    *jvm-shell*
+	    *jvm-jigloo*
 	    *jvm-java*
 	    *jvm-options*
 	    *jvm-bigloo-classpath*
@@ -749,6 +750,9 @@
 (param-define *jvm-shell*
    "Shell to be used when producing JVM run scripts"
    (bigloo-config 'java-shell))
+(param-define *jvm-jigloo*
+   "Jigloo JVM header generator"
+   (make-file-name (bigloo-config 'binary-directory) "jigloo"))
 (param-define *jvm-java*
    "JVM to be used to run Java programs"
    (bigloo-config 'java))

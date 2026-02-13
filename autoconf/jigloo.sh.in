@@ -3,7 +3,7 @@
 path=`realpath $0`
 dir=`dirname $path`
 
-classpath=$dir:$PWD:@ZIP_DIRECTORY@
+classpath=$dir:$PWD:@ZIP_DIRECTORY@:$CLASSPATH
 
 if [ " $1" = " -cp" ]; then
   classpath="$classpath:$2"

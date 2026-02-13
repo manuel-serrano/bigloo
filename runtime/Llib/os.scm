@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/os.scm             */
+;*    serrano/bigloo/5.0a/runtime/Llib/os.scm                          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Sep 25 12:08:47 2025 (serrano)                */
+;*    Last change :  Fri Feb 13 17:40:47 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -263,6 +263,7 @@
 	    (prefix::bstring ::bstring)
 	    (suffix::bstring ::bstring)
 	    (chmod::bool ::bstring . opts)
+	    (file-name-absolute?::bool ::bstring)
 	    (make-file-name::bstring ::bstring ::bstring)
 	    (make-file-path::bstring ::bstring ::bstring . obj)
 	    (make-static-lib-name ::bstring ::symbol)
@@ -490,7 +491,7 @@
    (let* ((len   (-fx (string-length string) 1))
 	  (start (if (and (>fx len 0)
 			  (char=? (string-ref string len)
-				  runtime-file-separator))
+			     runtime-file-separator))
 		     (-fx len 1)
 		     len)))
       (let loop ((index start))
@@ -611,7 +612,14 @@
 		#t))
 	 (else
 	  (error "chmod" "Unknown mode" mode)))))
-	     
+
+;*---------------------------------------------------------------------*/
+;*    file-name-absolute? ...                                          */
+;*---------------------------------------------------------------------*/
+(define (file-name-absolute? path::bstring)
+   (when (>fx (string-length path) 0)
+      (char=? (string-ref path 0) (file-separator))))
+
 ;*---------------------------------------------------------------------*/
 ;*    @deffn make-file-name@ ...                                       */
 ;*    -------------------------------------------------------------    */

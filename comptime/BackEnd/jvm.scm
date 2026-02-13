@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Fri Feb 13 09:19:48 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 18:03:55 2026 (serrano)                */
 ;*    Copyright   :  2012-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -52,6 +52,7 @@
 (define (build-jvm-backend)
    (instantiate::jvm
       (language 'jvm)
+      (name "jvm")
       (heap-suffix "jheap")
       (srfi0 'bigloo-jvm)
       (foreign-clause-support '(java))

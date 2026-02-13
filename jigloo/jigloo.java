@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan  1 17:24:51 2001                          */
-/*    Last change :  Fri Feb 13 17:11:22 2026 (serrano)                */
+/*    Last change :  Fri Feb 13 18:08:53 2026 (serrano)                */
 /*    Copyright   :  2001-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Automatic Bigloo Java module clause generation (by               */
@@ -397,8 +397,9 @@ public abstract class jigloo {
       try {
 	 jigloo_class(Class.forName(new String(filename)));
       } catch(Throwable e) {
-	 System.err.println("\n*** ERROR:jigloo:Can't open class -- " + filename);
+	 System.err.println("\n*** ERROR:jigloo:Cannot open class -- " + filename);
 	 e.printStackTrace();
+	 System.exit(1);
       }
    }
 
@@ -441,7 +442,8 @@ public abstract class jigloo {
 		     out = new PrintStream(new FileOutputStream(argv[i + 1]));
 		     i++;
 		  } catch(java.io.FileNotFoundException e) {
-		     System.err.println("*** ERROR:jigloo:Can't open file for output -- " + argv[i + 1]);
+		     System.err.println("*** ERROR:jigloo:Cannot open file for output -- " + argv[i + 1]);
+		     System.exit(1);
 		  } 
 	       } else {
 		  if (argv[i].equals("-v"))

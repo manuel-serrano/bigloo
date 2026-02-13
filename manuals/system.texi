@@ -381,6 +381,11 @@ Changes the current directory to @var{dir-name}. On success, @code{chdir}
 returns @code{#t}. On failure it returns @code{#f}.
 @end deffn
 
+@deffn {bigloo procedure} file-name-absolute? name
+Returns @code{#t} if @var{name} is absolute file name. Returns
+@code{#f} otherwise.
+@end deffn
+
 @deffn {bigloo procedure} make-file-name dir-name name
 Make an absolute file-name from a directory name @var{dir-name} and a relative
 name @var{name}.

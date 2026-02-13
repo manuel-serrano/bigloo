@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/module5.scm     */
+;*    serrano/bigloo/5.0a/comptime/Module/module5.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Feb 13 12:16:18 2026 (serrano)                */
+;*    Last change :  Fri Feb 13 17:31:57 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -765,7 +765,6 @@
    
    (define (parse-clause clause mod::Module x::pair pkg)
       
-      
       (define modifier-list
 	 '(public private protected static final synchronized abstract transient))
       
@@ -833,6 +832,41 @@
 	    `(define (,(symbol-append id '?::bool) ,(symbol-append o '|::obj|))
 		,(make-private-sexp 'instanceof id o))))
 
+      (define (jigloo file x)
+	 (with-trace 'module "jigloo"
+	    (trace-item "file=" file)
+	    (let ((path (if (file-name-absolute? file)
+			    file
+			    (make-file-name (dirname (-> mod path)) file))))
+	       (trace-item "path=" path)
+	       (let* ((cache-dir (make-file-path *module-cache-dir*
+				    (backend-name (the-backend))))
+		      (cache (make-file-name cache-dir
+				(string-append (string-replace file #\/ #\_)
+				   ".bgh"))))
+		  (trace-item "cache=" cache)
+		  (make-directories cache-dir)
+		  (unless (directory? cache-dir)
+		     (error/loc mod "Cannot create cache directory"
+			cache-dir x))
+		  (if (or (not (file-exists? cache))
+			  (and (file-exists? path)
+			       (<elong (file-modification-time cache)
+				  (file-modification-time path))))
+		      (let ((cmd (format "~a -cp ~a -s -module5 ~a -o ~a" *jvm-jigloo*
+				    (dirname (-> mod path))
+				    (if (file-exists? path) path file)
+				    cache)))
+ 			 (trace-item "cmd=" cmd)
+			 (if (=fx (system cmd) 0)
+			     cache
+			     (begin
+				(when (file-exists? cache)
+				   (delete-file cache))
+				(error/loc mod "Cannot generate Java header"
+				   file x))))
+		      cache)))))
+
       (match-case clause
 	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
 	  (java-parser clause (-> mod id) '|.|))
@@ -849,6 +883,10 @@
 		   (set! body (cons pred body))))))
 	 ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
  	  (java-declare-array clause ident of (-> mod id)))
+	 ((import (and ?class (? symbol?)))
+	  (module5-extern-plugin-java mod
+	     (call-with-input-file (jigloo (symbol->string class) clause)
+		read)))
 	 (else
 	  (error/loc mod "Illegal extern \"java\" module clause" clause x))))
    
