@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Feb 13 08:08:22 2026 (serrano)                */
+;*    Last change :  Sat Feb 14 08:15:30 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -259,7 +259,7 @@
        (set! *qualified-type-file* file))
       ;; one type addition
       (("-package" ?module ?pkg (help "Set module package (used by jvm only)"))
-       (module-package-set! (string->symbol module) pkg))
+       (module-package-set! (string->symbol module) (string->symbol pkg)))
       ;; main function
       (("-main" ?fun (help "Set the main function"))
        (set! *main* (string->symbol fun)))

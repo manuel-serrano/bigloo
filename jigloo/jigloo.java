@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan  1 17:24:51 2001                          */
-/*    Last change :  Fri Feb 13 18:08:53 2026 (serrano)                */
+/*    Last change :  Sat Feb 14 07:39:18 2026 (serrano)                */
 /*    Copyright   :  2001-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Automatic Bigloo Java module clause generation (by               */
@@ -203,7 +203,7 @@ public abstract class jigloo {
       Class[] args = method.getParameterTypes();
       
       if (! Modifier.isNative(mod)) {
-	 Integer override_index= (Integer)overrides.get(method.getName());
+	 Integer override_index = (Integer)overrides.get(method.getName());
 	 emit("     (");
 	 jigloo_modifiers(mod);
 	 emit(method.getName());
@@ -214,14 +214,20 @@ public abstract class jigloo {
 	 }
 	 jigloo_type(method.getReturnType(), pkg);
 
+	 if (!Modifier.isStatic(mod)) {
+	    emit(" ");
+	    jigloo_type(owner, pkg);
+	 }
+	 
 	 if (args.length > 0) {
 	    emit(" ");
-	    if (Modifier.isStatic(mod)) {
-	       jigloo_args(args, pkg);
-	    } else {
-	       jigloo_args(owner, method.getParameterTypes(), pkg);
-	    }
+	    jigloo_args(args, pkg);
+	 } 
+	 
+	 if (override_index.intValue() != 0) {
+	    emit(" \"" + method.getName() + "\"");
 	 }
+	 
 	 emit(")\n");
       }
    }

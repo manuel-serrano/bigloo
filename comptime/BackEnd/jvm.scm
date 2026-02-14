@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Fri Feb 13 18:03:55 2026 (serrano)                */
+;*    Last change :  Sat Feb 14 08:09:52 2026 (serrano)                */
 ;*    Copyright   :  2012-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -169,8 +169,8 @@
 	 (warning
 	    (format "Incompatible package name and class path for module \"~a\"."
 	       *module*)
-	    (format " class =~a\n" base)
-	    (format " dir   =~a\n" dir)))))
+	    (format " class: ~a\n" base)
+	    (format " dir  : a\n" dir)))))
 
 (define *jvm-dir-name* ".")
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Fri Feb 13 08:10:31 2026 (serrano)                */
+;*    Last change :  Sat Feb 14 08:55:42 2026 (serrano)                */
 ;*    Copyright   :  1993-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
@@ -63,17 +63,20 @@
 ;*    module-package-set! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (module-package-set! module::symbol pkg::symbol)
-   (let ((name (symbol->string! module)))
-      (let ((old (hashtable-get *module-jvm-packages* name)))
-	 (cond
-	    ((not old)
-	     (hashtable-put! *module-jvm-packages* name pkg))
-	    ((eq? old pkg)
-	     #unspecified)
-	    (else
-	     (warning name "module package redefinition"
-		"\n  old package=" old
-		"\n  new package=" pkg))))))
+   (with-trace 'jvm "module-package-set!"
+      (trace-item "module=" module)
+      (trace-item "pkg=" pkg)
+      (let ((name (symbol->string! module)))
+	 (let ((old (hashtable-get *module-jvm-packages* name)))
+	    (cond
+	       ((not old)
+		(hashtable-put! *module-jvm-packages* name pkg))
+	       ((eq? old pkg)
+		#unspecified)
+	       (else
+		(warning name "module package redefinition"
+		   "\n  old package=" old
+		   "\n  new package=" pkg)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-qualified-type-name-get ...                                */
@@ -89,14 +92,17 @@
 ;*    class-qualified-type-name-set! ...                               */
 ;*---------------------------------------------------------------------*/
 (define (class-qualified-type-name-set! clazz::symbol qtn::bstring)
-   (let ((name (symbol->string! clazz)))
-      (let ((old (hashtable-get *class-jvm-qualified-types* name)))
-	 (cond
-	    ((not old)
-	     (hashtable-put! *class-jvm-qualified-types* name qtn))
-	    ((not (string=? old qtn))
-	     (error clazz "Using two different qualified names for class"
-		(format "~a vs ~a" qtn old)))))))
+   (with-trace 'jvm "class-qualified-type-name-set!"
+      (trace-item "clazz=" clazz)
+      (trace-item "qtn=" qtn)
+      (let ((name (symbol->string! clazz)))
+	 (let ((old (hashtable-get *class-jvm-qualified-types* name)))
+	    (cond
+	       ((not old)
+		(hashtable-put! *class-jvm-qualified-types* name qtn))
+	       ((not (string=? old qtn))
+		(error clazz "Using two different qualified names for class"
+		   (format "~a vs ~a" qtn old))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    jvm-class-sans-directory ...                                     */

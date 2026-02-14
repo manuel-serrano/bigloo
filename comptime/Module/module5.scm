@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Feb 13 17:31:57 2026 (serrano)                */
+;*    Last change :  Sat Feb 14 06:49:44 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -814,8 +814,13 @@
 			;; method
 			(multiple-value-bind (id type)
 			   (parse-ident ident field mod)
-			   `(method ,@(reverse! m)
-			       ,ident ,args ,(symbol->string id))))
+			   (if (and (pair? args) (string? (car (last-pair args))))
+			       ;; the last argument is the actual method java name
+			       (let ((sgra (reverse args)))
+				  `(method ,@(reverse! m)
+				      ,ident ,(reverse (cdr sgra)) ,(car sgra)))
+			       `(method ,@(reverse! m)
+				   ,ident ,args ,(symbol->string id)))))
 		       (else
 			(error/loc mod "Illegal class field" field x))))))))
       
@@ -839,8 +844,8 @@
 			    file
 			    (make-file-name (dirname (-> mod path)) file))))
 	       (trace-item "path=" path)
-	       (let* ((cache-dir (make-file-path *module-cache-dir*
-				    (backend-name (the-backend))))
+	       (let* ((cache-dir (make-file-path *module-cache-dir* "class"))
+		      (lock-path (make-file-name cache-dir "LOCK"))
 		      (cache (make-file-name cache-dir
 				(string-append (string-replace file #\/ #\_)
 				   ".bgh"))))
@@ -849,23 +854,28 @@
 		  (unless (directory? cache-dir)
 		     (error/loc mod "Cannot create cache directory"
 			cache-dir x))
-		  (if (or (not (file-exists? cache))
-			  (and (file-exists? path)
-			       (<elong (file-modification-time cache)
-				  (file-modification-time path))))
-		      (let ((cmd (format "~a -cp ~a -s -module5 ~a -o ~a" *jvm-jigloo*
-				    (dirname (-> mod path))
-				    (if (file-exists? path) path file)
-				    cache)))
- 			 (trace-item "cmd=" cmd)
-			 (if (=fx (system cmd) 0)
-			     cache
-			     (begin
-				(when (file-exists? cache)
-				   (delete-file cache))
-				(error/loc mod "Cannot generate Java header"
-				   file x))))
-		      cache)))))
+		  (call-with-output-file lock-path
+		     (lambda (lock)
+			(lockf lock 'lock)
+			(unwind-protect
+			   (if (or (not (file-exists? cache))
+				   (and (file-exists? path)
+					(<elong (file-modification-time cache)
+					   (file-modification-time path))))
+			       (let ((cmd (format "~a -cp ~a -s --module5 ~a -o ~a" *jvm-jigloo*
+					     (dirname (-> mod path))
+					     (if (file-exists? path) path file)
+					     cache)))
+				  (trace-item "cmd=" cmd)
+				  (if (=fx (system cmd) 0)
+				      cache
+				      (begin
+					 (when (file-exists? cache)
+					    (delete-file cache))
+					 (error/loc mod "Cannot generate Java header"
+					    file x))))
+			       cache)
+			   (lockf lock 'ulock))))))))
 
       (match-case clause
 	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))

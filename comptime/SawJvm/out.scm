@@ -537,7 +537,10 @@
 		(cond
 		   ((memq 'static modifiers) 'invokestatic)
 		   ((memq 'abstract modifiers) 'invokeinterface)
-		   ((memq 'final modifiers) 'invokespecial)
+		   ;; MS 14 feb 2026
+		   ;; final virtual methods must be invoked with
+		   ;; invokevirtual
+		   ;((memq 'final modifiers) 'invokespecial)
 		   ((memq 'native modifiers) 'invokespecial)
 		   (else 'invokevirtual) ))
 	     'invokestatic )))

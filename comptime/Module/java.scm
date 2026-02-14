@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Fri Feb 13 12:42:34 2026 (serrano)                */
+;*    Last change :  Sat Feb 14 08:59:07 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -234,23 +234,26 @@
 (define (auto-declare-klass-types jklass::jklass)
    
    (define (auto-declare-jklass ty::type jklass::jklass src)
-      (with-access::jklass jklass (package module)
-	 (let ((k (instantiate::jklass
-		     (src src)
-		     (loc (find-location src))
-		     (id (type-id ty))
-		     (idd (type-id ty))
-		     (jname (symbol->string (type-id ty)))
-		     (package package)
-		     (abstract? #t)
-		     (module module))))
-	    (declare-java-class! k))))
+      (with-trace 'jvm "auto-declare-jklass"
+	 (trace-item "ty=" (type-id ty))
+	 (trace-item "jk=" (jklass-id jklass))
+	 (with-access::jklass jklass (package module)
+	    (let ((k (instantiate::jklass
+			(src src)
+			(loc (find-location src))
+			(id (type-id ty))
+			(idd (type-id ty))
+			(jname (symbol->string (type-id ty)))
+			(package package)
+			(abstract? #t)
+			(module module))))
+	       (declare-java-class! k)))))
 
    (define (type-declared? ty)
       ;; can't use (get-type-object) because it would not work for
       ;; library modules during bootstrap
       (or (eq? (type-id ty) 'object) (type-init? ty)))
-   
+
    (with-access::jklass jklass (fields methods loc id)
       ;; field types
       (for-each (lambda (f::jfield)
@@ -568,7 +571,9 @@
 		(jid (car pid))
 		(super (cdr pid)))
 	    (trace-item "jid=" jid)
+	    ;; both registration are needed for the SawJvm backend
 	    (register-java-class! jid jname)
+	    (register-java-class! (string->symbol jname) jname)
 	    ;; create the class holder
 	    ;; and create a type for this class
 	    (let ((jclass (declare-java-class-type! jid super jname package src)))
