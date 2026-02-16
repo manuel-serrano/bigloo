@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Sun Feb 15 19:40:02 2026 (serrano)                */
+;*    Last change :  Mon Feb 16 12:31:04 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -24,6 +24,7 @@
 	    object_slots
 	    object_coercion
 	    module_module
+	    module_pragma
 	    engine_param
 	    foreign_jtype
 	    ast_var

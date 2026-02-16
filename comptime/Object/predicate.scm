@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Mon Feb 16 10:35:18 2026 (serrano)                */
+;*    Last change :  Mon Feb 16 12:23:06 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class predicate                                      */
@@ -113,7 +113,7 @@
 ;*---------------------------------------------------------------------*/
 (define (gen-java-class-pred! class::jclass src-def mclause)
    (with-trace 'jvm "gen-java-class-pred!"
-      (trace-item "class=" (class-id class))
+      (trace-item "class=" (jclass-id class))
       (let* ((id      (jclass-id class))
 	     (id?     (symbol-append id '?))
 	     (pred-id (symbol-append id '?::bool))

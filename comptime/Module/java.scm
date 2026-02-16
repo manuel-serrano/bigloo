@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Sun Feb 15 07:25:19 2026 (serrano)                */
+;*    Last change :  Mon Feb 16 13:38:29 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -38,6 +38,7 @@
 	    ast_glo-decl
 	    ast_env
 	    ast_ident
+	    ast_private
 	    read_jvm
 	    foreign_jtype
 	    foreign_access)
@@ -233,12 +234,17 @@
 	    *jexported*)
 	 ;; collect all the undeclared references type
 	 ;; bind all the undeclared field types (automatic class declaration)
-	 (for-each auto-declare-jklass-klass-types *jklasses*)
-	 (for-each auto-declare-jarray-klass-types *jarrays*))
-      ;; cleanup
-      (set! *jexported* '())
-      (set! *jklasses* '())
-      (set! *jarrays* '())))
+	 (let ((r (append
+		     (append-map auto-declare-jklass-klass-types *jklasses*)
+		     (filter-map auto-declare-jarray-klass-types *jarrays*))))
+	    ;; cleanup
+	    (set! *jexported* '())
+	    (set! *jklasses* '())
+	    (set! *jarrays* '())
+	    ;; only used by module5
+	    (if (pair? r)
+		(list (unit 'java 47 r #t #f))
+		'())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-declared? ...                                               */
@@ -249,9 +255,20 @@
    (or (eq? (type-id ty) 'object) (type-init? ty)))
 
 ;*---------------------------------------------------------------------*/
+;*    auto-class-predicate ...                                         */
+;*---------------------------------------------------------------------*/
+(define (auto-class-predicate ty::type)
+   (let ((o (gensym 'obj))
+	 (id (type-id ty)))
+      `(define-inline (,(symbol-append id '?::bool) ,(symbol-append o '|::obj|))
+	  ,(make-private-sexp 'instanceof id o))))
+
+;*---------------------------------------------------------------------*/
 ;*    auto-declare-jklass-klass-types ...                              */
 ;*---------------------------------------------------------------------*/
 (define (auto-declare-jklass-klass-types jklass::jklass)
+
+   (define new-klasses '())
    
    (define (auto-declare-jklass ty::type jklass::jklass src)
       (with-trace 'jvm "auto-declare-jklass"
@@ -267,6 +284,7 @@
 			(package package)
 			(abstract? #t)
 			(module module))))
+	       (set! new-klasses (cons ty new-klasses))
 	       (declare-java-class! k)))))
    
    (with-access::jklass jklass (fields methods loc id)
@@ -288,7 +306,9 @@
 				      (unless (type-declared? ty)
 					 (auto-declare-jklass ty jklass src))))
 			 args)))
-	 methods)))
+	 methods)
+      ;; return the predicate definition
+      (map auto-class-predicate new-klasses)))
 
 ;*---------------------------------------------------------------------*/
 ;*    auto-declare-jarray-klass-types ...                              */
@@ -313,7 +333,8 @@
    
    (with-access::jarray jarray (item-type)
       (unless (type-declared? item-type)
-	 (auto-declare-jklass item-type jarray))))
+	 (auto-declare-jklass item-type jarray)
+	 (auto-class-predicate item-type))))
 	    
 ;*---------------------------------------------------------------------*/
 ;*    java-parse-class ...                                             */
@@ -638,7 +659,6 @@
 			(trace-item "init?=" (type-init? jclass))
 			(register-java-class! fqid jname)
 			(rebind-type! fqid jclass))))
-;* 			(declare-aliastype! fqid jname 'java jclass)))) */
 	       ;; store the src-import location in order to print a nice error
 	       ;; message if that tclass is not defined
 	       (type-import-location-set! jclass loc)

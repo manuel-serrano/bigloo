@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sun Feb 15 06:11:50 2026 (serrano)                */
+;*    Last change :  Mon Feb 16 13:08:30 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -59,6 +59,7 @@
 	   (module5-imported-inline mod::Module ::obj)
 	   (module5-extern-plugin-c ::Module ::pair)
 	   (module5-extern-plugin-java ::Module ::pair)
+	   (module5-extern-plugin-java-finalizer ::Module)
 	   (module5-extern-plugin-wasm ::Module ::pair)
 	   (module5-plugin-pragma ::Module ::pair)
 	   (module5-plugin-eval ::Module ::pair)
@@ -858,10 +859,12 @@
 		  (else name)))))
       
       (define (class-predicate id x)
-	 (let ((o (gensym 'obj))
-	       (id (fast-id-of-id id (find-location x))))
-	    `(define (,(symbol-append id '?::bool) ,(symbol-append o '|::obj|))
-		,(make-private-sexp 'instanceof id o))))
+	 (let* ((o (gensym 'obj))
+		(fid (fast-id-of-id id (find-location x)))
+		(pid (symbol-append fid '?)))
+	    (localize x
+	       `(define-inline (,(symbol-append pid '::bool) ,(symbol-append o '|::obj|))
+		   ,(make-private-sexp 'instanceof id o)))))
 
       (define (jigloo file x)
 	 (with-trace 'module5 "jigloo"
@@ -944,6 +947,22 @@
 	    (else
 	     (for-each (lambda (c) (parse-clause c mod x #f)) (cddr x)))))
       '()))
+
+;*---------------------------------------------------------------------*/
+;*    module5-extern-plugin-java-finalizer ...                         */
+;*---------------------------------------------------------------------*/
+(define (module5-extern-plugin-java-finalizer mod::Module)
+   ;; Mark that all the java class predicates cannot be removed
+   ;; until the coercion and checks have been inserted in the AST
+   ;; Because of the complex Java code generation and complex declarations
+   ;; associated with these codes, this cannot mark assignments cannot
+   ;; done while the classes are constructed
+   (for-each-type! (lambda (t)
+		      (when (isa? t jclass)
+			 (let* ((p (symbol-append (jclass-id t) '?))
+				(g (find-global (get-genv) p)))
+			    (when (isa? g global)
+			       (global-removable-set! g 'coerce)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-wasm ...                                   */

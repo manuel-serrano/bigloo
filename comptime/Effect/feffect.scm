@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Effect/feffect.scm       */
+;*    serrano/bigloo/5.0a/comptime/Effect/feffect.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 26 08:48:52 2003                          */
-;*    Last change :  Wed Jun 16 16:00:13 2021 (serrano)                */
+;*    Last change :  Mon Feb 16 15:12:03 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The effect of the functions (i.e. does a function read a pair,   */
@@ -169,19 +169,21 @@
 ;*    fun-effect-module! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (fun-effect-module!::feffect v::global)
-   (let* ((fun (variable-value v))
-	  (ef (fun-effect fun)))
-      (trace egen "fun-effect-module!: " (shape v) " ef="
-	     (with-output-to-string (lambda () (display ef))) #\Newline)
-      (if (feffect? fun)
-	  ef
-	  (do-fun-effect! v))))
+   (with-trace 'effect "fun-effect-module!"
+      (trace-item "v=" (shape v))
+      (let* ((fun (variable-value v))
+	     (ef (fun-effect fun)))
+	 (if (feffect? fun)
+	     ef
+	     (do-fun-effect! v)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    fun-effect-local! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (fun-effect-local!::feffect v::local)
-   (do-fun-effect! v))
+   (with-trace 'effect "fun-effect-local!"
+      (trace-item "v=" (shape v))
+      (do-fun-effect! v)))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-fun-effect! ...                                               */

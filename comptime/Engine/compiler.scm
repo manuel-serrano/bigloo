@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Feb 13 13:52:49 2026 (serrano)                */
+;*    Last change :  Mon Feb 16 13:44:33 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -660,7 +660,8 @@
 		  (lambda (k decl)
 		     (with-access::Decl decl (mod)
 			(module5-module-package-set! mod)))))
-	    (java-finalizer))
+	    (let ((u (java-finalizer)))
+	       (when (pair? u) (set! units (cons (car u) units)))))
 
 	 ;; foreign unit
 	 (let ((u (foreign-finalizer)))
@@ -673,7 +674,7 @@
 	 (module5-ast! mod genv 'compile)
 
 	 (module5-imported-inline mod genv)
-	 
+
 	 (let* ((m (module5-main mod genv))
 		(ast (profile ast (build-ast units genv))))
 
@@ -694,6 +695,9 @@
 
 	    ;; handle pragma declarations
 	    (module5-resolve-pragma! mod genv)
+
+	    ;; java classes predicate
+	    (module5-extern-plugin-java-finalizer mod)
 
 	    ;; check if inlined functions used by the backend
 	    ;; have all been defined

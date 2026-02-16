@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/base64.scm            */
+;*    serrano/bigloo/5.0a/runtime/Unsafe/base64.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 29 17:52:57 2004                          */
-;*    Last change :  Wed Sep 24 19:29:48 2014 (serrano)                */
-;*    Copyright   :  2004-14 Manuel Serrano                            */
+;*    Last change :  Mon Feb 16 17:30:54 2026 (serrano)                */
+;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    base64 encoding/decoding                                         */
 ;*=====================================================================*/
@@ -204,13 +204,16 @@
 ;*    actual-string-length ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (actual-string-length s)
-   (let loop ((i (-fx (string-length s) 1)))
-      (if (=fx i 0)
-	  i
-	  (let ((c (string-ref s i)))
-	     (if (or (char=? c #\Newline) (char=? c #\Return))
-		 (loop (-fx i 1))
-		 (+fx i 1))))))
+   (let ((len (string-length s)))
+      (if (=fx len 0)
+	  0
+	  (let loop ((i (-fx (string-length s) 1)))
+	     (if (=fx i 0)
+		 i
+		 (let ((c (string-ref s i)))
+		    (if (or (char=? c #\Newline) (char=? c #\Return))
+			(loop (-fx i 1))
+			(+fx i 1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    base64-decode ...                                                */

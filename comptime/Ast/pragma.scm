@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/pragma.scm         */
+;*    serrano/bigloo/5.0a/comptime/Ast/pragma.scm                      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:11:13 1996                          */
-;*    Last change :  Mon Oct 20 12:47:34 2025 (serrano)                */
+;*    Last change :  Mon Feb 16 13:06:13 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The creation of pragma forms.                                    */
 ;*=====================================================================*/
@@ -107,7 +107,7 @@
 	   (let ((v (sexp->node ident stack loc site genv)))
 	      (if (isa? v var)
 		  (with-access::var v (variable)
-		     (with-access::variable variable (name removable)
+		     (with-access::variable variable (name)
 			(instantiate::pragma
 			   (loc loc)
 			   (type type)
@@ -121,7 +121,7 @@
 	   (let ((v (sexp->node ident stack loc site genv)))
 	      (if (isa? v var)
 		  (with-access::var v (variable)
-		     (with-access::variable variable (name removable)
+		     (with-access::variable variable (name)
 			(instantiate::pragma
 			   (loc loc)
 			   (type type)
