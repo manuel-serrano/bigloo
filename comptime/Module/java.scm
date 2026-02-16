@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Sat Feb 14 08:59:07 2026 (serrano)                */
+;*    Last change :  Sun Feb 15 07:25:19 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -93,9 +93,9 @@
 ;*---------------------------------------------------------------------*/
 (define (java-error java . msg)
    (user-error "Parse error"
-	       (if (pair? msg) (car msg) "Illegal java variable")
-	       java
-	       '()))
+      (if (pair? msg) (car msg) "Illegal Java variable")
+      java
+      '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-java-clause ...                                            */
@@ -107,7 +107,7 @@
 	   (for-each (lambda (p) (java-parser p module '-)) protos)
 	   '())
 	  (else
-	   (java-error clause "Illegal `java' clause")))
+	   (java-error clause "Illegal Java clause")))
        '()))
 
 ;*---------------------------------------------------------------------*/
@@ -115,13 +115,15 @@
 ;*---------------------------------------------------------------------*/
 (define (java-parser java module::symbol separator::symbol)
    (with-trace 'jvm "java-parser"
-      (trace-item "java=" java)
+      (trace-item "module=" module)
+      (trace-item "java="
+	 (if (>fx (length java) 10) (append (take java 6) '("...")) java))
       (match-case java
 	 ;; export clauses
 	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
 	  (set! *jexported* (cons (cons java module) *jexported*)))
 	 ((export . ?-)
-	  (java-error java "Illegal java export form"))
+	  (java-error java "Illegal Java export form"))
 	 ;; a java class
 	 ((class ?ident . ?rest)
 	  (java-parse-class java ident rest #f module separator))
@@ -142,6 +144,14 @@
 ;*    that declares the Bigloo type.                                   */
 ;*---------------------------------------------------------------------*/
 (define *jklasses* '())
+
+;*---------------------------------------------------------------------*/
+;*    *jarrays* ...                                                    */
+;*    -------------------------------------------------------------    */
+;*    List of created arrays, only used in for declaring automaticall  */
+;*    unbound Java classes in auto-declare-jarray-klass-types.         */
+;*---------------------------------------------------------------------*/
+(define *jarrays* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    *jexported* ...                                                  */
@@ -223,15 +233,25 @@
 	    *jexported*)
 	 ;; collect all the undeclared references type
 	 ;; bind all the undeclared field types (automatic class declaration)
-	 (for-each auto-declare-klass-types *jklasses*))
+	 (for-each auto-declare-jklass-klass-types *jklasses*)
+	 (for-each auto-declare-jarray-klass-types *jarrays*))
       ;; cleanup
       (set! *jexported* '())
-      (set! *jklasses* '())))
+      (set! *jklasses* '())
+      (set! *jarrays* '())))
 
 ;*---------------------------------------------------------------------*/
-;*    auto-declare-klass-types ...                                     */
+;*    type-declared? ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (auto-declare-klass-types jklass::jklass)
+(define (type-declared? ty::type)
+   ;; can't use (get-type-object) because it would not work for
+   ;; library modules during bootstrap
+   (or (eq? (type-id ty) 'object) (type-init? ty)))
+
+;*---------------------------------------------------------------------*/
+;*    auto-declare-jklass-klass-types ...                              */
+;*---------------------------------------------------------------------*/
+(define (auto-declare-jklass-klass-types jklass::jklass)
    
    (define (auto-declare-jklass ty::type jklass::jklass src)
       (with-trace 'jvm "auto-declare-jklass"
@@ -248,12 +268,7 @@
 			(abstract? #t)
 			(module module))))
 	       (declare-java-class! k)))))
-
-   (define (type-declared? ty)
-      ;; can't use (get-type-object) because it would not work for
-      ;; library modules during bootstrap
-      (or (eq? (type-id ty) 'object) (type-init? ty)))
-
+   
    (with-access::jklass jklass (fields methods loc id)
       ;; field types
       (for-each (lambda (f::jfield)
@@ -276,47 +291,82 @@
 	 methods)))
 
 ;*---------------------------------------------------------------------*/
+;*    auto-declare-jarray-klass-types ...                              */
+;*---------------------------------------------------------------------*/
+(define (auto-declare-jarray-klass-types jarray::jarray)
+   
+   (define (auto-declare-jklass ty::type jarray::jarray)
+      (with-trace 'jvm "auto-declare-jklass"
+	 (trace-item "ty=" (type-id ty))
+	 (with-access::jarray jarray (location)
+	    (let* ((n (symbol->string (type-id ty)))
+		   (k (instantiate::jklass
+			 (src '(auto))
+			 (loc location)
+			 (id (type-id ty))
+			 (idd (type-id ty))
+			 (jname n)
+			 (package (prefix n))
+			 (abstract? #t)
+			 (module 'foreign))))
+	       (declare-java-class! k)))))
+   
+   (with-access::jarray jarray (item-type)
+      (unless (type-declared? item-type)
+	 (auto-declare-jklass item-type jarray))))
+	    
+;*---------------------------------------------------------------------*/
 ;*    java-parse-class ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (java-parse-class java ident rest abstract? module separator)
-   (let* ((tser (reverse rest))
-	  (jname (if (pair? tser) (car tser) #f)))
-      (cond
-	 ((not (symbol? ident))
-	  (java-error java "Illegal Java class"))
-	 ((string? jname)
-	  (java-declare-class java ident jname (cdr tser) abstract? module separator))
-	 (else
-	  (java-refine-class java ident rest module separator)))))
+   (with-trace 'jvm "java-parse-class"
+      (trace-item "ident=" ident)
+      (let* ((tser (reverse rest))
+	     (jname (if (pair? tser) (car tser) #f)))
+	 (cond
+	    ((not (symbol? ident))
+	     (java-error java "Illegal Java class"))
+	    ((string? jname)
+	     (java-declare-class java ident jname (cdr tser) abstract? module separator))
+	    (else
+	     (java-refine-class java ident rest module separator))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    java-declare-class ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (java-declare-class::jklass j id::symbol jname::bstring
 	   comp::pair-nil a::bool module::symbol separator::symbol)
-   (let* ((loc (find-location j))
-	  (jklass (let ((jklass (find-jklass id)))
-		     (cond
-			((not (jklass? jklass))
-			 (instantiate::jklass
-			    (src j)
-			    (loc loc)
-			    (id id)
-			    (idd (fast-id-of-id id loc))
-			    (jname jname)
-			    (abstract? a)
-			    (module module)))
-			((not (eq? (jklass-abstract? jklass) a))
-			 (java-error j "Illegal Java class redefinition"))
-			((not (string? (jklass-jname jklass)))
-			 (jklass-jname-set! jklass jname))
-			((string=? (jklass-jname jklass) jname)
-			 jklass)
-			(else
-			 (java-error j "Illegal Java class redefinition"))))))
-      (for-each (lambda (c) (java-declare-component j jklass c separator))
-	 comp)
-      jklass))
+   (with-trace 'jvm "java-declare-class"
+      (trace-item "id=" id)
+      (trace-item "jname=" jname)
+      (let ((loc (find-location j))
+	    (klass (find-jklass id)))
+	 (trace-item "old=" (typeof klass))
+	 (cond
+	    ((not (jklass? klass))
+	     (let ((k (instantiate::jklass
+			 (src j)
+			 (loc loc)
+			 (id id)
+			 (idd (fast-id-of-id id loc))
+			 (jname jname)
+			 (abstract? a)
+			 (module module))))
+		(for-each (lambda (c)
+			     (java-declare-component j k c separator))
+		   comp)
+		k))
+	    ((not (eq? (jklass-abstract? klass) a))
+	     (user-error/location loc "Parse error"
+		"Illegal Java class redefinition" id))
+	    ((not (string? (jklass-jname klass)))
+	     (jklass-jname-set! klass jname)
+	     klass)
+	    ((string=? (jklass-jname klass) jname)
+	     klass)
+	    (else
+	     (user-error/location loc "Parse error"
+		"Illegal Java class redefinition" id))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    java-refine-class ...                                            */
@@ -326,18 +376,20 @@
 ;*---------------------------------------------------------------------*/
 (define (java-refine-class::jklass j ident::symbol comp::pair-nil
 	   module::symbol separator::symbol)
-   (let ((jklass (let ((jklass (find-jklass ident)))
-		    (if (jklass? jklass)
-			jklass
-			(instantiate::jklass
-			   (src j)
-			   (loc (find-location j))
-			   (idd (fast-id-of-id ident (find-location j)))
-			   (id ident)
-			   (module module))))))
-      (for-each (lambda (c) (java-declare-component j jklass c separator))
-	 comp)
-      jklass))
+   (with-trace 'jvm "java-refine-class"
+      (trace-item "id=" ident)
+      (let ((jklass (let ((jklass (find-jklass ident)))
+		       (if (jklass? jklass)
+			   jklass
+			   (instantiate::jklass
+			      (src j)
+			      (loc (find-location j))
+			      (idd (fast-id-of-id ident (find-location j)))
+			      (id ident)
+			      (module module))))))
+	 (for-each (lambda (c) (java-declare-component j jklass c separator))
+	    comp)
+	 jklass)))
 
 ;*---------------------------------------------------------------------*/
 ;*    java-declare-component ...                                       */
@@ -360,7 +412,7 @@
 		(and (symbol? s)
 		     (memq s '(public private protected
 			       static final synchronized
-			       transient abstract))))
+			       transient abstract volatile))))
 	 lst))
    
    (define (make-ident base id)
@@ -569,21 +621,24 @@
 	 (trace-item "package=" package)
 	 (let* ((pid (parse-id id loc))
 		(jid (car pid))
-		(super (cdr pid)))
+		(super (cdr pid))
+		(qid (string->symbol jname)))
 	    (trace-item "jid=" jid)
-	    ;; both registration are needed for the SawJvm backend
-	    (register-java-class! jid jname)
-	    (register-java-class! (string->symbol jname) jname)
+	    (trace-item "super=" (shape super))
 	    ;; create the class holder
 	    ;; and create a type for this class
 	    (let ((jclass (declare-java-class-type! jid super jname package src)))
+	       ;; both registration are needed for the SawJvm backend
+	       (register-java-class! jid jname)
 	       (when (>fx (string-length package) 0)
 		  (let ((fqid (string->symbol jname)))
 		     (unless (eq? jid fqid)
 			;; declare an alias for the fully qualified type name
-			(declare-aliastype! fqid jname 'java jclass))))
-	       ;; some paranoid checking
-	       (assert (jclass) (jclass? jclass))
+			(trace-item "rebind=" fqid)
+			(trace-item "init?=" (type-init? jclass))
+			(register-java-class! fqid jname)
+			(rebind-type! fqid jclass))))
+;* 			(declare-aliastype! fqid jname 'java jclass)))) */
 	       ;; store the src-import location in order to print a nice error
 	       ;; message if that tclass is not defined
 	       (type-import-location-set! jclass loc)
@@ -648,6 +703,7 @@
 	  (let* ((sof (symbol->string of))
 		 (tof (string->symbol (substring sof 2 (string-length sof))))
 		 (jtype (declare-jvm-type! id tof j)))
+	     (set! *jarrays* (cons jtype *jarrays*))
 	     (foreign-accesses-add!
 		(make-ctype-accesses! jtype jtype (find-location j) module)))))))
       

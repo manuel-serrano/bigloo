@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sat Feb 14 06:49:44 2026 (serrano)                */
+;*    Last change :  Sun Feb 15 06:11:50 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -95,6 +95,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (object-copy d::TDef)
    (duplicate::TDef d))
+
+;*---------------------------------------------------------------------*/
+;*    object-copy ::JDef ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (object-copy d::JDef)
+   (duplicate::JDef d))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-expand ...                                               */
@@ -339,15 +345,23 @@
 
 	    ;; declare all C types
 	    (for-each (lambda (e)
-			 (let ((t (vector-ref e 0)))
+			 (let ((t::Def (vector-ref e 0)))
+			    (trace-item "type=" (-> t id) " " (typeof t))
 			    (if (isa? t JDef)
-				(with-access::JDef t (id name super package expr decl)
-				   (with-access::Decl decl ((dmod mod))
-				      (unless (eq? dmod mod)
+				(with-access::JDef t (id name super package expr decl scope)
+				   (with-access::Decl decl ((dmod mod) scope)
+				      (trace-item "mod=" (-> dmod id))
+				      (trace-item "scope=" scope)
+				      (unless (or (eq? dmod mod)
+						  (eq? scope 'static))
 					 (declare-java-class-type! id
 					    (find-type super) name package expr))))
-				(with-access::TDef t (id name)
-				   (declare-type! id name 'C)))))
+				(with-access::TDef t (id name decl kind)
+				   (with-access::Decl decl ((dmod mod) scope)
+				      (trace-item "kind=" kind)
+				      (trace-item "mod=" (-> dmod id))
+				      (trace-item "scope=" scope)
+				      (declare-type! id name 'C))))))
 	       types)
 	    
 	    ;; declare all classes
@@ -387,7 +401,7 @@
 ;*    module5-module-package-set! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (module5-module-package-set! mod::Module)
-   (with-trace 'module "module5-set-module-package!"
+   (with-trace 'module5 "module5-set-module-package!"
       (trace-item "mod=" (-> mod id))
       (trace-item "pkg=" (-> mod package))
       (trace-item "path=" (-> mod path))
@@ -428,10 +442,12 @@
 	    '(checksum::long path::string) id 'import 'sfun
 	    #f #f)
 	 `((@ module-initialization ,id) ,checksum ,path)))
-   
+
    (with-access::Module mod (inits path)
-      (let ((body (map (lambda (m) (init-module! m path)) inits)))
-	 (unit 'imported-modules 12 body #f #f))))
+      (with-trace 'module5 "module5-imported-unit"
+	 (trace-item "path=" path)
+	 (let ((body (map (lambda (m) (init-module! m path)) inits)))
+	    (unit 'imported-modules 12 body #f #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-object-unit ...                                          */
@@ -712,32 +728,35 @@
 ;*    declare-java-type! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (declare-java-type! j::jklass mod::Module clause)
-   (with-access::jklass j (id jname package src)
-      (multiple-value-bind (clazz super)
-	 (parse-ident id src mod)
-	 (co-instantiate
-	       ((def (instantiate::JDef
-			(id id)
-			(kind 'java-type)
-			(expr clause)
-			(ronly #t)
-			(expr src)
-			(decl decl)
-			(name jname)
-			(package (if (string? package) package "."))
-			(super (if (string? super) (string->symbol super) '_))))
-		(decl (instantiate::Decl
-			 (id id)
-			 (alias id)
-			 (mod mod)
-			 (expr clause)
-			 (ronly #t)
-			 (scope 'extern)
-			 (def def))))
-	    (with-access::Module mod (decls defs exports)
-	       (hashtable-put! exports (symbol->string! id) decl)
-	       (hashtable-put! decls (symbol->string! id) decl)
-	       (hashtable-put! defs (symbol->string! id) def))))))
+   (with-trace 'jvm "declare-java-type"
+      (with-access::jklass j (id jname package src)
+	 (trace-item "jklass=" id)
+	 (trace-item "mod=" (-> mod id))
+	 (multiple-value-bind (clazz super)
+	    (parse-ident id src mod)
+	    (co-instantiate
+		  ((def (instantiate::JDef
+			   (id id)
+			   (kind 'java-type)
+			   (expr clause)
+			   (ronly #t)
+			   (expr src)
+			   (decl decl)
+			   (name jname)
+			   (package (if (string? package) package "."))
+			   (super (if (string? super) (string->symbol super) '_))))
+		   (decl (instantiate::Decl
+			    (id id)
+			    (alias id)
+			    (mod mod)
+			    (expr clause)
+			    (ronly #t)
+			    (scope 'static)
+			    (def def))))
+	       (with-access::Module mod (decls defs exports)
+		  (hashtable-put! exports (symbol->string! id) decl)
+		  (hashtable-put! decls (symbol->string! id) decl)
+		  (hashtable-put! defs (symbol->string! id) def)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module4-extern-plugin-java ...                                   */
@@ -766,7 +785,8 @@
    (define (parse-clause clause mod::Module x::pair pkg)
       
       (define modifier-list
-	 '(public private protected static final synchronized abstract transient))
+	 '(public private protected static final synchronized
+	   abstract transient volatile))
       
       (define (class-name name)
 	 (let ((i (string-contains name "::")))
@@ -775,16 +795,19 @@
 		name)))
       
       (define (parse-class5-ident ident)
-	 (let ((name (symbol->string ident)))
+	 (let* ((s (symbol->string ident))
+		(i (string-contains s "::"))
+		(name (if i (substring s 0 i) s))
+		(super (when i (string->symbol (substring s (+fx i 2))))))
 	    (if (char=? (string-ref name 0) #\.)
 		(let ((name (substring name 1)))
-		   (values #f (class-name name) (string->symbol name)))
+		   (values #f (class-name name) (string->symbol name) super))
 		(let ((i (string-index-right name #\.)))
 		   (if i
 		       (let ((pkg (substring name 0 i))
 			     (id (substring name (+fx i 1))))
-			  (values pkg (class-name name) (string->symbol id)))
-		       (values #f (class-name name) ident))))))
+			  (values pkg (class-name name) (string->symbol id) super))
+		       (values #f (class-name name) (string->symbol name) super))))))
       
       (define (field5->field4 field)
 	 (if (symbol? field)
@@ -824,12 +847,15 @@
 		       (else
 			(error/loc mod "Illegal class field" field x))))))))
       
-      (define (class5->class4 keyword cpkg name id rest)
-	 `(,keyword ,id ,@(map field5->field4 rest)
-	     ,(cond
-		 (cpkg name)
-		 (pkg (format "~a.~a" pkg id))
-		 (else name))))
+      (define (class5->class4 clause cpkg name id super rest)
+	 (localize clause
+	    `(,(car clause)
+	      ,(if super (string->symbol (format "~a::~a" id super)) id)
+	      ,@(map (lambda (f) (localize f (field5->field4 f))) rest)
+	      ,(cond
+		  (cpkg name)
+		  (pkg (format "~a.~a" pkg id))
+		  (else name)))))
       
       (define (class-predicate id x)
 	 (let ((o (gensym 'obj))
@@ -838,7 +864,7 @@
 		,(make-private-sexp 'instanceof id o))))
 
       (define (jigloo file x)
-	 (with-trace 'module "jigloo"
+	 (with-trace 'module5 "jigloo"
 	    (trace-item "file=" file)
 	    (let ((path (if (file-name-absolute? file)
 			    file
@@ -882,11 +908,18 @@
 	  (java-parser clause (-> mod id) '|.|))
 	 ((or (class ?ident . ?rest)
 	      (abstract-class ?ident . ?rest))
-	  (multiple-value-bind (cpkg name id)
+	  (multiple-value-bind (cpkg name id super)
 	     (parse-class5-ident ident)
-	     (let ((clazz (class5->class4 (car clause) cpkg name id rest))
+	     (let ((clazz (class5->class4 clause cpkg name id super rest))
 		   (pred (class-predicate id clause)))
-		(trace-item "clazz=" clazz)
+		(trace-item "ident=" ident)
+		(trace-item "id=" id)
+		(trace-item "super=" super)
+		(trace-item "name=" name)
+		(trace-item "class5="
+		   (if (>fx (length clazz) 5)
+		       (append (take clazz 5) '("..."))
+		       clazz))
 		(let ((jklazz (java-parser clazz (-> mod id) '|.|)))
 		   (declare-java-type! jklazz mod clause))
 		(with-access::Module mod (body)
@@ -901,6 +934,7 @@
 	  (error/loc mod "Illegal extern \"java\" module clause" clause x))))
    
    (with-trace 'jvm "module5-extern-plugin-java"
+      (trace-item "module=" (-> mod id))
       (when (memq 'java (backend-foreign-clause-support (the-backend)))
 	 (match-case (cddr x)
 	    (((package (and (? symbol?) ?pkg)) . ?other-clauses)
@@ -1099,9 +1133,9 @@
    (define (define-expander x e)
       (match-case x
 	 ((?def ?proto ?body)
-	  (localize `(,def ,proto ,(e body e)) x))
+	  (localize x `(,def ,proto ,(e body e))))
 	 ((?def ?proto . ?body)
-	  (localize `(,def ,proto ,@(map (lambda (x) (e x e)) body)) x))
+	  (localize x `(,def ,proto ,@(map (lambda (x) (e x e)) body))))
 	 (else
 	  (error "expand" "Illegal form" x))))
    
@@ -1113,11 +1147,3 @@
    (install-module5-expander xenv '$class-allocate #f expand-class-allocate)
    
    xenv)
-
-;*---------------------------------------------------------------------*/
-;*    localize ...                                                     */
-;*---------------------------------------------------------------------*/
-(define (localize nx x)
-   (if (epair? x)
-       (econs (car nx) (cdr nx) (cer x))
-       nx))

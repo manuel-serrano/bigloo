@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Fri Feb 13 08:08:41 2026 (serrano)                */
+;*    Last change :  Sun Feb 15 06:20:59 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -349,14 +349,15 @@
 		(*lib-mode*
 		 old)
 		((eq? module (global-module old))
-		 (warning-rebind-global! old src)
+		 (unless (eq? import 'foreign)
+		    (warning-rebind-global! old src))
 		 old)
 		(else
 		 (error-rebind-global! old src)))
 	     (let* ((qtn (cond
 			    ((not (backend-qualified-types (the-backend))) "")
 			    ((eq? import 'eval) "eval")
-			    (else (class-qualified-type-name-get module))))
+			    (else (class-qualified-type-name-get/def module))))
 		    (new (instantiate::global
 			    (type *_*)
 			    (module module)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Type/tenv.scm          */
+;*    serrano/bigloo/5.0a/comptime/Type/tenv.scm                       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Fri Feb 13 12:23:49 2026 (serrano)                */
+;*    Last change :  Sun Feb 15 08:43:11 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -54,6 +54,7 @@
 	    (find-type::type ::symbol)
 	    (find-type/expr::type ::symbol ::obj)
 	    (find-type/location::type ::symbol loc)
+	    (rebind-type!::type ::symbol ::type)
 	    (use-type!::type ::symbol loc)
 	    (use-type/import-loc!::type ::symbol loc loci)
 	    (use-foreign-type!::type ::symbol loc)
@@ -338,6 +339,12 @@
 		new)))))
 
 ;*---------------------------------------------------------------------*/
+;*    rebind-type! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (rebind-type!::type id::symbol old::type)
+   (hashtable-put! *Tenv* id old))
+
+;*---------------------------------------------------------------------*/
 ;*    use-type! ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (use-type!::type id::symbol loc)
@@ -506,40 +513,17 @@
 (define (check-types)
    (let ((ut (uninitialized-types)))
       (when (pair? ut)
-	 (error *module*
-	    "Undefined used types"
-	    (map shape ut))
-	 (newline (current-error-port))
-	 (fprint (current-error-port)
-	    (length ut)
-	    (if (>fx (length ut) 1)
-		" types used but not defined."
-		" type used but not defined."))
-	 (let loop ((ut ut))
-	    (cond
-	       ((null? ut)
-		(fprint (current-error-port) "Stopping compilation...")
-		(compiler-exit 56))
-	       ((type? (car ut))
-		(with-exception-handler
-		   error-notify
-		   (lambda ()
-		      (if (type-import-location (car ut))
-			  (user-error/location (type-import-location (car ut))
-			     *module*
-			     "Undefined type used in export clause"
-			     (shape (car ut)))
-			  (user-error/location (type-location (car ut))
-			     *module*
-			     "Undefined used type"
-			     (shape (car ut))))))
-		(loop (cdr ut)))
-	       (else
-		(with-exception-handler
-		   error-notify
-		   (lambda ()
-		      (error *module* "Undefined type" (shape (car ut)))))))))
-      (set! *types-already-checked?* #t)))
+	 (for-each (lambda (t)
+		      (let ((loc (type-location t)))
+			 (if log
+			     (user-error/location loc *module*
+				"Undefined type" (shape t)
+				#unspecified)
+			     (user-error *module*
+				"Undefined type" (shape t)
+				#unspecified))))
+	    ut)
+	 (set! *types-already-checked?* #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sub-type? ...                                                    */

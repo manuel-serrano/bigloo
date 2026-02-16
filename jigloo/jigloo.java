@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan  1 17:24:51 2001                          */
-/*    Last change :  Sat Feb 14 07:39:18 2026 (serrano)                */
+/*    Last change :  Sun Feb 15 07:00:45 2026 (serrano)                */
 /*    Copyright   :  2001-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Automatic Bigloo Java module clause generation (by               */
@@ -22,6 +22,7 @@ import java.lang.reflect.*;
 /*    jigloo ...                                                       */
 /*---------------------------------------------------------------------*/
 public abstract class jigloo {
+   static String target = null;
    static PrintStream out = System.out;
    static int verbose = 0;
    static boolean directives = true;
@@ -398,18 +399,17 @@ public abstract class jigloo {
       }
    }
 
-   static void jigloo_file(String filename) {
+   static void jigloo_file(String filename) throws Exception {
       verbose(1, "  [" + filename + "]");
       try {
 	 jigloo_class(Class.forName(new String(filename)));
-      } catch(Throwable e) {
+      } catch (Throwable e) {
 	 System.err.println("\n*** ERROR:jigloo:Cannot open class -- " + filename);
-	 e.printStackTrace();
-	 System.exit(1);
+	 throw e;
       }
    }
 
-   static String[] parse_args(String argv[]) {
+   static String[] parse_args(String argv[]) throws Exception {
       String[] file = new String[argv.length];
       String[] res;
       int w = 0;
@@ -445,11 +445,12 @@ public abstract class jigloo {
 	    } else {
 	       if (argv[i].equals("-o")) { 
 		  try {
-		     out = new PrintStream(new FileOutputStream(argv[i + 1]));
+		     target = argv[i + 1];
+		     out = new PrintStream(new FileOutputStream(target));
 		     i++;
 		  } catch(java.io.FileNotFoundException e) {
 		     System.err.println("*** ERROR:jigloo:Cannot open file for output -- " + argv[i + 1]);
-		     System.exit(1);
+		     throw (e);
 		  } 
 	       } else {
 		  if (argv[i].equals("-v"))
@@ -478,27 +479,39 @@ public abstract class jigloo {
 		    
 
    public static void main(String argv[]) {
-      String file[] = parse_args(argv);
-
-      if (directives) {
-	 if (moduleVersion == 4) {
-	    emit("(directives\n  (java\n");
-	 } else {
-	    emit("(extern \"java\"\n");
+      try {
+	 String file[] = parse_args(argv);
+	 
+	 if (directives) {
+	    if (moduleVersion == 4) {
+	       emit("(directives\n  (java\n");
+	    } else {
+	       emit("(extern \"java\"\n");
+	    }
 	 }
-      }
 
-      for (int i = 0; i < file.length; i++) 
-	 jigloo_file(file[i]);
+	 for (int i = 0; i < file.length; i++) 
+	    jigloo_file(file[i]);
 
-      jigloo_emit_arrays();
+	 jigloo_emit_arrays();
 
-      if (directives) {
-	 if (moduleVersion == 4) {
-	    emit("))\n");
-	 } else {
-	    emit(")\n");
+	 if (directives) {
+	    if (moduleVersion == 4) {
+	       emit("))\n");
+	    } else {
+	       emit(")\n");
+	    }
 	 }
+      } catch (Throwable e) {
+	 e.printStackTrace();
+
+	 if (target != null) {
+	    File f = new File(target);
+	    if (f.exists()) {
+	       f.delete();
+	    }
+	 }
+	 System.exit(1);
       }
    }
 }

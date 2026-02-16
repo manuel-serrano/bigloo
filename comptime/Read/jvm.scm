@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Sat Feb 14 08:55:42 2026 (serrano)                */
+;*    Last change :  Sun Feb 15 06:20:27 2026 (serrano)                */
 ;*    Copyright   :  1993-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
@@ -23,6 +23,7 @@
    (export (module-package-get ::symbol #!optional warn)
 	   (module-package-set! ::symbol ::symbol)
 	   (class-qualified-type-name-get::bstring ::symbol)
+	   (class-qualified-type-name-get/def::bstring ::symbol)
 	   (class-qualified-type-name-set! ::symbol ::bstring)
            (module-jvm-packages::obj)
 	   (jvm-class-sans-directory::bstring ::bstring)
@@ -82,11 +83,32 @@
 ;*    class-qualified-type-name-get ...                                */
 ;*---------------------------------------------------------------------*/
 (define (class-qualified-type-name-get::bstring clazz::symbol)
-   (let ((name (symbol->string! clazz)))
-      (let ((qtn (hashtable-get *class-jvm-qualified-types* name)))
-	 (unless (string? qtn)
-	    (error "java" "Cannot find class qualified-type name" clazz))
-	 qtn)))
+   (with-trace 'jvm "class-qualified-type-name-get"
+      (trace-item "clazz=" clazz)
+      (let ((name (symbol->string! clazz)))
+	 (let ((qtn (hashtable-get *class-jvm-qualified-types* name)))
+	    (unless (string? qtn)
+	       (error "java" "Cannot find qualified-type name" clazz))
+	    qtn))))
+
+;*---------------------------------------------------------------------*/
+;*    class-qualified-type-name-get/def ...                            */
+;*---------------------------------------------------------------------*/
+(define (class-qualified-type-name-get/def::bstring clazz::symbol)
+   (with-trace 'jvm "class-qualified-type-name-get"
+      (trace-item "clazz=" clazz)
+      (let ((name (symbol->string! clazz)))
+	 (let ((qtn (hashtable-get *class-jvm-qualified-types* name)))
+	    (cond
+	       ((string? qtn)
+		qtn)
+	       ((string? *dest*)
+		(let ((qtn (string-replace *dest* #\/ #\.)))
+		   (class-qualified-type-name-set! clazz qtn)
+		   qtn))
+	       (else
+		(class-qualified-type-name-set! clazz "a")
+		"a"))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-qualified-type-name-set! ...                               */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Tue Feb 10 16:23:27 2026 (serrano)                */
+;*    Last change :  Sun Feb 15 19:40:02 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -201,7 +201,7 @@
 (define (declare-java-class-type!::type class-id super jname package src)
    (with-trace 'jvm "declare-java-class-type!"
       (trace-item "class-id=" class-id)
-      (trace-item "super=" (shape super))
+      (trace-item "super=" (shape super) " " (typeof super))
       (let ((super (cond
 		      ((eq? (type-id super) class-id) #f)
 		      ((eq? super *_*) #f)

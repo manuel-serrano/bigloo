@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Wed Feb  4 13:10:27 2026 (serrano)                */
+;*    Last change :  Mon Feb 16 10:35:18 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class predicate                                      */
@@ -112,39 +112,44 @@
 ;*    profiling.                                                       */
 ;*---------------------------------------------------------------------*/
 (define (gen-java-class-pred! class::jclass src-def mclause)
-   (let* ((id      (jclass-id class))
-	  (id?     (symbol-append id '?))
-	  (pred-id (symbol-append id '?::bool))
-	  (obj     (mark-symbol-non-user! (gensym 'obj)))
-	  (super   (jclass-its-super class)))
-      (define (predicate-body)
-	 (make-private-sexp 'instanceof id obj))
-      ;; the pragma declaration
-      (produce-module-clause!
-       `(,mclause (inline ,pred-id ::obj)))
-      (produce-module-clause!
-       `(pragma (,id? (predicate-of ,(jclass-id class)) no-cfa-top (effect))))
-      ;; we produce the predicat definitions...
-      (list
-       (epairify* `(,(if (inline-pred?) 'define-inline 'define)
-		    (,pred-id ,obj)
-		    ,(predicate-body))
-		  src-def))))
+   (with-trace 'jvm "gen-java-class-pred!"
+      (trace-item "class=" (class-id class))
+      (let* ((id      (jclass-id class))
+	     (id?     (symbol-append id '?))
+	     (pred-id (symbol-append id '?::bool))
+	     (obj     (mark-symbol-non-user! (gensym 'obj)))
+	     (super   (jclass-its-super class)))
+	 (define (predicate-body)
+	    (make-private-sexp 'instanceof id obj))
+	 ;; the pragma declaration
+	 (produce-module-clause!
+	    `(,mclause (inline ,pred-id ::obj)))
+	 (produce-module-clause!
+	    `(pragma (,id? (predicate-of ,(jclass-id class)) no-cfa-top (effect))))
+	 ;; we produce the predicat definitions...
+	 (list
+	    (epairify* `(,(if (inline-pred?) 'define-inline 'define)
+			 (,pred-id ,obj)
+			 ,(predicate-body))
+	       src-def)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    import-java-class-pred! ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (import-java-class-pred! class::jclass src-def module)
-   (if (inline-pred?)
-       ;; if we compile for optimization, we inline class predicate
-       (gen-java-class-pred! class src-def
-	  (if (eq? module *module*) 'export 'static))
-       ;; othwerise, we simply import it
-       (let* ((id      (jclass-id class))
-	      (id?     (symbol-append id '?))
-	      (pred-id (symbol-append id '?::bool))
-	      (super   (jclass-its-super class)))
-	  ;; the module declaration
-	  (import-parser module `(,pred-id ::obj) #f)
-	  ;; and we return no code in that particular situation
-	  '())))
+   (with-trace 'jvm "import-class-pred!"
+      (trace-item "class=" (jclass-id class))
+      (trace-item "module=" module)
+      (trace-item "inline-pred?=" (inline-pred?))
+      (if (inline-pred?)
+	  ;; if we compile for optimization, we inline class predicate
+	  (gen-java-class-pred! class src-def 'static)
+	  ;; otherwise, we simply import it
+	  (let* ((id (jclass-id class))
+		 (id? (symbol-append id '?))
+		 (pred-id (symbol-append id '?::bool))
+		 (super (jclass-its-super class)))
+	     ;; the module declaration
+	     (import-parser module `(,pred-id ::obj) #f)
+	     ;; and we return no code in that particular situation
+	     '()))))

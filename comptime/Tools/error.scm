@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Tools/error.scm        */
+;*    serrano/bigloo/5.0a/comptime/Tools/error.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Sun Sep 14 14:38:47 2025 (serrano)                */
-;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Feb 15 07:25:40 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
 ;*=====================================================================*/
@@ -121,7 +121,7 @@
 (define (user-error proc mes obj . continue)
    (if (pair? continue)
        (user-error/location (find-location obj) proc mes (shape obj)
-			    (car continue))
+	  (car continue))
        (user-error/location (find-location obj) proc mes (shape obj))))
 
 ;*---------------------------------------------------------------------*/
@@ -148,8 +148,8 @@
 		(objprn (let ((port (open-output-string)))
 			   (display-circle obj port)
 			   (let ((string (close-output-port port)))
-			      (if (>fx (string-length string) 45)
-				  (string-append (substring string 0 44) " ...")
+			      (if (>fx (string-length string) 65)
+				  (string-append (substring string 0 64) " ...")
 				  string)))))
 	    (bind-exit (skip)
 	       (with-exception-handler

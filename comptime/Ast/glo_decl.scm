@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Thu Feb 12 18:45:57 2026 (serrano)                */
+;*    Last change :  Sun Feb 15 06:09:17 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -68,94 +68,91 @@
 ;*    declare-global-dsssl-sfun! ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (declare-global-dsssl-sfun! env opts keys id alias args module scope class srce srci)
-   (trace (ast 3) "declare-global-dsssl-sfun!: "
-      (shape id) " opts=" (shape opts) " keys=" (shape keys) #\newline)
-   (let* ((arity (global-arity args))
-	  (export? (or (not (eq? scope 'static))
-		       (and (memq 'bdb (backend-debug-support (the-backend)))
-			    (>=fx *bdb-debug* 3))))
-	  (scope (if (and (eq? scope 'static)
-			  (memq 'bdb (backend-debug-support (the-backend)))
-			  (>=fx *bdb-debug* 3))
-		     'export
-		     scope))
-	  (loc (find-location srce))
-	  (loci (find-location/loc srci loc))
-	  (args (if (pair? keys)
-		    ;; keys are sorted so we have to adjust the actual
-		    ;; argument list
-		    (let loop ((args args))
-		       (cond
-			  ((null? args)
-			   '())
-			  ((eq? (car args) #!key)
-			   (cons (car args)
-			      (append 
-				 keys
-				 (loop (drop (cdr args) (length keys))))))
-			  (else
-			   (cons (car args) (loop (cdr args))))))
-		    args))
-	  (args-type (let loop ((args args)
-				(res '()))
-			(cond
-			   ((null? args)
-			    (reverse! res))
-			   ((dsssl-named-constant? (car args))
-			    (loop (cdr args) res))
-			   (else
-			    (let* ((a (if (symbol? (car args))
-					  (car args)
-					  (caar args)))
-				   (ty (let ((t (type-of-id/import-location
-						   a loc loci)))
-					  (if (and (eq? t *_*) export?)
-					      *obj*
-					      t))))
-			       (loop (cdr args) (cons ty res)))))))
-	  (args-name (let loop ((args args)
-				(res '()))
-			(cond
-			   ((null? args)
-			    (reverse! res))
-			   ((dsssl-named-constant? (car args))
-			    (loop (cdr args) res))
-			   (else
-			    (let* ((a (if (symbol? (car args))
-					  (car args)
-					  (caar args)))
-				   (vid (fast-id-of-id a loc))
-				   (var (if (eq? vid '||)
-					    (gensym)
-					    vid)))
-			       (loop (cdr args) (cons var res)))))))
-	  (id-type (parse-id/import-location id loc loci))
-	  (type-res (cdr id-type))
-	  (id (car id-type))
-	  (sfun (instantiate::sfun
-		   (arity arity)
-		   (args args-type)
-		   (args-name args-name)
-		   (class class)
-		   (optionals opts)
-		   (keys keys)))
-	  (old (find-global env id))
-	  (global (bind-global! env id alias module sfun scope srce)))
-      (trace (ast 3) "*** declare-global-dsssl-sfun!: srce: " srce #\Newline)
-      (trace (ast 3) "*** declare-global-dsssl-sfun!: loc: " (find-location srce)
-	 #\Newline)
-      (trace (ast 4) "   declare-global-dsssl-sfun!: (instantiate "
-	 (shape arity) " " (shape args-type) " " (shape class) #\Newline)
-      ;; we set the type of the function
-      (cond
-	 ((not (eq? type-res *_*))
-	  (global-type-set! global type-res))
-	 (export?
-	  (global-type-set! global *obj*))
-	 (else
-	  (global-type-set! global type-res)))
-      ;; and we return the global
-      global))
+   (with-trace 'ast "declare-global-dsssl-sfun!"
+      (trace-item "id=" id)
+      (trace-item "opts=" (shape opts))
+      (trace-item "keys=" (shape keys))
+      (let* ((arity (global-arity args))
+	     (export? (or (not (eq? scope 'static))
+			  (and (memq 'bdb (backend-debug-support (the-backend)))
+			       (>=fx *bdb-debug* 3))))
+	     (scope (if (and (eq? scope 'static)
+			     (memq 'bdb (backend-debug-support (the-backend)))
+			     (>=fx *bdb-debug* 3))
+			'export
+			scope))
+	     (loc (find-location srce))
+	     (loci (find-location/loc srci loc))
+	     (args (if (pair? keys)
+		       ;; keys are sorted so we have to adjust the actual
+		       ;; argument list
+		       (let loop ((args args))
+			  (cond
+			     ((null? args)
+			      '())
+			     ((eq? (car args) #!key)
+			      (cons (car args)
+				 (append 
+				    keys
+				    (loop (drop (cdr args) (length keys))))))
+			     (else
+			      (cons (car args) (loop (cdr args))))))
+		       args))
+	     (args-type (let loop ((args args)
+				   (res '()))
+			   (cond
+			      ((null? args)
+			       (reverse! res))
+			      ((dsssl-named-constant? (car args))
+			       (loop (cdr args) res))
+			      (else
+			       (let* ((a (if (symbol? (car args))
+					     (car args)
+					     (caar args)))
+				      (ty (let ((t (type-of-id/import-location
+						      a loc loci)))
+					     (if (and (eq? t *_*) export?)
+						 *obj*
+						 t))))
+				  (loop (cdr args) (cons ty res)))))))
+	     (args-name (let loop ((args args)
+				   (res '()))
+			   (cond
+			      ((null? args)
+			       (reverse! res))
+			      ((dsssl-named-constant? (car args))
+			       (loop (cdr args) res))
+			      (else
+			       (let* ((a (if (symbol? (car args))
+					     (car args)
+					     (caar args)))
+				      (vid (fast-id-of-id a loc))
+				      (var (if (eq? vid '||)
+					       (gensym)
+					       vid)))
+				  (loop (cdr args) (cons var res)))))))
+	     (id-type (parse-id/import-location id loc loci))
+	     (type-res (cdr id-type))
+	     (id (car id-type))
+	     (sfun (instantiate::sfun
+		      (arity arity)
+		      (args args-type)
+		      (args-name args-name)
+		      (class class)
+		      (optionals opts)
+		      (keys keys)))
+	     (old (find-global env id))
+	     (global (bind-global! env id alias module sfun scope srce)))
+	 ;; we set the type of the function
+	 (cond
+	    ((not (eq? type-res *_*))
+	     (global-type-set! global type-res))
+	    (export?
+	     (global-type-set! global *obj*))
+	    (else
+	     (global-type-set! global type-res)))
+	 ;; and we return the global
+	 global)))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-opt-sfun! ...                                     */
@@ -240,11 +237,6 @@
 		      (class class)))
 	     (old (find-global env id))
 	     (global (bind-global! env id alias module sfun scope srce)))
-	 (trace (ast 3) "*** declare-global-sfun!: srce: " srce #\Newline)
-	 (trace (ast 3) "*** declare-global-sfun!: loc: " (find-location srce)
-	    #\Newline)
-	 (trace (ast 4) "   declare-global-sfun!: (instantiate "
-	    (shape arity) " " (shape args-type) " " (shape class) #\Newline)
 	 ;; we set the type of the function
 	 (cond
 	    ((not (eq? type-res *_*))

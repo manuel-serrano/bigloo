@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Tue Feb 10 16:20:21 2026 (serrano)                */
+;*    Last change :  Mon Feb 16 10:31:22 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class accessors                                      */
@@ -86,11 +86,9 @@
       (cond
 	 ((and (type? super) (not (jclass? super)))
 	  (user-error (type-id super)
-		      (string-append "super of `"
-				     (symbol->string class-id)
-				     "' is not a class")
-		      src
-		      type)
+	     (format "super of `~a' is not a class" class-id)
+	     src
+	     type)
 	  #f)
 	 (else
 	  #t))))
@@ -106,9 +104,9 @@
    ;; we pre-parse the class slot and we return the data structure
    ;; describing the result of this parsing
    (let ((cslots (make-java-class-slots class
-					slots
-					(jclass-its-super class)
-					src-def)))
+		    slots
+		    (jclass-its-super class)
+		    src-def)))
       ;; and we store the slots
       (jclass-slots-set! class cslots)))
 

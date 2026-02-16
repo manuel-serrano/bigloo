@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Tools/location.scm     */
+;*    serrano/bigloo/5.0a/comptime/Tools/location.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:00:44 1996                          */
-;*    Last change :  Fri Oct 10 06:32:44 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Feb 15 07:28:42 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The location managment                                           */
 ;*=====================================================================*/
@@ -21,7 +21,8 @@
 	    (location-full-fname::bstring ::obj)
 	    (location-shape ::obj ::obj)
 	    (dump-location ::obj ::obj)
-	    (location-skip-forward ::obj ::int)))
+	    (location-skip-forward ::obj ::int)
+	    (localize ::obj ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *file-lines-table* ...                                           */
@@ -124,3 +125,25 @@
 	     (npos (+fx (location-pos loc) skip)))
 	  (location fname npos (pos->line fname npos)))
        loc))
+
+;*---------------------------------------------------------------------*/
+;*    localize ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (localize old new)
+   
+   (define (epairify old new)
+      (cond
+	 ((not (pair? new))
+	  new)
+	 ((epair? new)
+	  new)
+	 ((epair? old)
+	  (econs (epairify (car old) (car new))
+	     (epairify (cdr old) (cdr new) )
+	     (cer old)))
+	 (else
+	  new)))
+   
+   (if (and (epair? old) (pair? new))
+       (epairify old new)
+       new))
