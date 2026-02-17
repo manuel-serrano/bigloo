@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Tue Feb 17 08:39:27 2026 (serrano)                */
+;*    Last change :  Tue Feb 17 09:17:26 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -439,7 +439,7 @@
    (define (make-ident base id)
       (let* ((b (symbol->string! base))
 	     (j (string-index-right b #\$)))
-	 (if (and j (>fx j 0))
+	 (if (and #f j (>fx j 0))
 	     (let ((baseid (string-replace b #\$ #\.)))
 		(string->symbol (format "~a~a~a" baseid separator id)))
 	     (symbol-append base separator id))))
@@ -549,6 +549,10 @@
 	 (define (declare-java-virtual-method jmet)
 	    (with-trace 'jvm "declare-java-virtual-method"
 	       (with-access::jmethod jmet (id args jname src modifiers)
+		  (trace-item "id=" id)
+		  (trace-item "modifiers=" modifiers)
+		  (trace-item "jname=" jname)
+		  (trace-item "args=" (map shape args))
 		  (if (and (not (jconstructor? jmet))
 			   (not (and (pair? args) (is-class? (car args) jklass))))
 		      (java-error src "Illegal first argument of virtual method")

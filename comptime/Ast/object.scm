@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Tue Feb 17 08:39:59 2026 (serrano)                */
+;*    Last change :  Tue Feb 17 09:01:36 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -50,7 +50,7 @@
    (export (field-access::pair ::symbol ::symbol #!optional write-allow)
 	   (field-ref->node::node ::obj ::pair stack ::obj ::symbol ::obj)
 	   (field-set->node::node ::obj ::obj ::pair stack ::obj ::symbol ::obj)
-	   (field-call->node::obj ::obj ::symbol ::pair ::pair-nil stack ::obj ::symbol ::obj)))
+	   (field-call->node::obj ::obj ::symbol ::pair-nil ::pair stack ::obj ::symbol ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    __bigloo__ ...                                                   */
