@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Feb 12 09:15:25 2026 (serrano)                */
+;*    Last change :  Tue Feb 17 07:56:14 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -117,10 +117,10 @@
    (trace (ast 3) " site: " site)
    (trace (ast 2) #\Newline)
    (match-case exp
-;*--- () --------------------------------------------------------------*/
+      ;; illegal empty list
       (()
        (error-sexp->node "Illegal `()' expression" exp loc genv))
-;*--- node ------------------------------------------------------------*/
+      ;; already built node
       ((? node?)
        (when (extern? exp)
 	  (with-access::extern exp (expr* loc)
@@ -129,7 +129,7 @@
 	  (with-access::app exp (args loc)
 	     (map! (lambda (e) (sexp->node e stack loc 'value genv)) args)))
        exp)
-;*--- atom ------------------------------------------------------------*/
+      ;; atom
       ((atom ?atom)
        (cond
 	  ((or (local? atom) (global? atom))
@@ -158,7 +158,7 @@
 		  (sexp->node `(eval ',atom) stack loc site genv))
 		 (else
 		  (variable->node global loc site genv)))))))
-;*--- application -----------------------------------------------------*/
+      ;; call
       (((and (? symbol?)
 	     (? (lambda (x)
 		   (or (find-local x stack)
@@ -170,7 +170,7 @@
        ;; apply is a special case. unless overriden it must be handled
        ;; as a special form by the compiler.
        (call->node exp stack loc site genv))
-;*--- qualified global variable ---------------------------------------*/
+      ;; qualified names
       ((@ . ?-)
        (let ((loc (find-location/loc exp loc)))
 	  (match-case exp
@@ -186,12 +186,12 @@
 		     (variable->node global loc site genv)))))
 	     (else
 	      (error-sexp->node "Illegal `@' expression" exp loc genv)))))
-;*--- -> --------------------------------------------------------------*/
+      ;; field ref
       ((-> . ?l)
        (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	   (field-ref->node l exp stack loc site genv)
 	   (error-sexp->node "Illegal ->" exp loc genv)))
-;*--- quote -----------------------------------------------------------*/
+      ;; quote
       ((quote . ?-)
        (match-case exp
           ((?- ?value)
@@ -225,7 +225,7 @@
 		  (error-sexp->node "Illegal `quote' expression" exp loc genv)))))
           (else
 	   (error-sexp->node "Illegal `quote' expression" exp loc genv))))
-;*--- begin -----------------------------------------------------------*/
+      ;; begin
       ((begin)
        (sexp->node #unspecified stack (find-location/loc exp loc) site genv))
       ((begin . ?body)
@@ -235,7 +235,7 @@
 	     (loc loc)
 	     (type *_*)
 	     (nodes nodes))))
-;*--- if --------------------------------------------------------------*/
+      ;; if
       ((and ((or if (? if-sym?)) ?test #t #f)
 	    (? (lambda (x) (eq? site 'test))))
        (sexp->node test stack loc site genv))
@@ -285,7 +285,7 @@
            (sexp->node exp stack loc site genv))
           (else
 	   (error-sexp->node "Illegal `if' form" exp loc genv))))
-;*--- set! ------------------------------------------------------------*/
+      ;; set!
       ((set! (-> . ?l) ?val)
        (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	   (field-set->node l val exp stack loc site genv)
@@ -320,7 +320,7 @@
           (else
 	   (error-sexp->node
 	      "Illegal `set!' form" exp (find-location/loc exp loc) genv))))
-;*--- define ----------------------------------------------------------*/
+      ;; define
       ((define . ?-)
        ;; define is very similar to `set!' except that is it not
        ;; considered as a mutation of the defined variable.
@@ -345,7 +345,7 @@
           (else
 	   (error-sexp->node
 	      "Illegal `define' form" exp (find-location/loc exp loc) genv))))
-;*--- let & letrec ----------------------------------------------------*/
+      ;; let & letrec
       (($let ?bindings . ?expr)
        (let ((exp (let->node exp stack loc 'value genv)))
 	  (if (isa? exp let-var)
@@ -354,12 +354,10 @@
 		 exp)
 	      (error-sexp->node
 		 "illegal `$let' expression, does not produce a let" exp loc genv))))
-;*--- a pattern to improve pattern-matching compilation ---------------*/
       ((((or let (? let-sym?) letrec labels (? labels-sym?)) ?- ?body) . ?args)
        (let* ((let-part (car exp))
 	      (nexp `(,(car let-part) ,(cadr let-part) (,body ,@args))))
 	  (sexp->node nexp stack loc site genv)))
-;*--- let & letrec ----------------------------------------------------*/
       (((or let (? let-sym?) letrec) ?bindings . ?expr)
        (when (and (pair? bindings) (null? (cdr bindings))
 		  (and (pair? expr) (null? (cdr expr))))
@@ -380,10 +378,10 @@
        (let->node exp stack loc 'value genv))
       ((letrec* . ?-)
        (letrec*->node exp stack loc 'value genv))
-;*--- labels ----------------------------------------------------------*/
+      ;; labels
       (((or labels (? labels-sym?)) . ?-)
        (labels->node exp stack loc 'value genv))
-;*--- the direct lambda applications (see match-case ...) -------------*/
+      ;; direct lambda applications
       (((lambda (?var) (and ?body (?- . ?-) (? cast-sexp?))) (atom ?arg))
        (instantiate::cast
 	  (loc loc)
@@ -439,7 +437,7 @@
 				    (lambda (obj proc msg)
 				       (user-error/location loc obj proc msg))))))
 	  (let->node nexp stack loc 'value genv)))
-;*--- the direct if applications --------------------------------------*/
+      ;; if applications
       (((if ?test
 	    (and (? proc-or-lambda?) ?proc1)
 	    (and (? proc-or-lambda?) ?proc2))
@@ -455,21 +453,18 @@
 	      (nexp `(,(let-sym) ,(map list tmps args)
 				 (if ,test (,proc1 ,@tmps) (,proc2 ,@tmps)))))
 	  (let->node nexp stack (find-location/loc exp loc) site genv)))
-;*--- lambda ----------------------------------------------------------*/
+      ;; lambda
       ((lambda . ?-)
        (lambda->node exp stack loc site "L" genv))
-;*--- pragma ----------------------------------------------------------*/
+      ;; pragma
       ((pragma . ?-)
        (pragma/type->node #f #f *unspec* exp stack loc site genv))
-;*--- pragma/effect ---------------------------------------------------*/
       ((pragma/effect ?effect . ?rest)
        (pragma/type->node #f
 	  (parse-effect effect)
 	  *unspec* `(pragma ,@rest) stack loc site genv))
-;*--- free-pragma -----------------------------------------------------*/
       ((free-pragma . ?-)
        (pragma/type->node #t #f *unspec* exp stack loc site genv))
-;*--- static-pragma ---------------------------------------------------*/
       ((static-pragma . ?-)
        (if (not (and (null? stack) (eq? site 'value)))
 	   (error-sexp->node "Illegal `static-pragma' expression" exp loc genv)
@@ -477,18 +472,17 @@
 	      (add-static-pragma!
 		 (pragma/type->node #t #f *unspec* exp stack loc site genv))
 	      (sexp->node #unspecified stack loc site genv))))
-;*--- pragma/effect ---------------------------------------------------*/
       ((free-pragma/effect ?effect . ?rest)
        (pragma/type->node #t
 	  (parse-effect effect)
 	  *unspec* `(pragma ,@rest) stack loc site genv))
-;*--- cast-null -------------------------------------------------------*/
+      ;; cast-null
       ((cast-null ?type)
        (instantiate::cast-null
 	  (c-format "")
 	  (loc (find-location/loc exp loc))
 	  (type (find-type type))))
-;*--- failure ---------------------------------------------------------*/
+      ;; failure
       ((failure . ?-)
        (match-case exp
           ((?- ?proc ?msg ?obj)
@@ -511,7 +505,7 @@
           (else
 	   (error-sexp->node
 	      "Illegal `failure' form" exp (find-location/loc exp loc) genv))))
-;*--- case ------------------------------------------------------------*/
+      ;; case
       ((case . ?-)
        ;; former versions of the compiler used to make side effect
        ;; one the list that hold the clauses. This is a bad idea.
@@ -554,27 +548,29 @@
           (else
 	   (error-sexp->node
 	      "Illegal `case' form" exp (find-location/loc exp loc) genv))))
-;*--- set-exit --------------------------------------------------------*/
+      ;; exits
       ((set-exit . ?-)
        (set-exit->node exp stack loc site genv))
-;*--- jump-exit -------------------------------------------------------*/
       ((jump-exit . ?-)
        (jump-exit->node exp stack loc site genv))
-;*--- apply -----------------------------------------------------------*/
+      ;; apply
       ((apply ?- ?-)
        (applycation->node exp stack loc site genv))
-;*--- synchronize -----------------------------------------------------*/
+      ;; synchronize
       ((synchronize ?mutex :prelock ?prelock . ?body)
        (synchronize->node exp mutex prelock body stack (find-location/loc exp loc) site genv))
       ((synchronize ?mutex . ?body)
        (synchronize->node exp mutex ''() body stack (find-location/loc exp loc) site genv))
-;*--- private ---------------------------------------------------------*/
+      ;; private
       ((#unspecified)
        (error-sexp->node
 	  "Illegal `application' form" exp (find-location/loc exp loc) genv))
       ((? private-sexp?)
        (private-node exp stack loc site genv))
-;*--- app -------------------------------------------------------------*/
+      ;; calls
+      (((-> ?e (and ?f (? symbol?))) . ?args)
+       (or (field-call->node e f args exp stack loc site genv)
+	   (call->node exp stack loc site genv)))
       (else
        ;; this expression can be a function call or a typed pragma
        ;; form. We first check to see if it is a pragma. If it is not
@@ -620,7 +616,7 @@
 	  (loc loc)
 	  (type (strict-node-type *_* (variable-type v)))
 	  (variable v))))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    call->node ...                                                   */
 ;*---------------------------------------------------------------------*/

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/object.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/object.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Mon Oct 20 13:58:10 2025 (serrano)                */
+;*    Last change :  Tue Feb 17 08:01:44 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -49,7 +49,8 @@
    
    (export (field-access::pair ::symbol ::symbol #!optional write-allow)
 	   (field-ref->node::node ::obj ::pair stack ::obj ::symbol ::obj)
-	   (field-set->node::node ::obj ::obj ::pair stack ::obj ::symbol ::obj)))
+	   (field-set->node::node ::obj ::obj ::pair stack ::obj ::symbol ::obj)
+	   (field-call->node::obj ::obj ::symbol ::pair ::pair stack ::obj ::symbol ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    __bigloo__ ...                                                   */
@@ -168,3 +169,34 @@
        (let ((priv (make-class-set! (slot-class-owner slot) slot obj val)))
           ;; see MAKE-FIELD-REF for the remark about (SLOT-CLASS-OWNER SLOT)
           (private-node priv stack loc site genv)))))
+
+;*---------------------------------------------------------------------*/
+;*    field-call->node ...                                             */
+;*---------------------------------------------------------------------*/
+(define (field-call->node e field args x stack loc site genv)
+   
+   (define (find-method ty::jclass id)
+      (with-access::jclass ty (methods its-super)
+	 (or (find (lambda (m) (eq? m field)) methods)
+	     (and its-super (find-method its-super id)))))
+   
+   (let* ((ne (sexp->node e stack loc site genv))
+	  (ty (get-type ne #t)))
+      (cond
+	 ((not (or (tclass? ty) (jclass? ty) (wclass? ty)))
+	  (error-sexp->node "Static type not a class" x loc genv))
+	 ((jclass? ty)
+	  (with-access::jclass ty (id slots)
+	     (if (find-method ty id)
+		 (let* ((m (format "~a.~a" (jclass-id ty) field))
+			(nx `(,(string->symbol m) ,ne ,@args)))
+		    (localize x
+		       (sexp->node nx stack loc site genv)))
+		 (error-sexp->node
+		    (format "Class ~a has no such virutal method \"~a\""
+		       id field)
+		    x loc genv))))
+	 (else
+	  #f))))
+
+   

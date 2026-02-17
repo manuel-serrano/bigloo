@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Object/class.scm                    */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Object/class.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Mon Feb 16 12:31:04 2026 (serrano)                */
+;*    Last change :  Tue Feb 17 08:33:02 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -65,7 +65,9 @@
 	       ;; the slots of the class
 	       (slots (default #unspecified))
 	       ;; package
-	       (package::bstring read-only (default "")))
+	       (package::bstring read-only (default ""))
+	       ;; the list of methods name (for implementing ((-> v m) ...)
+	       (methods::pair-nil (default '())))
 
 	    (wide-class wclass::type
 	       ;; the plain class that uses this wide chunk
