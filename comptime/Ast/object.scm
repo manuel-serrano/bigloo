@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Tue Feb 17 08:01:44 2026 (serrano)                */
+;*    Last change :  Tue Feb 17 08:39:59 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -50,7 +50,7 @@
    (export (field-access::pair ::symbol ::symbol #!optional write-allow)
 	   (field-ref->node::node ::obj ::pair stack ::obj ::symbol ::obj)
 	   (field-set->node::node ::obj ::obj ::pair stack ::obj ::symbol ::obj)
-	   (field-call->node::obj ::obj ::symbol ::pair ::pair stack ::obj ::symbol ::obj)))
+	   (field-call->node::obj ::obj ::symbol ::pair ::pair-nil stack ::obj ::symbol ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    __bigloo__ ...                                                   */
@@ -175,10 +175,11 @@
 ;*---------------------------------------------------------------------*/
 (define (field-call->node e field args x stack loc site genv)
    
-   (define (find-method ty::jclass id)
-      (with-access::jclass ty (methods its-super)
-	 (or (find (lambda (m) (eq? m field)) methods)
-	     (and its-super (find-method its-super id)))))
+   (define (find-method ty::jclass field)
+      (let ((id (string->symbol (format "~a.~a" (type-id ty) field))))
+	 (with-access::jclass ty (methods its-super)
+	    (or (find (lambda (m) (eq? m id)) methods)
+		(and its-super (find-method its-super id))))))
    
    (let* ((ne (sexp->node e stack loc site genv))
 	  (ty (get-type ne #t)))
@@ -186,16 +187,15 @@
 	 ((not (or (tclass? ty) (jclass? ty) (wclass? ty)))
 	  (error-sexp->node "Static type not a class" x loc genv))
 	 ((jclass? ty)
-	  (with-access::jclass ty (id slots)
-	     (if (find-method ty id)
-		 (let* ((m (format "~a.~a" (jclass-id ty) field))
-			(nx `(,(string->symbol m) ,ne ,@args)))
-		    (localize x
-		       (sexp->node nx stack loc site genv)))
-		 (error-sexp->node
-		    (format "Class ~a has no such virutal method \"~a\""
-		       id field)
-		    x loc genv))))
+	  (with-access::jclass ty (id)
+	     (let ((m (find-method ty field)))
+		(if m
+		    (let ((nx (localize x `(,m ,ne ,@args))))
+		       (sexp->node nx stack loc site genv))
+		    (error-sexp->node
+		       (format "Class ~a has no such virtual method \"~a\""
+			  id field)
+		       x loc genv)))))
 	 (else
 	  #f))))
 

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/java.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/java.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Mon Feb 16 13:38:29 2026 (serrano)                */
+;*    Last change :  Tue Feb 17 08:39:27 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -649,6 +649,16 @@
 	    ;; create the class holder
 	    ;; and create a type for this class
 	    (let ((jclass (declare-java-class-type! jid super jname package src)))
+	       ;; bind the method names for the expansion of the
+	       ;; ((-> v f) ...) method call syntax (see Ast/object.scm)
+	       (with-access::jclass jclass (methods)
+		  (set! methods
+		     (filter-map (lambda (m)
+				    (with-access::jmethod m (id modifiers)
+				       (unless (memq 'static modifiers)
+					  (fast-id-of-id id loc))))
+			(with-access::jklass jklass (methods)
+			   methods))))
 	       ;; both registration are needed for the SawJvm backend
 	       (register-java-class! jid jname)
 	       (when (>fx (string-length package) 0)
