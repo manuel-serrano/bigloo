@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan  2 10:58:27 2001                          */
-;*    Last change :  Fri Feb 13 13:45:13 2026 (serrano)                */
+;*    Last change :  Wed Feb 18 07:37:47 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The JVM array type managment. I have tried to reuse as much as   */
@@ -97,6 +97,7 @@
 	     (id-ref (symbol-append id '-ref))
 	     (tid-ref (make-typed-ident id-ref item-type-id))
 	     (id-set! (symbol-append id '-set!)))
+	 (trace-item "id-ref=" id-ref " " tid-ref)
 	 
 	 ;; the coercers
 	 (define (mk-id->obj)

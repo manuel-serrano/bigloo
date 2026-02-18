@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Feb 16 13:44:33 2026 (serrano)                */
+;*    Last change :  Wed Feb 18 11:38:20 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -55,6 +55,7 @@
 	    module_eval
 	    module_java
 	    module_foreign
+	    module_class
 	    expand_eps
 	    expand_install
 	    init_main
@@ -666,7 +667,7 @@
 	 ;; foreign unit
 	 (let ((u (foreign-finalizer)))
 	    (when (pair? u) (set! units (cons (car u) units))))
-	 
+
 	 ;; check if all types are defined
 	 (profile ctype (check-types))
 	 
@@ -696,7 +697,7 @@
 	    ;; handle pragma declarations
 	    (module5-resolve-pragma! mod genv)
 
-	    ;; java classes predicate
+	    ;; java classes predicate and constructors
 	    (module5-extern-plugin-java-finalizer mod)
 
 	    ;; check if inlined functions used by the backend

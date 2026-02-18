@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Object/creator.scm          */
+;*    serrano/bigloo/5.0a/comptime/Object/creator.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Fri Nov 25 15:28:15 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Feb 18 09:53:08 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class constructors                                   */
 ;*    -------------------------------------------------------------    */
@@ -78,12 +78,14 @@
 ;*    gen-java-class-constructors ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (gen-java-class-constructors class constrs src-def)
+   
    (define (gen-one-constructor constr)
+      (trace-item "constr=" (shape constr))
       (match-case constr
 	 ((?ident . ?args-type)
 	  ;; if we have reached that point, it means that the class
 	  ;; declaration has alreay been enterily parsed so there is no need
-	  ;; now to make any user correctness check
+	  ;; for user correctness checks
 	  (let* ((jid (jclass-id class))
 		 (loc (find-location constrs))
 		 (cid (fast-id-of-id ident loc))
@@ -107,4 +109,6 @@
 		 (mod `(,scope (,tid ,@args-type))))
 	     (produce-module-clause! mod)
 	     (epairify* def constr)))))
-   (map gen-one-constructor constrs))
+
+   (with-trace 'jvm "gen-java-class-constructors"
+      (map gen-one-constructor constrs)))

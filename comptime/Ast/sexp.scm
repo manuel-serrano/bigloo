@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/sexp.scm           */
+;*    serrano/bigloo/5.0a/comptime/Ast/sexp.scm                        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Tue Feb 17 07:56:14 2026 (serrano)                */
+;*    Last change :  Wed Feb 18 08:30:01 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -667,6 +667,17 @@
 			      site genv)))
 		       (else
 			(error-sexp->node "Illegal lambda" exp loc genv))))
+;* 		   ((cast)                                             */
+;* 		    (match-case exp                                    */
+;* 		       ((?- ?arg)                                      */
+;* 			(instantiate::cast                             */
+;* 			   (type type)                                 */
+;* 			   (arg (sexp->node arg stack loc site genv)))))) */
+;* 		   ((cast-null)                                        */
+;* 		    (instantiate::cast-null                            */
+;* 		       (c-format "")                                   */
+;* 		       (loc (find-location/loc exp loc))               */
+;* 		       (type (find-type type))))                       */
 		   (else
 		    (application->node exp stack loc site genv))))
 	     (application->node exp stack loc site genv)))))

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/java.scm        */
+;*    serrano/bigloo/5.0a/comptime/Module/java.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Tue Feb 17 09:17:26 2026 (serrano)                */
+;*    Last change :  Wed Feb 18 09:40:37 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -63,7 +63,7 @@
 	    ;; object-module to be imported in too many places.
 	    (heap-add-jclass! jclass)
 	    (parse-java-clause ::symbol ::pair)
-	    (java-parser ::pair ::symbol ::symbol)
+	    (java-parser ::obj ::symbol ::symbol)
 	    (java-declare-array j::pair id::symbol of::symbol ::symbol))
    (static  (class jfield
 	       (src::pair read-only)
@@ -179,6 +179,23 @@
 ;*    to create associated Bigloo types.                               */
 ;*---------------------------------------------------------------------*/
 (define (java-finalizer)
+
+   (define (jklass-ctors k::jklass)
+      (with-access::jklass k (id idd loc constructors)
+	 (map (lambda (ctor)
+		 (let* ((cid (string->symbol (format "~a.~a" idd (car ctor))))
+			(tid (make-typed-ident cid idd))
+			(args (map (lambda (a) (gensym 'a)) (cdr ctor)))
+			(targs (map (lambda (a t) (symbol-append a t))
+				  args (cdr ctor))))
+		    `(define-inline (,tid ,@targs)
+			,(apply make-private-sexp 'new id
+			    `',(map (lambda (a)
+				       (type-id (type-of-id a loc)))
+				  (cdr ctor))
+			    args))))
+	    constructors)))
+
    (with-trace 'jvm "java-finalizer"
       ;; First, we check for the foreign class. If defined but bound (i.e.,
       ;; we have seen fields or methods but not the declaration of the
@@ -236,7 +253,9 @@
 	 ;; bind all the undeclared field types (automatic class declaration)
 	 (let ((r (append
 		     (append-map auto-declare-jklass-klass-types *jklasses*)
-		     (filter-map auto-declare-jarray-klass-types *jarrays*))))
+		     (filter-map auto-declare-jarray-klass-types *jarrays*)
+		     (append-map jklass-ctors *jklasses*))))
+		     
 	    ;; cleanup
 	    (set! *jexported* '())
 	    (set! *jklasses* '())
@@ -444,65 +463,74 @@
 		(string->symbol (format "~a~a~a" baseid separator id)))
 	     (symbol-append base separator id))))
    
-   (match-case component
-      ((field . ?rest)
-       (match-case (reverse rest)
-	  (((and (? string?) ?jname) (and (? symbol?) ?id) . ?mod)
-	   (if (not (modifier-list? mod))
-	       (java-error component "Illegal Java field (wrong modifiers)")
-	       (with-access::jklass jklass (fields idd)
-		  (let ((jfield (instantiate::jfield
-				   (src component)
-				   (id id)
-				   (qid (if (eq? idd 'foreign)
-					    id
-					    (make-ident idd id)))
-				   (jname jname)
-				   (modifiers mod))))
-		     (set! fields (cons jfield fields))))))
-	  (else
-	   (java-error component "Illegal Java field"))))
-      ((method . ?rest)
-       (match-case (reverse rest)
-	  (((and (? string?) ?jname)
-	    (and (? arg-list?) ?args)
-	    (and (? symbol?) ?id)
-	    . ?mod)
-	   (if (not (modifier-list? mod))
-	       (java-error component "Illegal Java method (wrong modifiers)")
-	       (with-access::jklass jklass (methods idd abstract?)
-		  (let* ((mod (if abstract? (cons 'abstract mod) mod))
-			 (jmet (instantiate::jmethod
-				  (src component)
-				  (id (if (eq? idd 'foreign)
-					  id
-					  (make-ident idd id)))
-				  (args args)
-				  (jname jname)
-				  (modifiers mod))))
-		     (set! methods (cons jmet methods))))))
-	  (else
-	   (java-error component "Illegal Java method"))))
-      ((or (constructor public (and (? symbol?) ?id) (and (? arg-list?) ?args))
-	   (constructor (and (? symbol?) ?id) (and (? arg-list?) ?args)))
-       (with-access::jklass jklass (constructors methods idd)
-	  (let ((jconstr (instantiate::jconstructor
-			    (src component)
-			    (id (make-typed-ident
-				   (symbol-append '%% (make-ident idd id))
-				   idd))
-			    (args args)
-			    (jname "<init>"))))
-	     (set! methods (cons jconstr methods))
-	     (set! constructors (cons (cons id args) constructors)))))
-      (else
-       (if (pair? component)
-	   (java-error component "Illegal class field")
-	   (java-error j (string-append "Illegal class field `"
-					(with-output-to-string
-					   (lambda ()
-					      (write component)))
-					"'"))))))
+   (with-trace 'jvm "java-declare-component"
+      (match-case component
+	 ((field . ?rest)
+	  (match-case (reverse rest)
+	     (((and (? string?) ?jname) (and (? symbol?) ?id) . ?mod)
+	      (if (not (modifier-list? mod))
+		  (java-error component "Illegal Java field (wrong modifiers)")
+		  (with-access::jklass jklass (fields idd)
+		     (let* ((qid (if (eq? idd 'foreign)
+				     id
+				     (make-ident idd id)))
+			    (jfield (instantiate::jfield
+				       (src component)
+				       (id id)
+				       (qid qid)
+				       (jname jname)
+				       (modifiers mod))))
+			(trace-item "field id=" id " qid=" qid)
+			(set! fields (cons jfield fields))))))
+	     (else
+	      (java-error component "Illegal Java field"))))
+	 ((method . ?rest)
+	  (match-case (reverse rest)
+	     (((and (? string?) ?jname)
+	       (and (? arg-list?) ?args)
+	       (and (? symbol?) ?id)
+	       . ?mod)
+	      (if (not (modifier-list? mod))
+		  (java-error component "Illegal Java method (wrong modifiers)")
+		  (with-access::jklass jklass (methods idd abstract?)
+		     (let* ((mod (if abstract? (cons 'abstract mod) mod))
+			    (id (if (eq? idd 'foreign)
+				    id
+				    (make-ident idd id)))
+			    (jmet (instantiate::jmethod
+				     (src component)
+				     (id id)
+				     (args args)
+				     (jname jname)
+				     (modifiers mod))))
+			(trace-item "method id=" id)
+			(trace-item "args=" args)
+			(set! methods (cons jmet methods))))))
+	     (else
+	      (java-error component "Illegal Java method"))))
+	 ((or (constructor public (and (? symbol?) ?id) (and (? arg-list?) ?args))
+	      (constructor (and (? symbol?) ?id) (and (? arg-list?) ?args)))
+	  (with-access::jklass jklass (constructors methods idd)
+	     (let* ((cid (make-typed-ident
+			   (make-ident idd id)
+			   idd))
+		    (jconstr (instantiate::jconstructor
+				(src component)
+				(id cid)
+				(args args)
+				(jname "<init>"))))
+		(trace-item "constructor id=" id " cid=" cid)
+		(trace-item "args=" args)
+		(set! methods (cons jconstr methods))
+		(set! constructors (cons (cons id args) constructors)))))
+	 (else
+	  (if (pair? component)
+	      (java-error component "Illegal class field")
+	      (java-error j (string-append "Illegal class field `"
+			       (with-output-to-string
+				  (lambda ()
+				     (write component)))
+			       "'")))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    jklass->jclass ...                                               */
@@ -531,7 +559,7 @@
 ;*---------------------------------------------------------------------*/
 (define (declare-jklass-properties! jklass::jklass jclass::jclass)
    (with-trace 'jvm "declare-jklass-properties!"
-      (with-access::jklass jklass (id jname constructors methods fields src loc)
+      (with-access::jklass jklass (id jname methods fields src loc)
 	 
 	 (define (is-class? a jklass)
 	    (with-access::jklass jklass (id idd)

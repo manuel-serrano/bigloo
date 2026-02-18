@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Object/tools.scm            */
+;*    serrano/bigloo/5.0a/comptime/Object/tools.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:52:24 1996                          */
-;*    Last change :  Thu May  4 07:47:17 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Feb 18 09:11:18 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for builing the class accessors                       */
 ;*=====================================================================*/
@@ -14,6 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module object_tools
    (import  tools_misc
+	    tools_shape
 	    backend_backend
 	    type_type
 	    type_env
@@ -120,13 +121,34 @@
 ;*    find-class-slot ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (find-class-slot klass id)
-   (let loop ((slots (tclass-slots klass)))
-      (cond
-	 ((null? slots)
-	  (when (tclass-widening klass)
-	     (find-class-slot (tclass-its-super klass) id)))
-	 ((eq? (slot-id (car slots)) id)
-	  (car slots))
-	 (else
-	  (loop (cdr slots))))))
+   
+   (define (find-tclass-slot klass id)
+      (let loop ((slots (tclass-slots klass)))
+	 (cond
+	    ((null? slots)
+	     (when (tclass-widening klass)
+		(find-tclass-slot (tclass-its-super klass) id)))
+	    ((eq? (slot-id (car slots)) id)
+	     (car slots))
+	    (else
+	     (loop (cdr slots))))))
+
+   (define (find-jclass-slot klass id)
+      (let loop ((slots (jclass-slots klass)))
+	 (cond
+	    ((not (pair? slots))
+	     (when (jclass-its-super klass)
+		(find-jclass-slot (jclass-its-super klass) id)))
+	    ((eq? (slot-id (car slots)) id)
+	     (car slots))
+	    (else
+	     (loop (cdr slots))))))
+
+   (with-trace 'object "find-class-slot"
+      (trace-item "klass=" (shape klass) " " (typeof klass))
+      (trace-item "id=" id)
+      (if (isa? klass jclass)
+	  (find-jclass-slot klass id)
+	  (find-tclass-slot klass id))))
+   
    
