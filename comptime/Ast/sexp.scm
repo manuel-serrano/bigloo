@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Wed Feb 18 08:30:01 2026 (serrano)                */
+;*    Last change :  Wed Feb 18 16:49:16 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -667,17 +667,27 @@
 			      site genv)))
 		       (else
 			(error-sexp->node "Illegal lambda" exp loc genv))))
-;* 		   ((cast)                                             */
-;* 		    (match-case exp                                    */
-;* 		       ((?- ?arg)                                      */
-;* 			(instantiate::cast                             */
-;* 			   (type type)                                 */
-;* 			   (arg (sexp->node arg stack loc site genv)))))) */
-;* 		   ((cast-null)                                        */
-;* 		    (instantiate::cast-null                            */
-;* 		       (c-format "")                                   */
-;* 		       (loc (find-location/loc exp loc))               */
-;* 		       (type (find-type type))))                       */
+		   ((cast)
+		    (if (eq? caller 'cast)
+			(application->node exp stack loc site genv)
+			(match-case exp
+			   ((?- ?arg)
+			    (instantiate::cast
+			       (type type)
+			       (arg (sexp->node arg stack loc site genv))))
+			   (else
+			    (application->node exp stack loc site genv)))))
+		   ((cast-null)
+		    (if (eq? caller 'cast-null)
+			(application->node exp stack loc site genv)
+			(match-case exp
+			   ((?-)
+			    (instantiate::cast-null
+			       (c-format "")
+			       (loc (find-location/loc exp loc))
+			       (type (find-type type))))
+			   (else
+			    (application->node exp stack loc site genv)))))
 		   (else
 		    (application->node exp stack loc site genv))))
 	     (application->node exp stack loc site genv)))))

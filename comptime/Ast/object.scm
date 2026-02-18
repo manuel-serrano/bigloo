@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/object.scm         */
+;*    serrano/bigloo/5.0a/comptime/Ast/object.scm                      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Tue Feb 17 09:01:36 2026 (serrano)                */
+;*    Last change :  Wed Feb 18 16:51:42 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -95,7 +95,7 @@
 		    (let ((slot (find-class-slot klass (car slots))))
 		       (if (not slot)
 			   (error-sexp->node
-			      (format "Class \"~a\" has not field \"~a\""
+			      (format "Class \"~a\" has no field named \"~a\""
 				 (type-id klass) (car slots) genv)
 			      exp loc genv)
 			   (let ((node (make-field-ref slot node stack loc site genv)))
