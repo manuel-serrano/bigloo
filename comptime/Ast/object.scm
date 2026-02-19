@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Ast/object.scm                      */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/object.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Wed Feb 18 16:51:42 2026 (serrano)                */
+;*    Last change :  Thu Feb 19 07:38:16 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -78,70 +78,88 @@
 ;*    field-ref->node ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (field-ref->node l exp stack loc site genv)
+   
+   (define (field-ref type node slots)
+      (let loop ((node node)
+		 (klass type)
+		 (slots slots))
+	 (cond
+	    ((null? slots)
+	     node)
+	    ((not (or (tclass? klass) (jclass? klass) (wclass? klass)))
+	     (error-sexp->node "Static type not a class" exp loc genv))
+	    (else
+	     (let ((slot (find-class-slot klass (car slots))))
+		(if (not slot)
+		    (error-sexp->node
+		       (format "Class \"~a\" has no field named \"~a\""
+			  (type-id klass) (car slots) genv)
+		       exp loc genv)
+		    (let ((node (make-field-ref slot node stack loc site genv)))
+		       (loop node (slot-type slot) (cdr slots)))))))))
+   
    (let* ((l2 (source->field l))
-	  (var (sexp->node (car l2) stack loc site genv)))
+	  (node (sexp->node (car l2) stack loc site genv)))
       (cond
-	 ((var? var)
-	  (with-access::variable (var-variable var) (type)
-	     (let loop ((node var)
-			(klass type)
-			(slots (cdr l2)))
-		(cond
-		   ((null? slots)
-		    node)
-		   ((not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-		    (error-sexp->node "Static type not a class" exp loc genv))
-		   (else
-		    (let ((slot (find-class-slot klass (car slots))))
-		       (if (not slot)
-			   (error-sexp->node
-			      (format "Class \"~a\" has no field named \"~a\""
-				 (type-id klass) (car slots) genv)
-			      exp loc genv)
-			   (let ((node (make-field-ref slot node stack loc site genv)))
-			      (loop node (slot-type slot) (cdr slots))))))))))
+	 ((cast? node)
+	  (with-access::cast node (arg type)
+	     (if (var? arg)
+		 (field-ref type node (cdr l2))
+		 (error-sexp->node "Illegal ->" exp loc genv))))
+	 ((var? node)
+	  (with-access::variable (var-variable node) (type)
+	     (field-ref type node (cdr l2))))
 	 ((= *nb-error-on-pass* 0)
 	  (error-sexp->node "Unbound variable" exp loc genv))
 	 (else
-	  var))))
+	  node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    field-set->node ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (field-set->node l val exp stack loc site genv)
+
+   (define (field-set type node slots)
+      (let loop ((node node)
+		 (klass type)
+		 (slots slots))
+	 (if (not (or (tclass? klass) (jclass? klass) (wclass? klass)))
+	     (error-sexp->node "Static type not a class" exp loc genv)
+	     (let ((slot (find-class-slot klass (car slots))))
+		(cond
+		   ((not slot)
+		    (error-sexp->node
+		       (format "Class \"~a\" has no field \"~a\""
+			  (type-id klass) (car slots))
+		       exp loc genv))
+		   ((null? (cdr slots))
+		    (if (and (slot-read-only? slot)
+			     (not (eq? (car l) __bigloo_wallow__)))
+			(error-sexp->node
+			   (format "Field read-only \"~a\"" slot)
+			   exp
+			   loc genv)
+			(make-field-set! slot node val stack loc site genv)))
+		   (else
+		    (let ((node (make-field-ref slot node stack loc site genv)))
+		       (loop node (slot-type slot) (cdr slots)))))))))
+   
    (let* ((l2 (source->field l))
-	  (var (sexp->node (car l2) stack loc site genv))
+	  (node (sexp->node (car l2) stack loc site genv))
 	  (val (sexp->node val stack loc site genv)))
       (cond
-	 ((var? var)
-	  (with-access::variable (var-variable var) (type)
-	     (let loop ((node var)
-			(klass type)
-			(slots (cdr l2)))
-		(if (not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-		    (error-sexp->node "Static type not a class" exp loc genv)
-		    (let ((slot (find-class-slot klass (car slots))))
-		       (cond
-			  ((not slot)
-			   (error-sexp->node
-			      (format "Class \"~a\" has no field \"~a\""
-				 (type-id klass) (car slots))
-			      exp loc genv))
-			  ((null? (cdr slots))
-			   (if (and (slot-read-only? slot)
-				    (not (eq? (car l) __bigloo_wallow__)))
-			       (error-sexp->node
-				  (format "Field read-only \"~a\"" (cadr l2))
-				  `(set! ,(car l2) ,(cadr l2))
-				  loc genv)
-			       (make-field-set! slot node val stack loc site genv)))
-			  (else
-			   (let ((node (make-field-ref slot node stack loc site genv)))
-			      (loop node (slot-type slot) (cdr slots))))))))))
+	 ((cast? node)
+	  (with-access::cast node (arg type)
+	     (if (var? arg)
+		 (field-set type node (cdr l2))
+		 (error-sexp->node "Illegal ->" exp loc genv))))
+	 ((var? node)
+	  (with-access::variable (var-variable node) (type)
+	     (field-set type node (cdr l2))))
 	 ((= *nb-error-on-pass* 0)
 	  (error-sexp->node "Unbound variable" exp loc genv))
 	 (else
-	  var))))
+	  node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-field-ref ...                                               */

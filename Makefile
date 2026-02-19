@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Jan 29 08:22:09 2026 (serrano)                */
+#*    Last change :  Thu Feb 19 07:47:37 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -403,7 +403,9 @@ fullbootstrap-sans-log:
 	./configure --bootconfig $(CONFIGUREOPTS)
 	$(MAKE) fullbootstrap-sans-configure
 	$(MAKE) -C recette -i touchall
-	$(MAKE) -C recette && (cd recette && ./recette$(EXE_SUFFIX))
+	$(MAKE) -C recette \
+            && (cd recette && ./recette$(EXE_SUFFIX)) \
+            && (cd recette && ./recette5$(EXE_SUFFIX))
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) -C recette jvm && (cd recette && ./recette-jvm$(SCRIPTEXTENSION)); \
         fi

@@ -38,7 +38,7 @@
 
 (define (ex11h)
    (let ((o1::V1 (instantiate::V1 (c 10)))
-	 (o2::V2 (instantiate::V2)))
+	 (o2::V2 (instantiate::V2 (c 10))))
       (and (=fx (-> o1 a) 10)
 	   (=fx (-> o1 b) 2)
 	   (=fx (-> o1 c) -1)

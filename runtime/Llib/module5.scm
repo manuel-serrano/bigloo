@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Feb 12 08:34:41 2026 (serrano)                */
+;*    Last change :  Thu Feb 19 07:58:53 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -2093,6 +2093,27 @@
 ;*    define-class-expander ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (define-class-expander mod::Module xenv)
+
+   (define (append-properties sp cp)
+      ;; Same as append but for virtual property. If a virtual property
+      ;; is overriden by the cp, use that version instead of the one
+      ;; of the super class
+      (let loop ((sp sp)
+		 (cp cp))
+	 (cond
+	    ((null? sp)
+	     cp)
+	    ((prop-info-virtual? (car sp))
+	     (let* ((s (car sp))
+		    (p (find (lambda (p)
+			       (eq? (prop-info-id p) (prop-info-id s)))
+			  cp)))
+		(if p
+		    (cons p (loop (cdr sp) (remq p cp)))
+		    (cons (car sp) (loop (cdr sp) cp)))))
+	    (else
+	     (cons (car sp) (loop (cdr sp) cp))))))
+   
    (lambda (x e)
       (let ((ci (parse-class x mod)))
 	 ;; bind the class in the module
@@ -2111,7 +2132,7 @@
 		   (begin
 		      (class-info-super-set! ci si)
 		      (class-info-properties-set! ci
-			 (append (class-info-properties si)
+			 (append-properties (class-info-properties si)
 			    (class-info-properties ci)))
 		      (cond
 			 ((class-info-ctor ci)

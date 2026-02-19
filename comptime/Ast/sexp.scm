@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Ast/sexp.scm                        */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/sexp.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Wed Feb 18 16:49:16 2026 (serrano)                */
+;*    Last change :  Thu Feb 19 07:43:19 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -187,9 +187,9 @@
 	     (else
 	      (error-sexp->node "Illegal `@' expression" exp loc genv)))))
       ;; field ref
-      ((-> . ?l)
-       (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
-	   (field-ref->node l exp stack loc site genv)
+      ((-> ?e . ?fields)
+       (if (and (list? fields) (every symbol? fields))
+	   (field-ref->node (cdr exp) exp stack loc site genv)
 	   (error-sexp->node "Illegal ->" exp loc genv)))
       ;; quote
       ((quote . ?-)
@@ -286,9 +286,9 @@
           (else
 	   (error-sexp->node "Illegal `if' form" exp loc genv))))
       ;; set!
-      ((set! (-> . ?l) ?val)
-       (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
-	   (field-set->node l val exp stack loc site genv)
+      ((set! (-> ?e . ?fields) ?val)
+       (if (and (list? fields) (every symbol? fields))
+	   (field-set->node (cdr (cadr exp)) val exp stack loc site genv)
 	   (error-sexp->node "Illegal ->" exp loc genv)))
       ((set! . ?-)
        (match-case exp

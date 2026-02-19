@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Sat Feb  7 06:36:24 2026 (serrano)                */
+;*    Last change :  Thu Feb 19 08:15:23 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -89,35 +89,35 @@
 	    ((eq? id super) (values id #f))
 	    (else (values id super)))))
 
-   (define (class-depth-and-virtual-length k)
+   (define (class-depth-and-virtual-properties k)
       (if (not k)
-	  (values 0 0)
+	  (values 0 '())
 	  (let ((ci (module5-get-class mod k)))
 	     (if (not ci)
 		 (error/loc "parse-class"
 		    "Cannot find super class" x x)
 		 (values (+fx 1 (class-info-depth ci))
-		    (class-info-vlength ci))))))
+		    (class-info-vproperties ci))))))
    
    (match-case x
       (((and (? class-kind?) ?kind)  ?ident (?ctor) . ?props)
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
-	  (multiple-value-bind (depth vlength)
-	     (class-depth-and-virtual-length super)
-	     (multiple-value-bind (props vlength)
-		(parse-properties props id vlength)
+	  (multiple-value-bind (depth vproperties)
+	     (class-depth-and-virtual-properties super)
+	     (multiple-value-bind (props vprops)
+		(parse-properties props id vproperties)
 		(class-info id depth super kind ctor
-		   props #unspecified x #f vlength)))))
+		   props #unspecified x #f vprops)))))
       (((and (? class-kind?) ?kind) ?ident . ?props)
        (multiple-value-bind (id super)
 	  (parse-class-ident ident x)
-	  (multiple-value-bind (depth vlength)
-	     (class-depth-and-virtual-length super)
-	     (multiple-value-bind (props vlength)
-		(parse-properties props id vlength)
+	  (multiple-value-bind (depth vproperties)
+	     (class-depth-and-virtual-properties super)
+	     (multiple-value-bind (props vprops)
+		(parse-properties props id vproperties)
 		(class-info id depth super kind #f
-		   props #unspecified x #f vlength)))))
+		   props #unspecified x #f vprops)))))
       (else
        (error/loc "parse" "Illegal class definition" x x))))
 
@@ -148,13 +148,20 @@
 ;*---------------------------------------------------------------------*/
 ;*    parse-properties ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (parse-properties props klass vindex)
+(define (parse-properties props klass vproperties)
 
    (define (ronly-error pi a)
       (error/loc klass
 	 (format "Abstract property \"~a\" is declared read-only but is given a setter"
 	    (prop-info-id pi))
 	 a a))
+
+
+   (define vindex (length vproperties))
+   (define vprops '())
+
+   (define (find-property id props)
+      (find (lambda (p) (eq? (prop-info-id p) id)) props))
    
    (define (parse-attribute a pi x)
       (match-case a
@@ -169,17 +176,27 @@
 	  (prop-info-get-set! pi get)
 	  (unless (prop-info-virtual? pi)
 	     (prop-info-virtual?-set! pi #t)
-	     (prop-info-vindex-set! pi vindex)
-	     (set! vindex (+fx vindex 1))))
+	     (let ((o (find-property (prop-info-id pi) vproperties)))
+		(if o
+		    (prop-info-vindex-set! pi (prop-info-vindex o))
+		    (begin
+		       (set! vprops (cons pi vprops))
+		       (prop-info-vindex-set! pi vindex)
+		       (set! vindex (+fx vindex 1)))))))
 	 ((set ?set)
 	  (if (prop-info-ronly? pi)
 	      (ronly-error pi a)
 	      (begin
 		 (prop-info-set-set! pi set)
 		 (unless (prop-info-virtual? pi)
-		    (prop-info-vindex-set! pi vindex)
 		    (prop-info-virtual?-set! pi #t)
-		    (set! vindex (+fx vindex 1))))))
+		    (let ((o (find-property (prop-info-id pi) vproperties)))
+		       (if o
+			   (prop-info-vindex-set! pi (prop-info-vindex o))
+			   (begin
+			      (set! vprops (cons pi vprops))
+			      (prop-info-vindex-set! pi vindex)
+			      (set! vindex (+fx vindex 1)))))))))
 	 (else
 	  (error/loc (prop-info-id pi) "Illegal attribute" a x))))
       
@@ -205,7 +222,7 @@
 	  (error/loc klass "Illegal property" p props))))
    
    (let ((props (map (lambda (p) (parse-property p klass)) props)))
-      (values props vindex)))
+      (values props (reverse vprops))))
 
 ;*---------------------------------------------------------------------*/
 ;*    allocate-expand ...                                              */
