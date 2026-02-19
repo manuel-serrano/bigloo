@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Tue Feb 10 09:07:26 2026 (serrano)                */
+;*    Last change :  Thu Feb 19 08:54:56 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -142,19 +142,19 @@
    ;; ->
    (install-module4-expander '->
       (lambda (x e)
-	 (if (every symbol? x)
-	     (match-case x
-		((?- ?v . ?rest)
+	 (match-case x
+	    ((?- ?v . ?rest)
+	     (if (every symbol? rest)
 		 (let ((nv (e v e)))
 		    (match-case nv
 		       ((-> . ?mv)
 			(evepairify `(-> ,@mv ,@rest) x))
 		       (else
 			(set-car! (cdr x) nv)
-			x))))
-		(else
+			x)))
 		 (expand-error "->" "Illegal form" x)))
-	     (expand-error "->" "Illegal form" x))))
+	    (else
+	     (expand-error "->" "Illegal form" x)))))
    ;; quasiquote
    (install-module4-expander 'quasiquote
       (lambda (x e) (e (quasiquotation 1 x) e)))
