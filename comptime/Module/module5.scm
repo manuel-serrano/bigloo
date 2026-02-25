@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/module5.scm                  */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/module5.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Mon Feb 16 13:08:30 2026 (serrano)                */
+;*    Last change :  Tue Feb 24 10:13:56 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -47,7 +47,8 @@
 	   type_env
 	   object_class
 	   object_slots
-	   object_coercion)
+	   object_coercion
+	   foreign_jtype)
 
    (export (module5-expand ::pair-nil)
 	   (module5-import-def ::Module ::Decl)
@@ -958,8 +959,8 @@
    ;; associated with these codes, this cannot mark assignments cannot
    ;; done while the classes are constructed
    (for-each-type! (lambda (t)
-		      (when (isa? t jclass)
-			 (let* ((p (symbol-append (jclass-id t) '?))
+		      (when (or (isa? t jclass) (isa? t jarray))
+			 (let* ((p (symbol-append (type-id t) '?))
 				(g (find-global (get-genv) p)))
 			    (when (isa? g global)
 			       (global-removable-set! g 'coerce)))))))

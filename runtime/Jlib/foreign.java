@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0a/runtime/Jlib/foreign.java                    */
+/*    serrano/prgm/project/bigloo/5.0a/runtime/Jlib/foreign.java       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Wed Feb  4 15:01:52 2026 (serrano)                */
+/*    Last change :  Wed Feb 25 08:25:44 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -4392,6 +4392,7 @@ public final class foreign {
    }
 
    public static Object debug_handler(bexception v, exit tag) {
+      System.err.println("DEBUG_HANDLER " + v);
       if (tag.userp == 0)
       {
 	 // System.err.println("** PROTECT " + v + " " + tag);
@@ -4449,7 +4450,6 @@ public final class foreign {
 	 // abort at once because otherwise the handler will crash too!
 	 err_lock.lock();
 	 try {
-	    System.err.println("*** JVM stack overflow error:");
 	    v.printStackTrace(new stackwriter(System.err, true));
 	 } finally {
 	    err_lock.unlock();
