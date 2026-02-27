@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Wed Feb 25 08:25:44 2026 (serrano)                */
+/*    Last change :  Fri Feb 27 08:28:14 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -4392,14 +4392,11 @@ public final class foreign {
    }
 
    public static Object debug_handler(bexception v, exit tag) {
-      System.err.println("DEBUG_HANDLER " + v);
-      if (tag.userp == 0)
-      {
+      if (tag.userp == 0) {
 	 // System.err.println("** PROTECT " + v + " " + tag);
 	 return v.value;
       }
-      if (v.tag == tag)
-      {
+      if (v.tag == tag) {
 	 // System.err.println("** TAG reached " + v + " " + tag);
 	 return v.value;
       }

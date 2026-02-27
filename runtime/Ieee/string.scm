@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/string.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/string.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Sep  4 11:59:36 2025 (serrano)                */
+;*    Last change :  Fri Feb 27 09:57:02 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -49,7 +49,9 @@
 	    ($string->bstring-len::bstring (str::string len::int) "string_to_bstring_len")
 	    (macro $string-length::long (::bstring) "STRING_LENGTH")
 	    (macro $string-ref::uchar (::bstring ::long) "STRING_REF")
+	    (macro $string-ref-ur::uchar (::bstring ::long) "STRING_REF")
 	    (macro $string-set!::obj (::bstring ::long ::uchar) "STRING_SET")
+	    (macro $string-set-ur!::obj (::bstring ::long ::uchar) "STRING_SET")
 
 	    (macro $memchr::string (::string ::int ::long ::long) "BGL_MEMCHR")
 	    (macro $memchr-zero?::bool (::string) "BGL_MEMCHR_ZERO")
@@ -92,8 +94,10 @@
 	    ($string->bstring-len "~0")
 	    ($string-length "(i64.extend_i32_u (array.len ~0))")
 	    ($string-ref "(array.get_u $bstring ~0 (i32.wrap_i64 ~1))")
+	    ($string-ref-ur "(array.get_u $bstring ~0 (i32.wrap_i64 ~1))")
 	    ;; TODO: maybe move string-set to its own function in the runtime
 	    ($string-set! "(block (result (ref eq)) (array.set $bstring ~0 (i32.wrap_i64 ~1) ~2) (global.get $BUNSPEC))")
+	    ($string-set-ur! "(block (result (ref eq)) (array.set $bstring ~0 (i32.wrap_i64 ~1) ~2) (global.get $BUNSPEC))")
 	    ($string-bound-check? "(i64.lt_u ~0 ~1)")
 	    ($blit-string "(block (result (ref eq)) (array.copy $bstring $bstring ~2 (i32.wrap_i64 ~3) ~0 (i32.wrap_i64 ~1) (i32.wrap_i64 ~4)) (global.get $BUNSPEC))"))
 
@@ -111,7 +115,11 @@
 	       
 	       (method static $string-ref::uchar (::bstring ::long)
 		       "STRING_REF")
+	       (method static $string-ref-ur::uchar (::bstring ::long)
+		       "STRING_REF")
 	       (method static $string-set!::obj (::bstring ::long ::uchar)
+		       "STRING_SET")
+	       (method static $string-set-ur!::obj (::bstring ::long ::uchar)
 		       "STRING_SET")
 	       
 	       (method static $string=?::bool (::bstring ::bstring)
@@ -346,13 +354,13 @@
 ;*    @deffn string-ref-ur@ ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-ref-ur string k)
-   ($string-ref string k))
+   ($string-ref-ur string k))
  
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-set-ur!@ ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-set-ur! string k char)
-   ($string-set! string k char))
+   ($string-set-ur! string k char))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string=?@ ...                                             */

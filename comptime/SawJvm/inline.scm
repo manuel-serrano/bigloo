@@ -207,6 +207,15 @@
    (code! me '(sipush 255))
    (code! me '(iand)) )
 
+;; MS 27 feb 2026
+;* (define-inline-call c-char->integer ; "CHAR_TO_INT"                 */
+;*    (code! me '(sipush 255))                                         */
+;*    (code! me '(iand)))                                              */
+
+;; MS 27 feb 2026
+(define-inline-call-args c-char->integer ; "CHAR_TO_INT"
+   (gen-expr me (car args)) )
+
 (define-inline-call $uchar->char ; "UCHAR_TO_CHAR"
    (code! me '(i2b)) )
 
@@ -429,6 +438,15 @@
    (code! me '(iand)) )
 
 (define-inline-call $string-set! ; "STRING_SET"
+   (code! me '(bastore))
+   'no-value )
+
+(define-inline-call $string-ref-ur ; "STRING_REF"
+   (code! me '(baload))
+   (code! me '(sipush 255))
+   (code! me '(iand)) )
+
+(define-inline-call $string-set-ur! ; "STRING_SET"
    (code! me '(bastore))
    'no-value )
 
