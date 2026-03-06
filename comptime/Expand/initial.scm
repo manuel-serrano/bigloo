@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Expand/initial.scm     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Expand/initial.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Mon Oct 20 09:34:55 2025 (serrano)                */
-;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar  1 14:02:27 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -473,6 +473,8 @@
     'sqrtfl
     (lambda (x::obj e::procedure)
        (match-case x
+	  ((?- (and ?n (? (lambda (n) (and (flonum? n) (>fl n 0.0))))))
+	   (sqrtfl n))
 	  ((?- ?n)
 	   (if *unsafe-range*
 	       `(sqrtfl-ur ,(e n e))

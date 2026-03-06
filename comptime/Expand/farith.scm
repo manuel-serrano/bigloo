@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/farith.scm           */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Expand/farith.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 23 16:05:55 1995                          */
-;*    Last change :  Thu Jun  9 06:49:37 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar  1 14:01:00 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The flonum expanders.                                            */
 ;*=====================================================================*/
