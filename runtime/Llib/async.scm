@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 10 08:40:18 2026                          */
-;*    Last change :  Tue Feb 10 09:38:29 2026 (serrano)                */
+;*    Last change :  Fri Mar  6 22:15:32 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Asynchronous functions                                           */
@@ -66,7 +66,7 @@
 			`(yield ,(e val e)))
 		       (else
 			(e x ne))))))
-	  (ae `(lambda ,args (spawn-async (lambda* () ,@body))) ae)))
+	  (e `(lambda ,args (spawn-async (lambda* () ,@body))) ae)))
       (else
        (error "async" "wrong syntax" x))))
 

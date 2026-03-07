@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/java.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/java.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Wed Feb 18 09:40:37 2026 (serrano)                */
+;*    Last change :  Fri Mar  6 17:52:23 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -184,12 +184,13 @@
       (with-access::jklass k (id idd loc constructors)
 	 (map (lambda (ctor)
 		 (let* ((cid (string->symbol (format "~a.~a" idd (car ctor))))
+			(kid (fast-id-of-id id loc))
 			(tid (make-typed-ident cid idd))
 			(args (map (lambda (a) (gensym 'a)) (cdr ctor)))
 			(targs (map (lambda (a t) (symbol-append a t))
 				  args (cdr ctor))))
 		    `(define-inline (,tid ,@targs)
-			,(apply make-private-sexp 'new id
+			,(apply make-private-sexp 'new kid
 			    `',(map (lambda (a)
 				       (type-id (type-of-id a loc)))
 				  (cdr ctor))

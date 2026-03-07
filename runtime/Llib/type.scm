@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/runtime/Llib/type.scm                        */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/type.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Feb  4 15:00:07 2026 (serrano)                */
+;*    Last change :  Fri Mar  6 17:56:23 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -814,13 +814,20 @@
       
       ;; java specific to be fixed
       (subtype String "char *" (cobj))
+      (coerce String cobj () ())
+      (coerce cobj String () ())
       (coerce obj String ($string?) ($bstring->String))
       (coerce bstring String () ($bstring->String))
       (coerce String bstring () ($String->bstring))
+      
       (subtype CharSequence "char *" (cobj))
+      (coerce CharSequence cobj () ())
+      (coerce cobj CharSequence () ())
       (coerce obj CharSequence ($string?) ($bstring->CharSequence))
       (coerce bstring CharSequence () ($bstring->CharSequence))
       (coerce CharSequence bstring () ($CharSequence->bstring))
+      (coerce String CharSequence () ())
+      
       )
    
    (extern

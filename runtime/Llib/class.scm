@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Thu Feb 19 08:15:23 2026 (serrano)                */
+;*    Last change :  Fri Mar  6 22:02:41 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -327,15 +327,15 @@
 		   (prop-info-get p)
 		   `(lambda (,to) (-> o ,id)))
 	      ;; set
-	      ,@(cond
+	      ,(cond
 		   ((prop-info-ronly? p)
-		    '())
+		    #f)
 		   (virtual?
-		    (list (prop-info-set p)))
+		    (prop-info-set p))
 		   (else
 		    (let ((tv (make-typed-ident 'v ty)))
-		       (list `(lambda (,to ,tv)
-				 (set! (-> o ,id) v))))))
+		       `(lambda (,to ,tv)
+			   (set! (-> o ,id) v)))))
 	      ;; ronly
 	      ,(prop-info-ronly? p)
 	      ;; virtual

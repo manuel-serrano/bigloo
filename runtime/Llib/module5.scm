@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Feb 19 07:58:53 2026 (serrano)                */
+;*    Last change :  Fri Mar  6 21:47:57 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -530,11 +530,11 @@
       (synchronize module-mutex
 	 (trace-item "path=" path
 	    (if (hashtable-get *modules-by-path* path) " [in-mem-cache]" ""))
-	 (if (hashtable-get *modules-by-path* path)
-	     (with-access::Module (hashtable-get *modules-by-path* path) (exports)
-		(trace-item "exports=" (hashtable-map exports
-					  (lambda (k d::Decl)
-					     (cons (-> d id) (-> d xid)))))))
+	 (when (hashtable-get *modules-by-path* path)
+	    (with-access::Module (hashtable-get *modules-by-path* path) (exports)
+	       (trace-item "exports=" (hashtable-map exports
+					 (lambda (k d::Decl)
+					    (cons (-> d id) (-> d xid)))))))
 	 (or (hashtable-get *modules-by-path* path)
 	     (filecache-get path lib-path cache-dir expand parse)
 	     (let ((exprs (call-with-input-file path
