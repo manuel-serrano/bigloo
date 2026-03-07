@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Feb  9 16:19:48 2026                          */
-;*    Last change :  Tue Feb 10 05:38:20 2026 (serrano)                */
+;*    Last change :  Sat Mar  7 10:07:21 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Generators (aka lambda*)                                         */
@@ -225,7 +225,7 @@
 			     (cons (cons lp k) (append frame stack))
 			     (lambda (x) `(,k ,x)))))
 		(let ((bdg (car bdgs))
-		      (tmp (gensym 't)))
+		      (tmp (gensym 'l)))
 		   (if (symbol? bdg)
 		       `(let (,tmp)
 			   ,(loop (cdr bdgs)
@@ -254,6 +254,25 @@
 			  `(let ((,tmp ,x))
 			      ,(loop (cdr bdgs)
 				  (cons (list (car bdg) tmp) tmps))))))))))
+
+   (define (cps-letrec bdgs body stack ck)
+      (let ((tmps (map (lambda (bdg) (gensym (car bdg))) bdgs)))
+	 `(letrec ,(map (lambda (bdg) (list (car bdg) #unspecified)) bdgs)
+	     ,(cps-let 'let 
+		 (map (lambda (tmp bdg) (cons tmp (cdr bdg))) tmps bdgs)
+		 `(begin
+		     ,@(map (lambda (tmp bdg) `(set! ,(car bdg) ,tmp))
+			  tmps bdgs)
+		     ,body)
+		 stack ck))))
+
+   (define (cps-letrec* bdgs body stack ck)
+      `(letrec ,(map (lambda (bdg) (list (car bdg) #unspecified)) bdgs)
+	  ,(cps g
+	      `(begin
+		  ,@(map (lambda (bdg) `(set! (car bdg) ,@(cdr bdg))) bdgs)
+		  ,body)
+	      stack ck)))
    
    (define (cps-labels bdgs body stack ck)
       (let ((frame (args->frame (map car bdgs))))
@@ -323,14 +342,14 @@
 	  (normalize-let (cps-let 'let bdgs body stack ck)))
 	 ((let* ?bdgs . ?body)
 	  (normalize-let (cps-let 'let* bdgs body stack ck)))
-;*       ((letrec ((?var (lambda (and (? list?) ?args) . ?body))) (?var . ?vals)) */
-;*        (if (= (length args) (length vals))                          */
-;* 	   (normalize-loop (cps-loop var (map list args vals) body))   */
-;* 	   (normalize-let (cps-let 'letrec (cadr x) body))))           */
+	 ((letrec ((?var (lambda (and (? list?) ?args) . ?body))) (?var . ?vals))
+	  (if (= (length args) (length vals))
+	      (normalize-loop (cps-loop var (map list args vals) body stack ck))
+	      (cps-letrec (cadr x) body stack ck)))
 	 ((letrec ?bdgs . ?body)
-	  (normalize-let (cps-let 'letrec (cadr x) body stack ck)))
+	  (cps-letrec (cadr x) body stack ck))
 	 ((letrec* ?bdgs . ?body)
-	  (normalize-let (cps-let 'letrec* bdgs body stack ck)))
+	  (cps-letrec* (cadr x) body stack ck))
 	 ((labels ?bdgs . ?body)
 	  (cps-labels bdgs body stack ck))
 	 ((case ?e . ?clauses)
