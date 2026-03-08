@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Foreign/ctype.scm           */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Foreign/ctype.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:57:02 1994                          */
-;*    Last change :  Mon Nov 14 16:59:34 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar  8 19:55:46 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C type managment                                             */
 ;*=====================================================================*/
@@ -97,9 +97,19 @@
 (define (declare-c-type! ct-def ct-id ct-exp ct-name)
    (cond
       ((type-exists? ct-id)
-       (unless *allow-type-redefinition*
-	  (warning "declare-c-type!" "Type redefinition -- " ct-id))
-       #unspecified)
+       (let ((o (find-type ct-id)))
+	  (if (or *allow-type-redefinition*
+		  (and (symbol? ct-exp) (isa? o calias))
+		  (and (pair? ct-exp)
+		       (case (car ct-exp)
+			  ((enum) (isa? o cenum))
+			  ((opaque) (isa? o copaque))
+			  ((function) (isa? o cfunction))
+			  ((pointer array) (isa? o cptr))
+			  ((struct union) (isa? o cstruct))
+			  ((struct* union*) (isa? o cstruct*)))))
+	      o
+	      (warning "declare-c-type!" "Type redefinition -- " ct-id))))
       ((symbol? ct-exp)
        (declare-c-alias! ct-id ct-exp ct-name))
       ((pair? ct-exp)
@@ -118,12 +128,12 @@
 	   (declare-c-struct*! ct-id ct-exp ct-name))
 	  (else
 	   (internal-error "declare-c-type!"
-			   "Illegal c type declaration"
-			   ct-def))))
+	      "Illegal c type declaration"
+	      ct-def))))
       (else
        (internal-error "declare-c-type!"
-		       "Illegal c type declaration"
-		       ct-def))))
+	  "Illegal c type declaration"
+	  ct-def))))
  
 ;*---------------------------------------------------------------------*/
 ;*    declare-c-alias! ...                                             */

@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/api/Makefile                    */
+#*    serrano/prgm/project/bigloo/5.0a/api/Makefile                    */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Fri Oct  3 07:43:45 2025 (serrano)                */
-#*    Copyright   :  2005-25 Manuel Serrano                            */
+#*    Last change :  Sun Mar  8 11:48:41 2026 (serrano)                */
+#*    Copyright   :  2005-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
 #*=====================================================================*/
@@ -18,7 +18,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    DIRECTORIES                                                      */
 #*---------------------------------------------------------------------*/
-DIRECTORIES=pthread srfi18 fthread mail ssl web multimedia sqlite calendar \
+DIRECTORIES=pthread srfi18 mail ssl web multimedia sqlite calendar \
             srfi1 pkgcomp pkglib gstreamer text packrat srfi27 crypto \
             openpgp phone alsa mpg123 flac wav avahi csv upnp libuv \
             pulseaudio libbacktrace mqtt browser

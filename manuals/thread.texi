@@ -16,28 +16,19 @@
 @chapter Threads
 @cindex Threads
 
-Bigloo supports multithreaded programming. Two different libraries
-programming are available. The first one, the @emph{Fair Thread}
-(see Section @ref{Fair Threads}), enables, simple, easy to develop and 
-to maintain code. The second one, the Posix Thread 
-(see Section @ref{Posix Threads}) enables more
-easily to take benefit of the actual parallelism that is now available
-on stock hardware. Because it is easier to program with @code{fthread}
-than with @code{pthread}, we strongly recommend to use the former
-as much as possible and leave the former for specially demanding
-applications. Both libraries are described in this chapter.
+Bigloo supports Posix multithreaded programming. It easily to take
+benefit of the actual parallelism that is now available on stock
+hardware.
 
 @menu
 * Thread Common Functions::
-* Fair Threads::
 * Posix Threads::
-* Mixing Thread APIs::
 @end menu
 
 @c ------------------------------------------------------------------- @c
 @c    Bigloo's threads                                                 @c
 @c ------------------------------------------------------------------- @c
-@node Thread Common Functions, Fair Threads, , Threads
+@node Thread Common Functions, Posix Threads, , Threads
 @comment  node-name,  next,  previous,  up
 @section Thread Common Functions
 @cindex Posix Threads
@@ -73,7 +64,7 @@ function @code{make-thread}, which is not available for all libraries,
 as it can be hard  to predict the type of thread which will be created
 if several thread libraries are used simultaneously. As threads are
 regular Bigloo objects, they can be created using the
-@code{instantiate} syntax. See the @ref{Fair Threads} and @ref{Posix Threads} 
+@code{instantiate} syntax. See the @ref{Posix Threads} 
 specific sections for more details about thread creation and
 examples.
 
@@ -320,98 +311,4 @@ The function @var{with-lock} might be implemented as:
 @end smalllisp
 @end deffn
 
-
-@include fthread.texi
 @include pthread.texi
-
-
-
-@c ------------------------------------------------------------------- @c
-@c    Mixing threads                                                   @c
-@c ------------------------------------------------------------------- @c
-@node Mixing Thread APIs, , Posix Threads, Threads
-@comment  node-name,  next,  previous,  up
-@section Mixing Thread APIs
-@cindex Fair Threads
-@cindex Posix Threads
-@cindex Threads
-
-The @ref{Fair Threads} library is ``Posix Threads'' safe, which means it
-is possible to use at the same time both libraries. In other words, it
-is possible to embed one fair scheduler into a Posix thread.
-
-Here is a little example with two schedulers started into two
-different Posix threads, each schedulers running two fair threads.
-
-@smalllisp
-(module mix_threads
-   (library fthread pthread)
-   (main main))
-
-(define *f1* 0)
-(define *f2* 0)
-
-(define (main args)
-   (let ((s1 (make-scheduler #t))
-	 (s2 (make-scheduler #t))
-	 
-	 (f1a (instantiate::fthread
-		 (body (lambda ()
-			  (let loop ()
-			     (print "f1a: " *f1* " " (current-thread))
-			     (set! *f1* (+ 1 *f1*))
-			     (thread-yield!)
-			     (loop))))))
-	 
-	 (f1b (instantiate::fthread
-		 (body (lambda ()
-			  (let loop ()
-			     (print "f1b: " *f1* " " (current-thread))
-			     (set! *f1* (+ 1 *f1*))
-			     (thread-yield!)
-			     (loop))))))
-	 
-	 (f2a (instantiate::fthread
-		 (body (lambda ()
-			  (let loop ()
-			     (print "f2a: " *f2* " " (current-thread))
-			     (set! *f2* (+ 1 *f2*))
-			     (thread-yield!)
-			     (loop))))))
-	 
-	 (f2b (instantiate::fthread
-		 (body (lambda ()
-			  (let loop ()
-			     (print "f2b: " *f2* " " (current-thread))
-			     (set! *f2* (+ 1 *f2*))
-			     (thread-yield!)
-			     (loop)))))))
-      
-      (let* ((p1 (instantiate::pthread
-		   (body (lambda ()
-			    ;; Sets the thread's specific scheduler
-			    (default-scheduler s1)
-			    (scheduler-start! 5)))))
-	     
-	    (p2 (instantiate::pthread
-		   (body (lambda ()
-			    ;; Sets the thread's specific scheduler
-			    (default-scheduler s2)
-			    ;; One reaction for s2
-			    (scheduler-react!)
-			    ;; Starts s1
-			    (thread-start-joinable! p1)
-			    ;; Do three reactions
-			    (scheduler-start! 3)
-			    ;; Waits for p1/s1 termination
-			    (thread-join! p1)
-			    ;; The final reaction
-			    (scheduler-react!))))))
-	 
-	 (thread-start! f1a s1)
-	 (thread-start! f1b s1)
-	 (thread-start! f2a s2)
-	 (thread-start! f2b s2)
-	 
-	 (thread-join! (thread-start-joinable! p2)))))
-@end smalllisp

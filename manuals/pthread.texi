@@ -11,7 +11,7 @@
 @c ------------------------------------------------------------------- @c
 @c    Bigloo's threads                                                 @c
 @c ------------------------------------------------------------------- @c
-@node Posix Threads, Mixing Thread APIs, Fair Threads, Threads
+@node Posix Threads, , Thread Common Functions, Threads
 @comment  node-name,  next,  previous,  up
 @section Posix Threads
 @cindex Posix Threads
@@ -26,9 +26,6 @@ the @code{pthread} library is significantly faster than the @code{srfi-18}
 library. For that reason, it is recommended to use the @code{pthread}
 library instead of the @code{srfi-18} library that is mostly supported
 for backward compatibility.
-
-As much as possible, the names exported by this library are compatible
-with the Fair Threads library (see Section @ref{Fair Threads}).
 
 @menu
 * Using Posix Threads::

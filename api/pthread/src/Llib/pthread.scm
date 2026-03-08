@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Sun Feb  8 08:13:15 2026 (serrano)                */
+;*    Last change :  Sun Mar  8 21:06:30 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -16,11 +16,11 @@
    
    (option (set! *dlopen-init-gc* #t))
    
-   (import  __pth_backend)
-   
    (include "pthread.sch")
    
    (extern ($bgl_debug_top_stack::int () "bgl_debug_top_stack"))
+   
+   (static (class pthread-backend::thread-backend))
    
    (export (class pthread::thread
 	      ;; the user thunk
@@ -49,6 +49,42 @@
 ;*    Initialization for dynamic library loading                       */
 ;*---------------------------------------------------------------------*/
 (library-multithread-set! #t)
+
+;*---------------------------------------------------------------------*/
+;*    *pthread-backend* ...                                            */
+;*---------------------------------------------------------------------*/
+(define *pthread-backend* #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    pthread-setup-backend! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (pthread-setup-backend!)
+   (cond-expand
+      (bigloo-jvm
+       ($pthread-setup)))
+   (set! *pthread-backend* (instantiate::pthread-backend (name "pthread")))
+   (default-thread-backend-set! *pthread-backend*)
+   (current-thread-backend-set! (get-pthread-backend)))
+
+;*---------------------------------------------------------------------*/
+;*    get-pthread-backend ...                                          */
+;*---------------------------------------------------------------------*/
+(define (get-pthread-backend)
+   *pthread-backend*)
+
+;*---------------------------------------------------------------------*/
+;*    tb-make-thread ::pthread-backend ...                             */
+;*---------------------------------------------------------------------*/
+(define-method (tb-make-thread tb::pthread-backend body name)
+   (instantiate::pthread
+      (body body)
+      (name name)))
+
+;*---------------------------------------------------------------------*/
+;*    tb-current-thread ::pthread-backend ...                          */
+;*---------------------------------------------------------------------*/
+(define-method (tb-current-thread tb::pthread-backend)
+   ($pthread-current-thread))
 
 ;*---------------------------------------------------------------------*/
 ;*    pthread-timedjoin property                                       */
@@ -237,4 +273,5 @@
 ;*---------------------------------------------------------------------*/
 ;*    Initialization                                                   */
 ;*---------------------------------------------------------------------*/
-;;(pthread-setup-backend!)
+(pthread-setup-backend!)
+

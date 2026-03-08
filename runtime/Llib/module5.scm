@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Mar  6 21:47:57 2026 (serrano)                */
+;*    Last change :  Sun Mar  8 10:27:37 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -118,11 +118,11 @@
 	   (module5-resolve-path ::bstring ::bstring)
 	   (module5-resolve-library ::symbol ::pair-nil)
 	   (module5-preload-cache! ::pair-nil)
-	   (module5-read::Module ::bstring #!key (lib-path '()) cache-dir expand)
+	   (module5-read::Module ::bstring #!key (lib-path '()) cache-dir expand (stack '()))
 	   (module5-read-library::Module ::bstring ::obj ::Module ::bstring)
 	   (module5-read-heap::Module ::bstring ::obj ::Module)
 	   (module5-write-heap ::bstring ::Module)
-	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand (heap-suffix ".heap5"))
+	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir expand (heap-suffix ".heap5") (stack '()))
 	   (module5-import-all! ::Module ::Module)
 	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()) (packages #f))
 	   (module5-checksum!::Module ::Module)
@@ -525,7 +525,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module-read ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (module-read path::bstring lib-path cache-dir expand parse)
+(define (module-read path::bstring lib-path cache-dir expand stack parse)
    (with-trace 'module5 "module-read"
       (synchronize module-mutex
 	 (trace-item "path=" path
@@ -544,21 +544,22 @@
 		    (parse exprs path
 		       :lib-path lib-path
 		       :cache-dir cache-dir
-		       :expand expand)))))))
+		       :expand expand
+		       :stack stack)))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    module5-read ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (module5-read path::bstring #!key (lib-path '()) cache-dir expand)
-   (module-read path (or lib-path '()) cache-dir expand module5-parse))
+(define (module5-read path::bstring #!key (lib-path '()) cache-dir expand (stack '()))
+   (module-read path (or lib-path '()) cache-dir expand stack module5-parse))
 
 ;*---------------------------------------------------------------------*/
 ;*    module4-read ...                                                 */
 ;*    -------------------------------------------------------------    */
 ;*    Read and parse a module4 when imported from a module 5.          */
 ;*---------------------------------------------------------------------*/
-(define (module4-read path::bstring #!key (lib-path '()) cache-dir expand)
-   (module-read path lib-path cache-dir expand module4-parse))
+(define (module4-read path::bstring #!key (lib-path '()) cache-dir expand (stack '()))
+   (module-read path lib-path cache-dir expand stack module4-parse))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-read-library ...                                         */
@@ -697,7 +698,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (module5-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand (heap-suffix ".heap5"))
+(define (module5-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand (heap-suffix ".heap5") (stack '()))
 
    (define (parse5 id path clauses expr body)
       (let ((mod (instantiate::Module
@@ -717,7 +718,7 @@
 		(hashtable-put! *modules-by-id* (symbol->string id) mod)))
 	 
 	 (for-each (lambda (c)
-		      (module5-parse-clause c expr mod lib-path cache-dir expand heap-suffix))
+		      (module5-parse-clause c expr mod lib-path cache-dir expand heap-suffix stack))
 	    clauses)
 	 (with-access::Module mod (imports exports)
 	    (trace-item "imports="
@@ -759,7 +760,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse-clause ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (module5-parse-clause clause expr::pair mod::Module lib-path cache-dir expand hsuffix)
+(define (module5-parse-clause clause expr::pair mod::Module lib-path cache-dir expand hsuffix stack)
 
    (define (unbound-error path id clause)
       (error/loc mod (format "Can't find \"~a\" declaration in module" id)
@@ -833,16 +834,22 @@
 	 (else
 	  (error/loc mod "Illegal reexport binding" b clause))))
    
-   (define (parse-reexport-all clause::pair expr::pair mod::Module expand)
+   (define (parse-reexport-all clause::pair expr::pair mod::Module expand stack)
       (with-trace 'module5-parse "parse-reexport-all"
 	 (trace-item "mod=" (-> mod id))
 	 (let* ((path (cadr clause))
 		(rfrom (module5-resolve-path path (-> mod path))))
-	    (if (string? rfrom)
+	    (cond
+	       ((not (string? rfrom))
+		(error/loc mod "Cannot find file" path clause))
+	       ((member rfrom stack)
+		(error/loc mod "Cyclic module5 import" stack clause))
+	       (else
 		(let ((imod::Module (module5-read rfrom
 				       :lib-path lib-path
 				       :cache-dir cache-dir
-				       :expand expand))
+				       :expand expand
+				       :stack (cons rfrom stack)))
 		      (mid (-> mod id)))
 		   (hashtable-for-each (-> imod exports)
 		      (lambda (key d::Decl)
@@ -852,34 +859,44 @@
 			       " imod=" (-> imod id)
 			       " (reexport-all)")
 			    (hashtable-put! (-> mod exports) key nd))))
-		   (set! (-> mod inits) (append! (-> mod inits) (list imod))))
-		(error/loc mod "Cannot find file" path clause)))))
+		   (set! (-> mod inits) (append! (-> mod inits) (list imod)))))))))
    
-   (define (parse-reexport4-all clause::pair expr::pair mod::Module expand)
+   (define (parse-reexport4-all clause::pair expr::pair mod::Module expand stack)
       (let* ((path (cadr (cddr clause)))
 	     (rfrom (module5-resolve-path path (-> mod path))))
-	 (if (string? rfrom)
+	 (cond
+	    ((not (string? rfrom))
+	     (error/loc mod "Cannot find file" path clause))
+	    ((member rfrom stack)
+	     (error/loc mod "Cyclic module5 import" stack clause))
+	    (else
 	     (let ((imod::Module (module4-read rfrom
 				    :lib-path lib-path
 				    :cache-dir cache-dir
-				    :expand expand)))
+				    :expand expand
+				    :stack (cons rfrom stack))))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
 		      (hashtable-put! (-> mod exports) key d)))
-		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
-	     (error/loc mod "Cannot find file" path clause))))
+		(set! (-> mod inits) (append! (-> mod inits) (list imod))))))))
    
-   (define (parse-reexport-some clause::pair expr::pair mod::Module expand)
+   (define (parse-reexport-some clause::pair expr::pair mod::Module expand stack)
       (with-trace 'module5-parse "parse-reexport-some"
 	 (trace-item "mod=" (-> mod id))
 	 (let* ((path (cadr clause))
 		(bindings (cddr clause))
 		(rfrom (module5-resolve-path path (-> mod path))))
-	    (if (string? rfrom)
+	    (cond
+	       ((not (string? rfrom))
+		(error/loc mod "Cannot find file" path clause))
+	       ((member rfrom stack)
+		(error/loc mod "Cyclic module5 import" stack clause))
+	       (else
 		(let ((imod::Module (module5-read rfrom
 				       :lib-path lib-path
 				       :cache-dir cache-dir
-				       :expand expand)))
+				       :expand expand
+				       :stack (cons rfrom stack))))
 		   (for-each (lambda (b)
 				(let ((d::Decl (parse-reexport-binding b
 						  imod expr mod expand)))
@@ -892,30 +909,40 @@
 					 (-> mod exports) alias d))
 				   d))
 		      bindings)
-		   (set! (-> mod inits) (append! (-> mod inits) (list imod))))
-		(error/loc mod "Cannot find file" path clause)))))
+		   (set! (-> mod inits) (append! (-> mod inits) (list imod)))))))))
    
-   (define (parse-import-init clause::pair expr::pair mod::Module expand)
+   (define (parse-import-init clause::pair expr::pair mod::Module expand stack)
       (let* ((path (cadr clause))
 	     (rfrom (module5-resolve-path path (-> mod path))))
-	 (if (string? rfrom)
+	 (cond
+	    ((not (string? rfrom))
+	     (error/loc mod "Cannot find file" path clause))
+	    ((member rfrom stack)
+	     (error/loc mod "Cyclic module5 import" stack clause))
+	    (else
 	     (let ((imod::Module (module5-read rfrom
 				    :lib-path lib-path
 				    :cache-dir cache-dir
-				    :expand expand)))
-		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
-	     (error/loc mod "Cannot find file" path clause))))
+				    :expand expand
+				    :stack (cons rfrom stack))))
+		(set! (-> mod inits) (append! (-> mod inits) (list imod))))))))
    
-   (define (parse-import-all id::symbol clause::pair expr::pair mod::Module expand)
+   (define (parse-import-all id::symbol clause::pair expr::pair mod::Module expand stack)
       (with-trace 'module5-parse "parse-import-all"
 	 (trace-item "mod=" (-> mod id))
 	 (let* ((path (cadr clause))
 		(rfrom (module5-resolve-path path (-> mod path))))
-	    (if (string? rfrom)
+	    (cond
+	       ((not (string? rfrom))
+		(error/loc mod "Cannot find file" path clause))
+	       ((member rfrom stack)
+		(error/loc mod "Cyclic module5 import" stack clause))
+	       (else
 		(let ((imod::Module (module5-read rfrom
 				       :lib-path lib-path
 				       :cache-dir cache-dir
-				       :expand expand)))
+				       :expand expand
+				       :stack (cons rfrom stack))))
 		   (hashtable-for-each (-> imod exports)
 		      (lambda (key d::Decl)
 			 (let* ((alias (module5-qualified-name (-> d alias) id))
@@ -929,37 +956,47 @@
 			    (hashtable-symbol-put! (-> mod decls) alias nd)
 			    (hashtable-symbol-put! (-> mod imports) alias nd))))
 		   (module-add-libraries! mod (-> imod libraries))
-		   (set! (-> mod inits) (append! (-> mod inits) (list imod))))
-		(error/loc mod "Cannot find file" path clause)))))
+		   (set! (-> mod inits) (append! (-> mod inits) (list imod)))))))))
    
-   (define (parse-import-some clause::pair expr::pair mod::Module expand)
+   (define (parse-import-some clause::pair expr::pair mod::Module expand stack)
       (with-trace 'module5-parse "parse-import-some"
 	 (trace-item "mod=" (-> mod id))
 	 (let* ((path (cadr clause))
 		(bindings (cddr clause))
 		(rfrom (module5-resolve-path path (-> mod path))))
-	    (if (string? rfrom)
+	    (cond
+	       ((not (string? rfrom))
+		(error/loc mod "Cannot find file" path clause))
+	       ((member rfrom stack)
+		(error/loc mod "Cyclic module5 import" stack clause))
+	       (else
 		(let ((imod::Module (module5-read rfrom
 				       :lib-path lib-path
 				       :cache-dir cache-dir
-				       :expand expand)))
+				       :expand expand
+				       :stack (cons rfrom stack))))
 		   (for-each (lambda (b)
 				(trace-item "b=" b
 				   " imod=" (-> imod id) " (import-some)")
 				(parse-import-binding b imod expr mod expand))
 		      bindings)
 		   (module-add-libraries! mod (-> imod libraries))
-		   (set! (-> mod inits) (append! (-> mod inits) (list imod))))
-		(error/loc mod "Cannot find file" path clause)))))
+		   (set! (-> mod inits) (append! (-> mod inits) (list imod)))))))))
 
-   (define (parse-import4-all clause::pair expr::pair mod::Module expand)
+   (define (parse-import4-all clause::pair expr::pair mod::Module expand stack)
       (let* ((path (cadr (cddr clause)))
 	     (rfrom (module5-resolve-path path (-> mod path))))
-	 (if (string? rfrom)
+	 (cond
+	    ((not (string? rfrom))
+	     (error/loc mod "Cannot find file" path clause))
+	    ((member rfrom stack)
+	     (error/loc mod "Cyclic module5 import" stack clause))
+	    (else
 	     (let ((imod::Module (module4-read rfrom
 				    :lib-path lib-path
 				    :cache-dir cache-dir
-				    :expand expand)))
+				    :expand expand
+				    :stack (cons rfrom stack))))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
 		      (let* ((alias (-> d alias))
@@ -967,10 +1004,8 @@
 				    (alias alias)
 				    (scope 'import))))
 			 (hashtable-put! (-> mod decls) key nd)
-			 (hashtable-put! (-> mod imports) key nd)
-			 )))
-		(set! (-> mod inits) (append! (-> mod inits) (list imod))))
-	     (error/loc mod "Cannot find file" path clause))))
+			 (hashtable-put! (-> mod imports) key nd))))
+		(set! (-> mod inits) (append! (-> mod inits) (list imod))))))))
 
    (define (parse-export clause expr::pair mod::Module expand)
       (for-each-expr (lambda (expr src)
@@ -1012,7 +1047,7 @@
 			     (lambda (p)
 				(for-each (lambda (c)
 					     (module5-parse-clause c clause mod
-						lib-path cache-dir expand hsuffix))
+						lib-path cache-dir expand hsuffix stack))
 				   (port->sexp-list p #t))))))
 		      (else
 		       (error/loc mod "Cannot find file" f clause))))
@@ -1021,7 +1056,7 @@
    (define (parse-cond-expand clause expr::pair mod::Module expand)
       (let ((ec (expand clause)))
 	 (when (epair? ec)
-	    (module5-parse-clause ec expr mod lib-path cache-dir expand hsuffix))))
+	    (module5-parse-clause ec expr mod lib-path cache-dir expand hsuffix stack))))
 
    (define (parse-library-all id clause expr::pair mod::Module expand)
       (let* ((lib (cadr clause))
@@ -1074,23 +1109,23 @@
       (trace-item "clause=" clause)
       (match-case clause
 	 ((export (? string?))
-	  (parse-reexport-all clause expr mod expand))
+	  (parse-reexport-all clause expr mod expand stack))
 	 ((export (? string?) . ?-)
-	  (parse-reexport-some clause expr mod expand))
+	  (parse-reexport-some clause expr mod expand stack))
 	 ((export :version 4 (? string?))
-	  (parse-reexport4-all clause expr mod expand))
+	  (parse-reexport4-all clause expr mod expand stack))
 	 ((import :version 5 . ?rest)
 	  (module5-parse-clause
 	     (localize `(import ,@rest) clause)
-	     expr mod lib-path cache-dir expand hsuffix))
+	     expr mod lib-path cache-dir expand hsuffix stack))
 	 ((import (? string?))
-	  (parse-import-init clause expr mod expand))
+	  (parse-import-init clause expr mod expand stack))
 	 ((import (? string?) . (and (? symbol?) ?id))
-	  (parse-import-all id clause expr mod expand))
+	  (parse-import-all id clause expr mod expand stack))
 	 ((import (? string?) . (? list?))
-	  (parse-import-some clause expr mod expand))
+	  (parse-import-some clause expr mod expand stack))
 	 ((import :version 4 (? string?))
-	  (parse-import4-all clause expr mod expand))
+	  (parse-import4-all clause expr mod expand stack))
 	 ((export . ?bindings)
 	  (parse-export clause expr mod expand))
 	 ((main)
@@ -1259,7 +1294,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module4-parse ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (module4-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand)
+(define (module4-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand (stack '()))
 
    (define (define-class? x)
       (match-case x
@@ -1288,7 +1323,7 @@
 		(hashtable-put! *modules-by-id* (symbol->string id) mod)))
 	 (let* ((nbody (append-map (lambda (c)
 				      (module4-parse-clause c expr mod
-					 lib-path cache-dir expand))
+					 lib-path cache-dir expand stack))
 			  clauses))
 		(nclasses (filter define-class? nbody))
 		(others (filter (lambda (x) (not (define-class? x))) nbody)))
@@ -1313,7 +1348,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module4-parse-clause ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (module4-parse-clause::pair-nil clause expr::pair mod::Module lib-path cache-dir expand)
+(define (module4-parse-clause::pair-nil clause expr::pair mod::Module lib-path cache-dir expand stack)
    
    (define (unbound-error path id clause)
       (error/loc mod (format "Cannot find declaration in module \"~a\"" path)
@@ -1391,11 +1426,12 @@
 	    (values name decl
 	       (localize `(,kind ,@(cdr expr)) expr)))))
 
-   (define (parse-import-all id path)
+   (define (parse-import-all id path stack)
       (let ((imod::Module (module4-read path
 			     :lib-path lib-path
 			     :cache-dir cache-dir
-			     :expand expand)))
+			     :expand expand
+			     :stack (cons path stack))))
 	 (hashtable-for-each (-> imod exports)
 	    (lambda (key d::Decl)
 	       (let* ((alias (if id
@@ -1407,17 +1443,17 @@
 			     (alias alias)
 			     (scope 'import))))
 		  (hashtable-put! (-> mod decls) key nd)
-		  (hashtable-put! (-> mod imports) key nd)
-		  )))
+		  (hashtable-put! (-> mod imports) key nd))))
 	 (module-add-libraries! mod (-> imod libraries))
 	 (set! (-> mod inits)
 	    (append! (-> mod inits) (list imod)))))
 
-   (define (parse-import-some syms id path)
+   (define (parse-import-some syms id path stack)
       (let ((imod::Module (module4-read path
 			     :lib-path lib-path
 			     :cache-dir cache-dir
-			     :expand expand)))
+			     :expand expand
+			     :stack (cons path stack))))
 	 (hashtable-for-each (-> imod exports)
 	    (lambda (key d::Decl)
 	       (when (memq (-> d id) syms)
@@ -1436,19 +1472,23 @@
 	 (set! (-> mod inits)
 	    (append! (-> mod inits) (list imod)))))
    
-   (define (parse-import import expr::pair mod::Module expand)
+   (define (parse-import import expr::pair mod::Module expand stack)
       (match-case import
 	 ((and (? symbol?) ?id)
 	  (let ((path (module4-resolve-module-path mod id)))
-	     (if (string? path)
-		 (parse-import-all id path)
+	     (cond
+		((not (string? path))
 		 (error (-> mod id)
 		    (format "Cannot find \"~a\" module source file" (-> mod id))
-		    id))))
+		    id))
+		((member path stack)
+		 (error/loc mod "Cyclic module4 import" stack clause))
+		(else
+		 (parse-import-all id path stack)))))
 	 (((and (? symbol?) ?id) (and (? string?) ?path))
-	  (parse-import-all id path))
+	  (parse-import-all id path stack))
 	 ((??- (and (? symbol?) ?id) (and (? string?) ?path))
-	  (parse-import-some (cddr (reverse import)) id path))
+	  (parse-import-some (cddr (reverse import)) id path stack))
 	 (else
 	  (tprint "parse-import (4) not implemented " import))))
 	  
@@ -1557,7 +1597,7 @@
 				      (append-map (lambda (c)
 						     (module4-parse-clause c clause
 							mod lib-path cache-dir
-							expand))
+							expand stack))
 					 clauses)
 				      rest))
 				  (else
@@ -1569,8 +1609,31 @@
    (define (parse-cond-expand clause expr mod expand)
       (let ((ec (expand clause)))
 	 (if (epair? ec)
-	     (module4-parse-clause ec expr mod lib-path cache-dir expand)
+	     (module4-parse-clause ec expr mod lib-path cache-dir expand stack)
 	     '())))
+
+   (define (parse-library-all id clause expr::pair mod::Module expand)
+      (tprint "TODO")
+      '(let* ((lib (cadr clause))
+	     (rlib (module5-resolve-library lib lib-path)))
+	 (if (string? rlib)
+	     (let ((lmod::Module (module4-read-library rlib clause mod ".heap")))
+		(hashtable-for-each (-> lmod exports)
+		   (lambda (k d::Decl)
+		      (let* ((alias (if id
+					(module5-qualified-name (-> d alias) id)
+					(-> d alias)))
+			     (nd (duplicate::Decl d
+				    (alias alias)
+				    (scope 'import))))
+			 (hashtable-put! (-> mod decls) k nd)
+			 (hashtable-put! (-> mod imports) k nd)
+			 )))
+		(set! (-> mod inits)
+		   (append! (-> mod inits) (list lmod)))
+		(set! (-> mod libraries)
+		   (cons (cons lib rlib) (-> mod libraries))))
+	     (error/loc mod "Cannot find library" lib clause))))
    
    (with-trace 'module5-parse "module4-parse-clause"
       (trace-item "clause=" clause)
@@ -1578,10 +1641,10 @@
 
       (match-case clause
 	 ((import :version 4 . ?imports)
-	  (for-each (lambda (i) (parse-import i clause mod expand)) imports)
+	  (for-each (lambda (i) (parse-import i clause mod expand stack)) imports)
 	  '())
 	 ((import . ?imports)
-	  (for-each (lambda (i) (parse-import i clause mod expand)) imports)
+	  (for-each (lambda (i) (parse-import i clause mod expand stack)) imports)
 	  '())
 	 ((export . ?bindings)
 	  (parse-export clause expr mod expand))
@@ -1590,9 +1653,9 @@
 	 ((include . ?-)
 	  (parse-include clause expr mod expand))
 	 ((library (? symbol?))
-	  '())
-	 ((library (? symbol?) . ?-)
-	  '())
+	  (parse-library-all #f clause expr mod expand))
+	 ((library (? symbol?) . (and (? symbol?) ?id))
+	  (parse-library-all id clause expr mod expand))
 	 ((use . ?-)
 	  '())
 	 ((from . ?-)
@@ -1996,7 +2059,6 @@
       (case scope
 	 ((export) 124)
 	 ((static) 23544)
-	 ((export) 33)
 	 (else 8843)))
    
    (define (kind-number kind)

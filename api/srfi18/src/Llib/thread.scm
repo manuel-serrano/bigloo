@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/srfi18/src/Llib/thread.scm       */
+;*    .../prgm/project/bigloo/5.0a/api/srfi18/src/Llib/thread.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Fri Dec 13 12:49:07 2013 (serrano)                */
-;*    Copyright   :  2002-20 Manuel Serrano                            */
+;*    Last change :  Sun Mar  8 21:02:08 2026 (serrano)                */
+;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public srfi18 Thread implementation.                         */
 ;*=====================================================================*/
@@ -18,16 +18,52 @@
    
    (library pthread)
    
-   (import  __srfi18_backend)
-   
    (include "srfi18.sch")
 
+   (static (class srfi18-backend::thread-backend))
+   
    (export (class srfi18thread::pthread)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Initialization for dynamic library loading                       */
 ;*---------------------------------------------------------------------*/
 (library-multithread-set! #t)
+
+;*---------------------------------------------------------------------*/
+;*    *srfi18-backend* ...                                             */
+;*---------------------------------------------------------------------*/
+(define *srfi18-backend* #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    srfi18-setup-backend! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (srfi18-setup-backend!)
+   (cond-expand
+      (bigloo-jvm
+       ($srfi18thread-setup)))
+   (set! *srfi18-backend* (instantiate::srfi18-backend (name "srfi18")))
+   (default-thread-backend-set! *srfi18-backend*)
+   (current-thread-backend-set! (get-srfi18-backend)))
+
+;*---------------------------------------------------------------------*/
+;*    get-srfi18-backend ...                                           */
+;*---------------------------------------------------------------------*/
+(define (get-srfi18-backend)
+   *srfi18-backend*)
+
+;*---------------------------------------------------------------------*/
+;*    tb-make-thread ::srfi18-backend ...                              */
+;*---------------------------------------------------------------------*/
+(define-method (tb-make-thread tb::srfi18-backend body name)
+   (instantiate::srfi18thread
+      (body body)
+      (name name)))
+
+;*---------------------------------------------------------------------*/
+;*    tb-current-thread ::srfi18-backend ...                           */
+;*---------------------------------------------------------------------*/
+(define-method (tb-current-thread tb::srfi18-backend)
+   ($pthread-current-thread))
 
 ;*---------------------------------------------------------------------*/
 ;*    srfi18read-timedjoin property                                    */

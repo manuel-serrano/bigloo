@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Feb 11 10:52:07 2026 (serrano)                */
+#*    Last change :  Sun Mar  8 10:12:33 2026 (serrano)                */
 #*    Copyright   :  2010-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -158,7 +158,7 @@ clean-init:
 #*---------------------------------------------------------------------*/
 .PHONY: api-c heap-c api-c-static api-c-shared api-clean-c
 
-api-c: api-init $(TAGS) .afile heap-c
+api-c: api-init $(TAGS) .afile heap-c heap5-c
 	mkdir -p objs
 	$(MAKE) api-c-static
 	$(MAKE) api-c-shared
@@ -166,7 +166,7 @@ api-c: api-init $(TAGS) .afile heap-c
 	  $(MAKE) api-c-shared_mt; \
 	fi
 
-api-c_mt: api-init $(TAGS) .afile heap-c
+api-c_mt: api-init $(TAGS) .afile heap-c heap5-c
 	mkdir -p objs
 	$(MAKE) api-c-static
 	$(MAKE) api-c-shared_mt
@@ -282,9 +282,9 @@ api-clean-c:
 #*---------------------------------------------------------------------*/
 #*    JVM build                                                        */
 #*---------------------------------------------------------------------*/
-.PHONY: api-jvm heap-jvm api.zip api-clean-jvm
+.PHONY: api-jvm heap-jvm heap5-jvm api.zip api-clean-jvm
 
-api-jvm: api-init $(TAGS) .jfile heap-jvm
+api-jvm: api-init $(TAGS) .jfile heap-jvm heap5-jvm
 	mkdir -p $(CLASS_DIR)
 	mkdir -p $(CLASS_EDIR)
 	$(MAKE) api.zip
@@ -331,9 +331,9 @@ api-clean-jvm:
 #*---------------------------------------------------------------------*/
 #*    WASM build                                                       */
 #*---------------------------------------------------------------------*/
-.PHONY: api-wasm heap-wasm api.zip api-clean-wasm
+.PHONY: api-wasm heap-wasm heap5-wasm api.zip api-clean-wasm
 
-api-wasm: api-init heap-wasm
+api-wasm: api-init heap-wasm heap5-wasm
 	mkdir -p objs
 	$(MAKE) api.wasm
 

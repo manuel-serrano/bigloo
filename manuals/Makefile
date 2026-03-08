@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/manuals/Makefile              */
+#*    serrano/prgm/project/bigloo/5.0a/manuals/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun 15 07:21:19 1998                          */
-#*    Last change :  Thu Jun 27 09:59:02 2024 (serrano)                */
-#*    Copyright   :  1998-2024 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Mar  8 11:49:26 2026 (serrano)                */
+#*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Bigloo documentation                   */
 #*=====================================================================*/
@@ -42,7 +42,7 @@ SOURCES		= modules.texi stdlib.texi rgc.texi lalr.texi match.texi \
                   java.texi pregexp.texi srfi.texi system.texi \
                   core.texi serialization.texi bit.texi hash.texi weakptr.texi \
                   io.texi custom.texi params.texi \
-                  thread.texi fthread.texi pthread.texi \
+                  thread.texi pthread.texi \
                   database.texi sqlite.texi search.texi digest.texi \
                   internet.texi multimedia.texi mail.texi cryptography.texi \
                   trace.texi crc.texi date.texi cross.texi text.texi csv.texi \
