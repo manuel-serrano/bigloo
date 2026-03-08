@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 10 08:40:18 2026                          */
-;*    Last change :  Fri Mar  6 22:15:32 2026 (serrano)                */
+;*    Last change :  Sat Mar  7 19:08:14 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Asynchronous functions                                           */
@@ -15,7 +15,9 @@
 (module __async
    
    (import  __error
-	    __object)
+	    __object
+	    __generator
+	    __promise)
    
    (use     __type
 	    __bigloo
@@ -27,9 +29,7 @@
 	    __os
 	    __bit
 	    __thread
-	    __promise
-	    __generator
-
+	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum

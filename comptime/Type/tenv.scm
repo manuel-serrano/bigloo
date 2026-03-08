@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Type/tenv.scm                       */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Type/tenv.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Sun Feb 15 08:43:11 2026 (serrano)                */
+;*    Last change :  Sun Mar  8 09:27:18 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -292,7 +292,7 @@
 (define (find-type/location::type id::symbol loc)
    (let ((type (hashtable-get *Tenv* id)))
       (if (not (type? type))
-	  (user-error/location loc 'find-type "Can't find type" id)
+	  (user-error/location loc "find-type" "Can't find type" id)
 	  type)))
 
 ;*---------------------------------------------------------------------*/
@@ -317,7 +317,7 @@
 	     (if (and (not *allow-type-redefinition*)
 		      (not *lib-mode*)
 		      (type-init? type))
-		 (user-error 'bind-type! "Type redefinition" (shape type))
+		 (user-error "bind-type!" "Type redefinition" (shape type))
 		 (begin
 		    (when (and (type? type)
 			       (not *lib-mode*)

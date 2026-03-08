@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Feb 24 10:13:56 2026 (serrano)                */
+;*    Last change :  Sun Mar  8 09:17:14 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -189,8 +189,8 @@
 
    (define (declare-class-definition! id alias mid scope src def::KDef)
       (with-trace 'module5 "declare-class-definition!"
-	 (trace-item "id=" id)
 	 (with-access::KDef def (expr id decl super ctor kkind properties)
+	    (trace-item "id=" id " alias=" alias)
 	    (when (isa? decl Decl)
 	       (with-access::Decl decl (mod)
 		  (with-access::Module mod ((mid id))
@@ -354,6 +354,7 @@
 				   (with-access::Decl decl ((dmod mod) scope)
 				      (trace-item "mod=" (-> dmod id))
 				      (trace-item "scope=" scope)
+				      (trace-item "pckage=" package)
 				      (unless (or (eq? dmod mod)
 						  (eq? scope 'static))
 					 (declare-java-class-type! id
@@ -734,6 +735,7 @@
       (with-access::jklass j (id jname package src)
 	 (trace-item "jklass=" id)
 	 (trace-item "mod=" (-> mod id))
+	 (trace-item "pkg=" package)
 	 (multiple-value-bind (clazz super)
 	    (parse-ident id src mod)
 	    (co-instantiate
@@ -745,7 +747,7 @@
 			   (expr src)
 			   (decl decl)
 			   (name jname)
-			   (package (if (string? package) package "."))
+			   (package (if (string? package) package (jname-package jname ".")))
 			   (super (if (string? super) (string->symbol super) '_))))
 		   (decl (instantiate::Decl
 			    (id id)
@@ -753,7 +755,8 @@
 			    (mod mod)
 			    (expr clause)
 			    (ronly #t)
-			    (scope 'static)
+			    ;;(scope 'static)
+			    (scope 'export)
 			    (def def))))
 	       (with-access::Module mod (decls defs exports)
 		  (hashtable-put! exports (symbol->string! id) decl)

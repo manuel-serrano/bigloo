@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Tue Feb 17 09:15:46 2026 (serrano)                */
+;*    Last change :  Sun Mar  8 09:31:34 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -202,15 +202,17 @@
 ;*    a class in order to help the error management.                   */
 ;*---------------------------------------------------------------------*/
 (define (declare-java-class-type!::type class-id super jname package src)
-   (with-trace 'jvm "declare-java-class-type!"
-      (trace-item "class-id=" class-id)
-      (trace-item "jname=" jname)
-      (trace-item "super=" (shape super) " " (typeof super))
-      (let ((super (cond
-		      ((eq? (type-id super) class-id) #f)
-		      ((eq? super *_*) #f)
-		      (else super)))
-	    (ty (declare-type! class-id jname 'java)))
+   
+   (define (previously-declared-type class-id super)
+      (when (type-exists? class-id)
+	 (let ((oty (find-type class-id)))
+	    (when (and (isa? oty jclass)
+		       (with-access::jclass oty ((osup its-super) (opkg package))
+			  (and (eq? osup super) (equal? opkg package))))
+	       oty))))
+   
+   (define (declare-new-type class-id super)
+      (let ((ty (declare-type! class-id jname 'java)))
 	 ;; By now we make the assumption that super type is a correct class.
 	 ;; Super will be checked in `make-class-accesses!'
 	 ;; (see module object_access).
@@ -232,7 +234,18 @@
 		  (add-coercion! super ty
 		     (list (cons pred super)) (list (cons #t ty)))
 		  (loop (jclass-its-super super)))))
-	 ty)))
+	 ty))
+   
+   (with-trace 'jvm "declare-java-class-type!"
+      (trace-item "class-id=" class-id)
+      (trace-item "jname=" jname)
+      (trace-item "super=" (shape super) " " (typeof super))
+      (let ((super (cond
+		      ((eq? (type-id super) class-id) #f)
+		      ((eq? super *_*) #f)
+		      (else super))))
+	 (or (previously-declared-type class-id super)
+	     (declare-new-type class-id super)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    final-class? ...                                                 */

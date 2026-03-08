@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Fri Mar  6 17:52:23 2026 (serrano)                */
+;*    Last change :  Sun Mar  8 09:48:48 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -59,6 +59,7 @@
 	    (make-java-compiler)
 	    (java-finalizer)
 	    (find-java-class ::symbol)
+	    (jname-package ::bstring default)
 	    ;; heap-add-jclass is untyped other it force the module
 	    ;; object-module to be imported in too many places.
 	    (heap-add-jclass! jclass)
@@ -364,6 +365,7 @@
       (trace-item "ident=" ident)
       (let* ((tser (reverse rest))
 	     (jname (if (pair? tser) (car tser) #f)))
+	 (trace-item "jname=" jname)
 	 (cond
 	    ((not (symbol? ident))
 	     (java-error java "Illegal Java class"))
@@ -380,6 +382,7 @@
    (with-trace 'jvm "java-declare-class"
       (trace-item "id=" id)
       (trace-item "jname=" jname)
+      (trace-item "pkg=" (jname-package jname #unspecified))
       (let ((loc (find-location j))
 	    (klass (find-jklass id)))
 	 (trace-item "old=" (typeof klass))
@@ -391,6 +394,7 @@
 			 (id id)
 			 (idd (fast-id-of-id id loc))
 			 (jname jname)
+			 (package (jname-package jname #unspecified))
 			 (abstract? a)
 			 (module module))))
 		(for-each (lambda (c)
@@ -534,6 +538,16 @@
 			       "'")))))))
 
 ;*---------------------------------------------------------------------*/
+;*    jname-package ...                                                */
+;*---------------------------------------------------------------------*/
+(define (jname-package jname default)
+   (let ((prefix (prefix jname)))
+      ;; set the java class package
+      (if (string=? prefix jname)
+	  default
+	  prefix)))
+
+;*---------------------------------------------------------------------*/
 ;*    jklass->jclass ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (jklass->jclass jklass::jklass)
@@ -541,11 +555,7 @@
       (with-access::jklass jklass (id jname package src loc)
 	 (trace-item "id=" id)
 	 (trace-item "jname=" jname)
-	 (let ((prefix (prefix jname)))
-	    ;; set the java class package
-	    (if (string=? prefix jname)
-		(set! package "")
-		(set! package prefix)))
+	 (set! package (jname-package jname ""))
 	 ;; add a qualified type so Bigloo won't complain when fetching
 	 ;; slots or calling methods of this class
 	 (class-qualified-type-name-set! id jname)

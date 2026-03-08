@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Feb 11 10:50:51 2026 (serrano)                */
+#*    Last change :  Sun Mar  8 09:06:56 2026 (serrano)                */
 #*    Copyright   :  2010-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -274,6 +274,7 @@ $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).zip: .afile .jfile $(BGL_ECLASSES)
 
 api-clean-jvm:
 	$(RM) -f $(BOOTLIBDIR)/$(API).jheap
+	$(RM) -f $(BOOTLIBDIR)/$(API).jheap5
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).zip
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).zip
 	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).zip

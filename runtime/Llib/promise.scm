@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Tue Feb 10 08:53:07 2026 (serrano)                */
+;*    Last change :  Sun Mar  8 08:11:57 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JavaScript like promise for Bigloo.                              */
@@ -65,7 +65,8 @@
 	    (catch ::promise ::procedure)
 	    (resolved::promise ::obj)
 	    (rejected::promise ::obj)
-	    (run-promises)))
+	    (run-promises #!optional infinite)
+	    (abort-promises)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *promise-mutex* ...                                              */
@@ -324,7 +325,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    run-promises ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (run-promises)
+(define (run-promises #!optional infinite)
    
    (define (flush-actions)
       (synchronize *promise-mutex*
@@ -341,6 +342,9 @@
 		     ((>fx *promise-count* 0)
 		      (condition-variable-wait! *promise-condv* *promise-mutex*)
 		      (loop))
+		     ((and infinite (=fx *promise-count* 0))
+		      (condition-variable-wait! *promise-condv* *promise-mutex*)
+		      (loop))
 		     (else
 		      '())))))))
 
@@ -354,4 +358,12 @@
 	       (for-each (lambda (a) (promise-dec! "action") (a)) actions)
 	       (loop))))))
 
-
+;*---------------------------------------------------------------------*/
+;*    abort-promises ...                                               */
+;*---------------------------------------------------------------------*/
+(define (abort-promises)
+   (synchronize *promise-mutex*
+      (set! *actions* '())
+      (set! *promise-count* -1)
+      (condition-variable-signal! *promise-condv*)))
+   
