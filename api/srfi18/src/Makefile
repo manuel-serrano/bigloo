@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Mar  8 19:52:12 2026 (serrano)                */
+#*    Last change :  Mon Mar  9 18:09:41 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -52,7 +52,7 @@ JVMAPIBOOTPATH  = .:../../../../../lib/bigloo/$(RELEASE)/bigloo_s.zip:../../../.
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= mutex condvar thread backend
+_BGL_OBJECTS	= mutex condvar thread
 _BGL5_OBJECTS	= make_lib5
 
 _POSIX_OBJECTS	= csetup cmutex ccondvar cthread

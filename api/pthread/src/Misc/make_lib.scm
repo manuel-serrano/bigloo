@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/pthread/src/Misc/make_lib.scm        */
+;*    .../project/bigloo/5.0a/api/pthread/src/Misc/make_lib.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Thu Apr 20 13:18:18 2017 (serrano)                */
-;*    Copyright   :  2001-17 Manuel Serrano                            */
+;*    Last change :  Mon Mar  9 18:13:29 2026 (serrano)                */
+;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -14,8 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module __pth_makelib
 
-   (import __pth_backend
-	   __pth_thread
+   (import __pth_thread
 	   __pth_mutex
 	   __pth_condvar
 	   __pth_semaphore)

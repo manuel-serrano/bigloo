@@ -1,12 +1,12 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/srfi18/src/Llib/srfi18.sch       */
+;*    .../prgm/project/bigloo/5.0a/api/srfi18/src/Llib/srfi18.sch      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar  5 14:48:55 2005                          */
-;*    Last change :  Tue Dec 11 20:16:11 2012 (serrano)                */
-;*    Copyright   :  2005-12 Manuel Serrano                            */
+;*    Last change :  Mon Mar  9 18:25:56 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    The native interfaces for threads                                */
+;*    The native interfaces for SRFI18 threads                         */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sun Mar  8 09:17:14 2026 (serrano)                */
+;*    Last change :  Mon Mar  9 18:26:32 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -755,10 +755,16 @@
 			    (mod mod)
 			    (expr clause)
 			    (ronly #t)
-			    ;;(scope 'static)
 			    (scope 'export)
 			    (def def))))
 	       (with-access::Module mod (decls defs exports)
+		  (when (string? super)
+		     (tprint "ID=" id " SUPER=" super
+			" -> " (hashtable-get (-> mod decls) super))
+		     (let ((sdecl (hashtable-get (-> mod decls) super)))
+			(with-access::Decl sdecl (def)
+			   (tprint "DEF=" (typeof def)))
+			(hashtable-put! exports super sdecl)))
 		  (hashtable-put! exports (symbol->string! id) decl)
 		  (hashtable-put! decls (symbol->string! id) decl)
 		  (hashtable-put! defs (symbol->string! id) def)))))))
