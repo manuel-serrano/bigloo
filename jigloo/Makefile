@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Thu Feb  5 07:49:16 2026 (serrano)                */
+#*    Last change :  Wed Mar 11 16:01:13 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Jigloo. This makefile has to be processed  */
@@ -34,8 +34,6 @@ OBJECTS		= jigloo.class
 #*    Tout le code ...                                                 */
 #*---------------------------------------------------------------------*/
 O_OBJECTS       = $(OBJECTS)
-
-POPULATION	= $(SOURCE) README Makefile
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
@@ -120,16 +118,6 @@ touchall:
 	@ touch $(SOURCE)
 	@ echo "touchall done..."
 	@ echo "-------------------------------"
-
-#*---------------------------------------------------------------------*/
-#*    pop                                                              */
-#*    -------------------------------------------------------------    */
-#*    This entry is used by the bigloo/Makefile (the main Bigloo       */
-#*    makefile) to get the list of file that populate a revision.      */
-#*---------------------------------------------------------------------*/
-.PHONY: pop
-pop:
-	@ echo $(POPULATION:%=jigloo/%)
 
 #*---------------------------------------------------------------------*/
 #*     .java --> .class                                                */

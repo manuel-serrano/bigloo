@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Mar 11 07:00:33 2026 (serrano)                */
+#*    Last change :  Wed Mar 11 15:58:40 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -244,6 +244,7 @@ boot-touch-specific:
 
 boot-jvm: checkgmake
 	$(MAKE) -C runtime boot-jvm
+	$(MAKE) -C jigloo
 
 boot-wasm: checkgmake
 	$(MAKE) -C runtime boot-wasm
@@ -737,7 +738,7 @@ install-doc-source:
 
 install-sans-docs: install-progs install-apis
 
-install-progs: install-devel install-libs
+install-progs: install-devel install-libs install-jigloo
 
 install-devel: install-dirs
 	$(MAKE) -C comptime install
@@ -790,12 +791,14 @@ install-api: install-dirs
 install-docs: install-dirs
 	$(MAKE) -C manuals install
 
-install-bee0: install-dirs
-	$(MAKE) -C cigloo install
-	$(MAKE) -C bdl install
+install-jigloo: install-dirs
 	@ if [ "$(JVMBACKEND) " = "yes " ]; then \
             $(MAKE) -C jigloo install; \
           fi
+
+install-bee0: install-dirs
+	$(MAKE) -C cigloo install
+	$(MAKE) -C bdl install
 	-$(MAKE) -C bmacs install
 
 install-bee1: install-dirs
