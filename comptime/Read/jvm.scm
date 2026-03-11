@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Read/jvm.scm                        */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Read/jvm.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Sun Feb 15 06:20:27 2026 (serrano)                */
+;*    Last change :  Tue Mar 10 20:51:35 2026 (serrano)                */
 ;*    Copyright   :  1993-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
@@ -20,64 +20,90 @@
 	   tools_error
 	   init_main
 	   tools_speek)
-   (export (module-package-get ::symbol #!optional warn)
-	   (module-package-set! ::symbol ::symbol)
+   (export (default-jvm-package-set! ::symbol)
+	   (default-jvm-package)
+           (jvm-qualified-names::obj)
+	   (jvm-package-get ::symbol #!optional warn)
+	   (jvm-qualified-name-get ::symbol #!optional warn)
+	   (jvm-qualified-name-set! ::symbol ::symbol)
 	   (class-qualified-type-name-get::bstring ::symbol)
 	   (class-qualified-type-name-get/def::bstring ::symbol)
-	   (class-qualified-type-name-set! ::symbol ::bstring)
-           (module-jvm-packages::obj)
 	   (jvm-class-sans-directory::bstring ::bstring)
 	   (jvm-class-with-directory::bstring ::bstring)
 	   (read-jfile)))
 
 ;*---------------------------------------------------------------------*/
-;*    *module-jvm-packages* ...                                        */
+;*    *default-jvm-package* ...                                        */
 ;*---------------------------------------------------------------------*/
-(define *module-jvm-packages*
+(define *default-jvm-package* #f)
+
+;*---------------------------------------------------------------------*/
+;*    default-jvm-package-set! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (default-jvm-package-set! pkg::symbol)
+   (cond
+      ((not *default-jvm-package*)
+       (set! *default-jvm-package* pkg))
+      ((not (eq? *default-jvm-package* pkg))
+       (error "jvm" "Two different default package names used"
+	  (format "\"~a\" vs \"~a\"" *default-jvm-package* pkg)))))
+
+;*---------------------------------------------------------------------*/
+;*    default-jvm-package ...                                          */
+;*---------------------------------------------------------------------*/
+(define (default-jvm-package)
+   *default-jvm-package*)
+
+;*---------------------------------------------------------------------*/
+;*    *jvm-qualified-names* ...                                        */
+;*---------------------------------------------------------------------*/
+(define *jvm-qualified-names*
    (create-hashtable :size 512 :weak 'open-string))
 
 ;*---------------------------------------------------------------------*/
-;*    *class-jvm-qualified-types* ...                                  */
+;*    jvm-qualified-names ...                                          */
 ;*---------------------------------------------------------------------*/
-(define *class-jvm-qualified-types*
-   (create-hashtable :size 512 :weak 'open-string))
+(define (jvm-qualified-names)
+   *jvm-qualified-names*)
 
 ;*---------------------------------------------------------------------*/
-;*    module-jvm-packages ...                                          */
+;*    jvm-qualified-name-get ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (module-jvm-packages)
-   *module-jvm-packages*)
-
-;*---------------------------------------------------------------------*/
-;*    module-package-get ...                                           */
-;*---------------------------------------------------------------------*/
-(define (module-package-get module::symbol #!optional warn)
+(define (jvm-qualified-name-get module::symbol #!optional warn)
    (let ((name (symbol->string! module)))
-      (let ((pkg (hashtable-get *module-jvm-packages* name)))
+      (let ((pkg (hashtable-get *jvm-qualified-names* name)))
 	 (when (and warn (not pkg))
 	    (warning
-	       (string-append "Can't find package for module `"
-		  (symbol->string module) "'.")))
+	       (format "Can't find qualified name for module \"a\"." module)))
 	 pkg)))
 
 ;*---------------------------------------------------------------------*/
-;*    module-package-set! ...                                          */
+;*    jvm-package-get ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (module-package-set! module::symbol pkg::symbol)
-   (with-trace 'jvm "module-package-set!"
+(define (jvm-package-get module::symbol #!optional warn)
+   (let ((qn (jvm-qualified-name-get module warn)))
+      (when (symbol? qn)
+	 (string->symbol (prefix (symbol->string! qn))))))
+
+;*---------------------------------------------------------------------*/
+;*    jvm-qualified-name-set! ...                                      */
+;*---------------------------------------------------------------------*/
+(define (jvm-qualified-name-set! module::symbol qn::symbol)
+   (with-trace 'jvm "jvm-qualified-name-set!"
       (trace-item "module=" module)
       (trace-item "pkg=" pkg)
       (let ((name (symbol->string! module)))
-	 (let ((old (hashtable-get *module-jvm-packages* name)))
+	 (let ((old (hashtable-get *jvm-qualified-names* name)))
 	    (cond
 	       ((not old)
-		(hashtable-put! *module-jvm-packages* name pkg))
-	       ((eq? old pkg)
+		(hashtable-put! *jvm-qualified-names* name qn))
+	       ((eq? old qn)
 		#unspecified)
 	       (else
-		(warning name "module package redefinition"
-		   "\n  old package=" old
-		   "\n  new package=" pkg)))))))
+		(error "java"
+		   (format "different qualified names used for module \"~a\""
+		      module)
+		   (format "\"~a\" vs \"~a\"" old qn))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-qualified-type-name-get ...                                */
@@ -85,11 +111,10 @@
 (define (class-qualified-type-name-get::bstring clazz::symbol)
    (with-trace 'jvm "class-qualified-type-name-get"
       (trace-item "clazz=" clazz)
-      (let ((name (symbol->string! clazz)))
-	 (let ((qtn (hashtable-get *class-jvm-qualified-types* name)))
-	    (unless (string? qtn)
-	       (error "java" "Cannot find qualified-type name" clazz))
-	    qtn))))
+      (let ((qn (jvm-qualified-name-get clazz #f)))
+	 (if (symbol? qn)
+	     (symbol->string qn)
+	     (error "java" "Cannot find qualified-type name" clazz)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-qualified-type-name-get/def ...                            */
@@ -97,34 +122,17 @@
 (define (class-qualified-type-name-get/def::bstring clazz::symbol)
    (with-trace 'jvm "class-qualified-type-name-get"
       (trace-item "clazz=" clazz)
-      (let ((name (symbol->string! clazz)))
-	 (let ((qtn (hashtable-get *class-jvm-qualified-types* name)))
-	    (cond
-	       ((string? qtn)
-		qtn)
-	       ((string? *dest*)
-		(let ((qtn (string-replace *dest* #\/ #\.)))
-		   (class-qualified-type-name-set! clazz qtn)
-		   qtn))
-	       (else
-		(class-qualified-type-name-set! clazz "a")
-		"a"))))))
-
-;*---------------------------------------------------------------------*/
-;*    class-qualified-type-name-set! ...                               */
-;*---------------------------------------------------------------------*/
-(define (class-qualified-type-name-set! clazz::symbol qtn::bstring)
-   (with-trace 'jvm "class-qualified-type-name-set!"
-      (trace-item "clazz=" clazz)
-      (trace-item "qtn=" qtn)
-      (let ((name (symbol->string! clazz)))
-	 (let ((old (hashtable-get *class-jvm-qualified-types* name)))
-	    (cond
-	       ((not old)
-		(hashtable-put! *class-jvm-qualified-types* name qtn))
-	       ((not (string=? old qtn))
-		(error clazz "Using two different qualified names for class"
-		   (format "~a vs ~a" qtn old))))))))
+      (let ((qn (jvm-qualified-name-get clazz #f)))
+	 (cond
+	    ((symbol? qn)
+	     (symbol->string qn))
+	    (*default-jvm-package*
+	     (let ((qn (format "~a.~a" *default-jvm-package* clazz)))
+		(jvm-qualified-name-set! clazz (string->symbol qn))
+		qn))
+	    (else
+	     (jvm-qualified-name-set! clazz clazz)
+	     (symbol->string clazz))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    jvm-class-sans-directory ...                                     */
@@ -174,7 +182,7 @@
 	      (inner-read-qualified-type-file *qualified-type-file-default*)
 	      'done))
 	 ((not (file-exists? *qualified-type-file*))
-	  (user-error 'read-jfile "Can't find jfile" *qualified-type-file*))
+	  (user-error "read-jfile" "Can't find jfile" *qualified-type-file*))
 	 (else
 	  (inner-read-qualified-type-file *qualified-type-file*)))))
 
@@ -186,21 +194,18 @@
 	  (eof (read port)))
       (cond
 	 ((eof-object? obj)
-	  (user-error 'read-jfile "Illegal jfile format" obj))
+	  (user-error "read-jfile" "Illegal jfile format" obj))
 	 ((not (eof-object? eof))
-	  (user-error 'read-jfile "Illegal jfile format" eof))
+	  (user-error "read-jfile" "Illegal jfile format" eof))
 	 (else
 	  (let loop ((obj obj))
 	     (if (null? obj)
 		 'done
 		 (match-case (car obj)
 		    (((and (? symbol?) ?mod) (and ?qtype (? string?)))
-		     (class-qualified-type-name-set! mod qtype)
-		     (let ((pqtn (prefix qtype)))
-			(if (string=? pqtn qtype)
-			    (module-package-set! mod '||)
-			    (module-package-set! mod (string->symbol pqtn))))
+		     (jvm-qualified-name-set! mod (string->symbol qtype))
 		     (loop (cdr obj)))
 		    (else
-		     (user-error 'read-jfile
+		     (user-error "read-jfile"
 			"Illegal jfile format" (car obj))))))))))
+

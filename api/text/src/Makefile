@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/api/text/src/Makefile           */
+#*    serrano/prgm/project/bigloo/5.0a/api/text/src/Makefile           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Jul 23 14:05:05 2025 (serrano)                */
+#*    Last change :  Tue Mar 10 14:42:40 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -49,8 +49,9 @@ WASMAS		= $(BGLWATIB)
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= bibtex gb2312 hyphenation levenshtein
+_BGL5_OBJECTS	= make_lib5
 
-_OBJECTS	= $(_BGL_OBJECTS)
+_OBJECTS	= $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 

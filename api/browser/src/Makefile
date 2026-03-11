@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Jan 29 09:16:32 2026 (serrano)                */
+#*    Last change :  Tue Mar 10 15:44:07 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -45,15 +45,16 @@ WASMAS		= $(BGLWATIB)
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= dom
+_BGL5_OBJECTS	= make_lib5
 
-_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) make_lib5
+_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 
 EOBJECTS	= objs/make_lib.o
 
 
 WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) \
-                  objs/make_lib5.wat Wlib/wbrowser.wat
+                  Wlib/wbrowser.wat
 WEOBJECTS	= objs/make_lib.wat
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)

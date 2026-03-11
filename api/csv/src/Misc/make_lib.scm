@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/csv/src/Misc/make_lib.scm        */
+;*    .../prgm/project/bigloo/5.0a/api/csv/src/Misc/make_lib.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Joseph Donaldson (donaldsonjw@yahoo.com)          */
 ;*    Creation    :  Fri Feb 24 07:12:29 2012                          */
-;*    Last change :  Fri Feb 24 07:14:15 2012 (serrano)                */
-;*    Copyright   :  2011-12 Joseph Donaldson                          */
+;*    Last change :  Tue Mar 10 15:15:10 2026 (serrano)                */
+;*    Copyright   :  2011-26 Joseph Donaldson                          */
 ;*    -------------------------------------------------------------    */
 ;*    This file is part of bigloo-csv.                                 */
 ;*=====================================================================*/
@@ -13,5 +13,5 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __csv_make_lib
-   (import csv)
+   (import __csv)
    (eval (export-all)))

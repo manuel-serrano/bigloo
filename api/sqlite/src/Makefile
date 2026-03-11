@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/api/sqlite/src/Makefile         */
+#*    serrano/prgm/project/bigloo/5.0a/api/sqlite/src/Makefile         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Sep 11 08:27:14 2025 (serrano)                */
+#*    Last change :  Tue Mar 10 09:09:44 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -55,7 +55,8 @@ endif
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= sqlite sqltiny parser lexer engine
+_BGL_OBJECTS	= sqlite sqltypes sqltiny parser lexer engine
+_BGL5_OBJECTS   = make_lib5
 
 ifeq "$(SQLITELIBS) " " "
 _POSIX_OBJECTS	= 
@@ -64,12 +65,13 @@ _POSIX_OBJECTS	= bglsqlite
 endif
 _JAVA_CLASSES	= 
 
-_OBJECTS	= $(_POSIX_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_POSIX_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 
 EOBJECTS	= objs/make_lib.o
 
-BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class)
+BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class) \
+                  $(_BGL5_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
 JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class)

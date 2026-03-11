@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/crypto/src/Makefile              */
+#*    serrano/prgm/project/bigloo/5.0a/api/crypto/src/Makefile         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jul  9 10:01:24 2017                          */
-#*    Last change :  Sun Jul  9 10:06:30 2017 (serrano)                */
-#*    Copyright   :  2017 Manuel Serrano                               */
+#*    Last change :  Tue Mar 10 14:44:01 2026 (serrano)                */
+#*    Copyright   :  2017-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the library                                */
 #*=====================================================================*/
@@ -47,9 +47,9 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 _BGL_OBJECTS	= block_ciphers ciphers aes cast128 des idea pad \
                   util string2key \
                   dsa rsa elgamal DER pem
+_BGL5_OBJECTS	= make_lib5
 
-
-_OBJECTS	= $(_BGL_OBJECTS)
+_OBJECTS	= $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 

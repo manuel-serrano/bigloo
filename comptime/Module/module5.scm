@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Mon Mar  9 18:26:32 2026 (serrano)                */
+;*    Last change :  Tue Mar 10 07:19:47 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -34,6 +34,7 @@
 	   heap_restore
 	   expand_eps
 	   expand_object
+	   expand_assert
 	   ast_node
 	   ast_var
 	   ast_env
@@ -53,7 +54,7 @@
    (export (module5-expand ::pair-nil)
 	   (module5-import-def ::Module ::Decl)
 	   (module5-ast! ::Module ::obj ::symbol)
-	   (module5-module-package-set! ::Module)
+	   (module5-module-qualified-name-set! ::Module)
 	   (module5-main ::Module ::obj)
 	   (module5-imported-unit ::Module ::procedure ::obj)
 	   (module5-object-unit ::Module)
@@ -357,6 +358,7 @@
 				      (trace-item "pckage=" package)
 				      (unless (or (eq? dmod mod)
 						  (eq? scope 'static))
+					 
 					 (declare-java-class-type! id
 					    (find-type super) name package expr))))
 				(with-access::TDef t (id name decl kind)
@@ -401,16 +403,16 @@
 	       others)))))
 
 ;*---------------------------------------------------------------------*/
-;*    module5-module-package-set! ...                                  */
+;*    module5-module-qualified-name-set! ...                           */
 ;*---------------------------------------------------------------------*/
-(define (module5-module-package-set! mod::Module)
-   (with-trace 'module5 "module5-set-module-package!"
+(define (module5-module-qualified-name-set! mod::Module)
+   (with-trace 'module5 "module5-module-qualified-name-set!"
       (trace-item "mod=" (-> mod id))
-      (trace-item "pkg=" (-> mod package))
+      (trace-item "qn=" (-> mod qualified-name))
       (trace-item "path=" (-> mod path))
-      (when (symbol? (-> mod package))
+      (when (symbol? (-> mod qualified-name))
 	 (unless (string=? (dirname (-> mod path)) "/")
-	    (module-package-set! (-> mod id) (-> mod package))))))
+	    (jvm-qualified-name-set! (-> mod id) (-> mod qualified-name))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-main ...                                                 */
@@ -434,9 +436,12 @@
       (with-access::Module imod (id checksum version expr)
 	 (module5-expand-and-resolve! imod module5-init-xenv!
 	    :heap-modules (module5-heap4-modules)
-	    :packages (module-jvm-packages))
+	    :default-package (default-jvm-package)
+	    :qualified-names (jvm-qualified-names))
 	 ;; See engine compiler
-	 ;;; (module5-module-package-set! imod)
+	 ;; (module5-module-package-set! imod)
+	 (when (symbol? (-> imod qualified-name))
+	    (jvm-qualified-name-set! id (-> imod qualified-name)))
 	 (if (=fx version 5)
 	     (module5-checksum! imod)
 	     (set! checksum (module-checksum expr '())))
@@ -704,6 +709,8 @@
        (parse-function #t #t ident args name clause mod))
       ((macro (and (? symbol?) ?ident) (and (? string?) ?name))
        (parse-variable #t ident name clause mod))
+      ((export . ?-)
+       (parse-c-foreign-export clause #t))
       (((and (? symbol?) ?ident) ?args (and (? string?) ?name))
        (parse-function #f #f ident args name clause mod))
       (((and (? symbol?) ?ident) (and (? string?) ?name))
@@ -758,13 +765,6 @@
 			    (scope 'export)
 			    (def def))))
 	       (with-access::Module mod (decls defs exports)
-		  (when (string? super)
-		     (tprint "ID=" id " SUPER=" super
-			" -> " (hashtable-get (-> mod decls) super))
-		     (let ((sdecl (hashtable-get (-> mod decls) super)))
-			(with-access::Decl sdecl (def)
-			   (tprint "DEF=" (typeof def)))
-			(hashtable-put! exports super sdecl)))
 		  (hashtable-put! exports (symbol->string! id) decl)
 		  (hashtable-put! decls (symbol->string! id) decl)
 		  (hashtable-put! defs (symbol->string! id) def)))))))
@@ -951,8 +951,10 @@
       (when (memq 'java (backend-foreign-clause-support (the-backend)))
 	 (match-case (cddr x)
 	    (((package (and (? symbol?) ?pkg)) . ?other-clauses)
-	     (set! (-> mod package) pkg)
-	     (module5-module-package-set! mod)
+	     (let ((qn (string->symbol
+			  (format "~a.~a" pkg (prefix (basename (-> mod path)))))))
+		(jvm-qualified-name-set! (-> mod id) qn)
+		(set! (-> mod qualified-name) qn))
 	     (for-each (lambda (c) (parse-clause c mod x pkg)) other-clauses))
 	    (else
 	     (for-each (lambda (c) (parse-clause c mod x #f)) (cddr x)))))
@@ -1150,7 +1152,8 @@
 	   (let ((mi (cdr c)))
 	      (let ((m::Module (module5-parse mi (symbol->path (car c)))))
 		 (module5-expand-and-resolve! m module5-init-xenv!
-		    :packages (module-jvm-packages))
+		    :default-package (default-jvm-package)
+		    :qualified-names (jvm-qualified-names))
 		 m)))
       (reverse mods)))
 
@@ -1167,12 +1170,23 @@
 	  (localize x `(,def ,proto ,@(map (lambda (x) (e x e)) body))))
 	 (else
 	  (error "expand" "Illegal form" x))))
-   
+
+   (define (define-macro-expander x e)
+      ;; macro expander cannot use regular module5 initial env because
+      ;; the define expanders of that environment are incompatible with eval
+      (let ((envx *module5-env*))
+	 (set! *module5-env* #f)
+	 (let ((nx (expand-define-macro x e)))
+	    (set! *module5-env* envx)
+	    x)))
+
+   (install-module5-expander xenv 'define-macro #f define-macro-expander)
    (install-module5-expander xenv 'define #f define-expander)
    (install-module5-expander xenv 'define-inline #f define-expander)
    (install-module5-expander xenv 'define-generic #f define-expander)
    (install-module5-expander xenv 'define-method #f define-expander)
    (install-module5-expander xenv 'cond-expand #f expand-compile-cond-expand)
    (install-module5-expander xenv '$class-allocate #f expand-class-allocate)
+   (install-module5-expander xenv 'assert #f expand-assert)
    
    xenv)

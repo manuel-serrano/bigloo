@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/api/ssl/src/Llib/ssl.scm      */
+;*    serrano/prgm/project/bigloo/5.0a/api/ssl/src/Llib/ssl.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Thu Feb 15 08:06:46 2024 (serrano)                */
-;*    Copyright   :  2005-24 Manuel Serrano                            */
+;*    Last change :  Tue Mar 10 08:37:37 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
 ;*=====================================================================*/
@@ -51,7 +51,7 @@
 	   (macro $ssl-cipher-ctx-nil::$ssl-cipher-ctx "0L")
 
 	   (macro $obj->bignum::$bignum (::obj) "(BIGNUM *)FOREIGN_TO_COBJ")
-	   (macro $bignum->obj::obj ($bignum) "void_star_to_obj")
+	   (macro $bignum->obj::obj (::$bignum) "void_star_to_obj")
 	   (macro $bignum-nil::$bignum "((BIGNUM *)0L)")
 	   
 	   ($ssl-version::string () "bgl_ssl_version")
@@ -184,19 +184,19 @@
 	   ($bgl-evp-get-ciphers::pair-nil () "bgl_evp_get_ciphers")
 	   ($bgl-evp-get-hashes::pair-nil () "bgl_evp_get_hashes")
 
-	   ($bgl-dh-pub-priv-key-set!::void (::$dh $bignum $bignum)
+	   ($bgl-dh-pub-priv-key-set!::void (::$dh ::$bignum ::$bignum)
 	      "bgl_dh_pub_priv_key_set")
 	   ($bgl-dh-private-key::$bignum (::$dh)
 	      "bgl_dh_private_key")
-	   ($bgl-dh-private-key-set!::void (::$dh $bignum)
+	   ($bgl-dh-private-key-set!::void (::$dh ::$bignum)
 	      "bgl_dh_private_key_set")
 	   ($bgl-dh-public-key::$bignum (::$dh)
 	      "bgl_dh_public_key")
-	   ($bgl-dh-public-key-set!::void (::$dh $bignum)
+	   ($bgl-dh-public-key-set!::void (::$dh ::$bignum)
 	      "bgl_dh_public_key_set")
 	   ($bgl-dh-p::$bignum (::$dh)
 	      "bgl_dh_p")
-	   ($bgl-dh-pqg-set!::void (::$dh $bignum $bignum $bignum)
+	   ($bgl-dh-pqg-set!::void (::$dh ::$bignum ::$bignum ::$bignum)
 	      "bgl_dh_pqg_set")
 	   ($bgl-dh-q::$bignum (::$dh)
 	      "bgl_dh_p")

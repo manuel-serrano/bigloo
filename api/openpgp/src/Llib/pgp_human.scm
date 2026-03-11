@@ -1,6 +1,5 @@
 (module __openpgp-human
    (import __openpgp-packets
-	   __openpgp-composition
 	   __openpgp-error
 	   __openpgp-util)
    (export (content-tag->human-readable::bstring tag::symbol)

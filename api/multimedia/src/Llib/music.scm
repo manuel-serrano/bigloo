@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/api/multimedia/src/Llib/music.scm      */
+;*    .../project/bigloo/5.0a/api/multimedia/src/Llib/music.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Fri Mar 26 10:42:17 2021 (serrano)                */
-;*    Copyright   :  2005-21 Manuel Serrano                            */
+;*    Last change :  Tue Mar 10 12:02:10 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
 ;*=====================================================================*/

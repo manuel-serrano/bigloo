@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Engine/heap.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Engine/heap.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Fri Feb 13 09:34:27 2026 (serrano)                */
+;*    Last change :  Wed Mar 11 09:07:49 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
@@ -127,7 +127,7 @@
    (define (dump-var new)
       (let* ((mod (global-module new))
 	     (id (global-id new))
-	     (pkg (module-package-get mod))
+	     (pkg (jvm-package-get mod))
 	     (jt (global-qualified-type-name new))
 	     (val (global-value new)))
 	 (cond

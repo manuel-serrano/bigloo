@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/api/sqlite/src/Llib/sqlite.scm      */
+;*    .../prgm/project/bigloo/5.0a/api/sqlite/src/Llib/sqlite.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Thu Nov 10 13:55:46 2005                          */
-;*    Last change :  Tue Sep  9 13:26:07 2025 (serrano)                */
-;*    Copyright   :  2005-25 Manuel Serrano                            */
+;*    Last change :  Tue Mar 10 09:12:14 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SQLITE Scheme binding                                            */
 ;*=====================================================================*/
@@ -19,17 +19,9 @@
    (cond-expand
       ((and (or bigloo-c bigloo-wasm) (not sqltiny))
        (include "sqlite.sch")))
-
-   (cond-expand
-      ((and (or bigloo-c bigloo-wasm) (not sqltiny))
-       (export (class sqlite::%sqlite
-		  (%setup-sqlite!)
-		  ($builtin::$sqlite (default ($sqlite-nil))))
-	       ($sqlite-nil)))
-      (else
-       (export (class sqlite::sqltiny))))
    
-   (import __sqlite_sqltiny)
+   (import __sqlite_types
+	   __sqlite_sqltiny)
    
    (export  (abstract-class %sqlite
 	       (path::bstring read-only (default ":memory:")))
@@ -61,7 +53,16 @@
 	    
 	    (sqlite-last-insert-rowid ::%sqlite)
 
-	    (sqlite-format ::bstring . ::obj)))
+	    (sqlite-format ::bstring . ::obj))
+
+   (cond-expand
+      ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+       (export (class sqlite::%sqlite
+		  (%setup-sqlite!)
+		  ($builtin::$sqlite (default ($sqlite-nil))))
+	       ($sqlite-nil)))
+      (else
+       (export (class sqlite::sqltiny)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $sqlite-nil ...                                                  */

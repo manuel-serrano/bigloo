@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/sqlite/src/Llib/parser.scm       */
+;*    .../prgm/project/bigloo/5.0a/api/sqlite/src/Llib/parser.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 18 08:30:50 2007                          */
-;*    Last change :  Wed Nov 28 08:54:46 2007 (serrano)                */
-;*    Copyright   :  2007 Manuel Serrano                               */
+;*    Last change :  Tue Mar 10 09:06:57 2026 (serrano)                */
+;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable sqltiny parser                                          */
 ;*=====================================================================*/
@@ -19,10 +19,17 @@
 	   (set! *unsafe-arity* #t)
 	   (set! *unsafe-range* #t))
    
-   (import __sqlite_sqltiny
+   (import __sqlite_types
+	   __sqlite_lexer
 	   __sqlite_engine)
    
-   (export sqltiny-parser))
+   (export (sqltiny-parse ::input-port)))
+
+;*---------------------------------------------------------------------*/
+;*    sqltiny-parse ...                                                */
+;*---------------------------------------------------------------------*/
+(define (sqltiny-parse ip)
+   (read/lalrp sqltiny-parser sqltiny-lexer ip))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-default ...                                                 */

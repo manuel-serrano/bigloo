@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/phone/src/Makefile               */
+#*    serrano/prgm/project/bigloo/5.0a/api/phone/src/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:15:14 2017 (serrano)                */
+#*    Last change :  Tue Mar 10 15:29:02 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -44,10 +44,11 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= phone
+_BGL5_OBJECTS	= make_lib5
 
 _UNIX_OBJECTS	= 
 
-_OBJECTS	= $(_UNIX_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_UNIX_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 

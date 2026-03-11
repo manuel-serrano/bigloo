@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Mar  9 18:13:17 2026 (serrano)                */
+#*    Last change :  Tue Mar 10 19:58:03 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -73,22 +73,10 @@ _POSIX_SOURCES	= $(_POSIX_OBJECTS:%=$(C_SRC_DIR)/%.c)
 _JAVA_SOURCES	= $(_JAVA_CLASSES:%=$(JAVA_SRC_DIR)/%.java)
 
 SOURCES		= $(_BGL_SOURCES) \
+                  $(_BGL_SOURCES5) \
                   $(_POSIX_SOURCES) \
                   $(_JAVA_SOURCES)
-INCLUDES	= $(C_SRC_DIR)/bglpthread.h \
-                  $(BIGLOO_SRC_DIR)/pthread.sch \
-                  $(BIGLOO_SRC_DIR)/pmutex.sch \
-                  $(BIGLOO_SRC_DIR)/pcondvar.sch \
-                  $(BIGLOO_SRC_DIR)/psemaphore.sch \
  
-#*---------------------------------------------------------------------*/
-#*    Sources                                                          */
-#*---------------------------------------------------------------------*/
-POPULATION	= $(SOURCES) $(INCLUDES) \
-		  $(MISC_SRC_DIR)/make_lib.scm \
-                  $(MISC_SRC_DIR)/$(API).init.in \
-                  Makefile
-
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
@@ -116,12 +104,6 @@ $(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
 	@ exit 1
 
 #*---------------------------------------------------------------------*/
-#*    pop ...                                                          */
-#*---------------------------------------------------------------------*/
-pop:
-	@ echo $(POPULATION:%=$(API)/src/%)
-
-#*---------------------------------------------------------------------*/
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean: api-clean
@@ -134,6 +116,18 @@ distclean: cleanall
 #*    Common API rules                                                 */
 #*---------------------------------------------------------------------*/
 include ../../Makefile.api-safe
+
+#*---------------------------------------------------------------------*/
+#*    The explit rule                                                  */
+#*---------------------------------------------------------------------*/
+objs/objs_s/pthread.o: $(BIGLOO_SRC_DIR)/pthread.scm
+	$(BIGLOO) -suffix srfi $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c -module4 -dload-init-gc
+
+objs/objs_u/pthread.o: $(BIGLOO_SRC_DIR)/pthread.scm
+	$(BIGLOO) -suffix srfi $(EFLAGS) $(BAPIFLAGS) $(BAPIUNSAFEFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c -module4 -dload-init-gc
+
+$(CLASS_DIR)/pthread.class: $(BIGLOO_SRC_DIR)/pthread.scm
+	$(BIGLOO) -suffix srfi -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@ -module4 -dload-init-gc
 
 #bdepend start (don't edit)
 #*---------------------------------------------------------------------*/

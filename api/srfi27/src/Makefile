@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Jan 29 08:20:54 2026 (serrano)                */
+#*    Last change :  Tue Mar 10 15:31:34 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -35,7 +35,7 @@ JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
 DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options (cannot use BFLAGS because of -fcfa-arithmetic)
-BAPIFLAGS	= -O3 -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee -module4
+BAPIFLAGS	= -O3 -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
@@ -45,8 +45,9 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= 
 _SRFI_OBJECTS	= srfi27
+_BGL5_OBJECTS	= make_lib5
 
-_OBJECTS	= $(_BGL_OBJECTS) $(_SRFI_OBJECTS)
+_OBJECTS	= $(_BGL_OBJECTS) $(_SRFI_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 
@@ -118,8 +119,8 @@ include ../../Makefile.api
 #*    The implicit rules                                               */
 #*---------------------------------------------------------------------*/
 objs/%.o: $(BIGLOO_SRC_DIR)/%.bgl $(SRFIS)
-	$(BIGLOO) -suffix srfi $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c
+	$(BIGLOO) -suffix srfi $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c -module4
 
 $(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.bgl $(SRFIS)
-	$(BIGLOO) -suffix srfi -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@
+	$(BIGLOO) -suffix srfi -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@ -module4
 

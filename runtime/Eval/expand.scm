@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/expand.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/expand.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:57:39 1994                          */
-;*    Last change :  Sun Sep 21 01:04:38 2025 (serrano)                */
+;*    Last change :  Tue Mar 10 11:19:55 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La macro expansion de l'interprete                               */
 ;*=====================================================================*/
@@ -131,10 +131,10 @@
 		 (cond
 		    ((get-module5-expander (car x))
 		     =>
-		     (lambda (x) x))
+		     (lambda (e1) e1))
 		    ((get-eval-expander (car x))
 		     =>
-		     (lambda (x) x))
+		     (lambda (e1) e1))
 		    (else
 		     (let* ((loc (get-source-location x))
 			    (id (car (parse-formal-ident (car x) loc))))
@@ -145,10 +145,10 @@
 			    ae)
 			   ((get-module5-expander id)
 			    =>
-			    (lambda (x) x))
+			    (lambda (e1) e1))
 			   ((get-eval-expander id)
 			    =>
-			    (lambda (x) x))
+			    (lambda (e1) e1))
 			   (else
 			    ae))))))
 		(else

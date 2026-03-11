@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/SawJvm/jld.scm                      */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/SawJvm/jld.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct 24 10:32:46 2000                          */
-;*    Last change :  Fri Feb 13 09:01:41 2026 (serrano)                */
+;*    Last change :  Wed Mar 11 09:13:34 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The pseudo Jvm link (generation of a script shell that will run  */
@@ -228,7 +228,7 @@
 			 ((module ?mod . ?clauses)
 			  (find-classes mod
 			     (jvm-class-with-directory
-				(or (module-package-get mod) ""))
+				(or (jvm-package-get mod) ""))
 			     clauses))
 			 (else
 			  '()))))))

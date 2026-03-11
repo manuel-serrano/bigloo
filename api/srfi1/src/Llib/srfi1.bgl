@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/srfi1/src/Llib/srfi1.bgl         */
+;*    .../prgm/project/bigloo/5.0a/api/srfi1/src/Llib/srfi1.bgl        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 21:27:38 1999                          */
-;*    Last change :  Fri Dec 13 12:48:32 2013 (serrano)                */
+;*    Last change :  Tue Mar 10 14:40:07 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo module clause for the srfi1 implementation            */
 ;*=====================================================================*/
@@ -12,10 +12,6 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __srfi1
-   
-   (option (set! *dlopen-init-gc* #t)
-           (set! *dlopen-init* "bgl_dload_init_s_srfi1"))
-   
    (export (xcons::pair d a)
 	   (make-list::pair-nil ::int . el)
 	   (list-tabulate::pair-nil ::int ::procedure)

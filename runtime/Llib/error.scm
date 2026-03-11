@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/error.scm          */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/error.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Sep 24 13:32:41 2025 (serrano)                */
+;*    Last change :  Tue Mar 10 17:19:29 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -531,7 +531,7 @@
 	      (raise/cell handler))
 	     ((not (cdr handler))
 	      (default-exception-handler val)
-	      (the_failure "raise" "uncaught exception" val))
+	      (%abort 2))
 	     ((eq? (cdr handler) #unspecified)
 	      ((car handler) val))
 	     (else
@@ -558,7 +558,7 @@
 	   "Module `" current "' is inconsistently initialized by module `"
 	   from "'.\n"
 	   "At least `" from "' must be recompiled (see also -unsafev option).")
-   (%exit 1))
+   (%abort 1))
 
 ;*---------------------------------------------------------------------*/
 ;*    error ...                                                        */

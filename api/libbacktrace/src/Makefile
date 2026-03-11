@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    .../prgm/project/bigloo/bigloo/api/libbacktrace/src/Makefile     */
+#*    .../prgm/project/bigloo/5.0a/api/libbacktrace/src/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jan 23 07:08:36 2022 (serrano)                */
+#*    Last change :  Tue Mar 10 15:19:24 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -60,11 +60,12 @@ LDOPTS		+= -L$(BOOTDIR)/libbacktrace/libbacktrace-$(LIBBACKTRACECUSTOMVERSION)/.
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= backtrace
+_BGL5_OBJECTS	= make_lib5
 
 _C_OBJECTS	= bglbacktrace
 _JAVA_CLASSES	= 
 
-_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 
 EOBJECTS	= objs/make_lib.o

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Fri Feb 27 08:28:14 2026 (serrano)                */
+/*    Last change :  Tue Mar 10 17:20:12 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -4444,7 +4444,6 @@ public final class foreign {
    
    public static Object java_exception_handler(Throwable v, exit tag) {
       if (v instanceof java.lang.StackOverflowError) {
-	 // abort at once because otherwise the handler will crash too!
 	 err_lock.lock();
 	 try {
 	    v.printStackTrace(new stackwriter(System.err, true));
@@ -4458,7 +4457,7 @@ public final class foreign {
 	    return debug_handler(be, tag);
 	 } catch (Throwable _e) {
 	    System.err.println("Unexpected Java Exception: " +
-				v.getClass().getName().getBytes());
+			       v.getClass().getName().getBytes());
 	    v.printStackTrace(new stackwriter(System.err, true));
 	 }
       }
@@ -4489,7 +4488,7 @@ public final class foreign {
 
    public static RuntimeException fail(Object proc, Throwable x, Object env) {
       byte[] msg = (x.getMessage() != null)
-	 ? x.getMessage().getBytes() : FOREIGN_TYPE_NAME( x );
+	 ? x.getMessage().getBytes() : FOREIGN_TYPE_NAME(x);
       bigloo.runtime.Llib.error.the_failure(proc, msg, env);
 
       final RuntimeException e = new RuntimeException("bigloo error...");
@@ -4530,23 +4529,31 @@ public final class foreign {
    }
 
    public static void internalerror(Throwable e) throws Throwable {
-      try {
-	 notify_exception( e );
-      } catch(Throwable _t) {
-      } finally {
-         err_lock.lock();
+      if (e instanceof NoClassDefFoundError) {
+	 final stackwriter sw = new stackwriter(System.err, true);
+	 System.err.println(e.getMessage());
+	 e.printStackTrace(sw);
+	 sw.flush();
+	 JDK.exit(3);
+      } else {
 	 try {
-	    final stackwriter sw = new stackwriter( System.err, true );
-	    System.err.println();
-	    e.printStackTrace( sw );
-	    sw.flush();
+	    notify_exception(e);
+	 } catch(Throwable _t) {
 	 } finally {
-            err_lock.unlock();
-         }
-      }
+	    err_lock.lock();
+	    try {
+	       final stackwriter sw = new stackwriter(System.err, true);
+	       System.err.println();
+	       e.printStackTrace(sw);
+	       sw.flush();
+	    } finally {
+	       err_lock.unlock();
+	    }
+	 }
 	 
-      bigloo_abort();
-      JDK.exit(1);
+	 bigloo_abort();
+	 JDK.exit(1);
+      }
    }
 
    public static Object PUSH_ENV_EXIT(bgldynamic env, exit v, int protect) {
@@ -4557,7 +4564,6 @@ public final class foreign {
    }
       
    public static Object PUSH_EXIT(exit v, int protect) {
-//      print("** PUSH " + v + " " + protect + " abgldynamic=" + bgldynamic.abgldynamic.get() + " thread=" + Thread.currentThread());
       v.userp = protect;
       v.prev = (exit) bgldynamic.abgldynamic.get().exitd_top;
       bgldynamic.abgldynamic.get().exitd_top = v;
@@ -4565,8 +4571,6 @@ public final class foreign {
    }
 
    public static Object POP_EXIT() {
-//      print("** POP abgldynamic=" + bgldynamic.abgldynamic.get()  + " thread=" + Thread.currentThread());
-
       try {
 	 bgldynamic.abgldynamic.get().exitd_top =
 	    ((exit) bgldynamic.abgldynamic.get().exitd_top).prev;
@@ -4577,7 +4581,6 @@ public final class foreign {
    }
 
    public static Object POP_ENV_EXIT(bgldynamic env) {
-//      print("** POP abgldynamic=" + bgldynamic.abgldynamic.get()  + " thread=" + Thread.currentThread());
       try {
 	 env.get().exitd_top =
 	    ((exit) env.get().exitd_top).prev;
@@ -5155,6 +5158,10 @@ public final class foreign {
       JDK.exit((exitv instanceof bint) ? ((bint) exitv).value : 0);
 
       return null;
+   }
+
+   public static void BIGLOO_ABORT(int n) {
+      JDK.abort(n);
    }
 
    public static final byte[] BGL_DYNAMIC_LOAD_INIT =

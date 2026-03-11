@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/BackEnd/cplib.scm                   */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/BackEnd/cplib.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Fri Feb 13 08:09:12 2026 (serrano)                */
+;*    Last change :  Wed Mar 11 09:12:47 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
@@ -67,7 +67,7 @@
       (assert (name) (not (bigloo-need-mangling? name)))
       (if (string=? pkg "")
 	  name
-	  (string-append pkg "." name)))
+	  (string-append pkg "$" name)))
    
    (define (tclass-id-mangling::bstring class::tclass)
       (if (eq? class (get-object-type))
@@ -76,22 +76,14 @@
 	     (let ((mod (global-module holder)))
 		(class-id->type-name id mod)))))
    
-   (define (class-package module)
-      (let ((pkg (module-package-get module)))
+   (define (class-qualified-name module)
+      (let ((pkg (jvm-qualified-name-get module)))
 	 (if pkg
 	     (symbol->string! pkg)
 	     "")))
    
-   (define (super-package::bstring super)
-      (with-access::tclass super (its-super id)
-	 (if (or (not (tclass? its-super))
-		 (and (eq? super its-super)
-		      (not (eq? (type-id its-super) 'obj))))
-	     "bigloo"
-	     (let ((holder (tclass-holder super)))
-		(class-package (global-module holder))))))
-   
-   (on-package (super-package class) (tclass-id-mangling class)))
+   (on-package (class-qualified-name (global-module (tclass-holder class)))
+      (tclass-id-mangling class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    qualified-tclass-name ...                                        */

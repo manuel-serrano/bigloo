@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Init/parse_args.scm                 */
+;*    .../prgm/project/bigloo/5.0a/comptime/Init/parse_args.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat Feb 14 08:15:30 2026 (serrano)                */
+;*    Last change :  Wed Mar 11 07:19:40 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -257,9 +257,9 @@
       ;; package access file name
       (("-jfile" ?file (help "Name of the Jvm package file"))
        (set! *qualified-type-file* file))
-      ;; one type addition
-      (("-package" ?module ?pkg (help "Set module package (used by jvm only)"))
-       (module-package-set! (string->symbol module) (string->symbol pkg)))
+      ;; jvm package
+      (("-package" ?pkg (help "Set default package (jvm only)"))
+       (default-jvm-package-set! (string->symbol pkg)))
       ;; main function
       (("-main" ?fun (help "Set the main function"))
        (set! *main* (string->symbol fun)))
@@ -1239,15 +1239,15 @@
    (let ((len (string-length string)))
       (if (=fx len 0)
 	  (begin
-	     (set! *module-shape?*   #t)
-	     (set! *key-shape?*      #t)
-	     (set! *type-shape?*     #t)
+	     (set! *module-shape?* #t)
+	     (set! *key-shape?* #t)
+	     (set! *type-shape?* #t)
 	     (set! *typename-shape?* #t)
-	     (set! *access-shape?*   #t)
-	     (set! *alloc-shape?*    #t)
+	     (set! *access-shape?* #t)
+	     (set! *alloc-shape?* #t)
 	     (set! *location-shape?* #t)
-	     (set! *user-shape?*     #t)
-	     (set! *name-shape?*     #t))
+	     (set! *user-shape?* #t)
+	     (set! *name-shape?* #t))
 	  (let liip ((i 0))
 	     (if (=fx i len)
 		 'done

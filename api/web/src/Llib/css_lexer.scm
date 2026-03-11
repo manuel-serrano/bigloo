@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
 ;*    Last change :  Tue Aug 16 14:13:32 2022 (serrano)                */
-;*    Copyright   :  2005-22 Manuel Serrano                            */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
 ;*=====================================================================*/

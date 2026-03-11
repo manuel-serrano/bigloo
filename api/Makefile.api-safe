@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Sun Mar  8 09:06:56 2026 (serrano)                */
+#*    Last change :  Tue Mar 10 10:33:05 2026 (serrano)                */
 #*    Copyright   :  2010-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -105,7 +105,7 @@ clean-init:
 #*---------------------------------------------------------------------*/
 .PHONY: api-c heap-c api-c-static api-c-shared api-clean-c
 
-api-c: api-init $(TAGS) .afile heap-c
+api-c: api-init $(TAGS) .afile heap-c heap5-c
 	mkdir -p objs
 	mkdir -p objs/objs_s
 	mkdir -p objs/objs_u
@@ -115,7 +115,7 @@ api-c: api-init $(TAGS) .afile heap-c
 	  $(MAKE) api-c-shared_mt; \
 	fi
 
-api-c_mt: api-init $(TAGS) .afile heap-c
+api-c_mt: api-init $(TAGS) .afile heap-c heap5-c
 	mkdir -p objs
 	mkdir -p objs/objs_s
 	mkdir -p objs/objs_u
@@ -237,7 +237,7 @@ api-clean-c:
 #*---------------------------------------------------------------------*/
 .PHONY: api-jvm heap-jvm api.zip api-clean-jvm
 
-api-jvm: api-init $(TAGS) .jfile heap-jvm
+api-jvm: api-init $(TAGS) .jfile heap-jvm heap5-jvm
 	mkdir -p $(CLASS_DIR)
 	mkdir -p $(CLASS_EDIR)
 	$(MAKE) api.zip
@@ -363,16 +363,16 @@ objs/objs_u/make_lib5.o: $(MISC_SRC_DIR)/make_lib5.scm
 	$(BIGLOO) -module5 $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
 
 $(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.scm
-	$(BIGLOO) -jvm $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
+	$(BIGLOO) -jvm -package $(PBASE) $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
 $(CLASS_DIR)/make_lib5.class: $(MISC_SRC_DIR)/make_lib5.scm
-	$(BIGLOO) -module5 -jvm $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
+	$(BIGLOO) -module5 -jvm -package $(PBASE) $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
 $(CLASS_DIR)/%.java: $(JAVA_SRC_DIR)/%.java
 	cp $< $@
 
 $(CLASS_EDIR)/%.class: $(MISC_SRC_DIR)/%.scm
-	$(BIGLOO) -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
+	$(BIGLOO) -jvm -package $(PBASE) $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
 objs/obj_s/%.wat: $(BIGLOO_SRC_DIR)/%.scm
 	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c

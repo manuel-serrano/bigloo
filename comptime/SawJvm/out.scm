@@ -98,8 +98,7 @@
 (define (declare-module me::jvm module::symbol)
    (if (eq? module *module*)
        'me
-       (declare-class me
-	  (string->symbol (class-qualified-type-name-get module)))))
+       (declare-class me (jvm-qualified-name-get module))))
 
 (define (open-module me::jvm);
    (with-access::jvm me (declarations fields methods qname)

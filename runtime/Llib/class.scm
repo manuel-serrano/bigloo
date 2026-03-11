@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Fri Mar  6 22:02:41 2026 (serrano)                */
+;*    Last change :  Tue Mar 10 09:18:37 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -67,6 +67,7 @@
 	   (properties-expand::pair ::struct ::bool)
 	   (registration-expand::pair ::struct ::Module)
 	   (instantiate-expander::procedure ::struct ::Module)
+	   (duplicate-expander::procedure ::struct ::Module)
 	   (with-access-expander::procedure ::struct ::Module)
 	   (co-instantiate-expander::procedure ::Module)))
 
@@ -95,7 +96,7 @@
 	  (let ((ci (module5-get-class mod k)))
 	     (if (not ci)
 		 (error/loc "parse-class"
-		    "Cannot find super class" x x)
+		    (format "Cannot find super class \"~a\"" k) x x)
 		 (values (+fx 1 (class-info-depth ci))
 		    (class-info-vproperties ci))))))
    
@@ -250,24 +251,6 @@
 				   `(cast-null ,(prop-info-type p))))))))
 	    (class-info-properties class-info))))
 
-(define (allocator-expand-TBR class-info mod)
-   `($class-allocate ,(class-info-id class-info)
-       ,@(filter-map (lambda (p)
-			(cond
-			   ((prop-info-virtual? p)
-			    #f)
-			   ((prop-info-defv? p)
-			    (prop-info-value p))
-			   (else
-			    (let ((ty (prop-info-type p)))
-			       `(set! (-> o ,(prop-info-id p))
-				   ,(cond
-				       ((module5-get-class mod ty)
-					`(class-nil ,ty))
-				       (else
-					`(cast-null ,(prop-info-type p)))))))))
-	    (class-info-properties class-info))))
-
 ;*---------------------------------------------------------------------*/
 ;*    creator-expand ...                                               */
 ;*---------------------------------------------------------------------*/
@@ -401,43 +384,103 @@
 				 (class-info-properties class-info))
 			 (error/loc (car x) "Illegal property" (car a) args)))
 	    args)
-	 (e `(let ((,to ($class-allocate ,cid
-			   ;; concrete properties
-			   ,@(map (lambda (p)
-				     (cond
-					((prop-info-virtual? p)
-					 #f)
-					((assq (prop-info-id p) args)
-					 =>
-					 (lambda (arg)
-					    (e (cadr arg) e)))
-					((prop-info-defv? p)
-					 (e (prop-info-value p) e))
-					(else
-					 (error/loc (car x)
-					    "Property missing"
-					    (prop-info-id p)
-					    (prop-info-expr p)))))
-				(filter (lambda (p)
-					   (not (prop-info-virtual? p)))
-				   (class-info-properties class-info))))))
-		;; constructor
-		,@(if (class-info-ctor class-info)
-		      (list `(,(class-info-ctor class-info) ,o))
-		      '())
-		;; virtual propertys
-		,@(filter-map (lambda (p)
-				 (cond
-				    ((not (prop-info-virtual? p))
-				     #f)
-				    ((assq (prop-info-id p) args)
-				     =>
-				     (lambda (arg)
-					`(set! (-> ,o ,(prop-info-id p)) ,(e (cadr arg) e))))))
-		     (class-info-properties class-info))
-		;; done
-		,o)
-	    e))))
+	 (let ((nx `(let ((,to ($class-allocate ,cid
+				  ;; concrete properties
+				  ,@(map (lambda (p)
+					    (cond
+					       ((prop-info-virtual? p)
+						#f)
+					       ((assq (prop-info-id p) args)
+						=>
+						(lambda (arg)
+						   (e (cadr arg) e)))
+					       ((prop-info-defv? p)
+						(e (prop-info-value p) e))
+					       (else
+						(error/loc (car x)
+						   "Property missing"
+						   (prop-info-id p)
+						   (prop-info-expr p)))))
+				       (filter (lambda (p)
+						  (not (prop-info-virtual? p)))
+					  (class-info-properties class-info))))))
+		       ;; constructor
+		       ,@(if (class-info-ctor class-info)
+			     (list `(,(class-info-ctor class-info) ,o))
+			     '())
+		       ;; virtual propertys
+		       ,@(filter-map (lambda (p)
+					(cond
+					   ((not (prop-info-virtual? p))
+					    #f)
+					   ((assq (prop-info-id p) args)
+					    =>
+					    (lambda (arg)
+					       (unless (prop-info-ronly? p)
+						  `(set! (-> ,o ,(prop-info-id p)) ,(e (cadr arg) e)))))))
+			    (class-info-properties class-info))
+		       ;; done
+		       ,o)))
+	    (e (localize x nx) e)))))
+
+;*---------------------------------------------------------------------*/
+;*    duplicate-expander ...                                           */
+;*    -------------------------------------------------------------    */
+;*    Create an duplicate expander, suitable for the interpreter       */
+;*    and the compiler. Called during the expansion of a module 5.     */
+;*---------------------------------------------------------------------*/
+(define (duplicate-expander class-info mod::Module)
+   (lambda (x e)
+      (let* ((args (cddr x))
+	     (o (gensym 'o))
+	     (d (gensym 'd))
+	     (cid (class-info-id class-info))
+	     (mid (-> mod id))
+	     (td (make-typed-ident d cid))
+	     (to (make-typed-ident o cid)))
+	 ;; syntactic check
+	 (for-each (lambda (a)
+		      (unless (match-case a (((? symbol?) ?e) #t) (else #f))
+			 (error/loc (car x) "Illegal property" a args))
+		      (unless (find (lambda (p) (eq? (prop-info-id p) (car a)))
+				 (class-info-properties class-info))
+			 (error/loc (car x) "Illegal property" (car a) args)))
+	    args)
+	 (let ((nx `(let ((,d ,(cadr x))
+			  (,to ($class-allocate ,cid
+				  ;; concrete properties
+				  ,@(map (lambda (p)
+					    (cond
+					       ((prop-info-virtual? p)
+						#f)
+					       ((assq (prop-info-id p) args)
+						=>
+						cadr)
+					       (else
+						`(-> ,d ,(prop-info-id p)))))
+				       (filter (lambda (p)
+						  (not (prop-info-virtual? p)))
+					  (class-info-properties class-info))))))
+		       ;; constructor
+		       ,@(if (class-info-ctor class-info)
+			     (list `(,(class-info-ctor class-info) ,o))
+			     '())
+		       ;; virtual propertys
+		       ,@(filter-map (lambda (p)
+					(cond
+					   ((not (prop-info-virtual? p))
+					    #f)
+					   ((assq (prop-info-id p) args)
+					    =>
+					    (lambda (arg)
+					       (unless (prop-info-ronly? p)
+						  `(set! (-> ,o ,(prop-info-id p)) ,(cadr arg)))))
+					   ((not (prop-info-ronly? p))
+					    `(set! (-> ,o ,(prop-info-id p)) (-> ,d ,(prop-info-id p))))))
+			    (class-info-properties class-info))
+		       ;; done
+		       ,o)))
+	    (e (localize x nx) e)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-access-expander ...                                         */
@@ -566,7 +609,8 @@
    (lambda (x e)
       (match-case x
 	 ((co-instantiate (and (? list?) ?bindings) . ?body)
-	  (e (co-instantiate-expand bindings body x) e))
+	  (let ((nx (co-instantiate-expand bindings body x)))
+	     (e (localize x nx) e)))
 	 (else
 	  (error/loc "co-instantiate" "Illegal form" x x)))))
 

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/foreign.scm                  */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/foreign.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Fri Feb 13 13:53:04 2026 (serrano)                */
+;*    Last change :  Tue Mar 10 08:31:26 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign and extern clauses compilation. Foreign and extern   */
@@ -38,6 +38,7 @@
    (export  (make-foreign-compiler)
 	    (make-extern-compiler)
 	    (parse-c-foreign-type ::pair)
+	    (parse-c-foreign-export ::pair ::bool)
 	    (foreign-accesses-add! ::pair-nil)
 	    (foreign-finalizer)))
 
@@ -123,8 +124,7 @@
       ((type . ?-)
        (parse-c-foreign-type foreign))
       ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
-       (set! *foreign-exported*
-	  (cons (cons foreign exportp) *foreign-exported*)))
+       (parse-c-foreign-export foreign exportp))
       (((or export type include) . ?-)
        ;; an error
        (user-error "Parse error" "Illegal foreign form" foreign '()))
@@ -218,6 +218,12 @@
       (else
        (user-error "Parse error" "Illegal extern form" extern '()))))
 
+;*---------------------------------------------------------------------*/
+;*    parse-c-foreign-export ...                                       */
+;*---------------------------------------------------------------------*/
+(define (parse-c-foreign-export clause exportp)
+   (set! *foreign-exported* (cons (cons clause exportp) *foreign-exported*)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    parse-c-foreign-type ...                                         */
 ;*---------------------------------------------------------------------*/

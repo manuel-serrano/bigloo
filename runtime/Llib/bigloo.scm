@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/bigloo.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/bigloo.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Mon Sep  8 15:44:42 2025 (serrano)                */
+;*    Last change :  Tue Mar 10 17:19:51 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -147,6 +147,9 @@
 	    (macro %exit::obj (::obj)
 		   "BIGLOO_EXIT")
 
+	    (macro %abort::void (::int)
+		   "exit")
+
 	    (macro $time::obj (::procedure)
 		   "bgl_time")
 
@@ -284,6 +287,9 @@
 	       
 	       (method static %exit::obj (::obj)
 		       "BIGLOO_EXIT")
+
+	       (method static %abort::void (::int)
+		       "BIGLOO_ABORT")
 
 	       (method static $time::obj (::procedure)
 		       "bgl_time"))

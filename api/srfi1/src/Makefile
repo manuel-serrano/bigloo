@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Jan 29 08:17:00 2026 (serrano)                */
+#*    Last change :  Tue Mar 10 14:33:19 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -35,7 +35,7 @@ JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
 DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options
-BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -module4
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR)
 BAPIUNSAFEFLAGS = -unsafe -safee
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
@@ -45,9 +45,10 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= 
+_BGL5_OBJECTS	= make_lib5
 _SRFI_OBJECTS	= srfi1
 
-_OBJECTS	= $(_BGL_OBJECTS) $(_SRFI_OBJECTS)
+_OBJECTS	= $(_BGL_OBJECTS) $(_SRFI_OBJECTS) $(_BGL5_OBJECTS)
 SAFE_OBJECTS	= $(_OBJECTS:%=objs/objs_s/%.o)
 SAFE_EOBJECTS	= objs/objs_s/make_lib.o
 UNSAFE_OBJECTS	= $(_OBJECTS:%=objs/objs_u/%.o)
@@ -120,13 +121,13 @@ include ../../Makefile.api-safe
 #*    The implicit rules                                               */
 #*---------------------------------------------------------------------*/
 objs/objs_s/%.o: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.srfi
-	$(BIGLOO) -suffix srfi $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c
+	$(BIGLOO) -suffix srfi $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c -module4 -dload-sym "bgl_dload_init_s_srfi1" -dload-init-gc
 
 objs/objs_u/%.o: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.srfi
-	$(BIGLOO) -suffix srfi $(EFLAGS) $(BAPIFLAGS) $(BAPIUNSAFEFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c
+	$(BIGLOO) -suffix srfi $(EFLAGS) $(BAPIFLAGS) $(BAPIUNSAFEFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c -module4 -dload-sym "bgl_dload_init_s_srfi1" -dload-init-gc
 
 $(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.srfi
-	$(BIGLOO) -suffix srfi -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@
+	$(BIGLOO) -suffix srfi -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@ -module4 -dload-sym "bgl_dload_init_s_srfi1" -dload-init-gc
 
 
 

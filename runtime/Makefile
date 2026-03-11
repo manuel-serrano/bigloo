@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Feb 13 11:43:22 2026 (serrano)                */
+#*    Last change :  Tue Mar 10 17:11:47 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -134,7 +134,7 @@ W_WLIB		= $(WLIB:%=Wlib/%.wat)
 #*---------------------------------------------------------------------*/
 #*    Java objects                                                     */
 #*---------------------------------------------------------------------*/
-JDK_LIBS	= JDK
+JDK_LIBS	= JDK JDKexit
 
 ifeq ($(JAVA_VERSION), 20)
   JDK_LIBS += JDK16
@@ -390,65 +390,11 @@ CLASSES		= $(SCM_SYS_SRC:%.scm=objs/$(CLASSDIR_SYS)/bigloo/runtime/%.class) \
 WASMS		= $(SCM_SYS_SRC:%.scm=objs/$(WASMDIR_SYS)/%.wasm) \
                   $(SCM_USR_SRC:%.scm=objs/$(WASMDIR_USR)/%.wasm)
 
-#* WASMS = \                                                           */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/base64.wasm \                       */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/bm.wasm \                           */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/crc.wasm objs/$(WASMDIR_SYS)/Unsafe/crc16.wasm \ */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/ftp.wasm objs/$(WASMDIR_SYS)/Unsafe/gunzip.wasm \ */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/hmac.wasm \                         */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/intext.wasm objs/$(WASMDIR_SYS)/Unsafe/kmp.wasm \ */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/md5.wasm \                          */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/regexp.wasm objs/$(WASMDIR_SYS)/Unsafe/rsa.wasm \ */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/sha1.wasm objs/$(WASMDIR_SYS)/Unsafe/sha2.wasm \ */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/ssr.wasm \                          */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/url.wasm objs/$(WASMDIR_SYS)/Unsafe/uuid.wasm \ */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/aes.wasm \                          */
-#* 	objs/$(WASMDIR_SYS)/Unsafe/http.wasm \                         */
-#*         objs/$(WASMDIR_SYS)/Unsafe/tar.wasm \                       */
-#*         objs/$(WASMDIR_SYS)/Unsafe/bignumber.wasm \                 */
-#* 	$(LLIB:%=objs/$(WASMDIR_SYS)/Llib/%.wasm) \                    */
-#* 	$(IEEE:%=objs/$(WASMDIR_SYS)/Ieee/%.wasm) \                    */
-#* 	$(EVAL:%=objs/$(WASMDIR_SYS)/Eval/%.wasm) \                    */
-#* 	$(RGC:%=objs/$(WASMDIR_SYS)/Rgc/%.wasm) \                      */
-#* 	$(PP:%=objs/$(WASMDIR_SYS)/Pp/%.wasm) \                        */
-#* 	$(READ:%=objs/$(WASMDIR_SYS)/Read/%.wasm) \                    */
-#* 	$(R5RS:%=objs/$(WASMDIR_SYS)/R5rs/%.wasm) \                    */
-#* 	$(MATCH:%=objs/$(WASMDIR_SYS)/Match/%.wasm) \                  */
-#* 	$(LALR:%=objs/$(WASMDIR_SYS)/Lalr/%.wasm) \                    */
-#* 	# objs/$(WASMDIR_SYS)/Unsafe/pregexp.wasm \                    */
-#* 	# objs/$(WASMDIR_SYS)/Unsafe/pcre.wasm objs/$(WASMDIR_SYS)/Unsafe/regex.wasm */
-
 #*---------------------------------------------------------------------*/
 #*    C Object files for the distribution                              */
 #*---------------------------------------------------------------------*/
 C_OBJECTS	= $(SCM_SYS_SRC:%.scm=objs/$(OBJDIR_SYS)/%.c) \
                   $(SCM_USR_SRC:%.scm=objs/$(OBJDIR_USR)/%.c)
-
-#*---------------------------------------------------------------------*/
-#*    Population                                                       */
-#*---------------------------------------------------------------------*/
-POPULATION_SI	= $(SRC_FILES) \
-                  Makefile \
-                  Llib/make_lib.scm \
-		  Lalr/lalr.sch \
-		  Rgc/rgc-node.sch \
-		  Eval/byte-code.sch \
-		  Llib/hash.sch \
-		  Llib/object.sch \
-		  Mlib/mach_dep.c \
-                  Clib/inline_alloc.c \
-                  Clib/non_inline_alloc.c \
-                  Clib/gc_intf.c \
-                  Clib/inline_alloc_bump.h \
-                  Clib/inline_alloc.h \
-                  Clib/inline_alloc_thread.h \
-                  Clib/cregex.h Clib/cpcre.h \
-                  Clib/cregex.h Clib/cpcre2.h
-POPULATION	= $(POPULATION_SI) $(INCLUDE_FILE) \
-                  Jlib/JDK13.java \
-                  Jlib/JDK14.java \
-                  Jlib/JDK15.java \
-                  Jlib/JDK16.java
 
 #*---------------------------------------------------------------------*/
 #*    .SUFFIXES                                                        */
@@ -642,7 +588,7 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip: $(CLASSES) class$(LIBSUFFIX)/jlib 
 	 $(ZIP) -q $(ZFLAGS) $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip \
                  $(SCM_SYS_SRC:%.scm=bigloo/runtime/%.class) \
                  $(SCM_USR_SRC:%.scm=bigloo/runtime/%.class) \
-                 bigloo/runtime/*/_KBGl_*.class \
+                 bigloo/runtime/*/*_KBGl_*.class \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%.class) \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%[$$]*.class)) || exit 1
 	@ echo "\e[1;38m$(@)\e[0m done."
@@ -747,22 +693,6 @@ objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: \
 #*---------------------------------------------------------------------*/
 Llib/make_lib.wasm.sch: $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_UNSAFE_SRC) $(W_WLIB)
 	$(BIGLOO) -i ../tools/gen_make_lib_wasm.scm -- $^ > $@
-
-#*---------------------------------------------------------------------*/
-#*    pop                                                              */
-#*    -------------------------------------------------------------    */
-#*    This entry is used by the bigloo/Makefile (the main Bigloo       */
-#*    makefile) to get the list of file that populate a revision.      */
-#*---------------------------------------------------------------------*/
-.PHONY: pop
-pop:
-	@ echo $(POPULATION:%=runtime/%)
-
-#*---------------------------------------------------------------------*/
-#*    touchall                                                         */
-#*---------------------------------------------------------------------*/
-touchall:
-	touch $(POPULATION_SI)
 
 #*---------------------------------------------------------------------*/
 #*    Soure file distributions                                         */

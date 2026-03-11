@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/BackEnd/jvm.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/BackEnd/jvm.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Sat Feb 14 08:09:52 2026 (serrano)                */
+;*    Last change :  Wed Mar 11 08:42:33 2026 (serrano)                */
 ;*    Copyright   :  2012-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -67,32 +67,19 @@
 ;*    backend-select! ::jvm ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-select! me::jvm)
-   (let ((pkg (string->symbol (prefix *jvm-foreign-class-name*))))
-      (module-package-set! 'foreign pkg)
-      (class-qualified-type-name-set! 'foreign *jvm-foreign-class-name*)))
+   (jvm-qualified-name-set! 'foreign (string->symbol *jvm-foreign-class-name*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-compile me::jvm)
-   ;; the jvm prelude (hello message and *DEST* update)
-   (pass-prelude "Jvm" start-jvm-emission!)
-   (verbose 2 "      [module: " *module* " package: "
-      (module-package-get *module*) "]"#\Newline)
-   ;; CARE: BPS, fix the backend qualified name !!
-   (jvm-qname-set! me (class-qualified-type-name-get *module*))
-   ;; if we are going to link and we have not found a main yet, we
-   ;; have to produce a fake one
-   (when (and (not *main*) *auto-link-main* (memq *pass* '(ld distrib)))
-      (set! *main* (make-bigloo-main)))
-   ;; the jvm driver
+   
    (define (emit classfile dest)
       (let ((dir *jvm-dir-name*))
 	 (if (eq? *pass* 'jvmas)
 	     (let ((port (if (not (string? dest))
 			     (current-output-port)
-			     (open-output-file
-				(string-append dir "/" dest)))))
+			     (open-output-file (string-append dir "/" dest)))))
 		(jvmasdump classfile port)
 		(if (not (eq? port (current-output-port)))
 		    (close-output-port port)))
@@ -111,25 +98,42 @@
 		   (unwind-protect
 		      (jvm-as classfile port)
 		      (close-binary-port port)))))))
+   
+   ;; the jvm prelude (hello message and *DEST* update)
+   (pass-prelude "Jvm" start-jvm-emission!)
+   (verbose 2 "      [module: " *module* " package: "
+      (jvm-package-get *module*) "]"#\Newline)
+   
+   (jvm-qname-set! me (class-qualified-type-name-get *module*))
+   
+   ;; if we are going to link and we have not found a main yet, we
+   ;; have to produce a fake one
+   (when (and (not *main*) *auto-link-main* (memq *pass* '(ld distrib)))
+      (set! *main* (make-bigloo-main)))
+   
+   ;; the jvm driver
    (jvm-check-package *module* *jvm-dir-name*)
+   
    (let ((l* (saw_jvm-compile me))
 	 (bname (cond
 		   ((eq? *pass* 'ld)
-		    (if (symbol? (jvm-qname me))
-			(addsuffix (prefix (basename (symbol->string (jvm-qname me)))))
+		    (if (string? (jvm-qname me))
+			(addsuffix (prefix (basename (jvm-qname me))))
 			"a.class"))
 		   ((not (string? *dest*))
-		    (if (symbol? (jvm-qname me))
-			(addsuffix (prefix (basename (symbol->string (jvm-qname me)))))
+		    (if (string? (jvm-qname me))
+			(addsuffix (prefix (basename (jvm-qname me))))
 			#f))
 		   (else
 		    (addsuffix (prefix (basename *dest*)))))))
+      
       (emit (car l*) bname)
-      (for-each (lambda (cf) (emit cf (jasname cf)))
-	 (cdr l*) )
+      
+      (for-each (lambda (cf) (emit cf (jasname cf))) (cdr l*))
+      
       (stop-on-pass 'cc (lambda () 'done))
       (stop-on-pass 'jvmas (lambda () 'done))
-      (stop-on-pass 'jast (lambda () 'done)) ))
+      (stop-on-pass 'jast (lambda () 'done))))
 
 ;*---------------------------------------------------------------------*/
 ;*    jvm-check-package ...                                            */

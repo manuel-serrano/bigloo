@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/api/calendar/src/Makefile       */
+#*    serrano/prgm/project/bigloo/5.0a/api/calendar/src/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Jul 29 08:32:05 2025 (serrano)                */
+#*    Last change :  Tue Mar 10 14:29:20 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -46,8 +46,9 @@ WASMAS		= $(BGLWATIB)
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= types icalendar utils
+_BGL5_OBJECTS	= make_lib5
 
-_OBJECTS	= $(_BGL_OBJECTS)
+_OBJECTS	= $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 

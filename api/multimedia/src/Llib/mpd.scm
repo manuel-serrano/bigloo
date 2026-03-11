@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/multimedia/src/Llib/mpd.scm      */
+;*    .../prgm/project/bigloo/5.0a/api/multimedia/src/Llib/mpd.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Sun Aug 17 07:49:08 2014 (serrano)                */
-;*    Copyright   :  2008-14 Manuel Serrano                            */
+;*    Last change :  Tue Mar 10 12:10:16 2026 (serrano)                */
+;*    Copyright   :  2008-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
 ;*=====================================================================*/
@@ -100,7 +100,7 @@
 	 ((symbol4)
 	  `(get-line-arg-symbol-nth line 4))
 	 (else
-	  (error 'define-mpd-command "Unknown argument type" arg))))
+	  (error "define-mpd-command" "Unknown argument type" arg))))
    
    (let ((fun (match-case proto
 		 ((?id)
@@ -129,7 +129,7 @@
 			    (,arg4 ,(get-arg arg4)))
 			 ,@body)))
 		 (else
-		  (error 'define-mpd-command "Illegal prototype" proto))))
+		  (error "define-mpd-command" "Illegal prototype" proto))))
 	 (id (symbol-append 'mpd- (car proto))))
       
       `(begin

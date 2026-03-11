@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/web/src/Makefile          */
+#*    serrano/prgm/project/bigloo/5.0a/api/web/src/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue May 28 10:29:28 2019 (serrano)                */
+#*    Last change :  Tue Mar 10 09:51:55 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -46,8 +46,9 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= xml css css_ast css_lexer css_parser cgi rss atom feeds \
                   html webdav date json
+_BGL5_OBJECTS	= make_lib5
 
-_OBJECTS	= $(_BGL_OBJECTS)
+_OBJECTS	= $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 

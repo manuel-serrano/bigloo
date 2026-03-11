@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/api/alsa/src/Llib/alsa.sch        */
+;*    serrano/prgm/project/bigloo/5.0a/api/alsa/src/Llib/alsa.sch      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Thu Mar  7 14:26:32 2019 (serrano)                */
-;*    Copyright   :  2011-19 Manuel Serrano                            */
+;*    Last change :  Tue Mar 10 15:22:52 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
 ;*=====================================================================*/
@@ -15,7 +15,6 @@
 (directives
    (extern
       (include "alsa/asoundlib.h")
-      ;;(include "bglalsa_config.h")
       (include "bglalsa.h")
 
       ;; misc
@@ -384,7 +383,7 @@
       ;; snd-rawmidi
       (type $snd-rawmidi void* "snd_rawmidi_t *")
       (infix macro $snd-rawmidi-nil::$snd-rawmidi () "0L")
-      (infix macro $snd-rawmidi-nil?::bool ($snd-rawmidi) " == 0L")
+      (infix macro $snd-rawmidi-nil?::bool (::$snd-rawmidi) " == 0L")
 
       (macro $snd-rawmidi-append::int
 	 "SND_RAWMIDI_APPEND")

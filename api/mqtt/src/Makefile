@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/mqtt/src/Makefile         */
+#*    serrano/prgm/project/bigloo/5.0a/api/mqtt/src/Makefile           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Jun 29 09:51:59 2022 (serrano)                */
+#*    Last change :  Tue Mar 10 15:43:01 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -52,8 +52,9 @@ BIGLOOEXTRALIBS	+= bigloopthread
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= mqtt common client server
+_BGL5_OBJECTS	= make_lib5
 
-_OBJECTS	= $(_BGL_OBJECTS)
+_OBJECTS	= $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 

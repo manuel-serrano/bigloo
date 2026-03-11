@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/SawJvm/names.scm                    */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/SawJvm/names.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */

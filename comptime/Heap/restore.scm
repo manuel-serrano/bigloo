@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Heap/restore.scm                    */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Heap/restore.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Fri Feb 13 08:20:45 2026 (serrano)                */
+;*    Last change :  Wed Mar 11 08:32:49 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -66,12 +66,8 @@
 ;*---------------------------------------------------------------------*/
 (define (global-package-and-qualified-type-set! new::global)
    (let* ((mod (global-module new))
-	  (qtn (global-qualified-type-name new))
-	  (pkg (if (string-index qtn #\.)
-		   (string->symbol (prefix qtn))
-		   '||)))
-      (module-package-set! mod pkg)
-      (class-qualified-type-name-set! mod qtn)))
+	  (qtn (global-qualified-type-name new)))
+      (jvm-qualified-name-set! mod (string->symbol qtn))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-heap ...                                                    */

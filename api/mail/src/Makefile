@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Feb 10 15:59:37 2026 (serrano)                */
+#*    Last change :  Tue Mar 10 13:57:45 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -36,7 +36,7 @@ JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
 DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options
-BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee -module4
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q \
                   -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
@@ -46,9 +46,10 @@ BHEAPFLAGS	= -unsafe -q \
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= rfc2045 rfc2047 rfc2822 mailbox maildir vcard
+_BGL5_OBJECTS	= make_lib5
 _STK_OBJECTS	= imap
 
-_OBJECTS	= $(_BGL_OBJECTS) $(_STK_OBJECTS)
+_OBJECTS	= $(_BGL_OBJECTS) $(_BGL5_OBJECTS) $(_STK_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 
@@ -117,20 +118,20 @@ include ../../Makefile.api
 #*---------------------------------------------------------------------*/
 #*    The implicit rules                                               */
 #*---------------------------------------------------------------------*/
-objs/%.o: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.stk
+objs/%.o: $(PKG_SRC_DIR)/%.stk
 	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
 
-objs/%.o: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.scm
+objs/%.o: $(PKG_SRC_DIR)/%.scm
 	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
 
 objs/%.o: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.stk
-	$(BIGLOO) -suffix stk $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c
+	$(BIGLOO) -suffix stk $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c -module4
 
-$(CLASS_DIR)/%.class: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.stk
+$(CLASS_DIR)/%.class: $(PKG_SRC_DIR)/%.stk
 	$(BIGLOO) -jvm $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
-$(CLASS_DIR)/%.class: $(PKG_SRC_DIR)/%.spi $(PKG_SRC_DIR)/%.scm
+$(CLASS_DIR)/%.class: $(PKG_SRC_DIR)/%.scm
 	$(BIGLOO) -jvm $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
 $(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.stk
-	$(BIGLOO) -suffix stk -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@
+	$(BIGLOO) -suffix stk -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@ -module4

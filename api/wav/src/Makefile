@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/wav/src/Makefile          */
+#*    serrano/prgm/project/bigloo/5.0a/api/wav/src/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Apr 30 08:16:49 2020 (serrano)                */
+#*    Last change :  Tue Mar 10 15:25:25 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -63,8 +63,9 @@ endif
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= wav wav_decoder wav_alsadec wav_padec
+_BGL5_OBJECTS	= make_lib5
 
-_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 
 EOBJECTS	= objs/make_lib.o

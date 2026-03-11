@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../bigloo/bigloo/api/pulseaudio/src/Llib/pulseaudio.sch         */
+;*    .../bigloo/5.0a/api/pulseaudio/src/Llib/pulseaudio.sch           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Wed Jan 22 07:48:12 2025 (serrano)                */
-;*    Copyright   :  2011-25 Manuel Serrano                            */
+;*    Last change :  Tue Mar 10 15:24:57 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of PULSEAUDIO types and functions                     */
 ;*=====================================================================*/
@@ -29,8 +29,8 @@
       ;; simple interface
       (type $pa-simple void* "pa_simple *")
       (macro $pa-simple-nil::$pa-simple "0L")
-      (infix macro $pa-simple-nil?::bool ($pa-simple) " == 0L")
-      (macro $pa-simple-free::void ($pa-simple) "pa_simple_free")
+      (infix macro $pa-simple-nil?::bool (::$pa-simple) " == 0L")
+      (macro $pa-simple-free::void (::$pa-simple) "pa_simple_free")
       ($bgl-pa-simple-new::$pa-simple (::string ::string ::string
 					 ::long ::long ::long)
 	 "bgl_pa_simple_new")

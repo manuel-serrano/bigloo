@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Feb 18 11:38:20 2026 (serrano)                */
+;*    Last change :  Tue Mar 10 08:34:54 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -569,11 +569,15 @@
 	 (set! units
 	    (cons (module5-imported-unit mod comptime-expand genv) units))
 	 
-	 (with-access::Module mod (id body checksum main decls imports)
+	 (with-access::Module mod (id body checksum main decls imports qualified-name)
 
+	    (when (eq? qualified-name #unspecified)
+	       (set! qualified-name (module-qualified-name-register! id)))
+	    
 	    (module5-expand-and-resolve! mod module5-init-xenv!
 	       :heap-modules (module5-heap4-modules)
-	       :packages (module-jvm-packages))
+	       :default-package (default-jvm-package)
+	       :qualified-names (jvm-qualified-names))
 	    (module5-checksum! mod)
 	    
 	    (hashtable-for-each decls
@@ -653,17 +657,21 @@
 		    (backend-force-register-gc-roots (the-backend)))
 	    (set! units (cons (make-gc-roots-unit) units)))
 
-	 ;; java code
-	 (when (eq? *target-language* 'jvm)
-	    (module5-module-package-set! mod)
-	    (with-access::Module mod (imports)
-	       (hashtable-for-each imports
-		  (lambda (k decl)
-		     (with-access::Decl decl (mod)
-			(module5-module-package-set! mod)))))
-	    (let ((u (java-finalizer)))
-	       (when (pair? u) (set! units (cons (car u) units)))))
-
+	 ;; foreigtn code
+	 (case *target-language*
+	    ((c)
+	     (let ((u (foreign-finalizer)))
+		(when (pair? u) (set! units (cons (car u) units)))))
+	    ((jvm)
+	     (module5-module-qualified-name-set! mod)
+	     (with-access::Module mod (imports)
+		(hashtable-for-each imports
+		   (lambda (k decl)
+		      (with-access::Decl decl (mod)
+			 (module5-module-qualified-name-set! mod)))))
+	     (let ((u (java-finalizer)))
+		(when (pair? u) (set! units (cons (car u) units))))))
+	 
 	 ;; foreign unit
 	 (let ((u (foreign-finalizer)))
 	    (when (pair? u) (set! units (cons (car u) units))))
@@ -729,9 +737,7 @@
 	     (tu (find (lambda (u) (eq? (unit-id u) 'toplevel)) units)))
 
 	 ;; module package
-	 (when (backend-qualified-types (the-backend))
-	    (unless (module-package-get *module*)
-	       (module-package-set! *module* '||)))
+	 (module-qualified-name-register! *module*)
 	 
 	 (stop-on-pass 'dump-module (lambda () (dump-module module)))
 	 
@@ -791,6 +797,21 @@
 	    (set! units (cons (make-gc-roots-unit) units)))
 	 
 	 (profile ast (build-ast units genv)))))
+
+;*---------------------------------------------------------------------*/
+;*    module-qualified-name-register! ...                              */
+;*---------------------------------------------------------------------*/
+(define (module-qualified-name-register! id::symbol)
+   (or (jvm-qualified-name-get id)
+       (let* ((name (if (string? *dest*)
+			(prefix (basename *dest*))
+			(symbol->string! id)))
+	      (qn (string->symbol
+		     (if (default-jvm-package)
+			 (format "~a.~a" (default-jvm-package) name)
+			 name))))
+	  (jvm-qualified-name-set! *module* qn)
+	  qn)))
 
 ;*---------------------------------------------------------------------*/
 ;*    debug-code ...                                                   */

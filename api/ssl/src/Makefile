@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/ssl/src/Makefile          */
+#*    serrano/prgm/project/bigloo/5.0a/api/ssl/src/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:18:03 2017 (serrano)                */
+#*    Last change :  Tue Mar 10 08:16:58 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -56,17 +56,19 @@ JVMAPIBOOTPATH  := $(JVMAPIBOOTPATH):$(BOOTLIBDIR)/$(SSL_ZIP)
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= ssl
+_BGL5_OBJECTS	= make_lib5
 
 _C_OBJECTS	= bglssl
 _JAVA_CLASSES	= certificate private_key ctx
 _JAVA_ECLASSES	= ssl_client_socket ssl_server_socket 
 
-_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 
 EOBJECTS	= objs/make_lib.o
 
-BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class)
+BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class) \
+                  $(_BGL5_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
 JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class) \

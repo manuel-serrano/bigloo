@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Unsafe/intext.scm       */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Unsafe/intext.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */

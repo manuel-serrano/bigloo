@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evaluate.scm       */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/evaluate.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Tue Feb  4 07:46:03 2025 (serrano)                */
-;*    Copyright   :  2010-25 Manuel Serrano                            */
+;*    Last change :  Tue Mar 10 13:00:56 2026 (serrano)                */
+;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
 ;*=====================================================================*/
@@ -70,20 +70,22 @@
 ;*---------------------------------------------------------------------*/
 ;*    untype-ident ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (untype-ident id::symbol)
-   (let* ((string (symbol->string id))
-	  (len (string-length string)))
-      (let loop ((walker  0))
-	 (cond
-	    ((=fx walker len)
-	     (cons id #f))
-	    ((and (char=? (string-ref string walker) #\:)
-		  (<fx walker (-fx len 1))
-		  (char=? (string-ref string (+fx walker 1)) #\:))
-	     (cons (string->symbol (substring string 0 walker))
-		(string->symbol (substring string (+fx walker 2)))))
-	    (else
-	     (loop (+fx walker 1)))))))
+(define (untype-ident id loc)
+   (if (symbol? id)
+       (let* ((string (symbol->string id))
+	      (len (string-length string)))
+	  (let loop ((walker  0))
+	     (cond
+		((=fx walker len)
+		 (cons id #f))
+		((and (char=? (string-ref string walker) #\:)
+		      (<fx walker (-fx len 1))
+		      (char=? (string-ref string (+fx walker 1)) #\:))
+		 (cons (string->symbol (substring string 0 walker))
+		    (string->symbol (substring string (+fx walker 2)))))
+		(else
+		 (loop (+fx walker 1))))))
+       (evcompile-error loc "eval" "Illegal identifier" id)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-evaluation-context ...                                       */
@@ -398,10 +400,10 @@
 	       ((null? r)
 		(values (reverse! flat) arity))
 	       ((not (pair? r))
-		(values (reverse! (cons (untype-ident r) flat)) (-fx -1 arity)))
+		(values (reverse! (cons (untype-ident r loc) flat)) (-fx -1 arity)))
 	       (else
 		(rec (cdr r)
-		     (cons (untype-ident (car r)) flat) (+fx arity 1))) )))
+		     (cons (untype-ident (car r) loc) flat) (+fx arity 1))) )))
       
       (multiple-value-bind (args arity)
 	 (split-formals (dsssl-formals->scheme-typed-formals formals error #t))
@@ -477,7 +479,7 @@
       ((begin . ?l)
        (conv-begin l locals globals tail? where loc top?) )
       ((let ?binds . ?body)
-       (let* ( (ubinds (map (lambda (b) (untype-ident (car b))) binds))
+       (let* ( (ubinds (map (lambda (b) (untype-ident (car b) loc)) binds))
 	       (vars (map (lambda (i)
 			     (instantiate::ev_var
 				(name (car i))
@@ -501,7 +503,7 @@
 		 (cons (conv (cadar l) locals globals #f where loc #f)
 		       (conv-vals (cdr l) (cdr vars) (cons (car vars) locals) loc) ))))
        (let ( (vars (map (lambda (b)
-			    (let ( (i (untype-ident (car b))) )
+			    (let ( (i (untype-ident (car b) loc)) )
 			       (instantiate::ev_var
 				  (name (car i))
 				  (type (cdr i)) )))
@@ -512,7 +514,7 @@
 	     (vals (conv-vals binds vars locals bloc))
 	     (body (conv-begin body (append (reverse vars) locals) globals tail? where loc #f)) )))
       ((letrec ?binds . ?body)
-       (let* ( (ubinds (map (lambda (b) (untype-ident (car b))) binds))
+       (let* ( (ubinds (map (lambda (b) (untype-ident (car b) loc)) binds))
 	       (vars (map (lambda (i)
 			     (instantiate::ev_var
 				(name (car i))
@@ -555,14 +557,14 @@
       ((set! . ?-)
        (evcompile-error loc "eval" "Illegal form" e))
       ((define ?gv (lambda ?formals ?body))
-       (let ((tid (untype-ident gv)))
+       (let ((tid (untype-ident gv loc)))
 	  (instantiate::ev_defglobal
 	     (loc loc)
 	     (name (car tid))
 	     (mod (if (evmodule? globals) globals ($eval-module)))
 	     (e (conv-lambda formals body gv (cdr tid))) )))
       ((define ?gv ?ge)
-       (let ( (tid (untype-ident gv)) )
+       (let ( (tid (untype-ident gv loc)) )
 	  (instantiate::ev_defglobal
 	     (loc loc)
 	     (name (car tid))

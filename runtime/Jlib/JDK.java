@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:50:33 2008                          */
-/*    Last change :  Tue Feb  3 13:02:41 2026 (serrano)                */
+/*    Last change :  Tue Mar 10 16:55:12 2026 (serrano)                */
 /*    Copyright   :  2008-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java auto-configuration                                          */
@@ -25,6 +25,7 @@ import java.lang.reflect.*;
 /*---------------------------------------------------------------------*/
 public abstract class JDK {
    private static JDK impl;
+   private static JDKexit exit = null;
    
    static {
       // Android
@@ -103,8 +104,25 @@ public abstract class JDK {
    }
 
    public static void exit(int n) {
-      impl.exitImpl(n);
+      if (exit == null) {
+	 impl.exitImpl(n);
+      } else {
+	 exit.exit(n);
+      }
    }
+
+   public static void abort(int n) {
+      if (exit == null) {
+	 impl.exitImpl(n);
+      } else {
+	 exit.abort(n);
+      }
+   }
+
+   public static void setExit(JDKexit e) {
+      exit = e;
+   }
+   
    public abstract Method getDeclaredMethodImpl(Class c, byte[] m)
       throws Exception;
    
@@ -132,10 +150,6 @@ public abstract class JDK {
    }
 
    public void exitImpl(int n) {
-      try {
-	 Class.forName("android.os.Build");
-      } catch (Exception x) {
-	 System.exit(n);
-      }
+      System.exit(n);
    }
 }

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/api/sqlite/src/Llib/sqltiny.scm        */
+;*    .../prgm/project/bigloo/5.0a/api/sqlite/src/Llib/sqltiny.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 17:44:47 2007                          */
-;*    Last change :  Mon Dec 18 10:19:16 2023 (serrano)                */
-;*    Copyright   :  2007-23 Manuel Serrano                            */
+;*    Last change :  Tue Mar 10 09:07:20 2026 (serrano)                */
+;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The portable replacement for sqlite                              */
 ;*=====================================================================*/
@@ -13,35 +13,12 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __sqlite_sqltiny
-   (import __sqlite_engine
-	   __sqlite_lexer
+   
+   (import __sqlite_types
+	   __sqlite_engine
 	   __sqlite_parser)
-   (export (class $sqltiny
-	      ($version::bstring (default ($sqltiny-version)))
-	      path::bstring
-	      (sync::symbol read-only (default 'automatic))
-	      (tables::pair-nil (default '()))
- 	      (mutex::mutex (default (make-mutex)))
-	      (transaction::bool (default #f)))
-	   (class $sqltiny-table
-	      (name::bstring read-only)
-	      (mutex::mutex (default (make-mutex)))
-	      (rowid::long (default 0))
-	      (removable::bool read-only (default #t))
-	      (columns::pair-nil (default '()))
-	      (*columns::pair-nil (default '()))
-	      (rows::pair-nil (default '()))
-	      (constraints::pair-nil (default '()))
-	      (keycheck::procedure (default (lambda (obj r rs replacep) #t)))
-	      (last-row-pair::pair-nil (default '())))
-	   (class $sqltiny-column
-	      (name::bstring read-only)
-	      (type::symbol read-only (default 'OBJ))
-	      (index::int (default -1))
-	      (primkey::bool read-only (default #f))
-	      (default::obj read-only (default #unspecified)))
-	   ($sqltiny-version::bstring)
-	   ($sqltiny-open::$sqltiny ::bstring ::symbol)
+   
+   (export ($sqltiny-open::$sqltiny ::bstring ::symbol)
 	   ($sqltiny-close ::$sqltiny ::obj)
 	   ($sqltiny-exec::obj ::$sqltiny ::bstring ::obj)
 	   ($sqltiny-eval::obj ::$sqltiny ::procedure ::bstring ::obj)
@@ -49,12 +26,6 @@
 	   ($sqltiny-map::pair-nil ::$sqltiny ::procedure ::bstring ::obj)
 	   ($sqltiny-for-each::pair-nil ::$sqltiny ::procedure ::bstring ::obj)
 	   ($sqltiny-dump-table ::obj ::$sqltiny ::bstring ::output-port)))
-
-;*---------------------------------------------------------------------*/
-;*    $sqltiny-version ...                                             */
-;*---------------------------------------------------------------------*/
-(define ($sqltiny-version)
-   "1.0.1")
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ::$sqltiny-table ...                              */
@@ -138,7 +109,7 @@
 (define (sqltiny-do builtin cmd obj proc)
    (with-input-from-string cmd
       (lambda ()
-	 (let loop ((actions (sqltiny-portable-parse (current-input-port)))
+	 (let loop ((actions (sqltiny-parse (current-input-port)))
 		    (res #f))
 	    (if (null? actions)
 		(proc res)
@@ -183,12 +154,6 @@
 ;*---------------------------------------------------------------------*/
 (define ($sqltiny-for-each builtin proc cmd obj)
    (error "sqltiny" "sqlite-for-each not supported" #f))
-
-;*---------------------------------------------------------------------*/
-;*    sqltiny-portable-parse ...                                       */
-;*---------------------------------------------------------------------*/
-(define (sqltiny-portable-parse ip)
-   (read/lalrp sqltiny-parser sqltiny-lexer ip))
 
 ;*---------------------------------------------------------------------*/
 ;*    for-list ...                                                     */

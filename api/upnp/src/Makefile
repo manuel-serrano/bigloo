@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/upnp/src/Makefile                */
+#*    serrano/prgm/project/bigloo/5.0a/api/upnp/src/Makefile           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:18:33 2017 (serrano)                */
+#*    Last change :  Tue Mar 10 15:15:59 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -47,10 +47,11 @@ BIGLOOEXTRALIBS += biglooweb
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= soap content ssdp
+_BGL5_OBJECTS	= make_lib5
 
 _UNIX_OBJECTS	= 
 
-_OBJECTS	= $(_UNIX_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_UNIX_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 

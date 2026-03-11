@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/libuv/src/Makefile               */
+#*    serrano/prgm/project/bigloo/5.0a/api/libuv/src/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:13:14 2017 (serrano)                */
+#*    Last change :  Tue Mar 10 15:17:17 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -61,11 +61,12 @@ LDOPTS		+= -L$(BOOTDIR)/libuv/libuv-$(LIBUVCUSTOMVERSION)/.libs
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= uvtypes handle loop timer async fs os net idle fsevent \
   fspoll poll check process pipe
+_BGL5_OBJECTS	= make_lib5
 
 _C_OBJECTS	= bgluv
 _JAVA_CLASSES	= 
 
-_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 
 EOBJECTS	= objs/make_lib.o

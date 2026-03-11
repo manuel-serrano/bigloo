@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Mon Mar  9 18:02:13 2026 (serrano)                */
+;*    Last change :  Tue Mar 10 07:01:00 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -81,7 +81,7 @@
 	      (resolved::bool (default #f))
 	      (cache-dir (default #f))
 	      (heap (default #f))
-	      (package (default #unspecified)))
+	      (qualified-name (default #unspecified)))
 	   
 	   (class Decl
 	      (id::symbol read-only)
@@ -122,7 +122,7 @@
 	   (module5-write-heap ::bstring ::Module)
 	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir (heap-suffix ".heap5") expand (stack '()))
 	   (module5-import-all! ::Module ::Module)
-	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()) (packages #f))
+	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()) (default-package #f) (qualified-names #f))
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol ::obj)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
@@ -217,6 +217,13 @@
    (duplicate::KDef d))
 
 ;*---------------------------------------------------------------------*/
+;*    cycle-error ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (cycle-error mod msg path stack clause)
+   (error/loc mod "Cyclic module4 import"
+      (format "~( -> )" (reverse (cons path stack))) clause))
+
+;*---------------------------------------------------------------------*/
 ;*    *modules-by-path* ...                                            */
 ;*---------------------------------------------------------------------*/
 (define module-mutex (make-mutex "modules"))
@@ -232,7 +239,6 @@
 ;*    module5-qualified-name ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (module5-qualified-name::symbol alias::symbol id::symbol)
-   ;; (string->symbol (format "~a@~a" alias id))
    (string->symbol (format "~a.~a" id alias)))
    
 ;*---------------------------------------------------------------------*/
@@ -401,7 +407,10 @@
 	    ((4 . ?path)
 	     (set! (-> d mod)
 		(module4-read (unserialize-resolve-path d path)
-		   lib-path: lib-path :cache-dir cache-dir :expand expand)))
+		   lib-path: lib-path
+		   :cache-dir cache-dir
+		   :heap-suffix hsuffix
+		   :expand expand)))
 	    ((?heap . ?path)
 	     (let* ((hmod::Module (module5-read-heap heap
 				     (-> d id) mod))
@@ -531,6 +540,8 @@
       (synchronize module-mutex
 	 (trace-item "path=" path
 	    (if (hashtable-get *modules-by-path* path) " [in-mem-cache]" ""))
+	 (trace-item "hsuffix=" hsuffix)
+	 (trace-item "stack=" stack)
 	 (when (hashtable-get *modules-by-path* path)
 	    (with-access::Module (hashtable-get *modules-by-path* path) (exports)
 	       (trace-item "exports=" (hashtable-map exports
@@ -547,7 +558,7 @@
 		       :cache-dir cache-dir
 		       :heap-suffix hsuffix
 		       :expand expand
-		       :stack stack)))))))
+		       :stack (cons path stack))))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    module5-read ...                                                 */
@@ -749,6 +760,7 @@
    (with-trace 'module5-parse "module5-parse"
       (trace-item "path=" path)
       (trace-item "exprs=" exprs)
+      (trace-item "heap-suffix=" heap-suffix)
       (let ((expr (car exprs)))
 	 (match-case expr
 	    ((module (and (? symbol?) ?id) :version 5 . ?clauses)
@@ -844,14 +856,14 @@
 	       ((not (string? rfrom))
 		(error/loc mod "Cannot find file" path clause))
 	       ((member rfrom stack)
-		(error/loc mod "Cyclic module5 import" stack clause))
+		(cycle-error mod "Cyclic module5 import" rfrom stack clause))
 	       (else
 		(let ((imod::Module (module5-read rfrom
 				       :lib-path lib-path
 				       :cache-dir cache-dir
 				       :heap-suffix hsuffix
 				       :expand expand
-				       :stack (cons rfrom stack)))
+				       :stack stack))
 		      (mid (-> mod id)))
 		   (hashtable-for-each (-> imod exports)
 		      (lambda (key d::Decl)
@@ -865,18 +877,29 @@
    
    (define (parse-reexport4-all clause::pair expr::pair mod::Module expand stack)
       (let* ((path (cadr (cddr clause)))
-	     (rfrom (module5-resolve-path path (-> mod path))))
+	     (rfrom (module5-resolve-path path (-> mod path)))
+	     (rest (map (lambda (p) (module5-resolve-path p (-> mod path)))
+		      (cddr (cddr clause)))))
 	 (cond
 	    ((not (string? rfrom))
 	     (error/loc mod "Cannot find file" path clause))
+	    ((not (every string? rest))
+	     (error/loc mod "Cannot find file" (cddr (cddr clause)) clause))
 	    ((member rfrom stack)
-	     (error/loc mod "Cyclic module5 import" stack clause))
+	     (cycle-error mod "Cyclic module5 import" rfrom stack clause))
 	    (else
 	     (let ((imod::Module (module4-read rfrom
 				    :lib-path lib-path
 				    :cache-dir cache-dir
+				    :heap-suffix hsuffix
 				    :expand expand
-				    :stack (cons rfrom stack))))
+				    :stack stack)))
+		(when (pair? rest)
+		   (let ((rbody (append-map (lambda (p)
+					       (call-with-input-file p port->sexp-list))
+				   rest)))
+		      (set! (-> imod body)
+			 (append (-> imod body) rbody))))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
 		      (hashtable-put! (-> mod exports) key d)))
@@ -892,14 +915,14 @@
 	       ((not (string? rfrom))
 		(error/loc mod "Cannot find file" path clause))
 	       ((member rfrom stack)
-		(error/loc mod "Cyclic module5 import" stack clause))
+		(cycle-error mod "Cyclic module5 import" rfrom stack clause))
 	       (else
 		(let ((imod::Module (module5-read rfrom
 				       :lib-path lib-path
 				       :cache-dir cache-dir
 				       :heap-suffix hsuffix
 				       :expand expand
-				       :stack (cons rfrom stack))))
+				       :stack stack)))
 		   (for-each (lambda (b)
 				(let ((d::Decl (parse-reexport-binding b
 						  imod expr mod expand)))
@@ -921,14 +944,14 @@
 	    ((not (string? rfrom))
 	     (error/loc mod "Cannot find file" path clause))
 	    ((member rfrom stack)
-	     (error/loc mod "Cyclic module5 import" stack clause))
+	     (cycle-error mod "Cyclic module5 import" rfrom stack clause))
 	    (else
 	     (let ((imod::Module (module5-read rfrom
 				    :lib-path lib-path
 				    :cache-dir cache-dir
 				    :heap-suffix hsuffix
 				    :expand expand
-				    :stack (cons rfrom stack))))
+				    :stack stack)))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))))))
    
    (define (parse-import-all id::symbol clause::pair expr::pair mod::Module expand stack)
@@ -940,14 +963,14 @@
 	       ((not (string? rfrom))
 		(error/loc mod "Cannot find file" path clause))
 	       ((member rfrom stack)
-		(error/loc mod "Cyclic module5 import" stack clause))
+		(cycle-error mod "Cyclic module5 import" rfrom stack clause))
 	       (else
 		(let ((imod::Module (module5-read rfrom
 				       :lib-path lib-path
 				       :cache-dir cache-dir
 				       :heap-suffix hsuffix
 				       :expand expand
-				       :stack (cons rfrom stack))))
+				       :stack stack)))
 		   (hashtable-for-each (-> imod exports)
 		      (lambda (key d::Decl)
 			 (let* ((alias (module5-qualified-name (-> d alias) id))
@@ -973,14 +996,14 @@
 	       ((not (string? rfrom))
 		(error/loc mod "Cannot find file" path clause))
 	       ((member rfrom stack)
-		(error/loc mod "Cyclic module5 import" stack clause))
+		(cycle-error mod "Cyclic module5 import" rfrom stack clause))
 	       (else
 		(let ((imod::Module (module5-read rfrom
 				       :lib-path lib-path
 				       :cache-dir cache-dir
 				       :heap-suffix hsuffix
 				       :expand expand
-				       :stack (cons rfrom stack))))
+				       :stack stack)))
 		   (for-each (lambda (b)
 				(trace-item "b=" b
 				   " imod=" (-> imod id) " (import-some)")
@@ -996,13 +1019,14 @@
 	    ((not (string? rfrom))
 	     (error/loc mod "Cannot find file" path clause))
 	    ((member rfrom stack)
-	     (error/loc mod "Cyclic module5 import" stack clause))
+	     (cycle-error mod "Cyclic module5 import" rfrom stack clause))
 	    (else
 	     (let ((imod::Module (module4-read rfrom
 				    :lib-path lib-path
 				    :cache-dir cache-dir
+				    :heap-suffix hsuffix
 				    :expand expand
-				    :stack (cons rfrom stack))))
+				    :stack stack)))
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
 		      (let* ((alias (-> d alias))
@@ -1113,12 +1137,15 @@
       (trace-item "mod-path=" (-> mod path))
       (trace-item "lib-path=" lib-path)
       (trace-item "clause=" clause)
+      (trace-item "hsuffix=" hsuffix)
       (match-case clause
 	 ((export (? string?))
 	  (parse-reexport-all clause expr mod expand stack))
 	 ((export (? string?) . ?-)
 	  (parse-reexport-some clause expr mod expand stack))
 	 ((export :version 4 (? string?))
+	  (parse-reexport4-all clause expr mod expand stack))
+	 ((export :version 4 (? string?) . (? (lambda (l) (every string? l))))
 	  (parse-reexport4-all clause expr mod expand stack))
 	 ((import :version 5 . ?rest)
 	  (module5-parse-clause
@@ -1188,15 +1215,42 @@
       libs))
 
 ;*---------------------------------------------------------------------*/
+;*    module5-qualified-name-set! ...                                  */
+;*---------------------------------------------------------------------*/
+(define (module5-qualified-name-set! mod::Module default-package qualified-names)
+   (define (default-qualified-name mod::Module default-package::symbol)
+      (let* ((n (prefix (basename (-> mod path))))
+	     (qn (format "~a.~a" default-package n)))
+	 (string->symbol qn)))
+   
+   (cond
+      (qualified-names
+       (let ((p (hashtable-get qualified-names (symbol->string! (-> mod id)))))
+	  (cond
+	     ((symbol? p)
+	      (set! (-> mod qualified-name) p))
+	     ((symbol? default-package)
+	      (set! (-> mod qualified-name)
+		 (default-qualified-name mod default-qualified-name))))))
+      ((symbol? default-package)
+       (let* ((n (prefix (basename (-> mod path))))
+	      (qn (format "~a.~a" default-package n)))
+	  (set! (-> mod qualified-name)
+	     (default-qualified-name mod default-qualified-name))))))
+
+;*---------------------------------------------------------------------*/
 ;*    module5-expand-and-resolve! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (module5-expand-and-resolve! mod::Module init-xenv
-	   #!key (heap-modules '()) (packages #f))
+	   #!key
+	   (heap-modules '())
+	   (default-package #f)
+	   (qualified-names #f))
    (unless (-> mod resolved)
       (with-trace 'module5-resolve "module5-expand-and-resolve!"
 	 (trace-item (-> mod id)
 	    " resolved=" (-> mod resolved)
-	    " package=" (-> mod package))
+	    " qualified-name=" (-> mod qualified-name))
 	 (trace-item "decls="
 	    (hashtable-map (-> mod decls)
 	       (lambda (k d::Decl)
@@ -1214,11 +1268,9 @@
 		    (with-access::Module m (id) id))
 	       heap-modules))
 	 (set! (-> mod resolved) #t)
-	 ;; set the module package
-	 (when (and (eq? (-> mod package) #unspecified) packages)
-	    (let ((p (hashtable-get packages (symbol->string! (-> mod id)))))
-	       (when (symbol? p)
-		  (set! (-> mod package) p))))
+	 ;; set the module qualified-name
+	 (when (eq? (-> mod qualified-name) #unspecified)
+	    (module5-qualified-name-set! mod default-package qualified-names))
 	 ;; force import the "heap-modules", i.e., the modules that
 	 ;; come from a Bigloo heap file
 	 (for-each (lambda (m) (module5-import-all! mod m)) heap-modules)
@@ -1248,7 +1300,8 @@
 			" def=" (typeof def))
 		     (unless (eq? imod mod)
 			(module5-expand-and-resolve! imod init-xenv
-			   :heap-modules heap-modules :packages packages)
+			   :heap-modules heap-modules
+			   :qualified-names qualified-names)
 			(let ((idef (module5-get-export-def imod (or xid id))))
 			   (with-access::Def idef (kind expr ci)
 			      (case kind
@@ -1274,15 +1327,22 @@
 	       (set! (-> mod body)
 		  (map (lambda (x) (expand/env x xenv)) (-> mod body)))
 	       (trace-item "body after-expand=" (-> mod body)))
+	    ;; class registration cannot be expanded before all the classes
+	    ;; are defined, otherwise a class that would have an instance
+	    ;; as a default field value could not be declared
+	    (hashtable-for-each (-> mod classes)
+	       (lambda (k ci)
+		  (class-info-registration-set! ci (expand/env (registration-expand ci mod) xenv))))
 	    ;; Macro and class definitions are disgarded by the macro-expansion.
 	    ;; Because these definitions are needed to resolve the module
 	    ;; exports, INSTALL-MODULE5-EXPANDER (runtime/macro.scm),
 	    ;; stores these definitions in XENV.
 	    (let ((dm (hashtable-filter-map xenv (lambda (k e) (car e)))))
 	       (collect-defines! mod dm))
+	    ;; bind variables and macros
 	    (collect-defines! mod (-> mod body))
-	    (collect-classes! mod)
 	    ;; bind all the classes
+	    (collect-classes! mod)
 	    (check-unbounds mod))
 	 (ronly! mod)
 	 (filecache-put! (-> mod path) mod)
@@ -1342,6 +1402,7 @@
    (with-trace 'module5-parse "module4-parse"
       (trace-item "path=" path)
       (trace-item "exprs=" exprs)
+      (trace-item "heap-suffix=" heap-suffix)
       (let ((expr (car exprs)))
 	 (match-case expr
 	    ((module (and (? symbol?) ?id) :version 4 . ?clauses)
@@ -1403,6 +1464,18 @@
 			 (attributes attrs))))
 	    (values name decl))))
    
+   (define (macro4 expr id)
+      (multiple-value-bind (name type)
+	 (parse-ident id expr)
+	 (let ((decl (instantiate::Decl
+			(id name)
+			(alias name)
+			(mod mod)
+			(scope 'export)
+			(ronly #t)
+			(expr expr))))
+	    (values name decl))))
+   
    (define (variable4 expr id)
       (multiple-value-bind (name type)
 	 (parse-ident id expr)
@@ -1436,8 +1509,9 @@
       (let ((imod::Module (module4-read path
 			     :lib-path lib-path
 			     :cache-dir cache-dir
+			     :heap-suffix hsuffix
 			     :expand expand
-			     :stack (cons path stack))))
+			     :stack stack)))
 	 (hashtable-for-each (-> imod exports)
 	    (lambda (key d::Decl)
 	       (let* ((alias (if id
@@ -1458,8 +1532,9 @@
       (let ((imod::Module (module4-read path
 			     :lib-path lib-path
 			     :cache-dir cache-dir
+			     :heap-suffix hsuffix
 			     :expand expand
-			     :stack (cons path stack))))
+			     :stack stack)))
 	 (hashtable-for-each (-> imod exports)
 	    (lambda (key d::Decl)
 	       (when (memq (-> d id) syms)
@@ -1488,7 +1563,7 @@
 		    (format "Cannot find \"~a\" module source file" (-> mod id))
 		    id))
 		((member path stack)
-		 (error/loc mod "Cyclic module4 import" stack clause))
+		 (cycle-error mod "Cyclic module4 import" path stack clause))
 		(else
 		 (parse-import-all id path stack)))))
 	 (((and (? symbol?) ?id) (and (? string?) ?path))
@@ -1569,6 +1644,11 @@
 			       (hashtable-symbol-put! (-> mod decls) id decl)
 			       (hashtable-symbol-put! (-> mod exports) id decl)
 			       (set! nbody (cons expr nbody))))
+			   ((macro (and (? symbol?) ?id))
+			    (multiple-value-bind (id decl)
+			       (macro4 expr id)
+			       (hashtable-symbol-put! (-> mod decls) id decl)
+			       (hashtable-symbol-put! (-> mod exports) id decl)))
 			   ((?id . ?args)
 			    (multiple-value-bind (id decl)
 			       (procedure4 expr id args
@@ -1803,7 +1883,9 @@
 	 (let* ((name (symbol->string! id))
 		(old (hashtable-get defs name))
 		(decl (hashtable-get decls name)))
-	    (if old
+	    (if (and old
+		     (not (or (eq? kind 'macro)
+			      (eq? (with-access::Def old (kind) kind) 'macro))))
 		(error/loc mod
 		   (format "Identifier ~s has already been declared" name)
 		   (with-access::Def old (expr) expr)
@@ -2236,20 +2318,26 @@
 		      (class-info-super ci) x))))
 	 ;; install the expanders
 	 (install-class-expanders ci xenv mod)
-	 ;; expanded class registration form
-	 (class-info-registration-set! ci (e (registration-expand ci mod) e))
+	 ;; expanded class registration form (move to expand-and-resolved
+	 ;; after all class expansions).
+	 ;;(class-info-registration-set! ci (e (registration-expand ci mod) e))
 	 #unspecified)))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-class-expanders ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (install-class-expanders ci xenv mod)
-   (install-module5-expander xenv
-      (string->symbol (format "instantiate::~a" (class-info-id ci)))
-      #f (instantiate-expander ci mod))
-   (install-module5-expander xenv
-      (string->symbol (format "with-access::~a" (class-info-id ci)))
-      #f (with-access-expander ci mod)))
+   (with-trace 'module5-resolve "install-class-expanders"
+      (trace-item "ci=" ci)
+      (install-module5-expander xenv
+	 (string->symbol (format "instantiate::~a" (class-info-id ci)))
+	 #f (instantiate-expander ci mod))
+      (install-module5-expander xenv
+	 (string->symbol (format "duplicate::~a" (class-info-id ci)))
+	 #f (duplicate-expander ci mod))
+      (install-module5-expander xenv
+	 (string->symbol (format "with-access::~a" (class-info-id ci)))
+	 #f (with-access-expander ci mod))))
 
 ;*---------------------------------------------------------------------*/
 ;*    include-expander ...                                             */

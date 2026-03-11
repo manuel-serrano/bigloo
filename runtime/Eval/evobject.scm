@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evobject.scm       */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/evobject.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Tue Sep 23 08:53:59 2025 (serrano)                */
+;*    Last change :  Tue Mar 10 11:11:23 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -338,7 +338,7 @@
       (install-module4-expander wid
 	 (eval-instantiate-expander class))))
 
-;*--------------------------------------------------------------------*/
+;*---------------------------------------------------------------------*/
 ;*    eval-instantiate-expander ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (eval-instantiate-expander class)

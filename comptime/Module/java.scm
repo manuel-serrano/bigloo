@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Mon Mar  9 18:31:33 2026 (serrano)                */
+;*    Last change :  Tue Mar 10 07:11:37 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -96,8 +96,7 @@
 (define (java-error java . msg)
    (user-error "Parse error"
       (if (pair? msg) (car msg) "Illegal Java variable")
-      java
-      '()))
+      java))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-java-clause ...                                            */
@@ -198,12 +197,6 @@
 			    args))))
 	    constructors)))
    
-   (define last-error #f)
-   
-   (define (err java . msg)
-      (set! last-error (format "~a: ~( )" java msg))
-      (apply java-error java msg))
-   
    (with-trace 'jvm "java-finalizer"
       ;; First, we check for the foreign class. If defined but bound (i.e.,
       ;; we have seen fields or methods but not the declaration of the
@@ -215,7 +208,7 @@
 		    (jklass-abstract?-set! jklass #t)
 		    (jklass-jname-set! jklass *jvm-foreign-class-name*))
 		 (if (not (eq? (jklass-jname jklass) *jvm-foreign-class-name*))
-		     (err (jklass-src jklass)
+		     (java-error (jklass-src jklass)
 			"Illegal foreign class definition")))))
       ;; declare all the associated types
       (set! *jklasses* (reverse! *jklasses*))
@@ -225,16 +218,8 @@
 		      (with-access::jklass jklass (id jname src package)
 			 (remprop! (jklass-id jklass) 'jklass)
 			 (unless (string? jname)
-			    (err src "Can't find class declaration"))
+			    (java-error src "Can't find class declaration"))
 			 (declare-jklass-properties! jklass jclass)))
-	    *jklasses* jclasses)
-	 ;; check that each Java class has a correct super class
-	 (for-each (lambda (jklass jclass)
-		      (with-access::jclass jclass (its-super)
-			 (when (and its-super (not (jclass? its-super)))
-			    (err
-			       (jklass-src jklass)
-			       "Super class is not a Java class"))))
 	    *jklasses* jclasses)
 	 ;; patch bigloo java exported variables name
 	 (for-each (lambda (jmod)
@@ -247,7 +232,7 @@
 			     (if (and (not (or (eq? *pass* 'make-add-heap)
 					       (eq? *pass* 'make-heap)))
 				      (eq? mod *module*))
-				 (err java
+				 (java-error java
 				    "Unbound (or static) global variable")))
 			    ((string? (global-name global))
 			     (user-warning
@@ -263,19 +248,14 @@
 		     (append-map auto-declare-jklass-klass-types *jklasses*)
 		     (filter-map auto-declare-jarray-klass-types *jarrays*)
 		     (append-map jklass-ctors *jklasses*))))
-	    
 	    ;; cleanup
 	    (set! *jexported* '())
 	    (set! *jklasses* '())
 	    (set! *jarrays* '())
 	    ;; only used by module5
-	    (cond
-	       (last-error
-		(error "java" "last error" last-error))
-	       ((pair? r)
-		(list (unit 'java 47 r #t #f)))
-	       (else
-		'()))))))
+	    (if (pair? r)
+		(list (unit 'java 47 r #t #f))
+		'())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-declared? ...                                               */
@@ -318,7 +298,20 @@
 	       (set! new-klasses (cons ty new-klasses))
 	       (declare-java-class! k)))))
    
-   (with-access::jklass jklass (fields methods loc id)
+   (with-access::jklass jklass (fields methods loc id src)
+      ;; super class
+      (let ((ty (cdr (parse-id id loc))))
+	 (cond
+	    ((not (type-declared? ty))
+	     (auto-declare-jklass ty jklass src))
+	    ((eq? ty *_*)
+	     #unspecified)
+	    ((not (jclass? ty))
+	     (java-error
+		(jklass-src jklass)
+		(format "Super class \"~a\" is not a Java class (~a)"
+		   (type-id ty)
+		   (typeof ty))))))
       ;; field types
       (for-each (lambda (f::jfield)
 		   (with-access::jfield f (id src)
@@ -568,8 +561,9 @@
 	 (set! package (jname-package jname ""))
 	 ;; add a qualified type so Bigloo won't complain when fetching
 	 ;; slots or calling methods of this class
-	 (class-qualified-type-name-set! id jname)
-	 (class-qualified-type-name-set! (fast-id-of-id id loc) jname)
+	 (let ((qn (string->symbol jname)))
+	    (jvm-qualified-name-set! id qn)
+	    (jvm-qualified-name-set! (fast-id-of-id id loc) qn))
 	 ;; construct the associated jclass
 	 (declare-java-class! jklass))))
    

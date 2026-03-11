@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/alsa/src/Makefile         */
+#*    serrano/prgm/project/bigloo/5.0a/api/alsa/src/Makefile           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Mar 27 12:34:05 2020 (serrano)                */
+#*    Last change :  Tue Mar 10 15:20:30 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -58,6 +58,7 @@ endif
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= alsa pcm card control mixer music rawmidi
+_BGL5_OBJECTS	= make_lib5
 
 ifeq "$(ALSALIBS) " " "
 _C_OBJECTS	= 
@@ -66,7 +67,7 @@ _C_OBJECTS	= bglalsa
 endif
 _JAVA_CLASSES	= 
 
-_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 
 EOBJECTS	= objs/make_lib.o

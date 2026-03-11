@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/api/sqlite/src/Llib/engine.scm         */
+;*    .../prgm/project/bigloo/5.0a/api/sqlite/src/Llib/engine.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 18:35:10 2007                          */
-;*    Last change :  Mon Dec 18 10:28:43 2023 (serrano)                */
-;*    Copyright   :  2007-25 Manuel Serrano                            */
+;*    Last change :  Tue Mar 10 09:26:29 2026 (serrano)                */
+;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple SQLTINY evaluator                                         */
 ;*=====================================================================*/
@@ -13,7 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __sqlite_engine
-   (import __sqlite_sqltiny)
+   (import __sqlite_types)
    (export (sqltiny-create-table o ::$sqltiny ::bstring ::pair-nil ::pair-nil)
 	   (sqltiny-compile-key-check o ::$sqltiny-table ::pair-nil ::obj)
 	   (sqltiny-drop-table ::obj ::$sqltiny ::bstring ::bool)

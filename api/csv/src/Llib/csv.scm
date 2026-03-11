@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/api/csv/src/Llib/csv.scm      */
+;*    serrano/prgm/project/bigloo/5.0a/api/csv/src/Llib/csv.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Joseph Donaldson (donaldsonjw@yahoo.com)          */
 ;*    Creation    :  Fri Feb 24 07:12:29 2012                          */
-;*    Last change :  Thu Oct 17 14:25:42 2019 (serrano)                */
-;*    Copyright   :  2011-19 Joseph Donaldson                          */
+;*    Last change :  Tue Mar 10 15:15:03 2026 (serrano)                */
+;*    Copyright   :  2011-26 Joseph Donaldson                          */
 ;*    -------------------------------------------------------------    */
 ;*    This file is part of bigloo-csv.                                 */
 ;*=====================================================================*/
@@ -12,7 +12,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module csv
+(module __csv
 
    (option (set! *dlopen-init-gc* #t))
    

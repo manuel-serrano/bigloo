@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/api/csv/src/Makefile            */
+#*    serrano/prgm/project/bigloo/5.0a/api/csv/src/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Jul 29 08:26:26 2025 (serrano)                */
+#*    Last change :  Tue Mar 10 15:08:35 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -57,6 +57,7 @@ endif
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= csv
+_BGL5_OBJECTS	= make_lib5
 
 ifeq "$(CSVLIBS) " " "
 _C_OBJECTS	= 
@@ -65,7 +66,7 @@ _C_OBJECTS	=
 endif
 _JAVA_CLASSES	= 
 
-_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS) 
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 
 EOBJECTS	= objs/make_lib.o

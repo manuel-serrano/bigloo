@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Feb 19 07:47:37 2026 (serrano)                */
+#*    Last change :  Wed Mar 11 07:00:33 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -47,8 +47,6 @@
 #*      zip............ aka for distrib-jvm                            */
 #*      rpm............ Produces an rpm file for Bigloo.               */   
 #*      newrevision.... Changes the development Bigloo revision.       */
-#*      pop............ The population that composes Bigloo.           */
-#*      popfilelist.... The sort file list of the Bigloo population.   */
 #*      revision....... commit a revision (uses prcs-revision and      */
 #*                      mercurial-revision).                           */
 #*      checkout....... commit a checkout (uses prcs-checkout and      */
@@ -970,36 +968,6 @@ distclean:
         fi
 
 #*---------------------------------------------------------------------*/
-#*    population                                                       */
-#*    -------------------------------------------------------------    */
-#*    The list of all files that have to be placed inside the          */
-#*    repository for revision.                                         */
-#*---------------------------------------------------------------------*/
-pop:
-	@ echo LICENSE COPYING \
-               configure INSTALL.md INSTALL.jvm README.md \
-               Makefile Makefile.misc \
-               Makefile.git \
-               .hgignore \
-               .gitignore \
-               tutorial
-	@ for d in $(DIRECTORIES); do \
-             (cd $$d && $(MAKE) -s pop); \
-          done
-
-popfilelist:
-	@ (for p in `$(MAKE) -s pop`; do \
-            echo $$p; \
-           done) | sort
-
-checkpop:
-	@ for f in `$(MAKE) -s popfilelist`; do \
-	    if [ ! -e $$f ]; then \
-	      echo "Missing file: " $$f; \
-	    fi; \
-	  done
-
-#*---------------------------------------------------------------------*/
 #*    checkgmake                                                       */
 #*---------------------------------------------------------------------*/
 .PHONY: checkgmake
@@ -1013,5 +981,5 @@ checkgmake:
 #*    -------------------------------------------------------------    */
 #*    Generic revision entry point.                                    */
 #*---------------------------------------------------------------------*/
-.PHONY: branch revision checkout populate revision-pop push
+.PHONY: branch revision checkout push
 
