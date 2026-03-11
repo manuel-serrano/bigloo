@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/api/mpg123/src/Makefile       */
+#*    serrano/prgm/project/bigloo/5.0a/api/mpg123/src/Makefile         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Apr 30 08:15:05 2020 (serrano)                */
+#*    Last change :  Wed Mar 11 13:45:54 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -68,6 +68,7 @@ endif
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= mpg123 mpg123_decoder mpg123_alsadec mpg123_padec
+_BGL5_OBJECTS	= make_lib5
 
 ifeq "$(MPG123LIBS) " " "
 _C_OBJECTS	= 
@@ -76,7 +77,7 @@ _C_OBJECTS	= bglmpg123
 endif
 _JAVA_CLASSES	= 
 
-_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
+_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 
 EOBJECTS	= objs/make_lib.o
