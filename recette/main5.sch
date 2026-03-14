@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/main5.sch               */
+;*    serrano/prgm/project/bigloo/5.0a/recette/main5.sch               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Wed Oct  8 14:12:11 2025                          */
-;*    Last change :  Mon Feb  2 09:18:30 2026 (serrano)                */
+;*    Last change :  Fri Mar 13 09:48:19 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 include file                                             */

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/main4.sch               */
+;*    serrano/prgm/project/bigloo/5.0a/recette/main4.sch               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Wed Oct  8 14:12:11 2025                          */
-;*    Last change :  Thu Oct  9 14:58:25 2025 (serrano)                */
-;*    Copyright   :  2025 manuel serrano                               */
+;*    Last change :  Fri Mar 13 09:35:07 2026 (serrano)                */
+;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module4 directives                                               */
 ;*=====================================================================*/

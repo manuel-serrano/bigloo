@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Expand/eps.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Expand/eps.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Sat Sep 20 12:45:41 2025 (serrano)                */
-;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Mar 13 08:06:17 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
 ;*    Expansion-Passing Style: Beyond Conventional Macro,              */
@@ -114,59 +114,20 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-units units)
    (pass-prelude "Expand")
-   ;; We set all macros definitions seen in include files.
-   (for-each (lambda (x)
-		(compile-expand (comptime-expand x)))
-      (reverse! *macro*))
-   ;; imported inlined functions which are not coming from library
-   ;; have to be expanded. It is not obliged to perform macro-expansion
-   ;; on library functions because they have alredy been expanded.
-   (define (handler e)
-      (if (isa? e &error)
-	  (user-error-notify e 'expand)
-	  (raise e)))
-   ;; we scan all units
-   (for-each (lambda (unit)
-		(if (procedure? (unit-sexp* unit))
-		    ;; a freezed unit (such as the eval unit)
-		    ;; cannot be macro expanser.
-		    'nothing
-		    (let loop ((src (unit-sexp* unit))
-			       (res '()))
-		       (if (null? src)
-			   (unit-sexp*-set! unit (reverse! res))
-			   (match-case (car src)
-			      ((define-macro . ?-)
-			       (with-exception-handler
-				  (lambda (e)
-				     (handler e)
-				     ''())
-				  (lambda ()
-				     (comptime-expand (car src))))
-			       (loop (cdr src) res))
-			      ((define-expander . ?-)
-			       (with-exception-handler
-				  (lambda (e)
-				     (handler e)
-				     ''())
-				  (lambda ()
-				     (comptime-expand (car src))))
-			       (loop (cdr src) res))
-			      (else
-			       (let* ((obody (car src))
-				      (nbody (bind-exit (skip)
-						(with-exception-handler
-						   (lambda (e)
-						      (handler e)
-						      (if (isa? e &error)
-							  (skip ''())))
-						   (lambda ()
-						      (comptime-expand obody))))))
-				  (loop (cdr src) (cons nbody res)))))))))
-      units)
-   ;; in a second time, we apply compile (i.e., optim/debug macros).
-   (when (or *optim-O-macro?*
-	     (and (number? *compiler-debug*) (>= *compiler-debug* 1)))
+   (with-trace 'expand "expand-units"
+      ;; We set all macros definitions seen in include files.
+      (for-each (lambda (x)
+		   (trace-item "*macro=*" x)
+		   (compile-expand (comptime-expand x)))
+	 (reverse! *macro*))
+      ;; imported inlined functions which are not coming from library
+      ;; have to be expanded. It is not obliged to perform macro-expansion
+      ;; on library functions because they have alredy been expanded.
+      (define (handler e)
+	 (if (isa? e &error)
+	     (user-error-notify e 'expand)
+	     (raise e)))
+      ;; we scan all units
       (for-each (lambda (unit)
 		   (if (procedure? (unit-sexp* unit))
 		       ;; a freezed unit (such as the eval unit)
@@ -175,21 +136,65 @@
 		       (let loop ((src (unit-sexp* unit))
 				  (res '()))
 			  (if (null? src)
-			      (unit-sexp*-set! unit
-				 (append (get-O-macro-toplevel) (reverse! res)))
-			      (let* ((obody (car src))
-				     (nbody (bind-exit (skip)
-					       (with-exception-handler
-						  (lambda (e)
-						     (handler e)
-						     (if (isa? e &error)
-							 (skip ''())))
-						  (lambda ()
-						     (compile-expand obody))))))
-				 (loop (cdr src) (cons nbody res)))))))
-	 units))
-   ;; we are done
-   (pass-postlude units check-to-be-macros))
+			      (unit-sexp*-set! unit (reverse! res))
+			      (match-case (car src)
+				 ((define-macro . ?-)
+				  (trace-item "macro=" (car src))
+				  (with-exception-handler
+				     (lambda (e)
+					(handler e)
+					''())
+				     (lambda ()
+					(comptime-expand (car src))))
+				  (loop (cdr src) res))
+				 ((define-expander . ?-)
+				  (trace-item "expander=" (car src))
+				  (with-exception-handler
+				     (lambda (e)
+					(handler e)
+					''())
+				     (lambda ()
+					(comptime-expand (car src))))
+				  (loop (cdr src) res))
+				 (else
+				  (let* ((obody (car src))
+					 (nbody (bind-exit (skip)
+						   (with-exception-handler
+						      (lambda (e)
+							 (handler e)
+							 (if (isa? e &error)
+							     (skip ''())))
+						      (lambda ()
+							 (comptime-expand obody))))))
+				     (loop (cdr src) (cons nbody res)))))))))
+	 units)
+      ;; in a second time, we apply compile (i.e., optim/debug macros).
+      (when (or *optim-O-macro?*
+		(and (number? *compiler-debug*) (>= *compiler-debug* 1)))
+	 (for-each (lambda (unit)
+		      (if (procedure? (unit-sexp* unit))
+			  ;; a freezed unit (such as the eval unit)
+			  ;; cannot be macro expanser.
+			  'nothing
+			  (let loop ((src (unit-sexp* unit))
+				     (res '()))
+			     (if (null? src)
+				 (unit-sexp*-set! unit
+				    (append (get-O-macro-toplevel)
+				       (reverse! res)))
+				 (let* ((obody (car src))
+					(nbody (bind-exit (skip)
+						  (with-exception-handler
+						     (lambda (e)
+							(handler e)
+							(if (isa? e &error)
+							    (skip ''())))
+						     (lambda ()
+							(compile-expand obody))))))
+				    (loop (cdr src) (cons nbody res)))))))
+	    units))
+      ;; we are done
+      (pass-postlude units check-to-be-macros)))
       
 ;*---------------------------------------------------------------------*/
 ;*    comptime-expand ...                                              */

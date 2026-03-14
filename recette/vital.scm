@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/vital.scm               */
+;*    serrano/prgm/project/bigloo/5.0a/recette/vital.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Thu Oct  9 14:59:52 2025 (serrano)                */
-;*    Copyright   :  2002-25 Manuel Serrano                            */
+;*    Last change :  Sat Mar 14 09:31:49 2026 (serrano)                */
+;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
 ;*=====================================================================*/

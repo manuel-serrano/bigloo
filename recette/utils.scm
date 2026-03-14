@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/utils.scm               */
+;*    serrano/prgm/project/bigloo/5.0a/recette/utils.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Oct  9 14:54:33 2025                          */
-;*    Last change :  Thu Oct  9 14:57:41 2025 (serrano)                */
-;*    Copyright   :  2025 Manuel Serrano                               */
+;*    Last change :  Sat Mar 14 09:33:34 2026 (serrano)                */
+;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test utils                                                       */
 ;*=====================================================================*/

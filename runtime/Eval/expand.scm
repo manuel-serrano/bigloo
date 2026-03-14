@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:57:39 1994                          */
-;*    Last change :  Tue Mar 10 11:19:55 2026 (serrano)                */
+;*    Last change :  Sat Mar 14 10:30:47 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La macro expansion de l'interprete                               */
 ;*=====================================================================*/
@@ -63,6 +63,7 @@
 	    (expand/env ::obj ::obj)
 	    (expand/env! ::obj ::obj)
 	    (expand-once ::obj)
+	    (expand-eval ::obj)
 	    (%lexical-stack::pair-nil)
 	    (%with-lexical ::pair-nil ::obj ::procedure ::obj)
 	    (expand-error proc msg obj)))
@@ -105,21 +106,33 @@
    (initial-expander x (lambda (x e) x)))
 
 ;*---------------------------------------------------------------------*/
+;*    expand-eval ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-eval x)
+   (eval-expander x eval-expander))
+
+;*---------------------------------------------------------------------*/
 ;*    initial-expander ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (initial-expander x e)
-   (initial-expander/application x e application-eval-expander))
+   (initial-expander/application x e application-eval-expander #t))
+
+;*---------------------------------------------------------------------*/
+;*    eval-expander ...                                                */
+;*---------------------------------------------------------------------*/
+(define (eval-expander x e)
+   (initial-expander/application x e application-eval-expander #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    initial-expander! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (initial-expander! x e)
-   (initial-expander/application x e application-eval-expander!))
+   (initial-expander/application x e application-eval-expander! #t))
 
 ;*---------------------------------------------------------------------*/
 ;*    initial-expander/application ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (initial-expander/application x e ae)
+(define (initial-expander/application x e ae module5::bool)
    (let ((e1 (cond
 		((symbol? x)
 		 identifier-eval-expander)
@@ -129,7 +142,7 @@
 		 (lambda (x e) x))
 		((symbol? (car x))
 		 (cond
-		    ((get-module5-expander (car x))
+		    ((and module5 (get-module5-expander (car x)))
 		     =>
 		     (lambda (e1) e1))
 		    ((get-eval-expander (car x))
@@ -143,7 +156,7 @@
 			    ae)
 			   ((eq? id (car x))
 			    ae)
-			   ((get-module5-expander id)
+			   ((and module5 (get-module5-expander id))
 			    =>
 			    (lambda (e1) e1))
 			   ((get-eval-expander id)

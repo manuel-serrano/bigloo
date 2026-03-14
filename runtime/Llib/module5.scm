@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Mar 14 07:37:26 2026 (serrano)                */
+;*    Last change :  Sat Mar 14 09:06:27 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1301,6 +1301,7 @@
 		     (unless (eq? imod mod)
 			(module5-expand-and-resolve! imod init-xenv
 			   :heap-modules heap-modules
+			   :default-package default-package
 			   :qualified-names qualified-names)
 			(let ((idef (module5-get-export-def imod (or xid id))))
 			   (with-access::Def idef (kind expr ci)
@@ -1308,6 +1309,7 @@
 				 ((macro)
 				  (trace-item "bind-macro alias="
  				     alias " id=" id)
+				  (tprint "ALIAS=" alias)
 				  (install-module5-expander xenv alias expr
 				     (eval! (macro->expander expr))))
 				 ((expander)
@@ -1323,10 +1325,11 @@
 				     (module5-bind-class! mod id ci)
 				     (install-class-expanders ci xenv mod))))))))))
 	    (when (pair? (-> mod body))
-	       (trace-item "body before-expand=" (-> mod body))
-	       (set! (-> mod body)
-		  (map (lambda (x) (expand/env x xenv)) (-> mod body)))
-	       (trace-item "body after-expand=" (-> mod body)))
+	       (with-trace 'module5-resolve "module-expand-and-resolve!, expand-body"
+		  (trace-item "mod=" (-> mod id))
+		  (set! (-> mod body)
+		     (map (lambda (x) (expand/env x xenv)) (-> mod body)))))
+	    
 	    ;; class registration cannot be expanded before all the classes
 	    ;; are defined, otherwise a class that would have an instance
 	    ;; as a default field value could not be declared
@@ -1334,7 +1337,8 @@
 	       (lambda (k ci)
 		  (class-info-registration-set! ci
 		     (expand/env (registration-expand ci mod) xenv))))
-	    ;; Macro and class definitions are disgarded by the macro-expansion.
+	    
+	    ;; Macro and class definitions are erased by the macro-expansion.
 	    ;; Because these definitions are needed to resolve the module
 	    ;; exports, INSTALL-MODULE5-EXPANDER (runtime/macro.scm),
 	    ;; stores these definitions in XENV.
@@ -1345,7 +1349,21 @@
 	    ;; bind all the classes
 	    (collect-classes! mod)
 	    (check-unbounds mod))
+	 
 	 (ronly! mod)
+	 ;; remove the macro and expanders definitions from body as these
+	 ;; have already been evaluated and declared
+	 (set! (-> mod body)
+	    (filter (lambda (x)
+;		       (tprint "ICI x=" x)
+		       (match-case x
+			  (#unspecified #f)
+			  ((define-macro . ?-) #f)
+			  ((define-expander . ?-) #f)
+			  (else #t)))
+	       (-> mod body)))
+	 
+	 ;; store the body in cache for next use or import
 	 (filecache-put! (-> mod path) mod)
 	 (trace-item "decls="
 	    (hashtable-map (-> mod decls)
@@ -1944,7 +1962,8 @@
 	 ((begin . ?exprs)
 	  (collect-defines! mod exprs))))
 
-   (for-each (lambda (expr) (collect-define! mod expr)) body))
+   (with-trace 'module5 "collect-defines!"
+	 (for-each (lambda (expr) (collect-define! mod expr)) body)))
 
 ;*---------------------------------------------------------------------*/
 ;*    collect-classes! ...                                             */
@@ -2319,7 +2338,7 @@
 		      (class-info-super ci) x))))
 	 ;; install the expanders
 	 (install-class-expanders ci xenv mod)
-	 ;; expanded class registration form (move to expand-and-resolved
+	 ;; expanded class registration form (move to expand-and-resolve
 	 ;; after all class expansions).
 	 ;;(class-info-registration-set! ci (e (registration-expand ci mod) e))
 	 #unspecified)))
@@ -2328,17 +2347,17 @@
 ;*    install-class-expanders ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (install-class-expanders ci xenv mod)
-   (with-trace 'module5-resolve "install-class-expanders"
-      (trace-item "ci=" ci)
-      (install-module5-expander xenv
+   (with-trace 'module5-class "install-class-expanders"
+      (trace-item "ci=" (class-info-id ci))
+      (install-module5-lazy-expander xenv
 	 (string->symbol (format "instantiate::~a" (class-info-id ci)))
-	 #f (instantiate-expander ci mod))
-      (install-module5-expander xenv
+	 #f (lambda () (instantiate-expander ci mod)))
+      (install-module5-lazy-expander xenv
 	 (string->symbol (format "duplicate::~a" (class-info-id ci)))
-	 #f (duplicate-expander ci mod))
-      (install-module5-expander xenv
+	 #f (lambda () (duplicate-expander ci mod)))
+      (install-module5-lazy-expander xenv
 	 (string->symbol (format "with-access::~a" (class-info-id ci)))
-	 #f (with-access-expander ci mod))))
+	 #f (lambda () (with-access-expander ci mod)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    include-expander ...                                             */
@@ -2364,7 +2383,7 @@
 ;*    module5-bind-class! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (module5-bind-class! mod::Module id::symbol ci)
-   (with-trace 'module5-resolve "module5-bind-class!"
+   (with-trace 'module5-class "module5-bind-class!"
       (trace-item "class=" id " module=" (-> mod id))
       (hashtable-put! (-> mod classes) (symbol->string! id) ci)))
 

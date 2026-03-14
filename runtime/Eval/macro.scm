@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 08:59:04 1994                          */
-;*    Last change :  Sat Mar 14 07:25:52 2026 (serrano)                */
+;*    Last change :  Sat Mar 14 09:24:57 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation des macros (de l'interprete et du compilateur).  */
 ;*=====================================================================*/
@@ -41,6 +41,7 @@
 	    __bignum
 	    __param
 	    __bit
+	    __trace
 
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -94,7 +95,7 @@
    (hashtable-update! table key
       (lambda (x)
 	 (evwarning #f "install-expander"
-	    (format "Redefinition of ~a" " expander -- " where)
+	    (format "Redefinition of ~a expander -- " where)
 	    key)
 	 expander)
       expander))
@@ -105,15 +106,17 @@
 ;*    On installe une macro pour l'interprete seulement.               */
 ;*---------------------------------------------------------------------*/
 (define (install-eval-expander id expander)
-   (cond
-      ((not (symbol? id))
-       (error "install-eval-expander" "Illegal expander identifier" id))
-      ((not (procedure? expander))
-       (error "install-eval-expander" "Illegal expander expander" expander))
-      (else
-       (synchronize *eval-macro-mutex*
-	  (put-macro! (or (module-macro-table) *eval-macro-table*)
-	     id expander "eval")))))
+   (with-trace 'expand "install-compiler-expander"
+      (trace-item "id=" id)
+      (cond
+	 ((not (symbol? id))
+	  (error "install-eval-expander" "Illegal expander identifier" id))
+	 ((not (procedure? expander))
+	  (error "install-eval-expander" "Illegal expander expander" expander))
+	 (else
+	  (synchronize *eval-macro-mutex*
+	     (put-macro! (or (module-macro-table) *eval-macro-table*)
+		id expander "eval"))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-compiler-expander ...                                    */
@@ -121,14 +124,16 @@
 ;*    On installe une macro pour le compilateur seulement.             */
 ;*---------------------------------------------------------------------*/
 (define (install-compiler-expander id expander)
-   (cond
-      ((not (symbol? id))
-       (error "install-eval-expander" "Illegal expander identifier" id))
-      ((not (procedure? expander))
-       (error "install-eval-expander" "Illegal expander expander" expander))
-      (else
-       (synchronize *compiler-macro-mutex*
-	  (put-macro! *compiler-macro-table* id expander "compiler")))))
+   (with-trace 'expand "install-compiler-expander"
+      (trace-item "id=" id)
+      (cond
+	 ((not (symbol? id))
+	  (error "install-eval-expander" "Illegal expander identifier" id))
+	 ((not (procedure? expander))
+	  (error "install-eval-expander" "Illegal expander expander" expander))
+	 (else
+	  (synchronize *compiler-macro-mutex*
+	     (put-macro! *compiler-macro-table* id expander "compiler"))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-module5-xenv ...                                            */
@@ -143,12 +148,14 @@
 ;*    install-module5-expander ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (install-module5-expander env id x expander)
-   ;; the module5 compilation (MODULE5-EXPAND-AND-RESOLVE), will need
-   ;; the actual source expressions that defined the module macros
-   ;; (see runtime/module5.scm), so the module5
-   ;; environment stores the definition of the expander itself and its sources
-   (hashtable-put! env (symbol->string! id) (cons x expander))
-   #unspecified)
+   (with-trace 'expand "install-module5-expander"
+      (trace-item "id=" id)
+      ;; the module5 compilation (MODULE5-EXPAND-AND-RESOLVE), will need
+      ;; the actual source expressions that defined the module macros
+      ;; (see runtime/module5.scm), so the module5 environment
+      ;; stores the definition of the expander itself and its sources
+      (hashtable-put! env (symbol->string! id) (cons x expander))
+      #unspecified))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-module5-lazy-expander ...                                */
@@ -173,9 +180,11 @@
 ;*    On installe une macro pour le compilateur *et* l'interprete.     */
 ;*---------------------------------------------------------------------*/
 (define (install-module4-expander id expander)
-   (install-eval-expander id expander)
-   (install-compiler-expander id expander)
-   #unspecified)
+   (with-trace 'expand "install-module4-expander"
+      (trace-item "id=" id)
+      (install-eval-expander id expander)
+      (install-compiler-expander id expander)
+      #unspecified))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-expander ...                                             */
@@ -183,9 +192,11 @@
 ;*    On installe une macro pour le compilateur *et* l'interprete.     */
 ;*---------------------------------------------------------------------*/
 (define (install-expander id x expander)
-   (if *module5-env*
-       (install-module5-expander *module5-env* id x expander)
-       (install-module4-expander id expander)))
+   (with-trace 'expand "install-expander"
+      (trace-item "id=" id)
+      (if *module5-env*
+	  (install-module5-expander *module5-env* id x expander)
+	  (install-module4-expander id expander))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-module5-expander ...                                         */
@@ -226,32 +237,22 @@
 (define (macro->expander x)
    (match-case x
       ((?- (?name . ?args) . ?body)
-       (let (xfname xloc)
-	  (when (epair? x)
-	     (match-case (cer x)
-		((at ?f ?l)
-		 (set! xfname f)
-		 (set! xloc l))))
-	  (let* ((fname (gensym))
-		 (loc (gensym))
-		 (nx `(lambda (x1 e)
-			 (let ((,fname #f) ,loc)
-			    (cond
-			       ((epair? x1)
-				(match-case (cer x1)
-				   ((at ?f ?l)
-				    (set! ,fname f)
-				    (set! ,loc l))))
-			       (else
-				(set! ,fname ,xfname)
-				(set! ,loc ',xloc)))
-			    (let* ((n (let* ,(destructure
-						name fname loc
-						args '(cdr x1) '())
-					 ,(expand-progn body)))
-				   (ne (e n e)))
-			       (evepairify* ne x1))))))
-	     (evepairify nx x))))
+       (let* ((fname (gensym))
+	      (loc (gensym))
+	      (nx `(lambda (x1 e)
+		      (let ((,fname #f) ,loc)
+			 (when (epair? x1)
+			    (match-case (cer x1)
+			       ((at ?f ?l)
+				(set! ,fname f)
+				(set! ,loc l))))
+			 (let* ((n (let* ,(destructure
+					     name fname loc
+					     args '(cdr x1) '())
+				      ,(expand-progn body)))
+				(ne (e n e)))
+			    (evepairify* ne x1))))))
+	  (evepairify nx x)))
       (else
        (error "macro->expander" "Illegal form syntax" x))))
 

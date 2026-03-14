@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Mar 10 07:19:47 2026 (serrano)                */
+;*    Last change :  Fri Mar 13 08:49:55 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -433,23 +433,25 @@
 (define (module5-imported-unit mod::Module expand env)
 
    (define (init-module! imod::Module path)
-      (with-access::Module imod (id checksum version expr)
-	 (module5-expand-and-resolve! imod module5-init-xenv!
-	    :heap-modules (module5-heap4-modules)
-	    :default-package (default-jvm-package)
-	    :qualified-names (jvm-qualified-names))
-	 ;; See engine compiler
-	 ;; (module5-module-package-set! imod)
-	 (when (symbol? (-> imod qualified-name))
-	    (jvm-qualified-name-set! id (-> imod qualified-name)))
-	 (if (=fx version 5)
-	     (module5-checksum! imod)
-	     (set! checksum (module-checksum expr '())))
-	 (declare-global-sfun! env 'module-initialization
-	    'module-initialization
-	    '(checksum::long path::string) id 'import 'sfun
-	    #f #f)
-	 `((@ module-initialization ,id) ,checksum ,path)))
+      (with-trace 'module5 "init-module!"
+	 (trace-item "id=" (-> imod id))
+	 (with-access::Module imod (id checksum version expr)
+	    (module5-expand-and-resolve! imod module5-init-xenv!
+	       :heap-modules (module5-heap4-modules)
+	       :default-package (default-jvm-package)
+	       :qualified-names (jvm-qualified-names))
+	    ;; See engine compiler
+	    ;; (module5-module-package-set! imod)
+	    (when (symbol? (-> imod qualified-name))
+	       (jvm-qualified-name-set! id (-> imod qualified-name)))
+	    (if (=fx version 5)
+		(module5-checksum! imod)
+		(set! checksum (module-checksum expr '())))
+	    (declare-global-sfun! env 'module-initialization
+	       'module-initialization
+	       '(checksum::long path::string) id 'import 'sfun
+	       #f #f)
+	    `((@ module-initialization ,id) ,checksum ,path))))
 
    (with-access::Module mod (inits path)
       (with-trace 'module5 "module5-imported-unit"
@@ -1171,16 +1173,34 @@
 	 (else
 	  (error "expand" "Illegal form" x))))
 
-   (define (define-macro-expander x e)
+   (define (define-macro-expander-TBR-13ma42026 x e)
       ;; macro expander cannot use regular module5 initial env because
-      ;; the define expanders of that environment are incompatible with eval
+      ;; the inner define expanders of that environment are incompatible
+      ;; with eval
       (let ((envx *module5-env*))
 	 (set! *module5-env* #f)
 	 (let ((nx (expand-define-macro x e)))
 	    (set! *module5-env* envx)
 	    x)))
 
-   (install-module5-expander xenv 'define-macro #f define-macro-expander)
+   (define (define-macro-expander x e)
+      ;; macro expander cannot use regular module5 initial env because
+      ;; the inner define expanders of that environment are incompatible
+      ;; with eval
+      (let ((envx *module5-env*))
+	 (set! *module5-env* #f)
+	 (let ((nx (expand-define-macro x e)))
+	    (set! *module5-env* envx)
+	    #unspecified)))
+
+   (define (define-macro-expander-new x e)
+      ;; macro expander cannot use regular module5 initial env because
+      ;; the inner define expanders of that environment are incompatible
+      ;; with eval
+      (expand-define-macro x e)
+      #unspecified)
+
+   ;;(install-module5-expander xenv 'define-macro #f define-macro-expander)
    (install-module5-expander xenv 'define #f define-expander)
    (install-module5-expander xenv 'define-inline #f define-expander)
    (install-module5-expander xenv 'define-generic #f define-expander)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sun Sep 21 01:15:43 2025 (serrano)                */
+;*    Last change :  Fri Mar 13 08:11:12 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -75,6 +75,8 @@
 	    __evmodule
 
 	    (extend-r-macro-env __match_normalize))
+
+   (use     __trace)
    
    (eval    (export *c-debug-repl-value*))
 
@@ -602,11 +604,15 @@
 ;*    expand-define-macro ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (expand-define-macro x e)
-   (let ((ev (eval! (macro->expander x))))
-      (install-expander (caadr x) x
-	 (lambda (x e)
-	    (with-handler expander-exception-handler
-	       (ev x e))))))
+   (with-trace 'expand "expand-define-macro"
+      (trace-item "x=" x)
+      (let ((ev (eval! (expand-eval (macro->expander x)))))
+	 (trace-item "install-expander=" (caadr x))
+	 (install-expander (caadr x) x
+	    (lambda (x e)
+	       (with-handler
+		  expander-exception-handler
+		  (ev x e)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-define-hygiene-macro ...                                  */
@@ -615,7 +621,8 @@
    (let ((ev (eval! (macro->expander x))))
       (install-expander (caadr x) x
 	 (lambda (x e)
-	    (with-handler expander-exception-handler
+	    (with-handler
+	       expander-exception-handler
 	       (ev x e))))))
 
 ;*---------------------------------------------------------------------*/

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/main.scm                */
+;*    serrano/prgm/project/bigloo/5.0a/recette/main.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Fri Jan 30 17:05:28 2026 (serrano)                */
+;*    Last change :  Sat Mar 14 09:31:01 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -43,8 +43,8 @@
 ;*    if-module ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (if-module sym thunk)
-   (if (or (null? *modules*) (memq sym *modules*))
-       (thunk)))
+   (when (or (null? *modules*) (memq sym *modules*))
+      (thunk)))
 
 ;*---------------------------------------------------------------------*/
 ;*    recette-resume ...                                               */
