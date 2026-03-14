@@ -15,6 +15,7 @@
 	    cnst_alloc
 	    tvector_tvector
 	    tools_error
+	    tools_shape
 	    read_jvm
 	    backend_backend
 	    backend_bvm

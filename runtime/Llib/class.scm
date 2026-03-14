@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Tue Mar 10 09:18:37 2026 (serrano)                */
+;*    Last change :  Sat Mar 14 11:38:03 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -236,19 +236,19 @@
 ;*---------------------------------------------------------------------*/
 (define (allocator-expand class-info mod)
    `($class-allocate ,(class-info-id class-info)
-       ,@(filter-map (lambda (p)
+       ,@(append-map (lambda (p)
 			(cond
 			   ((prop-info-virtual? p)
-			    #f)
+			    '())
 			   ((prop-info-defv? p)
-			    (prop-info-value p))
+			    (list (prop-info-value p)))
 			   (else
 			    (let ((ty (prop-info-type p)))
 			       (cond
 				  ((module5-get-class mod ty)
-				   `(class-nil ,ty))
+				   `((class-nil ,ty)))
 				  (else
-				   `(cast-null ,(prop-info-type p))))))))
+				   `((cast-null ,(prop-info-type p)))))))))
 	    (class-info-properties class-info))))
 
 ;*---------------------------------------------------------------------*/
@@ -272,6 +272,54 @@
 ;*    nil-creator-expand ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (nil-creator-expand class-info mod)
+   
+   (define (type-nil ty)
+      (cond
+	 ((memq ty '(obj unspec)) #unspecified)
+	 ((module5-get-class mod ty) `(class-nil ,ty))
+	 ((or (eq? ty 'bool) (eq? ty 'bbool)) #f)
+	 ((eq? ty 'cell) '(make-cell #unspecified))
+	 ((memq ty '(bint blong int)) 0)
+	 ((memq ty '(bllong belong)) '(string->llong "0"))
+	 ((eq? ty 'bignum) #z0)
+	 ((eq? ty 'real) 0.0)
+	 ((eq? ty 'bchar) #\_)
+	 ((memq ty '(nil pair pair-nil)) ''())
+	 ((eq? ty 'pair) '(econs #f #f))
+	 ((eq? ty 'epair) '(econs #f #f #f))
+	 ((eq? ty 'bstring) "")
+	 ((eq? ty 'symbol) ''_)
+	 ((eq? ty 'keyword) ':_)
+	 ((eq? ty 'vector) ''#())
+	 ((eq? ty 'procedure) 'cons)
+	 ((eq? ty 'input-port) '(current-input-port))
+	 ((eq? ty 'output-port) '(current-output-port))
+	 ((eq? ty 'error-port) '(current-error-port))
+	 ((eq? ty 'binary-port) '(current-output-port))
+	 ((eq? ty 'mmap) '(string->mmap ""))
+	 ((eq? ty 'date) '(current-date))
+	 ((eq? ty 'struct) `(make-struct ',(gensym) 0 #f))
+	 ((eq? ty 'process) '(process-nil))
+	 ((eq? ty 'custom) '(custom-nil))
+	 ((eq? ty 'opaque) '(opaque-nil))
+	 ((eq? ty 'socket) '(make-server-socket))
+	 ((eq? ty 'datagram-socket) '(make-datagram-server-socket))
+	 ((eq? ty 'bucs2) '(char->ucs2 #\_))
+	 ((eq? ty 'ucs2string) '(utf8-string->ucs2-string ""))
+	 ((eq? ty 'mutex) '(mutex-nil))
+	 ((eq? ty 'condvar) '(condition-variable-nil))
+	 ((eq? ty 's8vector) '(make-s8vector 0))
+	 ((eq? ty 'u8vector) '(make-u8vector 0))
+	 ((eq? ty 's16vector) '(make-s16vector 0))
+	 ((eq? ty 'u16vector) '(make-u16vector 0))
+	 ((eq? ty 's32vector) '(make-s32vector 0))
+	 ((eq? ty 'u32vector) '(make-u32vector 0))
+	 ((eq? ty 's64vector) '(make-s64vector 0))
+	 ((eq? ty 'u64vector) '(make-u64vector 0))
+	 ((eq? ty 'f32vector) '(make-f32vector 0))
+	 ((eq? ty 'f64vector) '(make-f64vector 0))
+	 (else `(cast-null ,ty))))
+   
    (let* ((props (filter (lambda (p)
 			    (or (not (prop-info-virtual? p))
 				(not (prop-info-ronly? p))))
@@ -282,12 +330,7 @@
       `(lambda (,(make-typed-ident 'o (class-info-id class-info)))
 	  ,@(map (lambda (p)
 		    (let ((ty (prop-info-type p)))
-		       `(set! (-> o ,(prop-info-id p))
-			   ,(cond
-			      ((module5-get-class mod ty)
-			       `(class-nil ,ty))
-			      (else
-			       `(cast-null ,(prop-info-type p)))))))
+		       `(set! (-> o ,(prop-info-id p)) ,(type-nil ty))))
 	       props)
 	  o)))
 

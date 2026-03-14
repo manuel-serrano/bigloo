@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Mar 14 09:06:27 2026 (serrano)                */
+;*    Last change :  Sat Mar 14 11:41:54 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1309,7 +1309,6 @@
 				 ((macro)
 				  (trace-item "bind-macro alias="
  				     alias " id=" id)
-				  (tprint "ALIAS=" alias)
 				  (install-module5-expander xenv alias expr
 				     (eval! (macro->expander expr))))
 				 ((expander)
