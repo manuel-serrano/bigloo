@@ -6,3 +6,6 @@
 
 (define (ex18-shadow)
    'not-shadowed)
+
+(define-macro (ex18-shadow-macro x)
+   'shadowed)

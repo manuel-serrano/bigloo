@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Mar 10 07:01:00 2026 (serrano)                */
+;*    Last change :  Sat Mar 14 07:37:26 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1332,7 +1332,8 @@
 	    ;; as a default field value could not be declared
 	    (hashtable-for-each (-> mod classes)
 	       (lambda (k ci)
-		  (class-info-registration-set! ci (expand/env (registration-expand ci mod) xenv))))
+		  (class-info-registration-set! ci
+		     (expand/env (registration-expand ci mod) xenv))))
 	    ;; Macro and class definitions are disgarded by the macro-expansion.
 	    ;; Because these definitions are needed to resolve the module
 	    ;; exports, INSTALL-MODULE5-EXPANDER (runtime/macro.scm),

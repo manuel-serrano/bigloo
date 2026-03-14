@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/macro.scm          */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/macro.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 08:59:04 1994                          */
-;*    Last change :  Fri Oct 10 05:11:15 2025 (serrano)                */
+;*    Last change :  Sat Mar 14 07:25:52 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation des macros (de l'interprete et du compilateur).  */
 ;*=====================================================================*/
@@ -16,6 +16,7 @@
    (export  *module5-env*
 	    (make-module5-xenv)
 	    (install-module5-expander ::obj ::symbol ::obj ::procedure)
+	    (install-module5-lazy-expander ::obj ::symbol ::obj ::procedure)
 	    (install-module4-expander ::symbol ::procedure)
 	    (install-eval-expander ::symbol ::procedure)
 	    (install-compiler-expander ::symbol ::procedure)
@@ -150,6 +151,23 @@
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
+;*    install-module5-lazy-expander ...                                */
+;*    -------------------------------------------------------------    */
+;*    Install an expander that when first used computes its            */
+;*    expander. This is used when expanding module5 to avoid           */
+;*    computing the expander of all classes that might even not being  */
+;*    by the modules. (see ../Llib/module5.scm).                        *
+;*---------------------------------------------------------------------*/
+(define (install-module5-lazy-expander env id k make-expander)
+   (let ((lexpander (lambda (x e)
+		       (let ((expander (make-expander)))
+			  (hashtable-put! env (symbol->string! id)
+			     (cons k expander))
+			  (expander x e)))))
+      (hashtable-put! env (symbol->string! id) (cons k lexpander))
+      #unspecified))
+   
+;*---------------------------------------------------------------------*/
 ;*    install-module4-expander ...                                     */
 ;*    -------------------------------------------------------------    */
 ;*    On installe une macro pour le compilateur *et* l'interprete.     */
@@ -208,22 +226,32 @@
 (define (macro->expander x)
    (match-case x
       ((?- (?name . ?args) . ?body)
-       (let* ((fname (gensym))
-	      (loc (gensym))
-	      (nx `(lambda (x1 e)
-		      (let ((,fname #f) ,loc)
-			 (when (epair? x1)
-			    (match-case (cer x1)
-			       ((at ?f ?l)
-				(set! ,fname f)
-				(set! ,loc l))))
-			 (let* ((n (let* ,(destructure
-					     name fname loc
-					     args '(cdr x1) '())
-				      ,(expand-progn body)))
-				(ne (e n e)))
-			    (evepairify* ne x1))))))
-	  (evepairify nx x)))
+       (let (xfname xloc)
+	  (when (epair? x)
+	     (match-case (cer x)
+		((at ?f ?l)
+		 (set! xfname f)
+		 (set! xloc l))))
+	  (let* ((fname (gensym))
+		 (loc (gensym))
+		 (nx `(lambda (x1 e)
+			 (let ((,fname #f) ,loc)
+			    (cond
+			       ((epair? x1)
+				(match-case (cer x1)
+				   ((at ?f ?l)
+				    (set! ,fname f)
+				    (set! ,loc l))))
+			       (else
+				(set! ,fname ,xfname)
+				(set! ,loc ',xloc)))
+			    (let* ((n (let* ,(destructure
+						name fname loc
+						args '(cdr x1) '())
+					 ,(expand-progn body)))
+				   (ne (e n e)))
+			       (evepairify* ne x1))))))
+	     (evepairify nx x))))
       (else
        (error "macro->expander" "Illegal form syntax" x))))
 
