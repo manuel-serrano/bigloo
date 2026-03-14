@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/optim.scm               */
+;*    serrano/prgm/project/bigloo/5.0a/recette/optim.scm               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 28 16:04:55 1998                          */

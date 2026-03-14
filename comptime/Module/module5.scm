@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Mar 10 07:19:47 2026 (serrano)                */
+;*    Last change :  Fri Mar 13 08:49:55 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -433,23 +433,25 @@
 (define (module5-imported-unit mod::Module expand env)
 
    (define (init-module! imod::Module path)
-      (with-access::Module imod (id checksum version expr)
-	 (module5-expand-and-resolve! imod module5-init-xenv!
-	    :heap-modules (module5-heap4-modules)
-	    :default-package (default-jvm-package)
-	    :qualified-names (jvm-qualified-names))
-	 ;; See engine compiler
-	 ;; (module5-module-package-set! imod)
-	 (when (symbol? (-> imod qualified-name))
-	    (jvm-qualified-name-set! id (-> imod qualified-name)))
-	 (if (=fx version 5)
-	     (module5-checksum! imod)
-	     (set! checksum (module-checksum expr '())))
-	 (declare-global-sfun! env 'module-initialization
-	    'module-initialization
-	    '(checksum::long path::string) id 'import 'sfun
-	    #f #f)
-	 `((@ module-initialization ,id) ,checksum ,path)))
+      (with-trace 'module5 "init-module!"
+	 (trace-item "id=" (-> imod id)
+	    (with-access::Module imod (id checksum version expr)
+	       (module5-expand-and-resolve! imod module5-init-xenv!
+		  :heap-modules (module5-heap4-modules)
+		  :default-package (default-jvm-package)
+		  :qualified-names (jvm-qualified-names))
+	       ;; See engine compiler
+	       ;; (module5-module-package-set! imod)
+	       (when (symbol? (-> imod qualified-name))
+		  (jvm-qualified-name-set! id (-> imod qualified-name)))
+	       (if (=fx version 5)
+		   (module5-checksum! imod)
+		   (set! checksum (module-checksum expr '())))
+	       (declare-global-sfun! env 'module-initialization
+		  'module-initialization
+		  '(checksum::long path::string) id 'import 'sfun
+		  #f #f)
+	       `((@ module-initialization ,id) ,checksum ,path)))))
 
    (with-access::Module mod (inits path)
       (with-trace 'module5 "module5-imported-unit"

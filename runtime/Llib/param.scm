@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/param.scm          */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/param.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:29:58 2004                          */
-;*    Last change :  Thu Sep  4 09:43:59 2025 (serrano)                */
-;*    Copyright   :  2004-25 Manuel Serrano                            */
+;*    Last change :  Fri Mar 13 09:29:48 2026 (serrano)                */
+;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo global parameters                                         */
 ;*=====================================================================*/
@@ -157,7 +157,7 @@
    0
    (lambda (val)
       (if (and (fixnum? val) (<fx val 0))
-	  (error 'bigloo-compiler-debug-set! "Illegal debug level" val)
+	  (error "bigloo-compiler-debug-set!" "Illegal debug level" val)
 	  val)))
    
 ;*---------------------------------------------------------------------*/
@@ -169,7 +169,7 @@
    0
    (lambda (val)
       (if (and (fixnum? val) (<fx val 0))
-	  (error 'bigloo-debug-set! "Illegal debug level" val)
+	  (error "bigloo-debug-set!" "Illegal debug level" val)
 	  val)))
 
 ;*---------------------------------------------------------------------*/
@@ -181,7 +181,7 @@
    0
    (lambda (val)
       (if (and (fixnum? val) (<fx val 0))
-	  (error 'bigloo-debug-module-set! "Illegal debug module level" val)
+	  (error "bigloo-debug-module-set!" "Illegal debug module level" val)
 	  val)))
 
 ;*---------------------------------------------------------------------*/
@@ -193,7 +193,7 @@
    1
    (lambda (val)
       (if (and (fixnum? val) (<fx val 0))
-	  (error 'bigloo-warning-set! "Illegal warning level" val)
+	  (error "bigloo-warning-set!" "Illegal warning level" val)
 	  val)))
 
 ;*---------------------------------------------------------------------*/
@@ -205,7 +205,7 @@
    0
    (lambda (val)
       (if (and (fixnum? val) (<fx val 0))
-	  (error 'bigloo-profile-set! "Illegal profile level" val)
+	  (error "bigloo-profile-set!" "Illegal profile level" val)
 	  val)))
 
 ;*---------------------------------------------------------------------*/
@@ -296,11 +296,11 @@
    (lambda (val)
       (cond
 	 ((not (list? val))
-	  (error 'bigloo-library-path-set! "Illegal list" val))
+	  (error "bigloo-library-path-set!" "Illegal list" val))
 	 ((not (every string? val))
-	  (error 'bigloo-library-path-set!
-		 "Illegal values"
-		 (filter (lambda (s) (not (string? s))) val)))
+	  (error "bigloo-library-path-set!"
+	     "Illegal values"
+	     (filter (lambda (s) (not (string? s))) val)))
 	 (else
 	  val))))
 

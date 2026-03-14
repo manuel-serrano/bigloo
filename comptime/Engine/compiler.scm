@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Mar 10 08:34:54 2026 (serrano)                */
+;*    Last change :  Fri Mar 13 08:47:39 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -573,12 +573,14 @@
 
 	    (when (eq? qualified-name #unspecified)
 	       (set! qualified-name (module-qualified-name-register! id)))
-	    
+
+	 (tprint ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 	    (module5-expand-and-resolve! mod module5-init-xenv!
 	       :heap-modules (module5-heap4-modules)
 	       :default-package (default-jvm-package)
 	       :qualified-names (jvm-qualified-names))
 	    (module5-checksum! mod)
+	 (tprint "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 	    
 	    (hashtable-for-each decls
 	       (lambda (k d)
