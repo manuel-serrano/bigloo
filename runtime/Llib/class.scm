@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Sat Mar 14 11:38:03 2026 (serrano)                */
+;*    Last change :  Sun Mar 15 08:24:29 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -489,21 +489,21 @@
 				 (class-info-properties class-info))
 			 (error/loc (car x) "Illegal property" (car a) args)))
 	    args)
-	 (let ((nx `(let ((,d ,(cadr x))
-			  (,to ($class-allocate ,cid
-				  ;; concrete properties
-				  ,@(map (lambda (p)
-					    (cond
-					       ((prop-info-virtual? p)
-						#f)
-					       ((assq (prop-info-id p) args)
-						=>
-						cadr)
-					       (else
-						`(-> ,d ,(prop-info-id p)))))
-				       (filter (lambda (p)
-						  (not (prop-info-virtual? p)))
-					  (class-info-properties class-info))))))
+	 (let ((nx `(let* ((,td ,(cadr x))
+			   (,to ($class-allocate ,cid
+				   ;; concrete properties
+				   ,@(map (lambda (p)
+					     (cond
+						((prop-info-virtual? p)
+						 #f)
+						((assq (prop-info-id p) args)
+						 =>
+						 cadr)
+						(else
+						 `(-> ,d ,(prop-info-id p)))))
+					(filter (lambda (p)
+						   (not (prop-info-virtual? p)))
+					   (class-info-properties class-info))))))
 		       ;; constructor
 		       ,@(if (class-info-ctor class-info)
 			     (list `(,(class-info-ctor class-info) ,o))
