@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Read/reader.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Read/reader.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Thu Sep  4 10:12:15 2025 (serrano)                */
+;*    Last change :  Tue Mar 17 08:40:06 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -555,6 +555,26 @@
       ;; fixnums
       ((: (? (in "+-")) (+ digit))
        (the-integer))
+      ((: (? (in "+-")) (** 1 2 digit) (+ (: #\_ (= 3 digit))))
+       (let ((s (the-string)))
+	  (let loop ((i (-fx (string-length s) 1))
+		     (k 1)
+		     (n 0))
+	     (if (=fx i -1)
+		 n
+		 (let ((c (string-ref-ur s i)))
+		    (case c
+		       ((#\-)
+			(- n))
+		       ((#\+)
+			n)
+		       ((#\_)
+			(loop (-fx i 1) k n))
+		       (else (loop (-fx i 1)
+				(*fx k 10)
+				(+ n (*fx k
+					(-fx (char->integer c)
+					   (char->integer #\0))))))))))))
       
       ;; flonum
       ((: (? (in "-+"))

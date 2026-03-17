@@ -34,11 +34,11 @@ that compose the body of a module (see @ref{Modules}).
 @cindex Syntax
 
 The syntax of Bigloo is that of Scheme (a parenthesis based one) with
-three exceptions: type information, multi-line comments, and extended
-strings escape characters. Type information is supplied when identifiers
-are introduced (via @code{lambda}, @code{let}, @code{define}, ...) and
-those identifiers holding type information are referred to as typed
-identifiers.
+four exceptions: type information, multi-line comments, extended strings
+escape characters, and Java-like syntax for large integers. Type
+information is supplied when identifiers are introduced (via
+@code{lambda}, @code{let}, @code{define}, ...) and those identifiers
+holding type information are referred to as typed identifiers.
 
 @cindex Typed identifier
 They are defined by the following grammar:
@@ -90,6 +90,26 @@ A Bigloo string literal is defined by:
 If @code{#t} r5rs-string literals are restricted to the official R5Rs
 character set. Otherwise, they are interpreted as Bigloo string.
 @end deffn
+
+@pindex Integer constants 
+@cindex Integer constants 
+
+Large integers can be written as:
+
+@smallexample
+<integer>       @expansion{} <r5rs-integer> | <large-integer>
+<large-integer> @expansion{} (+|-?)?<digit><digit>?(_<digit><digit><digit>)+
+<comment-text> @expansion{} <character sequence not containing #| or |#>
+@end smallexample
+
+That is, large integer constants can use the @code{_} character to separate
+sequences of 3 digits. Examples:
+
+@smallexample
+1_000_102
+89_223
+@end smallexample
+
 
 @c ------------------------------------------------------------------- @c
 @c    Comments                                                         @c
