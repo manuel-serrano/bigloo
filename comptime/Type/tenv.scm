@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Sun Mar  8 09:27:18 2026 (serrano)                */
+;*    Last change :  Wed Mar 18 09:38:03 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -282,7 +282,7 @@
       (if (not (type? type))
 	  (if (epair? x)
 	      (user-error/location (find-location x) "find-type"
-		 (format "Can't find type \"~a\"" id) x)
+		 (format "Cannot find type \"~a\"" id) x)
 	      (error "find-type" (format "Can't find type \"~a\"" id) x))
 	  type)))
 

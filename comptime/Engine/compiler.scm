@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Mar 13 08:47:39 2026 (serrano)                */
+;*    Last change :  Wed Mar 18 09:31:38 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -549,7 +549,7 @@
       ;; to be a valid module name
       (when (symbol? (cadr (car expr)))
 	 (set! *module* (cadr (car expr))))
-      
+
       (let* ((expr-mod (car expr))
 	     (expr-body (cdr expr))
 	     (mod (module5-parse expr (car *src-files*)

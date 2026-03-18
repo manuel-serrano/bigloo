@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Mar 14 11:41:54 2026 (serrano)                */
+;*    Last change :  Wed Mar 18 09:16:29 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -125,6 +125,7 @@
 	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()) (default-package #f) (qualified-names #f))
 	   (module5-checksum!::Module ::Module)
 	   (module5-get-decl::Decl ::Module ::symbol ::obj)
+	   (module5-get-decl*::Decl ::Module ::symbol ::obj)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
 	   (module5-get-export-def ::Module ::symbol)
 	   (module5-get-class ::Module ::symbol)
@@ -1326,6 +1327,7 @@
 	    (when (pair? (-> mod body))
 	       (with-trace 'module5-resolve "module-expand-and-resolve!, expand-body"
 		  (trace-item "mod=" (-> mod id))
+		  (trace-item "body=" (-> mod body))
 		  (set! (-> mod body)
 		     (map (lambda (x) (expand/env x xenv)) (-> mod body)))))
 	    
@@ -2232,6 +2234,21 @@
 	 (if (isa? decl Decl)
 	     decl
 	     (error/loc mod "Cannot find declaration" id src)))))
+
+;*---------------------------------------------------------------------*/
+;*    module5-get-decl* ...                                            */
+;*    -------------------------------------------------------------    */
+;*    May return a local or imported declaration.                      */
+;*---------------------------------------------------------------------*/
+(define (module5-get-decl* mod::Module id src)
+   (with-access::Module mod (decls imports (mid id))
+      (let ((decl (hashtable-get decls (symbol->string! id))))
+	 (if (isa? decl Decl)
+	     decl
+	     (let ((decl (hashtable-get imports (symbol->string! id))))
+		(if (isa? decl Decl)
+		    decl
+		    (error/loc mod "Cannot find declaration" id src)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-get-def ...                                              */

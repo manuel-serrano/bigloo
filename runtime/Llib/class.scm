@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Sun Mar 15 08:24:29 2026 (serrano)                */
+;*    Last change :  Wed Mar 18 09:09:42 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -95,7 +95,7 @@
 	  (values 0 '())
 	  (let ((ci (module5-get-class mod k)))
 	     (if (not ci)
-		 (error/loc "parse-class"
+		 (error/loc (-> mod id)
 		    (format "Cannot find super class \"~a\"" k) x x)
 		 (values (+fx 1 (class-info-depth ci))
 		    (class-info-vproperties ci))))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Mar 13 08:49:55 2026 (serrano)                */
+;*    Last change :  Wed Mar 18 09:39:11 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -339,6 +339,44 @@
 	       (append declc defc)
 	       (append declo defo)))))
 
+   (define (super-kdef k::KDef)
+      (with-access::KDef k (super decl expr id)
+	 (when (symbol? super)
+	    (with-access::Decl decl (mod def scope)
+	       (let ((d (module5-get-decl* mod super expr)))
+		  (with-access::Decl d (def)
+		     def))))))
+
+   (define (same-kdef? kx ky)
+      (with-access::KDef kx ((dx decl))
+	 (with-access::KDef ky ((dy decl))
+	    (with-access::Decl dx ((idx id) (modx mod))
+	       (with-access::Decl dy ((idy id) (mody mod))
+		  (and (eq? idx idy) (eq? modx mody)))))))
+   
+   (define (find-imported-classes classes)
+      (let loop ((lclasses classes)
+		 (iclasses '()))
+	 (if (null? lclasses)
+	     ;; create iclasses for those that are not
+	     ;; explicitly imported
+	     (filter (lambda (ic)
+			(not (find (lambda (c) (same-kdef? ic c)) classes)))
+		iclasses)
+	     (let* ((c (car lclasses))
+		    (s (super-kdef c)))
+		(if (not s)
+		    (loop (cdr lclasses) iclasses)
+		    (with-access::KDef s (decl)
+		       (with-access::Decl decl ((imod mod))
+			  (cond
+			     ((eq? mod imod)
+			      (loop (cdr lclasses) iclasses))
+			     ((memq s iclasses)
+			      (loop (cdr lclasses) iclasses))
+			     (else
+			      (loop (cdr lclasses) (cons s (append (find-imported-classes (list s)) iclasses))))))))))))
+   
    (with-trace 'module5 "module5-ast!"
       (with-access::Module mod (defs imports (mid id))
 	 (trace-item "mid=" mid)
@@ -368,18 +406,25 @@
 				      (trace-item "scope=" scope)
 				      (declare-type! id name 'C))))))
 	       types)
-	    
+
 	    ;; declare all classes
-	    (let* ((cs (sort (lambda (ex ey)
+	    (let* ((iclasses (find-imported-classes (map (lambda (v) (vector-ref v 0)) classes)))
+		   (ic (map (lambda (def::KDef)
+			       (with-access::KDef def (decl id)
+				  (with-access::Decl decl (mod)
+				     (with-access::Module mod ((mid id))
+					(vector def mid id 'import)))))
+			  iclasses))
+		   (cs (sort (lambda (ex ey)
 				(with-access::KDef (vector-ref ex 0) ((dx depth))
 				   (with-access::KDef (vector-ref ey 0) ((dy depth))
 				      (<fx dx dy))))
-			  classes))
+			  (append ic classes)))
 		   (ts (map (lambda (e)
 			       (let ((def (vector-ref e 0))
 				     (alias (vector-ref e 2))
 				     (scope (vector-ref e 3)))
-				  (with-access::KDef (vector-ref e 0) (expr kind id depth)
+				  (with-access::KDef def (expr kind id depth)
 				     (declare-class-definition! kind id alias
 					scope expr def))))
 			  cs)))
@@ -388,7 +433,7 @@
 			       (when ty
 				  (let ((def (vector-ref e 0))
 					(alias (vector-ref e 2)))
-				     (with-access::KDef (vector-ref e 0) (expr kind id depth)
+				     (with-access::KDef def (expr kind id depth)
 					(declare-class-slots! id alias expr def ty)))))
 		     cs ts)))
 	    
