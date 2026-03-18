@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Mar 18 09:16:29 2026 (serrano)                */
+;*    Last change :  Wed Mar 18 17:44:37 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -2241,14 +2241,20 @@
 ;*    May return a local or imported declaration.                      */
 ;*---------------------------------------------------------------------*/
 (define (module5-get-decl* mod::Module id src)
-   (with-access::Module mod (decls imports (mid id))
+   (with-access::Module mod (decls imports defs (mid id))
       (let ((decl (hashtable-get decls (symbol->string! id))))
 	 (if (isa? decl Decl)
 	     decl
 	     (let ((decl (hashtable-get imports (symbol->string! id))))
 		(if (isa? decl Decl)
 		    decl
-		    (error/loc mod "Cannot find declaration" id src)))))))
+		    (let ((def (hashtable-get defs (symbol->string! id))))
+		       (if (isa? def Def)
+			   (with-access::Def def (decl)
+			      (if (isa? decl Decl)
+				  decl
+				  (error/loc mod "Cannot find declaration" id src)))
+			   (error/loc mod "Cannot find declaration" id src)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-get-def ...                                              */

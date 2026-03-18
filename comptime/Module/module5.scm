@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Mar 18 09:39:11 2026 (serrano)                */
+;*    Last change :  Wed Mar 18 17:14:00 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -357,12 +357,14 @@
    (define (find-imported-classes classes)
       (let loop ((lclasses classes)
 		 (iclasses '()))
-	 (if (null? lclasses)
+	 (cond
+	    ((null? lclasses)
 	     ;; create iclasses for those that are not
 	     ;; explicitly imported
 	     (filter (lambda (ic)
 			(not (find (lambda (c) (same-kdef? ic c)) classes)))
-		iclasses)
+		iclasses))
+	    (else
 	     (let* ((c (car lclasses))
 		    (s (super-kdef c)))
 		(if (not s)
@@ -375,7 +377,8 @@
 			     ((memq s iclasses)
 			      (loop (cdr lclasses) iclasses))
 			     (else
-			      (loop (cdr lclasses) (cons s (append (find-imported-classes (list s)) iclasses))))))))))))
+			      (loop (cdr lclasses)
+				 (cons s (append (find-imported-classes (list s)) iclasses)))))))))))))
    
    (with-trace 'module5 "module5-ast!"
       (with-access::Module mod (defs imports (mid id))
@@ -408,7 +411,9 @@
 	       types)
 
 	    ;; declare all classes
-	    (let* ((iclasses (find-imported-classes (map (lambda (v) (vector-ref v 0)) classes)))
+	    (let* ((iclasses (find-imported-classes
+				(map (lambda (v) (vector-ref v 0))
+				   classes)))
 		   (ic (map (lambda (def::KDef)
 			       (with-access::KDef def (decl id)
 				  (with-access::Decl decl (mod)
@@ -891,6 +896,17 @@
 		       ((constructor ?id . ?rest)
 			`(constructor ,@(reverse! m)
 			    ,id ,rest))
+		       ;; method (used for static methods with no arguments)
+		       ((method ?ident . (and (? list?) ?args))
+			(multiple-value-bind (id type)
+			   (parse-ident ident field mod)
+			   (if (and (pair? args) (string? (car (last-pair args))))
+			       ;; the last argument is the actual method java name
+			       (let ((sgra (reverse args)))
+				  `(method ,@(reverse! m)
+				      ,ident ,(reverse (cdr sgra)) ,(car sgra)))
+			       `(method ,@(reverse! m)
+				   ,ident ,args ,(symbol->string id)))))
 		       ((?ident . (and (? list?) ?args))
 			;; method
 			(multiple-value-bind (id type)
