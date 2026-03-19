@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan  1 17:24:51 2001                          */
-/*    Last change :  Tue Feb 24 11:02:41 2026 (serrano)                */
+/*    Last change :  Thu Mar 19 10:46:09 2026 (serrano)                */
 /*    Copyright   :  2001-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Automatic Bigloo Java module clause generation (by               */
@@ -209,6 +209,9 @@ public abstract class jigloo {
 	 Integer override_index = (Integer)overrides.get(method.getName());
 	 emit("     (");
 	 jigloo_modifiers(mod);
+	 
+	 if (args.length == 0) emit("method ");
+	    
 	 emit(method.getName());
 	 if (override_index.intValue() != 0) {
 	    emit(override_index.toString());
