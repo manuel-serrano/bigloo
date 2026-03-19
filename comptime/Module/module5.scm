@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Mar 19 10:59:47 2026 (serrano)                */
+;*    Last change :  Thu Mar 19 14:22:54 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -208,7 +208,6 @@
 					     (eq? kkind 'define-final-class)
 					     (eq? kkind 'define-abstract-class)
 					     src)))
-				  (tprint "DECLARE-CTYPE id=" id " alias=" alias)
 				  (gen-class-coercions! ty)
 				  ty))
 			      ((not (eq? (type-class-module id) mid))
@@ -401,9 +400,9 @@
 				      (trace-item "pckage=" package)
 				      (unless (or (eq? dmod mod)
 						  (eq? scope 'static))
-					 
-					 (declare-java-class-type! id
-					    (find-type super) name package expr))))
+					 (unless (type-exists? id)
+					    (declare-java-class-type! id
+					       (find-type super) name package expr)))))
 				(with-access::TDef t (id name decl kind)
 				   (with-access::Decl decl ((dmod mod) scope)
 				      (trace-item "kind=" kind)

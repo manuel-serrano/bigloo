@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Tue Mar 10 07:11:37 2026 (serrano)                */
+;*    Last change :  Thu Mar 19 14:33:03 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -347,7 +347,7 @@
 		   (k (instantiate::jklass
 			 (src '(auto))
 			 (loc location)
-			 (id (type-id ty))
+			 (id (type-id ty)) 
 			 (idd (type-id ty))
 			 (jname n)
 			 (package (prefix n))
