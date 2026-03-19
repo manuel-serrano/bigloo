@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Wed Mar 18 09:09:42 2026 (serrano)                */
+;*    Last change :  Thu Mar 19 10:15:51 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -443,7 +443,9 @@
 						(error/loc (car x)
 						   "Property missing"
 						   (prop-info-id p)
-						   (prop-info-expr p)))))
+						   (if (epair? (prop-info-expr p))
+						       (prop-info-expr p)
+						       x)))))
 				       (filter (lambda (p)
 						  (not (prop-info-virtual? p)))
 					  (class-info-properties class-info))))))

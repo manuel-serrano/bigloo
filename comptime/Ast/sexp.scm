@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Feb 19 07:43:19 2026 (serrano)                */
+;*    Last change :  Thu Mar 19 10:28:50 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -685,7 +685,7 @@
 			    (instantiate::cast-null
 			       (c-format "")
 			       (loc (find-location/loc exp loc))
-			       (type (find-type type))))
+			       (type type)))
 			   (else
 			    (application->node exp stack loc site genv)))))
 		   (else
