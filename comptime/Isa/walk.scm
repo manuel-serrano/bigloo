@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Isa/walk.scm           */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Isa/walk.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Mon Oct 20 09:06:58 2025 (serrano)                */
-;*    Copyright   :  2010-25 Manuel Serrano                            */
+;*    Last change :  Thu Mar 19 13:44:52 2026 (serrano)                */
+;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace isa? calls with specialized inlinable versions           */
 ;*=====================================================================*/
@@ -110,8 +110,7 @@
 	  ;; and the bigloo.heap generation
 	  (with-access::app node (fun args loc)
 	     (cond
-		((or (static-final-class? typ)
-		     (and #f (tclass-final? typ)))
+		((static-final-class? typ)
 		 (if (isa? (uncasted-type (car args)) tclass)
 		     (let ((nfun (duplicate::ref fun
 				    (variable *isa-object/final*))))

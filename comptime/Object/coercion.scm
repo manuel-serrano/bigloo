@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Object/coercion.scm                 */
+;*    .../prgm/project/bigloo/5.0a/comptime/Object/coercion.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 17 10:02:36 2000                          */
-;*    Last change :  Tue Feb 10 16:17:45 2026 (serrano)                */
+;*    Last change :  Thu Mar 19 13:53:36 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class coercions functions.                           */
@@ -49,7 +49,7 @@
    (with-trace 'object "gen-class-coercions!"
       (trace-item "class=" (shape class))
       (install-module-clauses-compiler!)
-      (with-access::tclass class (id its-super)
+      (with-access::tclass class (id its-super holder)
 	 (gen-coercion-clause! class id its-super)
 	 (gen-class-coercers! class its-super))))
 
@@ -87,7 +87,8 @@
    (with-trace 'object "make-coercion-clause"
       (trace-item "class=" (shape class))
       (trace-item "c-id=" c-id)
-      (let* ((class->obj `(lambda (x)
+      (let* ((alias (global-id (tclass-holder class)))
+	     (class->obj `(lambda (x)
 			     ,(make-private-sexp 'cast 'obj 'x)))
 	     (obj->class `(lambda (x)
 			     ,(make-private-sexp 'cast c-id 'x)))
@@ -97,7 +98,7 @@
 			       `((lambda (,o)
 				    ,(make-private-sexp 'instanceof c-id o)))
 			       `((lambda (,o)
-				    ((@ isa? __object) ,o ,c-id)))))
+				    ((@ isa? __object) ,o ,alias)))))
 			'()))
 	     (x (make-typed-ident 'x c-id)))
 	 (let loop ((super super)

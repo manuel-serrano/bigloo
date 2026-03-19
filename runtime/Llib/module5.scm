@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Mar 18 17:44:37 2026 (serrano)                */
+;*    Last change :  Thu Mar 19 11:07:59 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -733,6 +733,7 @@
 	 (for-each (lambda (c)
 		      (module5-parse-clause c expr mod lib-path cache-dir heap-suffix expand stack))
 	    clauses)
+
 	 (with-access::Module mod (imports exports)
 	    (trace-item "imports="
 	       (hashtable-map imports
@@ -756,6 +757,7 @@
 				 (with-access::Module y ((yid id))
 				    (eq? xid yid))))))
 	    (trace-item "libraries=" libraries))
+	 
 	 mod))
 
    (with-trace 'module5-parse "module5-parse"
@@ -1330,7 +1332,7 @@
 		  (trace-item "body=" (-> mod body))
 		  (set! (-> mod body)
 		     (map (lambda (x) (expand/env x xenv)) (-> mod body)))))
-	    
+
 	    ;; class registration cannot be expanded before all the classes
 	    ;; are defined, otherwise a class that would have an instance
 	    ;; as a default field value could not be declared
@@ -1338,32 +1340,32 @@
 	       (lambda (k ci)
 		  (class-info-registration-set! ci
 		     (expand/env (registration-expand ci mod) xenv))))
-	    
+
 	    ;; Macro and class definitions are erased by the macro-expansion.
 	    ;; Because these definitions are needed to resolve the module
 	    ;; exports, INSTALL-MODULE5-EXPANDER (runtime/macro.scm),
 	    ;; stores these definitions in XENV.
 	    (let ((dm (hashtable-filter-map xenv (lambda (k e) (car e)))))
 	       (collect-defines! mod dm))
+
 	    ;; bind variables and macros
 	    (collect-defines! mod (-> mod body))
 	    ;; bind all the classes
 	    (collect-classes! mod)
 	    (check-unbounds mod))
-	 
+
 	 (ronly! mod)
 	 ;; remove the macro and expanders definitions from body as these
 	 ;; have already been evaluated and declared
 	 (set! (-> mod body)
 	    (filter (lambda (x)
-;		       (tprint "ICI x=" x)
 		       (match-case x
 			  (#unspecified #f)
 			  ((define-macro . ?-) #f)
 			  ((define-expander . ?-) #f)
 			  (else #t)))
 	       (-> mod body)))
-	 
+
 	 ;; store the body in cache for next use or import
 	 (filecache-put! (-> mod path) mod)
 	 (trace-item "decls="
@@ -1971,8 +1973,8 @@
 ;*---------------------------------------------------------------------*/
 (define (collect-classes! mod::Module)
 
-   (define (klass-def ci)
-      (let ((id (class-info-id ci)))
+   (define (klass-def name::bstring ci)
+      (let ((id (string->symbol name)))
 	 (instantiate::KDef
 	    (id id)
 	    (depth (class-info-depth ci))
@@ -1999,37 +2001,46 @@
 					    (vindex . ,(prop-info-vindex p)))))
 			   (class-info-properties ci))))))
 
+   (define talias (create-hashtable :size 64 :weak 'open-string))
+
+   (hashtable-for-each (-> mod decls)
+      (lambda (k d::Decl)
+	 (hashtable-put! talias
+	    (symbol->string! (-> d id)) (symbol->string! (-> d alias)))))
+      
    (hashtable-for-each (-> mod classes)
       (lambda (k ci)
 	 (with-access::Module mod (defs decls)
 	    (let* ((name (symbol->string! (class-info-id ci)))
-		   (old (hashtable-get defs name))
-		   (decl (hashtable-get decls name)))
+		   (alias (or (hashtable-get talias name) name))
+		   (old (hashtable-get defs alias))
+		   (decl (hashtable-get decls alias)))
 	       (if old
 		   (error/loc mod
-		      (format "Identifier ~s has already been declared" name)
+		      (format "Identifier ~s has already been declared" alias)
 		      (with-access::Def old (expr) expr)
 		      (with-access::Decl decl (expr) expr))
-		   (let ((def (klass-def ci)))
-		      (hashtable-put! defs name def)
+		   (let ((def (klass-def alias ci)))
+		      (hashtable-put! defs alias def)
 		      (if decl
 			 (with-access::Decl decl (scope ronly (ddef def))
 			    (set! ronly #t)
 			    (with-access::Def def ((ddecl decl))
 			       (set! ddef def)
 			       (set! ddecl decl)))
-			 ;; class needs to preserve the invariable that
-			 ;; all class definition has an associated declation
+			 ;; class needs to preserve the invariant that
+			 ;; all class definition has an associated declaration
 			 (let* ((id (class-info-id ci))
+				(aid (string->symbol alias))
 				(decl (instantiate::Decl
 					(id id)
-					(alias id)
+					(alias aid)
 					(expr (class-info-expr ci))
 					(mod mod)
 					(scope 'static)
 					(ronly #t)
 					(def def))))
-			    (hashtable-put! decls (symbol->string! id) decl)
+			    (hashtable-put! decls alias decl)
 			    (with-access::Def def ((ddecl decl))
 			       (set! ddecl decl))))
 		      def)))))))

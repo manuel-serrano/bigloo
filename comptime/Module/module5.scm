@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Mar 18 17:14:00 2026 (serrano)                */
+;*    Last change :  Thu Mar 19 10:59:47 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -188,7 +188,7 @@
 	    (with-access::tclass old (holder)
 	       (global-module holder)))))
 
-   (define (declare-class-definition! id alias mid scope src def::KDef)
+   (define (declare-class-definition! kind id alias scope src def::KDef)
       (with-trace 'module5 "declare-class-definition!"
 	 (with-access::KDef def (expr id decl super ctor kkind properties)
 	    (trace-item "id=" id " alias=" alias)
@@ -197,7 +197,7 @@
 		  (with-access::Module mod ((mid id))
 		     (unless (find-global/module env id mid)
 			;; a class declared in the module being compiled
-			(let ((var (declare-global-svar! env id id mid scope expr expr)))
+			(let ((var (declare-global-svar! env id alias mid scope expr expr)))
 			   (global-type-set! var (find-type/expr 'class expr))
 			   (global-set-read-only! var)
 			   (cond
@@ -208,6 +208,7 @@
 					     (eq? kkind 'define-final-class)
 					     (eq? kkind 'define-abstract-class)
 					     src)))
+				  (tprint "DECLARE-CTYPE id=" id " alias=" alias)
 				  (gen-class-coercions! ty)
 				  ty))
 			      ((not (eq? (type-class-module id) mid))
@@ -321,6 +322,7 @@
 	 (hashtable-for-each decls
 	    (lambda (k decl)
 	       (with-access::Decl decl (mod xid id alias)
+		  
 		  (with-access::Module mod ((mid id))
 		     (let* ((d (module5-get-export-def mod (or xid id)))
 			    (e (vector d mid alias 'import)))
@@ -383,7 +385,7 @@
    (with-trace 'module5 "module5-ast!"
       (with-access::Module mod (defs imports (mid id))
 	 (trace-item "mid=" mid)
-	 
+
 	 (multiple-value-bind (types classes others)
 	    (split-definitions mid defs imports)
 

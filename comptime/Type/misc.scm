@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Type/misc.scm          */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Type/misc.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  5 12:50:52 2004                          */
-;*    Last change :  Mon Oct 20 08:51:58 2025 (serrano)                */
-;*    Copyright   :  2004-25 Manuel Serrano                            */
+;*    Last change :  Thu Mar 19 13:46:06 2026 (serrano)                */
+;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Misc type functions                                              */
 ;*=====================================================================*/
@@ -128,7 +128,8 @@
 	    (when (and (or (eq? (var-variable fun) *isa*))
 		       (var? (cadr args))
 		       (global? (var-variable (cadr args))))
-	       (find-type (global-id (var-variable (cadr args)))))))))
+	       (let ((g (var-variable (cadr args))))
+		  (find-type (or (global-alias g) (global-id g)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    app-predicate-of ...                                             */
