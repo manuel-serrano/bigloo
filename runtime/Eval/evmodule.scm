@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Mar 26 10:31:11 2026 (serrano)                */
+;*    Last change :  Thu Mar 26 12:51:53 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -128,7 +128,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    %evmodule ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-struct %evmodule key id path env exports macros extension)
+(define-struct %evmodule key id path env exports macros extension mod)
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule? ...                                                    */
@@ -181,7 +181,7 @@
    (synchronize *modules-mutex*
       (let* ((env (make-hashtable 100 #unspecified eq?))
 	     (mactable (make-hashtable 64))
-	     (mod (%evmodule make-%evmodule id path env '() mactable '())))
+	     (mod (%evmodule make-%evmodule id path env '() mactable '() #unspecified)))
 	 (if (not (hashtable? *modules-table*))
 	     (begin
 		(set! *modules-table* (make-hashtable 256))
@@ -878,10 +878,15 @@
 ;*    evmodule-module5 ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-module5 evmod expr loc)
+   
+   (define (module5-option m x)
+      (for-each eval (cdr x)))
+
    (let* ((path (match-case loc
 		   ((at ?file ?-) file)
 		   (else (make-file-name (pwd) "__dummy__.bgl"))))
 	  (mod (module5-parse (list expr) path
+		  :plugins `((option ,module5-option))
 		  :lib-path (module5-lib-path)
 		  :cache-dir (make-file-name (module5-cache-dir) "eval"))))
       (module5-expand-and-resolve! mod (lambda (xenv mod) xenv))

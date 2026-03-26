@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Mar 26 10:38:29 2026 (serrano)                */
+;*    Last change :  Thu Mar 26 12:46:36 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -122,7 +122,7 @@
 	   (module5-preload-cache! ::pair-nil)
 	   (module5-read::Module ::bstring #!key (lib-path '()) cache-dir (heap-suffix ".heap5") expand (stack '()))
 	   (module5-write-heap ::bstring ::Module)
-	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir (heap-suffix ".heap5") expand (stack '()))
+	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir (heap-suffix ".heap5") expand (stack '()) (plugins '()))
 	   (module5-import-all! ::Module ::Module)
 	   (module5-expand-and-resolve!::Module ::Module ::procedure #!key (heap-modules '()) (default-package #f) (qualified-names #f))
 	   (module5-checksum!::Module ::Module)
@@ -303,6 +303,17 @@
       (if (assoc name *extern-plugins*)
 	  (error "module5-register-extern-plugin!" "Plugin already registered" name)
 	  (set! *extern-plugins* (cons (cons name plugin) *extern-plugins*)))))
+
+;*---------------------------------------------------------------------*/
+;*    module5-with-plugins ...                                         */
+;*---------------------------------------------------------------------*/
+(define (module5-with-plugins plugins proc)
+   (synchronize module-mutex
+      (let ((old *plugins*))
+	 (set! *plugins* (append plugins *plugins*))
+	 (unwind-protect
+	    (proc)
+	    (set! *plugins* old)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    absolute-file-name? ...                                          */
@@ -736,7 +747,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (module5-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand (heap-suffix ".heap5") (stack '()))
+(define (module5-parse::Module exprs path::bstring #!key (lib-path '()) cache-dir expand (heap-suffix ".heap5") (stack '()) (plugins '()))
 
    (define (parse5 id path clauses expr body)
       (let ((mod (instantiate::Module
@@ -785,10 +796,7 @@
 	 
 	 mod))
 
-   (with-trace 'module5-parse "module5-parse"
-      (trace-item "path=" path)
-      (trace-item "exprs=" exprs)
-      (trace-item "heap-suffix=" heap-suffix)
+   (define (parse)
       (let ((expr (car exprs)))
 	 (match-case expr
 	    ((module (and (? symbol?) ?id) :version 5 . ?clauses)
@@ -796,7 +804,15 @@
 	    ((module (and (? symbol?) ?id) . ?clauses)
 	     (parse5 id path clauses expr (cdr exprs)))
 	    (else
-	     (error/loc #f "Illegal expression" expr #f))))))
+	     (error/loc #f "Illegal expression" expr #f)))))
+   
+   (with-trace 'module5-parse "module5-parse"
+      (trace-item "path=" path)
+      (trace-item "exprs=" exprs)
+      (trace-item "heap-suffix=" heap-suffix)
+      (if (pair? plugins)
+	  (module5-with-plugins plugins parse)
+	  (parse))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-parse-clause ...                                         */
