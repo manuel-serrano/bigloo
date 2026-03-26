@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Mar 19 11:07:59 2026 (serrano)                */
+;*    Last change :  Thu Mar 26 10:38:29 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -112,6 +112,8 @@
 	      (ci::struct read-only)
 	      (properties::pair-nil read-only))
 
+	   (module5-cache-dir::bstring)
+	   (module5-lib-path::pair-nil)
 	   (module5-register-plugin! ::symbol ::procedure)
 	   (module4-register-plugin! ::symbol ::procedure)
 	   (module5-register-extern-plugin! ::bstring ::procedure)
@@ -251,6 +253,29 @@
 		   (with-access::Module m (path)
 		      (hashtable-put! *modules-by-path* path m)))
 	 modules)))
+
+;*---------------------------------------------------------------------*/
+;*    module5-cache-dir ...                                            */
+;*---------------------------------------------------------------------*/
+(define (module5-cache-dir)
+   (or (getenv "BIGLOOCACHE")
+       (make-file-path
+	  (or (getenv "TMPDIR") "/tmp")
+	  (or (getenv "USER") "/anonymous")
+	  "cache"
+	  "bigloo"
+	  (bigloo-config 'release-number)
+	  (bigloo-config 'build-tag))))
+
+;*---------------------------------------------------------------------*/
+;*    module5-lib-path ...                                             */
+;*---------------------------------------------------------------------*/
+(define (module5-lib-path)
+   (let* ((env (getenv "BIGLOOLIB"))
+	  (lib-env (if (string? env)
+		       (string-split env ":")
+		       (bigloo-config 'library-directory))))
+      (cons "." lib-env)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-register-plugin! ...                                     */
@@ -1326,6 +1351,12 @@
 				  (with-access::KDef idef (ci decl)
 				     (module5-bind-class! mod id ci)
 				     (install-class-expanders ci xenv mod))))))))))
+	    ;; static binding of the module filename
+	    (set! (-> mod body)
+	       (let ((id (string->symbol (format "~a.filename" (-> mod id)))))
+		  (cons `(define ,id ,(-> mod path))
+		     (-> mod body))))
+	    
 	    (when (pair? (-> mod body))
 	       (with-trace 'module5-resolve "module-expand-and-resolve!, expand-body"
 		  (trace-item "mod=" (-> mod id))

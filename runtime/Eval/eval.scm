@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Mar 13 08:11:12 2026 (serrano)                */
+;*    Last change :  Thu Mar 26 11:10:39 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -483,7 +483,7 @@
 	 (when v?
 	    (display-circle v)
 	    (newline))))
-   
+
    (let* ((path (find-file filename))
 	  (port (open-input-file path))
 	  (evread (get-eval-reader))
@@ -499,10 +499,12 @@
 		      (env env))
 		   (when (epair? sexp)
 		      ($env-set-trace-location denv (cer sexp)))
-		   ;; is it a module (don't use match-case for easier bootstrap)
-		   (if (and (pair? sexp) (eq? (car sexp) 'module))
-		       ;; grab the main clause
-		       (let ((clause (assq 'main (cddr sexp))))
+		   (match-case sexp
+		      ((module ?name :version 5 . ?-)
+		       (evalv! sexp env)
+		       (set! env ($eval-module)))
+		      ((module ?name . ?clauses)
+		       (let ((clause (assq 'main clauses)))
 			  (set! loc (get-source-location sexp))
 			  (if (pair? clause)
 			      (if (and (pair? (cdr clause))
@@ -515,8 +517,9 @@
 				     clause)))
 			  ;; evaluate for the module
 			  (evalv! sexp env)
-			  (set! env ($eval-module)))
-		       (evalv! sexp env))
+			  (set! env ($eval-module))))
+		      (else
+		       (evalv! sexp env)))
 		   (let loop ((sexp (evread port)))
 		      (cond
 			 ((eof-object? sexp)

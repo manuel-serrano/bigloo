@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Engine/param.scm                    */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Engine/param.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Fri Feb 13 17:38:55 2026 (serrano)                */
+;*    Last change :  Thu Mar 26 10:40:48 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -489,6 +489,7 @@
 ;; the lib dir path
 (param-define *lib-dir*
    "The lib dir path"
+   ;; TO BE REPLACED WITH (module5-lib-path)
    (let ((lib-env (build-path-from-shell-variable "BIGLOOLIB")))
       (if (not (pair? lib-env))
 	  (list "." (bigloo-config 'library-directory))
@@ -840,6 +841,7 @@
    0)
 (param-define *module-cache-dir*
    "Optional disk cache to store resolved modules"
+   ;; TO BE REPLACED WITH (module5-cache-dir)
    (or (getenv "BIGLOOCACHE")
        (make-file-path
 	  (or (getenv "TMPDIR") "/tmp")

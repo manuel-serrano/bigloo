@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan  1 17:24:51 2001                          */
-/*    Last change :  Thu Mar 19 10:46:09 2026 (serrano)                */
+/*    Last change :  Wed Mar 25 13:26:20 2026 (serrano)                */
 /*    Copyright   :  2001-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Automatic Bigloo Java module clause generation (by               */
@@ -75,6 +75,8 @@ public abstract class jigloo {
 	 return "obj";
       if (type.getName().equals("java.lang.Runnable"))
 	 return "java.lang.Runnable";
+      if (type.getName().equals("java.lang.CharSequence"))
+	 return "CharSequence";
       if (type.getName().startsWith("java.lang"))
 	 return "obj";
       return unpackage(type.getName(), pkg);

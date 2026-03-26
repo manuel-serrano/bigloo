@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Mar 18 09:31:38 2026 (serrano)                */
+;*    Last change :  Wed Mar 25 21:46:11 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -161,7 +161,7 @@
       ;; we read access file
       (profile afile (read-access-files))
       (profile package (read-jfile))
-      
+
       ;; create (or restore) the compilation environment
       (if *lib-mode*
 	  (profile env

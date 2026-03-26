@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Tue Mar 10 20:51:35 2026 (serrano)                */
+;*    Last change :  Wed Mar 25 21:27:41 2026 (serrano)                */
 ;*    Copyright   :  1993-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
@@ -173,7 +173,7 @@
 	     (unwind-protect
 		(do-read-jfile port name)
 		(close-input-port port)))))
-   
+
    (with-trace 'jvm "read-jfile"
       (trace-item "jfile=" *qualified-type-file*)
       (cond

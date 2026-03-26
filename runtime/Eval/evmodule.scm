@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evmodule.scm       */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/evmodule.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sun Sep 21 22:28:49 2025 (serrano)                */
-;*    Copyright   :  2006-25 Manuel Serrano                            */
+;*    Last change :  Thu Mar 26 10:31:11 2026 (serrano)                */
+;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
 ;*=====================================================================*/
@@ -31,6 +31,7 @@
 	    __reader
 	    __expand
 	    __trace
+	    __module5
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -874,9 +875,23 @@
    (append-map evmodule-cond-expand-clause clauses))
 
 ;*---------------------------------------------------------------------*/
-;*    evmodule-module ...                                              */
+;*    evmodule-module5 ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (evmodule-module mod clauses loc)
+(define (evmodule-module5 evmod expr loc)
+   (let* ((path (match-case loc
+		   ((at ?file ?-) file)
+		   (else (make-file-name (pwd) "__dummy__.bgl"))))
+	  (mod (module5-parse (list expr) path
+		  :lib-path (module5-lib-path)
+		  :cache-dir (make-file-name (module5-cache-dir) "eval"))))
+      (module5-expand-and-resolve! mod (lambda (xenv mod) xenv))
+      (with-access::Module mod (body)
+	 `(begin ,@body))))
+
+;*---------------------------------------------------------------------*/
+;*    evmodule-module4 ...                                             */
+;*---------------------------------------------------------------------*/
+(define (evmodule-module4 mod clauses loc)
    ;; check the syntax and resolve the cond-expand clauses
    (let ((mclauses (evmodule-cond-expand mod clauses loc)))
       (multiple-value-bind (iclauses iexprs)
@@ -901,6 +916,16 @@
    (let* ((loc (or (get-source-location exp) loc))
 	  (hdl (bigloo-module-extension-handler)))
       (match-case exp
+	 ((module (and (? symbol?) ?name) :version 5 . ?clauses)
+	  (if (not (list? clauses))
+	      (evcompile-error loc "eval" "Illegal module clauses" clauses)
+	      (let* ((path (or (evcompile-loc-filename loc) "."))
+		     (evmod (make-evmodule name path loc)))
+		 (when (procedure? hdl)
+		    (evmodule-extension-set! evmod (hdl exp)))
+		 (unwind-protect
+		    (evmodule-module5 evmod exp loc)
+		    ($eval-module-set! evmod)))))
 	 ((module (and (? symbol?) ?name) . ?clauses)
 	  (if (not (list? clauses))
 	      (evcompile-error loc "eval" "Illegal module clauses" clauses)
@@ -910,7 +935,7 @@
 		 (when (procedure? hdl)
 		    (evmodule-extension-set! mod (hdl exp)))
 		 (unwind-protect
-		    (evmodule-module mod clauses loc)
+		    (evmodule-module4 mod clauses loc)
 		    ($eval-module-set! mod)))))
 	 (else
 	  (evcompile-error loc "eval" "Illegal module expression" exp)))))

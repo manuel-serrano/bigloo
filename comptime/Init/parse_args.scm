@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Mar 11 07:19:40 2026 (serrano)                */
+;*    Last change :  Wed Mar 25 21:47:21 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -55,7 +55,7 @@
    (set! *bigloo-cmd-name* (car args))
    (set! *bigloo-args* args)
    (do-parse-args (cdr args))
-   
+
    ;; debug
    (when (getenv "BIGLOOTRACE")
       (unless (> (bigloo-debug) 0)
@@ -259,7 +259,7 @@
        (set! *qualified-type-file* file))
       ;; jvm package
       (("-package" ?pkg (help "Set default package (jvm only)"))
-       (default-jvm-package-set! (string->symbol pkg)))
+       (default-jvm-package-set! (string->symbol (string-replace pkg #\/ #\.))))
       ;; main function
       (("-main" ?fun (help "Set the main function"))
        (set! *main* (string->symbol fun)))
