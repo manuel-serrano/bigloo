@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Mar 26 12:46:36 2026 (serrano)                */
+;*    Last change :  Sat Mar 28 13:29:33 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -120,6 +120,7 @@
 	   (module5-resolve-path ::bstring ::bstring)
 	   (module5-resolve-library ::symbol ::pair-nil)
 	   (module5-preload-cache! ::pair-nil)
+	   (module5-find-module-by-path ::bstring)
 	   (module5-read::Module ::bstring #!key (lib-path '()) cache-dir (heap-suffix ".heap5") expand (stack '()))
 	   (module5-write-heap ::bstring ::Module)
 	   (module5-parse::Module ::pair-nil ::bstring #!key (lib-path '()) cache-dir (heap-suffix ".heap5") expand (stack '()) (plugins '()))
@@ -405,6 +406,7 @@
 	  mod
 	  (begin
 	     (module5-checksum! mod)
+	     ;; eval need to save the expanded body in the cache
 	     (duplicate::Module mod
 		(inits '())
 		(body '())
@@ -568,6 +570,12 @@
 			   (output-obj p (serialize mod))
 			   (close-binary-port p)))
 		     (lockf lock 'ulock))))))))
+
+;*---------------------------------------------------------------------*/
+;*    module5-find-module-by-path ...                                  */
+;*---------------------------------------------------------------------*/
+(define (module5-find-module-by-path path::bstring)
+   (hashtable-get *modules-by-path* path))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-read ...                                                  */

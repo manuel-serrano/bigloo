@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Mar 26 12:51:53 2026 (serrano)                */
+;*    Last change :  Thu Mar 26 13:20:24 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -77,6 +77,7 @@
 	    (evmodule-macro-table ::obj)
 	    (evmodule-extension ::obj)
 	    (evmodule-extension-set! ::obj ::obj)
+	    (evmodule5 ::pair-nil ::pair-nil ::obj)
 	    (evmodule ::pair-nil ::obj)
 	    (evmodule-comp! ::symbol ::pair ::obj . bindings)
 	    (evmodule-check-unbound mod loc)
@@ -178,29 +179,32 @@
 ;*    make-evmodule ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (make-evmodule id path loc)
-   (synchronize *modules-mutex*
-      (let* ((env (make-hashtable 100 #unspecified eq?))
-	     (mactable (make-hashtable 64))
-	     (mod (%evmodule make-%evmodule id path env '() mactable '() #unspecified)))
-	 (if (not (hashtable? *modules-table*))
-	     (begin
-		(set! *modules-table* (make-hashtable 256))
-		(hashtable-put! *modules-table* id mod))
-	     (let ((old (hashtable-get *modules-table* id)))
-		(if old
-		    (begin
-		       (hashtable-update! *modules-table* id
-			  (lambda (v) mod) mod)
-		       (unless (string=? (%evmodule-path old) path)
-			  (let ((msg (string-append "Module redefinition `"
-					(symbol->string id)
-					"'. Previous \""
-					(%evmodule-path old)
-					"\", new (ignored) \""
-					path "\"")))
-			     (warning/loc loc msg))))
-		    (hashtable-put! *modules-table* id mod))))
-	 mod)))
+   (with-trace 'module5 "make-evmodule"
+      (trace-item "id=" id)
+      (trace-item "path=" path)
+      (synchronize *modules-mutex*
+	 (let* ((env (make-hashtable 100 #unspecified eq?))
+		(mactable (make-hashtable 64))
+		(mod (%evmodule make-%evmodule id path env '() mactable '() #unspecified)))
+	    (if (not (hashtable? *modules-table*))
+		(begin
+		   (set! *modules-table* (make-hashtable 256))
+		   (hashtable-put! *modules-table* id mod))
+		(let ((old (hashtable-get *modules-table* id)))
+		   (if old
+		       (begin
+			  (hashtable-update! *modules-table* id
+			     (lambda (v) mod) mod)
+			  (unless (string=? (%evmodule-path old) path)
+			     (let ((msg (string-append "Module redefinition `"
+					   (symbol->string id)
+					   "'. Previous \""
+					   (%evmodule-path old)
+					   "\", new (ignored) \""
+					   path "\"")))
+				(warning/loc loc msg))))
+		       (hashtable-put! *modules-table* id mod))))
+	    mod))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-module ...                                                  */
@@ -518,19 +522,23 @@
 		(error "evmodule-load"
 		   "incorect user module loader" proc))))))
 
-   (let ((load (or (user-load-module) evmodule-loadq)))
-      (for-each (lambda (p) (load p mod)) paths))
+   (with-trace 'module5 "evmodule-load"
+      (trace-item "ident=" ident)
+
+      (let ((load (or (user-load-module) evmodule-loadq)))
+	 (for-each (lambda (p) (load p mod)) paths))
    
-   (let ((m (eval-find-module ident)))
-      (if (evmodule? m)
-	  (begin
-	     (evmodule-check-unbound m loc)
-	     m)
-	  (evcompile-error loc "eval"
-	     (format "~a:cannot find module \"~a\"" (evmodule-name mod) ident)
-	     (if (pair? (cdr paths))
-		 paths
-		 (car paths))))))
+      (let ((m (eval-find-module ident)))
+	 (if (evmodule? m)
+	     (begin
+		(evmodule-check-unbound m loc)
+		m)
+	     (evcompile-error loc "eval"
+		(format "~a:cannot find module \"~a\""
+		   (evmodule-name mod) ident)
+		(if (pair? (cdr paths))
+		    paths
+		    (car paths)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *loading-list* ...                                               */
@@ -877,21 +885,81 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-module5 ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (evmodule-module5 evmod expr loc)
+(define (evmodule-module5 evmod expr path loc)
    
-   (define (module5-option m x)
+   (define (eval/module body evmod)
+      (with-trace 'module5 "eval/module"
+	 (trace-item "evmod=" (%evmodule-id evmod))
+	 (let ((old (eval-module)))
+	    (unwind-protect
+	       (begin
+		  (eval-module-set! evmod)
+		  (for-each (lambda (e)
+			       (trace-item "eval " e)
+			       (eval e))
+		     body))
+	       (eval-module-set! old)))))
+   
+   (define (module5-option mod x)
       (for-each eval (cdr x)))
 
-   (let* ((path (match-case loc
-		   ((at ?file ?-) file)
-		   (else (make-file-name (pwd) "__dummy__.bgl"))))
-	  (mod (module5-parse (list expr) path
-		  :plugins `((option ,module5-option))
-		  :lib-path (module5-lib-path)
-		  :cache-dir (make-file-name (module5-cache-dir) "eval"))))
-      (module5-expand-and-resolve! mod (lambda (xenv mod) xenv))
-      (with-access::Module mod (body)
-	 `(begin ,@body))))
+   (define (module5->evmodule mod loc)
+      (with-trace 'module5 "module5->evmodule"
+	 (with-access::Module mod (id path body)
+	    (trace-item "id=" id)
+	    (trace-item "path=" path)
+	    (let ((evmod (eval-find-module id)))
+	       (trace-item "evmod=" (typeof evmod))
+	       (if (evmodule? evmod)
+		   evmod
+		   (begin
+		      (evmodule-loadq path #unspecified)
+		      (let ((evmod (eval-find-module id)))
+			 (%evmodule-mod-set! evmod mod)
+			 (module5-expand-and-resolve! mod (lambda (xenv mod) xenv))
+			 (module5-imports! mod loc evmod))))))))
+   
+   (define (module5-inits! mod::Module loc)
+      (with-trace 'module5 "module5-inits!"
+	 (with-access::Module mod (id inits)
+	    (trace-item "id=" id)
+	    (for-each (lambda (i) (module5->evmodule i loc)) inits))))
+
+   (define (module5-imports! mod::Module loc evmod)
+      (with-trace 'module5 "module5-imports!"
+	 (with-access::Module mod (id imports)
+	    (hashtable-for-each imports
+	       (lambda (key decl)
+		  (with-access::Decl decl (def alias id (imod mod))
+		     (with-access::Module imod ((mid id))
+			(let ((ievmod (eval-find-module mid)))
+			   (if (evmodule? ievmod)
+			       (let ((var (evmodule-find-global ievmod id)))
+				  (trace-item "import alias=" alias " id=" id " mid=" mid " " (hashtable-key-list (%evmodule-env ievmod)))
+				  (if var
+				      (evmodule-bind-global! evmod alias var loc)
+				      (evcompile-error loc "eval"
+					 "Cannot find variable" id)))
+			       (evcompile-error loc "eval" "Cannot find module" mid))))))))))
+
+      
+   (with-trace 'module5 "evmodule-module5"
+      (trace-item "path=" path)
+      (trace-item "expr=" expr)
+      (let* ((path (match-case loc
+		      ((at ?file ?-) file)
+		      (else (make-file-name (pwd) "__dummy__.bgl"))))
+	     (mod (or (module5-find-module-by-path path)
+		      (module5-parse expr path
+			 :plugins `((option ,module5-option))
+			 :lib-path (module5-lib-path)
+			 :cache-dir #f))))
+	 (%evmodule-mod-set! evmod mod)
+	 (module5-expand-and-resolve! mod (lambda (xenv mod) xenv))
+	 (module5-inits! mod loc)
+	 (module5-imports! mod loc evmod)
+	 (with-access::Module mod (body)
+	    (eval/module body evmod)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-module4 ...                                             */
@@ -913,6 +981,28 @@
 	 `(begin ,@iexprs))))
 
 ;*---------------------------------------------------------------------*/
+;*    evmodule5 ...                                                    */
+;*    -------------------------------------------------------------    */
+;*    Evaluate a module5 form                                          */
+;*---------------------------------------------------------------------*/
+(define (evmodule5 exp body loc)
+   (let* ((loc (or (get-source-location exp) loc))
+	  (hdl (bigloo-module-extension-handler)))
+      (match-case exp
+	 ((module (and (? symbol?) ?name) . ?clauses)
+	  (if (not (list? clauses))
+	      (evcompile-error loc "eval" "Illegal module clauses" clauses)
+	      (let* ((path (or (evcompile-loc-filename loc) "."))
+		     (evmod (make-evmodule name path loc)))
+		 (when (procedure? hdl)
+		    (evmodule-extension-set! evmod (hdl exp)))
+		 (unwind-protect
+		    (evmodule-module5 evmod (cons exp body) path loc)
+		    ($eval-module-set! evmod)))))
+	 (else
+	  (evcompile-error loc "eval" "Illegal module expression" exp)))))
+
+;*---------------------------------------------------------------------*/
 ;*    evmodule ...                                                     */
 ;*    -------------------------------------------------------------    */
 ;*    Evaluate a module form                                           */
@@ -922,15 +1012,7 @@
 	  (hdl (bigloo-module-extension-handler)))
       (match-case exp
 	 ((module (and (? symbol?) ?name) :version 5 . ?clauses)
-	  (if (not (list? clauses))
-	      (evcompile-error loc "eval" "Illegal module clauses" clauses)
-	      (let* ((path (or (evcompile-loc-filename loc) "."))
-		     (evmod (make-evmodule name path loc)))
-		 (when (procedure? hdl)
-		    (evmodule-extension-set! evmod (hdl exp)))
-		 (unwind-protect
-		    (evmodule-module5 evmod exp loc)
-		    ($eval-module-set! evmod)))))
+	  (error "evmodule" "should not be here" exp))
 	 ((module (and (? symbol?) ?name) . ?clauses)
 	  (if (not (list? clauses))
 	      (evcompile-error loc "eval" "Illegal module clauses" clauses)

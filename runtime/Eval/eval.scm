@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Thu Mar 26 11:10:39 2026 (serrano)                */
+;*    Last change :  Thu Mar 26 13:40:56 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -501,8 +501,13 @@
 		      ($env-set-trace-location denv (cer sexp)))
 		   (match-case sexp
 		      ((module ?name :version 5 . ?-)
-		       (evalv! sexp env)
-		       (set! env ($eval-module)))
+		       (let loop ((exprs '()))
+			  (let ((x (evread port)))
+			     (if (eof-object? x)
+				 (evmodule5 sexp
+				    (reverse! exprs)
+				    (get-source-location sexp))
+				 (loop (cons x exprs))))))
 		      ((module ?name . ?clauses)
 		       (let ((clause (assq 'main clauses)))
 			  (set! loc (get-source-location sexp))
