@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Thu Mar 26 13:40:56 2026 (serrano)                */
+;*    Last change :  Sat Mar 28 14:55:40 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -45,6 +45,7 @@
 	    __reader
 	    __intext
 	    __rgc
+	    __module5
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -484,6 +485,15 @@
 	    (display-circle v)
 	    (newline))))
 
+   (define (module5 sexp evread port)
+      (let loop ((exprs '()))
+	 (let ((x (evread port)))
+	    (if (eof-object? x)
+		(evmodule5 sexp
+		   (reverse! exprs)
+		   (get-source-location sexp))
+		(loop (cons x exprs))))))
+
    (let* ((path (find-file filename))
 	  (port (open-input-file path))
 	  (evread (get-eval-reader))
@@ -501,28 +511,24 @@
 		      ($env-set-trace-location denv (cer sexp)))
 		   (match-case sexp
 		      ((module ?name :version 5 . ?-)
-		       (let loop ((exprs '()))
-			  (let ((x (evread port)))
-			     (if (eof-object? x)
-				 (evmodule5 sexp
-				    (reverse! exprs)
-				    (get-source-location sexp))
-				 (loop (cons x exprs))))))
+		       (module5 sexp evread port))
 		      ((module ?name . ?clauses)
-		       (let ((clause (assq 'main clauses)))
-			  (set! loc (get-source-location sexp))
-			  (if (pair? clause)
-			      (if (and (pair? (cdr clause))
-				       (null? (cddr clause))
-				       (symbol? (cadr clause)))
-				  (set! mainsym (cadr clause))
-				  (evcompile-error (get-source-location sexp)
-				     "load"
-				     "Illegal main clause"
-				     clause)))
-			  ;; evaluate for the module
-			  (evalv! sexp env)
-			  (set! env ($eval-module))))
+		       (if (=fx (module5-default-version) 5)
+			   (module5 sexp evread port)
+			   (let ((clause (assq 'main clauses)))
+			      (set! loc (get-source-location sexp))
+			      (if (pair? clause)
+				  (if (and (pair? (cdr clause))
+					   (null? (cddr clause))
+					   (symbol? (cadr clause)))
+				      (set! mainsym (cadr clause))
+				      (evcompile-error (get-source-location sexp)
+					 "load"
+					 "Illegal main clause"
+					 clause)))
+			      ;; evaluate for the module
+			      (evalv! sexp env)
+			      (set! env ($eval-module)))))
 		      (else
 		       (evalv! sexp env)))
 		   (let loop ((sexp (evread port)))

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/BackEnd/c_proto.scm        */
+;*    .../prgm/project/bigloo/5.0a/comptime/BackEnd/c_proto.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Mon Feb  2 11:25:02 2026 (serrano)                */
+;*    Last change :  Sun Mar 29 08:41:56 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -51,9 +51,10 @@
    (and (or (eq? (global-module global) *module*)
 	    (not (eq? (global-import global) 'static)))
 	(or (and (eq? (global-module global) *module*)
-		 (eq? (global-import global) 'export))
-	    (>fx (global-occurrence global) 0)
-	    (eq? (global-removable global) 'never))))
+		 (or (eq? (global-import global) 'export)
+		     (>fx (global-occurrence global) 0)
+		     (eq? (global-removable global) 'never)))
+	    (global-imported? global))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-prototypes ...                                              */
@@ -65,10 +66,10 @@
       (when init (set-variable-name! init)))
    ;; first, we print the prototype of non procedures
    (for-each-global! (get-genv)
-    (lambda (global)
-       (if (and (require-prototype? global)
-		(not (scnst? (global-value global))))
-	   (emit-prototype (global-value global) global))))
+      (lambda (global)
+	 (when (and (require-prototype? global)
+		    (not (scnst? (global-value global))))
+	    (emit-prototype (global-value global) global))))
    ;; cnst-table never appears explicitly but it is used
    ;; by a bunch of C macros (this variable cannot appears because
    ;; it has a strange name).
@@ -144,6 +145,7 @@
 ;*---------------------------------------------------------------------*/
 (define (emit-prototype/svar/scnst value variable)
    (with-access::variable variable (type id name pragma)
+      
       (set-variable-name! variable)
       (cond
 	 ((eq? (global-import variable) 'static)
@@ -196,17 +198,17 @@
    (with-access::variable variable (type id name)
       (set-variable-name! variable)
       (fprint *c-port*
-	      (get-c-scope variable)
-	      #\space
-	      (make-typed-declaration
-	       type
-	       (string-append
-		name
-		(let ((args (sfun-args value)))
-		   (if (and (pair? args) (type? (car args)))
-		       (emit-prototype-formal-types args)
-		       (emit-prototype-formals args)))))
-	      ";")))
+	 (get-c-scope variable)
+	 #\space
+	 (make-typed-declaration
+	    type
+	    (string-append
+	       name
+	       (let ((args (sfun-args value)))
+		  (if (and (pair? args) (type? (car args)))
+		      (emit-prototype-formal-types args)
+		      (emit-prototype-formals args)))))
+	 ";")))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-prototype-formal-types ...                                  */

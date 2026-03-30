@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Sat Feb  7 15:22:47 2026 (serrano)                */
+;*    Last change :  Sun Mar 29 09:05:06 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -426,7 +426,7 @@
       (kont (instantiate::varc
 	       (type (variable-type variable))
 	       (variable variable)
-	       (loc      loc)))))
+	       (loc loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::closure ...                                          */

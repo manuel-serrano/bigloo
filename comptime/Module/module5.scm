@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Mar 19 14:22:54 2026 (serrano)                */
+;*    Last change :  Sat Mar 28 19:45:17 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -21,6 +21,7 @@
 	   tools_error
 	   tools_shape
  	   tools_location
+	   tools_misc
 	   read_jvm
 	   backend_backend
 	   module_module
@@ -44,6 +45,7 @@
 	   ast_build
 	   ast_sexp
 	   ast_private
+	   ast_walk
 	   type_type
 	   type_env
 	   object_class
@@ -321,7 +323,6 @@
 	 (hashtable-for-each decls
 	    (lambda (k decl)
 	       (with-access::Decl decl (mod xid id alias)
-		  
 		  (with-access::Module mod ((mid id))
 		     (let* ((d (module5-get-export-def mod (or xid id)))
 			    (e (vector d mid alias 'import)))
@@ -565,37 +566,44 @@
       (with-access::Module mod (imports)
 	 (hashtable-for-each imports
 	    (lambda (k decl)
-	       (with-access::Decl decl (def xid id (imod mod))
-		  (with-access::Module mod ((mid id) resolved)
-		     (let ((def (module5-get-export-def imod (or xid id))))
-			(when (isa? def Def)
-			   (with-access::Def def (kind expr)
-			      (when (eq? kind 'inline)
-				 (multiple-value-bind (genv tenv)
-				    (module5-env imod)
-				    ;; force all globals of imod
-				    ;; to be considered as imported in mod
-				    (for-each-global! genv
-				       (lambda (g)
-					  (when (eq? (global-import g) 'export)
-					     (global-import-set! g 'import)
-					     (add-global! env g (global-id g)))))
-				    (let ((d (find-global env id))
-					  (e (find-global genv id)))
+	       (with-access::Decl decl (xid id (imod mod) alias)
+		  (let ((def (module5-get-export-def imod (or xid id))))
+		     (when (isa? def Def)
+			(with-access::Def def (kind expr decl)
+			   (when (eq? kind 'inline)
+			      (with-access::Decl decl ((imod mod))
+				 (with-access::Module imod ((mid id))
+				    (multiple-value-bind (genv tenv)
+				       (module5-env imod)
 				       (trace-item "inline id=" id "@" mid)
-				       (toplevel->ast expr '() mid genv)
-				       (let* ((nd (find-global genv id))
-					      (f (global-value nd))
-					      (args (sfun-args f))
-					      (body (sexp->node (sfun-body f)
-						       args
-						       (find-location expr)
-						       'value genv)))
-					  (trace-item "body=" (shape body))
-					  (sfun-body-set! (global-value d) body)
-					  (sfun-args-set! (global-value d) args))
-				       #unspecified)))))))))))))
-   
+				       (trace-item "expr=" expr)
+				       (let* ((gi (car (toplevel->ast expr '() mid genv)))
+					      (gl (find-global/module env alias mid))
+					      (fi (global-value gi))
+					      (loc (find-location expr))
+					      (args (sfun-args fi))
+					      (node (sexp->node (sfun-body fi)
+						       (sfun-args fi) loc 'value genv)))
+					  (sfun-body-set! fi node)
+					  (rebind-inline-global node mid)
+					  (global-value-set! gl (global-value gi))))))))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    rebind-inline-global ...                                         */
+;*---------------------------------------------------------------------*/
+(define-walk-method (rebind-inline-global node::node mod)
+   (call-default-walker))
+
+;*---------------------------------------------------------------------*/
+;*    rebind-inline-global ::var ...                                   */
+;*---------------------------------------------------------------------*/
+(define-walk-method (rebind-inline-global node::var mod)
+   (let ((v (var-variable node)))
+      (if (and (global? v) (eq? (global-module v) mod))
+	  (let ((g (find-global/module (get-genv) (global-id v) mod)))
+	     (tprint "NEED REBIND..." (shape v) " -> " (shape g) " " (global-id v) " mod=" mod))
+	  (call-default-walker))))
+
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */
 ;*---------------------------------------------------------------------*/

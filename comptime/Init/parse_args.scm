@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Mar 25 21:47:21 2026 (serrano)                */
+;*    Last change :  Sat Mar 28 14:47:59 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -383,8 +383,8 @@
       (section "Dialect")
       ;; module language version
       (("-module?version" (help "Set the module language version (4 or 5)"))
-       (set! *module-version* (string->integer version))
-       (unless (memv *module-version* '(4 5))
+       (module5-default-version-set! (string->integer version))
+       (unless (memv (module5-default-version) '(4 5))
 	  (error "-module" "Illegal module version" version)))
       ;; nil
       (("-nil" (help "Evaluate '() as #f in `if' expression"))
@@ -1214,8 +1214,8 @@
 	      (set! *src-files* (list else)))
 	     ((string=? suf "bgl")
 	      ;; bgl (the new official suffix) implies module5 by default
-	      (when (=fx *module-version* 0)
-		 (set! *module-version* 5))
+	      (when (=fx (module5-default-version) 0)
+		 (module5-default-version-set! 5))
 	      (set! *src-files* (cons else *src-files*)))
 	     ((member suf *src-suffix*)
 	      (set! *src-files* (cons else *src-files*)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Thu Jan 29 11:24:22 2026 (serrano)                */
+;*    Last change :  Sat Mar 28 20:00:47 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
@@ -112,6 +112,7 @@
 		       (isfun-original-body sfun)
 		       (sfun-body sfun))))
 	 (trace-item "class=" (sfun-class sfun))
+	 (trace-item "body=" (typeof body))
 	 (cond
 	    ((not (isa? body node))
 	     (trace (inline inline+ 0) " no (no body) " (shape var) #\Newline)

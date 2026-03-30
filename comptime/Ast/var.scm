@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Ast/var.scm                         */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/var.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Fri Feb 13 06:58:32 2026 (serrano)                */
+;*    Last change :  Sat Mar 28 19:22:26 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -15,6 +15,8 @@
 
    (import engine_param
 	   type_type)
+
+   (use module_module)
 
    (include "Ast/var.sch")
    
@@ -40,7 +42,7 @@
 	      (occurrence::long (default 0))
 	      ;; the variable number of write occurrences
 	      (occurrencew::long (default 0))
-	      ;; does this local variable belongs to the user ?
+	      ;; does this local variable belongs to the user?
 	      (user?::bool (default #f)))
 	   
 	   (final-class global::variable
@@ -49,7 +51,7 @@
 	      ;;    @ref ../Foreign/library.scm:module change@
 	      module::symbol
 	      ;; the global's importation (is mutated in make_heap@heap_make)
-	      ;; should be IMPORT, STATIC, EXPORT, EVAL, or FOREIGN.
+	      ;; should be IMPORT, STATIC, EXPORT, EVAL, FOREIGN, or TRANSMIT.
 	      import
 	      ;; is this global can be known by eval?
 	      (evaluable?::bool (default #t))
@@ -183,6 +185,7 @@
 	      (write (default '())))
 
 	   (global-read-only?::bool ::global)
+	   (global-imported?::bool ::global)
 	   (global-set-read-only! ::global)
 	   (global-args-safe?::bool ::global)
 	   (fun-optional-arity::int ::fun)
@@ -204,6 +207,18 @@
 (define (global-set-read-only! global::global)
    (with-access::global global (pragma)
       (set! pragma (cons 'read-only pragma))))
+
+;*---------------------------------------------------------------------*/
+;*    global-imported? ...                                             */
+;*---------------------------------------------------------------------*/
+(define (global-imported? global::global)
+   ;; MS: 29 March 2026
+   ;; with the module5 inlining, the global, non-imported
+   ;; functions used in the body of an imported inlined function
+   ;; are "local" so testing global-import is no longer enough;
+   ;; the module the variable belongs to must be checked too.
+   (or (eq? (global-import global) 'import)
+       (not (eq? (global-module global) *module*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    global-args-safe? ...                                            */

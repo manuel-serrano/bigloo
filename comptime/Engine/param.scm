@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Thu Mar 26 10:40:48 2026 (serrano)                */
+;*    Last change :  Sat Mar 28 14:48:04 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -132,7 +132,6 @@
 	    *bdb-debug-no-line-directives?*
 	    *profile-mode*
 	    *prof-table-name*
-	    *module-version*
 	    *module-cache-dir*
 	    *module-shape?*
 	    *key-shape?*
@@ -836,9 +835,6 @@
 (param-define *profile-library*
    "Use the profiled library version"
    #f)
-(param-define *module-version*
-   "Version of the module language support"
-   0)
 (param-define *module-cache-dir*
    "Optional disk cache to store resolved modules"
    ;; TO BE REPLACED WITH (module5-cache-dir)

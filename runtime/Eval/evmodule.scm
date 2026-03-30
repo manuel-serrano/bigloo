@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Mar 26 13:20:24 2026 (serrano)                */
+;*    Last change :  Sat Mar 28 14:47:33 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -958,8 +958,10 @@
 	 (module5-expand-and-resolve! mod (lambda (xenv mod) xenv))
 	 (module5-inits! mod loc)
 	 (module5-imports! mod loc evmod)
-	 (with-access::Module mod (body)
-	    (eval/module body evmod)))))
+	 (with-access::Module mod (body main)
+	    (eval/module body evmod)
+	    (when main
+	       (eval/module (list `(,main (command-line))) evmod))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-module4 ...                                             */

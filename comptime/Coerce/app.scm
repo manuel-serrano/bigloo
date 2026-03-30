@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/app.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Coerce/app.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Mon Oct 20 08:53:01 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Mar 29 08:19:08 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
 ;*=====================================================================*/
@@ -155,7 +155,7 @@
       (trace-item "callee=" (shape (variable-type callee)))
       (trace-item "node=" (shape node))
       (if (and (global? callee)
-	       (eq? (global-import callee) 'import)
+	       (global-imported? callee)
 	       (pair? (sfun-args (variable-value callee)))
 	       (type? (car (sfun-args (variable-value callee)))))
 	  (coerce-bigloo-extern-app! callee caller node to safe)

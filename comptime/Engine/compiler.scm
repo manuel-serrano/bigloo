@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Mar 25 21:46:11 2026 (serrano)                */
+;*    Last change :  Sat Mar 28 14:48:47 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -508,7 +508,7 @@
 ;*    src->ast ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (src->ast src env)
-   (case *module-version*
+   (case (module5-default-version)
       ((4)
        (module4->ast src env))
       ((5)
@@ -527,7 +527,7 @@
       (trace-item "expr=" expr)
       (pass-prelude "Module5")
       
-      (set! *module-version* 5)
+      (module5-default-version-set! 5)
       (register-srfi! 'bigloo-module5)
       
       (module5-register-plugin! 'option (lambda (m x) (for-each eval (cdr x))))
@@ -682,6 +682,7 @@
 	 ;; build the variable and function ast
 	 (module5-ast! mod genv 'compile)
 
+	 ;; bind the imported inline in the module environment
 	 (module5-imported-inline mod genv)
 
 	 (let* ((m (module5-main mod genv))
@@ -728,7 +729,7 @@
 (define (module4->ast src genv)
    (with-trace 'compiler "module4->ast"
       (trace-item "src=" src)
-      (set! *module-version* 4)
+      (module5-default-version-set! 4)
       (register-srfi! 'bigloo-module4)
       (let* ((exp0 (comptime-expand/error (car src)))
 	     (module (progn-first-expression exp0))

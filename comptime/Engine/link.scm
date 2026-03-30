@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Engine/link.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Engine/link.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Fri Feb 13 10:57:06 2026 (serrano)                */
+;*    Last change :  Sat Mar 28 14:49:34 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -47,7 +47,7 @@
    (with-trace 'linker "link"
       ;; register bigloo-compile srfi for library inclusion
       (register-eval-srfi! 'bigloo-compile)
-      (case *module-version*
+      (case (module5-default-version)
 	 ((0 1 2 3 4) (register-srfi! 'bigloo-module4))
 	 ((5) (register-srfi! 'bigloo-module5))
 	 (else (register-srfi! 'bigloo-module5)))
@@ -130,7 +130,7 @@
 ;*    find-libraries ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (find-libraries clauses)
-   (case *module-version*
+   (case (module5-default-version)
       ((5) (find-libraries5 clauses))
       ((4) (find-libraries4 clauses))
       (else (find-libraries4 clauses))))
@@ -197,7 +197,7 @@
 ;*    find-main ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (find-main clauses)
-   (case *module-version*
+   (case (module5-default-version)
       ((5) (find-main5 clauses))
       ((4) (find-main4 clauses))
       (else (find-main4 clauses))))
@@ -250,7 +250,7 @@
 ;*    make-tmp-main ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (make-tmp-main file main module modules libraries)
-   (case *module-version*
+   (case (module5-default-version)
       ((5) (make-tmp-main5 file main module modules libraries))
       ((4) (make-tmp-main4 file main module modules libraries))
       (else (make-tmp-main4 file main module modules libraries))))
