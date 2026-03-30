@@ -286,8 +286,8 @@ extern "C" {
    static struct { __CNST_ALIGN header_t header; int64_t val; } \
       const aux = { __CNST_FILLER BGL_MAKE_HEADER(INT64_TYPE, 0), (int64_t)(num) }
 #define BGL_CREATE_UINT64(aux, num) \
-   static struct { __CNST_ALIGN header_t header; int64_t val; } \
-      const aux = { __CNST_FILLER BGL_MAKE_HEADER(INT64_TYPE, 0), (int64_t)(num) }
+   static struct { __CNST_ALIGN header_t header; uint64_t val; } \
+      const aux = { __CNST_FILLER BGL_MAKE_HEADER(UINT64_TYPE, 0), (uint64_t)(num) }
 
 #if BGL_CNST_TWO_STEPS_INIT
 #   define BGL_DECLARE_INT64(name, cobj) \
