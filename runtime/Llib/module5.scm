@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Mar 28 14:47:37 2026 (serrano)                */
+;*    Last change :  Mon Mar 30 12:45:16 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -175,7 +175,7 @@
 	   (module5-get-decl::Decl ::Module ::symbol ::obj)
 	   (module5-get-decl*::Decl ::Module ::symbol ::obj)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
-	   (module5-get-export-def ::Module ::symbol)
+	   (module5-get-export-def ::Module ::symbol #!optional src)
 	   (module5-get-class ::Module ::symbol)
 	   ))
 
@@ -305,8 +305,7 @@
 ;*    module5-hidden-decl? ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (module5-hidden-decl? d::Decl)
-   (let ((c (assq 'hidden (-> d attributes))))
-      (and (pair? c) (cdr c))))
+   (memq 'hidden (-> d attributes)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-qualified-name ...                                       */
@@ -524,7 +523,7 @@
 	    ((?heap . ?path)
 	     (let* ((hmod::Module (module5-read-heap heap
 				     (-> d id) mod))
-		    (def::Def (module5-get-export-def hmod (-> d id)))
+		    (def::Def (module5-get-export-def hmod (-> d id) (-> d expr)))
 		    (decl::Decl (-> def decl)))
 		(set! (-> d mod) (-> decl mod))))
 	    (else
@@ -647,6 +646,12 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-find-module-by-path path::bstring)
    (hashtable-get *modules-by-path* path))
+
+;*---------------------------------------------------------------------*/
+;*    module5-find-module-by-id ...                                    */
+;*---------------------------------------------------------------------*/
+(define (module5-find-module-by-id id::symbol)
+   (hashtable-get *modules-by-id* (symbol->string! id)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-read ...                                                  */
@@ -866,12 +871,24 @@
 			      alias: (-> d alias) id: (-> d id) mod: (-> m id))))))))
 	 
 	 (with-access::Module mod (inits libraries)
+	    (trace-item "libraries=" libraries)
 	    (set! inits (delete-duplicates! inits
 			   (lambda (x y)
 			      (with-access::Module x ((xid id))
 				 (with-access::Module y ((yid id))
 				    (eq? xid yid))))))
-	    (trace-item "libraries=" libraries))
+	    ;; import all the hidden variables from all the imported modules
+	    (for-each (lambda (imod::Module)
+			 (with-access::Module imod (exports)
+			    (hashtable-for-each exports
+			       (lambda (key decl::Decl)
+				  (let ((b (-> decl id)))
+				     (when (memq 'hidden (-> decl attributes))
+					(let ((nd::Decl (import-decl! decl b b b b mod)))
+					   (set! (-> nd attributes)
+					      (cons 'hidden 
+						 (-> nd attributes))))))))))
+	       inits))
 	 
 	 mod))
 
@@ -894,6 +911,18 @@
 	  (parse))))
 
 ;*---------------------------------------------------------------------*/
+;*    import-decl! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (import-decl!::Decl idecl::Decl id::symbol alias::symbol decl-id::symbol import-id::symbol mod::Module)
+   (let ((d (duplicate::Decl idecl
+	       (id id)
+	       (alias alias)
+	       (scope 'import))))
+      (hashtable-symbol-put! (-> mod decls) decl-id d)
+      (hashtable-symbol-put! (-> mod imports) import-id d)
+      d))
+      
+;*---------------------------------------------------------------------*/
 ;*    module5-parse-clause ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (module5-parse-clause clause expr::pair mod::Module lib-path cache-dir hsuffix::bstring expand stack)
@@ -911,26 +940,12 @@
 	 ((? symbol?)
 	  (let ((idecl (hashtable-symbol-get (-> imod exports) b)))
 	     (if (isa? idecl Decl)
-		 (let* ((i::Decl idecl)
-			(d (duplicate::Decl idecl
-			      (id b)
-			      (alias b)
-			      (scope 'import))))
-		    (hashtable-symbol-put! (-> mod decls) b d)
-		    (hashtable-symbol-put! (-> mod imports) b d)
-		    d)
+		 (import-decl! idecl b b b b mod)
 		 (unbound-error (-> imod path) b clause))))
 	 (((and (? symbol?) ?alias) (and (? symbol?) ?id))
 	  (let ((idecl (hashtable-symbol-get (-> imod exports) id)))
 	     (if (isa? idecl Decl)
-		 (let* ((i::Decl idecl)
-			(d (duplicate::Decl idecl
-			      (id id)
-			      (alias alias)
-			      (scope 'import))))
-		    (hashtable-symbol-put! (-> mod decls) alias d)
-		    (hashtable-symbol-put! (-> mod imports) id d)
-		    d)
+		 (import-decl! idecl id alias alias id mod)
 		 (unbound-error (-> imod path) id clause))))
 	 (else
 	  (error/loc mod "Illegal import binding" b clause))))
@@ -1090,22 +1105,19 @@
 				       :stack stack)))
 		   (hashtable-for-each (-> imod exports)
 		      (lambda (key d::Decl)
-			 ;; must not qualify hidden imports
 			 (let* ((alias (module5-qualified-name d id))
 				(nd (duplicate::Decl d
 				       (alias alias)
 				       (id (-> d alias))
 				       (scope 'import))))
+			    (import-decl! d (-> d alias) alias alias alias mod)
 			    (trace-item "id=" (-> d id)
 			       " alias=" alias
-			       " imod=" (-> imod id) " (import-all)")
-			    (hashtable-symbol-put! (-> mod decls) alias nd)
-			    (hashtable-symbol-put! (-> mod imports) alias nd))))
+			       " imod=" (-> imod id) " (import-all)"))))
 		   (module-add-libraries! mod (-> imod libraries))
 		   (set! (-> mod inits) (append! (-> mod inits) (list imod)))))))))
    
    (define (parse-import-some clause::pair expr::pair mod::Module expand stack)
-      (tprint "NEED TO IMPORT IMPLICITLY HIDDEN VAR FOR INLINES...")
       (with-trace 'module5-parse "parse-import-some"
 	 (trace-item "mod=" (-> mod id))
 	 (let* ((path (cadr clause))
@@ -1411,7 +1423,7 @@
 	       '(include) ki)
 	    (hashtable-for-each (-> mod decls)
 	       (lambda (k d::Decl)
-		  (with-access::Decl d ((imod mod) alias id xid def scope)
+		  (with-access::Decl d ((imod mod) alias id xid def scope expr)
 		     (trace-item "d=" id " xid=" xid
 			" alias=" alias
 			" mod=" (-> imod id)
@@ -1422,7 +1434,7 @@
 			   :heap-modules heap-modules
 			   :default-package default-package
 			   :qualified-names qualified-names)
-			(let ((idef (module5-get-export-def imod (or xid id))))
+			(let ((idef (module5-get-export-def imod (or xid id) expr)))
 			   (with-access::Def idef (kind expr ci)
 			      (case kind
 				 ((macro)
@@ -1474,7 +1486,8 @@
 	    (collect-defines! mod (-> mod body))
 
 	    ;; auto export all the global variables referenced in exported
-	    ;; inline functions
+	    ;; inline functions and patch the body of exported inline functions
+	    ;; so that they only use qualified naming for global variables
 	    (export-inline-hidden! mod)
 	    
 	    ;; bind all the classes
@@ -1528,7 +1541,7 @@
 		    (body body)
 		    (resolved #f))))
 	 (hashtable-put! *modules-by-path* path mod)
-	 (let ((omod (hashtable-get *modules-by-id* (symbol->string id))))
+	 (let ((omod (module5-find-module-by-id id)))
 	    (if omod
 		(with-access::Module omod ((opath path))
 		   (error/loc mod
@@ -2113,159 +2126,197 @@
 	     (multiple-value-bind (ident type)
 		(parse-ident (car args) src)
 		(loop (cdr args) (cons ident frame))))
-	    ((keyword? (car args))
+	    ((and (pair? (car args)) (symbol? (caar args)))
+	     (multiple-value-bind (ident type)
+		(parse-ident (caar args) src)
+		(loop (cdr args) (cons ident frame))))
+	    ((memq (car args) '(#!key #!optional #!rest))
 	     (loop (cdr args) frame))
 	    (else
 	     (error/loc mod "Illegal formal parameter" (car args) src)))))
+
+   (define (find-decl id mod::Module)
+      ;; find the declaration of g in mod, might return false
+      (hashtable-get (-> mod decls) (symbol->string! id)))
    
-   (define (free-vars::pair-nil expr env::pair-nil vars::pair-nil)
-      ;; Compute an over approximation of the all the global variables used
-      ;; inside the "expr". Does not need to be precises as the result will
-      ;; be filtered against the list of global variables visible in the
-      ;; module.
+   (define (find-def id mod::Module)
+      ;; find the definition of g in mod, might return false
+      (hashtable-get (-> mod defs) (symbol->string! id)))
+   
+   (define (free-global!::pair-nil expr::symbol mod::Module globals src)
+      (cond
+	 ((find-decl expr mod)
+	  =>
+	  (lambda (decl::Decl)
+	     (let ((mod::Module (-> decl mod)))
+		(set-car! src (localize `(@ ,(-> decl id) ,(-> mod id)) src))
+		(cons decl globals))))
+	 ((find-def expr mod)
+	  =>
+	  (lambda (def::Def)
+	     (set-car! src (localize `(@ ,(-> def id) ,(-> mod id)) src))
+	     (cons def globals)))
+	 (else
+	  globals)))
+   
+   (define (binding-id b)
+      (if (pair? b)
+	  (multiple-value-bind (id ty) (parse-ident (car b) b) id)
+	  (multiple-value-bind (id ty) (parse-ident b b) id)))
+   
+   (define (free-vars*!::pair-nil expr*::pair-nil env globals::pair-nil)
+      (if (null? expr*)
+	  globals
+	  (free-vars*! (cdr expr*) env
+	     (free-vars! (car expr*) env globals expr*))))
+   
+   (define (free-vars!::pair-nil expr env::pair-nil globals::pair-nil src::pair)
+      ;; Compute the list of the all the global variables used
+      ;; inside the macro-expanded "expr" and patch the code so that it uses
+      ;; fully qualified variable names.
       (match-case expr
 	 ((atom ?-)
 	  (cond
-	     ((not (symbol? expr)) vars)
-	     ((memq expr env) vars)
-	     (else (cons expr vars))))
+	     ((not (symbol? expr)) globals)
+	     ((memq expr env) globals)
+	     (else (free-global! expr mod globals src))))
 	 ((quote . ?-)
-	  vars)
+	  '())
 	 ((@ ?id ?mod)
-	  (cons (cons id mod) vars))
+	  (let ((mod (module5-find-module-by-id mod)))
+	     (if (isa? mod Module)
+		 (free-global! id mod globals src)
+		 globals)))
 	 ((-> ?e . ?rest)
-	  (free-vars e env vars))
-	 ((set! ?expr ?val)
-	  (free-vars expr env
-	     (free-vars val env vars)))
-	 ((define (?id . ?args) . ?body)
-	  (multiple-value-bind (id type)
-	     (parse-ident id expr)
-	     (free-vars `(lambda ,args) (cons id env) vars)))
-	 ((define ?expr ?val)
-	  (free-vars expr env
-	     (free-vars val env vars)))
+	  (free-vars! e env globals (cdr expr)))
+	 ((set! ?var ?val)
+	  (free-vars*! (cdr expr) env globals))
 	 ((if ?test ?then ?otherwise)
-	  (free-vars otherwise env
-	     (free-vars then env
-		(free-vars test env vars))))
+	  (free-vars*! (cdr expr) env globals))
 	 ((begin . ?exprs)
-	  (free-vars exprs env vars))
+	  (free-vars*! (cdr exprs) env globals))
 	 ((lambda ?args . ?body)
-	  (free-vars body (append (args*->frame args expr) env) vars))
+	  (let ((nenv (append (args*->frame args expr) env)))
+	     (free-vars! body nenv globals (cddr expr))))
 	 ((let (and (? symbol?) ?loop) ?bindings . ?body)
 	  (multiple-value-bind (id ty)
 	     (parse-ident loop expr)
-	     (free-vars body
-		(cons id
-		   (append
-		      (map (lambda (b)
-			      (if (pair? b)
-				  (multiple-value-bind (id ty) (car b) id)
-				  (multiple-value-bind (id ty) b id)))
-			 bindings)))
-		vars)))
-	 (((or let letrec let* letrec*) ?bindings . ?body)
-	  (free-vars body
-	     (append
-		(map (lambda (b)
-			(if (pair? b)
-			    (multiple-value-bind (id ty) (car b) id)
-			    (multiple-value-bind (id ty) b id)))
-		   bindings))
-	     vars))
+	     (let ((nenv (cons id (map binding-id bindings))))
+		(free-vars! body nenv globals (cddr expr)))))
+	 ((let ?bindings . ?body)
+	  (let ((nenv (map binding-id bindings)))
+	     (free-vars! body nenv globals (cddr expr))))
+	 ((let* ?bindings . ?body)
+	  (let loop ((bindings bindings)
+		     (env env)
+		     (globals globals))
+	     (cond
+		((null? globals)
+		 (free-vars! body env globals (cddr expr)))
+		((pair? (car bindings))
+		 (let ((var (caar bindings))
+		       (val (cdar bindings)))
+		    (multiple-value-bind (id ty)
+		       (parse-ident var (car bindings))
+		       (loop (cdr bindings)
+			  (cons id env)
+			  (free-vars! val env globals val)))))
+		(else
+		 (multiple-value-bind (id ty)
+		    (parse-ident (car bindings) bindings)
+		    (loop (cdr bindings)
+		       (cons id env)
+		       globals))))))
+	 (((or letrec letrec*) ?bindings . ?body)
+	  (let ((nenv (append (map binding-id bindings) env)))
+	     (let loop ((bindings bindings)
+			(globals globals))
+		(cond
+		   ((null? bindings)
+		    (free-vars! body nenv globals (cddr expr)))
+		   ((pair? (car bindings))
+		    (let ((val (cdar bindings)))
+		       (loop (cdr bindings)
+			  (free-vars! val env globals val))))
+		   (else
+		    (loop (cdr bindings) globals))))))
 	 ((labels ?bindings . ?body)
-	  (free-vars
-	     `(letrec ,(map (lambda (b)
-			       (match-case b
-				  ((?id ?args . ?b)
-				   `(,id (lambda ,args ,@b)))))
-			  bindings)
-		 ,@body)
-	     env vars))
+	  (let* ((frame (map (lambda (b)
+				(multiple-value-bind (id ty)
+				   (parse-ident (car b) b)
+				   id))
+			   bindings))
+		 (nenv (append frame env)))
+	     (let loop ((bindings bindings)
+			(globals globals))
+		(cond
+		   ((null? bindings)
+		    (free-vars! body nenv globals (cddr expr)))
+		   (else
+		    (let* ((b (car bindings))
+			   (frame (args*->frame (cadr b) b))
+			   (nenv (append frame env)))
+		       (loop (cdr bindings)
+			  (free-vars! (cddr b) nenv globals (cddr b)))))))))
 	 (((or pragma pragma/effect free-pragma static-pragma free-pragma/effect) . ?body)
-	  (free-vars body env vars))
+	  (free-vars! body env globals (cdr expr)))
 	 ((cast-null? . ?-)
-	  vars)
+	  globals)
 	 ((case ?expr . ?clauses)
 	  (let loop ((clauses clauses)
-		     (vars (free-vars expr env vars)))
+		     (globals (free-vars! expr env globals (cdr expr))))
 	     (if (null? clauses)
-		 vars
-		 (loop (cdr clauses)
-		    (free-vars (cdar clauses) env vars)))))
+		 globals
+		 (let ((clause (car clauses)))
+		    (loop (cdr clauses)
+		       (free-vars! (cdr clauses) env globals (cdr clauses)))))))
+	 ((define . ?id)
+	  (error (-> mod id)
+	     "inner define is illegal in inline functions"
+	     expr))
 	 (else
-	  (append-map (lambda (x) (free-vars x env vars)) expr))))
+	  (free-vars*! expr env globals))))
    
-   (define (inline-free-vars def::Def)
+   (define (inline-free-vars! def::Def)
       (match-case (-> def expr)
-	 ((define-inline (?- . ?args) . ?body)
-	  (free-vars body (args*->frame args (-> def expr)) '()))
+	 ((define-inline (?id . ?args) . ?body)
+	  (free-vars! body (args*->frame args (-> def expr)) '()
+	     (cddr (-> def expr))))
 	 (else
 	  '())))
    
-   (define (find-decl g mod::Module)
-      ;; find the declaration of g in mod, might return false
-      (let ((decls (-> mod decls)))
-	 (if (symbol? g)
-	     (hashtable-get decls (symbol->string! g))
-	     (let ((d (hashtable-get decls (car g))))
-		;; deprecated qualitified name
-		(when (isa? d Decl)
-		   (let ((m::Module (-> (cast::Decl d) mod)))
-		      (when (eq? (-> m id) (cdr g))
-			 d)))))))
-   
-   (define (find-def g mod::Module)
-      ;; find the definition of g in mod, might return false
-      (hashtable-get (-> mod defs)
-	 (symbol->string! (if (symbol? g) g (car g)))))
-   
-   (define (find-export g mod::Module)
-      (hashtable-get (-> mod decls)
-	 (symbol->string! (if (symbol? g) g (car g)))))
-   
    (define (export-hidden! d::Decl mod::Module)
-      (tprint "export hidden d=" (-> d id) " mod=" (-> mod id)
-	 " " (typeof (-> d def)))
       (set! (-> d scope) 'export)
-      (set! (-> d attributes) (cons (cons 'hidden #t) (-> d attributes)))
+      (set! (-> d attributes) (cons 'hidden (-> d attributes)))
       (hashtable-symbol-put! (-> mod exports) (-> d id) d))
    
    (hashtable-for-each (-> mod exports)
       (lambda (k decl::Decl)
 	 (when (isa? (-> decl def) Def)
 	    (let* ((def::Def (-> decl def))
-		   (gs::pair-nil (inline-free-vars def)))
-	       (tprint "inline=" (-> decl id))
-	       (for-each (lambda (g)
-			    (tprint "g=" g)
-			    (unless (find-export g mod)
-			       (cond
-				  ((find-decl g mod)
-				   =>
-				   (lambda (d::Decl)
-				      (tprint "DECL=" g)
-				      (unless (eq? (-> d scope) 'export)
-					 (export-hidden! d mod))))
-				  ((find-def g mod)
-				   =>
-				   (lambda (d::Def)
-				      (tprint "DEF=" g)
-				      ;; g was a static global variable, must
-				      ;; declare a fresh declaration
-				      (let* ((id (if (symbol? g) g (car g)))
-					     (decl (instantiate::Decl
-						      (id (-> d id))
-						      (alias (-> d id))
-						      (mod mod)
-						      (scope 'export)
-						      (def d)
-						      (expr (-> def expr)))))
-					 (set! (-> d decl) decl)
-					 (hashtable-symbol-put! (-> mod decls) (-> def id) decl)
-					 (export-hidden! decl mod)))))))
-		  gs))))))
+		   (ds::pair-nil (inline-free-vars! def)))
+	       (for-each (lambda (d)
+			    (cond
+			       ((isa? d Decl)
+				(unless (eq? (-> (cast::Decl d) scope) 'export)
+				   (export-hidden! d mod)))
+			       ((isa? d Def)
+				;; d was a static global variable, must
+				;; declare a fresh declaration
+				(let* ((d::Def d)
+				       (id (-> d id))
+				       (decl (instantiate::Decl
+						(id id)
+						(alias id)
+						(mod mod)
+						(scope 'export)
+						(def d)
+						(expr (-> def expr)))))
+				   (set! (-> d decl) decl)
+				   (hashtable-symbol-put! (-> mod decls)
+				      (-> def id) decl)
+				   (export-hidden! decl mod)))))
+		  ds))))))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    collect-classes! ...                                             */
@@ -2581,20 +2632,20 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-get-export-def ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (module5-get-export-def mod::Module id)
+(define (module5-get-export-def mod::Module id #!optional src)
    (with-trace 'module5-resolve "module5-get-export-def"
       (trace-item "mod=" (-> mod id))
       (trace-item "id=" id)
       (with-access::Module mod (exports (mid id) resolved defs decls)
 	 (unless resolved
-	    (error/loc mod "Module definitions not resolved yet" id #f))
+	    (error/loc mod "Module definitions not resolved yet" id src))
 	 (let ((decl (hashtable-get exports (symbol->string! id))))
 	    (if (isa? decl Decl)
 		(with-access::Decl decl (def expr (dmod mod))
 		   (if (isa? def Def)
 		       def
 		       (error/loc mod "Cannot find exported definition" id expr)))
-		(error/loc mod "Cannot find exported declaration" id #f))))))
+		(error/loc mod "Cannot find exported declaration" id src))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-class-expander ...                                        */

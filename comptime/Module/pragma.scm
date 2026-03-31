@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/pragma.scm                   */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/pragma.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Fri Feb 13 07:04:38 2026 (serrano)                */
+;*    Last change :  Tue Mar 31 10:08:40 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
@@ -95,7 +95,7 @@
 			   (set-pragma-properties! global prop* clause))))
 		   (else
 		    (internal-error "pragma-finalizer"
-		       "Illegal \"pragma\" finalizer form"
+		       "Illegal pragma finalizer form"
 		       pragma))))
       *pragma-list*)
    (set! *pragma-list* '())
@@ -197,7 +197,7 @@
 		    (cons 'thread-local
 		       (global-pragma global))))))
 	  (else
-	   (user-error "Parse error" "Illegal \"pragma\" form" clause '()))))
+	   (user-error "Parse error" "Illegal pragma form" clause '()))))
       (((and (? symbol?) ?key) . ?val)
        (case key
 	  ;; the predicate-of pragma
@@ -230,14 +230,18 @@
 	   (args-noescape global val fun-args-noescape fun-args-noescape-set!))
 	  ((args-retescape)
 	   (args-noescape global val fun-args-retescape fun-args-retescape-set!))
+	  ((hidden)
+	   ;; hidden (from user code during ast building) variable
+	   (global-pragma-set! global
+	      (cons (cons 'hidden var) (global-pragma global))))
 	  ;; MS: removed 13 feb 2026
 ;* 	  ((qualified-type-name)                                       */
 ;* 	   (global-qualified-type-name-set! global val))               */
 	  (else
-	   (user-error "Parse error" "Illegal \"pragma\" form" prop '()))))
+	   (user-error "Parse error" "Illegal pragma form" prop '()))))
       (else
        (user-error "Parse error"
-	  (format "Illegal \"pragma\" form (~a)" prop)
+	  (format "Illegal pragma form (~a)" prop)
 	  clause
 	  '()))))
 

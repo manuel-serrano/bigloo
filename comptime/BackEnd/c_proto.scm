@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Sun Mar 29 08:41:56 2026 (serrano)                */
+;*    Last change :  Tue Mar 31 12:44:55 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -54,7 +54,9 @@
 		 (or (eq? (global-import global) 'export)
 		     (>fx (global-occurrence global) 0)
 		     (eq? (global-removable global) 'never)))
-	    (global-imported? global))))
+	    (and (global-imported? global)
+		 (or (>fx (global-occurrence global) 0)
+		     (eq? (global-removable global) 'never))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-prototypes ...                                              */

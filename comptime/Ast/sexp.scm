@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Mar 19 10:28:50 2026 (serrano)                */
+;*    Last change :  Tue Mar 31 11:12:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -151,7 +151,7 @@
 	   (let ((global (find-global genv atom))
 		 (loc (find-location/loc atom loc)))
 	      (cond
-		 ((not (global? global))
+		 ((or (not (global? global)) (global-hidden? global))
 		  (trace (ast 2) "*** UNBOUND VARIALBLE " exp " " loc)
 		  (error-sexp->node "Unbound variable" exp loc genv))
 		 ((eq? (global-import global) 'eval)

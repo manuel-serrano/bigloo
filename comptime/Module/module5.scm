@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sat Mar 28 19:45:17 2026 (serrano)                */
+;*    Last change :  Tue Mar 31 09:14:41 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -48,6 +48,7 @@
 	   ast_walk
 	   type_type
 	   type_env
+	   type_cache
 	   object_class
 	   object_slots
 	   object_coercion
@@ -119,10 +120,10 @@
 (define (module5-import-def mod::Module decl::Decl)
    (with-trace 'module5-resolve "modulet5-import-def"
       (trace-item "id=" (-> decl id))
-      (with-access::Decl decl ((dmod mod) def xid id)
+      (with-access::Decl decl ((dmod mod) def xid id expr)
 	 (if (eq? mod dmod)
 	     def
-	     (module5-get-export-def dmod (or xid id))))))
+	     (module5-get-export-def dmod (or xid id) expr)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-ast! ...                                                 */
@@ -566,9 +567,11 @@
       (with-access::Module mod (imports)
 	 (hashtable-for-each imports
 	    (lambda (k decl)
-	       (with-access::Decl decl (xid id (imod mod) alias)
-		  (let ((def (module5-get-export-def imod (or xid id))))
-		     (when (isa? def Def)
+	       (with-access::Decl decl (xid id (imod mod) alias attributes)
+		  (let ((def (module5-get-export-def imod (or xid id)))
+			(g (find-global env alias)))
+		     ;;(tprint "IMPORT INLINE ID=" id " ALIAS=" alias " G=" (shape g))
+		     (when (and (isa? def Def) (or (not g) (not (eq? id alias))))
 			(with-access::Def def (kind expr decl)
 			   (when (eq? kind 'inline)
 			      (with-access::Decl decl ((imod mod))
@@ -577,32 +580,23 @@
 				       (module5-env imod)
 				       (trace-item "inline id=" id "@" mid)
 				       (trace-item "expr=" expr)
-				       (let* ((gi (car (toplevel->ast expr '() mid genv)))
+				       (let* ((gi (car (toplevel->ast expr '() mid env)))
 					      (gl (find-global/module env alias mid))
 					      (fi (global-value gi))
 					      (loc (find-location expr))
 					      (args (sfun-args fi))
 					      (node (sexp->node (sfun-body fi)
-						       (sfun-args fi) loc 'value genv)))
+						       (sfun-args fi) loc 'value env)))
+					  ;; mark the function as hidden for the symbol resolution
+					  (global-pragma-set! gi (cons 'hidden (global-pragma gi)))
+					  ;; force concrete types for all arguments in order
+					  ;; to preserve the semantics of imported external function
+					  (for-each (lambda (a)
+						       (when (eq? (local-type a) *_*)
+							  (local-type-set! a *obj*)))
+					     (sfun-args fi))
 					  (sfun-body-set! fi node)
-					  (rebind-inline-global node mid)
-					  (global-value-set! gl (global-value gi))))))))))))))))
-
-;*---------------------------------------------------------------------*/
-;*    rebind-inline-global ...                                         */
-;*---------------------------------------------------------------------*/
-(define-walk-method (rebind-inline-global node::node mod)
-   (call-default-walker))
-
-;*---------------------------------------------------------------------*/
-;*    rebind-inline-global ::var ...                                   */
-;*---------------------------------------------------------------------*/
-(define-walk-method (rebind-inline-global node::var mod)
-   (let ((v (var-variable node)))
-      (if (and (global? v) (eq? (global-module v) mod))
-	  (let ((g (find-global/module (get-genv) (global-id v) mod)))
-	     (tprint "NEED REBIND..." (shape v) " -> " (shape g) " " (global-id v) " mod=" mod))
-	  (call-default-walker))))
+					  (global-value-set! gl fi)))))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */
@@ -1270,7 +1264,6 @@
       (expand-define-macro x e)
       #unspecified)
 
-   ;;(install-module5-expander xenv 'define-macro #f define-macro-expander)
    (install-module5-expander xenv 'define #f define-expander)
    (install-module5-expander xenv 'define-inline #f define-expander)
    (install-module5-expander xenv 'define-generic #f define-expander)

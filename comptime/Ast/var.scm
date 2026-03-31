@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Sat Mar 28 19:22:26 2026 (serrano)                */
+;*    Last change :  Tue Mar 31 10:32:45 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -15,8 +15,6 @@
 
    (import engine_param
 	   type_type)
-
-   (use module_module)
 
    (include "Ast/var.sch")
    
@@ -186,6 +184,7 @@
 
 	   (global-read-only?::bool ::global)
 	   (global-imported?::bool ::global)
+	   (global-hidden?::bool ::global)
 	   (global-set-read-only! ::global)
 	   (global-args-safe?::bool ::global)
 	   (fun-optional-arity::int ::fun)
@@ -212,13 +211,14 @@
 ;*    global-imported? ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (global-imported? global::global)
-   ;; MS: 29 March 2026
-   ;; with the module5 inlining, the global, non-imported
-   ;; functions used in the body of an imported inlined function
-   ;; are "local" so testing global-import is no longer enough;
-   ;; the module the variable belongs to must be checked too.
    (or (eq? (global-import global) 'import)
-       (not (eq? (global-module global) *module*))))
+       (eq? (global-import global) 'foreign)))
+
+;*---------------------------------------------------------------------*/
+;*    global-hidden? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (global-hidden? global::global)
+   (memq 'hidden (global-pragma global)))
 
 ;*---------------------------------------------------------------------*/
 ;*    global-args-safe? ...                                            */
