@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Wed Apr  1 08:31:24 2026 (serrano)                */
+;*    Last change :  Wed Apr  1 13:47:10 2026 (serrano)                */
 ;*    Copyright   :  2014-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -350,7 +350,7 @@
 		     (and (pair? c) (or (string? (car c)) (symbol? (car c)))))
 	      obj)
 	   (alist->json obj op fallback)
-	   (fallback obj op fallback)))
+	   (list->json obj op fallback)))
       (else
        (fallback obj op fallback))))
 
@@ -376,6 +376,28 @@
 		    (display "," op)
 		    (obj->json (vector-ref vec i) op fallback)
 		    (loop (+fx i 1)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    list->json ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (list->json lst op::output-port fallback)
+   (cond
+      ((null? lst)
+       (display "[]" op))
+      ((null? (cdr lst))
+       (display "[" op)
+       (obj->json (car lst) op fallback)
+       (display "]" op))
+      (else
+       (display "[" op)
+       (obj->json (car lst) op fallback)
+       (let loop ((l (cdr lst)))
+	  (if (null? l)
+	      (display "]" op)
+	      (begin
+		 (display "," op)
+		 (obj->json (car l) op fallback)
+		 (loop (cdr l))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alist->json ...                                                  */
@@ -404,4 +426,4 @@
       (lambda (p)
 	 (obj->json obj p
 	    (lambda (obj op fallback)
-	       (error "json-stringify" "Illegal object" obj))))))
+	       (error "json-stringify" "Illegal object" (format "~s" obj)))))))

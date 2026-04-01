@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Apr  1 11:33:03 2026 (serrano)                */
+;*    Last change :  Wed Apr  1 12:34:17 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1271,15 +1271,17 @@
 ;*    delim? ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (delim? delims char)
-   (let ((len (string-length delims)))
-      (let loop ((i 0))
-	 (cond
-	    ((=fx i len)
-	     #f)
-	    ((char=? char (string-ref-ur delims i))
-	     #t)
-	    (else
-	     (loop (+fx i 1)))))))
+   (if (char? delims)
+       (char=? delims char)
+       (let ((len (string-length delims)))
+	  (let loop ((i 0))
+	     (cond
+		((=fx i len)
+		 #f)
+		((char=? char (string-ref-ur delims i))
+		 #t)
+		(else
+		 (loop (+fx i 1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    skip-separator ...                                               */
