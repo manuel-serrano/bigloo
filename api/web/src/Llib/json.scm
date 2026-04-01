@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/api/web/src/Llib/json.scm     */
+;*    serrano/prgm/project/bigloo/5.0a/api/web/src/Llib/json.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Thu Oct 12 13:22:30 2023 (serrano)                */
-;*    Copyright   :  2014-23 Manuel Serrano                            */
+;*    Last change :  Wed Apr  1 08:31:24 2026 (serrano)                */
+;*    Copyright   :  2014-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
 ;*=====================================================================*/
@@ -29,7 +29,9 @@
               (parse-error #f)
 	      (undefined #t) reviver expr
 	      constant-alloc string-alloc)
-           (read-json #!optional (port::input-port (current-input-port)))))
+           (read-json #!optional (port::input-port (current-input-port)))
+	   (obj->json ::obj ::output-port ::procedure)
+	   (json-stringify ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    return ...                                                       */
@@ -320,5 +322,86 @@
 		      #f #f)))))
       val))
 
+;*---------------------------------------------------------------------*/
+;*    read-json ...                                                    */
+;*---------------------------------------------------------------------*/
 (define (read-json #!optional (port::input-port (current-input-port)))
    (json-parse port))
+
+;*---------------------------------------------------------------------*/
+;*    obj->json ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (obj->json obj op::output-port fallback::procedure)
+   (cond
+      ((boolean? obj)
+       (display (if obj "true" "false") op))
+      ((number? obj)
+       (display obj op))
+      ((string? obj)
+       (write-char #\" op)
+       (display (string-for-read obj) op)
+       (write-char #\" op))
+      ((null? obj)
+       (display "null" op))
+      ((vector? obj)
+       (vector->json obj op fallback))
+      ((pair? obj)
+       (if (every (lambda (c)
+		     (and (pair? c) (or (string? (car c)) (symbol? (car c)))))
+	      obj)
+	   (alist->json obj op fallback)
+	   (fallback obj op fallback)))
+      (else
+       (fallback obj op fallback))))
+
+;*---------------------------------------------------------------------*/
+;*    vector->json ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (vector->json vec op::output-port fallback)
+   (let ((len (vector-length vec)))
+      (case len
+	 ((0)
+	  (display "[]" op))
+	 ((1)
+	  (display "[" op)
+	  (obj->json (vector-ref vec 0) op fallback)
+	  (display "]" op))
+	 (else
+	  (display "[" op)
+	  (obj->json (vector-ref vec 0) op fallback)
+	  (let loop ((i 1))
+	     (if (=fx i len)
+		 (display "]" op)
+		 (begin
+		    (display "," op)
+		    (obj->json (vector-ref vec i) op fallback)
+		    (loop (+fx i 1)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    alist->json ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (alist->json l::pair-nil op::output-port fallback)
+   (display "{" op)
+   (if (null? l)
+       (display "}" op)
+       (let loop ((l l))
+	  (let ((c (car l)))
+	     (write-char #\" op)
+	     (display (car c) op)
+	     (display "\":" op)
+	     (obj->json (cdr c) op fallback))
+	  (if (pair? (cdr l))
+	      (begin
+		 (display "," op)
+		 (loop (cdr l)))
+	      (display "}" op)))))
+   
+;*---------------------------------------------------------------------*/
+;*    json-stringify ...                                               */
+;*---------------------------------------------------------------------*/
+(define (json-stringify obj)
+   (call-with-output-string
+      (lambda (p)
+	 (obj->json obj p
+	    (lambda (obj op fallback)
+	       (error "json-stringify" "Illegal object" obj))))))

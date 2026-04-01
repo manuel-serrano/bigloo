@@ -1499,6 +1499,34 @@ The optional argument @var{start} default to 0. The optional argument
 
 @end deffn
 
+@deffn {SRFI-13} string-trim-both string [char/charset/pred start end]
+@deffnx {SRFI-13} string-trim string [char/charset/pred start end]
+@deffnx {SRFI-13} string-trim-right string [char/charset/pred start end]
+
+Trim s by skipping over all characters on the left / on the right / on
+both sides that satisfy the second parameter char/char-set/pred:
+
+@itemize @bullet
+@item if it is a character char, characters equal to char are trimmed;
+@item if it is a char set cs, characters contained in cs are trimmed;
+@item if it is a predicate pred, it is a test predicate that is applied
+to the characters in s; a character causing it to return true is skipped.
+@end itemize
+
+@var{Char/char-set/pred} defaults to the character set
+char-set:whitespace defined in SRFI 14.
+
+If no trimming occurs, these functions may returns a copy of
+s.
+
+
+@smallexample
+    (string-trim-both "  The outlook wasn't brilliant,  \n\r")
+        => "The outlook wasn't brilliant,"
+@end smallexample
+
+
+@end deffn
 
 @c -- Unicode (UCS-2) strings ---------------------------------------- @c
 @node  Unicode (UCS-2) Strings, Vectors, Strings, Scheme Library
