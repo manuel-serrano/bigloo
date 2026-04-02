@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Feb 27 09:57:02 2026 (serrano)                */
+;*    Last change :  Wed Apr  1 12:34:17 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -264,7 +264,10 @@
 	       #!optional (start1 0) (start2 0))
 	    (string-hex-intern::bstring ::bstring)
 	    (string-hex-intern!::bstring ::bstring)
-	    (string-hex-extern::bstring str::bstring #!optional (start::int 0) (end::long (string-length str))))
+	    (string-hex-extern::bstring str::bstring #!optional (start::int 0) (end::long (string-length str)))
+	    (string-trim-both::bstring ::bstring . opt)
+	    (string-trim-right::bstring ::bstring . opt)
+	    (string-trim::bstring ::bstring . opt))
    
    (pragma  ($string? fail-safe (predicate-of bstring) no-cfa-top nesting)
 	    (string? fail-safe side-effect-free no-cfa-top nesting)
@@ -300,7 +303,10 @@
 	    (string-prefix? fail-safe side-effect-free nesting)
 	    (string-suffix? fail-safe side-effect-free nesting)
 	    (string-prefix-ci? fail-safe side-effect-free nesting)
-	    (string-suffix-ci? fail-safe side-effect-free nesting))
+	    (string-suffix-ci? fail-safe side-effect-free nesting)
+	    (string-trim-both fail-safe side-effect-free nesting no-cfa-top)
+	    (string-trim fail-safe side-effect-free nesting no-cfa-top)
+	    (string-trim-right fail-safe side-effect-free nesting no-cfa-top))
    (cond-expand
       (bigloo-c
        (pragma
@@ -1265,15 +1271,17 @@
 ;*    delim? ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (delim? delims char)
-   (let ((len (string-length delims)))
-      (let loop ((i 0))
-	 (cond
-	    ((=fx i len)
-	     #f)
-	    ((char=? char (string-ref-ur delims i))
-	     #t)
-	    (else
-	     (loop (+fx i 1)))))))
+   (if (char? delims)
+       (char=? delims char)
+       (let ((len (string-length delims)))
+	  (let loop ((i 0))
+	     (cond
+		((=fx i len)
+		 #f)
+		((char=? char (string-ref-ur delims i))
+		 #t)
+		(else
+		 (loop (+fx i 1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    skip-separator ...                                               */
@@ -1998,3 +2006,120 @@
 		       (string-set! res j (integer->hex d1))
 		       (string-set! res (+fx j 1) (integer->hex d0))
 		       (loop (+fx i 1) (+fx j 2))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    string-trim-both ...                                             */
+;*---------------------------------------------------------------------*/
+(define (string-trim-both s::bstring . opt)
+
+   (define (string-trim-fast s)
+      (let ((i (string-skip s "\r\n "))
+	    (j (string-skip-right s "\r\n ")))
+	 (substring s i (+fx j 1))))
+
+   (define (string-trim-full s cs start end)
+      (let ((len (string-length s)))
+	 (cond
+	    ((not (fixnum? start))
+	     (error "string-trim" "Illegal start index" start))
+	    ((not (fixnum? end))
+	     (error "string-trim" "Illegal end index" end))
+	    ((or (<fx start 0) (>=fx start len))
+	     (error "string-trim" "Start index out of bounds" start))
+	    ((or (<fx end 0) (>fx end len))
+	     (error "string-trim" "End index out of bounds" start))
+	    (else
+	     (let ((i (string-skip s cs start))
+		   (j (string-skip-right s cs end)))
+		(substring s i (+fx j 1)))))))
+
+   (match-case opt
+      (()
+       (string-trim-fast s))
+      ((?cs)
+       (if (fixnum? cs)
+	   (string-trim-full s "\r\n " cs (string-length s))
+	   (string-trim-full s cs 0 (string-length s))))
+      ((?cs ?start)
+       (string-trim-full s cs start (string-length s)))
+      ((?cs ?start ?end)
+       (string-trim-full s cs start end))
+      (else
+       (error "string-trim" "Illegal arguments" opt))))
+      
+;*---------------------------------------------------------------------*/
+;*    string-trim ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (string-trim s::bstring . opt)
+
+   (define (string-trim-fast s)
+      (let ((i (string-skip s "\r\n ")))
+	 (substring s i (string-length s))))
+
+   (define (string-trim-full s cs start end)
+      (let ((len (string-length s)))
+	 (cond
+	    ((not (fixnum? start))
+	     (error "string-trim-left" "Illegal start index" start))
+	    ((not (fixnum? end))
+	     (error "string-trim-left" "Illegal end index" end))
+	    ((or (<fx start 0) (>=fx start len))
+	     (error "string-trim-left" "Start index out of bounds" start))
+	    ((or (<fx end 0) (>fx end len))
+	     (error "string-trim-left" "End index out of bounds" start))
+	    (else
+	     (let ((i (string-skip s cs start)))
+		(substring s i len))))))
+
+   (match-case opt
+      (()
+       (string-trim-fast s))
+      ((?cs)
+       (if (fixnum? cs)
+	   (string-trim-full s "\r\n " cs (string-length s))
+	   (string-trim-full s cs 0 (string-length s))))
+      ((?cs ?start)
+       (string-trim-full s cs start (string-length s)))
+      ((?cs ?start ?end)
+       (string-trim-full s cs start end))
+      (else
+       (error "string-trim-left" "Illegal arguments" opt))))
+      
+;*---------------------------------------------------------------------*/
+;*    string-trim-right ...                                            */
+;*---------------------------------------------------------------------*/
+(define (string-trim-right s::bstring . opt)
+
+   (define (string-trim-fast s)
+      (let ((j (string-skip-right s "\r\n ")))
+	 (substring s 0 (+fx j 1))))
+
+   (define (string-trim-full s cs start end)
+      (let ((len (string-length s)))
+	 (cond
+	    ((not (fixnum? start))
+	     (error "string-trim-right" "Illegal start index" start))
+	    ((not (fixnum? end))
+	     (error "string-trim-right" "Illegal end index" end))
+	    ((or (<fx start 0) (>=fx start len))
+	     (error "string-trim-right" "Start index out of bounds" start))
+	    ((or (<fx end 0) (>fx end len))
+	     (error "string-trim-right" "End index out of bounds" start))
+	    (else
+	     (let ((j (string-skip-right s cs end)))
+		(substring s start (+fx j 1)))))))
+
+   (match-case opt
+      (()
+       (string-trim-fast s))
+      ((?cs)
+       (if (fixnum? cs)
+	   (string-trim-full s "\r\n " cs (string-length s))
+	   (string-trim-full s cs 0 (string-length s))))
+      ((?cs ?start)
+       (string-trim-full s cs start (string-length s)))
+      ((?cs ?start ?end)
+       (string-trim-full s cs start end))
+      (else
+       (error "string-trim-right" "Illegal arguments" opt))))
+      

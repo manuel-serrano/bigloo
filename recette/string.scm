@@ -718,4 +718,7 @@
    (test "strint-char-index.7" (string-char-index "abcdef" #\e 4 1) 4)
    (test "strint-char-index.8" (string-char-index "abcdef" #\e 4 2) 4)
    (test "strint-char-index.9" (string-char-index "abcdef" #\e 3 1) #f)
-   (test "strint-char-index.10" (string-char-index "abcdef" #\e 3 3) 4))
+   (test "strint-char-index.10" (string-char-index "abcdef" #\e 3 3) 4)
+   (test "string-trim-both.1" (string-trim-both "  The outlook wasn't brilliant,  \n\r") "The outlook wasn't brilliant,")
+   (test "string-trim.1" (string-trim "  The outlook wasn't brilliant,  \n\r") "The outlook wasn't brilliant,  \n\r")
+   (test "string-trim-right.1" (string-trim-right "  The outlook wasn't brilliant,  \n\r") "  The outlook wasn't brilliant,"))

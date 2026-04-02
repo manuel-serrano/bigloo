@@ -257,3 +257,44 @@ after parsing an object property.
 @end itemize
 
 @end deffn
+
+@deffn {bigloo procedure} obj->json obj op::output-port fallback::procedure
+
+Display a JSON representation of the @emph{JSONifiable} object @var{obj}
+into the output port @var{op}.
+
+A @emph{JSONifiable} might be:
+
+@itemize @bullet
+@item a number;
+@item a string;
+@item a boolean;
+@item the @code{null} value;
+@item a vector of @emph{JSONifiable} objects;
+@item an alist whose cells @code{car} are a string or a symbol and whose
+value is a @emph{JSONifiable} objects;
+@end itemize
+
+If the object passed to @code{obj->json} is not a @emph{JSONifiable} value,
+the @code{fallback} procedure is called with three arguments:
+
+@itemize @bullet
+@item the value itself;
+@item the output port @var{op};
+@item the @var{fallback} procedure.
+@end itemize
+
+@end deffn
+
+@deffn {bigloo procedure} json-stringify obj
+Produce a JSON string from a @emph{JSONifiable} object. It is defined as:
+
+@smalllisp
+(define (json-stringify obj)
+   (call-with-output-string
+      (lambda (p)
+	 (obj->json obj p
+	    (lambda (obj op fallback)
+	       (error "json-stringify" "Illegal object" obj))))))
+@end smalllisp
+@end deffn
