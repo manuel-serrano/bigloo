@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Tue Apr  7 17:23:58 2026 (serrano)                */
+;*    Last change :  Tue Apr  7 18:47:52 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -275,7 +275,7 @@
       ((memq ty '(bint blong int long)) 0)
       ((memq ty '(bllong belong)) '(string->llong "0"))
       ((eq? ty 'bignum) #z0)
-      ((eq? ty 'real) 0.0)
+      ((memq ty '(real double float)) 0.0)
       ((eq? ty 'bchar) #\_)
       ((memq ty '(nil pair pair-nil)) ''())
       ((eq? ty 'pair) '(econs #f #f))
