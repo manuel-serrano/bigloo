@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Thu Feb 19 07:38:16 2026 (serrano)                */
+;*    Last change :  Tue Apr  7 17:15:40 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -87,7 +87,9 @@
 	    ((null? slots)
 	     node)
 	    ((not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-	     (error-sexp->node "Static type not a class" exp loc genv))
+	     (tprint "X=" exp " " (shape klass) " " (shape node))
+	     (error-sexp->node "Static type is not a class" exp
+		(or (node-loc node) loc) genv))
 	    (else
 	     (let ((slot (find-class-slot klass (car slots))))
 		(if (not slot)
@@ -124,7 +126,7 @@
 		 (klass type)
 		 (slots slots))
 	 (if (not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-	     (error-sexp->node "Static type not a class" exp loc genv)
+	     (error-sexp->node "Static type is not a class" exp loc genv)
 	     (let ((slot (find-class-slot klass (car slots))))
 		(cond
 		   ((not slot)
@@ -203,7 +205,7 @@
 	  (ty (get-type ne #t)))
       (cond
 	 ((not (or (tclass? ty) (jclass? ty) (wclass? ty)))
-	  (error-sexp->node "Static type not a class" x loc genv))
+	  (error-sexp->node "Static type is not a class" x loc genv))
 	 ((jclass? ty)
 	  (with-access::jclass ty (id)
 	     (let ((m (find-method ty field)))

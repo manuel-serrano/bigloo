@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Tue Mar 31 11:12:20 2026 (serrano)                */
+;*    Last change :  Tue Apr  7 17:18:59 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -189,7 +189,8 @@
       ;; field ref
       ((-> ?e . ?fields)
        (if (and (list? fields) (every symbol? fields))
-	   (field-ref->node (cdr exp) exp stack loc site genv)
+	   (field-ref->node (cdr exp) exp stack
+	      (find-location/loc exp loc) site genv)
 	   (error-sexp->node "Illegal ->" exp loc genv)))
       ;; quote
       ((quote . ?-)
@@ -569,7 +570,8 @@
        (private-node exp stack loc site genv))
       ;; calls
       (((-> ?e (and ?f (? symbol?))) . ?args)
-       (or (field-call->node e f args exp stack loc site genv)
+       (or (field-call->node e f args exp stack
+	      (find-location/loc exp loc) site genv)
 	   (call->node exp stack loc site genv)))
       (else
        ;; this expression can be a function call or a typed pragma

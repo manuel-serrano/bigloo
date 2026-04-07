@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Tue Mar 24 12:22:07 2026 (serrano)                */
+;*    Last change :  Tue Apr  7 17:23:58 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -419,10 +419,10 @@
 	 ;; syntactic check
 	 (for-each (lambda (a)
 		      (unless (match-case a (((? symbol?) ?e) #t) (else #f))
-			 (error/loc (car x) "Illegal property" a args))
+			 (error/loc (car x) "Illegal property" a (if (pair? a) a args)))
 		      (unless (find (lambda (p) (eq? (prop-info-id p) (car a)))
 				 (class-info-properties class-info))
-			 (error/loc (car x) "Illegal property" (car a) args)))
+			 (error/loc (car x) "Illegal property" (car a) a)))
 	    args)
 	 (let ((nx `(let ((,to ($class-allocate ,cid
 				  ;; concrete properties
@@ -487,10 +487,10 @@
 	 ;; syntactic check
 	 (for-each (lambda (a)
 		      (unless (match-case a (((? symbol?) ?e) #t) (else #f))
-			 (error/loc (car x) "Illegal property" a args))
+			 (error/loc (car x) "Illegal property" a (if (pair? a) a args)))
 		      (unless (find (lambda (p) (eq? (prop-info-id p) (car a)))
 				 (class-info-properties class-info))
-			 (error/loc (car x) "Illegal property" (car a) args)))
+			 (error/loc (car x) "Illegal property" (car a) a)))
 	    args)
 	 (let ((nx `(let* ((,td ,(cadr x))
 			   (,to ($class-allocate ,cid
