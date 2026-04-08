@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Tue Apr  7 18:47:52 2026 (serrano)                */
+;*    Last change :  Wed Apr  8 08:24:28 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -541,11 +541,11 @@
 		((null? s)
 		 (let* ((to (gensym 'o))
 			(tto (make-typed-ident to (class-info-id class-info))))
-		    (localize x
+		    (localize (cdr x)
 		       `(let ((,tto ,(e o e)))
 			   ,(%with-lexical
 			       (map car nfields)
-			       (expand-progn body)
+			       (localize (cddr x) (expand-progn body))
 			       (eval-begin-expander
 				  (with-access-expand
 				     e to nfields x))
