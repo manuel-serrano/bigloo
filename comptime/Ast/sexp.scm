@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Tue Apr  7 17:18:59 2026 (serrano)                */
+;*    Last change :  Wed Apr  8 08:17:58 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -387,6 +387,7 @@
        (instantiate::cast
 	  (loc loc)
 	  (type (use-type! (cast-sexp-type body) loc))
+	  (checked #t)
 	  (arg (sexp->node arg stack loc site genv))))
       (((lambda ?vars . ?body) . ?args)
        (let ((loc (find-location/loc exp loc))
@@ -676,6 +677,7 @@
 			   ((?- ?arg)
 			    (instantiate::cast
 			       (type type)
+			       (checked #t)
 			       (arg (sexp->node arg stack loc site genv))))
 			   (else
 			    (application->node exp stack loc site genv)))))

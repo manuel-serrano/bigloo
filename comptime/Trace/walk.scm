@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Trace/walk.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Trace/walk.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Mon Oct 20 14:21:51 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Apr  8 07:53:54 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -105,7 +105,8 @@
 			    (trace-node body stack (-fx level 1))
 			    (trace-node body (cons var stack) (-fx level 1)))
 			body))
-		(t (strict-node-type (node-type body) (variable-type var)))
+		;;(t (strict-node-type (node-type body) (variable-type var)))
+		(t (variable-type var))
 		(id (trace-id var))
 		(nbody (make-traced-node bd t id lloc stack)))
 	    (sfun-body-set! fun nbody)
@@ -249,7 +250,7 @@
 	  (symbol-append sym ': (fqname (trace-id (car stack)) (cdr stack)))))
    
    (let* ((loc  (node-loc node))
-	  (aux  (mark-symbol-non-user! (gensym 'aux)))
+	  (aux  (mark-symbol-non-user! (gensym 'res)))
 	  (taux (make-typed-ident aux (type-id type)))
 	  (tmp1 (mark-symbol-non-user! (gensym 'name)))
 	  (tmp2 (mark-symbol-non-user! (gensym 'loc)))
@@ -383,7 +384,8 @@
    (if (isloop? node)
        (with-access::let-fun node (body locals loc)
 	  (let* ((var (car locals))
-		 (t (strict-node-type (node-type body) (variable-type var)))
+		 ;;(t (strict-node-type (node-type body) (variable-type var)))
+		 (t (variable-type var))
 		 (id (trace-id var)))
 	     (set! body (make-traced-node body t id loc '())))
 	  node)
@@ -489,7 +491,8 @@
 			     (var? value)
 			     (kwote? value)
 			     (pragma? value))))
-	    (let* ((t (strict-node-type (node-type value) (global-type variable)))
+	    (let* (;;(t (strict-node-type (node-type value) (global-type variable)))
+		   (t (global-type variable))
 		   (trace (make-traced-node value t (trace-id variable) loc '())))
 	       (set! value trace)))))
    node)

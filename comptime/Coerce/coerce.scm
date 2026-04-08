@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Coerce/coerce.scm                   */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Coerce/coerce.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Fri Feb  6 15:16:35 2026 (serrano)                */
+;*    Last change :  Wed Apr  8 08:08:39 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce implicity type coercions                               */
@@ -251,11 +251,16 @@
 ;*    coerce! ::cast ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::cast caller to safe)
-   (with-access::cast node (arg type)
-      (trace (coerce 2) "coerce-cast!: " (shape node) " -> " (shape to)
-	     #\Newline)
-      (set! arg (coerce! arg caller (get-type arg #f) safe))
-      (convert! node type to safe)))
+   (with-access::cast node (arg type checked)
+      (with-trace 'coerce "coerce! ::cast"
+	 (trace-item "node=" (shape node))
+	 (trace-item "type=" (shape type))
+	 (trace-item "safe=" safe)
+	 (trace-item "checked=" checked)
+	 (if checked
+	     (set! arg (convert! arg (get-type arg #f) type safe))
+	     (set! arg (coerce! arg caller (get-type arg #f) safe)))
+	 (convert! node type to safe))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::setq ...                                               */

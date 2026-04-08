@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Ast/node.scm                        */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/node.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Tue Feb 10 08:18:32 2026 (serrano)                */
+;*    Last change :  Wed Apr  8 08:13:11 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -196,7 +196,8 @@
 
 	   ;; the cast node
 	   (final-class cast::node
-	      ;; the casted node. 
+	      ;; the casted node
+	      (checked::bool (default #f))
 	      arg::node)
 
 	   ;; the affections

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Ast/private.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/private.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Fri Feb  6 15:21:52 2026 (serrano)                */
+;*    Last change :  Wed Apr  8 08:14:02 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -155,6 +155,7 @@
        (instantiate::cast
 	  (loc loc)
 	  (type (use-type! type loc))
+	  (checked #f)
 	  (arg (sexp->node exp stack loc site genv))))
       ((?- cast-null ?type)
        (instantiate::cast-null
