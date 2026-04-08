@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Wed Apr  8 08:17:58 2026 (serrano)                */
+;*    Last change :  Wed Apr  8 10:02:56 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -572,8 +572,13 @@
       ;; calls
       (((-> ?e (and ?f (? symbol?))) . ?args)
        (or (field-call->node e f args exp stack
-	      (find-location/loc exp loc) site genv)
+	      (find-location/loc (car exp) (find-location/loc exp loc))
+	      site genv)
 	   (call->node exp stack loc site genv)))
+      (((-> ?e ?f . ?rest) . ?args)
+       (let* ((loc (find-location/loc (car exp) (find-location/loc exp loc)))
+	      (ref (sexp->node `(-> ,e ,f) stack loc 'value genv)))
+	  (sexp->node `((-> ,ref ,@rest) ,@args) stack loc site genv)))
       (else
        ;; this expression can be a function call or a typed pragma
        ;; form. We first check to see if it is a pragma. If it is not
