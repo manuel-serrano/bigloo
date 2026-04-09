@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Wed Apr  8 10:00:37 2026 (serrano)                */
+;*    Last change :  Thu Apr  9 10:34:22 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -87,7 +87,6 @@
 	    ((null? slots)
 	     node)
 	    ((not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-	     (tprint "X=" exp " " (shape klass) " " (shape node))
 	     (error-sexp->node "Static type is not a class" exp
 		(or (node-loc node) loc) genv))
 	    (else
@@ -101,7 +100,7 @@
 		       (loop node (slot-type slot) (cdr slots)))))))))
    
    (let* ((l2 (source->field l))
-	  (node (sexp->node (car l2) stack loc site genv)))
+	  (node (sexp->node (car l2) stack (find-location/loc l loc) site genv)))
       (cond
 	 ((cast? node)
 	  (with-access::cast node (arg type)
