@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Tue Mar 10 10:29:01 2026 (serrano)                */
+;*    Last change :  Thu Apr  9 18:54:22 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -21,4 +21,5 @@
    (export :version 4 "../Llib/css.scm")
    (export :version 4 "../Llib/css_ast.scm")
    (export :version 4 "../Llib/date.scm")
-   (export :version 4 "../Llib/json.scm"))
+   (export :version 4 "../Llib/json.scm")
+   (export :version 4 "../Llib/markdown.scm"))

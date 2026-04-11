@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan  1 17:24:51 2001                          */
-/*    Last change :  Wed Mar 25 13:26:20 2026 (serrano)                */
+/*    Last change :  Sun Apr  5 09:16:34 2026 (serrano)                */
 /*    Copyright   :  2001-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Automatic Bigloo Java module clause generation (by               */
@@ -317,6 +317,32 @@ public abstract class jigloo {
 
       if (!superEmit) {
 	 return name;
+      } else {
+	 String cname = name;
+	 Class the_super = a_class.getSuperclass();
+
+	 if (the_super == null) {
+	    return cname;
+	 } else {
+	    String super_name = the_super.getName();
+	    String spkg = the_super.getPackage().getName();
+	    String sup = super_name;
+
+	    if (sup.equals("Object")) {
+	       return cname;
+	    } else {
+	       return cname + "::" + sup;
+	    }
+	 }
+      }
+   }
+      
+   static String classTypedName_TBR(Class a_class) {
+      String pkg = stripPackage ? a_class.getPackage().getName() : null;
+      String name = a_class.getName();
+
+      if (!superEmit) {
+	 return unpackage(name, pkg);
       } else {
 	 String cname = unpackage(name, pkg);
 	 Class the_super = a_class.getSuperclass();

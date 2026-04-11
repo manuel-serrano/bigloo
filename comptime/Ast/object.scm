@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Wed Apr  8 10:00:37 2026 (serrano)                */
+;*    Last change :  Sat Apr 11 10:47:11 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -206,7 +206,6 @@
 	  (ty (get-type ne #t)))
       (cond
 	 ((not (or (tclass? ty) (jclass? ty) (wclass? ty)))
-	  (tprint "E=" e)
 	  (error-sexp->node "XStatic type is not a class" x loc genv))
 	 ((jclass? ty)
 	  (with-access::jclass ty (id)
