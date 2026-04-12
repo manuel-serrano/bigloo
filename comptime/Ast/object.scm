@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Sat Apr 11 10:47:38 2026 (serrano)                */
+;*    Last change :  Sun Apr 12 18:55:04 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -87,7 +87,6 @@
 	    ((null? slots)
 	     node)
 	    ((not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-	     (tprint "X=" exp " " (shape klass) " " (shape node))
 	     (error-sexp->node "Static type is not a class" exp
 		(or (node-loc node) loc) genv))
 	    (else
