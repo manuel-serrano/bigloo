@@ -188,8 +188,6 @@ api/srfi18/src/Misc/srfi18.init
 # ssl
 api/ssl/src/C/bglssl.h
 api/ssl/src/C/ssl.h
-api/ssl/src/Java/ssl_client_socket.java
-api/ssl/src/Java/ssl_server_socket.java
 api/ssl/src/Misc/ssl.init
 
 # wav
