@@ -1,11 +1,11 @@
 ;; -*- eval: (bee-mode) -*-
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/runtime.wat        */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Wlib/runtime.wat        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Thu Sep 11 10:59:41 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Tue Apr 14 06:21:49 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
 ;*=====================================================================*/
@@ -579,4 +579,8 @@
 	     (else (i32.const 0))))
       
       (return (local.get $val)))
+
+   (func $exit (export "exit")
+      (param $val i32)
+      (call $js_exit (local.get $val)))
    )

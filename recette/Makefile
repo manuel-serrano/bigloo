@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Mon Apr 13 18:41:58 2026 (serrano)                */
+#*    Last change :  Tue Apr 14 06:35:22 2026 (serrano)                */
 #*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -46,7 +46,7 @@ BCFLAGS         = -afile .afile-c
 BJVMFLAGS       = $(BFLAGS) -afile .afile-jvm -jfile .jfile-jvm -g
 BPURIFYJVMFLAGS	=
 
-BWASMFLAGS      = $(BFLAGS) -afile .afile-wasm -g
+BWASMFLAGS      = $(BFLAGS) -afile .afile-wasm -g $(EWASMFLAGS)
 
 #*---------------------------------------------------------------------*/
 #*    Les objects destinations                                         */
