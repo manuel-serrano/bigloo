@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/pairlist.scm       */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/pairlist.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Fri Jul 18 15:59:15 2025 (serrano)                */
+;*    Last change :  Mon Apr 13 17:33:35 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -644,9 +644,13 @@
    (let loop ((list list)
 	      (k k)
 	      (res '()))
-      (if (zerofx? k)
-	  (reverse! res)
-	  (loop (cdr list) (-fx k 1) (cons (car list) res)))))
+      (cond
+	 ((zerofx? k)
+	  (reverse! res))
+	 ((null? list)
+	  (reverse! res))
+	 (else
+	  (loop (cdr list) (-fx k 1) (cons (car list) res))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    drop ...                                                         */

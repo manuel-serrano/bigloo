@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Mar 10 09:51:55 2026 (serrano)                */
+#*    Last change :  Thu Apr  9 17:38:35 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -45,7 +45,7 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= xml css css_ast css_lexer css_parser cgi rss atom feeds \
-                  html webdav date json
+                  html webdav date json markdown
 _BGL5_OBJECTS	= make_lib5
 
 _OBJECTS	= $(_BGL_OBJECTS) $(_BGL5_OBJECTS)

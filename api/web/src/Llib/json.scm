@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Wed Apr  1 13:47:10 2026 (serrano)                */
+;*    Last change :  Thu Apr  9 11:06:31 2026 (serrano)                */
 ;*    Copyright   :  2014-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -13,22 +13,27 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __web_json
-
+   
    (option (set! *unsafe-type* #t)
-	   (set! *unsafe-arity* #t))
-
+      (set! *unsafe-arity* #t))
+   
    (export (json-parse ::input-port #!key
-              (array-alloc (lambda () (make-cell '()))) 
-              (array-set (lambda (a i v) (cell-set! a (cons v (cell-ref a)))))
-              (array-return (lambda (a i) (list->vector (reverse! (cell-ref a)))))
-              (object-alloc (lambda ()  (make-cell '()))) 
-              (object-set (lambda (obj key value) (cell-set! obj 
-                                                     (cons (cons key value)
-                                                        (cell-ref obj)))))
-              (object-return (lambda (obj)  (cell-ref obj)))
+              (array-alloc (lambda ()
+			      (make-cell '()))) 
+              (array-set (lambda (a i v)
+			    (cell-set! a (cons v (cell-ref a)))))
+              (array-return (lambda (a i)
+			       (list->vector (reverse! (cell-ref a)))))
+              (object-alloc (lambda ()
+			       (make-cell '()))) 
+              (object-set (lambda (obj key value)
+			     (cell-set! obj
+				(cons (cons key value) (cell-ref obj)))))
+              (object-return (lambda (obj)
+				(cell-ref obj)))
               (parse-error #f)
 	      (undefined #t) reviver expr
-	      constant-alloc string-alloc)
+	      constant-alloc string-alloc propname-alloc)
            (read-json #!optional (port::input-port (current-input-port)))
 	   (obj->json ::obj ::output-port ::procedure)
 	   (json-stringify ::obj)))
@@ -194,7 +199,7 @@
            (object-return (lambda (obj)  (cell-ref obj)))
            (parse-error #f)
            (undefined #t) reviver expr
-	   constant-alloc string-alloc)
+	   constant-alloc string-alloc propname-alloc)
    
    (define (check-procedure proc arity name)
       (unless (and (procedure? proc) (correct-arity? proc arity))
@@ -268,7 +273,7 @@
 	    (case (car token)
 	       ((STRING)
 		(parse-token 'COLON)
-		(let* ((key (cadr token))
+		(let* ((key (property-name (cadr token)))
 		       (val (parse-text #f)))
 		   (if reviver
 		       (let ((res (reviver object key val)))
@@ -299,6 +304,11 @@
 		(unless (eq? (car token) end)
 		   (parse-token-error token))
 		*eot*)))))
+
+   (define (property-name pname)
+      (if (procedure? propname-alloc)
+	  (propname-alloc pname)
+	  pname))
    
    (check-procedure array-alloc 0 :array-alloc)
    (check-procedure array-set 3 :array-set)

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Fri Feb 13 10:59:48 2026 (serrano)                */
+#*    Last change :  Mon Apr 13 18:41:58 2026 (serrano)                */
 #*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -170,7 +170,7 @@ wasm: objs_wasm .afile-wasm
 wasm-static: objs_wasm .afile-wasm
 	$(MAKE) recette-wasm-static
 
-recette-wasm: $(WASM_OBJECTS:%=objs_wasm/%) objs_wasm/main.wasm
+recette-wasm: $(WASM_OBJECTS:%=objs_wasm/%) #objs_wasm/main.wasm
 	$(BIGLOO) -wasm $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette.wasm $^
 	@ echo "\e[1;36mrecette.wasm\e[0m done."
 

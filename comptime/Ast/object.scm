@@ -4,6 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
 ;*    Last change :  Thu Apr  9 10:34:22 2026 (serrano)                */
+;*    Last change :  Sun Apr 12 18:55:04 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
@@ -205,8 +206,7 @@
 	  (ty (get-type ne #t)))
       (cond
 	 ((not (or (tclass? ty) (jclass? ty) (wclass? ty)))
-	  (tprint "E=" e)
-	  (error-sexp->node "XStatic type is not a class" x loc genv))
+	  (error-sexp->node "Static type is not a class" x loc genv))
 	 ((jclass? ty)
 	  (with-access::jclass ty (id)
 	     (let ((m (find-method ty field)))

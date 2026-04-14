@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Apr  1 12:34:17 2026 (serrano)                */
+;*    Last change :  Mon Apr 13 11:01:31 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -317,61 +317,61 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string?@ ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (string? obj)
+(define-inline (string?::bool obj)
    ($string? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-null? ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (string-null? str)
+(define-inline (string-null?::bool str)
    (=fx (string-length str) 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn make-string@ ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-string k #!optional (char #\space))
+(define-inline (make-string::bstring k #!optional (char #\space))
    ($make-string k char))
  
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string@ ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (string . chars)
+(define-inline (string::bstring . chars)
    (list->string chars))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-length@ ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (string-length string)
+(define-inline (string-length::long string::bstring)
    ($string-length string))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ref@ ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (string-ref string k)
+(define-inline (string-ref::uchar string::bstring k::long)
    ($string-ref string k))
  
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-set!@ ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (string-set! string k char)
+(define-inline (string-set! string::bstring k::long char::uchar)
    ($string-set! string k char))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ref-ur@ ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (string-ref-ur string k)
+(define-inline (string-ref-ur::uchar string::bstring k::long)
    ($string-ref-ur string k))
  
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-set-ur!@ ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (string-set-ur! string k char)
+(define-inline (string-set-ur! string::bstring k::long char::uchar)
    ($string-set-ur! string k char))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string=?@ ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (string=? string1 string2)
+(define-inline (string=?::bool string1::bstring string2::bstring)
    (cond-expand
       (bigloo-c
        (let ((l1 (string-length string1)))
@@ -385,7 +385,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring=?@ ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (substring=? string1 string2 len)
+(define-inline (substring=?::bool string1::bstring string2::bstring len::long)
    ($substring=? string1 string2 len))
 
 ;*---------------------------------------------------------------------*/
@@ -1370,7 +1370,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-char-index ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (string-char-index string char #!optional (start 0) (count -1))
+(define (string-char-index string::bstring char::char #!optional (start 0) (count -1))
    (let* ((len (string-length string))
 	  (n (if (and (integer? count)
 		      (>=fx count 0) (<=fx count (-fx len start)))
@@ -1382,7 +1382,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-index ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (string-index string rs #!optional (start 0))
+(define (string-index string::bstring rs #!optional (start 0))
    (cond
       ((char? rs)
        (string-char-index string rs start))
