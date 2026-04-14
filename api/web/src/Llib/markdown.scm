@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 17:38:56 2026                          */
-;*    Last change :  Mon Apr 13 17:30:06 2026 (serrano)                */
+;*    Last change :  Tue Apr 14 19:08:39 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Markdown parser                                                  */
@@ -1541,7 +1541,8 @@
    (define (el->html el m)
       (case (ctor-tag el)
 	 ((text)
-	  (display (ctor-children el) op))
+	  (let ((v (ctor-children el)))
+	     (display (if (string? v) (html-string-encode v) v) op)))
 	 ((p)
 	  (if (null? (ctor-children el))
 	      (disp m "<p/>\n")

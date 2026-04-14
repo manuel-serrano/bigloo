@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/web/src/Llib/html.scm            */
+;*    serrano/prgm/project/bigloo/5.0a/api/web/src/Llib/html.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Mon Nov 27 08:42:47 2017 (serrano)                */
-;*    Copyright   :  2005-17 Manuel Serrano                            */
+;*    Last change :  Tue Apr 14 19:15:27 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
 ;*=====================================================================*/
@@ -116,6 +116,7 @@
 ;*    html-string-encode ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (html-string-encode str)
+   
    (define (count str ol)
       (let loop ((i 0)
 		 (n 0))
@@ -131,6 +132,19 @@
 		    (loop (+fx i 1) (+fx n 4)))
 		   (else
 		    (loop (+fx i 1) (+fx n 1))))))))
+
+   (define (html-entity str i)
+      (let ((len (string-length str)))
+	 (unless (=fx i (-fx len 1))
+	    (when (char-alphabetic? (string-ref str i))
+	       (let loop ((i i))
+		  (unless (=fx i len)
+		     (let ((c (string-ref str i)))
+			(cond
+			   ((char=? c #\;) (+fx i 1))
+			   ((char-alphabetic? c) (loop (+fx i 1)))
+			   (else #f)))))))))
+      
    (define (encode str ol nl)
       (if (=fx nl ol)
 	  str
@@ -148,8 +162,14 @@
 			   (blit-string! "&gt;" 0 res j 4)
 			   (loop (+fx i 1) (+fx j 4)))
 			  ((#\&)
-			   (blit-string! "&amp;" 0 res j 5)
-			   (loop (+fx i 1) (+fx j 5)))
+			   (let ((k (html-entity str (+fx i 1))))
+			      (if k
+				  (begin
+				     (blit-string! str i res j (-fx k i))
+				     (loop k (+fx j (-fx k i))))
+				  (begin
+				     (blit-string! "&amp;" 0 res j 5)
+				     (loop (+fx i 1) (+fx j 5))))))
 			  ((#\')
 			   (blit-string! "&#39;" 0 res j 5)
 			   (loop (+fx i 1) (+fx j 5)))
