@@ -1,0 +1,172 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0a/test/vector.bgl                 */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Tue Apr 14 08:32:16 2026                          */
+;*    Last change :  Tue Apr 14 09:25:01 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing vector functions                                         */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    vector                                                           */
+;*---------------------------------------------------------------------*/
+(module vector
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "vector" tests))
+      (test-all verbose "vector")))
+
+;*---------------------------------------------------------------------*/
+;*    tests ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-test vector? (vector? '#())
+   :expected #t)
+(define-test vector? (vector? '#(1))
+   :expected #t)
+(define-test vector? (vector? '(1))
+   :expected #f)
+(define-test vector-ref (vector-ref '#(1 2 3 4) 2)
+   :expected 3)
+(define-test vector-set!
+   (let ((v (make-vector 1 '())))
+      (vector-set! v 0 'toto)
+      (vector-ref  v 0))
+   :expected 'toto)
+(define-test vector-length (vector-length '#(1 2 3 4 5))
+   :expected 5)
+(define-test vector-length (vector-length (make-vector 5 'toto))
+   :expected 5)
+(define-test make-vector
+   (let ((v (make-vector 3 '())))
+      (vector-set! v 0 '(1 2 3))
+      (vector-set! v 1 '#(1 2 3))
+      (vector-set! v 2 'hello)
+      v)
+   :expected 
+   '#((1 2 3) #(1 2 3) hello))
+(define-test vector-fill!
+   (let ((v (make-vector 3 1)))
+      (vector-fill! v 2)
+      (+ (vector-ref v 0)
+	 (vector-ref v 1)
+	 (vector-ref v 2)))
+   :expected 6)
+(define-test vector-fill!
+   (let ((v (make-vector 3 1)))
+      (vector-fill! v 2 1)
+      (vector->list v))
+   :expected '(1 2 2))
+(define-test vector-fill!
+   (let ((v (make-vector 3 1)))
+      (vector-fill! v 2 1 2)
+      (vector->list v))
+   :expected '(1 2 1))
+(define-test vector-fill!
+   (let ((v (make-vector 3 1)))
+      (vector-fill! v 2 1 3)
+      (vector->list v))
+   :expected '(1 2 2))
+(define-test tvector
+   (let ((t '#(1 2 3)))
+      (vector-ref t 2))
+   :expected 3)
+(define-test vector-ref (vector-ref (let ((v (vector 0 1 2))) v) 2)
+   :expected 2)
+(define-test sort (sort < '#(5 3 4 2 1))
+   :expected '#(1 2 3 4 5))
+(define-test sort (sort '#(5 3 4 2 1) <)
+   :expected '#(1 2 3 4 5))
+(define-test vector-append (vector-append '#() '#())
+   :expected '#())
+(define-test vector-append (vector-append '#())
+   :expected '#())
+(define-test vector-append (vector-append '#(a))
+   :expected '#(a))
+(define-test vector-append (vector-append '#(a b) '#(c d))
+   :expected '#(a b c d))
+(define-test vector-append (vector-append '#(a b) '#(c d) '#())
+   :expected '#(a b c d))
+(define-test vector-append (vector-append '#(a b) '#(c d) '#(e))
+   :expected '#(a b c d e))
+(define-test vector-map (vector-map (lambda (x) (+ 1 x)) '#(1 2 3))
+   :expected '#(2 3 4))
+(define-test vector-map (vector-map (lambda (x y) (+ x y)) '#(1 2 3) '#(4 5 6))
+   :expected '#(5 7 9))
+
+(let ((v (vector 1 2 3)))
+   (vector-map! (lambda (x) (+ 1 x)) v)
+   (define-test vector-map! v
+      :expected '#(2 3 4)))
+(let* ((v (vector 1 2 3))
+       (v2 (vector 0)))
+   (vector-copy! v2 0 v 1 2)
+   (define-test vector-copy! v2
+      :expected '#(2)))
+(let ((v (vector 1 2 3 4 5 6 7 8)))
+   (vector-copy! v 4 v 0 4)
+   (define-test vector-copy! v
+      :expected '#(1 2 3 4 1 2 3 4)))
+(let ((v (vector 1 2 3 4 5 6 7 8)))
+   (vector-copy! v 4 v 0 4)
+   (vector-copy! v 2 v 0 6)
+   (define-test vector-copy!
+      v
+      :expected '#(1 2 1 2 3 4 1 2)))
+   
+(let ((n 0))
+   (vector-for-each (lambda (x) (set! n (+ n x))) '#(0 1 2))
+   (define-test vector-for-each n
+      :expected 3))
+(let ((n 0))
+   ((car (list vector-for-each)) (lambda (x) (set! n (+ n x))) '#(0 1 2))
+   (define-test vector-for-each n
+      :expected 3))
+   
+(let ((n 0))
+   (vector-for-each (lambda (x y) (set! n (+ n (+ x y)))) '#(0 1 2) '#(1 2 3))
+   (define-test vector-for-each n
+      :expected 9))
+(let ((n 0))
+   ((car (list vector-for-each)) (lambda (x y) (set! n (+ n (+ x y)))) '#(0 1 2) '#(1 2 3))
+   (define-test vector-for-each n
+      :expected 9))
+   
+(let ((v (vector-map (lambda (x) (+ 1 x)) '#(0 1 2))))
+   (define-test vector-map v
+      :expected '#(1 2 3)))
+(let ((v ((car (list vector-map)) (lambda (x) (+ 1 x)) '#(0 1 2))))
+   (define-test vector-map v
+      :expected '#(1 2 3)))
+   
+(let ((v (vector-map (lambda (x y) (+ x y)) '#(0 1 2) '#(1 2 3))))
+   (define-test vector-map v
+      :expected '#(1 3 5)))
+(let ((v ((car (list vector-map)) (lambda (x y) (+ x y)) '#(0 1 2) '#(1 2 3))))
+   (define-test vector-map v
+      :expected '#(1 3 5)))
+   
+(let ((v (vector-map! (lambda (x) (+ 1 x)) (vector 0 1 2))))
+   (define-test vector-map! v
+      :expected '#(1 2 3)))
+(let ((v ((car (list vector-map!)) (lambda (x) (+ 1 x)) (vector 0 1 2))))
+   (define-test vector-map! v
+      :expected '#(1 2 3)))
+   
+(let ((v (vector-map! (lambda (x y) (+ x y)) (vector 0 1 2) '#(1 2 3))))
+   (define-test vector-map! v
+      :expected '#(1 3 5)))
+(let ((v ((car (list vector-map!)) (lambda (x y) (+ x y)) (vector 0 1 2) '#(1 2 3))))
+   (define-test vector-map! v
+      :expected '#(1 3 5)))
+

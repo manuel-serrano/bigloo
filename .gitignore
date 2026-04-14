@@ -97,6 +97,11 @@ runtime/Wlib/wfixnum.wat
 # recette
 recette/objs_c
 
+# test
+test/objs_c
+test/objs_wasm
+test/objs_jvm
+
 # jas
 bde/jas/as.scm
 bde/jas/classfile.scm 

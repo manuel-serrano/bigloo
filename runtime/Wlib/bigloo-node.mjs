@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/wasm/runtime/Wlib/bigloo-node.mjs        */
+/*    .../prgm/project/bigloo/5.0a/runtime/Wlib/bigloo-node.mjs        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Sep 11 08:44:13 2025 (serrano)                */
-/*    Copyright   :  2024-25 manuel serrano                            */
+/*    Last change :  Tue Apr 14 08:25:10 2026 (serrano)                */
+/*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
 /*=====================================================================*/

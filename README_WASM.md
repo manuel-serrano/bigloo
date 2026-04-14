@@ -42,6 +42,21 @@ with node.
 > functions. Currently there is no option for selecting another
 > JavaScript engine when invoking Bigloo.
 
+Debugging
+---------
+
+With nodejs and chromium:
+
+```
+NODEOPTEXTRA=--inspect-brk ./a.out
+```
+
+and browse (with chromium)
+
+```
+chrome://inspect
+```
+
 ## TODO
 
 + Integrate `bigloo-wasm-merge` directly to the WASM backend

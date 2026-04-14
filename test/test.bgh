@@ -1,0 +1,87 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0a/test/test.bgh                   */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:22:05 2026                          */
+;*    Last change :  Tue Apr 14 09:26:56 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing macros                                                   */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    all-tests ...                                                    */
+;*---------------------------------------------------------------------*/
+(define all-tests '())
+
+(define isatty (output-port-isatty? (current-output-port)))
+
+;*---------------------------------------------------------------------*/
+;*    define-test ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-expander define-test
+   (lambda (x e)
+      (match-case x
+	 ((define-test ?id ?expr . ?rest)
+	  `(set! all-tests
+	      (cons (cons ',id
+		       (lambda ()
+			  (check-test ',id
+			     ,(cadr (cer x))
+			     ,(caddr (cer x))
+			     ,(e expr e)
+			     ,@(map (lambda (x) (e x e)) rest))))
+		 all-tests)))
+	 (else
+	  (error "define-test" "Illegal form" x)))))
+
+;*---------------------------------------------------------------------*/
+;*    check-test ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (check-test id fname loc provided #!key (expected #t) (eq equal?))
+   (if (not (eq provided expected))
+       (error/location id "test failed"
+	  (format "expected: ~a, provided: ~a" expected provided)
+	  fname loc)))
+
+;*---------------------------------------------------------------------*/
+;*    color ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (color col::symbol . l)
+   (if isatty
+       (let ((col (case col
+		     ((ok) 33)
+		     ((fail) 32)
+		     (else 31))))
+	  (format "[0m[1;~am~()[0m" col l))
+       (if (and (pair? l) (null? (cdr l)))
+	   (car l)
+	   (format "~()" l))))
+
+;*---------------------------------------------------------------------*/
+;*    test-all ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (test-all verbose section::bstring)
+   (if verbose
+       (print (color 'test section) "...")
+       (display* section "..."))
+   (let ((success 0)
+	 (failures 0))
+      (for-each (lambda (t)
+		   (with-handler
+		      (lambda (e)
+			 (exception-notify e)
+			 (when verbose (print (color 'fail "failure")))
+			 (set! failures (+fx failures 1)))
+		      (begin
+			 (when verbose (display* "  " (car t) "..."))
+			 ((cdr t))
+			 (when verbose (print (color 'ok "ok")))
+			 (set! success (+fx success 1)))))
+	 (reverse all-tests))
+      (unless verbose
+	 (if (=fx failures 0)
+	     (print (color 'ok "ok"))
+	     (print failures (color 'fail " failed"))))
+      (cons success failures)))
+      

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/tvector.scm        */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/tvector.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Mon Oct 20 14:20:28 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Apr 14 08:59:08 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
 ;*=====================================================================*/
@@ -20,6 +20,7 @@
    (import  engine_param
 	    module_type
 	    module_pragma
+	    module_module
 	    backend_backend
 	    type_type
 	    type_cache
@@ -75,6 +76,7 @@
 	     #\Newline "tvector-optimization! :" #\Newline
 	     (shape *make-vector-list*)
 	     #\Newline)
+	  (install-module-clauses-compiler!)
 	  (inline-setup! 'all)
 	  (multiple-value-bind (vectors tvectors)
 	     (collect-tvectors)
