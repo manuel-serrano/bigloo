@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Tue Apr 14 07:33:25 2026 (serrano)                */
+;*    Last change :  Wed Apr 15 14:11:16 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing string functions                                         */
@@ -21,6 +21,13 @@
 (include "test.bgh")
 
 ;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "string" tests))
+      (test-all verbose "string")))
+
+;*---------------------------------------------------------------------*/
 ;*    8bits->7bits ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (8bits->7bits string::bstring)
@@ -30,27 +37,27 @@
              string
              (begin 
                 (case (string-ref string i)
-                   ((#\È #\Ë)
+                   ((#\√© #\√®)
                     (string-set! string i #\e))
-                   ((#\… #\»)
+                   ((#\√â #\√à)
                     (string-set! string i #\E))
-                   ((#\‡)
+                   ((#\√†)
                     (string-set! string i #\a))
-                   ((#\¿)
+                   ((#\√Ä)
                     (string-set! string i #\A))
-                   ((#\˚ #\¸)
+                   ((#\√ª #\√º)
                     (string-set! string i #\u))
-                   ((#\€ #\‹)
+                   ((#\√õ #\√ú)
                     (string-set! string i #\U))
-                   ((#\Ó #\Ô)
+                   ((#\√Æ #\√Ø)
                     (string-set! string i #\i))
-                   ((#\Œ #\œ)
+                   ((#\√é #\√è)
                     (string-set! string i #\I))
-                   ((#\ˆ #\Ù)
+                   ((#\√∂ #\√¥)
                     (string-set! string i #\o))
-                   ((#\÷ #\‘)
+                   ((#\√ñ #\√î)
                     (string-set! string i #\O))
-                   ((#\Á)
+                   ((#\√ß)
                     (string-set! string i #\c))
                    ((#\C)
                     (string-set! string i #\C)))
@@ -170,6 +177,11 @@
 (define-test string-append (string-append "toto" " n'est" " pas" " content")
    :expected "toto n'est pas content")
 (define-test string-upcase (string-upcase "toto TOTO ToTo") :expected "TOTO TOTO TOTO")
+(define-test string-upcase! (let ((s "toto TOTO ToTo")) (string-upcase! s) s) :expected "TOTO TOTO TOTO")
+(define-test string-downcase (string-downcase "toto TOTO ToTo") :expected "toto toto toto")
+(define-test string-downcase! (let ((s "toto TOTO ToTo")) (string-dowcase! s) s) :expected "toto toto toto")
+(define-test string-capitalize (string-capitalize "toto TOTO ToTo") :expected "Toto Toto Toto")
+(define-test string-capitalize! (let ((s "toto TOTO ToTo")) (string-capitalize s) s) :expected "Toto Toto Toto")
 (define-test string-ci=? (string-ci=? "Toto" "tOtO") :expected #t)
 
 (define-test string-copy (string-copy (make-string 3 #\6))
@@ -217,11 +229,16 @@
 (define-test substring (substring "0123456789" 1 5)
    :expected "1234")
 
-(let ((dst (make-string 10 #\0))
-      (src (make-string 5 #\1)))
-   (define-test blit-string
-      (begin (blit-string! src 1 dst 1 3) dst)
-      :expected "0111000000"))
+(define-test blit-string!
+   (let ((dst (make-string 10 #\0))
+	 (src (make-string 5 #\1)))
+      (blit-string! src 1 dst 1 3) dst)
+   :expected "0111000000")
+(define-test blit-string!
+   (let ((s (make-string 20 #\-)))
+      (blit-string! "toto" 0 s 16 4)
+      s)
+   :expected "----------------toto")
 
 (define-test string<? (string<? "012345" "123456")
    :expected #t)
@@ -297,23 +314,23 @@
    :expected #f)
 (define-test substring-ci-at? (substring-ci-at? "abcdefghij" "defj" 3 -3)
    :expected #f)
-(define-test 8bits (8bits->7bits "…È»ËœÔ")
+(define-test 8bits (8bits->7bits "√â√©√à√®√è√Ø")
    :expected "EeEeIi")
-(define-test 8bits-string<? (string<? "abecd" "abÈcd")
+(define-test 8bits-string<? (string<? "abecd" "ab√©cd")
    :expected #t)
-(define-test 8bits-string<=? (string<=? "abecd" "abÈcd")
+(define-test 8bits-string<=? (string<=? "abecd" "ab√©cd")
    :expected #t)
-(define-test 8bits-string>? (string>? "abÈcd" "abecd")
+(define-test 8bits-string>? (string>? "ab√©cd" "abecd")
    :expected #t)
-(define-test 8bits-string>=? (string>=? "abÈcd" "abecd")
+(define-test 8bits-string>=? (string>=? "ab√©cd" "abecd")
    :expected #t)
-(define-test 8bits-string-ci<? (string-ci<? "abecd" "abÈcd")
+(define-test 8bits-string-ci<? (string-ci<? "abecd" "ab√©cd")
    :expected #t)
-(define-test 8bits-string-ci<=? (string-ci<=? "abecd" "abÈcd")
+(define-test 8bits-string-ci<=? (string-ci<=? "abecd" "ab√©cd")
    :expected #t)
-(define-test 8bits-string-ci>? (string-ci>? "abÈcd" "abecd")
+(define-test 8bits-string-ci>? (string-ci>? "ab√©cd" "abecd")
    :expected #t)
-(define-test 8bits-string-ci>=? (string-ci>=? "abÈcd" "abecd")
+(define-test 8bits-string-ci>=? (string-ci>=? "ab√©cd" "abecd")
    :expected #t)
 (define-test foreign (let ((x "\n\t\\\"")) (string->list x))
    :expected '(#\newline #\tab #\\ #\"))
@@ -356,8 +373,8 @@
    :expected (list->string '(#\f #\1 #\2 #\g)))
 (define-test escape "f\123g"
    :expected (list->string '(#\f #\S #\g)))
-(define-test escape8bits (list "bˆig")
-   :expected '("bˆig"))
+(define-test escape8bits (list "b√∂ig")
+   :expected '("b√∂ig"))
 
 (define-test trigraph "??-"
    :expected (string-append "?" "?" "-"))
@@ -377,39 +394,39 @@
 					"." (string (path-separator))
 					"/usr/local"))
    :expected '("/" "." "/usr/local"))
-(define-test string-compare3.1 (< (string-compare3 "abc" "def") 0)
+(define-test string-compare3 (< (string-compare3 "abc" "def") 0)
    :expected #t)
-(define-test string-compare3.2 (> (string-compare3 "def" "abc") 0)
+(define-test string-compare3 (> (string-compare3 "def" "abc") 0)
    :expected #t)
-(define-test string-compare3.3 (= (string-compare3 "def" "abc") 0)
+(define-test string-compare3 (= (string-compare3 "def" "abc") 0)
    :expected #f)
-(define-test string-compare3.4 (= (string-compare3 "def" "def") 0)
+(define-test string-compare3 (= (string-compare3 "def" "def") 0)
    :expected #t)
-(define-test string-compare3.5 (< (string-compare3 "abc" "abci") 0)
+(define-test string-compare3 (< (string-compare3 "abc" "abci") 0)
    :expected #t)
-(define-test string-compare3.6 (< (string-compare3 "abc" "abd") 0)
+(define-test string-compare3 (< (string-compare3 "abc" "abd") 0)
    :expected #t)
-(define-test string-compare3.7 (> (string-compare3 "abci" "abc") 0)
+(define-test string-compare3 (> (string-compare3 "abci" "abc") 0)
    :expected #t)
-(define-test string-compare3.8 (> (string-compare3 "abd" "abc") 0)
+(define-test string-compare3 (> (string-compare3 "abd" "abc") 0)
    :expected #t)
-(define-test string-compare3.8 (> (string-compare3 "abd" "abc") 0)
+(define-test string-compare3 (> (string-compare3 "abd" "abc") 0)
    :expected #t)
-(define-test string-compare3-ci.1 (< (string-compare3-ci "abc" "DeF") 0)
+(define-test string-compare3-ci (< (string-compare3-ci "abc" "DeF") 0)
    :expected #t)
-(define-test string-compare3-ci.2 (> (string-compare3-ci "def" "ABC") 0)
+(define-test string-compare3-ci (> (string-compare3-ci "def" "ABC") 0)
    :expected #t)
-(define-test string-compare3-ci.3 (= (string-compare3-ci "def" "ABC") 0)
+(define-test string-compare3-ci (= (string-compare3-ci "def" "ABC") 0)
    :expected #f)
-(define-test string-compare3-ci.4 (= (string-compare3-ci "def" "dEF") 0)
+(define-test string-compare3-ci (= (string-compare3-ci "def" "dEF") 0)
    :expected #t)
-(define-test string-compare3-ci.5 (< (string-compare3-ci "ABC" "AbCi") 0)
+(define-test string-compare3-ci (< (string-compare3-ci "ABC" "AbCi") 0)
    :expected #t)
-(define-test string-compare3-ci.6 (< (string-compare3-ci "abc" "ABD") 0)
+(define-test string-compare3-ci (< (string-compare3-ci "abc" "ABD") 0)
    :expected #t)
-(define-test string-compare3-ci.7 (> (string-compare3-ci "ABCI" "ABC") 0)
+(define-test string-compare3-ci (> (string-compare3-ci "ABCI" "ABC") 0)
    :expected #t)
-(define-test string-compare3-ci.8 (> (string-compare3-ci "aBd" "abc") 0)
+(define-test string-compare3-ci (> (string-compare3-ci "aBd" "abc") 0)
    :expected #t)
 (define-test output-string-port
    (let ((p (open-output-string)))
@@ -643,6 +660,8 @@
 (define-test string-suffix-length (string-suffix-length "ab" "-")
    :expected 0)
 
+(define-test string-suffix-length-ci (string-suffix-length-ci "Abcde" "fabcde")
+   :expected 5)
 (define-test string-prefix-length-ci (string-prefix-length-ci "AbCde" "abcdef")
    :expected 5)
 (define-test string-prefix-length-ci (string-prefix-length-ci "0ABCDE" "abcdef" 1)
@@ -794,11 +813,11 @@
 (define-test string-skip-right (string-skip-right "foobar-gee" "fobar-ge")
    :expected #f)
 
-(define-test string-natural-compare3.1 (string-natural-compare3 "foo" "foo")
+(define-test string-natural-compare3 (string-natural-compare3 "foo" "foo")
    :expected 0)
-(define-test string-natural-compare3.2 (string-natural-compare3 "foo0" "foo1")
+(define-test string-natural-compare3 (string-natural-compare3 "foo0" "foo1")
    :expected -1)
-(define-test string-natural-compare3.3 (string-natural-compare3 "foo1" "foo0")
+(define-test string-natural-compare3 (string-natural-compare3 "foo1" "foo0")
    :expected 1)
 (define-test string-natural<? (string-natural<? "rfc1.txt" "rfc822.txt")
    :expected #t)
@@ -933,10 +952,35 @@
 (define-test string-trim-right (string-trim-right "  The outlook wasn't brilliant,  \n\r")
    :expected "  The outlook wasn't brilliant,")
 
-;*---------------------------------------------------------------------*/
-;*    test ...                                                         */
-;*---------------------------------------------------------------------*/
-(define (test verbose tests::pair-nil)
-   (when (or (null? tests) (member "string" tests))
-      (test-all verbose "string")))
-   
+(define-test string-shrink! (string-shrink! (string-append "abc" "def") 4)
+   :expected "abcd")
+
+(define-test string-fill! (string-fill! (string-append "abc" "de") #\-)
+   :expected "-----")
+
+(define-test string-replace (string-replace "foo-bar" #\- #\_)
+   :expected "foo_bar")
+(define-test string-replace! (let ((s (string-append "foo" "-bar")) (string-replace! s #\- #\_) s))
+   :expected "foo_bar")
+
+(define-test string-split (string-split "foo  bar gee")
+   :expected '("foo" "bar" "gee"))
+(define-test string-cut (string-split "foo  bar gee")
+   :expected '("foo" "" "bar" "gee"))
+
+(define-test string-hex-intern (string-hex-intern "4a4b4c")
+   :expected "JKL")
+(define-test string-hex-intern! (let ((s (string-append "4a4b" "4c"))) (string-hex-intern! s) s)
+   :expected "JKL")
+
+(define-test string-hex-extern (string-hex-intern "JKL")
+   :expected "4a4b4c")
+
+(define-test string-trim (string-trim "  foo bar ")
+   :expected "foo bar ")
+
+(define-test string-trim-right (string-trim-right "  foo bar ")
+   :expected "   foo bar")
+
+(define-test string-trim-both (string-trim-both "  foo bar ")
+   :expected "foo bar")

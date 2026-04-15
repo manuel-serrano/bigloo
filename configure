@@ -133,9 +133,9 @@ jflags=
 jvflags=-noverify
 jshell=sh
 
-#*--- Java back-end user configuration --------------------------------*/
+#*--- Wasm back-end user configuration --------------------------------*/
 wasmbackend=no # set to "no" not to install the Wasm back-end
-wasmas=
+wasmas=wasm-as
 wasmopt=wasm-opt
 wasmjs=nodejs
 wasmfixnum=31
