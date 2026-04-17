@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Fri Apr 17 06:52:04 2026 (serrano)                */
+;*    Last change :  Wed Apr  8 10:02:56 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -47,7 +47,8 @@
 	    ast_ident
 	    effect_feffect)
    
-   (export  (top-level-sexp->node::node <sexp> ::obj ::obj)
+   (export  (if-sym)
+	    (top-level-sexp->node::node <sexp> ::obj ::obj)
 	    (sexp->node::node ::obj <obj> ::obj ::symbol ::obj)
 	    (sexp*->node::pair-nil ::pair-nil <obj> ::obj ::symbol ::obj)
 	    (define-primop-ref->node::node ::global ::node ::obj)
@@ -75,6 +76,23 @@
 ;*    *sites* ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define *sites* '(value apply app set! test))
+
+;*---------------------------------------------------------------------*/
+;*    *if* ...                                                         */
+;*---------------------------------------------------------------------*/
+(define *if* (gensym 'if))
+
+;*---------------------------------------------------------------------*/
+;*    if-sym ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (if-sym)
+   *if*)
+
+;*---------------------------------------------------------------------*/
+;*    if-sym? ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (if-sym? sym)
+   (eq? sym *if*))
 
 ;*---------------------------------------------------------------------*/
 ;*    proc-or-lambda? ...                                              */
@@ -210,18 +228,19 @@
 	   (error-sexp->node "Illegal `quote' expression" exp loc genv))))
       ;; begin
       ((begin . ?body)
-       (let ((loc (find-location/loc exp loc)))
+       (let* ((loc (find-location/loc exp loc)))
 	  (if (null? body)
-	      (sexp->node #unspecified stack loc site genv)      
-	      (let ((nodes (sexp*->node body stack loc site genv)))
-		 (instantiate::sequence
-		    (loc loc)
-		    (type *_*)
-		    (nodes nodes))))))
+	      (sexp->node #unspecified stack loc site genv))
+	  (let ((nodes (sexp*->node body stack loc site genv)))
+	     (instantiate::sequence
+		(loc loc)
+		(type *_*)
+		(nodes nodes)))))
       ;; if
-      ((and (if ?test #t #f) (? (lambda (x) (eq? site 'test))))
+      ((and ((or if (? if-sym?)) ?test #t #f)
+	    (? (lambda (x) (eq? site 'test))))
        (sexp->node test stack loc site genv))
-      ((if . ?-)
+      (((or if (? if-sym?)) . ?-)
        (match-case exp
           ((?- ?si ?alors ?sinon)
 	   (let ((nt (not-test si)))
@@ -269,7 +288,8 @@
 	   (error-sexp->node "Illegal `if' form" exp loc genv))))
       ;; set!
       ((set! . ?-)
-       (set!->node exp stack loc site genv))
+       (set!->node exp stack loc site genv)) 
+      
       ;; define
       ((define . ?-)
        ;; define is very similar to `set!' except that is it not
@@ -545,7 +565,7 @@
        (if (and (list? fields) (every symbol? fields))
 	   (field-set->node (cdr (cadr exp)) val exp stack loc site genv)
 	   (error-sexp->node "Illegal ->" exp loc genv)))
-      ((set! ?var ?val)
+      ((?- ?var ?val)
        (let* ((loc (find-location/loc exp loc))
 	      (cdloc (find-location/loc (cdr exp) loc))
 	      (cddloc (find-location/loc (cddr exp) loc))
@@ -687,7 +707,7 @@
 		   (else
 		    (application->node exp stack loc site genv))))
 	     (application->node exp stack loc site genv)))))
- 
+
 ;*---------------------------------------------------------------------*/
 ;*    sexp*->node ...                                                  */
 ;*---------------------------------------------------------------------*/
