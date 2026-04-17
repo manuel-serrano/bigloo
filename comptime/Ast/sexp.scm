@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Wed Apr  8 10:02:56 2026 (serrano)                */
+;*    Last change :  Fri Apr 17 06:52:04 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -47,8 +47,7 @@
 	    ast_ident
 	    effect_feffect)
    
-   (export  (if-sym)
-	    (top-level-sexp->node::node <sexp> ::obj ::obj)
+   (export  (top-level-sexp->node::node <sexp> ::obj ::obj)
 	    (sexp->node::node ::obj <obj> ::obj ::symbol ::obj)
 	    (sexp*->node::pair-nil ::pair-nil <obj> ::obj ::symbol ::obj)
 	    (define-primop-ref->node::node ::global ::node ::obj)
@@ -76,23 +75,6 @@
 ;*    *sites* ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define *sites* '(value apply app set! test))
-
-;*---------------------------------------------------------------------*/
-;*    *if* ...                                                         */
-;*---------------------------------------------------------------------*/
-(define *if* (gensym 'if))
-
-;*---------------------------------------------------------------------*/
-;*    if-sym ...                                                       */
-;*---------------------------------------------------------------------*/
-(define (if-sym)
-   *if*)
-
-;*---------------------------------------------------------------------*/
-;*    if-sym? ...                                                      */
-;*---------------------------------------------------------------------*/
-(define (if-sym? sym)
-   (eq? sym *if*))
 
 ;*---------------------------------------------------------------------*/
 ;*    proc-or-lambda? ...                                              */
@@ -227,20 +209,19 @@
           (else
 	   (error-sexp->node "Illegal `quote' expression" exp loc genv))))
       ;; begin
-      ((begin)
-       (sexp->node #unspecified stack (find-location/loc exp loc) site genv))
       ((begin . ?body)
-       (let* ((loc (find-location/loc exp loc))
-	      (nodes (sexp*->node body stack loc site genv)))
-	  (instantiate::sequence
-	     (loc loc)
-	     (type *_*)
-	     (nodes nodes))))
+       (let ((loc (find-location/loc exp loc)))
+	  (if (null? body)
+	      (sexp->node #unspecified stack loc site genv)      
+	      (let ((nodes (sexp*->node body stack loc site genv)))
+		 (instantiate::sequence
+		    (loc loc)
+		    (type *_*)
+		    (nodes nodes))))))
       ;; if
-      ((and ((or if (? if-sym?)) ?test #t #f)
-	    (? (lambda (x) (eq? site 'test))))
+      ((and (if ?test #t #f) (? (lambda (x) (eq? site 'test))))
        (sexp->node test stack loc site genv))
-      (((or if (? if-sym?)) . ?-)
+      ((if . ?-)
        (match-case exp
           ((?- ?si ?alors ?sinon)
 	   (let ((nt (not-test si)))
@@ -287,40 +268,8 @@
           (else
 	   (error-sexp->node "Illegal `if' form" exp loc genv))))
       ;; set!
-      ((set! (-> ?e . ?fields) ?val)
-       (if (and (list? fields) (every symbol? fields))
-	   (field-set->node (cdr (cadr exp)) val exp stack loc site genv)
-	   (error-sexp->node "Illegal ->" exp loc genv)))
       ((set! . ?-)
-       (match-case exp
-          ((?- ?var ?val)
-	   (let* ((loc (find-location/loc exp loc))
-		  (cdloc (find-location/loc (cdr exp) loc))
-		  (cddloc (find-location/loc (cddr exp) loc))
-		  (val-loc (find-location/loc val cddloc))
-		  (val (match-case val
-			  ((lambda . ?-)
-			   (lambda->node val stack val-loc 'value
-				(symbol->string var) genv))	    
-			  (else
-			   (sexp->node val stack val-loc 'value genv)))))
-	      (let ((ast (sexp->node var stack cdloc 'set! genv)))
-		 (if (var? ast)
-		     (with-access::var ast (variable)
-			(if (and (global? variable)
-				 (global-read-only? variable))
-			    (error-sexp->node
-			       "Read-only variable" exp cdloc genv)
-			    (instantiate::setq
-			       (loc loc)
-			       (type *unspec*)
-			       (var ast)
-			       (value val))))
-		     (error-sexp->node
-			"illegal `set!' expression" exp loc genv)))))
-          (else
-	   (error-sexp->node
-	      "Illegal `set!' form" exp (find-location/loc exp loc) genv))))
+       (set!->node exp stack loc site genv))
       ;; define
       ((define . ?-)
        ;; define is very similar to `set!' except that is it not
@@ -586,6 +535,44 @@
        ;; form (pragma::??? ...) (because we can't add a branch in the
        ;; match-case to check the node `pragma::???').
        (call->node exp stack loc site genv))))
+
+;*---------------------------------------------------------------------*/
+;*    set!->node ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (set!->node exp stack loc site genv)
+   (match-case exp
+      ((set! (-> ?e . ?fields) ?val)
+       (if (and (list? fields) (every symbol? fields))
+	   (field-set->node (cdr (cadr exp)) val exp stack loc site genv)
+	   (error-sexp->node "Illegal ->" exp loc genv)))
+      ((set! ?var ?val)
+       (let* ((loc (find-location/loc exp loc))
+	      (cdloc (find-location/loc (cdr exp) loc))
+	      (cddloc (find-location/loc (cddr exp) loc))
+	      (val-loc (find-location/loc val cddloc))
+	      (val (match-case val
+		      ((lambda . ?-)
+		       (lambda->node val stack val-loc 'value
+			  (symbol->string var) genv))	    
+		      (else
+		       (sexp->node val stack val-loc 'value genv)))))
+	  (let ((ast (sexp->node var stack cdloc 'set! genv)))
+	     (if (var? ast)
+		 (with-access::var ast (variable)
+		    (if (and (global? variable)
+			     (global-read-only? variable))
+			(error-sexp->node
+			   "Read-only variable" exp cdloc genv)
+			(instantiate::setq
+			   (loc loc)
+			   (type *unspec*)
+			   (var ast)
+			   (value val))))
+		 (error-sexp->node
+		    "illegal `set!' expression" exp loc genv)))))
+      (else
+       (error-sexp->node
+	  "Illegal `set!' form" exp (find-location/loc exp loc) genv))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lambda->node ...                                                 */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sun Mar  1 14:02:27 2026 (serrano)                */
+;*    Last change :  Fri Apr 17 06:58:44 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -1135,16 +1135,16 @@
 	  (msg (mark-symbol-non-user! (gensym)))
 	  (loc (find-location x)))
       (epairify-rec
-       `(,(let-sym) (,@(map (lambda (f v) (list f (e v e))) formals actuals)
-		       (,msg ,(string-append (symbol->string fun) ": argument not a "
-					     tname)))
-		    ,(let loop ((args formals))
-			(if (null? args)
-			    (cons fun formals)
-			    `(,(if-sym) (,pred ,(car args))
-					,(loop (cdr args))
-					,(err/loc loc fun msg (car args))))))
-       x)))
+	 `(,(let-sym) (,@(map (lambda (f v) (list f (e v e))) formals actuals)
+			 (,msg ,(string-append (symbol->string fun) ": argument not a "
+				   tname)))
+		      ,(let loop ((args formals))
+			  (if (null? args)
+			      (cons fun formals)
+			      `(if (,pred ,(car args))
+				   ,(loop (cdr args))
+				   ,(err/loc loc fun msg (car args))))))
+	 x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bound-check ...                                                  */
@@ -1157,14 +1157,14 @@
 	     (len (mark-symbol-non-user! (gensym)))
 	     (loc (find-location x)))
 	  (epairify-rec
-	   `(,(let-sym) ((,fobj ,(e aobj e))
-			 (,foff ,(e aoff e)))
-			(,(let-sym)
-			 ((,len (,flen ,fobj)))
-			 (,(if-sym) (,pred ,foff ,len)
-				    (,fun ,fobj ,foff ,@(map (lambda (x) (e x e)) rest))
-				    ,(err/loc loc fun "index out of bound" foff))))
-	   x)))
+	     `(,(let-sym) ((,fobj ,(e aobj e))
+			   (,foff ,(e aoff e)))
+			  (,(let-sym)
+			   ((,len (,flen ,fobj)))
+			   (if (,pred ,foff ,len)
+			       (,fun ,fobj ,foff ,@(map (lambda (x) (e x e)) rest))
+			       ,(err/loc loc fun "index out of bound" foff))))
+	     x)))
       (else
        (error #f "Illegal expression" x))))
 
@@ -1185,12 +1185,12 @@
 	     (msge (string-append (symbol->string op) ": argument not a list")))
 	  (if (or (= arity 1) (= arity -1))
 	      (epairify-rec 
-	       `(,(let-sym) ((,tmp ,(e actual e))
-			     (,ufun ,(e fun e)))
-			    (,(if-sym) (list? ,tmp)
-				       (,op ,ufun ,tmp)
-				       ((@ error  __error) #f ,msge ,tmp)))
-	       x)
+		 `(,(let-sym) ((,tmp ,(e actual e))
+			       (,ufun ,(e fun e)))
+			      (if (list? ,tmp)
+				  (,op ,ufun ,tmp)
+				  ((@ error  __error) #f ,msge ,tmp)))
+		 x)
 	      (error op "Illegal function arity" x))))
       ((?op ?fun . ?actuals)
        (let ((formals (map (lambda (x) (mark-symbol-non-user! (gensym)))
@@ -1213,16 +1213,16 @@
 					  ,(map (lambda (lf f)
 						   `(,lf (length ,f)))
 						lformals formals)
-					  (,(if-sym) (= ,@lformals)
-						     (,op ,ufun ,@formals)
-						     ,(err/loc loc
-							       op
-							       "Various list length"
-							       `(list ,@lformals))))
+					  (if (= ,@lformals)
+					      (,op ,ufun ,@formals)
+					      ,(err/loc loc
+						  op
+						  "Various list length"
+						  `(list ,@lformals))))
 					`(,op ,ufun ,@formals))
-				    `(,(if-sym) (list? ,(car args))
-						,(loop (cdr args))
-						((@ error  __error) #f ,msg-list ,(car args)))))
+				    `(if (list? ,(car args))
+					 ,(loop (cdr args))
+					 ((@ error  __error) #f ,msg-list ,(car args)))))
 			    ,(err/loc loc
 				      op
 				      "Incorrect function arity"

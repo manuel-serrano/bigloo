@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/expdlet.scm      */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/expdlet.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Sat Aug 27 16:47:58 2022 (serrano)                */
-;*    Copyright   :  2004-22 Manuel Serrano                            */
+;*    Last change :  Thu Apr 16 17:53:59 2026 (serrano)                */
+;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
 ;*=====================================================================*/
@@ -233,7 +233,7 @@
 		(string->symbol (substring string 0 walker)))
 	       (else
 		(loop (+fx walker 1)))))))
-   
+
    (let* ((e (eval-begin-expander e))
 	  (res (match-case x
 		  ((?- () . (and ?body (not ())))

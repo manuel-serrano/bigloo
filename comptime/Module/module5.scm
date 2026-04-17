@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Mar 31 09:14:41 2026 (serrano)                */
+;*    Last change :  Thu Apr 16 18:01:09 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -1237,16 +1237,6 @@
 	 (else
 	  (error "expand" "Illegal form" x))))
 
-   (define (define-macro-expander-TBR-13ma42026 x e)
-      ;; macro expander cannot use regular module5 initial env because
-      ;; the inner define expanders of that environment are incompatible
-      ;; with eval
-      (let ((envx *module5-env*))
-	 (set! *module5-env* #f)
-	 (let ((nx (expand-define-macro x e)))
-	    (set! *module5-env* envx)
-	    x)))
-
    (define (define-macro-expander x e)
       ;; macro expander cannot use regular module5 initial env because
       ;; the inner define expanders of that environment are incompatible
@@ -1264,6 +1254,29 @@
       (expand-define-macro x e)
       #unspecified)
 
+   (define (letrec-expand x e)
+      (match-case x
+	 ((?klet (and ?bs (? list?)) . ?body)
+	  (localize x
+	     `(,klet
+	       ,(map (lambda (b)
+			 (match-case b
+			    ((?var ?val)
+			     (localize b `(,var ,(e val e))))
+			    (else
+			     (error "expand" "Illegal let binding" b))))
+		    bs)
+	       ,@(map (lambda (b) (e b e)) body))))
+	 (else
+	  (error "expand" "Illegal form" x))))
+
+   (define (lambda-expand x e)
+      (match-case x
+	 ((lambda ?args . ?body)
+	  (localize x `(lambda ,args ,@(map (lambda (b) (e b e)) body))))
+	 (else
+	  (error "lambda" "Illegal form" x))))
+
    (install-module5-expander xenv 'define #f define-expander)
    (install-module5-expander xenv 'define-inline #f define-expander)
    (install-module5-expander xenv 'define-generic #f define-expander)
@@ -1271,5 +1284,10 @@
    (install-module5-expander xenv 'cond-expand #f expand-compile-cond-expand)
    (install-module5-expander xenv '$class-allocate #f expand-class-allocate)
    (install-module5-expander xenv 'assert #f expand-assert)
+
+   (install-module5-expander xenv 'letrec #f letrec-expand)
+   (install-module5-expander xenv 'letrec* #f letrec-expand)
+   
+   (install-module5-expander xenv 'lambda #f lambda-expand)
    
    xenv)

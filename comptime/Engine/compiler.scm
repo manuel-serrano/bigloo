@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Mar 28 14:48:47 2026 (serrano)                */
+;*    Last change :  Thu Apr 16 17:45:26 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -579,7 +579,7 @@
 	       :default-package (default-jvm-package)
 	       :qualified-names (jvm-qualified-names))
 	    (module5-checksum! mod)
-	    
+
 	    (hashtable-for-each decls
 	       (lambda (k d)
 		  (with-access::Decl d (scope alias id)
