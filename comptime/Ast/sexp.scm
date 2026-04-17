@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Wed Apr  8 10:02:56 2026 (serrano)                */
+;*    Last change :  Fri Apr 17 08:46:28 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -92,7 +92,7 @@
 ;*    if-sym? ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (if-sym? sym)
-   (eq? sym *if*))
+   (or (eq? sym 'if) (eq? sym *if*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    proc-or-lambda? ...                                              */
@@ -158,403 +158,480 @@
 		  (sexp->node `(eval ',atom) stack loc site genv))
 		 (else
 		  (variable->node global loc site genv)))))))
-      ;; call
-      (((and (? symbol?)
-	     (? (lambda (x)
-		   (or (find-local x stack)
-		       (let ((g (find-global (get-genv) x)))
-			  (when g
-			     (not (eq? (global-module g)
-				     '__r4_control_features_6_9))))))))
-	. ?rest)
-       ;; apply is a special case. unless overriden it must be handled
-       ;; as a special form by the compiler.
-       (call->node exp stack loc site genv))
-      ;; qualified names
-      ((@ . ?-)
-       (let ((loc (find-location/loc exp loc)))
-	  (match-case exp
-	     ((@ (and (? symbol?) ?name) (and (? symbol?) ?module))
-	      (let ((global (find-global/module (get-genv) name module))
-		    (loc (find-location/loc name loc)))
-		 (cond
-		    ((not (global? global))
-		     (error-sexp->node "Unbound global variable" exp loc genv))
-		    ((eq? (global-import global) 'eval)
-		     (sexp->node `(eval ,atom) stack loc site genv))
-		    (else
-		     (variable->node global loc site genv)))))
-	     (else
-	      (error-sexp->node "Illegal `@' expression" exp loc genv)))))
-      ;; field ref
-      ((-> ?e . ?fields)
-       (if (and (list? fields) (every symbol? fields))
-	   (field-ref->node (cdr exp) exp stack
-	      (find-location/loc exp loc) site genv)
-	   (error-sexp->node "Illegal ->" exp loc genv)))
-      ;; quote
-      ((quote . ?-)
-       (match-case exp
-          ((?- ?value)
-	   (let ((loc (find-location/loc exp loc)))
-	      (cond
-		 ((null? value)
-		  (instantiate::literal
-		     (loc loc)
-		     (type (strict-node-type (get-type-kwote value) *bnil*))
-		     (value '())))
-		 ((or (pair? value)
-		      (vector? value)
-		      (homogeneous-vector? value)
-		      (struct? value)
-		      (symbol? value)
-		      (keyword? value))
-		  (instantiate::kwote
-		     (loc loc)
-		     (type (strict-node-type (get-type-kwote value) *_*))
-		     (value value)))
-		 ((or (number? value)
-		      (string? value)
-		      (cnst? value)
-		      ;; I won't put in the compiler that characters
-		      ;; and boolean are constant so I explicitize
-		      ;; these tests.
-		      (char? value)
-		      (boolean? value))
-		  (sexp->node value stack loc site genv))
-		 (else
-		  (error-sexp->node "Illegal `quote' expression" exp loc genv)))))
-          (else
-	   (error-sexp->node "Illegal `quote' expression" exp loc genv))))
-      ;; begin
-      ((begin . ?body)
-       (let* ((loc (find-location/loc exp loc)))
-	  (if (null? body)
-	      (sexp->node #unspecified stack loc site genv))
-	  (let ((nodes (sexp*->node body stack loc site genv)))
-	     (instantiate::sequence
-		(loc loc)
-		(type *_*)
-		(nodes nodes)))))
-      ;; if
-      ((and ((or if (? if-sym?)) ?test #t #f)
-	    (? (lambda (x) (eq? site 'test))))
-       (sexp->node test stack loc site genv))
-      (((or if (? if-sym?)) . ?-)
-       (match-case exp
-          ((?- ?si ?alors ?sinon)
-	   (let ((nt (not-test si)))
-	      (if nt
-		  (begin
-		     (set-car! (cdr exp) nt)
-		     (set-car! (cddr exp) sinon)
-		     (set-car! (cdddr exp) alors)
-		     (sexp->node exp stack loc site genv))
-		  (let* ((loc (find-location/loc exp loc))
-			 (cdloc (find-location/loc (cdr exp) loc))
-			 (cddloc (find-location/loc (cddr exp) loc))
-			 (cdddloc (find-location/loc (cdddr exp) loc))
-			 (l-si (find-location/loc si cdloc))
-			 (l-alors (find-location/loc alors cddloc))
-			 (l-sinon (find-location/loc sinon cdddloc))
-			 (test (sexp->node si stack loc 'test genv)))
-		     (cond
-			((atom? test)
-			 (with-access::atom test (value)
-			    (if (not value)
-				(sexp->node sinon stack l-sinon 'value genv)
-				(sexp->node alors stack l-alors 'value genv))))
-			((kwote? test)
-			 (sexp->node alors stack l-alors 'value genv))
-			((test-nestable? test)
-			 (let ((alors (sexp->node alors stack l-alors 'value genv))
-			       (sinon (sexp->node sinon stack l-sinon 'value genv)))
-			    (instantiate::conditional
-			       (loc loc)
-			       (type *_*)
-			       (test test)
-			       (true alors)
-			       (false sinon))))
-			(else
-			 (let* ((v (mark-symbol-non-user! (gensym 'test)))
-				(var (make-typed-ident v 'bool))
-				(nexp (epairify-rec `(if ,v ,alors ,sinon) exp)))
-			    (replace! exp `(,(let-sym) ((,var ,si)) ,nexp))
-			    (sexp->node exp stack loc site genv))))))))
-	  ((?- ?si ?alors)
-           (set-cdr! (cddr exp) (list #unspecified))
-           (sexp->node exp stack loc site genv))
-          (else
-	   (error-sexp->node "Illegal `if' form" exp loc genv))))
-      ;; set!
-      ((set! . ?-)
-       (set!->node exp stack loc site genv)) 
-      
-      ;; define
-      ((define . ?-)
-       ;; define is very similar to `set!' except that is it not
-       ;; considered as a mutation of the defined variable.
-       (match-case exp
-          ((?- ?var ?val)
-	   (let* ((loc (find-location/loc exp loc))
-		  (cdloc (find-location/loc (cdr exp) loc))
-		  (cddloc (find-location/loc (cddr exp) loc))
-		  (val-loc (find-location/loc val cddloc))
-		  (val (sexp->node val stack val-loc 'value genv)))
-	      (let ((ast (sexp->node var stack cdloc 'value genv)))
-		 (if (and (var? ast) (global? (var-variable ast)))
-		     (begin
-			(global-src-set! (var-variable ast) val)
-			(instantiate::setq
-			   (loc loc)
-			   (type *unspec*)
-			   (var ast)
-			   (value val)))
-		     (error-sexp->node
-			"illegal `define' expression" exp loc genv)))))
-          (else
-	   (error-sexp->node
-	      "Illegal `define' form" exp (find-location/loc exp loc) genv))))
-      ;; let & letrec
-      (($let ?bindings . ?expr)
-       (let ((exp (let->node exp stack loc 'value genv)))
-	  (if (isa? exp let-var)
-	      (with-access::let-var exp (removable?)
-		 (set! removable? #f)
-		 exp)
-	      (error-sexp->node
-		 "illegal `$let' expression, does not produce a let" exp loc genv))))
-      ((((or let (? let-sym?) letrec labels (? labels-sym?)) ?- ?body) . ?args)
-       (let* ((let-part (car exp))
-	      (nexp `(,(car let-part) ,(cadr let-part) (,body ,@args))))
-	  (sexp->node nexp stack loc site genv)))
-      (((or let (? let-sym?) letrec) ?bindings . ?expr)
-       (when (and (pair? bindings) (null? (cdr bindings))
-		  (and (pair? expr) (null? (cdr expr))))
-	  (match-case exp
-	     ((?- ((?var ?expr)) (if (and (? symbol?) ?id) ?then ?otherwise))
-	      ;; (let ((v1 (not e1))) (if v1 then else))
-	      ;;   =>
-	      ;; (let ((v1 e1)) (if v1 else then))
-	      (let ((nt (not-test expr)))
-		 (when (and nt
-			    (not (used-in? id otherwise))
-			    (not (used-in? id then)))
-		    (let ((binding (car bindings))
-			  (body (caddr exp)))
-		       (set-car! (cdr binding) nt)
-		       (set-car! (cddr body) otherwise)
-		       (set-car! (cdddr body) then)))))))
-       (let->node exp stack loc 'value genv))
-      ((letrec* . ?-)
-       (letrec*->node exp stack loc 'value genv))
-      ;; labels
-      (((or labels (? labels-sym?)) . ?-)
-       (labels->node exp stack loc 'value genv))
-      ;; direct lambda applications
-      (((lambda (?var) (and ?body (?- . ?-) (? cast-sexp?))) (atom ?arg))
-       (instantiate::cast
-	  (loc loc)
-	  (type (use-type! (cast-sexp-type body) loc))
-	  (checked #t)
-	  (arg (sexp->node arg stack loc site genv))))
-      (((lambda ?vars . ?body) . ?args)
-       (let ((loc (find-location/loc exp loc))
-	     (nexp `(,(let-sym) ,(let loop ((vars vars)
-					    (args args))
-				    (cond
-				       ((null? vars)
-					(if (null? args)
-					    '()
-					    (user-error/location
-					       loc
-					       (shape (current-function))
-					       "wrong number of argument"
-					       exp)))
-				       ((not (pair? vars))
-					(list
-					   (list
-					      vars
-					      (let liip ((args args))
-						 (if (null? args)
-						     ''()
-						     `(cons ,(car args)
-							 ,(liip (cdr args))))))))
-				       ((dsssl-named-constant? (car vars))
-					(let ((arg (dsssl-find-first-formal
-						      (cdr vars))))
-					   (if arg
-					       (loop arg args)
-					       (loop '() args))))
-				       ((not (symbol? (car vars)))
-					(user-error/location
-					   loc
-					   (shape (current-function))
-					   "Illegal formal argument"
-					   exp))
-				       ((null? args)
-					(user-error/location
-					   loc
-					   (shape (current-function))
-					   "wrong number of argument"
-					   exp))
-				       (else
-					(cons (list (car vars) (car args))
-					   (loop (cdr vars) (cdr args))))))
-				,(make-dsssl-function-prelude
-				    (shape (current-function))
-				    vars
-				    (normalize-progn body)
-				    (lambda (obj proc msg)
-				       (user-error/location loc obj proc msg))))))
-	  (let->node nexp stack loc 'value genv)))
-      ;; if applications
-      (((if ?test
-	    (and (? proc-or-lambda?) ?proc1)
-	    (and (? proc-or-lambda?) ?proc2))
-	. (and (? (lambda (l) (every (lambda (l) (not (pair? l))) l))) ?args))
-       (let ((nexp `(if ,test (,proc1 ,@args) (,proc2 ,@args))))
-	  (sexp->node nexp stack (find-location/loc exp loc) site genv)))
-      (((if ?test
-	    (and (? proc-or-lambda?) ?proc1)
-	    (and (? proc-or-lambda?) ?proc2))
-	. (and (? list?) ?args))
-       (let* ((tmps (map (lambda (_) (gensym)) args))
-	      (loc (find-location/loc exp loc))
-	      (nexp `(,(let-sym) ,(map list tmps args)
-				 (if ,test (,proc1 ,@tmps) (,proc2 ,@tmps)))))
-	  (let->node nexp stack (find-location/loc exp loc) site genv)))
-      ;; lambda
-      ((lambda . ?-)
-       (lambda->node exp stack loc site "L" genv))
-      ;; pragma
-      ((pragma . ?-)
-       (pragma/type->node #f #f *unspec* exp stack loc site genv))
-      ((pragma/effect ?effect . ?rest)
-       (pragma/type->node #f
-	  (parse-effect effect)
-	  *unspec* `(pragma ,@rest) stack loc site genv))
-      ((free-pragma . ?-)
-       (pragma/type->node #t #f *unspec* exp stack loc site genv))
-      ((static-pragma . ?-)
-       (if (not (and (null? stack) (eq? site 'value)))
-	   (error-sexp->node "Illegal `static-pragma' expression" exp loc genv)
-	   (begin
-	      (add-static-pragma!
-		 (pragma/type->node #t #f *unspec* exp stack loc site genv))
-	      (sexp->node #unspecified stack loc site genv))))
-      ((free-pragma/effect ?effect . ?rest)
-       (pragma/type->node #t
-	  (parse-effect effect)
-	  *unspec* `(pragma ,@rest) stack loc site genv))
-      ;; cast-null
-      ((cast-null ?type)
-       (instantiate::cast-null
-	  (c-format "")
-	  (loc (find-location/loc exp loc))
-	  (type (find-type type))))
-      ;; failure
-      ((failure . ?-)
-       (match-case exp
-          ((?- ?proc ?msg ?obj)
-	   (let* ((loc (find-location/loc exp loc))
-		  (cdloc (find-location/loc (cdr exp) loc))
-		  (cddloc (find-location/loc (cddr exp) loc))
-		  (cdddloc (find-location/loc (cdddr exp) loc))
-		  (loc-proc (find-location/loc proc cdloc))
-		  (loc-msg (find-location/loc msg cddloc))
-		  (loc-obj (find-location/loc obj cdddloc))
-		  (proc (sexp->node proc stack loc-proc 'value genv))
-		  (msg (sexp->node msg stack loc-msg 'value genv))
-		  (obj (sexp->node obj stack loc-obj 'value genv)))
-	      (instantiate::fail
-		 (loc loc)
-		 (type *magic*)
-		 (proc proc)
-		 (msg msg)
-		 (obj obj))))
-          (else
-	   (error-sexp->node
-	      "Illegal `failure' form" exp (find-location/loc exp loc) genv))))
-      ;; case
-      ((case . ?-)
-       ;; former versions of the compiler used to make side effect
-       ;; one the list that hold the clauses. This is a bad idea.
-       ;; Because of macro expansion it could be that the very same
-       ;; case form is seen twice by the compiler. If we compile case
-       ;; by the means of side effects, the second time the compiler
-       ;; will see the case form it will think of it as incorrect.
-       (match-case exp
-          ((?- ?test . ?clauses)
-           (let* ((loc  (find-location/loc exp loc))
-		  (cdloc (find-location/loc (cdr exp) loc))
-		  (cddloc (find-location/loc (cdr exp) loc))
-                  (test (sexp->node test
-			   stack
-			   (find-location/loc test cdloc)
-			   'value genv)))
-	      (let loop ((cls clauses)
-			 (nclauses '()))
-		 (if (null? cls)
-		     (instantiate::switch
-			(loc loc)
-			(type *_*)
-			(test test)
-			(item-type (get-type-atom (car (car (car clauses)))))
-			(clauses (reverse! nclauses)))
-		     (let* ((clause (car cls))
-			    (body   (sexp->node (normalize-progn (cdr clause))
-				       stack
-				       (find-location/loc clause cddloc)
-				       'value genv))
-			    (nclause (cons (car clause) body)))
-			;; we check that it is not an illegal `else' clause
-			(if (and (eq? (car clause) 'else)
-				 (not (null? (cdr cls))))
-			    (error-sexp->node
-			       "Illegal `case' form" exp (find-location/loc exp loc) genv)
-			    (loop (cdr cls)
-			       (cons (epairify nclause clause)
-				  nclauses))))))))
-          (else
-	   (error-sexp->node
-	      "Illegal `case' form" exp (find-location/loc exp loc) genv))))
-      ;; exits
-      ((set-exit . ?-)
-       (set-exit->node exp stack loc site genv))
-      ((jump-exit . ?-)
-       (jump-exit->node exp stack loc site genv))
-      ;; apply
-      ((apply ?- ?-)
-       (applycation->node exp stack loc site genv))
-      ;; synchronize
-      ((synchronize ?mutex :prelock ?prelock . ?body)
-       (synchronize->node exp mutex prelock body stack (find-location/loc exp loc) site genv))
-      ((synchronize ?mutex . ?body)
-       (synchronize->node exp mutex ''() body stack (find-location/loc exp loc) site genv))
-      ;; private
-      ((#unspecified)
-       (error-sexp->node
-	  "Illegal `application' form" exp (find-location/loc exp loc) genv))
-      ((? private-sexp?)
-       (private-node exp stack loc site genv))
-      ;; calls
-      (((-> ?e (and ?f (? symbol?))) . ?args)
-       (or (field-call->node e f args exp stack
-	      (find-location/loc (car exp) (find-location/loc exp loc))
-	      site genv)
-	   (call->node exp stack loc site genv)))
-      (((-> ?e ?f . ?rest) . ?args)
-       (let* ((loc (find-location/loc (car exp) (find-location/loc exp loc)))
-	      (ref (sexp->node `(-> ,e ,f) stack loc 'value genv)))
-	  (sexp->node `((-> ,ref ,@rest) ,@args) stack loc site genv)))
+      ;; special form or call
+      (((? symbol?) . ?-)
+       (special-form->node exp stack loc site genv))
+      ;; optimization or call
       (else
-       ;; this expression can be a function call or a typed pragma
-       ;; form. We first check to see if it is a pragma. If it is not
-       ;; we compile a function call. This check is required by the
-       ;; form (pragma::??? ...) (because we can't add a branch in the
-       ;; match-case to check the node `pragma::???').
-       (call->node exp stack loc site genv))))
+       (optimization->node exp stack loc site genv))))
+
+;*---------------------------------------------------------------------*/
+;*    special-form->node ...                                           */
+;*---------------------------------------------------------------------*/
+(define (special-form->node exp::pair stack::pair-nil loc site genv)
+   (with-trace 'ast "special-form->node"
+      (trace-item "exp=" exp)
+      (let ((s (car exp)))
+	 (if (or (find-local s stack)
+		 (let ((g (find-global (get-genv) s)))
+		    (when g
+		       (not (eq? (global-module g) '__r4_control_features_6_9)))))
+	     (call->node exp stack loc site genv)
+	     (cond
+		((eq? s '@)
+		 (let ((loc (find-location/loc exp loc)))
+		    (match-case exp
+		       ((@ (and (? symbol?) ?name) (and (? symbol?) ?module))
+			(let ((global (find-global/module (get-genv) name module))
+			      (loc (find-location/loc name loc)))
+			   (cond
+			      ((not (global? global))
+			       (error-sexp->node "Unbound global variable" exp loc genv))
+			      ((eq? (global-import global) 'eval)
+			       (sexp->node `(eval ,atom) stack loc site genv))
+			      (else
+			       (variable->node global loc site genv)))))
+		       (else
+			(error-sexp->node "Illegal `@' expression" exp loc genv)))))
+		((eq? s '->)
+		 ;; field ref
+		 (match-case exp
+		    ((-> ?e . ?fields)
+		     (if (and (list? fields) (every symbol? fields))
+			 (field-ref->node (cdr exp) exp stack
+			    (find-location/loc exp loc) site genv)
+			 (error-sexp->node "Illegal ->" exp loc genv)))
+		    (else
+		     (error-sexp->node "Illegal ->" exp loc genv))))
+		;; quote
+		((eq? s 'quote)
+		 (match-case exp
+		    ((?- ?value)
+		     (let ((loc (find-location/loc exp loc)))
+			(cond
+			   ((null? value)
+			    (instantiate::literal
+			       (loc loc)
+			       (type (strict-node-type (get-type-kwote value) *bnil*))
+			       (value '())))
+			   ((or (pair? value)
+				(vector? value)
+				(homogeneous-vector? value)
+				(struct? value)
+				(symbol? value)
+				(keyword? value))
+			    (instantiate::kwote
+			       (loc loc)
+			       (type (strict-node-type (get-type-kwote value) *_*))
+			       (value value)))
+			   ((or (number? value)
+				(string? value)
+				(cnst? value)
+				;; I won't put in the compiler that characters
+				;; and boolean are constant so I explicitize
+				;; these tests.
+				(char? value)
+				(boolean? value))
+			    (sexp->node value stack loc site genv))
+			   (else
+			    (error-sexp->node "Illegal `quote' expression" exp loc genv)))))
+		    (else
+		     (error-sexp->node "Illegal `quote' expression" exp loc genv))))
+		;; begin
+		((eq? s 'begin)
+		 (let* ((loc (find-location/loc exp loc))
+			(body (cdr exp)))
+		    (if (null? body)
+			(sexp->node #unspecified stack loc site genv))
+		    (let ((nodes (sexp*->node body stack loc site genv)))
+		       (instantiate::sequence
+			  (loc loc)
+			  (type *_*)
+			  (nodes nodes)))))
+		;; if
+		((if-sym? s)
+		 (if->node exp stack loc site genv))
+		
+		;; set!
+		((eq? s 'set!)
+		 (set!->node exp stack loc site genv))
+		
+		;; define
+		((eq? s 'define)
+		 ;; define is very similar to `set!' except that is it not
+		 ;; considered as a mutation of the defined variable.
+		 (match-case exp
+		    ((?- ?var ?val)
+		     (let* ((loc (find-location/loc exp loc))
+			    (cdloc (find-location/loc (cdr exp) loc))
+			    (cddloc (find-location/loc (cddr exp) loc))
+			    (val-loc (find-location/loc val cddloc))
+			    (val (sexp->node val stack val-loc 'value genv)))
+			(let ((ast (sexp->node var stack cdloc 'value genv)))
+			   (if (and (var? ast) (global? (var-variable ast)))
+			       (begin
+				  (global-src-set! (var-variable ast) val)
+				  (instantiate::setq
+				     (loc loc)
+				     (type *unspec*)
+				     (var ast)
+				     (value val)))
+			       (error-sexp->node
+				  "illegal `define' expression" exp loc genv)))))
+		    (else
+		     (error-sexp->node
+			"Illegal `define' form" exp (find-location/loc exp loc) genv))))
+		;; let & letrec
+		((eq? s '$let)
+		 (match-case exp
+		    ((?- ?bindings . ?expr)
+		     (let ((exp (let->node exp stack loc 'value genv)))
+			(if (isa? exp let-var)
+			    (with-access::let-var exp (removable?)
+			       (set! removable? #f)
+			       exp)
+			    (error-sexp->node
+			       "illegal `$let' expression, does not produce a let" exp loc genv))))
+		    (else
+		     (error-sexp->node
+			"illegal `$let' expression, does not produce a let" exp loc genv))))
+		((or (eq? s 'let) (eq? s 'letrec) (let-sym? s))
+		 (match-case exp
+		    ((?- ?bindings . ?expr)
+		     (when (and (pair? bindings) (null? (cdr bindings))
+				(and (pair? expr) (null? (cdr expr))))
+			(match-case exp
+			   ((?- ((?var ?expr)) (if (and (? symbol?) ?id) ?then ?otherwise))
+			    ;; (let ((v1 (not e1))) (if v1 then else))
+			    ;;   =>
+			    ;; (let ((v1 e1)) (if v1 else then))
+			    (let ((nt (not-test expr)))
+			       (when (and nt
+					  (not (used-in? id otherwise))
+					  (not (used-in? id then)))
+				  (let ((binding (car bindings))
+					(body (caddr exp)))
+				     (set-car! (cdr binding) nt)
+				     (set-car! (cddr body) otherwise)
+				     (set-car! (cdddr body) then)))))))
+		     (let->node exp stack loc 'value genv))
+		    (else
+		     (error-sexp->node "illegal `let' expression" exp loc genv))))
+		((eq? s 'letrec*)
+		 (letrec*->node exp stack loc 'value genv))
+		;; labels
+		((or (eq? s 'labels) (labels-sym? s))
+		 (labels->node exp stack loc 'value genv))
+		;; lambda
+		((eq? s 'lambda)
+		 (lambda->node exp stack loc site "L" genv))
+		;; pragma
+		((eq? s 'pragma)
+		 (pragma/type->node #f #f *unspec* exp stack loc site genv))
+		((eq? s 'pragma/effect)
+		 (match-case exp
+		    ((pragma/effect ?effect . ?rest)
+		     (pragma/type->node #f
+			(parse-effect effect)
+			*unspec* `(pragma ,@rest) stack loc site genv))
+		    (else
+		     (error-sexp->node "illegal `pragma/effect' expression" exp loc genv))))
+		((eq? s 'free-pragma)
+		 (match-case exp
+		    ((free-pragma . ?-)
+		     (pragma/type->node #t #f *unspec* exp stack loc site genv))
+		    (else
+		     (error-sexp->node "illegal `free-pragma' expression" exp loc genv))))
+		((eq? s 'static-pragma)
+		 (if (not (and (null? stack) (eq? site 'value)))
+		     (error-sexp->node "Illegal `static-pragma' expression" exp loc genv)
+		     (begin
+			(add-static-pragma!
+			   (pragma/type->node #t #f *unspec* exp stack loc site genv))
+			(sexp->node #unspecified stack loc site genv))))
+		((eq? s 'free-pragma/effect)
+		 (match-case exp
+		    ((free-pragma/effect ?effect . ?rest)
+		     (pragma/type->node #t
+			(parse-effect effect)
+			*unspec* `(pragma ,@rest) stack loc site genv))
+		    (else
+		     (error-sexp->node "illegal `free-pragma/effect' expression" exp loc genv))))
+		((eq? s 'cast-null)
+		 (match-case exp
+		    ((cast-null ?type)
+		     (instantiate::cast-null
+			(c-format "")
+			(loc (find-location/loc exp loc))
+			(type (find-type type))))
+		    (else
+		     (error-sexp->node "illegal `cast-null' expression" exp loc genv))))
+		;; failure
+		((eq? s 'failure)
+		 (match-case exp
+		    ((?- ?proc ?msg ?obj)
+		     (let* ((loc (find-location/loc exp loc))
+			    (cdloc (find-location/loc (cdr exp) loc))
+			    (cddloc (find-location/loc (cddr exp) loc))
+			    (cdddloc (find-location/loc (cdddr exp) loc))
+			    (loc-proc (find-location/loc proc cdloc))
+			    (loc-msg (find-location/loc msg cddloc))
+			    (loc-obj (find-location/loc obj cdddloc))
+			    (proc (sexp->node proc stack loc-proc 'value genv))
+			    (msg (sexp->node msg stack loc-msg 'value genv))
+			    (obj (sexp->node obj stack loc-obj 'value genv)))
+			(instantiate::fail
+			   (loc loc)
+			   (type *magic*)
+			   (proc proc)
+			   (msg msg)
+			   (obj obj))))
+		    (else
+		     (error-sexp->node
+			"Illegal `failure' form" exp (find-location/loc exp loc) genv))))
+		;; case
+		((eq? s 'case)
+		 ;; former versions of the compiler used to make side effect
+		 ;; one the list that hold the clauses. This is a bad idea.
+		 ;; Because of macro expansion it could be that the very same
+		 ;; case form is seen twice by the compiler. If we compile case
+		 ;; by the means of side effects, the second time the compiler
+		 ;; will see the case form it will think of it as incorrect.
+		 (match-case exp
+		    ((?- ?test . ?clauses)
+		     (let* ((loc  (find-location/loc exp loc))
+			    (cdloc (find-location/loc (cdr exp) loc))
+			    (cddloc (find-location/loc (cdr exp) loc))
+			    (test (sexp->node test
+				     stack
+				     (find-location/loc test cdloc)
+				     'value genv)))
+			(let loop ((cls clauses)
+				   (nclauses '()))
+			   (if (null? cls)
+			       (instantiate::switch
+				  (loc loc)
+				  (type *_*)
+				  (test test)
+				  (item-type (get-type-atom (car (car (car clauses)))))
+				  (clauses (reverse! nclauses)))
+			       (let* ((clause (car cls))
+				      (body   (sexp->node (normalize-progn (cdr clause))
+						 stack
+						 (find-location/loc clause cddloc)
+						 'value genv))
+				      (nclause (cons (car clause) body)))
+				  ;; we check that it is not an illegal `else' clause
+				  (if (and (eq? (car clause) 'else)
+					   (not (null? (cdr cls))))
+				      (error-sexp->node
+					 "Illegal `case' form" exp (find-location/loc exp loc) genv)
+				      (loop (cdr cls)
+					 (cons (epairify nclause clause)
+					    nclauses))))))))
+		    (else
+		     (error-sexp->node
+			"Illegal `case' form" exp (find-location/loc exp loc) genv))))
+		;; exits
+		((eq? s 'set-exit)
+		 (set-exit->node exp stack loc site genv))
+		((eq? s 'jump-exit)
+		 (jump-exit->node exp stack loc site genv))
+		;; apply
+		((eq? s 'apply)
+		 (match-case exp
+		    ((?- ?- ?-)
+		     (applycation->node exp stack loc site genv))
+		    (else
+		     (call->node exp stack loc site genv))))
+		;; synchronize
+		((eq? s 'synchronize)
+		 (match-case exp
+		    ((synchronize ?mutex :prelock ?prelock . ?body)
+		     (synchronize->node exp mutex prelock body stack (find-location/loc exp loc) site genv))
+		    ((synchronize ?mutex . ?body)
+		     (synchronize->node exp mutex ''() body stack (find-location/loc exp loc) site genv))
+		    (else
+		     (error-sexp->node
+			"Illegal 'synchronize' form" exp (find-location/loc exp loc) genv))))
+		;; private
+		((private-sexp? exp)
+		 (private-node exp stack loc site genv))
+		;; calls
+		(else
+		 ;; this expression can be a function call or a typed pragma
+		 ;; form. We first check to see if it is a pragma. If it is not
+		 ;; we compile a function call. This check is required by the
+		 ;; form (pragma::??? ...) (because we can't add a branch in the
+		 ;; match-case to check the node `pragma::???').
+		 (call->node exp stack loc site genv)))))))
+
+;*---------------------------------------------------------------------*/
+;*    optimization->node ...                                           */
+;*---------------------------------------------------------------------*/
+(define (optimization->node exp stack loc site genv)
+   (with-trace 'ast "optimization->node"
+      (trace-item "exp=" exp)
+      (match-case exp
+	 ;; if
+	 ((and ((or if (? if-sym?)) ?test #t #f)
+	       (? (lambda (x) (eq? site 'test))))
+	  (sexp->node test stack loc site genv))
+	 (((if ?test
+	       (and (? proc-or-lambda?) ?proc1)
+	       (and (? proc-or-lambda?) ?proc2))
+	   . (and (? (lambda (l) (every (lambda (l) (not (pair? l))) l))) ?args))
+	  (let ((nexp `(if ,test (,proc1 ,@args) (,proc2 ,@args))))
+	     (sexp->node nexp stack (find-location/loc exp loc) site genv)))
+	 (((if ?test
+	       (and (? proc-or-lambda?) ?proc1)
+	       (and (? proc-or-lambda?) ?proc2))
+	   . (and (? list?) ?args))
+	  (let* ((tmps (map (lambda (_) (gensym)) args))
+		 (loc (find-location/loc exp loc))
+		 (nexp `(,(let-sym) ,(map list tmps args)
+				    (if ,test (,proc1 ,@tmps) (,proc2 ,@tmps)))))
+	     (let->node nexp stack (find-location/loc exp loc) site genv)))
+	 
+	 ;; let
+	 ((((or let (? let-sym?) letrec labels (? labels-sym?)) ?- ?body) . ?args)
+	  (let* ((let-part (car exp))
+		 (nexp `(,(car let-part) ,(cadr let-part) (,body ,@args))))
+	     (sexp->node nexp stack loc site genv)))
+	 
+	 ;; lambda
+	 (((lambda (?var) (and ?body (?- . ?-) (? cast-sexp?))) (atom ?arg))
+	  (instantiate::cast
+	     (loc loc)
+	     (type (use-type! (cast-sexp-type body) loc))
+	     (checked #t)
+	     (arg (sexp->node arg stack loc site genv))))
+	 (((lambda ?vars . ?body) . ?args)
+	  (let ((loc (find-location/loc exp loc))
+		(nexp `(,(let-sym) ,(let loop ((vars vars)
+					       (args args))
+				       (cond
+					  ((null? vars)
+					   (if (null? args)
+					       '()
+					       (user-error/location
+						  loc
+						  (shape (current-function))
+						  "wrong number of argument"
+						  exp)))
+					  ((not (pair? vars))
+					   (list
+					      (list
+						 vars
+						 (let liip ((args args))
+						    (if (null? args)
+							''()
+							`(cons ,(car args)
+							    ,(liip (cdr args))))))))
+					  ((dsssl-named-constant? (car vars))
+					   (let ((arg (dsssl-find-first-formal
+							 (cdr vars))))
+					      (if arg
+						  (loop arg args)
+						  (loop '() args))))
+					  ((not (symbol? (car vars)))
+					   (user-error/location
+					      loc
+					      (shape (current-function))
+					      "Illegal formal argument"
+					      exp))
+					  ((null? args)
+					   (user-error/location
+					      loc
+					      (shape (current-function))
+					      "wrong number of argument"
+					      exp))
+					  (else
+					   (cons (list (car vars) (car args))
+					      (loop (cdr vars) (cdr args))))))
+				   ,(make-dsssl-function-prelude
+				       (shape (current-function))
+				       vars
+				       (normalize-progn body)
+				       (lambda (obj proc msg)
+					  (user-error/location loc obj proc msg))))))
+	     (let->node nexp stack loc 'value genv)))
+	 
+	 ;; private
+	 ((#unspecified)
+	  (error-sexp->node
+	     "Illegal `application' form" exp (find-location/loc exp loc) genv))
+	 ((? private-sexp?)
+	  (private-node exp stack loc site genv))
+	 
+	 ;; method calls
+	 (((-> ?e (and ?f (? symbol?))) . ?args)
+	  (or (field-call->node e f args exp stack
+		 (find-location/loc (car exp) (find-location/loc exp loc))
+		 site genv)
+	      (call->node exp stack loc site genv)))
+	 (((-> ?e ?f . ?rest) . ?args)
+	  (let* ((loc (find-location/loc (car exp) (find-location/loc exp loc)))
+		 (ref (sexp->node `(-> ,e ,f) stack loc 'value genv)))
+	     (sexp->node `((-> ,ref ,@rest) ,@args) stack loc site genv)))
+	 
+	 (else
+	  ;; this expression can be a function call or a typed pragma
+	  ;; form. We first check to see if it is a pragma. If it is not
+	  ;; we compile a function call. This check is required by the
+	  ;; form (pragma::??? ...) (because we can't add a branch in the
+	  ;; match-case to check the node `pragma::???').
+	  (call->node exp stack loc site genv)))))
+
+;*---------------------------------------------------------------------*/
+;*    if->node ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (if->node exp stack loc site genv)
+   (match-case exp
+      ((?- ?si ?alors ?sinon)
+       (let ((nt (not-test si)))
+	  (if nt
+	      (begin
+		 (set-car! (cdr exp) nt)
+		 (set-car! (cddr exp) sinon)
+		 (set-car! (cdddr exp) alors)
+		 (sexp->node exp stack loc site genv))
+	      (let* ((loc (find-location/loc exp loc))
+		     (cdloc (find-location/loc (cdr exp) loc))
+		     (cddloc (find-location/loc (cddr exp) loc))
+		     (cdddloc (find-location/loc (cdddr exp) loc))
+		     (l-si (find-location/loc si cdloc))
+		     (l-alors (find-location/loc alors cddloc))
+		     (l-sinon (find-location/loc sinon cdddloc))
+		     (test (sexp->node si stack loc 'test genv)))
+		 (cond
+		    ((atom? test)
+		     (with-access::atom test (value)
+			(if (not value)
+			    (sexp->node sinon stack l-sinon 'value genv)
+			    (sexp->node alors stack l-alors 'value genv))))
+		    ((kwote? test)
+		     (sexp->node alors stack l-alors 'value genv))
+		    ((test-nestable? test)
+		     (let ((alors (sexp->node alors stack l-alors 'value genv))
+			   (sinon (sexp->node sinon stack l-sinon 'value genv)))
+			(instantiate::conditional
+			   (loc loc)
+			   (type *_*)
+			   (test test)
+			   (true alors)
+			   (false sinon))))
+		    (else
+		     (let* ((v (mark-symbol-non-user! (gensym 'test)))
+			    (var (make-typed-ident v 'bool))
+			    (nexp (epairify-rec `(if ,v ,alors ,sinon) exp)))
+			(replace! exp `(,(let-sym) ((,var ,si)) ,nexp))
+			(sexp->node exp stack loc site genv))))))))
+      ((?- ?si ?alors)
+       (set-cdr! (cddr exp) (list #unspecified))
+       (sexp->node exp stack loc site genv))
+      (else
+       (error-sexp->node "Illegal `if' form" exp loc genv))))
 
 ;*---------------------------------------------------------------------*/
 ;*    set!->node ...                                                   */
