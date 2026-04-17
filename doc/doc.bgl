@@ -1,0 +1,148 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0a/doc/doc.bgl                     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
+;*    Last change :  Fri Apr 17 11:23:28 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Documentation buildler                                           */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    doc                                                              */
+;*---------------------------------------------------------------------*/
+(module doc
+   (library web)
+   (main))
+
+;*---------------------------------------------------------------------*/
+;*    definitions-table ...                                            */
+;*---------------------------------------------------------------------*/
+(define definitions-table (create-hashtable :size 128 :weak 'open-string))
+(define tests-table (create-hashtable :size 128 :weak 'open-string))
+
+(define index '())
+
+(define max-tests 5)
+
+
+;*---------------------------------------------------------------------*/
+;*    main ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (main x)
+   (call-with-input-file (cadr x)
+      (lambda (ip)
+	 (let ((doc (markdown-parse ip :eval (make-doc-eval (dirname (cadr x))))))
+	    (for-each (lambda (e)
+			 (let* ((name (string-trim-both (markdown-text-element-value (car (markdown-element-children e)))))
+				(def (hashtable-get definitions-table name))
+				(tests (hashtable-get tests-table name)))
+			    (let ((def (format "~s" def)))
+			       (markdown-element-children-set! e (list def))
+			       (if (pair? tests)
+				   (let loop ((next (markdown-element-next-sibling e))
+					      (prev e))
+				      (cond
+					 ((or (not next)
+					      (memq (markdown-element-tag next) '(h1 h2 h3 h4)))
+					  (for-each (lambda (el)
+						       (markdown-element-append-child! prev el))
+					     (test->markdown (reverse tests))))
+					 (else
+					  (loop (markdown-element-next-sibling next) next))))
+				   (error "doc" "Cannot find test" name))
+			       (set! index (cons (list name def (markdown-element-attribute e 'id)) index)))))
+	       (markdown-get-elements-by-tag doc 'h3))
+	    (call-with-output-file "index.sexp"
+	       (lambda (op)
+		  (write index op)))
+	    (markdown->html doc)))))
+
+;*---------------------------------------------------------------------*/
+;*    test->markdown ...                                               */
+;*---------------------------------------------------------------------*/
+(define (test->markdown tests)
+   (let ((ts (take tests max-tests)))
+      (list
+	 (markdown-element 'h4 '((class . "example"))
+	    (list (if (pair? (cdr ts)) "Examples" "Example")))
+	 (markdown-element 'pre '((class . "test"))
+	    (map (lambda (t)
+		    (format "~s  &rarr;  ~s\n" (car t) (cdr t)))
+	       ts)))))
+
+;*---------------------------------------------------------------------*/
+;*    make-doc-eval ...                                                */
+;*---------------------------------------------------------------------*/
+(define (make-doc-eval dir)
+   (lambda (x)
+      (match-case x
+	 ((include (and ?file (? string?)))
+	  ;;(call-with-input-file (make-file-name dir file) read-string)
+	  (call-with-input-file file read-string))
+	 ((implementation-path (and ?file (? string?)))
+	  (let* ((src (call-with-input-file (make-file-name dir file) port->sexp-list)))
+	     (collect-definitions src)
+	     ""))
+	 ((example-path (and ?file (? string?)))
+	  (let* ((src (call-with-input-file (make-file-name dir file) port->sexp-list)))
+	     (collect-tests src)
+	     ""))
+	 (else
+	  (eval x)))))
+
+;*---------------------------------------------------------------------*/
+;*    collect-definitions ...                                          */
+;*---------------------------------------------------------------------*/
+(define (collect-definitions src)
+   (for-each (lambda (e)
+		(match-case e
+		   ((define (and ?def (?id . ?-)) . ?-)
+		    (hashtable-put! definitions-table (parse-ident id) def))
+		   ((define-inline (and ?def (?id . ?-)) . ?-)
+		    (hashtable-put! definitions-table (parse-ident id) def))
+		   ((define-generic (and ?def (?id . ?-)) . ?-)
+		    (hashtable-put! definitions-table (parse-ident id) (cons 'generic def)))
+		   ((define (and ?def (? symbol?)) ?-)
+		    (hashtable-put! definitions-table (parse-ident def) def))
+		   (else #f)))
+      src))
+	     
+;*---------------------------------------------------------------------*/
+;*    collect-tests ...                                                */
+;*---------------------------------------------------------------------*/
+(define (collect-tests src)
+   
+   (define (hashtable-add! table key val)
+      (let ((old (hashtable-get table key)))
+	 (if (pair? old)
+	     (hashtable-put! table key (cons val old))
+	     (hashtable-put! table key (list val)))))
+		
+   (for-each (lambda (e)
+		(match-case e
+		   ((define-test ?id ?expr :expected ?val)
+		    (hashtable-add! tests-table (symbol->string id) (cons expr val)))
+		   ((define-test ?id ?expr)
+		    (hashtable-add! tests-table (symbol->string id) (cons expr #t)))
+		   (else #f)))
+      src))
+	     
+;*---------------------------------------------------------------------*/
+;*    parse-ident ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (parse-ident id)
+   (let* ((s (symbol->string id))
+	  (l (string-length s)))
+      (let loop ((i 0))
+	 (cond
+	    ((>=fx i (-fx l 2))
+	     s)
+	    ((char=? (string-ref s i) #\:)
+	     (if (char=? (string-ref s (+fx i 1)) #\:)
+		 (substring s 0 i)
+		 (loop (+fx i 1))))
+	    (else
+	     (loop (+fx i 1)))))))
+
