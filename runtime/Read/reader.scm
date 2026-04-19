@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Tue Mar 17 08:40:06 2026 (serrano)                */
+;*    Last change :  Sun Apr 19 11:17:22 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -588,6 +588,16 @@
        $infinity)
       ("-inf.0"
        (negfl $infinity))
+
+      ((: (? (in "-+"))
+	  (or float (: (or float (+ digit)) (in "eE") (? (in "+-")) (+ digit)))
+	  #\/
+	  (or float (+ digit)))
+      (let* ((str (the-string))
+	     (i (string-index str #\/))
+	     (x (substring str 0 i))
+	     (y (substring str (+fx i 1) (the-length))))
+       (/fl (string->real x) (string->real y))))
       
       ;; doted pairs
       ("."
