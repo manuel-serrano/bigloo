@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Fri Apr 17 11:23:28 2026 (serrano)                */
+;*    Last change :  Mon Apr 20 16:43:41 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -26,7 +26,6 @@
 
 (define max-tests 5)
 
-
 ;*---------------------------------------------------------------------*/
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
@@ -38,8 +37,9 @@
 			 (let* ((name (string-trim-both (markdown-text-element-value (car (markdown-element-children e)))))
 				(def (hashtable-get definitions-table name))
 				(tests (hashtable-get tests-table name)))
-			    (let ((def (format "~s" def)))
-			       (markdown-element-children-set! e (list def))
+			    (let ((md (definition->markdown def)))
+			       (markdown-element-children-set! e md)
+			       (markdown-element-attribute-set! e 'class (definition-class def))
 			       (if (pair? tests)
 				   (let loop ((next (markdown-element-next-sibling e))
 					      (prev e))
@@ -58,6 +58,67 @@
 	       (lambda (op)
 		  (write index op)))
 	    (markdown->html doc)))))
+
+;*---------------------------------------------------------------------*/
+;*    definition-class ...                                             */
+;*---------------------------------------------------------------------*/
+(define (definition-class def)
+   (match-case def
+      ((generic . ?-) "generic")
+      ((?- .  ?-) "function")
+      (else "variable")))
+
+;*---------------------------------------------------------------------*/
+;*    definition->markdown ...                                         */
+;*---------------------------------------------------------------------*/
+(define (definition->markdown::pair def)
+
+   (define (markdown-ident::pair sym class)
+      (multiple-value-bind (id ty)
+	 (parse-ident2 sym)
+	 (if ty
+	     (list (markdown-element 'span `((class . ,class)) (list id))
+		(markdown-element 'span '((class . "type")) (list "::" ty)))
+	     (list (markdown-element 'span `((class . ,class)) (list id))))))
+
+   (define (markdown-argument::pair arg)
+      (cond
+	 ((symbol? arg)
+	  (markdown-ident arg "argument"))
+	 ((eq? arg #!optional)
+	  (list (markdown-element 'span '((class . "dsssl")) (list "#!optional"))))
+	 ((eq? arg #!key)
+	  (list (markdown-element 'span '((class . "dsssl")) (list "#!key"))))
+	 ((eq? arg #!rest)
+	  (list (markdown-element 'span '((class . "dsssl")) (list "#!rest"))))
+	 ((pair? arg)
+	  `("(" ,@(markdown-ident (car arg) "argument")
+	      " "
+	      ,(markdown-element 'span '((class . "expression")) (list (format "~s" (cadr arg))))
+	      ")"))
+	 (else
+	  (error "definition->markdown" "Illegal argument" arg))))
+
+   (define (markdown-arguments::pair-nil args)
+      (cond
+	 ((null? args)
+	  '())
+	 ((not (pair? args))
+	  (cons " . " (markdown-argument args)))
+	 (else
+	  (cons " " (append (markdown-argument (car args)) (markdown-arguments (cdr args)))))))
+	      
+   (define (function->markdown fun args)
+      `("(" ,@(markdown-ident fun "definition") ,@(markdown-arguments args) ")"))
+   
+   (define (variable->markdown var)
+      (list (markdown-element 'span '((class . "definition")) (list (symbol->string var)))))
+
+   (match-case def
+      ((?fun . ?args)
+       (function->markdown fun args))
+      (else
+       (variable->markdown def))))
 
 ;*---------------------------------------------------------------------*/
 ;*    test->markdown ...                                               */
@@ -132,8 +193,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    parse-ident ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (parse-ident id)
-   (let* ((s (symbol->string id))
+(define (parse-ident id::symbol)
+   (let* ((s (symbol->string! id))
 	  (l (string-length s)))
       (let loop ((i 0))
 	 (cond
@@ -146,3 +207,19 @@
 	    (else
 	     (loop (+fx i 1)))))))
 
+;*---------------------------------------------------------------------*/
+;*    parse-ident2 ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (parse-ident2 id::symbol)
+   (let* ((s (symbol->string! id))
+	  (l (string-length s)))
+      (let loop ((i 0))
+	 (cond
+	    ((>=fx i (-fx l 2))
+	     (values s #f))
+	    ((char=? (string-ref s i) #\:)
+	     (if (char=? (string-ref s (+fx i 1)) #\:)
+		 (values (substring s 0 i) (substring s (+fx i 2) (string-length s)))
+		 (loop (+fx i 1))))
+	    (else
+	     (loop (+fx i 1)))))))

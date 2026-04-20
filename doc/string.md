@@ -89,6 +89,11 @@ Returns `#t` if and only if `obj` is a `string`. Returns `#f` otherwise.
 Returns `#t` if and only if `obj` is a empty string. Returns `#f` otherwise.
 
 
+### empty-string? ###
+
+Return `#t' if and only if `string' is the empty string. Returns `#f' otherwise.
+
+
 ### string=? ###
 
 Returns `#t` if `string1` and `string2` are of the the same characters.
@@ -166,21 +171,11 @@ Returns the character at position `k` in `string`. If the argument
 triggered.
 
 
-### string-ref-ur ###
-
-Behaves as `string-ref` but does not check the range of `k`.
-
-
 ### string-set! ###
 
 Sets the character at position `k` of `string`. If the argument 
 `k` is not in the range `0 &le; k &lt; string.length`, an exception is 
 triggered.
-
-
-### string-set-ur! ###
-
-Behaves as `string-set!` but does not check the range of `k`.
 
 
 Library functions
@@ -192,11 +187,6 @@ the tests with the operation:
 ```
 (char-downcase (char-upcase c))
 ```
-
-### string-append ###
-
-Appends its string arguments.
-
 
 ### string-index ###
 
@@ -244,7 +234,7 @@ Behaves as `string-skip` but searches from right to left.
 
 ### string-contains ###
 
-Does string `s1 contain string `s2`? Return the index in `s1` where
+Does string `s1` contain string `s2`? Return the index in `s1` where
 `s2` occurs first as a substring, or `#f`.
 
 ### string-contains-ci ###
@@ -432,20 +422,20 @@ As `string-hex-intern` but might returns its modified argument.
 Converts a `string` into a hexadecimal representation.
 
 The arguments `start` and `end` must be exact integers satisfying:
-  0 &ge; `start` &ge; `end` &ge; `(string-length str)`.
+  0 &le; `start` &le; `end` &lt; `(string-length str)`.
   
 
 ### string-trim-both ###
 
 Trim `s` by skipping over all characters on the 
-both sides that satisfy the second parameter `char`/char-set/pred:
+both sides that satisfy the second parameter char/char-set/pred:
 
-   * if `obj` is a character char, characters equal to char are trimmed;
-   * if `obj` is a char set cs, characters contained in cs are trimmed;
-   * if `obj` is a predicate pred, it is a test predicate that is applied
+   * if `opt` is a character char, characters equal to char are trimmed;
+   * if `opt` is a char set cs, characters contained in cs are trimmed;
+   * if `opt` is a predicate pred, it is a test predicate that is applied
      to the characters in s; a character causing it to return true is skipped.
 
-The optional argument `obj` defaults to the character set
+The optional argument `opt` defaults to the character set
 `char-set:whitespace` defined in SRFI 14.
 
 If no trimming occurs, these functions may returns a copy of

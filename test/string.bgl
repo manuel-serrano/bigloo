@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Wed Apr 15 14:11:16 2026 (serrano)                */
+;*    Last change :  Mon Apr 20 18:14:49 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing string functions                                         */
@@ -132,6 +132,11 @@
 (define-test string-null? (string-null? "foo")
    :expected #f)
 (define-test string-null? (string-null? "")
+   :expected #t)
+
+(define-test empty-string? (empty-string? "foo")
+   :expected #f)
+(define-test empty-string? (empty-string? "")
    :expected #t)
 
 (define-test string=? (string=? "foo" "bar")
