@@ -1,0 +1,191 @@
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/5.0a/doc/doc.css                     */
+/*    -------------------------------------------------------------    */
+/*    Author      :  manuel serrano                                    */
+/*    Creation    :  Mon Apr 20 16:07:37 2026                          */
+/*    Last change :  Tue Apr 21 16:33:34 2026 (serrano)                */
+/*    Copyright   :  2026 manuel serrano                               */
+/*    -------------------------------------------------------------    */
+/*    Bigloo documentation style                                       */
+/*=====================================================================*/
+
+/*---------------------------------------------------------------------*/
+/*    Colors and dimensions                                            */
+/*---------------------------------------------------------------------*/
+:root {
+    --background: #fafafa;
+    --textShadow: #ccc;
+    
+    --sectionBorder: #777777;
+
+    --example: #333333;
+    
+    --functionBackground: #dfdfdf;
+    --functionTag: #1467e6;
+
+    --programBackground: #ffffff;
+    --programBorder: #eeeeee;
+    --programBorderLeft: #f91a03;
+
+    --type: #05ca04;
+    --expression: #444;
+    --dsssl: #f91a03;
+
+    --code: #1467e6;
+    --codeBackground: #efefef;
+    --codeBorder: #d2d2d2;
+
+    --result: #7d537d;
+
+    --fontifierString: #f91a03;
+    --fontifierSymbol: #f91a03;
+}
+
+/*---------------------------------------------------------------------*/
+/*    fonts                                                            */
+/*---------------------------------------------------------------------*/
+@font-face {
+  font-family: "icons";
+  font-style: normal;
+  font-weight: normal;
+  src: url("./fonts/glyphicons-halflings-regular.ttf");
+}
+
+/*---------------------------------------------------------------------*/
+/*    Main body                                                        */
+/*---------------------------------------------------------------------*/
+body {
+    background: var(--background);
+    font-family: "Helvetica Neue", "Hevetica", Arial, sans-serif;
+    font-size: 14px;
+}
+
+/*---------------------------------------------------------------------*/
+/*    Chapters and Sections                                            */
+/*---------------------------------------------------------------------*/
+h1 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+    padding-bottom: 4px;
+    padding-top: 4px;
+    border-top: 1px solid var(--sectionBorder);
+    border-bottom: 1px solid var(--sectionBorder);
+    counter-reset: subsection;
+    counter-increment: section;
+}
+
+h2 {
+    margin-top: 2ex;
+    margin-bottom: 1em;
+    border-bottom: 1px dashed var(--sectionBorder);
+    text-shadow: var(--textShadow) 1px 1px 1px;
+    counter-reset: subsubsection;
+    counter-increment: subsection;
+}
+
+h2:before{
+    content: counter(subsection) ". ";
+}
+
+/*---------------------------------------------------------------------*/
+/*    functions ...                                                    */
+/*---------------------------------------------------------------------*/
+h3 {
+    background-color: var(--functionBackground);
+    font-family: monospace;
+    font-size: 110%;
+    font-weight: normal;
+    margin-top: 2em;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+h3:before {
+    content: "\e041";
+    font-size: 65%;
+    color: var(--functionTag);
+    font-family: icons;
+    margin-left: 0.5em;
+    margin-right: 0.8em;
+}
+
+h3 .definition {
+    font-weight: bold;
+}
+
+h2 + h3 {
+    margin-top: 0;
+}
+/*---------------------------------------------------------------------*/
+/*    identifiers                                                      */
+/*---------------------------------------------------------------------*/
+span.type {
+    color: var(--type);
+    font-weight: bold;
+}
+
+span.argument,
+span.argument + span.type {
+    font-style: italic;
+}
+
+span.expression {
+    color: var(--expression);
+}
+
+span.dsssl {
+    color: var(--dsssl);
+}
+
+/*---------------------------------------------------------------------*/
+/*    Programs, examples, and codes                                    */
+/*---------------------------------------------------------------------*/
+h4 {
+    color: var(--example);
+    font-weight: normal;
+}
+
+h4:after {
+    content: ": ";
+}
+
+pre {
+    font-family: Bitstream Vera Sans Mon, Andale Mon, Monospace, DejaVu Sans Mono, monospace;
+    background-color: var(--programBackground);
+    border: 1px solid var(--programBorder);
+    border-left: 2px solid var(--programBorderLeft);
+    padding: 0.5em;
+    
+}
+
+code {
+    padding: 2px 2px;
+    font-size: 90%;
+    background-color: var(--codeBackground);
+    color: var(--code);
+    border: 1px solid var(--codeBorder);
+    border-radius: 1px;
+}
+		   
+.result {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    color: var(--result);
+    font-weight: bold;
+    font-size: 130%;
+}
+
+/*---------------------------------------------------------------------*/
+/*    fontification                                                    */
+/*---------------------------------------------------------------------*/
+pre .fontifier-prog-reserved {
+    font-weight: bold;
+}
+
+pre .fontifier-prog-string {
+    color: var(--fontifierString);
+}
+
+pre .fontifier-prog-symbol {
+    color: var(--fontifierSymbol);
+}

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Tue Apr 21 10:02:26 2026 (serrano)                */
+;*    Last change :  Tue Apr 21 16:26:16 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -33,7 +33,11 @@
 (define (main x)
    (call-with-input-file (cadr x)
       (lambda (ip)
-	 (let ((doc (markdown-parse ip :eval (make-doc-eval (dirname (cadr x))))))
+	 (let ((doc (markdown-parse ip
+		       :eval (make-doc-eval (dirname (cadr x)))
+		       :fontifier (lambda (lang id lines)
+				     (call-with-input-string (apply string-append lines)
+					fontifier.lisp)))))
 	    (for-each (lambda (e)
 			 (let* ((name (string-trim-both (markdown-text-element-value (car (markdown-element-children e)))))
 				(def (hashtable-get definitions-table name))

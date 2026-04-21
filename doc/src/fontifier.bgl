@@ -1,0 +1,1493 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0a/doc/src/fontifier.bgl           */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano, Florian Loitsch                   */
+;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
+;*    Last change :  Tue Apr 21 16:33:04 2026 (serrano)                */
+;*    Copyright   :  2006-26 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    fontifiers                                                       */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The module                                                       */
+;*---------------------------------------------------------------------*/
+(module fontifier
+
+   (library web)
+   
+   (export lisp
+	   xml
+	   wat
+	   hiphop
+	   hss
+	   ebnf
+	   plain
+	   sh
+	   c
+	   js
+	   hopscript
+	   typescript
+	   json
+	   tex
+	   asm
+	   mermaid
+	   line-number))
+
+;*---------------------------------------------------------------------*/
+;*    <SPAN> ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (<SPAN> #!key class id #!rest body)
+   (let ((attrs '()))
+      (when class (set! attrs (cons `(class . ,class) attrs)))
+      (when id (set! attrs (cons `(id . ,id) attrs)))
+      (markdown-element 'span attrs body)))
+   
+;*---------------------------------------------------------------------*/
+;*    <DIV> ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (<DIV> #!key class id #!rest body)
+   (let ((attrs '()))
+      (when class (set! attrs (cons `(class . ,class) attrs)))
+      (when id (set! attrs (cons `(id . ,id) attrs)))
+      (markdown-element 'div attrs body)))
+   
+;*---------------------------------------------------------------------*/
+;*    <CODE> ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (<CODE> #!key class id #!rest body)
+   (let ((attrs '()))
+      (when class (set! attrs (cons `(class . ,class) attrs)))
+      (when id (set! attrs (cons `(id . ,id) attrs)))
+      (markdown-element 'code attrs body)))
+   
+;*---------------------------------------------------------------------*/
+;*    <STRIKE> ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (<STRIKE> #!key class #!rest body)
+   (markdown-element 'strike `((class . ,class)) body))
+   
+;*---------------------------------------------------------------------*/
+;*    <SUP> ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (<SUP> #!key class #!rest body)
+   (markdown-element 'sup `((class . ,class)) body))
+   
+;*---------------------------------------------------------------------*/
+;*    <A> ...                                                          */
+;*---------------------------------------------------------------------*/
+(define (<A> #!key class id #!rest body)
+   (let ((attrs '()))
+      (when class (set! attrs (cons `(class . ,class) attrs)))
+      (when id (set! attrs (cons `(id . ,id) attrs)))
+      (markdown-element 'a attrs body)))
+   
+;*---------------------------------------------------------------------*/
+;*    <IMG> ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (<IMG> #!key class id src #!rest body)
+   (let ((attrs '()))
+      (when class (set! attrs (cons `(class . ,class) attrs)))
+      (when id (set! attrs (cons `(id . ,id) attrs)))
+      (when src (set! attrs (cons `(src . ,src) attrs)))
+      (markdown-element 'a attrs body)))
+   
+;*---------------------------------------------------------------------*/
+;*    <FTSPAN> ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (<FTSPAN> #!key (data-charpos #f) (anchor #f) #!rest body)
+   (let ((tag (if (string-prefix? "<" anchor)
+		  (let ((i (string-index anchor ">")))
+		     (if (not i)
+			 (error "fontifier" "wrong anchor" anchor)
+			 (let ((tag (substring anchor 1 i)))
+			    (set! anchor (substring anchor i))
+			    (cond
+			       ((string-ci=? tag "div") <DIV>)
+			       ((string-ci=? tag "code") <CODE>)
+			       ((string-ci=? tag "span") <SPAN>)
+			       (else (error "fontifier"
+					(format "wrong anchor tag [~s]" anchor)
+					tag))))))
+		  <SPAN>)))
+      (multiple-value-bind (id class prop)
+	 (fontifier-parse-ident anchor)
+	 (cond
+	    ((and prop class id)
+	     (apply tag :id id :class class (car prop) (cdr prop) body))
+	    ((and prop class)
+	     (apply tag :class class (car prop) (cdr prop) body))
+	    ((and prop id)
+	     (apply tag :id id (car prop) (cdr prop) body))
+	    ((and class id)
+	     (apply tag :id id :class class body))
+	    (prop
+	     (apply tag (car prop) (cdr prop) body))
+	    (class
+	     (apply tag :class class body))
+	    (id
+	     (apply tag :id id body))
+	    (else
+	     (apply tag body))))))
+   
+;*---------------------------------------------------------------------*/
+;*    fontifier-error-line ...                                         */
+;*---------------------------------------------------------------------*/
+(define (fontifier-error-line c port)
+   (let ((line (read-line port)))
+      (if (string? line)
+	  (string-append "{" (string c) "}" line)
+	  c)))
+
+;*---------------------------------------------------------------------*/
+;*    fontifier-parse-ident ...                                        */
+;*---------------------------------------------------------------------*/
+(define (fontifier-parse-ident str)
+   
+   (define (parse-property str)
+      (let ((m (pregexp-match "\\[([^=]+)=([^\\]]+)\\]" str)))
+	 (when m (cons (string->keyword (cadr m)) (caddr m)))))
+   
+   (let ((i (string-index str #\@)))
+      (cond
+	 ((not i)
+	  (if (char=? (string-ref str 0) #\[)
+	      (values #f #f (parse-property str))
+	      (values str #f #f)))
+	 ((=fx i 0)
+	  (values #f (substring str 1 (string-length str)) #f))
+	 (else
+	  (let* ((id (substring str 0 i))
+		 (p (parse-property id))
+		 (clazz (substring str (+fx i 1) (string-length str))))
+	     (if p
+		 (let ((j (string-index id #\])))
+		    (values (substring id (+fx j 1)) clazz p))
+		 (values id clazz #f)))))))
+
+;*---------------------------------------------------------------------*/
+;*    *xml-grammar* ...                                                */
+;*---------------------------------------------------------------------*/
+(define *xml-grammar*
+   (regular-grammar (keyword line-begin line-end incollect
+		     res column)
+      (define (add! s)
+       (when incollect
+	  (set! res (cons s res))))
+
+      ((: "<!--"
+	  (* (or (out #\-) (: "-" (out #\-)) (: "--" (out #\>))))
+	  "-->")
+       ;; comments
+       (let ((str (xml-string-encode (the-string))))
+	  (add! (<SPAN> :class "fontifier-prog-line-comment" str))
+	  (ignore)))
+      ((+ #\Space)
+       ;; separators
+       (let ((str (xml-string-encode (the-string))))
+	  (add! (<SPAN> str))
+	  (ignore)))
+      (#\Tab
+       ;; replace the tab character with a series an n whitespaces
+       (add! (vector-ref whitespaces (-fx 8 (modulofx column 8))))
+       (set! column 0)
+       (ignore))
+      
+      (#\Newline
+       ;; newline
+       (set! column 0)
+       (when (integer? line-end)
+	  (set! line-end (-fx line-end 1))
+	  (if (<=fx line-end 0) (set! incollect #f)))
+       (add! (the-string))
+       (when (integer? line-begin)
+	  (set! line-begin (-fx line-begin 1))
+	  (if (<=fx line-begin 1) (set! incollect #t)))
+       (ignore))
+
+      ((: "#" (+ (in #\_ #\@ ("azAZ09"))) #\#)
+       ;; anchor
+       (let ((cur res))
+	  (set! res '())
+	  (let ((anchor (ignore)))
+	     (set! res cur)
+	     (add! (<FTSPAN> :anchor (the-substring 1 -1) anchor))
+	     (ignore))))
+      ((: "#/" (+ (out #\#)) #\#)
+       ;; end anchor
+       (reverse! res))
+       ;; anchor
+      ((: #\<
+	  (: (? #\/) alpha (* (out #\# #\> #\space #\tab #\Newline)))
+	  (? #\>))
+       ;; tag
+       (let ((str (xml-string-encode (the-string))))
+	  (add! (<SPAN> :class "fontifier-prog-tag" str))
+	  (ignore)))
+      (#\>
+       (add! (<SPAN> :class "fontifier-prog-tag" "&gt;"))
+       (ignore))
+      ((: "<?" (: (? (in "/?")) alpha (* (out #\> #\space #\tab #\Newline))))
+       ;; special
+       (let ((str (xml-string-encode (the-string))))
+	  (add! (<SPAN> :class "fontifier-prog-special" str))
+	  (ignore)))
+      ("?>"
+       ;; special
+       (add! (<SPAN> :class "fontifier-prog-special" "?&gt;"))
+       (ignore))
+      (#\<
+       (add! "&lt;")
+       (ignore))
+      ((+ (out #\< #\> #\Space #\Tab #\= #\" #\' #\# #\Newline))
+       ;; regular text
+       (let ((string (xml-string-encode (the-string))))
+	  (add! string)
+	  (ignore)))
+      ((or (: "\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
+	   (: "\'" (* (or (out #a000 #\\ #\') (: #\\ all))) "\'"))
+       ;; strings
+       (let ((str (xml-string-encode (the-string))))
+	  (add! (<SPAN> :class "fontifier-prog-string" str))
+	  (ignore)))
+      ((in "\"=#'")
+       (let ((str (the-string)))
+	  (add! str)
+	  (ignore)))
+      (else
+       (let ((c (the-failure)))
+	  (if (eof-object? c)
+	      (reverse! res)
+	      (error "xml"
+		     "Unexpected character"
+		     (fontifier-error-line c (the-port))))))))
+
+;*---------------------------------------------------------------------*/
+;*    *lisp-grammar* ...                                               */
+;*---------------------------------------------------------------------*/
+(define *lisp-grammar*
+   (regular-grammar (keyword line-begin line-end incollect
+		     res column)
+      
+      (define (add! s)
+       (when incollect
+	  (set! res (cons s res))))
+
+      ((: ";;" (* all))
+       ;; italic comments
+       (let ((str (xml-string-encode (the-string))))
+	  (add! (<SPAN> :class "fontifier-prog-line-comment" str))
+	  (ignore)))
+      ((: ";*" (* all))
+       ;; bold comments
+       (let ((str (xml-string-encode (the-string))))
+	  (add! (<SPAN> :class "fontifier-prog-comment" str))
+	  (ignore)))
+      ((: ";" (out #\; #\* #\Newline) (* all))
+       ;; plain comments
+       (let ((str (xml-string-encode (the-string))))
+	  (add! (<SPAN> str))
+	  (ignore)))
+      ((: #\\ (* (in #\space #\tab)) ";" (out #\; #\*) (* all))
+       ;; plain comments
+       (let ((str (the-substring 1 (the-length))))
+	  (add! (<SPAN> str))
+	  (ignore)))
+      
+      ((+ #\Space)
+       ;; separators
+       (let ((str (the-string)))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> str))
+	  (ignore)))
+
+      (#\Tab
+       ;; replace the tab character with a series an n whitespaces
+       (add! (vector-ref whitespaces (-fx 8 (modulofx column 8))))
+       (set! column 0)
+       (ignore))
+      
+      (#\Newline
+       ;; newline
+       (set! column 0)
+       (when (integer? line-end)
+	  (set! line-end (-fx line-end 1))
+	  (if (<=fx line-end 0) (set! incollect #f)))
+       (add! (the-string))
+       (when (integer? line-begin)
+	  (set! line-begin (-fx line-begin 1))
+	  (if (<=fx line-begin 1) (set! incollect #t)))
+       (ignore))
+
+      ((+ #\#)
+       ;; sharp signs
+       (let ((str (the-string)))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> str))
+	  (ignore)))
+;*       ((: "#" (out #\/ #\space #\tab) (* (out #\# #\space)) #\#)    */
+;*        ;; anchor                                                    */
+;*        (let ((cur res))                                             */
+;* 	  (set! res '())                                               */
+;* 	  (let* ((str (the-substring 1 -1))                            */
+;* 		 (anchor (ignore)))                                    */
+;* 	     (set! res cur)                                            */
+;* 	     (tprint "ICI ANCHOR " str)                                */
+;* 	     (add! (<FTSPAN> :anchor str anchor))                      */
+;* 	     (ignore))))                                               */
+;*       ((: "#/" (+ (out #\#)) #\#)                                   */
+;*        ;; end anchor                                                */
+;*        (reverse! res))                                              */
+      ((or "(" (+ (in ")[]")))
+       ;; open parenthesis
+       (let ((str (the-string)))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> str))
+	  (ignore)))
+      ("~"
+       ;; client
+       (let ((str (the-string)))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> :class "fontifier-prog-client" str))
+	  (ignore)))
+      ("$"
+       ;; special
+       (let ((str (the-string)))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> :class "fontifier-prog-server" str))
+	  (ignore)))
+      ((: #\( (+ (or (: ":" (out ":")) (out "; $\t()[]:\"\n#"))))
+       ;; keywords
+       (let* ((string (the-substring 1 (the-length)))
+	      (obj (keyword string #t)))
+	  (set! column (+fx column (+fx 1 (the-length))))
+	  (add! (<SPAN> "("))
+	  (add! obj)
+	  (ignore)))
+      ((: ":" (+ (out "; \t()[]:\"\n~$#")))
+       ;; keywords
+       (let ((string (the-string)))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> :class "fontifier-prog-keyword" string))
+	  (ignore)))
+      ((: (+ (out "; \t()[]:\"\n~$#")) ":" (in "; \t()[]\"\n~$#"))
+       ;; keywords
+       (let ((string (the-string)))
+	  (unread-char! (string-ref string (-fx (the-length) 1)) (the-port))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> :class "fontifier-prog-keyword"
+		   (substring string 0 (-fx (string-length string) 1))))
+	  (ignore)))
+      ((: "'" (+ (out "; \t()[]:\"\n~$#")))
+       ;; symbols
+       (let ((string (the-string)))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> :class "fontifier-prog-symbol" string))
+	  (ignore)))
+      ((+ (or (out "; \t()[]:\"\n~$#") (: ":" (out "; :\t()[]\"\n~$#"))))
+       ;; identifiers
+       (let* ((string (the-string))
+	      (obj (keyword string #f)))
+	  (set! column (+fx column (the-length)))
+	  (add! obj)
+	  (ignore)))
+      ((or (: "\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
+	   (: "#\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\""))
+       ;; strings
+       (let ((str (xml-string-encode (the-string))))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> :class "fontifier-prog-string" str))
+	  (ignore)))
+      ((: "::" (+ (out ";\n \t()[]:\"")))
+       ;; types
+       (let ((str (xml-string-encode (the-string))))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> :class "fontifier-prog-type" str))
+	  (ignore)))
+      ((+ (or #\: #\; #\"))
+       (let ((str (xml-string-encode (the-string))))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> str))
+	  (ignore)))
+      ((: #\# #\\ (+ (out " \n\t")))
+       ;; characters
+       (let ((str (xml-string-encode (the-string))))
+	  (set! column (+fx column (the-length)))
+	  (add! (<SPAN> str))
+	  (ignore)))
+      ((: "&" (+ (out " \n\t;")) #\;)
+       ;; html verbatim
+       (add! (<SPAN> (the-string)))
+       (ignore))
+      (else
+       (let ((c (the-failure)))
+	  (if (eof-object? c)
+	      (reverse! res)
+	      (error "lisp" "Unexpected character" c))))))
+
+;*---------------------------------------------------------------------*/
+;*    xml ...                                                          */
+;*---------------------------------------------------------------------*/
+(define (xml ip #!key line-begin line-end)
+   (read/rp *xml-grammar* ip
+      (lambda (k) k)
+      line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1))
+      '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    *hop-keywords* ...                                               */
+;*---------------------------------------------------------------------*/
+(define *hop-keywords*
+   (let ((t (make-hashtable)))
+      (for-each (lambda (k)
+		   (hashtable-put! t k "define"))
+	 '("define" "module" "define-macro" "define-generic" "define-inline"
+	   "define-method" "define-service" "define-expander" "define-tag"))
+      (for-each (lambda (k)
+		   (hashtable-put! t k "reserved"))
+	 '("lambda" "service" "let" "let*" "letrec" "if" "when" "unless"
+	   "begin" "cond" "case" "instantiate" "set!" "else" "with-access"
+	   "multiple-value-bind" "values" "match-case" "node-style-set!"))
+      (for-each (lambda (k)
+		   (hashtable-put! t k "important"))
+	 '("try" "with-handler" "unwind-protect"
+	   "with-hop" "with-url" "error" "bind-exit" "call/cc"))
+      (for-each (lambda (k)
+		   (hashtable-put! t k "thread"))
+	 '("thread-start!" "thread-start-joinable!" "make-thread"
+	   "thread-join!"
+	   "make-mutex" "with-lock" "mutex-lock!" "mutex-unlock!"
+	   "make-condition-variable" "condition-variable-signal!"
+	   "condition-variable-wait!"))
+      (for-each (lambda (k)
+		   (hashtable-put! t k "server"))
+	 '("hop-event-signal!" "hop-event-broadcast!"))
+      (for-each (lambda (k)
+		   (hashtable-put! t k "class"))
+	 '("generic" "class" "final-class" "wide-class" "abstract-class"))
+      t))
+
+;*---------------------------------------------------------------------*/
+;*    lisp ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (lisp ip::input-port #!key line-begin line-end keyword)
+   
+   (define (hop-keyword x op)
+      (let ((s (xml-string-encode x))
+	    (l (string-length x)))
+	 (cond
+	    ((and (procedure? keyword) (keyword s))
+	     => 
+	     (lambda (k) k))
+	    ((and (char=? (string-ref x 0) #\<)
+		  (char=? (string-ref x (-fx l 1)) #\>))
+	     (<SPAN> :class "fontifier-prog-tag" s))
+	    ((hashtable-get *hop-keywords* s)
+	     =>
+	     (lambda (k)
+		(<SPAN> :class (string-append "fontifier-prog-" k) s)))
+	    (else
+	     (<SPAN> s)))))
+
+   (read/rp *lisp-grammar* ip hop-keyword
+      line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1))
+      '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    *wat-keywords* ...                                               */
+;*---------------------------------------------------------------------*/
+(define *wat-keywords*
+   (let ((t (make-hashtable)))
+      (for-each (lambda (k)
+		   (hashtable-put! t k "define"))
+	 '("func" "local" "result" "param" "block" "end" "type" "struct"
+	   "import" "export" "loop"))
+      (for-each (lambda (k)
+		   (hashtable-put! t k "reserved"))
+	 '("if" "then" "else" "call" "return" "br_table"))
+      (for-each (lambda (k)
+		   (hashtable-put! t k "important"))
+	 '("try" "br" "ref.cast"))
+      t))
+
+;*---------------------------------------------------------------------*/
+;*    wat ...                                                          */
+;*---------------------------------------------------------------------*/
+(define (wat ip #!key line-begin line-end keyword)
+   
+   (define (wat-keyword x op)
+      (let ((s (xml-string-encode x))
+	    (l (string-length x)))
+	 (cond
+	    ((and (procedure? keyword) (keyword s))
+	     => 
+	     (lambda (k) k))
+	    ((hashtable-get *wat-keywords* s)
+	     =>
+	     (lambda (k)
+		(<SPAN> :class (string-append "fontifier-prog-" k) s)))
+	    (else
+	     (<SPAN> s)))))
+
+   (read/rp *lisp-grammar* ip wat-keyword
+      line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1))
+      '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    hiphop ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (hiphop ip #!key line-begin line-end)
+   (js-lexer-init!)
+   (read/rp *js-lexer* ip 'hiphop line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1)) '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    *hss-keywords* ...                                               */
+;*---------------------------------------------------------------------*/
+(define *hss-keywords*
+   (let ((t (make-hashtable)))
+      (for-each (lambda (k)
+		   (hashtable-put! t k "define"))
+		'("define-hss-property" "define-hss-type" "define-hss-function"))
+      t))
+
+;*---------------------------------------------------------------------*/
+;*    hss ...                                                          */
+;*---------------------------------------------------------------------*/
+(define (hss ip #!key line-begin line-end keyword)
+
+   (define (hss-keyword x op)
+      (let ((s (xml-string-encode x))
+	    (l (string-length x)))
+	 (cond
+	    ((and (procedure? keyword) (keyword s))
+	     => 
+	     (lambda (k) k))
+	    ((and (char=? (string-ref x 0) #\<)
+		  (char=? (string-ref x (-fx l 1)) #\>))
+	     (<SPAN> :class "fontifier-prog-tag" s))
+	    ((or (hashtable-get *hop-keywords* s)
+		 (hashtable-get *hss-keywords* s))
+	     =>
+	     (lambda (k)
+		(<SPAN> :class (string-append "fontifier-prog-" k) s)))
+	    ((char=? (string-ref x 0) #\@)
+	     (<SPAN> :class "fontifier-prog-special" s))
+	    (else
+	     s))))
+
+   (read/rp *lisp-grammar* ip hss-keyword
+      line-begin line-end (not line-begin) '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    tex ...                                                          */
+;*---------------------------------------------------------------------*/
+(define (tex ip #!key line-begin line-end)
+   
+   (define *tex-grammar*
+      (regular-grammar (line-begin line-end incollect res column)
+	 
+	 (define (add! s)
+	  (when incollect
+	     (set! res (cons s res))))
+
+	 ((: #\\ (+ (out " \t\n\\{}")))
+	  (let ((el (<SPAN> :class "fontifier-prog-tag"
+		       (xml-string-encode (the-string)))))
+	     (add! el)
+	     (ignore)))
+	 ((+ (in "{}"))
+	  (let ((el (<SPAN> :class "fontifier-prog-string"
+		       (the-string))))
+	     (add! el)
+	     (ignore)))
+	 ((+ (out "{}\\n\t"))
+	  (let ((s (xml-string-encode (the-string))))
+	     (add! s)
+	     (ignore)))
+	 (#\Tab
+	  ;; replace the tab character with a series an n whitespaces
+	  (add! (vector-ref whitespaces (-fx 8 (modulofx column 8))))
+	  (set! column 0)
+	  (ignore))
+      
+	 (#\Newline
+	  ;; newline
+	  (set! column 0)
+	  (when (integer? line-end)
+	     (set! line-end (-fx line-end 1))
+	     (if (<=fx line-end 0) (set! incollect #f)))
+	  (add! (the-string))
+	  (when (integer? line-begin)
+	     (set! line-begin (-fx line-begin 1))
+	     (if (<=fx line-begin 1) (set! incollect #t)))
+	  (ignore))
+
+	 (else
+	  (let ((c (the-failure)))
+	     (if (eof-object? c)
+		 (reverse! res)
+		 (error "tex" "Unexpected character" c))))))
+   
+   (read/rp *tex-grammar* ip
+      line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1))
+      '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    asm ...                                                          */
+;*---------------------------------------------------------------------*/
+(define (asm ip #!key line-begin line-end)
+   
+   (define *asm-grammar*
+      (regular-grammar (line-begin line-end incollect res column)
+	 
+	 (define (add! s)
+	  (when incollect
+	     (set! res (cons s res))))
+
+	 ((: #\% (+ (in ("azAZ09"))))
+	  (let ((el (<SPAN> :class "fontifier-prog-register"
+		       (xml-string-encode (the-string)))))
+	     (add! el)
+	     (ignore)))
+	 ((: (+ (in #\_  #\. ("azAZ09"))) #\:)
+	  (let ((el (<SPAN> :class "fontifier-prog-label"
+		       (the-string))))
+	     (add! el)
+	     (ignore)))
+	 ((+ (out ":%\n\t"))
+	  (let ((s (xml-string-encode (the-string))))
+	     (add! s)
+	     (ignore)))
+	 (#\Tab
+	  ;; replace the tab character with a series an n whitespaces
+	  (add! (vector-ref whitespaces (-fx 8 (modulofx column 8))))
+	  (set! column 0)
+	  (ignore))
+      
+	 (#\Newline
+	  ;; newline
+	  (set! column 0)
+	  (when (integer? line-end)
+	     (set! line-end (-fx line-end 1))
+	     (if (<=fx line-end 0) (set! incollect #f)))
+	  (add! (the-string))
+	  (when (integer? line-begin)
+	     (set! line-begin (-fx line-begin 1))
+	     (if (<=fx line-begin 1) (set! incollect #t)))
+	  (ignore))
+
+	 (else
+	  (let ((c (the-failure)))
+	     (if (eof-object? c)
+		 (reverse! res)
+		 (error "asm" "Unexpected character"
+		    (fontifier-error-line c (the-port))))))))
+   
+   (read/rp *asm-grammar* ip
+      line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1))
+      '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    ebnf ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (ebnf ip #!key line-begin line-end)
+   
+   '(define *ebnf-grammar*
+      (regular-grammar (line-begin line-end incollect res column)
+	 
+	 (define (add! s)
+	  (when incollect
+	     (set! res (cons s res))))
+	 
+	 ("-->"
+	  (add! (<SPAN> :class "ebnf-arrow" "&rarr;"))
+	  (ignore))
+	 ("|"
+	  (add! (<SPAN> :class "ebnf-pipe" "|"))
+	  (ignore))
+	 ((in "+*")
+	  (let ((el (<SPAN> :class "ebnf-meta" (<SUP> (the-string)))))
+	     (add! el)
+	     (ignore)))
+	 ((in "[]")
+	  (let ((el (<SPAN> :class "ebnf-meta" (the-string))))
+	     (add! el)
+	     (ignore)))
+	 ((bol (: #\< (+ (out " \t\n>")) #\>))
+	  (let ((el (<SPAN> :class "fontifier-prog-define ebnf-tag"
+		       :id (the-substring 1 -1)
+		       (xml-string-encode (the-string)))))
+	     (add! el)
+	     (ignore)))
+	 ((: #\< (+ (out " \t\n>")) #\>)
+	  (let ((el (<SPAN> :class "ebnf-tag"
+		       (xml-string-encode (the-string)))))
+	     (add! el)
+	     (ignore)))
+	 ((or (+ " ") (+ (in "<>")))
+	  (let ((el (xml-string-encode (the-string))))
+	     (add! el)
+	     (ignore)))
+	 ((context strike "--")
+	  '())
+	 ("--"
+	  (rgc-context 'strike)
+	  (let ((rest (ignore)))
+	     (add! (<STRIKE> rest))
+	     (ignore)))
+	 ((context add "##")
+	  '())
+	 ("##"
+	  (rgc-context 'add)
+	  (let ((rest (ignore)))
+	     (add! (<SPAN> :class "ebnf-add" rest))
+	     (ignore)))
+	 ((+ (or (out "<> \t\n-#") (: #\- (out "-\t\n")) (: #\# (out #\#))))
+	  (let ((el (<SPAN> :class "ebnf-keyword" (the-string))))
+	     (add! el)
+	     (ignore)))
+	 (#\Tab
+	  ;; replace the tab character with a series an n whitespaces
+	  (add! (vector-ref whitespaces (-fx 8 (modulofx column 8))))
+	  (set! column 0)
+	  (ignore))
+      
+	 (#\Newline
+	  ;; newline
+	  (set! column 0)
+	  (when (integer? line-end)
+	     (set! line-end (-fx line-end 1))
+	     (if (<=fx line-end 0) (set! incollect #f)))
+	  (add! (the-string))
+	  (when (integer? line-begin)
+	     (set! line-begin (-fx line-begin 1))
+	     (if (<=fx line-begin 1) (set! incollect #t)))
+	  (ignore))
+
+	 (else
+	  (let ((c (the-failure)))
+	     (if (eof-object? c)
+		 (reverse! res)
+		 (error 'ebnf "Unexpected character" c))))))
+   
+   '(read/rp *ebnf-grammar* ip
+      line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1))
+      '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    mermaid ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (mermaid ip #!key line-begin line-end)
+   
+   (define (err txt)
+      (display "mermaid: cannot generate svg file\n" (current-error-port))
+      (display txt (current-error-port))
+      (list txt))
+   
+   (let ((txt (read-string ip)))
+      (with-handler
+	 (lambda (e)
+	    (err txt))
+	 (let* ((md5 (md5sum txt))
+		(key (substring md5 (-fx (string-length md5) 8)))
+		(svg (string-append "mermaid-" key ".svg")))
+	    (unless (file-exists? svg)
+	       (system->string
+		  (format "echo \"~a\" | mmdc -i- -o ~a 2> /dev/null" txt svg)))
+	    (if (file-exists? svg)
+		(list (<DIV> :class "mermaid"
+			 (<IMG> :class "mermaid" :id key :src svg)))
+		(err txt))))))
+
+;*---------------------------------------------------------------------*/
+;*    plain ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (plain ip #!key line-begin line-end)
+   (list (xml-string-encode (pregexp-replace* "#[^#]*#" (read-string ip) ""))))
+
+;*---------------------------------------------------------------------*/
+;*    sh ...                                                           */
+;*---------------------------------------------------------------------*/
+(define (sh ip #!key line-begin line-end)
+   (list (xml-string-encode (pregexp-replace* "#[^#]*#" (read-string ip) ""))))
+
+;*---------------------------------------------------------------------*/
+;*    *js-keyword-list* ...                                            */
+;*---------------------------------------------------------------------*/
+(define *js-keyword-list*
+   '("arguments"
+     "as"
+     "await"
+     "async"
+     "break"
+     "case"
+     "catch"
+     "class"
+     "sealed"
+     "const"
+     "continue"
+     "default"
+     "delete"
+     "do"
+     "else"
+     "extends"
+     "false"
+     "finally"
+     "for"
+     "from"
+     "function"
+     "if"
+     "import"
+     "in"
+     "instanceof"
+     "is"
+     "let"
+     "module"
+     "namespace"
+     "new"
+     "null"
+     "package"
+     "private"
+     "public"
+     "require"
+     "return"
+     "super"
+     "switch"
+     "this"
+     "throw"
+     "true"
+     "try"
+     "typeof"
+     "use"
+     "var"
+     "void"
+     "while"
+     "with"
+     "yield"
+     "export"))
+
+;*---------------------------------------------------------------------*/
+;*    *c-keyword-list* ...                                             */
+;*---------------------------------------------------------------------*/
+(define *c-keyword-list*
+   '("break"
+     "case"
+     "class"
+     "const"
+     "continue"
+     "default"
+     "do"
+     "else"
+     "for"
+     "if"
+     "private"
+     "public"
+     "return"
+     "switch"
+     "while"
+     "extern"
+     "static"
+     "main"
+     "typedef"))
+
+;*---------------------------------------------------------------------*/
+;*    *js-future-reserver-list* ...                                    */
+;*---------------------------------------------------------------------*/
+(define *js-future-reserved-list*
+   '("abstract"
+     "debugger"
+     "enum"
+     "export"
+     "goto"
+     "implements"
+     "interface"
+     "native"
+     "protected"
+     "synchronized"
+     "throws"
+     "transient"
+     "volatile"))
+
+;*---------------------------------------------------------------------*/
+;*    *hiphop-keyword-list*                                            */
+;*---------------------------------------------------------------------*/
+(define *hiphop-keyword-list*
+   '("fork"
+     "par"
+     "loop"
+     "every"
+     "emit"
+     "machine"
+     "abort"
+     "weakabort"
+     "loopeach"
+     "sustain"
+     "async"
+     "hiphop"
+     "pragma"
+     "out"
+     "inout"
+     "run"
+     "inout"
+     "interface"
+     "implements"
+     "kill"
+     "suspend"
+     "resume"))
+
+;*---------------------------------------------------------------------*/
+;*    *js-init-lexer* ...                                              */
+;*---------------------------------------------------------------------*/
+(define *js-init-lexer* #f)
+(define *c-init-lexer* #f)
+
+;*---------------------------------------------------------------------*/
+;*    *js-care-future-reserved* ...                                    */
+;*---------------------------------------------------------------------*/
+(define *js-care-future-reserved* #f)
+
+;*---------------------------------------------------------------------*/
+;*    js-lexer-init! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (js-lexer-init!)
+   (unless *js-init-lexer*
+      (begin
+	 (set! *js-init-lexer* #t)
+	 (for-each (lambda (word)
+		      (putprop! (string->symbol word) 'javascript #t))
+	    *js-keyword-list*)
+	 (when *js-care-future-reserved*
+	    (for-each (lambda (word)
+			 (putprop! (string->symbol word) 'javascript #t))
+	       *js-future-reserved-list*))
+	 (for-each (lambda (word)
+		      (putprop! (string->symbol word) 'hiphop #t))
+	    *hiphop-keyword-list*))))
+
+;*---------------------------------------------------------------------*/
+;*    c-lexer-init! ...                                                */
+;*---------------------------------------------------------------------*/
+(define (c-lexer-init!)
+   (unless *c-init-lexer*
+      (begin
+	 (set! *c-init-lexer* #t)
+	 (for-each (lambda (word)
+		      (putprop! (string->symbol word) 'c #t))
+	           *c-keyword-list*))))
+
+;*---------------------------------------------------------------------*/
+;*    whitespaces ...                                                  */
+;*---------------------------------------------------------------------*/
+(define whitespaces
+   '#("" " " "  " "   " "    " "     " "      " "       " "        "))
+
+;*---------------------------------------------------------------------*/
+;*    *js-lexer*                                                       */
+;*---------------------------------------------------------------------*/
+(define *js-lexer*
+   (regular-grammar ((blank (in #\Space #a012 #a013))
+		     (blank_no_lt (in #\Space #\Tab #a012))
+		     (nonzero-digit (in ("19")))
+		     (id_start (or alpha #\$ #\_))
+		     (id_part (or alnum #\$ #\_ ".#"))
+		     lang line-begin line-end incollect res
+		     column)
+      
+      (define (add! s)
+       (when incollect
+	  (set! res (cons s res))))
+      
+      ((+ blank)
+       (set! column (+fx column (the-length)))
+       (add! (xml-string-encode (the-string)))
+       (ignore))
+
+      (#\Tab
+       ;; replace the tab character with a series an n whitespaces
+       (add! (vector-ref whitespaces (-fx 8 (modulofx column 8))))
+       (set! column 0)
+       (ignore))
+      
+      (#\Newline
+       (set! column 0)
+       (when (integer? line-end)
+	  (set! line-end (-fx line-end 1))
+	  (when (<=fx line-end 0) (set! incollect #f)))
+       (add! (the-string))
+       (when (integer? line-begin)
+	  (set! line-begin (-fx line-begin 1))
+	  (if (=fx line-begin 1) (set! incollect #t)))
+       (ignore))
+      
+      ;; anchor
+      ((: "#" (out #\/ #\space #\tab) (* (out #\# #\space)) #\#)
+       (let ((charpos (-fx (input-port-position (the-port)) (the-length))))
+	  (let ((cur res))
+	     (set! res '())
+	     (let ((anchor (<FTSPAN> :data-charpos charpos
+			      :anchor (the-substring 1 -1) (ignore))))
+		(set! res cur)
+		(add! anchor)
+		(ignore)))))
+      ((: "#/" (+ (out #\#)) #\#)
+       (reverse! res))
+      ((: "/*#" (out #\/ #\space #\tab) (* (out #\# #\space)) "#*/")
+       (let ((charpos (-fx (input-port-position (the-port)) (the-length))))
+	  (let ((cur res))
+	     (set! res '())
+	     (let ((anchor (<FTSPAN> :data-charpos charpos
+			      :anchor (the-substring 3 -3) (ignore))))
+		(set! res cur)
+		(add! anchor)
+		(ignore)))))
+      ((: "/*#/" (+ (out #\#)) "#*/")
+       (reverse! res))
+      ((: "<!--#" (out #\/ #\space #\tab) (* (out #\# #\space)) "#-->")
+       (let ((charpos (-fx (input-port-position (the-port)) (the-length))))
+	  (let ((cur res))
+	     (set! res '())
+	     (let ((anchor (<FTSPAN> :data-charpos charpos
+			      :anchor (the-substring 5 -5) (ignore))))
+		(set! res cur)
+		(add! anchor)
+		(ignore)))))
+      ((: "<!--#/" (+ (out #\#)) "#-->")
+       (reverse! res))
+
+      ;; cpp
+      ((when (eq? lang 'c) (bol (: "#" (* (in " \t")) (+ id_part))))
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (cpp (the-string)))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class (string-append "fontifier-prog-tag " cpp) cpp))
+	  (ignore)))
+      
+      ;; LineComment
+      ((bol (: "// " (+ (out " \t\n")) (* all) #\Newline))
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (str (the-substring 0 -1))
+	      (h (string-index str " \t\n" 3))
+	      (m (substring str 3 (or h (string-length str)))))
+	  (set! column (+fx (the-length) column))
+	  (when (integer? line-end)
+	     (set! line-end (-fx line-end 1))
+	     (if (<=fx line-end 0) (set! incollect #f)))
+	  (when (equal? m line-end)
+	     (set! incollect #f))
+	  (add!
+	     (<SPAN> :data-charpos charpos
+		:class "fontifier-prog-line-comment"
+		(xml-string-encode str)))
+	  (add! "\n")
+	  (when (integer? line-begin)
+	     (set! line-begin (-fx line-begin 1))
+	     (if (=fx line-begin 1) (set! incollect #t)))
+	  (when (equal? m line-begin)
+	     (set! incollect #t))
+	  (ignore)))
+      ((:"//" (* (or (out #\/ #\Newline) (: #\/ (out #\* #\Newline)))))
+       (let ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	     (cmt (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-line-comment" cmt))
+	  (ignore)))
+
+      ;; inline scheme code
+      ((: "#:" (+ (out "; \t()[]:\"\n~$#")))
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (cmt (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-special" cmt))
+	  (ignore)))
+      
+      ;; inline html code
+      ((: "/**" (+ (or (out #\*) (: #\* (out #\*)) (: #\* #\* (out #\/)))) "**/")
+       (let ((charpos (-fx (input-port-position (the-port)) (the-length))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-html" (the-substring 3 -3)))
+	  (ignore)))
+      ;; multi-line comment on one line
+      ((: "/*" (* (or (out #\*) (: (+ #\*) (out #\/ #\*)))) (+ #\*) "/")
+       (let ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	     (cmt (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-line-comment" cmt))
+	  (ignore)))
+      
+      ((: "/*"
+	  (* (or #\Newline
+		 (out #\*)
+		 (: (+ #\*) (out #\/ #\*))))
+	  (+ #\*) "/")
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (cmt (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-line-comment" cmt))
+	  (ignore)))
+      
+      ;; multi-line comment on one line
+      ((: "/*" (* (or (out #\*) (: (+ #\*) (out #\/ #\*)))) (+ #\*) "/")
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (cmt (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :class "fontifier-prog-line-comment" cmt))
+	  (ignore)))
+      
+      ((: "/*"
+	  (* (or #\Newline
+		 (out #\*)
+		 (: (+ #\*) (out #\/ #\*))))
+	  (+ #\*) "/")
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (cmt (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-line-comment" cmt))
+	  (ignore)))
+      
+      ;; TODO: verify if this is really the correct syntax
+      ((or
+	;; integer constant
+	#\0
+	(: nonzero-digit (* digit))
+	(: (uncase "0x") (+ xdigit))
+	;; floating-point constant
+	(: (+ digit)
+	   (: (in #\e #\E) (? (in #\- #\+)) (+ digit)))
+	(: (or (: (+ digit) #\. (* digit)) (: #\. (+ digit)))
+	   (? (: (in #\e #\E) (? (in #\- #\+)) (+ digit)))))
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (num (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-number" num))
+	  (ignore)))
+      
+      ((or #\( #\) #\[ #\] #\. #\; #\, #\| "||" "|="
+	   #\< #\> "<=" ">=" "==" "!=" "===" "!==" #\+ #\- #\* #\% "++" "--"
+	   "<<" ">>" ">>>" #\& #\^ #\! #\^ "&&" #\: #\= "+=" "-="  
+	   "*=" "%=" "<<=" ">>=" ">>>=" "&=" "^=" "/=" #\/ #\?)
+       (let ((tmp (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :class "fontifier-prog-operator" tmp))
+	  (ignore)))
+
+      ;; tags
+      ((: #\< (? #\/) (+ (or (in ("09azAZ")) (in ":$_."))) (? #\/) #\>)
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (str (the-string))
+	      (tmp (xml-string-encode str)))
+	  (set! column (+fx (the-length) column))
+	  (if (memq lang '(hopscript hiphop))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class (string-append "fontifier-prog-tag "
+				 (substring str 1 (-fx (string-length str) 1)))
+		       tmp))
+	      (add! tmp))
+	  (ignore)))
+      
+      ((or (: #\< (? #\/) (+ (or (in ("09azAZ")) (in ":$_."))) #\space) "/>")
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (str (the-string))
+	      (tmp (xml-string-encode str)))
+	  (set! column (+fx (the-length) column))
+	  (if (memq lang '(hopscript hiphop))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class (if (>fx (the-length) 2)
+			   (string-append "fontifier-prog-tag "
+			      (substring str 1 (-fx (the-length) 1)))
+			   "fontifier-prog-tag")
+		       tmp))
+	      (add! tmp))
+	  (ignore)))
+      ((: #\< (? #\/) (+ (or (in ("09azAZ")) (in ":$_."))) #\Newline)
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (str (the-substring 0 -1))
+	      (tmp (xml-string-encode str)))
+	  (set! column (+fx (the-length) column))
+	  (if (memq lang '(hopscript hiphop))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class (string-append "fontifier-prog-tag "
+				 (substring str 1 (-fx (the-length) 1)))
+		       tmp))
+	      (add! tmp))
+	  (unread-char! #\Newline (the-port))
+	  (ignore)))
+      
+      ((when (memq lang '(hopscript hiphop javascript)) "~{")
+       (let ((charpos (-fx (input-port-position (the-port)) (the-length))))
+	  (set! column (+fx 2 column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-client" "~"))
+	  (add! "{")
+	  (ignore)))
+      
+      ((when (memq lang '(hopscript hiphop javascript)) "${")
+       (let ((charpos (-fx (input-port-position (the-port)) (the-length))))
+	  (set! column (+fx 2 column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-server" "$"))
+	  (add! "{")
+	  (ignore)))
+      
+      ;; TODO: probably not spec-conform
+      ((: #\" (* (or (out #\" #\\ #\Newline) (: #\\ all))) #\")
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (str (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-string" str))
+	  (ignore)))
+      ((: #\' (* (or (out #\' #\\ #\Newline) (: #\\ all))) #\')
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (str (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-string" str))
+	  (ignore)))
+      ((: #\` (* (or (out #\' #\\ #\Newline) (: #\\ all))) #\`)
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (str (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class "fontifier-prog-template" str))
+	  (ignore)))
+      
+      ((when (memq lang '(hopscript javascript typescript))
+	  (: #\/ (* (or (out #\* #\/ #\Newline) (: #\\ #\/) (: #\[ #\/ #\]))) #\/
+	     (out "*/")))
+       (let ((string (the-string))
+	     (len (the-length)))
+	  (unread-char! (string-ref string (-fx len 1)) (the-port))
+	  (let* ((charpos (-fx (input-port-position (the-port)) (+fx len 1)))
+		 (str (xml-string-encode (substring string 0 (-fx len 1)))))
+	     (set! column (+fx (-fx len 1) column))
+	     (add! (<SPAN> :data-charpos charpos
+		      :class "fontifier-prog-string" str))
+	     (ignore))))
+      
+      ;; Identifiers and Keywords
+      ((: id_start (* id_part))
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (symbol (the-symbol))
+	      (symbol-str (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (cond
+	     ((and (memq lang '(hopscript hiphop))
+		   (memq symbol '(post postSync then catch)))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class "fontifier-prog-server post" symbol-str))
+	      (ignore))
+	     ((and (memq lang '(hopscript hiphop))
+		   (memq symbol '(signal broadcast)))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class (string-append "fontifier-prog-client " symbol-str)
+		       symbol-str))
+	      (ignore))
+	     ((and (memq lang '(hopscript hiphop))
+		   (memq symbol '(service tag)))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class (string-append "fontifier-prog-define " symbol-str)
+		       symbol-str))
+	      (ignore))
+	     ((and (eq? symbol 'function)
+		   (memq lang '(hopscript hiphop javascript typescript)))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class (string-append "fontifier-prog-define symbol-str")
+		       symbol-str))
+	      (ignore))
+	     ((and (eq? symbol 'class)
+		   (memq lang '(hopscript hiphop javascript typescript)))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class (string-append "fontifier-prog-class symbol-str")
+		       symbol-str))
+	      (ignore))
+	     ((and (getprop symbol 'javascript)
+		   (memq lang '(hopscript hiphop javascript typescript)))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class (string-append "fontifier-prog-reserved " symbol-str)
+		       symbol-str))
+	      (ignore))
+	     ((and (getprop symbol 'c) (eq? lang 'c))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class (string-append "fontifier-prog-reserved " symbol-str)
+		       symbol-str))
+	      (ignore))
+	     ((and (getprop symbol 'hiphop) (eq? lang 'hiphop))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class (string-append "fontifier-prog-reserved " symbol-str)
+		       symbol-str))
+	      (ignore))
+	     ((and (eq? lang 'hiphop)
+		   (memq symbol '(val preval nowval now pre count react)))
+	      (add! (<SPAN> :data-charpos charpos
+		       :class "fontifier-prog-type delay" symbol-str))
+	      (ignore))
+	     (else
+	      (add! (<SPAN> :data-charpos charpos symbol-str))
+	      (ignore)))))
+      
+      ;; Identifiers and Keywords
+      ((when (memq lang '(hopscript hiphop))
+	  (: id_start (* (or #\- id_part)) #\:))
+       (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
+	      (kwd (xml-string-encode (the-string))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   :class (string-append "fontifier-prog-keyword " kwd)
+		   kwd))
+	  (ignore)))
+      
+      ;; TODO: add regular expressions
+      (all
+       (let ((charpos (-fx (input-port-position (the-port)) (the-length))))
+	  (set! column (+fx (the-length) column))
+	  (add! (<SPAN> :data-charpos charpos
+		   (xml-string-encode (the-string)))))
+       (ignore))
+      
+      ;; error
+      (else
+       (let ((c (the-failure)))
+	  (if (eof-object? c)
+	      (reverse! res)
+	      (raise
+		 (instantiate::&io-parse-error
+		    (proc "js")
+		    (msg "Javascript syntax: 'Unexpected char'")
+		    (obj c))))))))
+
+;*---------------------------------------------------------------------*/
+;*    js ...                                                           */
+;*---------------------------------------------------------------------*/
+(define (js ip #!key line-begin line-end)
+   (js-lexer-init!)
+   (read/rp *js-lexer* ip 'javascript line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1)) '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    hopscript ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (hopscript ip #!key line-begin line-end)
+   (js-lexer-init!)
+   (read/rp *js-lexer* ip 'hopscript line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1)) '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    typescript ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (typescript ip #!key line-begin line-end)
+   (js-lexer-init!)
+   (read/rp *js-lexer* ip 'typescript line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1)) '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    json ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (json ip #!key line-begin line-end)
+   (js-lexer-init!)
+   (read/rp *js-lexer* ip 'json line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1)) '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    c ...                                                            */
+;*---------------------------------------------------------------------*/
+(define (c ip #!key line-begin line-end)
+   (c-lexer-init!)
+   (read/rp *js-lexer* ip 'c line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1)) '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    line-number ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (line-number prog lnum id)
+   
+   (define (digit n)
+      (cond
+	 ((< n 10) 1)
+	 ((< n 100) 2)
+	 ((< n 1000) 3)
+	 ((< n 10000) 4)
+	 (else 5)))
+
+   (define (flatten lst)
+      (let flatten ((lst lst)
+		    (res '()))
+	 (cond
+	    ((null? lst)
+	     (reverse! res))
+	    ((pair? (car lst))
+	     (flatten (append (car lst) (cdr lst)) res))
+	    (else
+	     (flatten (cdr lst) (cons (car lst) res))))))
+
+   (define (next-line num prog)
+      (let loop ((n '())
+		 (prog prog)
+		 (num num))
+	 (cond
+	    ((null? prog)
+	     ;; done with the whole program
+	     (values num (reverse n) prog))
+	    ((string? (car prog))
+	     ;; a token
+	     (let ((i (string-index "\n" (car prog))))
+		(if i
+		    (let ((s0 (substring (car prog) 0 (+fx i 1)))
+			  (s1 (substring (car prog) (+fx i 1))))
+		       (values num (reverse (cons s0 n)) (cons s1 (cdr prog))))
+		    (loop (cons (car prog) n) (cdr prog) num))))
+	    ((vector? (car prog))
+	     ;; a line number
+	     (loop n (cdr prog) (vector-ref (car prog) 0)))
+	    (else
+	     ;; a tag
+	     (loop (cons (car prog) n) (cdr prog) num)))))
+
+   (define (empty-line? line)
+      (cond
+	 ((null? line) #t)
+	 ((equal? (car line) "") (empty-line? (cdr line)))
+	 (else #f)))
+   
+   (define (split-lines prog num)
+      (multiple-value-bind (num line next)
+	 (next-line num prog)
+	 (if (null? next)
+	     (if (empty-line? line)
+		 '()
+		 (list (cons num line)))
+	     (cons (cons num line) (split-lines next (+ num 1))))))
+
+   (if (integer? lnum)
+       (let ((lines (split-lines (flatten prog) lnum)))
+	  (when (pair? lines)
+	     (let* ((num (caar (last-pair lines)))
+		    (fmt (format "~~~ad" (digit num))))
+		(map (lambda (nl)
+			(let* ((i (car nl))
+			       (l (cdr nl)))
+			   (if id
+			       (let ((name (format "~a-~a" id i)))
+				  (list (<A> :name name)
+				     (<SPAN> :class "fontifier-prog-line-number"
+					:id name
+					(format fmt i)) l))
+			       (list
+				  (<SPAN> :class "fontifier-prog-line-number"
+				     (format fmt i)) l))))
+		   lines))))
+       prog))

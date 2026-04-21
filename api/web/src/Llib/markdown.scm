@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 17:38:56 2026                          */
-;*    Last change :  Tue Apr 21 09:42:47 2026 (serrano)                */
+;*    Last change :  Tue Apr 21 14:16:54 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Markdown parser                                                  */
@@ -444,12 +444,6 @@
        (unless (eof-object? (the-failure))
 	  (rgc-buffer-unget-char (the-port) (char->integer (the-failure))))
        (reverse! lines))))
-
-;*---------------------------------------------------------------------*/
-;*    fontify-code ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (fontify-code lines lang::bstring fontifier id)
-   (list lines lang fontifier id))
 
 ;*---------------------------------------------------------------------*/
 ;*    *quote-code-block-grammar* ...                                   */
@@ -1049,10 +1043,11 @@
 			 ((not (pair? lines))
 			  '())
 			 (else
-			  (fontify-code lines lang fontifier
+			  (fontifier lang 
 			     (cond
 				((assq 'id (-> state attributes)) => cdr)
-				(else '())))))))
+				(else '()))
+			     lines)))))
 	    (values 'block
 	       (markdown-element 'pre
 		  `((id . ,id)
@@ -1066,12 +1061,7 @@
 				 (else
 				  "fontifier-prog"))))
 		  
-		  (list
-		     (markdown-element 'code
-			(if (and (string? lang) (>fx (string-length lang) 0))
-			    `((class . ,(string-append "language-" lang)))
-			    '())
-			body)))))))
+		  body)))))
 
    (define (pre state::MDState token indent)
       (let ((start (token-value token)))
@@ -1476,7 +1466,24 @@
 ;*    markdown-parse ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (markdown-parse ip::input-port #!key charset fontifier eval)
-   (markdown-element 'html '() (markdown-parse-elements ip charset fontifier eval)))
+   (let ((fontifier (cond
+		       ((not fontifier)
+			(lambda (lang id lines) lines))
+		       ((or (not (procedure? fontifier))
+			    (not (correct-arity? fontifier 3)))
+			(error "markdown-parse" "Illegal fontifier" fontifier))
+		       (else
+			fontifier)))
+	 (eval (cond
+		  ((not eval)
+		   (lambda (x) x))
+		  ((or (not (procedure? eval))
+		       (not (correct-arity? eval 1)))
+		   (error "markdown-parse" "Illegal eval" eval))
+		  (else
+		   eval))))
+      (markdown-element 'html '()
+	 (markdown-parse-elements ip charset fontifier eval))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *margins* ...                                                    */
