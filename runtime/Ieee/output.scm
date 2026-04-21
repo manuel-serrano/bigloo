@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/output.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/output.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Thu Jun  5 08:34:45 2025 (serrano)                */
+;*    Last change :  Tue Apr 21 08:32:50 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -224,15 +224,15 @@
 	       (method static $ill-char-rep::obj (::uchar)
 		  "ill_char_rep")))
     
-   (export  (newline . port)
+   (export  (newline #!optional (port::output-port (current-output-port)))
 	    (inline newline-1 ::output-port)
-	    (write obj . port)
+	    (write obj #!optional (port::output-port (current-output-port)))
 	    (write-2 obj ::output-port)
-	    (display obj . port)
+	    (display obj #!optional (port::output-port (current-output-port)))
 	    (display-2 obj ::output-port)
 	    (display-console obj)
-	    (write-char ::uchar #!optional (port (current-output-port)))
-	    (write-byte ::ubyte #!optional (port (current-output-port)))
+	    (write-char ::uchar #!optional (port::output-port (current-output-port)))
+	    (write-byte ::ubyte #!optional (port::output-port (current-output-port)))
 	    (inline write-char-2 ::uchar ::output-port)
 	    (inline write-byte-2 ::ubyte ::output-port)
 	    (inline display-string ::bstring ::output-port)
@@ -267,17 +267,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    newline ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (newline . port)
-   (let ((port (match-case port
-		  (()
-		   (current-output-port))
-		  ((?-)
-		   (car port))
-		  (else
-		   (error "newline"
-			  "wrong number of optional arguments"
-			  port)))))
-      (newline-1 port)))
+(define (newline #!optional (port::output-port (current-output-port)))
+   (newline-1 port))
 
 ;*---------------------------------------------------------------------*/
 ;*    newline-1 ...                                                    */
@@ -288,37 +279,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    display ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (display obj . port)
-   (let ((port (match-case port
-		  (()
-		   (current-output-port))
-		  ((?-)
-		   (car port))
-		  (else
-		   (error "display"
-			  "wrong number of optional arguments"
-			  port)))))
-      (display-2 obj port)))
+(define (display obj #!optional (port::output-port (current-output-port)))
+   (display-2 obj port))
 
 ;*---------------------------------------------------------------------*/
 ;*    write ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (write obj . port)
-   (let ((port (match-case port
-		  (()
-		   (current-output-port))
-		  ((?-)
-		   (car port))
-		  (else
-		   (error "write"
-			  "wrong number of optional arguments"
-			  port)))))
-      (write-2 obj port)))
+(define (write obj #!optional (port::output-port (current-output-port)))
+   (write-2 obj port))
 
 ;*---------------------------------------------------------------------*/
 ;*    write-char ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (write-char char #!optional (port (current-output-port)))
+(define (write-char char #!optional (port::output-port (current-output-port)))
    (write-char-2 char port))
 
 ;*---------------------------------------------------------------------*/
@@ -330,7 +303,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    write-byte ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (write-byte byte #!optional (port (current-output-port)))
+(define (write-byte byte #!optional (port::output-port (current-output-port)))
    (write-byte-2 byte port))
 
 ;*---------------------------------------------------------------------*/

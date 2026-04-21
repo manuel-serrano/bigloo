@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/api/mail/src/Llib/rfc2045.scm     */
+;*    .../prgm/project/bigloo/5.0a/api/mail/src/Llib/rfc2045.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Wed Apr  3 16:53:23 2024 (serrano)                */
-;*    Copyright   :  2007-24 Manuel Serrano                            */
+;*    Last change :  Tue Apr 21 08:42:39 2026 (serrano)                */
+;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
 ;*    defined by the RFC 2045:                                         */
@@ -250,7 +250,7 @@
 	     ((eof-object? c)
 	      '())
 	     ((>fx (bigloo-warning) 0)
-	      (display "*** WARNING:multipart:mime-content-type-decode(" msg "): " (current-error-port))
+	      (display (format "*** WARNING:multipart:mime-content-type-decode(~s): " msg) (current-error-port))
 	      (display "Illegal parameter value -- \"" (current-error-port))
 	      (display c (current-error-port))
 	      (display (read-string (the-port)) (current-error-port))
