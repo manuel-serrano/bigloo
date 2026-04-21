@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/vector.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/vector.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Thu Jul 17 13:43:12 2025 (serrano)                */
+;*    Last change :  Tue Apr 21 08:16:11 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -125,8 +125,8 @@
 	    (copy-vector::vector ::vector ::long)
 	    (vector-copy3::vector ::vector start stop)
 	    (vector-copy::vector ::vector . args)
-	    (vector-copy! ::vector ::long source
-	       #!optional (sstart 0) (send (vector-length source)))
+	    (vector-copy! ::vector ::long source::vector
+	       #!optional (sstart::long 0) (send::long (vector-length source)))
 	    (vector-append::vector ::vector . args)
 	    (sort ::obj ::obj)
 	    (vector-map::vector ::procedure ::vector . rests)
@@ -150,37 +150,37 @@
 ;*---------------------------------------------------------------------*/
 ;*    vector? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (vector? obj)
+(define-inline (vector?::bool obj)
    ($vector? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-vector ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-vector int #!optional (fill #unspecified))
-   ($make-vector int fill))
+(define-inline (make-vector::vector len::long #!optional (fill #unspecified))
+   ($make-vector len fill))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector . args ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (vector . args)
+(define-inline (vector::vector . args)
    (list->vector args))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-length ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (vector-length vector)
+(define-inline (vector-length::long vector::vector)
    ($vector-length vector))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-ref ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (vector-ref vector k)
+(define-inline (vector-ref vector::vector k::long)
    ($vector-ref vector k))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-set! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (vector-set! vector k obj)
+(define-inline (vector-set! vector::vector k::long obj)
    ($vector-set! vector k obj))
 
 ;*---------------------------------------------------------------------*/
@@ -198,7 +198,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    vector->list ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (vector->list vector)
+(define (vector->list::pair-nil vector::vector)
    (let ((vlen (vector-length vector)))
       (if (=fx vlen 0)
 	  '()
@@ -211,7 +211,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    list->vector ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (list->vector list)
+(define (list->vector::vector list::pair-nil)
    (let* ((len (length list))
 	  (vec ($create-vector len)))
       (let loop ((i 0)
@@ -225,7 +225,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    vector-fill! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (vector-fill! vec fill
+(define (vector-fill! vec::vector fill
 	   #!optional (start::long 0) (end::long (vector-length vec)))
    (cond
       ((<fx start 0)
@@ -317,8 +317,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    vector-copy! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (vector-copy! target tstart source
-	   #!optional (sstart 0) (send (vector-length source)))
+(define (vector-copy! target::vector tstart::long source::vector
+	   #!optional (sstart::long 0) (send::long (vector-length source)))
    (let* ((end (minfx send (vector-length source)))
           (count (-fx end sstart))
           (tend (minfx (+fx tstart count) (vector-length target))))
@@ -427,7 +427,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    vector-map ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (vector-map proc v . rest)
+(define (vector-map::vector proc::procedure v::vector . rest)
    (let* ((len (vector-length v))
 	  (nv ($create-vector len)))
       (cond
@@ -441,7 +441,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    vector-map! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (vector-map! proc v . rest)
+(define (vector-map!::vector proc::procedure v::vector . rest)
    (let ((len (vector-length v)))
       (cond
 	 ((null? rest)
@@ -475,7 +475,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    vector-for-each ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (vector-for-each proc v . rest)
+(define (vector-for-each proc::procedure v::vector . rest)
    (let ((len (vector-length v)))
       (cond
 	 ((null? rest)
@@ -488,5 +488,5 @@
 ;*---------------------------------------------------------------------*/
 ;*    vector-shrink! ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (vector-shrink! vec nlen)
+(define-inline (vector-shrink!::vector vec::vector nlen::long)
    ($vector-shrink! vec nlen))

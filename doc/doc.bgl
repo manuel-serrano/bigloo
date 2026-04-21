@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Mon Apr 20 16:43:41 2026 (serrano)                */
+;*    Last change :  Tue Apr 21 08:06:01 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -129,8 +129,11 @@
 	 (markdown-element 'h4 '((class . "example"))
 	    (list (if (pair? (cdr ts)) "Examples" "Example")))
 	 (markdown-element 'pre '((class . "test"))
-	    (map (lambda (t)
-		    (format "~s  &rarr;  ~s\n" (car t) (cdr t)))
+	    (append-map (lambda (t)
+			   (list (format "~s" (car t))
+			      (markdown-element 'span '((class . "result")) (list "&rarr;"))
+			      (format "~s" (cdr t))
+			      "\n"))
 	       ts)))))
 
 ;*---------------------------------------------------------------------*/

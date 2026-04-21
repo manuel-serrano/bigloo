@@ -24,7 +24,7 @@ Constructors
 ------------
 
 ### make-vector ###
-Creates a vector of size `k`, initializes it with `obj`, which defaults
+Creates a vector of size `len`, initializes it with `fill`, which defaults
 to `#unspecified`.
 
 ### vector ###
@@ -72,21 +72,11 @@ Returns the character at position `k` in `vector`. If the argument
 triggered.
 
 
-### vector-ref-ur ###
-
-Behaves as `vector-ref` but does not check the range of `k`.
-
-
 ### vector-set! ###
 
 Sets the character at position `k` of `vector`. If the argument 
 `k` is not in the range `0 &le; k &lt; vector.length`, an exception is 
 triggered.
-
-
-### vector-set-ur! ###
-
-Behaves as `vector-set!` but does not check the range of `k`.
 
 
 Library functions
@@ -146,5 +136,3 @@ index `end` (exclusive). As much as possible `vector-shrink!`  changes
 the argument `vector`. That is, as much as possible, and for the
 back-ends that enable it, `vector-shrink!` operates a side effect on
 its argument.
-
-

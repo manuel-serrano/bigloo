@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Tools/trace.scm      */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Tools/trace.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 15 15:04:42 1992                          */
-;*    Last change :  Mon Jun 27 14:36:02 2022 (serrano)                */
-;*    Copyright   :  1992-2022 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Apr 21 08:09:32 2026 (serrano)                */
+;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The trace management                                             */
 ;*=====================================================================*/
