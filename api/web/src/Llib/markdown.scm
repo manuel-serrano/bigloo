@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 17:38:56 2026                          */
-;*    Last change :  Tue Apr 14 19:08:39 2026 (serrano)                */
+;*    Last change :  Tue Apr 21 07:30:09 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Markdown parser                                                  */
@@ -504,7 +504,7 @@
    (regular-grammar ((punct (in "+=/-$~#%!'\""))
 		     (punct+ (or punct #\newline #\return))
 		     (blank (in "<>^|:~;,{} ."))
-		     (letter (out "<>+^|*=/_-$#%:~;,\"`'[](){}! \\\n\t0123456789"))
+		     (letter (out "&<>+^|*=/_-$#%:~;,\"`'[](){}! \\\n\t0123456789"))
 		     (letter+ (or letter digit))
 		     (ident (: #\: (+ letter) (in " \t\n\r")))
 		     (crlf (or "\n" "\r\n"))
@@ -736,18 +736,18 @@
 	  (token 'html (html-parse (the-port) :procedure markdown-element :eoi (lambda (o) #t)) 0)))
       
       ;; escaped characters
-      ((: "\\" (in ".`*_{}[]()#+-!>,~$"))
+      ((: "\\" (in ".`*_{}[]()#+-!>,~$&"))
        (token 'text (the-substring 1 2) (the-length)))
       
       ;; single escape characters
-      ((or punct blank #\space #\\)
+      ((or punct blank #\space #\\ #\&)
        (token 'text (the-string) (the-length)))
       
       ;; HTML character
       ((: #\&
           (or (: "#x" (+ (in ("09afAF"))))
 	      (: "#" (+ (in ("09"))))
-	      "amp" "nbsp" "lt" "gt")
+	      (+ (in ("azAZ"))))
 	  #\;)
        (token 'CHAR (the-string) (the-length)))
       

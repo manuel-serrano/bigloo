@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Tue Apr 14 19:15:27 2026 (serrano)                */
+;*    Last change :  Mon Apr 20 18:35:35 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
@@ -151,8 +151,8 @@
 	  (let ((res (make-string nl)))
 	     (let loop ((i 0)
 			(j 0))
-		(if (=fx j nl)
-		    res
+		(if (=fx i ol)
+		    (string-shrink! res j)
 		    (let ((c (string-ref str i)))
 		       (case c
 			  ((#\<)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon Apr 20 17:43:37 2026 (serrano)                */
+;*    Last change :  Tue Apr 21 07:36:23 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -188,8 +188,8 @@
 	    (inline string-ci=?::bool ::bstring ::bstring)
 	    (inline substring=?::bool ::bstring ::bstring ::long)
 	    (inline substring-ci=?::bool ::bstring ::bstring ::long)
-	    (inline substring-at?::bool ::bstring ::bstring ::long #!optional (len -1))
-	    (inline substring-ci-at?::bool ::bstring ::bstring ::long #!optional (len -1))
+	    (inline substring-at?::bool ::bstring ::bstring ::long #!optional (len::long -1))
+	    (inline substring-ci-at?::bool ::bstring ::bstring ::long #!optional (len::long -1))
 	    (inline empty-string?::bool ::bstring)
 	    (inline string<?::bool ::bstring ::bstring)
 	    (inline string>?::bool ::bstring ::bstring)
@@ -201,8 +201,8 @@
 	    (inline string-ci>=?::bool ::bstring ::bstring)
 	    (substring::bstring string::bstring ::long #!optional (end::long (string-length string)))
 	    (inline substring-ur::bstring ::bstring ::long ::long)
-	    (string-contains ::bstring ::bstring #!optional (start::int 0))
-	    (string-contains-ci ::bstring ::bstring #!optional (start::int 0))
+	    (string-contains ::bstring ::bstring #!optional (start::long 0))
+	    (string-contains-ci ::bstring ::bstring #!optional (start::long 0))
 	    (string-compare3::long ::bstring ::bstring)
 	    (string-compare3-ci::long ::bstring ::bstring)
 	    (string-append::bstring . strings)
@@ -216,16 +216,16 @@
 	    (string-downcase!::bstring ::bstring)
 	    (string-capitalize!::bstring ::bstring)
 	    (string-capitalize::bstring ::bstring)
-	    (encode-string::bstring ::bstring #!optional (encoding (bigloo-string-encoding)))
+	    (encode-string::bstring ::bstring #!optional (encoding::symbol (bigloo-string-encoding)))
             (create-string-for-read::bstring ::bstring ::bool) 
 	    (inline string-for-read::bstring ::bstring)
 	    (inline symbol-for-read::bstring ::bstring)
 	    (inline string-as-read::bstring ::bstring)
-	    (inline escape-scheme-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
-	    (inline escape-C-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
-	    (decode-scheme-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
-	    (decode-C-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
-	    (decode-wasm-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
+	    (inline escape-scheme-string::bstring str::bstring #!optional (start::long 0) (len::long (string-length str)))
+	    (inline escape-C-string::bstring str::bstring #!optional (start::long 0) (len::long (string-length str)))
+	    (decode-scheme-string::bstring str::bstring #!optional (start::long 0) (len::long (string-length str)))
+	    (decode-C-string::bstring str::bstring #!optional (start::long 0) (len::long (string-length str)))
+	    (decode-wasm-string::bstring str::bstring #!optional (start::long 0) (len::long (string-length str)))
 	    (inline blit-string-ur! ::bstring ::long ::bstring ::long ::long)
 	    (blit-string! ::bstring ::long ::bstring ::long ::long)
 	    (inline string-shrink!::bstring ::bstring ::long)
@@ -234,37 +234,25 @@
 	    (string-delete::bstring string::bstring ::obj #!optional (start::int 0) (end::long (string-length string)))
 	    (string-split::pair-nil ::bstring . opt)
 	    (string-cut::pair-nil ::bstring . opt)
-	    (string-index::obj ::bstring ::obj #!optional (start 0))
-	    (string-char-index::obj ::bstring ::char #!optional (start 0) (count -1))
+	    (string-index::obj ::bstring ::obj #!optional (start::long 0))
+	    (string-char-index::obj ::bstring ::char #!optional (start::long 0) (count::long -1))
 	    (string-char-index-ur::obj ::bstring ::char ::long ::long)
-	    (string-index-right::obj s::bstring ::obj
-	       #!optional (start (string-length s)))
-	    (string-skip::obj ::bstring ::obj #!optional (start 0))
-	    (string-skip-right::obj s::bstring ::obj
-	       #!optional (start (string-length s)))
-	    (string-prefix-length::int s1::bstring s2::bstring
-	       #!optional start1 end1 start2 end2)
-	    (string-suffix-length::int s1::bstring s2::bstring
-	       #!optional start1 end1 start2 end2)
-	    (string-prefix-length-ci::int s1::bstring s2::bstring
-	       #!optional start1 end1 start2 end2)
-	    (string-suffix-length-ci::int s1::bstring s2::bstring
-	       #!optional start1 end1 start2 end2)
-	    (string-prefix?::bool s1::bstring s2::bstring
-	       #!optional start1 end1 start2 end2)
-	    (string-suffix?::bool s1::bstring s2::bstring
-	       #!optional start1 end1 start2 end2)
-	    (string-prefix-ci?::bool s1::bstring s2::bstring
-	       #!optional start1 end1 start2 end2)
-	    (string-suffix-ci?::bool s1::bstring s2::bstring
-	       #!optional start1 end1 start2 end2)
-	    (string-natural-compare3::int ::bstring ::bstring
-	       #!optional (start1 0) (start2 0))
-	    (string-natural-compare3-ci::int ::bstring ::bstring
-	       #!optional (start1 0) (start2 0))
+	    (string-index-right::obj s::bstring ::obj #!optional (start::long (string-length s)))
+	    (string-skip::obj ::bstring ::obj #!optional (start::long 0))
+	    (string-skip-right::obj s::bstring ::obj #!optional (start::long (string-length s)))
+	    (string-prefix-length::int s1::bstring s2::bstring #!optional start1 end1 start2 end2)
+	    (string-suffix-length::int s1::bstring s2::bstring #!optional start1 end1 start2 end2)
+	    (string-prefix-length-ci::int s1::bstring s2::bstring #!optional start1 end1 start2 end2)
+	    (string-suffix-length-ci::int s1::bstring s2::bstring #!optional start1 end1 start2 end2)
+	    (string-prefix?::bool s1::bstring s2::bstring #!optional start1 end1 start2 end2)
+	    (string-suffix?::bool s1::bstring s2::bstring #!optional start1 end1 start2 end2)
+	    (string-prefix-ci?::bool s1::bstring s2::bstring #!optional start1 end1 start2 end2)
+	    (string-suffix-ci?::bool s1::bstring s2::bstring #!optional start1 end1 start2 end2)
+	    (string-natural-compare3::int ::bstring ::bstring #!optional (start1::long 0) (start2::long 0))
+	    (string-natural-compare3-ci::int ::bstring ::bstring #!optional (start1::long 0) (start2::long 0))
 	    (string-hex-intern::bstring ::bstring)
 	    (string-hex-intern!::bstring ::bstring)
-	    (string-hex-extern::bstring str::bstring #!optional (start::int 0) (end::long (string-length str)))
+	    (string-hex-extern::bstring str::bstring #!optional (start::long 0) (end::long (string-length str)))
 	    (string-trim-both::bstring ::bstring . opt)
 	    (string-trim-right::bstring ::bstring . opt)
 	    (string-trim::bstring ::bstring . opt))
@@ -391,7 +379,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring-at?@ ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (substring-at?::bool string1::bstring string2::bstring off::long #!optional (len -1))
+(define-inline (substring-at?::bool string1::bstring string2::bstring off::long #!optional (len::long -1))
    (if (=fx len -1)
        ($prefix-at? string1 string2 off)
        ($substring-at? string1 string2 off len)))
@@ -405,7 +393,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring-ci-at?@ ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (substring-ci-at?::bool string1::bstring string2::bstring off #!optional (len -1))
+(define-inline (substring-ci-at?::bool string1::bstring string2::bstring off #!optional (len::long -1))
    (if (=fx len -1)
 	   ($prefix-ci-at? string1 string2 off)
 	   ($substring-ci-at? string1 string2 off len)))
@@ -496,7 +484,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-contains ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (string-contains s1::bstring s2::bstring #!optional (start::int 0))
+(define (string-contains s1::bstring s2::bstring #!optional (start::long 0))
    (let ((l2 (string-length s2)))
       (if (=fx l2 1)
 	  (string-index s1 (string-ref s2 0) start)
@@ -517,7 +505,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-contains-ci ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (string-contains-ci s1::bstring s2::bstring #!optional (start::int 0))
+(define (string-contains-ci s1::bstring s2::bstring #!optional (start::long 0))
    (let ((l1 (string-length s1))
 	 (l2 (string-length s2))
 	 (i0 (if (<fx start 0) 0 start)))
@@ -735,7 +723,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    encode-string ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (encode-string::bstring src::bstring #!optional (encoding (bigloo-string-encoding)))
+(define (encode-string::bstring src::bstring #!optional (encoding::symbol (bigloo-string-encoding)))
    
    (define (octal n)
       (integer->char (+fx n (char->integer #\0))))
@@ -864,7 +852,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Backward compatibility                                           */
 ;*---------------------------------------------------------------------*/
-(define (decode-scheme-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
+(define (decode-scheme-string::bstring str::bstring #!optional (start::long 0) (len::long (string-length str)))
    
    (define buf (make-string len))
    
@@ -903,13 +891,13 @@
 ;*    -------------------------------------------------------------    */
 ;*    Backward compatibility                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (escape-scheme-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
+(define-inline (escape-scheme-string::bstring str::bstring #!optional (start::long 0) (len::long (string-length str)))
    (decode-scheme-string str start len))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn decode-C-string@ ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (decode-C-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
+(define (decode-C-string::bstring str::bstring #!optional (start::long 0) (len::long (string-length str)))
    
    (define (xdigit->byte c)
       (cond
@@ -1056,13 +1044,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    escape-C-string ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (escape-C-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
+(define-inline (escape-C-string::bstring str::bstring #!optional (start::long 0) (len::long (string-length str)))
    (decode-C-string str start len))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn decode-wasm-string@ ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (decode-wasm-string::bstring str::bstring #!optional (start 0) (len (string-length str)))
+(define (decode-wasm-string::bstring str::bstring #!optional (start::long 0) (len::long (string-length str)))
    
    (define (xdigit->byte c)
       (cond
@@ -1370,7 +1358,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-char-index ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (string-char-index string::bstring char::char #!optional (start 0) (count -1))
+(define (string-char-index string::bstring char::char #!optional (start::long 0) (count::long -1))
    (let* ((len (string-length string))
 	  (n (if (and (integer? count)
 		      (>=fx count 0) (<=fx count (-fx len start)))
@@ -1382,7 +1370,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-index ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (string-index string::bstring rs #!optional (start 0))
+(define (string-index string::bstring rs #!optional (start::long 0))
    (cond
       ((char? rs)
        (string-char-index string rs start))
@@ -1425,7 +1413,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-index-right ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (string-index-right s::bstring rs #!optional (start (string-length s)))
+(define (string-index-right s::bstring rs #!optional (start::long (string-length s)))
    (define (string-char-index s c)
       (let loop ((i (-fx start 1)))
 	 (cond
@@ -1479,7 +1467,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-skip ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (string-skip string::bstring rs #!optional (start 0))
+(define (string-skip string::bstring rs #!optional (start::long 0))
    
    (define (string-char-skip s c)
       (let ((len (string-length s)))
@@ -1546,7 +1534,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-skip-right ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (string-skip-right s::bstring rs #!optional (start (string-length s)))
+(define (string-skip-right s::bstring rs #!optional (start::long (string-length s)))
    
    (define (string-char-skip s c)
       (let loop ((i (-fx start 1)))
@@ -1818,13 +1806,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-natural-compare3 ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (string-natural-compare3 a::bstring b::bstring #!optional (start1 0) (start2 0))
+(define (string-natural-compare3 a::bstring b::bstring #!optional (start1::long 0) (start2::long 0))
    (strnatcmp a b #f start1 start2))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-natural-compare3-ci ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (string-natural-compare3-ci a::bstring b::bstring #!optional (start1 0) (start2 0))
+(define (string-natural-compare3-ci a::bstring b::bstring #!optional (start1::long 0) (start2::long 0))
    (strnatcmp a b #t start1 start2))
 
 ;*---------------------------------------------------------------------*/
@@ -1980,7 +1968,7 @@
 ;*    string-hex-extern ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (string-hex-extern::bstring str::bstring #!optional
-	   (start::int 0) (end::long (string-length str)))
+	   (start::long 0) (end::long (string-length str)))
    
    (define (integer->hex n) (string-ref "0123456789abcdef" n))
    

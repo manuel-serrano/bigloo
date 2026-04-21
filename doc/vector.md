@@ -138,9 +138,9 @@ applying `proc` to all its elements.
 
 Shrink a vector. The resulting vector's len is the minimum value of
 `(vector-length vec)` and `nlen`. The argument `end` must be an exact
-integers satisfying: `0 &ge; end &ge; (vector-length vector)`.
+integers satisfying: `0 &le; end &le; (vector-length vector)`.
 
-The function `vector-shrink! returns a new vector formed from the
+The function `vector-shrink!` returns a new vector formed from the
 values of `vector` beginning with index 0 (inclusive) and ending with
 index `end` (exclusive). As much as possible `vector-shrink!`  changes
 the argument `vector`. That is, as much as possible, and for the

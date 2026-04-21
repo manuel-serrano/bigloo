@@ -333,12 +333,12 @@ position `o1`.
 
 ### string-replace ###
 
-Replaces all the occurrences of `char1` by `char2` in `string`.
+Replaces all the occurrences of `c1` by `c2` in `str`.
 Returns a newly allocated string.
 
 ### string-replace! ###
 
-Replaces all the occurrences of `char1` by `char2` in `string`.
+Replaces all the occurrences of `c1` by `c2` in `str`.
 Modifies its first argument.
 
 
@@ -419,10 +419,10 @@ As `string-hex-intern` but might returns its modified argument.
 
 ### string-hex-extern ###
 
-Converts a `string` into a hexadecimal representation.
+Converts `str` into an hexadecimal representation.
 
 The arguments `start` and `end` must be exact integers satisfying:
-  0 &le; `start` &le; `end` &lt; `(string-length str)`.
+  0 &le; `start` &le; `end` &le; `(string-length str)`.
   
 
 ### string-trim-both ###
