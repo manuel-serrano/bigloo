@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 17:38:56 2026                          */
-;*    Last change :  Tue Apr 21 07:30:09 2026 (serrano)                */
+;*    Last change :  Tue Apr 21 09:42:47 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Markdown parser                                                  */
@@ -91,10 +91,21 @@
 ;*---------------------------------------------------------------------*/
 ;*    markdown-element ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (markdown-element tag attrs cs::pair-nil)
-   (let ((el (ctor tag attrs cs #f)))
-      (markdown-element-children-set! el
-	 (map! (lambda (o) (if (ctor? o) o (ctor 'text '() o #f))) cs))
+(define (markdown-element tag attrs els::pair-nil)
+   (let ((el (ctor tag attrs '() #f)))
+      (let loop ((els els)
+		 (cs '()))
+	 (cond
+	    ((null? els)
+	     (markdown-element-children-set! el (reverse! cs)))
+	    ((string? (car els))
+	     (loop (cdr els) (cons (ctor 'text '() (car els) #f) cs)))
+	    ((ctor? (car els))
+	     (loop (cdr els) (cons (car els) cs)))
+	    ((pair? (car els))
+	     (loop (append (car els) (cdr els)) cs))
+	    (else
+	     (loop (cons (format "~s" (car els)) (cdr els)) cs))))
       el))
 
 ;*---------------------------------------------------------------------*/

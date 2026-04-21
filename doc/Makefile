@@ -1,41 +1,83 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/doc/Makefile                         */
+#*    serrano/prgm/project/bigloo/5.0a/doc/Makefile                    */
 #*    -------------------------------------------------------------    */
-#*    Author      :  Manuel Serrano                                    */
-#*    Creation    :  Wed Jan 14 15:08:14 2004                          */
-#*    Last change :  Fri Dec  1 10:22:23 2017 (serrano)                */
-#*    Copyright   :  2004-17 Manuel Serrano                            */
+#*    Author      :  manuel serrano                                    */
+#*    Creation    :  Mon Apr 13 12:38:34 2026                          */
+#*    Last change :  Tue Apr 14 08:37:49 2026 (serrano)                */
+#*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
-#*    The Makefile for managing the DOC Bigloo directory               */
+#*    The Makefile to build the documentation                          */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
-#*    distrib                                                          */
+#*    Default configuration                                            */
 #*---------------------------------------------------------------------*/
-distrib:
+include ../Makefile.buildconfig
+include ../Makefile.config
 
 #*---------------------------------------------------------------------*/
-#*    population                                                       */
+#*    Compilers, Tools and Destinations                                */
+#*---------------------------------------------------------------------*/
+# which C compiler to be used
+CC = `$(BIGLOO) -eval '(begin (print *cc*) (exit 0))'`
+# the shell to be used
+SHELL = /bin/sh
+
+#*---------------------------------------------------------------------*/
+#*  !!! WARNING !!! WARNING !!! WARNING !!! WARNING !!!  WARNING !!!   */
 #*    -------------------------------------------------------------    */
-#*    The list of all files that have to be placed inside the          */
-#*    repository for revision.                                         */
+#*  The recette can't be compiled in `-unsafe' mode (due to try forms) */
 #*---------------------------------------------------------------------*/
-pop:
-	@ echo doc/Makefile \
-               doc/README.ppc doc/README.sgi \
-               doc/README.alpha doc/README.openbsd \
-               doc/README.finalizer doc/README.fp \
-               doc/README.win32 doc/README.jvm \
-               doc/README.athlon doc/README.pentium \
-               doc/README.icc doc/README.benchmark \
-               doc/README.hppa \
-               doc/README.aix doc/README.aix.html \
-               doc/README.sparc-linux \
-               doc/README.mingw \
-               doc/README.macosx doc/README.solaris \
-               doc/README.android doc/README.raspberry
+VERBOSE = 
+EFLAGS = 
+BFLAGS = $(VERBOSE) -cg -g -O3 -q -Wall -init-lib \
+  -eval "(set! *indent* (= 1 2))" -gself \
+  -lib-dir $(BOOTLIBDIR) -no-auto-link-main -module5 -I src
+
+BCFLAGS =
 
 #*---------------------------------------------------------------------*/
-#*    distrib                                                          */
+#*    objects                                                          */
 #*---------------------------------------------------------------------*/
-distrib:
+COMMON = main fontifier
+
+C_OBJECTS = $(COMMON:%=%.$(C_OBJ_EXTENSION)) $(C_SPECIFIC:%=%.$(C_OBJ_EXTENSION))
+
+#*---------------------------------------------------------------------*/
+#*     Les suffixes ...                                                */
+#*---------------------------------------------------------------------*/
+.SUFFIXES:
+.SUFFIXES: .$(C_OBJ_EXTENSION) .scm .c .class .java .obj
+
+#*---------------------------------------------------------------------*/
+#*    tests                                                            */
+#*---------------------------------------------------------------------*/
+all: doc
+
+doc: objs_c bin
+	$(MAKE) bin/bgldoc
+
+bin/bgldoc: $(C_OBJECTS:%=objs_c/%)
+	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
+	@ echo "\e[1;34m$@\e[0m done."
+
+#*---------------------------------------------------------------------*/
+#*    .scm.$(C_OBJ_EXTENSION)                                          */
+#*---------------------------------------------------------------------*/
+objs_c/%.$(C_OBJ_EXTENSION): src/%.bgl
+	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
+
+#*---------------------------------------------------------------------*/
+#*    sub-directories                                                  */
+#*---------------------------------------------------------------------*/
+objs_c:
+	@ mkdir -p $@
+
+bin:
+	@ mkdir -p $@
+
+#*---------------------------------------------------------------------*/
+#*    clean                                                            */
+#*---------------------------------------------------------------------*/
+clean:
+	rm -rf objs_c bin

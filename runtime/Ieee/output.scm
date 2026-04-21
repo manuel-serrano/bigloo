@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Tue Apr 21 08:32:50 2026 (serrano)                */
+;*    Last change :  Tue Apr 21 10:09:13 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -610,7 +610,13 @@
 	  ((symbol? ,obj)
 	   (,write/display-symbol ,obj ,port))
 	  ((pair? ,obj)
-	   (,write/display-pair ,obj ,port))
+	   (if (and (eq? (car ,obj) 'quote)
+		    (pair? (cdr ,obj))
+		    (null? (cddr ,obj)))
+	       (begin
+		  (display-string "'" ,port)
+		  (,disp (cadr ,obj) ,port))
+	       (,write/display-pair ,obj ,port)))
 	  ((null? ,obj)
 	   (display-string "()" ,port))
 	  ((eq? ,obj #f)

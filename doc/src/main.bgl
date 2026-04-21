@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/doc/doc.bgl                     */
+;*    serrano/prgm/project/bigloo/5.0a/doc/src/main.bgl                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Tue Apr 21 08:44:36 2026 (serrano)                */
+;*    Last change :  Tue Apr 21 10:02:26 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -14,6 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module doc
    (library web)
+   (import "./fontifier.bgl" . fontifier)
    (main))
 
 ;*---------------------------------------------------------------------*/
@@ -122,6 +123,16 @@
        (variable->markdown def))))
 
 ;*---------------------------------------------------------------------*/
+;*    fontify ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (fontify text::bstring #!key (lang::bstring "bgl"))
+   (cond
+      ((string=? lang "bgl")
+       (call-with-input-string text fontifier.lisp))
+      (else
+       (format "~s" text))))
+
+;*---------------------------------------------------------------------*/
 ;*    test->markdown ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (test->markdown tests)
@@ -131,9 +142,10 @@
 	    (list (if (pair? (cdr ts)) "Examples" "Example")))
 	 (markdown-element 'pre '((class . "test"))
 	    (append-map (lambda (t)
-			   (list (format "~s" (car t))
+			   (list
+			      (fontify (format "~s" (car t)))
 			      (markdown-element 'span '((class . "result")) (list "&rarr;"))
-			      (format "~s" (cdr t))
+			      (fontify (format "~s" (cdr t)))
 			      "\n"))
 	       ts)))))
 
