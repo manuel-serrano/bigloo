@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Apr 14 08:37:49 2026 (serrano)                */
+#*    Last change :  Wed Apr 22 11:17:52 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -16,17 +16,7 @@ include ../Makefile.buildconfig
 include ../Makefile.config
 
 #*---------------------------------------------------------------------*/
-#*    Compilers, Tools and Destinations                                */
-#*---------------------------------------------------------------------*/
-# which C compiler to be used
-CC = `$(BIGLOO) -eval '(begin (print *cc*) (exit 0))'`
-# the shell to be used
-SHELL = /bin/sh
-
-#*---------------------------------------------------------------------*/
-#*  !!! WARNING !!! WARNING !!! WARNING !!! WARNING !!!  WARNING !!!   */
-#*    -------------------------------------------------------------    */
-#*  The recette can't be compiled in `-unsafe' mode (due to try forms) */
+#*    Variables                                                        */
 #*---------------------------------------------------------------------*/
 VERBOSE = 
 EFLAGS = 
@@ -39,9 +29,14 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
-COMMON = main fontifier
+COMMON = bgldoc fontifier
 
 C_OBJECTS = $(COMMON:%=%.$(C_OBJ_EXTENSION)) $(C_SPECIFIC:%=%.$(C_OBJ_EXTENSION))
+
+#*---------------------------------------------------------------------*/
+#*    Documentation                                                    */
+#*---------------------------------------------------------------------*/
+MD = pair string vector
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
@@ -54,18 +49,23 @@ C_OBJECTS = $(COMMON:%=%.$(C_OBJ_EXTENSION)) $(C_SPECIFIC:%=%.$(C_OBJ_EXTENSION)
 #*---------------------------------------------------------------------*/
 all: doc
 
-doc: objs_c bin
+doc: objs_c bin index.html
 	$(MAKE) bin/bgldoc
 
 bin/bgldoc: $(C_OBJECTS:%=objs_c/%)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 	@ echo "\e[1;34m$@\e[0m done."
 
+index.html: $(MD:%=%.html)
+
 #*---------------------------------------------------------------------*/
 #*    .scm.$(C_OBJ_EXTENSION)                                          */
 #*---------------------------------------------------------------------*/
 objs_c/%.$(C_OBJ_EXTENSION): src/%.bgl
 	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
+
+%.html: %.md bin/bgldoc
+	bin/bgldoc $< > $@ || rm -f $@
 
 #*---------------------------------------------------------------------*/
 #*    sub-directories                                                  */
@@ -81,3 +81,4 @@ bin:
 #*---------------------------------------------------------------------*/
 clean:
 	rm -rf objs_c bin
+	rm -rf $(MD:%=%.html)

@@ -72,5 +72,6 @@
   (have-overflow . ,(=fx @BGL_HAVE_OVERFLOW@ 1))
   (have-alloca . ,(=fx @HAVE_ALLOCA@ 1))
   (have-c99stackalloc . ,(=fx @HAVE_C99STACKALLOC@ 1))
+  (wasm-as . "@WASM_AS@")
   (wasm-fixnum . @WASM_FIXNUM@))
   

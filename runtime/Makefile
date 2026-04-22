@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Mar 10 17:11:47 2026 (serrano)                */
+#*    Last change :  Wed Apr 22 09:18:00 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -49,8 +49,6 @@ PBASE		= bigloo.runtime
 LIBSUFFIX	=
 # Wasm flags
 WFLAGS		= 
-# Wasm as
-WASMAS		= $(BGLWATIB)
 # Wasm preallocate ints length
 WASM_BINTS_PREALLOC_SIZE = 100
 WASM_BINTS_PREALLOC_START = -10

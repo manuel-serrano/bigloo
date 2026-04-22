@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Thu Apr  9 18:52:06 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 10:07:32 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -47,5 +47,7 @@
 	   (class css-declaration)
 	   (class css-function)
 	   (class css-hash-color)
+
+	   (class XmlElement)
 	   
 	   (export-all)))

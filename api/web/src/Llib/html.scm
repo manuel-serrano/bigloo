@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Mon Apr 20 18:35:35 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 11:08:27 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
@@ -19,14 +19,16 @@
    (export (html-parse::pair-nil ::input-port
 				 #!key
 				 (content-length 0)
-				 (procedure list)
+				 (procedure xml-element)
 				 (encoding 'UTF-8)
 				 (eoi #f))
 	   (html-string-decode::bstring ::bstring)
 	   (html-string-encode::bstring ::bstring)
 	   
 	   (unhtml-port ::input-port ::output-port #!optional table)
-	   (unhtml::bstring ::bstring #!optional table)))
+	   (unhtml::bstring ::bstring #!optional table)
+
+	   (write-html html::XmlElement #!optional (op::output-port (current-output-port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *html-special-elements* ...                                      */
@@ -47,7 +49,7 @@
 (define (html-parse port
 		    #!key
 		    (content-length 0)
-		    (procedure list)
+		    (procedure xml-element)
 		    (encoding 'UTF-8)
 		    (eoi #f))
    (xml-parse port
@@ -136,14 +138,33 @@
    (define (html-entity str i)
       (let ((len (string-length str)))
 	 (unless (=fx i (-fx len 1))
-	    (when (char-alphabetic? (string-ref str i))
-	       (let loop ((i i))
-		  (unless (=fx i len)
-		     (let ((c (string-ref str i)))
-			(cond
-			   ((char=? c #\;) (+fx i 1))
-			   ((char-alphabetic? c) (loop (+fx i 1)))
-			   (else #f)))))))))
+	    (cond
+	       ((char-alphabetic? (string-ref str i))
+		(let loop ((i i))
+		   (unless (=fx i len)
+		      (let ((c (string-ref str i)))
+			 (cond
+			    ((char=? c #\;) (+fx i 1))
+			    ((char-alphabetic? c) (loop (+fx i 1)))
+			    (else #f))))))
+	       ((and (char=? (string-ref str i) #\#)
+		     (<fx i (-fx len 4))
+		     (char=? (string-ref str (+fx i 1)) #\x))
+		(let loop ((i (+fx i 2)))
+		   (unless (=fx i len)
+		      (let ((c (string-ref str i)))
+			 (cond
+			    ((char=? c #\;)
+			     (+fx i 1))
+			    ((char-numeric? c)
+			     (loop (+fx i 1)))
+			    ((and (char>=? c #\a) (char<=? c #\f))
+			     (loop (+fx i 1)))
+			    ((and (char>=? c #\A) (char<=? c #\F))
+			     (loop (+fx i 1)))
+			    (else #f))))))
+	       (else
+		#f)))))
       
    (define (encode str ol nl)
       (if (=fx nl ol)
@@ -286,3 +307,98 @@
       (close-input-port in)
       (close-output-port out)))
 
+
+
+;*---------------------------------------------------------------------*/
+;*    *margins* ...                                                    */
+;*---------------------------------------------------------------------*/
+(define *margins*
+   '#("" " " "  " "   " "    " "     " "      " "       " "        "))
+
+;*---------------------------------------------------------------------*/
+;*    margin ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (margin m)
+   (when (>=fx m (vector-length *margins*))
+      (set! *margins* (make-vector (+fx m 1)))
+      (let loop ((i 0))
+	 (when (<=fx i m)
+	    (vector-set! *margins* i (make-string i #\space))
+	    (loop (+fx i 1)))))
+   (vector-ref *margins* m))
+
+;*---------------------------------------------------------------------*/
+;*    write-html ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (write-html html #!optional (op::output-port (current-output-port)))
+
+   (define (disp m text)
+      (display (margin m) op)
+      (display text op))
+
+   (define (disp-attrs attrs::pair-nil)
+      (for-each (lambda (a)
+		   (display " " op)
+		   (display (car a) op)
+		   (display "=\"" op)
+		   (display (cdr a) op)
+		   (display "\"" op))
+	 attrs))
+
+   (define (inline-element? el::XmlElement)
+      (memq (-> el tag) '(text em strong)))
+   
+   (define (inline->html el::XmlElement m)
+      (display "<")
+      (display (-> el tag) op)
+      (disp-attrs (-> el attrs))
+      (display ">" op)
+      (for-each (lambda (el) (el->html el m)) (xml-element-children el))
+      (display "</")
+      (display (-> el tag) op)
+      (display ">" op))
+      
+   (define (block->html el::XmlElement m)
+      (disp m "<")
+      (display (-> el tag) op)
+      (disp-attrs (-> el attrs))
+      (display ">" op)
+      (when (pair? (xml-element-children el))
+	 (display "\n" op)
+	 (for-each (lambda (el) (el->html el (+fx m 1))) (xml-element-children el)))
+      (disp m "</")
+      (display (-> el tag) op)
+      (display ">\n" op))
+
+   (define (inline-block->html el::XmlElement m)
+      (disp m "<")
+      (display (-> el tag) op)
+      (disp-attrs (-> el attrs))
+      (display ">" op)
+      (for-each (lambda (el) (el->html el (+fx m 1))) (xml-element-children el))
+      (display "</" op)
+      (display (-> el tag) op)
+      (display ">\n" op))
+
+   (define (el->html el::XmlElement m)
+      (case (-> el tag)
+	 ((text)
+	  (for-each (lambda (v)
+		       (display (html-string-encode v) op))
+	     (xml-element-children el)))
+	 ((p)
+	  (if (null? (xml-element-children el))
+	      (disp m "<p/>\n")
+	      (block->html el m)))
+	 ((h1 h2 h3 h4 h5)
+	  (inline-block->html el m))
+	 ((li div)
+	  (if (every inline-element? (xml-element-children el))
+	      (inline-block->html el m)
+	      (block->html el m)))
+	 ((ul html)
+	  (block->html el m))
+	 (else
+	  (inline->html el m))))
+
+   (el->html html 0))

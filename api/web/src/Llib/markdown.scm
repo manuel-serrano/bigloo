@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 17:38:56 2026                          */
-;*    Last change :  Tue Apr 21 14:16:54 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 10:05:56 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Markdown parser                                                  */
@@ -28,21 +28,10 @@
 	    
       (class MDSpan::MDState))
 
-   (import __web_html)
+   (import __web_html
+	   __web_xml)
 
-   (export (markdown-parse ::input-port #!key charset fontifier eval)
-	   (markdown-element::struct ::symbol ::pair-nil ::pair-nil)
-	   (markdown-element-tag ::struct)
-	   (markdown-element-attribute ::struct ::symbol)
-	   (markdown-element-attribute-set! ::struct ::symbol ::obj)
-	   (markdown-text-element-value::bstring ::struct)
-	   (markdown-element-children::pair-nil ::struct)
-	   (markdown-element-children-set!::pair-nil ::struct ::pair-nil)
-	   (markdown-element-append-child!::pair-nil ::struct ::obj)
-	   (markdown-element-next-sibling ::struct)
-	   (markdown-element-previous-sibling ::struct)
-	   (markdown-get-elements-by-tag::pair-nil ::struct ::symbol)
-	   (markdown->html html #!optional (op::output-port (current-output-port)))))
+   (export (markdown-parse ::input-port #!key charset fontifier eval)))
 
 ;*---------------------------------------------------------------------*/
 ;*    the-choord ...                                                   */
@@ -84,141 +73,6 @@
    (cer token))
 
 ;*---------------------------------------------------------------------*/
-;*    ctor ...                                                         */
-;*---------------------------------------------------------------------*/
-(define-struct ctor tag attrs children parent)
-
-;*---------------------------------------------------------------------*/
-;*    markdown-element ...                                             */
-;*---------------------------------------------------------------------*/
-(define (markdown-element tag attrs els::pair-nil)
-   (let ((el (ctor tag attrs '() #f)))
-      (let loop ((els els)
-		 (cs '()))
-	 (cond
-	    ((null? els)
-	     (markdown-element-children-set! el (reverse! cs)))
-	    ((string? (car els))
-	     (loop (cdr els) (cons (ctor 'text '() (car els) #f) cs)))
-	    ((ctor? (car els))
-	     (loop (cdr els) (cons (car els) cs)))
-	    ((pair? (car els))
-	     (loop (append (car els) (cdr els)) cs))
-	    (else
-	     (loop (cons (format "~s" (car els)) (cdr els)) cs))))
-      el))
-
-;*---------------------------------------------------------------------*/
-;*    markdown-element-tag ...                                         */
-;*---------------------------------------------------------------------*/
-(define (markdown-element-tag e)
-   (ctor-tag e))
-
-;*---------------------------------------------------------------------*/
-;*    markdown-element-attribute ...                                   */
-;*---------------------------------------------------------------------*/
-(define (markdown-element-attribute e attr)
-   (let ((c (assq attr (ctor-attrs e))))
-      (when (pair? c)
-	 (cdr c))))
-
-;*---------------------------------------------------------------------*/
-;*    markdown-element-attribute-set! ...                              */
-;*---------------------------------------------------------------------*/
-(define (markdown-element-attribute-set! e attr val)
-   (let ((c (assq attr (ctor-attrs e))))
-      (if (pair? c)
-	  (set-cdr! c val)
-	  (ctor-attrs-set! e (cons (cons attr val) (ctor-attrs e))))))
-
-;*---------------------------------------------------------------------*/
-;*    markdown-text-element-value ...                                  */
-;*---------------------------------------------------------------------*/
-(define (markdown-text-element-value e)
-   (if (eq? (ctor-tag e) 'text)
-       (ctor-children e)
-       (error "markdown-text-element-value"
-	  "argument is not a text element"
-	  (ctor-tag e))))
-
-;*---------------------------------------------------------------------*/
-;*    markdown-element-children ...                                    */
-;*---------------------------------------------------------------------*/
-(define (markdown-element-children e)
-   (ctor-children e))
-
-;*---------------------------------------------------------------------*/
-;*    markdown-element-children-set! ...                               */
-;*---------------------------------------------------------------------*/
-(define (markdown-element-children-set! e os)
-   (for-each (lambda (c)
-		(ctor-parent-set! c #f))
-      (ctor-children e))
-   (let ((cs (map (lambda (o)
-		     (if (ctor? o)
-			 o
-			 (ctor 'text '() o #f)))
-		os)))
-      (for-each (lambda (c)
-		   (ctor-parent-set! c e))
-	 cs)
-      (ctor-children-set! e cs)
-      cs))
-
-;*---------------------------------------------------------------------*/
-;*    markdown-element-next-sibling ...                                */
-;*---------------------------------------------------------------------*/
-(define (markdown-element-next-sibling e)
-   (let ((parent (ctor-parent e)))
-      (when (ctor? parent)
-	 (let ((l (memq e (ctor-children parent))))
-	    (when (pair? (cdr l))
-	       (cadr l))))))
-
-;*---------------------------------------------------------------------*/
-;*    markdown-element-previous-sibling ...                            */
-;*---------------------------------------------------------------------*/
-(define (markdown-element-previous-sibling e)
-   (let ((parent (ctor-parent e)))
-      (when (ctor? parent)
-	 (let ((cs (ctor-children e)))
-	    (when (and (pair? cs) (pair? (cdr cs)))
-	       (let loop ((p (car cs))
-			  (n (cdr cs)))
-		  (cond
-		     ((null? n) #f)
-		     ((eq? (car n) e) (car p))
-		     (else (loop n (cdr n))))))))))
-
-;*---------------------------------------------------------------------*/
-;*    markdown-element-append-child! ...                               */
-;*---------------------------------------------------------------------*/
-(define (markdown-element-append-child! e o)
-   (let* ((c (if (ctor? o)
-		 o
-		 (ctor 'text '() o #f)))
-	  (nc (append (ctor-children e) (list c))))
-      (when (ctor? c)
-	 (ctor-parent-set! c e))
-      (ctor-children-set! e nc)
-      nc))
-
-;*---------------------------------------------------------------------*/
-;*    markdown-get-elenents-by-tag ...                                 */
-;*---------------------------------------------------------------------*/
-(define (markdown-get-elements-by-tag::pair-nil el::struct tag::symbol)
-   
-   (define (get-tag::pair-nil el::struct tag::symbol)
-      (if (eq? (ctor-tag el) 'text)
-	  (if (eq? tag 'text) (list el) '())
-	  (let ((els (append-map (lambda (c) (get-tag c tag)) (ctor-children el))))
-	     (if (eq? (ctor-tag el) tag)
-		 (cons el els)
-		 els))))
-   
-   (get-tag el tag))
-
-;*---------------------------------------------------------------------*/
 ;*    flatten ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (flatten l)
@@ -241,9 +95,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    inline-els ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (inline-els tag els)
-   (if (and (pair? els) (null? (cdr els)) (eq? (ctor-tag (car els)) tag))
-       (ctor-children (car els))
+(define (inline-els tag::symbol els)
+   (if (and (pair? els)
+	    (null? (cdr els))
+	    (isa? (car els) XmlElement)
+	    (let ((el::XmlElement (car els)))
+	       (eq? (-> el tag) tag)))
+       (xml-element-children (car els))
        els))
 
 ;*---------------------------------------------------------------------*/
@@ -436,8 +294,9 @@
 	     (cons* (substring s (+fx i indent) (-fx (the-length) 2))
 		(substring s 0 i)
 		lines)))
-       (rgc-buffer-unget-char (the-port) (char->integer #\())
-       (ctor 'expr '() (read (the-port)) #f)
+       (let ((pos (input-port-position (the-port))))
+	  (rgc-buffer-unget-char (the-port) (char->integer #\())
+	  (xml-element 'expr '() (read (the-port)) pos))
        (rgc-context 'expr)
        (ignore))
       (else
@@ -484,8 +343,10 @@
 	   (reverse! (cdr lines))
 	   '()))
       ((bol ",(")
-       (rgc-buffer-unget-char (the-port) (char->integer #\())
-       (set! lines (cons (ctor 'expr '() (read (the-port)) #f) lines))
+       (let ((pos (input-port-position (the-port))))
+	  (rgc-buffer-unget-char (the-port) (char->integer #\())
+	  (set! lines
+	     (cons (xml-element 'expr '() (read (the-port)) pos) lines)))
        (ignore))
       (else
        (if (eof-object? (the-failure))
@@ -738,7 +599,7 @@
       ((: "<" (+ letter+) (or " " ">" "/>"))
        (let ((s (the-string)))
 	  (rgc-buffer-insert-substring! (the-port) s 0 (string-length s))
-	  (token 'html (html-parse (the-port) :procedure markdown-element :eoi (lambda (o) #t)) 0)))
+	  (token 'html (html-parse (the-port) :procedure xml-element :eoi (lambda (o) #t)) 0)))
       
       ;; escaped characters
       ((: "\\" (in ".`*_{}[]()#+-!>,~$&"))
@@ -908,12 +769,12 @@
 		(tprint "UNKNOWN RETCODE " retcode))))))
 
    (define (end-subblock state::MDState)
-      (let ((el (markdown-element (-> state tag) (-> state attributes) (reverse! (-> state elements)))))
+      (let ((el (xml-element (-> state tag) (-> state attributes) (reverse! (-> state elements)))))
 	 (state-add! (-> state parent) el)
 	 (-> state parent)))
       
    (define (end-blocks state::MDState)
-      (let ((el (markdown-element (-> state tag) (-> state attributes) (reverse! (-> state elements)))))
+      (let ((el (xml-element (-> state tag) (-> state attributes) (reverse! (-> state elements)))))
 	 (if (not (-> state parent))
 	     el
 	     (begin
@@ -924,9 +785,9 @@
       (let ((hr (case (peek-token-type)
 		   ((IDCLA)
 		    (let ((v (token-value (consume-any!))))
-		       (ctor 'HR `((id . ,(car v)) (class . ,(cdr v))) '() #f)))
+		       (xml-element 'HR `((id . ,(car v)) (class . ,(cdr v))) '())))
 		   (else
-		    (ctor 'HR '() '() #f)))))
+		    (xml-element 'HR '() '())))))
 	 (if (pair? (-> state elements))
 	     (values 'blocks (list hr (end-blocks state)))
 	     (values 'block hr))))
@@ -943,10 +804,10 @@
 			  ((IDCLA)
 			   (let ((v (token-value (consume-any!))))
 			      (set! id (or (car v) (symbol->string (gensym))))
-			      (markdown-element tag `((id . ,id) (class . ,(cdr v))) title)))
+			      (xml-element tag `((id . ,id) (class . ,(cdr v))) title)))
 			  (else
 			   (set! id (symbol->string (gensym)))
-			   (markdown-element tag `((id . ,id)) title)))))
+			   (xml-element tag `((id . ,id)) title)))))
 		(if (pair? (-> state elements))
 		    (values 'blocks (list s (end-blocks state)))
 		    (values 'blocks (list s))))
@@ -1049,7 +910,7 @@
 				(else '()))
 			     lines)))))
 	    (values 'block
-	       (markdown-element 'pre
+	       (xml-element 'pre
 		  `((id . ,id)
 		    (class . ,(cond
 				 ((and (string? class) (string? lang))
@@ -1069,7 +930,7 @@
       (let ((lines (read/rp *tab-code-block-grammar* ip
 		      indent '() conv)))
 	 (values 'block
-	    (markdown-element 'pre '() (list (markdown-element 'code '() lines))))))
+	    (xml-element 'pre '() (list (xml-element 'code '() lines))))))
 
    (define (href)
       (let (url (title #f))
@@ -1216,7 +1077,7 @@
 			  (href)
 			  (consume-token! 'CPAR)
 			  (state-add! state
-			     (markdown-element 'URL `((url . url) (title . title))
+			     (xml-element 'URL `((url . url) (title . title))
 				(reverse! (-> lstate elements))))))
 		      ((text)
 		       (let ((tok (consume-any!)))
@@ -1231,7 +1092,7 @@
 		      ((OBRA)
 		       (let* ((token (consume-any!))
 			      (ref (lref))
-			      (el (markdown-element 'LINK '() (reverse! (-> lstate elements)))))
+			      (el (xml-element 'LINK '() (reverse! (-> lstate elements)))))
 			  (set! unresolved-refs
 			     (cons (list ref el token) unresolved-refs))
 			  (consume-token! 'CBRA)
@@ -1257,35 +1118,35 @@
 	  #t)
 	 ((URL)
 	  (let ((url (conv (token-value (consume-any!)))))
-	     (state-add! state (markdown-element 'A `((url . url)) url)))
+	     (state-add! state (xml-element 'A `((url . url)) url)))
 	  #t)
 	 ((O_)
 	  (let ((val (token-value (consume-any!))))
-	     (parse-span state (lambda (l) (markdown-element 'em '() l)) 'O_ val))
+	     (parse-span state (lambda (l) (xml-element 'em '() l)) 'O_ val))
 	  #t)
 	 ((O*)
 	  (let ((val (token-value (consume-any!))))
-	     (parse-span state (lambda (l) (markdown-element 'em '() l)) 'O* val))
+	     (parse-span state (lambda (l) (xml-element 'em '() l)) 'O* val))
 	  #t)
 	 ((O__)
 	  (let ((val (token-value (consume-any!))))
-	     (parse-span state (lambda (l) (markdown-element 'STRONG '() l)) 'O__ val))
+	     (parse-span state (lambda (l) (xml-element 'STRONG '() l)) 'O__ val))
 	  #t)
 	 ((O**)
 	  (let ((val (token-value (consume-any!))))
-	     (parse-span state (lambda (l) (markdown-element 'STRONG '() l)) 'O** val))
+	     (parse-span state (lambda (l) (xml-element 'STRONG '() l)) 'O** val))
 	  #t)
 	 ((code)
 	  (let ((val (token-value (consume-any!))))
 	     (if (eq? (-> state wrapper) 'code2)
 		 (state-add! state "`")
-		 (parse-span state (lambda (l) (markdown-element 'code '() l)) 'code val
+		 (parse-span state (lambda (l) (xml-element 'code '() l)) 'code val
 		    :bra-as-text #t
 		    :o-as-text #t)))
 	  #t)
 	 ((code2)
 	  (let ((val (token-value (consume-any!))))
-	     (parse-span state (lambda (l) (markdown-element 'code '() l)) 'code2 val
+	     (parse-span state (lambda (l) (xml-element 'code '() l)) 'code2 val
 		:wrapper 'code2
 		:bra-as-text #t
 		:o-as-text #t))
@@ -1482,99 +1343,5 @@
 		   (error "markdown-parse" "Illegal eval" eval))
 		  (else
 		   eval))))
-      (markdown-element 'html '()
+      (xml-element 'html '()
 	 (markdown-parse-elements ip charset fontifier eval))))
-
-;*---------------------------------------------------------------------*/
-;*    *margins* ...                                                    */
-;*---------------------------------------------------------------------*/
-(define *margins*
-   '#("" " " "  " "   " "    " "     " "      " "       " "        "))
-
-;*---------------------------------------------------------------------*/
-;*    margin ...                                                       */
-;*---------------------------------------------------------------------*/
-(define (margin m)
-   (when (>=fx m (vector-length *margins*))
-      (set! *margins* (make-vector (+fx m 1)))
-      (let loop ((i 0))
-	 (when (<=fx i m)
-	    (vector-set! *margins* i (make-string i #\space))
-	    (loop (+fx i 1)))))
-   (vector-ref *margins* m))
-
-;*---------------------------------------------------------------------*/
-;*    markdown->html ...                                               */
-;*---------------------------------------------------------------------*/
-(define (markdown->html html #!optional (op::output-port (current-output-port)))
-
-   (define (disp m text)
-      (display (margin m) op)
-      (display text op))
-
-   (define (disp-attrs attrs)
-      (for-each (lambda (a)
-		   (display " " op)
-		   (display (car a) op)
-		   (display "=\"" op)
-		   (display (cdr a) op)
-		   (display "\"" op))
-	 attrs))
-
-   (define (inline-element? el)
-      (memq (ctor-tag el) '(text em strong)))
-   
-   (define (inline->html el m)
-      (display "<")
-      (display (ctor-tag el) op)
-      (disp-attrs (ctor-attrs el))
-      (display ">" op)
-      (for-each (lambda (el) (el->html el m)) (ctor-children el))
-      (display "</")
-      (display (ctor-tag el) op)
-      (display ">" op))
-      
-   (define (block->html el m)
-      (disp m "<")
-      (display (ctor-tag el) op)
-      (disp-attrs (ctor-attrs el))
-      (display ">" op)
-      (when (pair? (ctor-children el))
-	 (display "\n" op)
-	 (for-each (lambda (el) (el->html el (+fx m 1))) (ctor-children el)))
-      (disp m "</")
-      (display (ctor-tag el) op)
-      (display ">\n" op))
-
-   (define (inline-block->html el m)
-      (disp m "<")
-      (display (ctor-tag el) op)
-      (disp-attrs (ctor-attrs el))
-      (display ">" op)
-      (for-each (lambda (el) (el->html el (+fx m 1))) (ctor-children el))
-      (display "</" op)
-      (display (ctor-tag el) op)
-      (display ">\n" op))
-
-   (define (el->html el m)
-      (case (ctor-tag el)
-	 ((text)
-	  (let ((v (ctor-children el)))
-	     (display (if (string? v) (html-string-encode v) v) op)))
-	 ((p)
-	  (if (null? (ctor-children el))
-	      (disp m "<p/>\n")
-	      (block->html el m)))
-	 ((h1 h2 h3 h4 h5)
-	  (inline-block->html el m))
-	 ((li div)
-	  (if (every inline-element? (ctor-children el))
-	      (inline-block->html el m)
-	      (block->html el m)))
-	 ((ul html)
-	  (block->html el m))
-	 (else
-	  (inline->html el m))))
-
-   (el->html html 0))
-

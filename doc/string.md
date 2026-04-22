@@ -9,10 +9,8 @@
 <!--    Strings                                                       -->
 <!--==================================================================-->
 
-,(include "head.html")
-
 ,(implementation-path "../runtime/Ieee/string.scm")
-,(example-path "../test/string.bgl")
+,(example-path "../test/src/string.bgl")
 
 Strings
 =======
@@ -59,12 +57,11 @@ optional arguments, that must all be characters.
 
 ### substring ###
 
-Returns a substring of `string`, which must be a string, and `start` and `end` must be exact integers satisfying: `0 &le; `start` &le; `end` &le; `(string-length string)`.
-
-The optional argument `end` defaults to `(string-length string)`.
+Returns a substring of `str`, which must be a string, and `start` and `end` must be exact integers satisfying: `0 &le; start &le; end &le; (string-length str)`.
+The optional argument `end` defaults to `(string-length str)`.
 
 The function `substring` returns a newly allocated string formed from the
-characters of `string` beginning with index `start` (inclusive) 
+characters of `str` beginning with index `start` (inclusive) 
 and ending with index `end` (exclusive).
 
 ### string-append ###
@@ -155,6 +152,23 @@ Behaves as `string>?` but it is case insensitive.
 
 Behaves as `string>=?` but it is case insensitive.
 
+### string-prefix? ###
+
+Is `s1` a prefix of `s2`? The optional `start`/`end` indices restrict
+the comparison to the indicated substrings of `s1` and `s2`.
+
+### string-prefix-ci? ###
+
+As `string-prefix` but case-insenstive.
+
+### string-suffix? ###
+
+Is `s1` a suffix of `s2`? The optional `start`/`end` indices restrict
+the comparison to the indicated substrings of `s1` and `s2`.
+
+### string-suffix-ci? ###
+
+As `string-suffix` but case-insenstive.
 
 Getters and setters
 -------------------
@@ -356,7 +370,7 @@ introduces empty strings for consecutive occurrences of delimiters.
 
 ### string-delete ###
 
-Filters the string `string`, retaining only those characters that
+Filters the string `str`, retaining only those characters that
 are not equal to `obj`, not present in `obj`, or not
 satisfying the predicate `obj`. This function returns a fresh string no larger
 than `end` - `start.
@@ -387,25 +401,6 @@ indicated substrings of `s1` and `s2`.
 ### string-suffix-length-ci ###
 
 As `string-suffix-length` but uses case-insenstivie comparisons.
-
-
-### string-prefix? ###
-
-Is `s1` a prefix of `s2`? The optional `start`/`end` indices restrict
-the comparison to the indicated substrings of `s1` and `s2`.
-
-### string-prefix-ci? ###
-
-As `string-prefix` but case-insenstive.
-
-### string-suffix? ###
-
-Is `s1` a suffix of `s2`? The optional `start`/`end` indices restrict
-the comparison to the indicated substrings of `s1` and `s2`.
-
-### string-suffix-ci? ###
-
-As `string-suffix` but case-insenstive.
 
 
 ### string-hex-intern ###

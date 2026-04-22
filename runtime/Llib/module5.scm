@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Mon Mar 30 12:45:16 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 07:51:18 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -13,7 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __module5
-
+   
    (include "Llib/class.sch")
    
    (import  __error
@@ -28,7 +28,7 @@
 	    __expander_srfi0
 	    __expand
 	    __class)
-
+   
    (use     __type
 	    __tvector
 	    __bexit
@@ -45,7 +45,7 @@
 	    __param
 	    __trace
 	    __intext
-
+	    
 	    __r4_input_6_10_2
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
@@ -60,7 +60,7 @@
 	    __r4_strings_6_7
 	    __r4_output_6_10_3
 	    __r4_ports_6_10_1
-
+	    
 	    __r5_control_features_6_4)
    
    (export (class Module
@@ -124,7 +124,7 @@
 	      scope::symbol
 	      ;; variable attributes
 	      (attributes::pair-nil (default '())))
-
+	   
 	   (class Def
 	      ;; a variable definition, created by expand-and-resolve
 	      (id::symbol read-only)
@@ -138,7 +138,7 @@
 	      (ronly (default #unspecified))
 	      ;; the declaration associated with this definition
 	      (decl (default #unspecified)))
-
+	   
 	   (class KDef::Def
 	      ;; the depth of the class declation
 	      (depth::long read-only)
@@ -154,7 +154,7 @@
 	      (ci::struct read-only)
 	      ;; the list of class properties
 	      (properties::pair-nil read-only))
-
+	   
 	   (module5-default-version::long)
 	   (module5-default-version-set! ::long)
 	   (module5-cache-dir::bstring)
@@ -176,8 +176,7 @@
 	   (module5-get-decl*::Decl ::Module ::symbol ::obj)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
 	   (module5-get-export-def ::Module ::symbol #!optional src)
-	   (module5-get-class ::Module ::symbol)
-	   ))
+	   (module5-get-class ::Module ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *module-version* ...                                             */
@@ -2749,10 +2748,16 @@
    (lambda (x e)
       (match-case x
 	 ((include ?path)
-	  `(begin
-	      ,@(map (lambda (x) (e x e))
-		   (call-with-input-file path
-		      (lambda (p) (port->sexp-list p))))))
+	  (cond
+	     ((module5-resolve-path path (-> mod path))
+	      =>
+	      (lambda (f)
+		 `(begin
+		     ,@(map (lambda (x) (e x e))
+			  (call-with-input-file f
+			     (lambda (p) (port->sexp-list p)))))))
+	     (else
+	      (error/loc mod "Cannot find include file" path x))))
 	 (else
 	  (error/loc mod "Wrong include format" x x)))))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Apr 21 07:36:23 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 13:07:41 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -199,7 +199,7 @@
 	    (inline string-ci>?::bool ::bstring ::bstring)
 	    (inline string-ci<=?::bool ::bstring ::bstring)
 	    (inline string-ci>=?::bool ::bstring ::bstring)
-	    (substring::bstring string::bstring ::long #!optional (end::long (string-length string)))
+	    (substring::bstring str::bstring ::long #!optional (end::long (string-length str)))
 	    (inline substring-ur::bstring ::bstring ::long ::long)
 	    (string-contains ::bstring ::bstring #!optional (start::long 0))
 	    (string-contains-ci ::bstring ::bstring #!optional (start::long 0))
@@ -231,7 +231,7 @@
 	    (inline string-shrink!::bstring ::bstring ::long)
 	    (string-replace::bstring ::bstring ::char ::char)
 	    (string-replace!::bstring ::bstring ::char ::char)
-	    (string-delete::bstring string::bstring ::obj #!optional (start::int 0) (end::long (string-length string)))
+	    (string-delete::bstring str::bstring ::obj #!optional (start::int 0) (end::long (string-length str)))
 	    (string-split::pair-nil ::bstring . opt)
 	    (string-cut::pair-nil ::bstring . opt)
 	    (string-index::obj ::bstring ::obj #!optional (start::long 0))
@@ -461,19 +461,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring@ ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (substring::bstring string::bstring start::long #!optional (end::long (string-length string)))
-   (let ((len (string-length string)))
+(define (substring::bstring str::bstring start::long #!optional (end::long (string-length str)))
+   (let ((len (string-length str)))
       (cond
 	 ((or (<fx start 0) (>fx start len))
 	  (error "substring"
 		 (string-append "Illegal start index " (fixnum->string start))
-		 (list (string-length string) string)))
+		 (list (string-length str) str)))
 	 ((or (<fx end start) (>fx end len))
 	  (error "substring"
 		 (string-append "Illegal end index " (fixnum->string end))
-		 (list (string-length string) string)))
+		 (list (string-length str) str)))
 	 (else
-	  ($substring string start end)))))
+	  ($substring str start end)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn substring-ur@ ...                                         */
@@ -1197,14 +1197,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-delete ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (string-delete::bstring string::bstring obj #!optional (start::int 0) (end::long (string-length string)))
+(define (string-delete::bstring str::bstring obj #!optional (start::int 0) (end::long (string-length str)))
    
    (define (string-delete-char new c start end)
       (let loop ((i start)
 		 (j 0))
 	 (if (=fx i end)
 	     (string-shrink! new j)
-	     (let ((cc (string-ref string i)))
+	     (let ((cc (string-ref str i)))
 		(if (char=? cc c)
 		    (loop (+fx i 1) j)
 		    (begin
@@ -1216,7 +1216,7 @@
 		 (j 0))
 	 (if (=fx i end)
 	     (string-shrink! new j)
-	     (let ((cc (string-ref string i)))
+	     (let ((cc (string-ref str i)))
 		(if (memv cc l)
 		    (loop (+fx i 1) j)
 		    (begin
@@ -1228,7 +1228,7 @@
 		 (j 0))
 	 (if (=fx i end)
 	     (string-shrink! new j)
-	     (let ((cc (string-ref string i)))
+	     (let ((cc (string-ref str i)))
 		(if (pred cc)
 		    (loop (+fx i 1) j)
 		    (begin
@@ -1238,13 +1238,13 @@
    (cond
       ((<fx start 0)
        (error "string-delete" "start index out of range" start))
-      ((>fx end (string-length string))
+      ((>fx end (string-length str))
        (error "string-delete" "end index out of range" end))
       ((<fx end start)
        (error "string-delete" "Illegal indices" (cons start end)))
       (else
        (let* ((len (-fx end start))
-	      (new (string-copy string)))
+	      (new (string-copy str)))
 	  (cond
 	     ((char? obj)
 	      (string-delete-char new obj start end))

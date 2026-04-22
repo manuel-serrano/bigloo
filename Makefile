@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Mar 11 15:58:40 2026 (serrano)                */
+#*    Last change :  Wed Apr 22 07:27:03 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -409,6 +409,7 @@ fullbootstrap-sans-log:
 	  $(MAKE) -C recette jvm && (cd recette && ./recette-jvm$(SCRIPTEXTENSION)); \
         fi
 	$(MAKE) -C recette clean
+	$(MAKE) -C test check && $(MAKE) -C test clean
 	@ echo "Bigloo full bootstrap done..."
 	@ echo "-------------------------------"
 

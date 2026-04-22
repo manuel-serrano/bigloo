@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Apr 14 08:37:49 2026 (serrano)                */
+#*    Last change :  Wed Apr 22 07:11:43 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -18,85 +18,125 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-# which C compiler to be used
 CC = `$(BIGLOO) -eval '(begin (print *cc*) (exit 0))'`
-# the shell to be used
 SHELL = /bin/sh
-#
-JVMCLASSPATH = -jvm-bigloo-classpath $(BOOTLIBDIR)
 
 #*---------------------------------------------------------------------*/
 #*  !!! WARNING !!! WARNING !!! WARNING !!! WARNING !!!  WARNING !!!   */
 #*    -------------------------------------------------------------    */
 #*  The recette can't be compiled in `-unsafe' mode (due to try forms) */
 #*---------------------------------------------------------------------*/
-VERBOSE = 
 EFLAGS = 
-BFLAGS = $(VERBOSE) -cg -g -O3 -q -Wall -init-lib \
-  -eval "(set! *indent* (= 1 2))" -gself \
-  -lib-dir $(BOOTLIBDIR) -no-auto-link-main -module5
+BFLAGS = -cg -g -O3 -q -Wall -init-lib -gself \
+  -lib-dir $(BOOTLIBDIR) -no-auto-link-main
 
+BLFLAGS = -I src
 BCFLAGS =
-BWFLAGS = -wasm                  
-BJFLAGS = -jfile .jfile-jvm -g
+BWFLAGS = -wasm
+BJFLAGS = -jvm
 
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
-COMMON = main string vector
+COMMON = main pair string vector
 
-C_OBJECTS = $(COMMON:%=%.$(C_OBJ_EXTENSION)) $(C_SPECIFIC:%=%.$(C_OBJ_EXTENSION))
+C_OBJECTS = $(COMMON:%=%.o) $(C_SPECIFIC:%=%.o)
+J_OBJECTS = $(COMMON:%=%.class)
 W_OBJECTS = $(COMMON:%=%.wat) $(W_SPECIFIC:%=%.wat)
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .$(C_OBJ_EXTENSION) .scm .c .class .java .obj
+.SUFFIXES: .o .scm .c .class .java .wasm .wat
 
 #*---------------------------------------------------------------------*/
 #*    tests                                                            */
 #*---------------------------------------------------------------------*/
-all: c
+all: c jvm wasm
+	$(MAKE) c
+	if [ "$(JVMBACKEND)" = "yes" ]; then \
+	  $(MAKE) jvm; \
+        fi
+	if [ "$(WASMBACKEND)" = "yes" ]; then \
+	  $(MAKE) wasm; \
+        fi
+
+check: check_c check_jvm check_wasm
 
 c: objs_c
 	$(MAKE) test_c
-wasm: objs_wasm
-	$(MAKE) test_wasm
-jvm: objs_jvm
-	$(MAKE) test_jvm
 
 test_c: $(C_OBJECTS:%=objs_c/%)
-	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
+	$(BIGLOO) $(BLFLAGS) $(BFLAGS) $(EFLAGS) -o $@ $^
 	@ echo "\e[1;34m$@\e[0m done."
+
+check_c:
+	@$(MAKE) c && ./test_c
+
+jvm: objs_jvm .jfile
+	$(MAKE) test_jvm
+
+test_jvm: $(J_OBJECTS:%=objs_jvm/%)
+	$(BIGLOO) $(BLFLAGS) $(BFLAGS) $(BJFLAGS) $(EFLAGS) -o $@ $^
+	@ echo "\e[1;34m$@\e[0m done."
+
+check_jvm:
+	@if [ "$(JVMBACKEND)" = "yes" ]; then \
+	  $(MAKE) jvm && ./test_jvm; \
+        fi
+
+wasm: objs_wasm
+	$(MAKE) test_wasm
 
 test_wasm: $(W_OBJECTS:%=objs_wasm/%)
-	$(BIGLOO) $(BFLAGS) $(BWFLAGS) $(EFLAGS) -o $@ $^
+	$(BIGLOO) $(BLFLAGS) $(BFLAGS) $(BWFLAGS) $(EFLAGS) -o $@ $^
 	@ echo "\e[1;34m$@\e[0m done."
 
+check_wasm:
+	@if [ "$(WASMBACKEND)" = "yes" ]; then \
+	  $(MAKE) wasm && ./test_wasm; \
+        fi
+
 #*---------------------------------------------------------------------*/
-#*    .scm.$(C_OBJ_EXTENSION)                                          */
+#*    compilation rules                                                */
 #*---------------------------------------------------------------------*/
-objs_c/%.$(C_OBJ_EXTENSION): %.bgl test.bgh
+objs_c/%.o: src/%.bgl src/test.bgh
 	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
 
-objs_wasm/%.wat: %.bgl test.bgh
+objs_wasm/%.wat: src/%.bgl src/test.bgh
 	$(BIGLOO) -c $(BFLAGS) $(BWFLAGS) $(EFLAGS) $< -o $@
+
+objs_jvm/%.class: src/%.bgl src/test.bgh
+	$(BIGLOO) -c $(BFLAGS) $(BJFLAGS) $(EFLAGS) $< -o $@
+
+.jfile:
+	$(BGLJFILE) --strip 1 $(J_OBJECTS:%.class=src/%.bgl) -o $@
 
 #*---------------------------------------------------------------------*/
 #*    sub-directories                                                  */
 #*---------------------------------------------------------------------*/
 objs_c:
 	@ mkdir -p $@
+
 objs_jvm:
 	@ mkdir -p $@
+
 objs_wasm:
 	@ mkdir -p $@
 
 #*---------------------------------------------------------------------*/
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
-clean:
-	rm -rf objs_c objs_jvm objs_wasm
-	rm -f test_c test_wasm test_jvm
-	rm -f $(C_OBJECTS) $(W_OBJECTS) $(J_OBJECTS)
+clean_c:
+	rm -rf objs_c test_c
+
+clean_jvm:
+	rm -rf objs_jvm test_jvm .jfile
+
+clean_wasm:
+	rm -rf objs_wasm test_wasm
+
+clean: clean_c clean_jvm clean_wasm
+	$(BIGLOO) -cache-clean
+

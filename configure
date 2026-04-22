@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Mar 10 14:31:38 2026 (serrano)                */
+#*    Last change :  Wed Apr 22 09:09:31 2026 (serrano)                */
 #*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -135,7 +135,7 @@ jshell=sh
 
 #*--- Wasm back-end user configuration --------------------------------*/
 wasmbackend=no # set to "no" not to install the Wasm back-end
-wasmas=wasm-as
+wasmas="wasm-as -all"
 wasmopt=wasm-opt
 wasmjs=nodejs
 wasmfixnum=31
@@ -3994,6 +3994,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@SONAME@|$ldsoname|" \
 	      -e "s|@C_LINKER_SONAME_OPTION@|$ldsonameopt|" \
 	      -e "s|@C_LINKER_SHARED_OPTION@|$ldopt$ldbuildsharedopt|" \
+	      -e "s|@WASM_AS@|$wasmas|" \
 	      -e "s|@WASM_FIXNUM@|$wasmfixnum|" \
         > $p
     fi

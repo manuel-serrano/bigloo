@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Tue Apr 21 08:16:11 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 09:26:30 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -104,9 +104,7 @@
 	       (method static $sort-vector::vector (::vector ::procedure)
 		  "sort_vector")
 	       (method static $vector-tag::int (::vector)
-		  "VECTOR_TAG")
-	       (method static $vector-shrink!::vector (::vector ::long)
-		  "BGL_VECTOR_SHRINK")))
+		  "VECTOR_TAG")))
    
    (export  (inline vector?::bool obj)
 	    (inline make-vector::vector ::long #!optional (fill #unspecified))
@@ -489,4 +487,10 @@
 ;*    vector-shrink! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (vector-shrink!::vector vec::vector nlen::long)
-   ($vector-shrink! vec nlen))
+   (cond-expand
+      (bigloo-c
+       ($vector-shrink! vec nlen))
+      (else
+       (if (=fx nlen (vector-length vec))
+	   vec
+	   (vector-copy vec 0 nlen)))))

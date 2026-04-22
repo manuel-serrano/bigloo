@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/test/vector.bgl                 */
+;*    serrano/prgm/project/bigloo/5.0a/test/src/vector.bgl             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 08:32:16 2026                          */
-;*    Last change :  Fri Apr 17 11:24:43 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 07:48:30 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing vector functions                                         */
@@ -18,7 +18,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    test machinery                                                   */
 ;*---------------------------------------------------------------------*/
-(include "test.bgh")
+(include "./test.bgh")
 
 ;*---------------------------------------------------------------------*/
 ;*    test ...                                                         */
@@ -45,12 +45,11 @@
       (vector-set! v 0 'toto)
       (vector-ref  v 0)
       v)
-   :expected 'toto)
+   :expected '#(toto))
 (define-test vector-set-ur!
    (let ((v (make-vector 1 '())))
-      (vector-sset-ur! v 0 'toto)
-      (vector-ref  v 0)
-      v)
+      (vector-set-ur! v 0 'toto)
+      (vector-ref  v 0))
    :expected 'toto)
 (define-test vector-length (vector-length '#(1 2 3 4 5))
    :expected 5)
@@ -149,13 +148,13 @@
       v)
    :expected '#(1 2 1 2 3 4 1 2))
 
-(define-test copy-vector (copy-vector '#(1 2 3))
+(define-test copy-vector (copy-vector '#(1 2 3) 3)
    :expected '#(1 2 3))
-(define-test copy-vector (copy-vector '#(1 2 3))
-   :expected '#(1 2 3))
+(define-test copy-vector (copy-vector '#(1 2 3) 2)
+   :expected '#(1 2))
 
 (define-test vector-copy (vector-copy '#(1 2 3 4) 0 4)
-   :expecged '#(1 2 3 4))
+   :expected '#(1 2 3 4))
 (define-test vector-copy (vector-copy '#(1 2 3 4) 1 3)
    :expected '#(2 3))
 
@@ -216,6 +215,6 @@
    :expected '#(1 3 5))
 
 (define-test vector-shrink!
-   (vector-shrink! (make-vector 3 #\-) 2)
+   (vector-shrink! (make-vector 3 '-) 2)
    :expected '#(- -))
 

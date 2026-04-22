@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/bconfigure.scm     */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/bconfigure.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Wed Oct  1 07:20:31 2025 (serrano)                */
-;*    Copyright   :  2000-25 Manuel Serrano                            */
+;*    Last change :  Wed Apr 22 09:08:32 2026 (serrano)                */
+;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -134,6 +134,7 @@
 	   (macro $cfg-saw-gc::long "BGL_SAW_GC")
 	   (macro $configure-have-alloca::bool "BGL_HAVE_ALLOCA")
 	   (macro $configure-have-c99stackalloc::bool "BGL_HAVE_C99STACKALLOC")
+	   (macro $configure-wasm-as::string "BGL_WASM_AS")
 	   (macro $configure-wasm-fixnum::long "BGL_WASM_FIXNUM"))
    
    (java   (class $configure
@@ -215,6 +216,7 @@
 	      (field static os-arch::string "BGL_OS_ARCH")
 	      (field static os-version::string "BGL_OS_VERSION")
 
+	      (field static wasm-as::string "BGL_WASM_AS")
 	      (field static wasm-fixnum::int "BGL_WASM_FIXNUM")
 	      "bigloo.configure"))
 
@@ -319,6 +321,7 @@
      (have-spinlock . ,(cond-expand (bigloo-c $configure-have-spinlock) (bigloo-jvm #f) (else $configure-have-spinlock)))
      (have-alloca . ,(cond-expand (bigloo-c $configure-have-alloca) (bigloo-jvm #f) (else $configure-have-alloca)))
      (have-c99-stack-alloc . ,(cond-expand (bigloo-c $configure-have-c99stackalloc) (bigloo-jvm #f) (else $configure-have-c99stackalloc)))
+     (wasm-as . ,$configure-wasm-as)
      (wasm-fixnum . ,$configure-wasm-fixnum)))
 
 ;*---------------------------------------------------------------------*/

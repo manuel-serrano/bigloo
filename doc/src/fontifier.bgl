@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Tue Apr 21 16:33:04 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 11:16:42 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -41,7 +41,7 @@
    (let ((attrs '()))
       (when class (set! attrs (cons `(class . ,class) attrs)))
       (when id (set! attrs (cons `(id . ,id) attrs)))
-      (markdown-element 'span attrs body)))
+      (xml-element 'span attrs body)))
    
 ;*---------------------------------------------------------------------*/
 ;*    <DIV> ...                                                        */
@@ -50,7 +50,7 @@
    (let ((attrs '()))
       (when class (set! attrs (cons `(class . ,class) attrs)))
       (when id (set! attrs (cons `(id . ,id) attrs)))
-      (markdown-element 'div attrs body)))
+      (xml-element 'div attrs body)))
    
 ;*---------------------------------------------------------------------*/
 ;*    <CODE> ...                                                       */
@@ -59,19 +59,19 @@
    (let ((attrs '()))
       (when class (set! attrs (cons `(class . ,class) attrs)))
       (when id (set! attrs (cons `(id . ,id) attrs)))
-      (markdown-element 'code attrs body)))
+      (xml-element 'code attrs body)))
    
 ;*---------------------------------------------------------------------*/
 ;*    <STRIKE> ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (<STRIKE> #!key class #!rest body)
-   (markdown-element 'strike `((class . ,class)) body))
+   (xml-element 'strike `((class . ,class)) body))
    
 ;*---------------------------------------------------------------------*/
 ;*    <SUP> ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (<SUP> #!key class #!rest body)
-   (markdown-element 'sup `((class . ,class)) body))
+   (xml-element 'sup `((class . ,class)) body))
    
 ;*---------------------------------------------------------------------*/
 ;*    <A> ...                                                          */
@@ -80,7 +80,7 @@
    (let ((attrs '()))
       (when class (set! attrs (cons `(class . ,class) attrs)))
       (when id (set! attrs (cons `(id . ,id) attrs)))
-      (markdown-element 'a attrs body)))
+      (xml-element 'a attrs body)))
    
 ;*---------------------------------------------------------------------*/
 ;*    <IMG> ...                                                        */
@@ -90,7 +90,7 @@
       (when class (set! attrs (cons `(class . ,class) attrs)))
       (when id (set! attrs (cons `(id . ,id) attrs)))
       (when src (set! attrs (cons `(src . ,src) attrs)))
-      (markdown-element 'a attrs body)))
+      (xml-element 'a attrs body)))
    
 ;*---------------------------------------------------------------------*/
 ;*    <FTSPAN> ...                                                     */

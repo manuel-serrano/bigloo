@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Tue Mar 10 17:20:12 2026 (serrano)                */
+/*    Last change :  Wed Apr 22 09:27:29 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -3297,20 +3297,6 @@ public final class foreign {
 	       }
 
       return v;
-   }
-
-   public static Object[] BGL_VECTOR_SHRINK( Object[] v, int nlen ) {
-      if( nlen >= 0 && nlen < VECTOR_LENGTH( v ) ) {
-	 final Object[] r = new Object[ nlen ];
-
-	 for( int i = 0; i < nlen; ++i ){
-	    r[ i ] = v[ i ];
-	 }
-	 
-	 return r;
-      } else {
-	 return v;
-      }
    }
 
    //////

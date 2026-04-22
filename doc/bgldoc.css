@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Tue Apr 21 16:33:34 2026 (serrano)                */
+/*    Last change :  Wed Apr 22 09:59:40 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -15,6 +15,17 @@
 :root {
     --background: #fafafa;
     --textShadow: #ccc;
+
+    --menuColor: #9d9d9d;
+    --menuBackgroundColor: #33393f;
+
+    --versionColor: #fff;
+    --versionBackgroundColor: #777;
+
+    --navMenuBackgroundColor: #222;
+    --navMenuCcolor: #9d9d9d;
+    --navMenuBorderColor: #777;
+    --navHeight: 6ex;
     
     --sectionBorder: #777777;
 
@@ -39,6 +50,12 @@
 
     --fontifierString: #f91a03;
     --fontifierSymbol: #f91a03;
+
+    --chapterTocLinkColor: #777;
+    --chapterTocBackground: #fff;
+    --chapterTocBorder: #d2d2d2;
+
+    --hoverColor: #f91a03;
 }
 
 /*---------------------------------------------------------------------*/
@@ -58,6 +75,123 @@ body {
     background: var(--background);
     font-family: "Helvetica Neue", "Hevetica", Arial, sans-serif;
     font-size: 14px;
+}
+
+.chapter {
+    margin-top: 1ex;
+}
+
+/*---------------------------------------------------------------------*/
+/*    navigation                                                       */
+/*---------------------------------------------------------------------*/
+nav.menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--navHeight);
+    color: var(--menuColor);
+    background: var(--menuBackgroundColor);
+    font-size: 120%;
+    padding-top: 4px;
+}
+
+div.menu {
+    position: relative;
+    cursor: pointer;
+}
+
+.menu img.logo {
+    width: 3em;
+    height: 3em;
+    float: left;
+    margin: 0 0 0 1em;
+}
+
+.menu .version:before {
+    content: "version ";
+}
+
+.menu .version {
+    color: var(--versionColor);
+    background-color: var(--versionBackgroundColor);
+    font-weight: bold;
+    border-radius: 0.2em;
+    position: absolute;
+    right: 3em;
+    top: 1ex;
+    padding: 0.5em;
+    font-size: 90%;
+}
+
+ul.menu {
+    float: left;
+    margin: 1.5ex 0 0 0;
+    list-style: none;
+    font-size: 110%;
+}
+
+ul.menu > li {
+    float: left;
+    position: relative;
+    display: block;
+    border-bottom: 3px solid transparent;
+}
+
+ul.menu > li > a {
+    padding: 2ex 1em;
+}
+
+ul.menu > li.navbutton > a:after {
+    content: "\25be";
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+ul.menu > li.navbutton[open="true"] > a:after {
+    content: "\25b4";
+    font-weight: bold;
+    margin-left: 5px;
+    color: var(--hoverColor);
+}
+
+div.nav-menu {
+    position: fixed;
+    top: calc(var(--navHeight) - 1ex);
+    width: 30em;
+    height: 400px;
+    background-color: var(--navMenuBackgroundColor);
+    border: 1px solid var(--navMenuBorderColor);
+    z-index: 2;
+    font-size: 120%;
+    opacity: 0.9;
+    column-width: 12em;
+    column-gap: 2em;
+    column-rule: 1px solid #ccc;
+    padding: 1ex;
+    visibility: hidden;
+}
+
+li[open="true"] > div.nav-menu {
+    visibility: visible;
+}
+
+div.nav-menu ul {
+    padding-left: 0;
+}
+
+div.nav-menu li {
+    list-style: none;
+    margin-left: 0;
+}
+
+div.nav-menu a {
+    color: var(--navMenuColor);
+    text-decoration: none;
+}
+
+div.nav-menu a:hover {
+    color: var(--hoverColor);
 }
 
 /*---------------------------------------------------------------------*/
@@ -81,6 +215,7 @@ h2 {
     text-shadow: var(--textShadow) 1px 1px 1px;
     counter-reset: subsubsection;
     counter-increment: subsection;
+    font-weight: normal;
 }
 
 h2:before{
@@ -93,7 +228,7 @@ h2:before{
 h3 {
     background-color: var(--functionBackground);
     font-family: monospace;
-    font-size: 110%;
+    font-size: 105%;
     font-weight: normal;
     margin-top: 2em;
     padding-top: 3px;
@@ -155,7 +290,7 @@ pre {
     border: 1px solid var(--programBorder);
     border-left: 2px solid var(--programBorderLeft);
     padding: 0.5em;
-    
+    overflow-x: auto;
 }
 
 code {
@@ -188,4 +323,65 @@ pre .fontifier-prog-string {
 
 pre .fontifier-prog-symbol {
     color: var(--fontifierSymbol);
+}
+
+/*---------------------------------------------------------------------*/
+/*    Chapter                                                          */
+/*---------------------------------------------------------------------*/
+.chapter {
+    width: 100%;
+}
+
+.chapter .body {
+    width: 70%;
+    padding-left: 3em;
+    padding-right: 3em;
+}
+
+.chapter .toc {
+    overflow-y: scroll;
+    width: 25%;
+    position: fixed;
+    top: calc(var(--navHeight) + 4ex);
+    bottom: 1ex;
+    right: 0.2em;
+    background: var(--chapterTocBackground);
+    border: 1px solid var(--chapterTocBorder);
+    font-size: 95%;
+}
+
+.chapter .toc a {
+    text-decoration: none;
+}
+
+.chapter .toc li.section a:hover,
+.chapter .toc li.def a:hover {
+    color: var(--hoverColor);
+}
+
+.chapter .toc ul.sections li.section + li.section {
+    margin-top: 1ex;
+}
+
+.chapter .toc li.section {
+    list-style: none;
+}
+
+.chapter .toc li.section > a {
+    border-bottom: 1px dashed var(--sectionBorder);
+    font-weight: bold;
+    color: var(--sectionColor);
+}
+
+.chapter .toc li.def {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    list-style-type: circle;
+    color: var(--chapterTocLinkColor);
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.chapter .toc li.def a {
+    color: var(--chapterTocLinkColor);
 }

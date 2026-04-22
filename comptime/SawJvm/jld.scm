@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct 24 10:32:46 2000                          */
-;*    Last change :  Wed Mar 11 09:13:34 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 08:36:04 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The pseudo Jvm link (generation of a script shell that will run  */
@@ -31,15 +31,13 @@
 	   object_class
 	   object_slots
 	   backend_backend)
-   (export (jvm-ld ::obj)))
+   (export (jvm-ld ::bstring ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    jvm-ld ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (jvm-ld link-main-module)
-   (let* ((target (if (string? *dest*)
-		      *dest*
-		      (default-script-name)))
+(define (jvm-ld link-main-file link-main-module)
+   (let* ((target (if (string? *dest*) *dest* (default-script-name)))
 	  (jarname (string-append (prefix target) ".jar"))
 	  (zips (append
 		   (append-map library->zips *additional-bigloo-libraries*)
@@ -56,7 +54,7 @@
 	       jarname
 	       zips)
 	    (jvm-jar jarname manifest all-objects)))
-      (generate-jvm-script target
+      (generate-jvm-script target link-main-file
 	 (find-jvm-mainclass link-main-module)
 	 jarname
 	 zips)))
@@ -401,9 +399,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    generate-jvm-sh-script ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (generate-jvm-sh-script target main-class zips)
+(define (generate-jvm-sh-script target obj-dir::bstring main-class zips)
+   
    (define (quotify str)
       (string-append "'" str "'"))
+   
    (define (generate-jvm-env)
       (let loop ((env *jvm-env*)
 		 (res ""))
@@ -412,6 +412,7 @@
 	     (loop (cdr env)
 		   (string-append "-Dbigloo." (car env) "=$" (car env)
 				  " " res)))))
+   
    (define (generate-jvm-jar-script)
       (with-output-to-file target
 	 (lambda ()
@@ -419,7 +420,7 @@
 	    (newline)
 	    (print "CLASSPATH=\""
 		   (list->sh-path-string
-		    `(,*jvm-classpath* "$BUGLOOCLASSPATH"))
+		    `(,*jvm-classpath* ,obj-dir))
 		   "\"")
 	    (print "export CLASSPATH")
 	    (newline)
@@ -428,7 +429,7 @@
 	    (print "fi")
 	    (print "exec " *jvm-java* " "
 		   (if (not *purify*) (bigloo-config 'jvflags) "")
-		   " $BIGLOOJAVAOPT $BUGLOOJAVAOPT " (bigloo-config 'jflags)
+		   " $BIGLOOJAVAOPT " (bigloo-config 'jflags)
 		   " -jar "
 		   *jvm-options* " "
 		   (generate-jvm-env)
@@ -440,6 +441,7 @@
 		       (prefix target))
 		   ".jar $*")))
       (chmod target 'read 'write 'execute))
+   
    (define (generate-jvm-class-script)
       (with-output-to-file target
 	 (lambda ()
@@ -449,19 +451,19 @@
 		   (list->sh-path-string
 		    `(,*jvm-classpath*
 		      "$BIGLOOCLASSPATH"
-		      "$BUGLOOCLASSPATH"
 		      ,(quotify
 			(make-file-name (jvm-bigloo-classpath)
 					(if (and *unsafe-library*
 						 (not *purify*))
 					    "bigloo_u.zip"
 					    "bigloo_s.zip")))
-		      ,@(map (lambda (f) (quotify (user-library f))) zips))))
+		      ,@(map (lambda (f) (quotify (user-library f))) zips)
+		      ,obj-dir)))
 	    (print "export CLASSPATH")
 	    (newline)
 	    (print "exec " *jvm-java* " "
 		   (if (not *purify*) (bigloo-config 'jvflags) "")
-		   " $BIGLOOJAVAOPT $BUGLOOJAVAOPT "
+		   " $BIGLOOJAVAOPT "
 		   (bigloo-config 'jflags)
 		   " "
 		   *jvm-options* " "
@@ -469,6 +471,7 @@
 		   (string-replace! main-class (file-separator) #\.)
 		   " $*")))
       (chmod target 'read 'write 'execute))
+   
    (if *jvm-jar?*
        (generate-jvm-jar-script)
        (generate-jvm-class-script)))
@@ -476,71 +479,74 @@
 ;*---------------------------------------------------------------------*/
 ;*    generate-jvm-msdos-script ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (generate-jvm-msdos-script target main-class jarname zips)
+(define (generate-jvm-msdos-script target obj-dir::bstring main-class jarname zips)
+   
    (define (generate-jvm-env)
       (let loop ((env *jvm-env*)
 		 (res ""))
 	 (if (null? env)
 	     res
 	     (loop (cdr env)
-		   (string-append "-Dbigloo." (car env) "=$" (car env)
-				  " " res)))))
+		(string-append "-Dbigloo." (car env) "=$" (car env)
+		   " " res)))))
    (define (generate-jvm-jar-script)
       (with-output-to-file target
 	 (lambda ()
 	    (print "@" *jvm-java* " "
-		   (bigloo-config 'jflags) " "
-		   (if (not *purify*) (bigloo-config 'jvflags) "")
-		   " -cp \""
-		   (list->msdos-path-string
-		    `(,*jvm-classpath*
-		      "%BUGLOOCLASSPATH%"
+	       (bigloo-config 'jflags) " "
+	       (if (not *purify*) (bigloo-config 'jvflags) "")
+	       " -cp \""
+	       (list->msdos-path-string
+		  `(,*jvm-classpath*
 		      ,(string-append (jvm-jarpath (dirname jarname))
-				      "\\"
-				      (basename jarname))
+			  "\\"
+			  (basename jarname))
 		      ,(string-append (string-replace
-				       (jvm-bigloo-classpath)
-				       #\/ #\\)
-				      (if *unsafe-library*
-					  "\\bigloo_u.zip"
-					  "\\bigloo_s.zip"))
+					 (jvm-bigloo-classpath)
+					 #\/ #\\)
+			  (if *unsafe-library*
+			      "\\bigloo_u.zip"
+			      "\\bigloo_s.zip"))
 		      ,@(map (lambda (x)
 				(string-replace! (user-library x) #\/ #\\))
-			     zips)))
-                   "\" "
-		   *jvm-options* " "
-		   (generate-jvm-env)
-		   " %BIGLOOJAVAOPT% %BUGLOOJAVAOPT% "
-		   (string-replace! main-class (file-separator) #\.)
-		   " %*")))
+			   zips)
+		      ,obj-dir))
+	       "\" "
+	       *jvm-options* " "
+	       (generate-jvm-env)
+	       " %BIGLOOJAVAOPT% "
+	       (string-replace! main-class (file-separator) #\.)
+	       " %*")))
       (chmod target 'read 'write 'execute))
+   
    (define (generate-jvm-class-script)
       (with-output-to-file target
 	 (lambda ()
 	    (print "@" *jvm-java* " "
-		   (bigloo-config 'jflags) " "
-		   (if (not *purify*) (bigloo-config 'jvflags) "")
-		   " "
-		   *jvm-options*
-		   " -cp \""
-		   (list->msdos-path-string
-		    `(,*jvm-classpath*
-		      "%BUGLOOCLASSPATH%"
+	       (bigloo-config 'jflags) " "
+	       (if (not *purify*) (bigloo-config 'jvflags) "")
+	       " "
+	       *jvm-options*
+	       " -cp \""
+	       (list->msdos-path-string
+		  `(,*jvm-classpath*
 		      ,(string-append (string-replace
-				       (jvm-bigloo-classpath)
-				       #\/ #\\)
-				      (if *unsafe-library*
-					  "\\bigloo_u.zip"
-					  "\\bigloo_s.zip"))
+					 (jvm-bigloo-classpath)
+					 #\/ #\\)
+			  (if *unsafe-library*
+			      "\\bigloo_u.zip"
+			      "\\bigloo_s.zip"))
 		      ,@(map (lambda (x)
 				(string-replace! (user-library x) #\/ #\\))
-			     zips)))
-                   "\" "
-		   (generate-jvm-env)
-		   " %BIGLOOJAVAOPT% %BUGLOOJAVAOPT% "
-		   (string-replace! main-class (file-separator) #\.)
-		   " %*")))
+			   zips)
+		      ,obj-dir))
+	       "\" "
+	       (generate-jvm-env)
+	       " %BIGLOOJAVAOPT% "
+	       (string-replace! main-class (file-separator) #\.)
+	       " %*")))
       (chmod target 'read 'write 'execute))
+   
    (if *jvm-jar?*
        (generate-jvm-jar-script)
        (generate-jvm-class-script)))
@@ -548,19 +554,20 @@
 ;*---------------------------------------------------------------------*/
 ;*    generate-jvm-script ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (generate-jvm-script target main-class jarname zips)
+(define (generate-jvm-script target main-obj main-class jarname zips)
    (verbose 1 "   . " *jvm-shell*)
    (verbose 2 " (" target ")")
    (verbose 1 #\Newline)
-   (cond
-      ((string=? *jvm-shell* "sh")
-       (generate-jvm-sh-script target main-class zips))
-      ((string=? *jvm-shell* "msdos")
-       (generate-jvm-msdos-script target main-class jarname zips))
-      (else
-       (warning "generate-jvm-script"
-		"Illegal shell `" *jvm-shell* "' -- using `sh'")
-       (generate-jvm-sh-script target main-class zips))))
+   (let ((obj-dir (dirname main-obj)))
+      (cond
+	 ((string=? *jvm-shell* "sh")
+	  (generate-jvm-sh-script target obj-dir main-class zips))
+	 ((string=? *jvm-shell* "msdos")
+	  (generate-jvm-msdos-script target obj-dir main-class jarname zips))
+	 (else
+	  (warning "generate-jvm-script"
+	     "Illegal shell `" *jvm-shell* "' -- using `sh'")
+	  (generate-jvm-sh-script target obj-dir main-class zips)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    user-library ...                                                 */

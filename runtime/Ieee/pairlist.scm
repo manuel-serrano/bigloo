@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Mon Apr 13 17:33:35 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 16:52:02 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -157,8 +157,8 @@
 	    (remq!::pair-nil ::obj ::pair-nil)
 	    (remv::pair-nil ::obj ::pair-nil)
 	    (remv!::pair-nil ::obj ::pair-nil)
-	    (delete::pair-nil ::obj ::pair-nil #!optional (eq equal?))
-	    (delete!::pair-nil ::obj ::pair-nil #!optional (eq equal?))
+	    (delete::pair-nil ::obj ::pair-nil #!optional (eq::procedure equal?))
+	    (delete!::pair-nil ::obj ::pair-nil #!optional (eq::procedure equal?))
 	    (reverse!::pair-nil ::pair-nil)
 	    (cons* ::obj . obj)
 	    (every::obj ::procedure . obj)
@@ -173,8 +173,8 @@
 	    (iota::pair-nil ::int . obj)
 	    (list-copy::pair-nil ::pair-nil)
 	    (tree-copy::obj ::obj)
-	    (delete-duplicates::pair-nil ::pair-nil #!optional (eq equal?))
-	    (delete-duplicates!::pair-nil ::pair-nil #!optional (eq equal?)))
+	    (delete-duplicates::pair-nil ::pair-nil #!optional (eq::procedure equal?))
+	    (delete-duplicates!::pair-nil ::pair-nil #!optional (eq::procedure equal?)))
    
    (pragma  ($cons args-safe fail-safe (args-retescape)
 	       (stack-allocator "char ~a[ PAIR_SIZE ]"
@@ -234,19 +234,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    pair? ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (pair? obj)
+(define-inline (pair?::bool obj)
    ($pair? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    epair? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (epair? obj)
+(define-inline (epair?::bool obj)
    ($epair? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn pair-or-null?@ ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (pair-or-null? obj)
+(define-inline (pair-or-null?::bool obj)
    (if (pair? obj)
        #t
        (null? obj)))
@@ -254,224 +254,224 @@
 ;*---------------------------------------------------------------------*/
 ;*    cons ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (cons obj1 obj2)
+(define-inline (cons::pair obj1 obj2)
    ($cons obj1 obj2))
 
 ;*---------------------------------------------------------------------*/
 ;*    econs ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (econs obj1 obj2 obj3)
+(define-inline (econs::pair obj1 obj2 obj3)
    ($econs obj1 obj2 obj3))
 
 ;*---------------------------------------------------------------------*/
 ;*    car ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (car pair)
+(define-inline (car pair::pair)
    ($car pair))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdr ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (cdr pair)
+(define-inline (cdr pair::pair)
    ($cdr pair))
 
 ;*---------------------------------------------------------------------*/
 ;*    cer ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (cer obj)
-   ($cer obj))
+(define-inline (cer epair::epair)
+   ($cer epair))
 
 ;*---------------------------------------------------------------------*/
 ;*    caar ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (caar pair)
+(define-inline (caar pair::pair)
    (car (car pair)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cadr ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (cadr pair)
+(define-inline (cadr pair::pair)
    (car (cdr pair)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdar ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (cdar pair)
+(define-inline (cdar pair::pair)
    (cdr (car pair)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cddr ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (cddr pair)
+(define-inline (cddr pair::pair)
    (cdr (cdr pair)))
 
 ;*---------------------------------------------------------------------*/
 ;*    caaar ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (caaar pair)
+(define-inline (caaar pair::pair)
    (car (car (car pair))))
 
 ;*---------------------------------------------------------------------*/
 ;*    caadr ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (caadr pair)
+(define-inline (caadr pair::pair)
    (car (car (cdr pair))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cadar ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (cadar pair)
+(define-inline (cadar pair::pair)
    (car (cdr (car pair))))
 
 ;*---------------------------------------------------------------------*/
 ;*    caddr ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (caddr pair)
+(define-inline (caddr pair::pair)
    (car (cdr (cdr pair))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdaar ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (cdaar pair)
+(define-inline (cdaar pair::pair)
    (cdr (car (car pair))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cddar ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (cddar pair)
+(define-inline (cddar pair::pair)
    (cdr (cdr (car pair))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdadr ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (cdadr pair)
+(define-inline (cdadr pair::pair)
    (cdr (car (cdr pair))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdddr ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (cdddr pair)
+(define-inline (cdddr pair::pair)
    (cdr (cdr (cdr pair))))
 
 ;*---------------------------------------------------------------------*/
 ;*    caaaar ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (caaaar pair)
+(define-inline (caaaar pair::pair)
    (car (car (car (car pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    caaadr ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (caaadr pair)
+(define-inline (caaadr pair::pair)
    (car (car (car (cdr pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    caadar ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (caadar pair)
+(define-inline (caadar pair::pair)
    (car (car (cdr (car pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cadaar ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (cadaar pair)
+(define-inline (cadaar pair::pair)
    (car (cdr (car (car pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdaaar ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (cdaaar pair)
+(define-inline (cdaaar pair::pair)
    (cdr (car (car (car pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    caaddr ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (caaddr pair)
+(define-inline (caaddr pair::pair)
    (car (car (cdr (cdr pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    caddar ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (caddar pair)
+(define-inline (caddar pair::pair)
    (car (cdr (cdr (car pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cadadr ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (cadadr pair)
+(define-inline (cadadr pair::pair)
    (car (cdr (car (cdr pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cadddr ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (cadddr pair)
+(define-inline (cadddr pair::pair)
    (car (cdr (cdr (cdr pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdaadr ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (cdaadr pair)
+(define-inline (cdaadr pair::pair)
    (cdr (car (car (cdr pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdaddr ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (cdaddr pair)
+(define-inline (cdaddr pair::pair)
    (cdr (car (cdr (cdr pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cddaar ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (cddaar pair)
+(define-inline (cddaar pair::pair)
    (cdr (cdr (car (car pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cddadr ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (cddadr pair)
+(define-inline (cddadr pair::pair)
    (cdr (cdr (car (cdr pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdadar ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (cdadar pair)
+(define-inline (cdadar pair::pair)
    (cdr (car (cdr (car pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cdddar ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (cdddar pair)
+(define-inline (cdddar pair::pair)
    (cdr (cdr (cdr (car pair)))))
 
 
 ;*---------------------------------------------------------------------*/
 ;*    cddddr ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (cddddr pair)
+(define-inline (cddddr pair::pair)
    (cdr (cdr (cdr (cdr pair)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-car! ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (set-car! pair obj)
+(define-inline (set-car! pair::pair obj)
    ($set-car! pair obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-cdr! ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (set-cdr! pair obj)
+(define-inline (set-cdr! pair::pair obj)
    ($set-cdr! pair obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-cer! ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (set-cer! epair obj)
+(define-inline (set-cer! epair::epair obj)
    ($set-cer! epair obj)) 
 
 ;*---------------------------------------------------------------------*/
 ;*    null? ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (null? obj)
+(define-inline (null?::bool obj)
    ($null? obj))
 
 ;*---------------------------------------------------------------------*/
@@ -483,29 +483,26 @@
 ;*---------------------------------------------------------------------*/
 ;*    lists? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (list? x)
+(define (list?::bool obj)
    (labels ((l1 (x prev)
-		(cond ((null? x)
-		       #t)
-		      ((pair? x)
-		       (if (eq? x prev)
-			   #f
-			   (l2 (cdr x) prev)))
-		      (else #f)))
+	       (cond ((null? x)
+		      #t)
+		     ((pair? x)
+		      (if (eq? x prev)
+			  #f
+			  (l2 (cdr x) prev)))
+		     (else #f)))
 	    (l2 (x prev)
-		(cond ((null? x)
-		       #t)
-		      ((pair? x)
-		       (if (eq? x prev)
-			   #f
-			   (l1 (cdr x) (cdr prev))))
-		      (else #f))))
-      (cond ((null? x)
-	     #t)
-	    ((pair? x)
-	     (l1 (cdr x) x))
-	    (else
-	     #f))))
+	       (cond ((null? x)
+		      #t)
+		     ((pair? x)
+		      (if (eq? x prev)
+			  #f
+			  (l1 (cdr x) (cdr prev))))
+		     (else #f))))
+      (cond ((null? obj) #t)
+	    ((pair? obj) (l1 (cdr obj) obj))
+	    (else #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    append-2                                                         */
@@ -576,7 +573,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    append! ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (append! . l)
+(define (append!::pair-nil . l)
    (labels ((append-list (l)
 			 (let ((len (length l)))
 			    (if (=fx len 0)
@@ -605,8 +602,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    length ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (length list)
-   (let loop ((l       list)
+(define (length::long list::pair-nil)
+   (let loop ((l list)
 	      (res::long 0))
       (cond
 	 ((null? l)
@@ -617,7 +614,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    reverse ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (reverse l)
+(define (reverse::pair-nil l::pair-nil)
    (let loop ((l   l)
 	      (acc '()))
       (if (null? l)
@@ -640,7 +637,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    take ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (take list k)
+(define (take::pair-nil list::pair-nil k::long)
    (let loop ((list list)
 	      (k k)
 	      (res '()))
@@ -655,7 +652,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    drop ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (drop list k)
+(define (drop::pair-nil list::pair-nil k::long)
    (if (zerofx? k)
        list
        (drop (cdr list) (-fx k 1))))
@@ -663,13 +660,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    list-tail ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (list-tail list k)
+(define (list-tail::pair-nil list::pair-nil k::long)
    (drop list k))
 
 ;*---------------------------------------------------------------------*/
 ;*    list-ref ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (list-ref list k)
+(define (list-ref list::pair-nil k::long)
    (if (zerofx? k)
        (car list)
        (list-ref (cdr list) (-fx k 1))))
@@ -677,7 +674,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    list-set! ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (list-set! list k val)
+(define (list-set! list::pair-nil k::long val)
    (if (zerofx? k)
        (set-car! list val)
        (list-set! (cdr list) (-fx k 1) val)))
@@ -685,7 +682,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    last-pair ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (last-pair x)
+(define (last-pair::pair x::pair)
    (if (pair? (cdr x))
        (last-pair (cdr x))
        x))
@@ -693,7 +690,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    memq ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (memq obj list)
+(define (memq obj list::pair-nil)
    (let loop ((list list))
       (if (pair? list)
 	  (if (eq? (car list) obj)
@@ -704,7 +701,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    memv ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (memv obj list)
+(define (memv obj list::pair-nil)
    (let loop ((list list))
       (if (pair? list)
 	  (if (eqv? (car list) obj)
@@ -715,7 +712,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    member ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (member obj list)
+(define (member obj list::pair-nil)
    (let loop ((list list))
       (cond
 	 ((not (pair? list)) #f)
@@ -725,7 +722,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    assq ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (assq obj alist)
+(define (assq obj alist::pair-nil)
    (let loop ((alist alist))
       (if (pair? alist)
           (if (eq? (car (car alist)) obj)
@@ -736,7 +733,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    assv ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (assv obj alist)
+(define (assv obj alist::pair-nil)
    (let loop ((alist alist))
       (if (pair? alist)
           (if (eqv? (car (car alist)) obj)
@@ -747,7 +744,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    assoc ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (assoc obj alist)
+(define (assoc obj alist::pair-nil)
    (let loop ((alist alist))
       (if (pair? alist)
           (if (equal? (car (car alist)) obj)
@@ -756,28 +753,25 @@
 	  #f)))
 
 ;*---------------------------------------------------------------------*/
-;*    The following functions are not in the IEEE (nor r4).            */
-;*---------------------------------------------------------------------*/
-;*---------------------------------------------------------------------*/
 ;*    remq ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (remq x y)
+(define (remq::pair-nil obj list::pair-nil)
    (cond
-      ((null? y) y)
-      ((eq? x (car y)) (remq x (cdr y)))
-      (else (cons (car y) (remq x (cdr y))))))
+      ((null? list) list)
+      ((eq? obj (car list)) (remq obj (cdr list)))
+      (else (cons (car list) (remq obj (cdr list))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    remq! ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (remq! x y)
+(define (remq!::pair-nil obj list::pair-nil)
    (cond
-      ((null? y) y)
-      ((eq? x (car y)) (remq! x (cdr y)))
-      (else (let loop ((prev y))
+      ((null? list) list)
+      ((eq? obj (car list)) (remq! obj (cdr list)))
+      (else (let loop ((prev list))
                (cond ((null? (cdr prev))
-                      y)
-                     ((eq? (cadr prev) x)
+                      list)
+                     ((eq? (cadr prev) obj)
                       (set-cdr! prev (cddr prev))
                       (loop prev))
                      (else (loop (cdr prev))))))))
@@ -785,23 +779,23 @@
 ;*---------------------------------------------------------------------*/
 ;*    remv ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (remv x y)
+(define (remv::pair-nil obj list::pair-nil)
    (cond
-      ((null? y) y)
-      ((eqv? x (car y)) (remv x (cdr y)))
-      (else (cons (car y) (remv x (cdr y))))))
+      ((null? list) list)
+      ((eqv? obj (car list)) (remv obj (cdr list)))
+      (else (cons (car list) (remv obj (cdr list))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    remv! ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (remv! x y)
+(define (remv!::pair-nil obj list::pair-nil)
    (cond
-      ((null? y) y)
-      ((eqv? x (car y)) (remv! x (cdr y)))
-      (else (let loop ((prev y))
+      ((null? list) list)
+      ((eqv? obj (car list)) (remv! obj (cdr list)))
+      (else (let loop ((prev list))
                (cond ((null? (cdr prev))
-                      y)
-                     ((eqv? (cadr prev) x)
+                      list)
+                     ((eqv? (cadr prev) obj)
                       (set-cdr! prev (cddr prev))
                       (loop prev))
                      (else (loop (cdr prev))))))))
@@ -809,27 +803,27 @@
 ;*---------------------------------------------------------------------*/
 ;*    delete ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (delete x y #!optional (eq equal?))
-   (let loop ((x x)
-	      (y y))
+(define (delete::pair-nil obj list::pair-nil #!optional (eq::procedure equal?))
+   (let loop ((obj obj)
+	      (list list))
       (cond
-	 ((null? y) y)
-	 ((eq x (car y)) (loop x (cdr y)))
-	 (else (cons (car y) (loop x (cdr y)))))))
+	 ((null? list) list)
+	 ((eq obj (car list)) (loop obj (cdr list)))
+	 (else (cons (car list) (loop obj (cdr list)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    delete! ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (delete! x y #!optional (eq equal?))
-   (let laap ((x x)
-	      (y y))
+(define (delete!::pair-nil obj list::pair-nil #!optional (eq::procedure equal?))
+   (let laap ((obj obj)
+	      (list list))
       (cond
-	 ((null? y) y)
-	 ((eq x (car y)) (laap x (cdr y)))
-	 (else (let loop ((prev y))
+	 ((null? list) list)
+	 ((eq obj (car list)) (laap obj (cdr list)))
+	 (else (let loop ((prev list))
 		  (cond ((null? (cdr prev))
-			 y)
-			((eq (cadr prev) x)
+			 list)
+			((eq (cadr prev) obj)
 			 (set-cdr! prev (cddr prev))
 			 (loop prev))
 			(else (loop (cdr prev)))))))))
@@ -849,7 +843,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    reverse! ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (reverse! l)
+(define (reverse!::pair-nil l::pair-nil)
    (if (pair? l)
        (let nr ((l l)
 		(r '()))
@@ -865,7 +859,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    every ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (every pred . l)
+(define (every pred::procedure . l)
    (cond
       ((null? l)
        #t)
@@ -881,7 +875,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    any ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define (any pred . l)
+(define (any pred::procedure . l)
    (cond
       ((null? l)
        #f)
@@ -897,14 +891,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    find ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (find pred list)
+(define (find pred::procedure list::pair-nil)
    (cond ((find-tail pred list) => car)
 	 (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-tail ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (find-tail pred list)
+(define (find-tail pred::procedure list::pair-nil)
    (let lp ((list list))
       (when (pair? list)
 	 (if (pred (car list))
@@ -914,7 +908,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    reduce ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (reduce f ridentify list)
+(define (reduce f::procedure ridentify list::pair-nil)
    (if (null? list)
        ridentify
        (let loop ((list (cdr list))
@@ -926,7 +920,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-list ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (make-list n . o)
+(define (make-list::pair-nil n::int . o)
    (let ((fill (if (pair? o) (car o) #unspecified)))
       (let walk ((i n) (r '()))
 	 (if (<=fx i 0)
@@ -936,7 +930,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    list-tabulate ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (list-tabulate n init-proc)
+(define (list-tabulate::pair-nil n::int init-proc::procedure)
    (let walk ((i (-fx n 1)) (r '()))
       (if (<fx i 0)
 	  r
@@ -945,7 +939,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    list-split ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (list-split l num . fill)
+(define (list-split l::pair-nil num::int . fill)
    (let loop ((l l)
 	      (i 0)
 	      (acc '())
@@ -965,7 +959,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    list-split! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (list-split! l num . fill)
+(define (list-split! l::pair-nil num::int . fill)
    (let loop ((l l)
 	      (i 0)
 	      (last #f)
@@ -989,7 +983,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    iota ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (iota count . rest)
+(define (iota::pair-nil count::int . rest)
    (let ((start 0)
 	 (step 1))
       (if (pair? rest)
@@ -1005,7 +999,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    list-copy ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (list-copy l)
+(define (list-copy::pair-nil l::pair-nil)
    (if (pair? l)
        (cons (car l) (list-copy (cdr l)))
        l))
@@ -1013,7 +1007,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    tree-copy ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (tree-copy l)
+(define (tree-copy::pair-nil l::pair-nil)
    (cond
       ((epair? l)
        (econs (tree-copy (car l)) (tree-copy (cdr l)) (tree-copy (cer l))))
@@ -1025,13 +1019,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    delete-duplicates ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (delete-duplicates lis #!optional (eq equal?))
+(define (delete-duplicates::pair-nil lis::pair-nil #!optional (eq::procedure equal?))
    (delete-duplicates! (list-copy lis) eq))
 
 ;*---------------------------------------------------------------------*/
 ;*    delete-duplicates! ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (delete-duplicates! lis #!optional (eq equal?))
+(define (delete-duplicates!::pair-nil lis::pair-nil #!optional (eq::procedure equal?))
    (unless (procedure? eq)
       (bigloo-type-error 'delete-duplicates! "procedure" eq))
    (let recur ((lis lis))

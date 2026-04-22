@@ -12,7 +12,7 @@
 ,(include "head.html")
 
 ,(implementation-path "../runtime/Ieee/vector.scm")
-,(example-path "../test/vector.bgl")
+,(example-path "../test/src/vector.bgl")
 
 Vectors
 =======

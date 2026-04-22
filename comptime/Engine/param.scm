@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sat Mar 28 14:48:04 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 09:13:55 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -1277,7 +1277,9 @@
 ;*---------------------------------------------------------------------*/
 (param-define *wasmas*
    "wasm assembler"
-   (make-file-name (bigloo-config 'binary-directory) "bglwatib"))
+   (if (string? (bigloo-config 'wasm-as))
+       (bigloo-config 'wasm-as)
+       (make-file-name (bigloo-config 'binary-directory) "bglwatib")))
 		 
 ;*---------------------------------------------------------------------*/
 ;*    *wasmas-options* ...                                             */

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/api/web/src/Llib/xml.scm      */
+;*    serrano/prgm/project/bigloo/5.0a/api/web/src/Llib/xml.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & joe Donaldson                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Mon Feb 21 09:46:51 2022 (serrano)                */
-;*    Copyright   :  2005-22 Manuel Serrano                            */
+;*    Last change :  Wed Apr 22 10:17:05 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
 ;*=====================================================================*/
@@ -16,11 +16,31 @@
    
    (option (set! *dlopen-init-gc* #t))
    
-   (export (xml-parse::pair-nil port::input-port
+   (export (class XmlElement
+	      (xml-element-ctor)
+	      (loc (default #f))
+	      (tag::symbol read-only)
+	      (attrs::pair-nil (default '()))
+	      (%children::pair-nil (default '()))
+	      (%parent (default #f)))
+	   (generic xml-element-ctor ::XmlElement)
+	   (inline xml-element::XmlElement ::symbol ::pair-nil ::pair-nil #!optional loc)
+	   (xml-element-dup::XmlElement ::XmlElement)
+	   (xml-element-attribute ::XmlElement ::symbol)
+	   (xml-element-attribute-set! ::XmlElement ::symbol ::obj)
+	   (xml-text-element-value::pair-nil ::XmlElement)
+	   (inline xml-element-children::pair-nil ::XmlElement)
+	   (xml-element-children-set!::pair-nil ::XmlElement ::pair-nil)
+	   (xml-element-append-child!::pair-nil ::XmlElement ::obj)
+	   (xml-element-next-sibling ::XmlElement)
+	   (xml-element-previous-sibling ::XmlElement)
+	   (xml-get-elements-by-tag::pair-nil ::XmlElement ::symbol)
+
+	   (xml-parse::pair-nil port::input-port
 	      #!key
 	      (content-length 0)
 	      (procedure #f)
-	      (make-element #f)
+	      (make-element xml-element)
 	      (make-content (lambda (str pos) str))
 	      (make-comment (lambda (str pos) (cons 'comment str)))
 	      (make-declaration (lambda (str pos) (cons 'declaration str)))
@@ -38,13 +58,203 @@
 	   (xml-metadata xml-tree::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
+;*    object-write ::XmlElement ...                                    */
+;*---------------------------------------------------------------------*/
+(define-method (object-write m::XmlElement . port)
+   (fprintf (if (pair? port) (car port) (current-output-port))
+      "#<XmlElement tag=~a attrs=~s children=~a parent=~a>"
+      (-> m tag) (-> m attrs) (map typeof (-> m %children)) (typeof (-> m %parent))))
+
+;*---------------------------------------------------------------------*/
+;*    object-display ::XmlElement ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (object-display m::XmlElement . port)
+   (fprintf (if (pair? port) (car port) (current-output-port))
+      "#<XmlElement tag=~a attrs=~s ...>" (-> m tag) (-> m attrs)))
+
+;*---------------------------------------------------------------------*/
+;*    object-print ::XmlElement ...                                    */
+;*---------------------------------------------------------------------*/
+(define-method (object-print m::XmlElement port ds)
+   (object-write m port))
+
+;*---------------------------------------------------------------------*/
+;*    xml-element-ctor ...                                             */
+;*---------------------------------------------------------------------*/
+(define-generic (xml-element-ctor el::XmlElement)
+   (unless (eq? (-> el tag) 'text)
+      (let loop ((els (-> el %children))
+		 (cs '()))
+	 (cond
+	    ((null? els)
+	     (set! (-> el %children) (reverse! cs)))
+	    ((isa? (car els) XmlElement)
+	     (let ((c::XmlElement (car els)))
+		(set! (-> c %parent) el)
+		(loop (cdr els) (cons c cs))))
+	    ((string? (car els))
+	     (let ((ne (instantiate::XmlElement
+			  (tag 'text)
+			  (%children (list (car els)))
+			  (%parent el))))
+		(loop (cdr els) (cons ne cs))))
+	    ((number? (car els))
+	     (loop (cons (number->string (car els)) (cdr els)) cs))
+	    ((pair? (car els))
+	     (loop (append (car els) (cdr els)) cs))
+	    (else
+	     (loop (cons (format "~s" (car els)) (cdr els)) cs)))))
+   el)
+
+;*---------------------------------------------------------------------*/
+;*    xml-element ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (xml-element::XmlElement tag::symbol attrs::pair-nil els::pair-nil #!optional loc)
+   (instantiate::XmlElement
+      (loc loc)
+      (tag tag)
+      (attrs attrs)
+      (%children els)))
+
+;*---------------------------------------------------------------------*/
+;*    xml-element-dup ...                                              */
+;*---------------------------------------------------------------------*/
+(define (xml-element-dup::XmlElement el::XmlElement)
+   (let ((dup::XmlElement (duplicate::XmlElement el
+			     (%children '())
+			     (%parent #f))))
+      (if (eq? (-> el tag) 'text)
+	  (set! (-> dup %children) (list-copy (-> el %children)))
+	  (set! (-> dup %children)
+	     (map (lambda (c::XmlElement)
+		     (let ((nc::XmlElement (xml-element-dup c)))
+			(set! (-> nc %parent) dup)
+			nc))
+		(-> el %children))))
+      dup))
+
+;*---------------------------------------------------------------------*/
+;*    xml-element-attribute ...                                        */
+;*---------------------------------------------------------------------*/
+(define (xml-element-attribute e::XmlElement attr::symbol)
+   (let ((c (assq attr (-> e attrs))))
+      (when (pair? c)
+	 (cdr c))))
+
+;*---------------------------------------------------------------------*/
+;*    xml-element-attribute-set! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (xml-element-attribute-set! e::XmlElement attr::symbol val)
+   (let ((c (assq attr (-> e attrs))))
+      (if (pair? c)
+	  (set-cdr! c val)
+	  (set! (-> e attrs) (cons (cons attr val) (-> e attrs))))))
+
+;*---------------------------------------------------------------------*/
+;*    xml-text-element-value ...                                       */
+;*---------------------------------------------------------------------*/
+(define (xml-text-element-value::pair-nil e::XmlElement)
+   (if (eq? (-> e tag) 'text)
+       (-> e %children)
+       (error "xml-text-element-value" "argument is not a text element"
+	  (-> e tag))))
+
+;*---------------------------------------------------------------------*/
+;*    xml-element-children ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (xml-element-children::pair-nil e::XmlElement)
+   (-> e %children))
+
+;*---------------------------------------------------------------------*/
+;*    value->xml-element ...                                           */
+;*---------------------------------------------------------------------*/
+(define (value->xml-element e::XmlElement o)
+   (cond
+      ((string? o)
+       (instantiate::XmlElement
+	  (tag 'text)
+	  (%children (list o))
+	  (%parent e)))
+      ((number? o)
+       (instantiate::XmlElement
+	  (tag 'text)
+	  (%children (list (number->string o)))
+	  (%parent e)))
+      ((isa? o XmlElement)
+       (set! (-> (cast::XmlElement o) %parent) e)
+       o)
+      (else
+       (error "xml-element" "Child value not an XmlElement" o))))
+
+;*---------------------------------------------------------------------*/
+;*    xml-element-children-set! ...                                    */
+;*---------------------------------------------------------------------*/
+(define (xml-element-children-set!::pair-nil e::XmlElement os::pair-nil)
+   (for-each (lambda (c::XmlElement)
+		(set! (-> c %parent) #f))
+      (-> e %children))
+   (set! (-> e %children)
+      (map (lambda (o) (value->xml-element e o)) os))
+   (-> e %children))
+
+;*---------------------------------------------------------------------*/
+;*    xml-element-append-child! ...                                    */
+;*---------------------------------------------------------------------*/
+(define (xml-element-append-child! e::XmlElement o)
+   (let ((nc (append (-> e %children) (list (value->xml-element e o)))))
+      (set! (-> e %children) nc)
+      nc))
+
+;*---------------------------------------------------------------------*/
+;*    xml-element-next-sibling ...                                     */
+;*---------------------------------------------------------------------*/
+(define (xml-element-next-sibling e::XmlElement)
+   (let ((parent (-> e %parent)))
+      (when parent
+	 (let ((l (memq e (-> (cast::XmlElement parent) %children))))
+	    (when (pair? (cdr l))
+	       (cadr l))))))
+
+;*---------------------------------------------------------------------*/
+;*    xml-element-previous-sibling ...                                 */
+;*---------------------------------------------------------------------*/
+(define (xml-element-previous-sibling e::XmlElement)
+   (let ((parent (-> e %parent)))
+      (when parent
+	 (let ((cs (-> (cast::XmlElement parent) %children)))
+	    (when (and (pair? cs) (pair? (cdr cs)))
+	       (let loop ((p (car cs))
+			  (n (cdr cs)))
+		  (cond
+		     ((null? n) #f)
+		     ((eq? (car n) e) (car p))
+		     (else (loop n (cdr n))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    xml-get-elenents-by-tag ...                                      */
+;*---------------------------------------------------------------------*/
+(define (xml-get-elements-by-tag::pair-nil el::XmlElement tag::symbol)
+   
+   (define (get-tag::pair-nil el::XmlElement tag::symbol)
+      (if (eq? (-> el tag) 'text)
+	  (if (eq? tag 'text) (list el) '())
+	  (let ((els (append-map (lambda (c)
+				    (get-tag c tag))
+			(-> el %children))))
+	     (if (eq? (-> el tag) tag)
+		 (cons el els)
+		 els))))
+   
+   (get-tag el tag))
+
+;*---------------------------------------------------------------------*/
 ;*    xml-parse ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (xml-parse::pair-nil port::input-port
 	   #!key
 	   (content-length 0)
 	   (procedure #f)
-	   (make-element #f)
+	   (make-element xml-element)
 	   (make-content (lambda (str pos) str))
 	   (make-comment (lambda (str pos) (cons 'comment str)))
 	   (make-declaration (lambda (str pos) (cons 'declaration str)))

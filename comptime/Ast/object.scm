@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Thu Apr  9 10:34:22 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 11:01:39 2026 (serrano)                */
 ;*    Last change :  Sun Apr 12 18:55:04 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
@@ -107,7 +107,7 @@
 	  (with-access::cast node (arg type)
 	     (if (var? arg)
 		 (field-ref type node (cdr l2))
-		 (error-sexp->node "Illegal ->" exp loc genv))))
+		 (error-sexp->node "Illegal -> (casted argument not a variable)" exp loc genv))))
 	 ((var? node)
 	  (with-access::variable (var-variable node) (type)
 	     (field-ref type node (cdr l2))))

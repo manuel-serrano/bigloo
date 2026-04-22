@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Sat Mar 28 14:49:34 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 08:25:06 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -200,7 +200,7 @@
    (case (module5-default-version)
       ((5) (find-main5 clauses))
       ((4) (find-main4 clauses))
-      (else (find-main4 clauses))))
+      (else (or (find-main5 clauses) (find-main4 clauses)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-main5 ...                                                   */

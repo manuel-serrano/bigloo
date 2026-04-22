@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Wed Mar 11 08:42:33 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 08:07:12 2026 (serrano)                */
 ;*    Copyright   :  2012-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -163,18 +163,16 @@
    (let* ((qtype (class-qualified-type-name-get module))
 	  (base (let ((pre (prefix qtype)))
 		   (cond
-		      ((string=? pre "")
-		       ".")
-		      ((string=? pre qtype)
-		       ".")
-		      (else
-		       pre)))))
-      (unless (compare-path? (jvm-filename base) dir)
+		      ((string=? pre "") ".")
+		      ((string=? pre qtype) ".")
+		      (else pre)))))
+      (unless (or (string=? base ".") (compare-path? (jvm-filename base) dir))
 	 (warning
 	    (format "Incompatible package name and class path for module \"~a\"."
 	       *module*)
+	    (format " qtype: ~a\n" qtype)
 	    (format " class: ~a\n" base)
-	    (format " dir  : a\n" dir)))))
+	    (format " dir  : ~a\n" dir)))))
 
 (define *jvm-dir-name* ".")
 
@@ -247,7 +245,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link me::jvm result)
    ;; CARE move the code here...
-   (jvm-ld #f))
+   (jvm-ld "" #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-cnst-table-name ::jvm                                    */
@@ -278,10 +276,10 @@
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link-objects me::jvm sources)
    
-   (define (do-link first module)
+   (define (do-link mainobj module)
       (read-jfile)
-      (jvm-ld module))
-
+      (jvm-ld mainobj module))
+   
    (define (link-sources sources)
       (if (null? sources)
 	  (let ((first (prefix (car *o-files*))))
@@ -294,7 +292,7 @@
 		     (cls '())
 		     (main-module #f)
 		     (main #f)
-		     (fmain "")
+		     (src '("" . ""))
 		     (libraries '()))
 	     (if (null? sources)
 		 (if main
@@ -315,8 +313,8 @@
 			   libraries)
 			;; we load the library init files.
 			(load-library-init)
-			(set! *src-files* (list fmain))
-			(do-link first main-module))
+			(set! *src-files* (list (car src)))
+			(do-link (cdr src) main-module))
 		     ;; generate a main an link
 		     (let ((tmp (make-tmp-file-name)))
 			(make-tmp-main tmp main (make-link-module) cls libraries)
@@ -336,7 +334,7 @@
 			   (compiler)
 			   ;; we load the library init files.
 			   (load-library-init)
-			   (let* ((pre        (prefix tmp))
+			   (let* ((pre (prefix tmp))
 				  (class-file (string-append pre ".class")))
 			      (when *rm-tmp-files*
 				 (when (file-exists? tmp)
@@ -355,11 +353,11 @@
 				     (cons (cons name (caar sources)) cls)
 				     (if nmain name main-module)
 				     (or nmain main)
-				     (if nmain (caar sources) fmain)
+				     (if nmain (car sources) src)
 				     (append libs libraries))))
 			      (else
 			       (loop (cdr sources)
-				  cls main-module main fmain libraries))))))))))
+				  cls main-module main src libraries))))))))))
    
    (with-trace 'linker "backend-line-objects ::jvm"
       (trace-item "sources=" sources)

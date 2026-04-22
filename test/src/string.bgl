@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/test/string.bgl                 */
+;*    serrano/prgm/project/bigloo/5.0a/test/src/string.bgl             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Mon Apr 20 18:14:49 2026 (serrano)                */
+;*    Last change :  Wed Apr 22 09:05:02 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing string functions                                         */
@@ -18,7 +18,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    test machinery                                                   */
 ;*---------------------------------------------------------------------*/
-(include "test.bgh")
+(include "./test.bgh")
 
 ;*---------------------------------------------------------------------*/
 ;*    test ...                                                         */
@@ -37,27 +37,27 @@
              string
              (begin 
                 (case (string-ref string i)
-                   ((#\Ã© #\Ã¨)
+                   ((#\é #\è)
                     (string-set! string i #\e))
-                   ((#\Ã‰ #\Ãˆ)
+                   ((#\É #\È)
                     (string-set! string i #\E))
-                   ((#\Ã )
+                   ((#\à)
                     (string-set! string i #\a))
-                   ((#\Ã€)
+                   ((#\À)
                     (string-set! string i #\A))
-                   ((#\Ã» #\Ã¼)
+                   ((#\û #\ü)
                     (string-set! string i #\u))
-                   ((#\Ã› #\Ãœ)
+                   ((#\Û #\Ü)
                     (string-set! string i #\U))
-                   ((#\Ã® #\Ã¯)
+                   ((#\î #\ï)
                     (string-set! string i #\i))
-                   ((#\Ã #\Ã)
+                   ((#\Î #\Ï)
                     (string-set! string i #\I))
-                   ((#\Ã¶ #\Ã´)
+                   ((#\ö #\ô)
                     (string-set! string i #\o))
-                   ((#\Ã– #\Ã”)
+                   ((#\Ö #\Ô)
                     (string-set! string i #\O))
-                   ((#\Ã§)
+                   ((#\ç)
                     (string-set! string i #\c))
                    ((#\C)
                     (string-set! string i #\C)))
@@ -184,9 +184,9 @@
 (define-test string-upcase (string-upcase "toto TOTO ToTo") :expected "TOTO TOTO TOTO")
 (define-test string-upcase! (let ((s "toto TOTO ToTo")) (string-upcase! s) s) :expected "TOTO TOTO TOTO")
 (define-test string-downcase (string-downcase "toto TOTO ToTo") :expected "toto toto toto")
-(define-test string-downcase! (let ((s "toto TOTO ToTo")) (string-dowcase! s) s) :expected "toto toto toto")
+(define-test string-downcase! (let ((s "toto TOTO ToTo")) (string-downcase! s) s) :expected "toto toto toto")
 (define-test string-capitalize (string-capitalize "toto TOTO ToTo") :expected "Toto Toto Toto")
-(define-test string-capitalize! (let ((s "toto TOTO ToTo")) (string-capitalize s) s) :expected "Toto Toto Toto")
+(define-test string-capitalize! (let ((s "toto TOTO ToTo")) (string-capitalize! s) s) :expected "Toto Toto Toto")
 (define-test string-ci=? (string-ci=? "Toto" "tOtO") :expected #t)
 
 (define-test string-copy (string-copy (make-string 3 #\6))
@@ -319,23 +319,23 @@
    :expected #f)
 (define-test substring-ci-at? (substring-ci-at? "abcdefghij" "defj" 3 -3)
    :expected #f)
-(define-test 8bits (8bits->7bits "Ã‰Ã©ÃˆÃ¨ÃÃ¯")
+(define-test 8bits (8bits->7bits "ÉéÈèÏï")
    :expected "EeEeIi")
-(define-test 8bits-string<? (string<? "abecd" "abÃ©cd")
+(define-test 8bits-string<? (string<? "abecd" "abécd")
    :expected #t)
-(define-test 8bits-string<=? (string<=? "abecd" "abÃ©cd")
+(define-test 8bits-string<=? (string<=? "abecd" "abécd")
    :expected #t)
-(define-test 8bits-string>? (string>? "abÃ©cd" "abecd")
+(define-test 8bits-string>? (string>? "abécd" "abecd")
    :expected #t)
-(define-test 8bits-string>=? (string>=? "abÃ©cd" "abecd")
+(define-test 8bits-string>=? (string>=? "abécd" "abecd")
    :expected #t)
-(define-test 8bits-string-ci<? (string-ci<? "abecd" "abÃ©cd")
+(define-test 8bits-string-ci<? (string-ci<? "abecd" "abécd")
    :expected #t)
-(define-test 8bits-string-ci<=? (string-ci<=? "abecd" "abÃ©cd")
+(define-test 8bits-string-ci<=? (string-ci<=? "abecd" "abécd")
    :expected #t)
-(define-test 8bits-string-ci>? (string-ci>? "abÃ©cd" "abecd")
+(define-test 8bits-string-ci>? (string-ci>? "abécd" "abecd")
    :expected #t)
-(define-test 8bits-string-ci>=? (string-ci>=? "abÃ©cd" "abecd")
+(define-test 8bits-string-ci>=? (string-ci>=? "abécd" "abecd")
    :expected #t)
 (define-test foreign (let ((x "\n\t\\\"")) (string->list x))
    :expected '(#\newline #\tab #\\ #\"))
@@ -378,8 +378,8 @@
    :expected (list->string '(#\f #\1 #\2 #\g)))
 (define-test escape "f\123g"
    :expected (list->string '(#\f #\S #\g)))
-(define-test escape8bits (list "bÃ¶ig")
-   :expected '("bÃ¶ig"))
+(define-test escape8bits (list "böig")
+   :expected '("böig"))
 
 (define-test trigraph "??-"
    :expected (string-append "?" "?" "-"))
@@ -505,14 +505,21 @@
 	  (c (base64unencode b)))
       (define-test base64 a
 	 :expected c)))
-(define-test hex-string (string-hex-extern "AAA")
+(define-test string-hex-extern (string-hex-extern "AAA")
    :expected "414141")
-(define-test hex-string (string-hex-intern "414141")
+(define-test string-hex-extern (string-hex-intern "414141")
    :expected "AAA")
-(define-test hex-string (string-hex-intern! (string-copy "414141"))
-   :expected "AAA")
-(define-test hex-string (string-hex-intern (string-hex-extern "foo bar0x12"))
+(define-test string-hex-extern (string-hex-extern "JKL")
+   :expected "4a4b4c")
+(define-test string-hex-intern (string-hex-intern (string-hex-extern "foo bar0x12"))
    :expected "foo bar0x12")
+(define-test string-hex-intern (string-hex-intern "4a4b4c")
+   :expected "JKL")
+(define-test string-hex-intern! (string-hex-intern! (string-copy "414141"))
+   :expected "AAA")
+(define-test string-hex-intern! (string-hex-intern! (string-append "4a4b" "4c"))
+   :expected "JKL")
+
 
 (define-test md5 (md5sum "")
    :expected "d41d8cd98f00b204e9800998ecf8427e")
@@ -960,31 +967,23 @@
 (define-test string-shrink! (string-shrink! (string-append "abc" "def") 4)
    :expected "abcd")
 
-(define-test string-fill! (string-fill! (string-append "abc" "de") #\-)
+(define-test string-fill! (let ((s (string-append "abc" "de"))) (string-fill! s #\-) s)
    :expected "-----")
 
 (define-test string-replace (string-replace "foo-bar" #\- #\_)
    :expected "foo_bar")
-(define-test string-replace! (let ((s (string-append "foo" "-bar")) (string-replace! s #\- #\_) s))
+(define-test string-replace! (let ((s (string-append "foo" "-bar"))) (string-replace! s #\- #\_) s)
    :expected "foo_bar")
 
 (define-test string-split (string-split "foo  bar gee")
    :expected '("foo" "bar" "gee"))
-(define-test string-cut (string-split "foo  bar gee")
+(define-test string-cut (string-cut "foo  bar gee")
    :expected '("foo" "" "bar" "gee"))
-
-(define-test string-hex-intern (string-hex-intern "4a4b4c")
-   :expected "JKL")
-(define-test string-hex-intern! (let ((s (string-append "4a4b" "4c"))) (string-hex-intern! s) s)
-   :expected "JKL")
-
-(define-test string-hex-extern (string-hex-intern "JKL")
-   :expected "4a4b4c")
 
 (define-test string-trim (string-trim "  foo bar ")
    :expected "foo bar ")
 
-(define-test string-trim-right (string-trim-right "  foo bar ")
+(define-test string-trim-right (string-trim-right "   foo bar ")
    :expected "   foo bar")
 
 (define-test string-trim-both (string-trim-both "  foo bar ")
