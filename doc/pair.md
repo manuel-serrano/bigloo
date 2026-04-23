@@ -51,8 +51,8 @@ Predicates
 ----------
 
 ### pair-or-null? ###
-Returns @code{#t} if @var{obj} is either a pair or the empty list. Otherwise
-it returns @code{#f}.
+Returns `#t` if @var{obj} is either a pair or the empty list. Otherwise
+it returns `#f`.
 
 ### null? ###
 
@@ -298,7 +298,7 @@ comparison is performed `(= x y)`. The comparison procedure will be used
 to compare each pair of elements in list no more than once; the order
 in which it is applied to the various pairs is not specified.
 
-@code{delete-duplicates} is allowed to share common tails
+The function `delete-duplicates` is allowed to share common tails
 between argument and result lists -- for example, if the list argument
 contains only unique elements, it may simply return exactly this
 list. 

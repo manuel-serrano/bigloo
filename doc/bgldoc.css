@@ -157,13 +157,13 @@ ul.menu > li.navbutton[open="true"] > a:after {
 
 div.nav-menu {
     position: fixed;
-    top: calc(var(--navHeight) - 1ex);
+    top: calc(var(--navHeight) - 0ex);
     width: 30em;
     height: 400px;
     background-color: var(--navMenuBackgroundColor);
     border: 1px solid var(--navMenuBorderColor);
     z-index: 2;
-    font-size: 120%;
+    font-size: 100%;
     opacity: 0.9;
     column-width: 12em;
     column-gap: 2em;

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:57:39 1994                          */
-;*    Last change :  Sat Mar 14 10:30:47 2026 (serrano)                */
+;*    Last change :  Thu Apr 23 08:40:53 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La macro expansion de l'interprete                               */
 ;*=====================================================================*/
@@ -181,16 +181,16 @@
 ;*    application-eval-expander ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (application-eval-expander x e)
-   (let loop ((x x))
+   (let loop ((y x))
       (cond
-	 ((null? x)
+	 ((null? y)
 	  '())
-	 ((not (pair? x))
-	  (error "application" "Illegal form" x))
-	 ((epair? x)
-	  (econs (e (car x) e) (loop (cdr x)) (cer x)))
+	 ((not (pair? y))
+	  (expand-error "application" "Illegal form" x))
+	 ((epair? y)
+	  (econs (e (car y) e) (loop (cdr y)) (cer x)))
 	 (else
-	  (cons (e (car x) e) (loop (cdr x)))))))
+	  (cons (e (car y) e) (loop (cdr y)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    application-eval-expander! ...                                   */
@@ -201,7 +201,7 @@
 	 ((null? y)
 	  x)
 	 ((not (pair? y))
-	  (error "application" "Illegal form" y))
+	  (expand-error "application" "Illegal form" x))
 	 (else
 	  (set-car! y (e (car y) e))
 	  (loop (cdr y))))))

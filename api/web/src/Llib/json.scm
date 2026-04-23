@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Thu Apr  9 11:06:31 2026 (serrano)                */
+;*    Last change :  Thu Apr 23 08:26:00 2026 (serrano)                */
 ;*    Copyright   :  2014-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -436,4 +436,6 @@
       (lambda (p)
 	 (obj->json obj p
 	    (lambda (obj op fallback)
-	       (error "json-stringify" "Illegal object" (format "~s" obj)))))))
+	       (error "json-stringify"
+		  (format "Illegal object (~a)" (typeof obj))
+		  (format "~s" obj)))))))

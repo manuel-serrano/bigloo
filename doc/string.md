@@ -15,6 +15,11 @@
 Strings
 =======
 
+Strings are sequences of 8-bit characters. They are mutable. They are
+designated by the type `::bstring`. Native, backend depend strings,
+are denoted by the type `::string`. The native implementation of the
+native strings depends on the backend. 
+
 The syntax of string literals is:
 
 ```scheme
@@ -27,11 +32,7 @@ The syntax of string literals is:
     (the-encoded-substring 1 (-fx (the-length) 1) 'bigloo))
    ((: "#w\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
     ;; wasm strings
-    (the-encoded-substring 1 (-fx (the-length) 1) 'wasm))
-   ((: "#u\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
-    ;; utf8 strings
-    (let ((str (the-encoded-substring 2 (-fx (the-length) 1) 'bigloo)))
-      (utf8-string->ucs2-string str))))
+    (the-encoded-substring 1 (-fx (the-length) 1) 'wasm)))
 ```
 
 The global parameter `bigloo-string-encoding` is documented in
