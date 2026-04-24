@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Thu Apr 23 09:54:46 2026 (serrano)                */
+;*    Last change :  Thu Apr 23 19:00:43 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1327,8 +1327,8 @@ if that value is non-nil."
     (bgl-flycheck-init))
 
   ;; lsp configuration
-  (when (package-installed-p 'lsp-mode)
-    (bgl-lsp-init))
+;*   (when (package-installed-p 'lsp-mode)                             */
+;*     (bgl-lsp-init))                                                 */
   
   ;; activate th emode
   (font-lock-mode t)

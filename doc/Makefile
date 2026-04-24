@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Wed Apr 22 11:17:52 2026 (serrano)                */
+#*    Last change :  Thu Apr 23 19:19:02 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -29,14 +29,14 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
-COMMON = bgldoc fontifier
+COMMON = main fontifier
 
 C_OBJECTS = $(COMMON:%=%.$(C_OBJ_EXTENSION)) $(C_SPECIFIC:%=%.$(C_OBJ_EXTENSION))
 
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = pair string vector
+MD = hash pair string vector
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */

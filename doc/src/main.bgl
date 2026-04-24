@@ -1,16 +1,16 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/doc/src/bgldoc.bgl              */
+;*    serrano/prgm/project/bigloo/5.0a/doc/src/main.bgl                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Thu Apr 23 07:56:56 2026 (serrano)                */
+;*    Last change :  Thu Apr 23 20:10:59 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
-;*    doc                                                              */
+;*    bgldoc                                                           */
 ;*---------------------------------------------------------------------*/
 (module bgldoc
    (library web)
@@ -35,8 +35,9 @@
 (define all-chapters
    '(("numbers" . "number.html")
      ("characters" . "character.html")
+     ("hash" . "hash.html")
      ("i/o" . "io.html")
-     ("pairs" . "pair.html")
+     ("pairs and lists" . "pair.html")
      ("strings" . "string.html")
      ("vectors" . "vector.html")))
 

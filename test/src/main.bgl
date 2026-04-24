@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Wed Apr 22 16:01:44 2026 (serrano)                */
+;*    Last change :  Thu Apr 23 19:03:16 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -13,6 +13,7 @@
 ;*    main                                                             */
 ;*---------------------------------------------------------------------*/
 (module main
+   (import "./hash.bgl" . hash)
    (import "./pair.bgl" . pair)
    (import "./string.bgl" . string)
    (import "./vector.bgl" . vector)
@@ -38,6 +39,7 @@
        (set! tests (cons else tests))))
    
    (let* ((res (list
+		  (hash.test verbose tests)
 		  (pair.test verbose tests)
 		  (string.test verbose tests)
 		  (vector.test verbose tests)))
