@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Tools/error.scm                     */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Tools/error.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Sun Feb 15 07:25:40 2026 (serrano)                */
+;*    Last change :  Fri Apr 24 07:56:54 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
@@ -134,12 +134,9 @@
 	     (fprint *trace-port*  "*** ERROR:" proc ":" msg ":" obj))
 	 (set! *nb-error-on-pass* (+fx *nb-error-on-pass* 1))
 	 (let* ((proc-string (cond
-				((string? proc)
-				 proc)
-				((symbol? proc)
-				 (symbol->string proc))
-				(else
-				 #f)))
+				((string? proc) proc)
+				((symbol? proc) (symbol->string proc))
+				(else #f)))
 		(fun-string (symbol->string (current-function)))
 		(proc (if (and (string? proc-string)
 			       (not (string=? proc-string fun-string)))

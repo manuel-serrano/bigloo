@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:57:39 1994                          */
-;*    Last change :  Thu Apr 23 08:40:53 2026 (serrano)                */
+;*    Last change :  Fri Apr 24 08:01:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La macro expansion de l'interprete                               */
 ;*=====================================================================*/
@@ -187,6 +187,8 @@
 	  '())
 	 ((not (pair? y))
 	  (expand-error "application" "Illegal form" x))
+	 ((null? (car y))
+	  (expand-error/reason "application" "Illegal form" x y))
 	 ((epair? y)
 	  (econs (e (car y) e) (loop (cdr y)) (cer x)))
 	 (else
@@ -236,6 +238,18 @@
 (define (expand-error proc msg obj)
    (if (epair? obj)
        (match-case (cer obj)
+	  ((at ?fname ?loc)
+	   (error/location proc msg obj fname loc))
+	  (else
+	   (error proc msg obj)))
+       (error proc msg obj)))
+
+;*---------------------------------------------------------------------*/
+;*    expand-error/reason ...                                          */
+;*---------------------------------------------------------------------*/
+(define (expand-error/reason proc msg obj reason)
+   (if (epair? reason)
+       (match-case (cer reason)
 	  ((at ?fname ?loc)
 	   (error/location proc msg obj fname loc))
 	  (else

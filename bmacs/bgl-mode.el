@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Thu Apr 23 09:54:46 2026 (serrano)                */
+;*    Last change :  Fri Apr 24 07:26:27 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -183,14 +183,17 @@
   :type 'boolean)
 
 ;; flycheck configuration
+(defcustom bgl-flycheck-file-extensions '("bgl")
+  "*The file extensions that automatically start flycheck"
+  :group 'bgl
+  :type '(repeat (string)))
+
+(defcustom bgl-flycheck-size-limit 10000
+  "*The maximum file size for automatic flycheck start"
+  :group 'bgl
+  :type 'number)
 (defcustom bgl-flycheck-compiler "/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo"
   "*The bgl compiler"
-  :group 'bgl
-  :type 'string)
-
-;; lsp configuration
-(defcustom bgl-lsp-server "/home/serrano/prgm/project/bigloo/work/lsp/bgl-lsp"
-  "*The binary file of the  bgl lsp-server"
   :group 'bgl
   :type 'string)
 
@@ -1323,12 +1326,11 @@ if that value is non-nil."
 ;* 	    t)                                                         */
 
   ;; flycheck configuration
-  (when (package-installed-p 'flycheck)
-    (bgl-flycheck-init))
+  (bgl-flycheck-init)
 
-  ;; lsp configuration
-  (when (package-installed-p 'lsp-mode)
-    (bgl-lsp-init))
+;*   ;; lsp configuration                                              */
+;*   (when (package-installed-p 'lsp-mode)                             */
+;*     (bgl-lsp-init))                                                 */
   
   ;; activate th emode
   (font-lock-mode t)
@@ -1394,19 +1396,24 @@ if that value is non-nil."
 (defun bgl-flycheck-init ()
   (unless bgl-flycheck-initializedp
     (setq bgl-flycheck-initializedp t)
-    (require 'flycheck)
-    (with-eval-after-load 'flycheck
-      (flycheck-define-checker bgl
-	"A bgl syntax checker using the bgl compiler."
-	:command ("/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo" "-c" source)
-	:error-patterns
-	((error line-start
-		"File \"" (file-name) "\", line " line ", character " column ":\n"
-		(zero-or-more anything)
-		"*** ERROR:" (one-or-more not-newline) "\n"
-		(message) line-end))
-	:modes bgl-mode)
-      (add-to-list 'flycheck-checkers 'bgl))))
+    (when (package-installed-p 'flycheck)
+      (require 'flycheck)
+      (with-eval-after-load 'flycheck
+	(flycheck-define-checker bgl
+	  "A bgl syntax checker using the bgl compiler."
+	  :command ("/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo" "-c" source)
+	  :error-patterns
+	  ((error line-start
+		  "File \"" (file-name) "\", line " line ", character " column ":\n"
+		  (zero-or-more anything)
+		  "*** ERROR:" (one-or-more not-newline) "\n"
+		  (message) line-end))
+	  :modes bgl-mode)
+	(add-to-list 'flycheck-checkers 'bgl))))
+  (when (and (member (file-name-extension (buffer-file-name))
+		     bgl-flycheck-file-extensions)
+	     (< (buffer-size) bgl-flycheck-size-limit))
+    (flycheck-mode 1)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-lsp-initializedp                                             */
