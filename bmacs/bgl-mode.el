@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Fri Apr 24 07:26:27 2026 (serrano)                */
+;*    Last change :  Fri Apr 24 09:38:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -193,7 +193,7 @@
   :group 'bgl
   :type 'number)
 (defcustom bgl-flycheck-compiler "/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo"
-  "*The bgl compiler"
+  "*The bigloo compiler"
   :group 'bgl
   :type 'string)
 
@@ -1186,15 +1186,14 @@ of the start of the containing expression."
 (put 'else                      'bgl-indent-hook -1)
 
 ;; module
-(put 'static                    'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'import                    'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'extern                    'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'export                    'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'include                   'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'library                   'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'use                       'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'from                      'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'pragma                    'bgl-indent-hook 'bgl-module-indent-hook)
+;* (put 'static                    'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'import                    'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'export                    'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'include                   'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'library                   'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'use                       'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'from                      'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'pragma                    'bgl-indent-hook 'bgl-module-indent-hook) */
 
 ;; binding forms
 (put 'let                       'bgl-indent-hook 'bgl-let-indent)
@@ -1290,7 +1289,7 @@ of the start of the containing expression."
 ;*    bgl-mode ...                                                     */
 ;*---------------------------------------------------------------------*/
 (defun bgl-mode ()
-  "Major mode for editing Bgl code.
+  "Major mode for editing Bigloo code.
 
 Commands:
 Delete converts tabs to spaces as it moves back.

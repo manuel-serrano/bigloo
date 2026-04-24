@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Apr 24 08:20:25 2026 (serrano)                */
+;*    Last change :  Fri Apr 24 09:30:54 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -1066,6 +1066,8 @@
 			      (cons (cons 'qualified-type-name name)
 				 attributes))))
 		    (error/loc "mod" "Cannot find declaration" clause expr)))))
+	 (((and (? symbol?) ?id) ?proto (and (? string?) ?cn))
+	  (extern-parser clause #f))
 	 (else
 	  (error/loc mod "Illegal extern \"wasm\" module clause" clause expr))))
    
