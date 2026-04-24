@@ -131,21 +131,24 @@ Reverses the elements of the `l`.
 
 A destructive `reverse`.
 
-
 ### list-ref ###
 
 Returns the `k`th element of `list`.
 
 ### take ###
 
-The function `take` returns a new list made of the first @var{k}
-element of `list`.
-
+The function `take` returns a new list made of the first `k`
+elements of `list`.
 
 ### drop ###
 
 The function `drop` returns the sublist of `list`
 obtained by omitting the first `k` elements.
+
+### drop-last ###
+
+The function `drop-last` returns the sublist of `list`
+obtained by omitting the last `k` elements.
 
 ### list-tail ###
 
@@ -154,7 +157,6 @@ Behaves as `take`.
 ### last-pair ###
 
 Returns the last pair in the nonempty, possibly improper, @var{list}.
-
 
 ### memq ###
 Returns the first sublist of `list` whose `car` is `eq?` to `obj`.

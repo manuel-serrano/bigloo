@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Apr 16 18:01:09 2026 (serrano)                */
+;*    Last change :  Fri Apr 24 08:20:25 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -875,7 +875,7 @@
 			  (values pkg (class-name name) (string->symbol id) super))
 		       (values #f (class-name name) (string->symbol name) super))))))
       
-      (define (field5->field4 field)
+      (define (field5->field4 field clazz)
 	 (if (symbol? field)
 	     (multiple-value-bind (id type)
 		(parse-ident field field mod)
@@ -890,26 +890,21 @@
 		   (else
 		    (match-case f
 		       ;; field
-		       (((and (? symbol?) ?ident))
+		       ((field (and (? symbol?) ?ident))
 			(multiple-value-bind (id type)
 			   (parse-ident ident field mod)
 			   `(field ,@(reverse! m)
 			       ,ident ,(symbol->string id))))
+		       ((field ?mod . ?rest)
+			(let ((ident (car (last-pair rest))))
+			   (multiple-value-bind (id type)
+			      (parse-ident ident field mod)
+			      `(field ,@(append (reverse! m) (list mod) (drop-last rest 1))
+				  ,ident ,(symbol->string id)))))
 		       ;; constructor
 		       ((constructor ?id . ?rest)
 			`(constructor ,@(reverse! m)
 			    ,id ,rest))
-		       ;; method (used for static methods with no arguments)
-		       ((method ?ident . (and (? list?) ?args))
-			(multiple-value-bind (id type)
-			   (parse-ident ident field mod)
-			   (if (and (pair? args) (string? (car (last-pair args))))
-			       ;; the last argument is the actual method java name
-			       (let ((sgra (reverse args)))
-				  `(method ,@(reverse! m)
-				      ,ident ,(reverse (cdr sgra)) ,(car sgra)))
-			       `(method ,@(reverse! m)
-				   ,ident ,args ,(symbol->string id)))))
 		       ((?ident . (and (? list?) ?args))
 			;; method
 			(multiple-value-bind (id type)
@@ -917,22 +912,29 @@
 			   (if (and (pair? args) (string? (car (last-pair args))))
 			       ;; the last argument is the actual method java name
 			       (let ((sgra (reverse args)))
-				  `(method ,@(reverse! m)
-				      ,ident ,(reverse (cdr sgra)) ,(car sgra)))
-			       `(method ,@(reverse! m)
-				   ,ident ,args ,(symbol->string id)))))
+				  `(method ,@(reverse m)
+				      ,ident
+				      ,(if (memq 'static m)
+					   (reverse (cdr sgra))
+					   (cons clazz (reverse (cdr sgra))))
+				      ,(car sgra)))
+			       `(method ,@(reverse m)
+				   ,ident
+				   ,(if (memq 'static m) args (cons clazz args))
+				   ,(symbol->string id)))))
 		       (else
 			(error/loc mod "Illegal class field" field x))))))))
       
       (define (class5->class4 clause cpkg name id super rest)
-	 (localize clause
-	    `(,(car clause)
-	      ,(if super (string->symbol (format "~a::~a" id super)) id)
-	      ,@(map (lambda (f) (localize f (field5->field4 f))) rest)
-	      ,(cond
-		  (cpkg name)
-		  (pkg (format "~a.~a" pkg id))
-		  (else name)))))
+	 (let ((clazz (symbol-append '|::| id)))
+	    (localize clause
+	       `(,(car clause)
+		 ,(if super (string->symbol (format "~a::~a" id super)) id)
+		 ,@(map (lambda (f) (localize f (field5->field4 f clazz))) rest)
+		 ,(cond
+		     (cpkg name)
+		     (pkg (format "~a.~a" pkg id))
+		     (else name))))))
       
       (define (class-predicate id x)
 	 (let* ((o (gensym 'obj))
