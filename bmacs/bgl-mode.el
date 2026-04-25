@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Thu Apr 23 19:00:43 2026 (serrano)                */
+;*    Last change :  Fri Apr 24 09:38:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -29,7 +29,7 @@
   :group 'processes)
 
 ;; Bigloo suffix
-(defcustom bgl-suffixes '("bgl" "bgl")
+(defcustom bgl-suffixes '("bgl" "bgh")
   "*Bigloo source suffixes."
   :group 'bgl
   :type '(repeat (string)))
@@ -183,14 +183,23 @@
   :type 'boolean)
 
 ;; flycheck configuration
-(defcustom bgl-flycheck-compiler "/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo"
-  "*The bgl compiler"
+(defcustom bgl-flycheck-file-extensions '("bgl" "bgh")
+  "*The file extensions that automatically start flycheck"
   :group 'bgl
-  :type 'string)
+  :type '(repeat (string)))
 
-;; lsp configuration
-(defcustom bgl-lsp-server "/home/serrano/prgm/project/bigloo/work/lsp/bgl-lsp"
-  "*The binary file of the  bgl lsp-server"
+(defcustom bgl-flycheck-args '("-coerce")
+  "*The compiler options passed to flycheck"
+  :group 'bgl
+  :type '(repeat (string))
+  :safe #'string-listp)
+
+(defcustom bgl-flycheck-size-limit 100000
+  "*The maximum file size for automatic flycheck start"
+  :group 'bgl
+  :type 'number)
+(defcustom bgl-flycheck-compiler "/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo"
+  "*The bigloo compiler"
   :group 'bgl
   :type 'string)
 
@@ -1183,15 +1192,14 @@ of the start of the containing expression."
 (put 'else                      'bgl-indent-hook -1)
 
 ;; module
-(put 'static                    'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'import                    'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'extern                    'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'export                    'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'include                   'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'library                   'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'use                       'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'from                      'bgl-indent-hook 'bgl-module-indent-hook)
-(put 'pragma                    'bgl-indent-hook 'bgl-module-indent-hook)
+;* (put 'static                    'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'import                    'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'export                    'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'include                   'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'library                   'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'use                       'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'from                      'bgl-indent-hook 'bgl-module-indent-hook) */
+;* (put 'pragma                    'bgl-indent-hook 'bgl-module-indent-hook) */
 
 ;; binding forms
 (put 'let                       'bgl-indent-hook 'bgl-let-indent)
@@ -1287,7 +1295,7 @@ of the start of the containing expression."
 ;*    bgl-mode ...                                                     */
 ;*---------------------------------------------------------------------*/
 (defun bgl-mode ()
-  "Major mode for editing Bgl code.
+  "Major mode for editing Bigloo code.
 
 Commands:
 Delete converts tabs to spaces as it moves back.
@@ -1323,10 +1331,9 @@ if that value is non-nil."
 ;* 	    t)                                                         */
 
   ;; flycheck configuration
-  (when (package-installed-p 'flycheck)
-    (bgl-flycheck-init))
+  (bgl-flycheck-init)
 
-  ;; lsp configuration
+;*   ;; lsp configuration                                              */
 ;*   (when (package-installed-p 'lsp-mode)                             */
 ;*     (bgl-lsp-init))                                                 */
   
@@ -1394,19 +1401,45 @@ if that value is non-nil."
 (defun bgl-flycheck-init ()
   (unless bgl-flycheck-initializedp
     (setq bgl-flycheck-initializedp t)
-    (require 'flycheck)
-    (with-eval-after-load 'flycheck
-      (flycheck-define-checker bgl
-	"A bgl syntax checker using the bgl compiler."
-	:command ("/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo" "-c" source)
-	:error-patterns
-	((error line-start
-		"File \"" (file-name) "\", line " line ", character " column ":\n"
-		(zero-or-more anything)
-		"*** ERROR:" (one-or-more not-newline) "\n"
-		(message) line-end))
-	:modes bgl-mode)
-      (add-to-list 'flycheck-checkers 'bgl))))
+    (when (package-installed-p 'flycheck)
+      (require 'flycheck)
+      (with-eval-after-load 'flycheck
+	(flycheck-define-checker bgl
+	  "A bgl syntax checker using the bgl compiler."
+	  :command ("/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo"
+		    (eval bgl-flycheck-args)
+		    source-inplace)
+	  :error-patterns
+	  ((error line-start
+		  "File \"" (file-name) "\", line " line ", character " column ":\n"
+		  (zero-or-more anything)
+		  "*** ERROR:" (one-or-more not-newline) "\n"
+		  (message) line-end))
+	  :modes bgl-mode)
+	(add-to-list 'flycheck-checkers 'bgl))))
+  (when (and (member (file-name-extension (buffer-file-name))
+		     bgl-flycheck-file-extensions)
+	     (< (buffer-size) bgl-flycheck-size-limit))
+    (let ((be (bgl-guess-buffer-backend)))
+      (cond
+	((not be)
+	 t)
+	((string= be "C")
+	 (setq bgl-flycheck-args '("-coerce")))
+	((string= be "java")
+	 (setq bgl-flycheck-args '("-coerce" "-jvm")))
+	((string= be "wasm")
+	 (setq bgl-flycheck-args '("-coerce" "-wasm")))))
+    (flycheck-mode 1)))
+
+;*---------------------------------------------------------------------*/
+;*    bgl-guess-buffer-backend ...                                     */
+;*---------------------------------------------------------------------*/
+(defun bgl-guess-buffer-backend ()
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward "extern[ \n\t]+\"\\([a-zA-Z]*\\)\"" nil t)
+      (match-string 1))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-lsp-initializedp                                             */
@@ -1428,6 +1461,7 @@ if that value is non-nil."
 	     (make-lsp-client
 	      :new-connection (lsp-stdio-connection (list bgl-lsp-server))
 	      :activation-fn (lsp-activate-on "bgl")
+	      
 	      :server-id 'bgl-lsp))
 	    (add-to-list 'lsp-language-id-configuration '(bgl-mode . "bgl"))
 	    (global-set-key (kbd "C-c l s") 'lsp-workspace-restart)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Apr 16 17:45:26 2026 (serrano)                */
+;*    Last change :  Fri Apr 24 07:53:17 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -144,7 +144,8 @@
 	 ((not (pair? src))
 	  (if (eq? *reader* 'intern-src)
 	      (exit 1)
-	      (user-error "Parse error" "Illegal source file" src))))
+	      (user-error/location (read-src-first-loc)
+		 "Parse error" "Illegal source file" src))))
       
       ;; now (and only now) we can say hello
       (hello-world)

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Read/src.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Read/src.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:44:03 1994                          */
-;*    Last change :  Fri Nov 29 16:37:50 2024 (serrano)                */
-;*    Copyright   :  1994-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 24 07:56:22 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We read the source file                                          */
 ;*=====================================================================*/
@@ -13,11 +13,13 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module read_src
+   (include "Tools/location.sch")
    (import  read_reader
 	    engine_param
 	    engine_engine
  	    init_main)
-   (export  (read-src)))
+   (export  (read-src)
+	    (read-src-first-loc)))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-src ...                                                     */
@@ -41,6 +43,25 @@
 		 (cons mod (reverse! src))
 		 (loop (append (read-src-file (car sfiles)) src)
 		       (cdr sfiles)))))))
+
+;*---------------------------------------------------------------------*/
+;*    read-src-first-loc ...                                           */
+;*---------------------------------------------------------------------*/
+(define (read-src-first-loc)
+   (call-with-input-file (car *src-files*)
+      (lambda (ip)
+	 (let loop ((pos 0)
+		    (lnum 0))
+	    (let ((c (read-char ip)))
+	       (cond
+		  ((eof-object? c)
+		   (location (car *src-files*) 0 0))
+		  ((char=? c #\newline)
+		   (loop (+fx pos 1) (+fx lnum 1)))
+		  ((char-whitespace? (read-char ip))
+		   (loop (+fx pos 1) lnum))
+		  (else
+		   (location (car *src-files*) pos lnum))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-handler ...                                                 */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Apr 22 07:51:18 2026 (serrano)                */
+;*    Last change :  Sat Apr 25 06:42:14 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1210,7 +1210,12 @@
 						lib-path cache-dir hsuffix expand stack))
 				   (port->sexp-list p #t))))))
 		      (else
-		       (error/loc mod "Cannot find file" f clause))))
+		       (tprint "TBR")
+		       (with-output-to-file "/tmp/LOG"
+			  (lambda ()
+			     (display* "Cannot find include file " f " " (-> mod path) "\n")
+			     (display* "current " (pwd) "\n")))
+		       (error/loc mod "Cannot find include file" f clause))))
 	 (cdr clause)))
 
    (define (parse-cond-expand clause expr::pair mod::Module expand)

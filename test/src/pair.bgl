@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 08:32:16 2026                          */
-;*    Last change :  Wed Apr 22 17:51:21 2026 (serrano)                */
+;*    Last change :  Fri Apr 24 08:55:37 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing pair functions                                           */
@@ -315,6 +315,12 @@
    :expected '(1 2 3))
 (define-test drop (drop '(1 2 3 4) 2)
    :expected '(3 4))
+(define-test drop-last (drop-last '(1 2 3 4) 2)
+   :expected '(1 2))
+(define-test drop-last (drop-last '(1 2 3 4) 0)
+   :expected '(1 2 3 4))
+(define-test drop-last (drop-last '(1 2 3 4) 5)
+   :expected '())
 
 (define-test assq (assq 'b '((a . 0) (b . 1) (c . 2)))
    :expected '(b . 1))

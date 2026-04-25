@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Tue Mar 10 08:31:26 2026 (serrano)                */
+;*    Last change :  Fri Apr 24 09:31:22 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign and extern clauses compilation. Foreign and extern   */
@@ -40,7 +40,8 @@
 	    (parse-c-foreign-type ::pair)
 	    (parse-c-foreign-export ::pair ::bool)
 	    (foreign-accesses-add! ::pair-nil)
-	    (foreign-finalizer)))
+	    (foreign-finalizer)
+	    (extern-parser extern exportp)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-foreign-compiler ...                                        */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan  1 17:24:51 2001                          */
-/*    Last change :  Sun Apr  5 09:16:34 2026 (serrano)                */
+/*    Last change :  Fri Apr 24 08:21:33 2026 (serrano)                */
 /*    Copyright   :  2001-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Automatic Bigloo Java module clause generation (by               */
@@ -167,11 +167,7 @@ public abstract class jigloo {
    }
    
    static void jigloo_field(Field field, String pkg) {
-      if (moduleVersion == 4) {
-	 emit("     (field ");
-      } else {
-	 emit("     (");
-      }
+      emit("     (field ");
       jigloo_modifiers(field.getModifiers());
       emit(field.getName());
       jigloo_type(field.getType(), pkg);
@@ -212,8 +208,6 @@ public abstract class jigloo {
 	 emit("     (");
 	 jigloo_modifiers(mod);
 	 
-	 if (args.length == 0) emit("method ");
-	    
 	 emit(method.getName());
 	 if (override_index.intValue() != 0) {
 	    emit(override_index.toString());
@@ -222,11 +216,6 @@ public abstract class jigloo {
 	 }
 	 jigloo_type(method.getReturnType(), pkg);
 
-	 if (!Modifier.isStatic(mod)) {
-	    emit(" ");
-	    jigloo_type(owner, pkg);
-	 }
-	 
 	 if (args.length > 0) {
 	    emit(" ");
 	    jigloo_args(args, pkg);

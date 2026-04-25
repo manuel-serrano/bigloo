@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Thu Apr 23 07:48:06 2026 (serrano)                */
+;*    Last change :  Fri Apr 24 08:55:01 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -143,6 +143,7 @@
 	    (ereverse::pair-nil ::pair-nil)
 	    (take::pair-nil ::pair-nil ::long)
 	    (drop::pair-nil ::pair-nil ::long)
+	    (drop-last::pair-nil ::pair-nil ::long)
 	    (list-tail::pair-nil ::pair-nil ::long)
 	    (list-ref ::pair-nil ::long)
 	    (list-set! ::pair-nil ::long ::obj)
@@ -219,6 +220,7 @@
 	    (ereverse side-effect-free nesting (args-noescape))
 	    (take side-effect-free nesting)
 	    (drop side-effect-free nesting)
+	    (drop-last side-effect-free nesting)
 	    (list-tail side-effect-free nesting)
 	    (list-ref side-effect-free nesting)
 	    (last-pair side-effect-free nesting)
@@ -656,6 +658,15 @@
    (if (zerofx? k)
        list
        (drop (cdr list) (-fx k 1))))
+
+;*---------------------------------------------------------------------*/
+;*    drop-last ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (drop-last::pair-nil list::pair-nil k::long)
+   (let ((len (length list)))
+      (if (>=fx k len)
+          '()
+          (take list (-fx len k)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    list-tail ...                                                    */
