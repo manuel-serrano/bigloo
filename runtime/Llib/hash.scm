@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/hash.scm           */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/hash.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Tue Oct 14 08:34:20 2025 (serrano)                */
+;*    Last change :  Sat Apr 25 09:57:44 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -106,7 +106,7 @@
 		       "bgl_llong_hash_number")))
 
    (export  (make-hashtable . args)
-	    (create-hashtable #!key
+	    (create-hashtable::struct #!key
 	       (size 128)
 	       (max-bucket-length 10)
 	       (eqtest #f)
@@ -246,7 +246,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    create-hashtable ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (create-hashtable #!key
+(define (create-hashtable::struct #!key
 	   (size 128)
 	   (max-bucket-length 10)
 	   (eqtest #f)
@@ -301,7 +301,7 @@
 ;*    Mainly used for backend that use a Scheme implementation         */
 ;*    of symbols' hashtable.                                           */
 ;*---------------------------------------------------------------------*/
-(define (create-hashtable-open-string)
+(define (create-hashtable-open-string::struct)
    (let ((size 128)
 	 (wk (weak-open-string)))
       (%hashtable 0 size (make-vector (*fx 3 size) #f) #unspecified #unspecified wk 0 0)))

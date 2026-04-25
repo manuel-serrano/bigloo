@@ -26,18 +26,17 @@ Constructors
 
 ### create-hashtable ###
 
-Defines a hash table for which the number of buckets is `size`.
-The variable `max-bucket-len` specify when the table should be
-resized. If provided, these two values have to be exact integers greater or
-equal to 1. Normally you could ignore `size` and `max-bucket-len`
-arguments and call `make-hashtable` with no argument at all. The argument
-`eqtest` enables the specification of a comparison function. The first
-argument of this function is the keys contained in the table. The second
-argument is the searched key. By default,
-hash tables rely on `hashtable-equal?`, which is defined as:
+Creates a nea hash table. The arguments are as follows:
 
-Persistent hashtables are serializable. Non persistent hashtables are
-not.
+  * `size`: the initial bucket size;
+  * `max-bucket-len`: specifies when the table should be
+     resized. If provided, these two values have to be exact integers greater or
+     equal to 1. Normally you could ignore `size` and `max-bucket-len`
+     arguments. 
+  * `eqtest: when provided specifies of a comparison function. The first
+     argument of this function is the keys contained in the table. The second
+     argument is the searched key. By default,
+     hash tables rely on `hashtable-equal?`, which is defined as:
 
 ```(define (hashtable-equal? obj1 obj2)
    (or (eq? obj1 obj2)
@@ -46,32 +45,33 @@ not.
             (string=? obj1 obj2))))
 ```
 
-The argument `hash` specifies an hashing function. It defaults to
-`get-hashnumber`.  The arguments `weak-keys`, `weak-data`,
-and `weak-both` specify respectively whether the hash table should
-use weak pointers to store the keys and/or the data.  By default a
-hash table uses strong pointers for both keys and data.  Each optional
-arguments `size`, `max-bucket-len`, `eqtest`, `hash`,
+  * `hash`: specifies an hashing function. It defaults to `get-hashnumber`.    
+  * `weak`: might either be: `weak-keys`, `weak-data`, `weak-both`, or `open-string`. It
+    specifies respectively whether the hash table should
+    use weak pointers to store the keys and/or the data or if it should be an
+    open ended string table (see below).  By default a
+    hash table uses strong pointers for both keys and data.  
+  * `max-length`: specifies a maximum length (in number of
+    buckets) for this hashtable. It defaults to `16384`. If during the
+    execution, the hashtable tries to expand itself more than
+    `max-length`, an exception is raised. This feature helps debugging
+    incorrect hashtable uses because excessive expansion is generally the
+    signs of an incorrect behavior. Excessive expansions, cause the
+    garbage collector to crash at some point. This debugging feature can
+    be disabled by specifying a negative max length, in which case, no check
+    is performed at runtime.
+  * `bucket-expansion`: controls how `max-bucket-len` is
+    expanded each time the table grows. This is a floating point number that
+    is a multiplicative coefficient. It defaults to `1.2`.
+    
+Each optional arguments `size`, `max-bucket-len`, `eqtest`, `hash`,
 `weak-keys`, and `weak-data` can be bound to the Bigloo value
 `#unspecified` which forces its default.
 
-The argument `max-length` specifies a maximum length (in number of
-buckets) for this hashtable. It defaults to `16384`. If during the
-execution, the hashtable tries to expand itself more than
-`max-length`, an exception is raised. This feature helps debugging
-incorrect hashtable uses because excessive expansion is generally the
-signs of an incorrect behavior. Excessive expansions, cause the
-garbage collector to crash at some point. This debugging feature can
-be disabled by specifying a negative max length, in which case, no check
-is performed at runtime.
-
-The argument `bucket-expansion` controls how `max-bucket-len` is
-expanded each time the table grows. This is a floating point number that
-is a multiplicative coefficient. It defaults to `1.2`.
-
-The function `create-hashtable` is equivalent to `make-hashtable`
-but it uses a keyword interface. The keyword argument `weak` can either
-be `none`, `data`, or `keys`.
+> [!NOTE]
+> Open-ended hashtables are significantly more efficient than any other sort of
+> hashtables but they can be used only for keys that are strings. As much as 
+> possible, they should be prefered to all the other sort of hashtables.
 
 Predicates
 ----------
@@ -82,18 +82,24 @@ Returns `#t` if `obj` is an hash table, constructed by
 `make-hashtable`.
 
 
-@deffn {bigloo procedure} hashtable-weak-keys? table
+### hashtable-weak-keys? ###
 Returns `#t` if `table` is a hash table with weakly pointed keys.
 
 
-@deffn {bigloo procedure} hashtable-weak-data? table
+### hashtable-weak-data? ###
 Returns `#t` if `table` is a hash table with weakly pointed data.
+
+
+### hashtable-open-string? ###
+Returns `#t` if `table` is a hash table is an open-string hashtale. 
+Retiurn `#f` otherwis.
 
 
 Library functions
 -----------------
 
-@deffn {bigloo procedure} hashtable-size table
+### hashtable-size ###
+
 Returns the number of entries contained in `table`.
 Note that for a weak hash table the size does not guarantee the real size,
 since keys and/or data can dissapear before the next call to the hash table.

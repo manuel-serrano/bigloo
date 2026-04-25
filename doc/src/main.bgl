@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Thu Apr 23 20:10:59 2026 (serrano)                */
+;*    Last change :  Sat Apr 25 09:18:33 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -25,8 +25,11 @@
 
 (define max-tests 5)
 
-(define navbutton-attrs
-   '((class . "navbutton")
+;*---------------------------------------------------------------------*/
+;*    navbutton-attrs ...                                              */
+;*---------------------------------------------------------------------*/
+(define (navbutton-attrs clazz::bstring)
+   `((class . ,(string-append "navbutton " clazz))
      (onclick . "this.setAttribute('open', this.getAttribute('open') === 'true' ? 'false' : 'true')")))
 
 ;*---------------------------------------------------------------------*/
@@ -60,6 +63,7 @@
    (define reset-index #f)
    (define target #f)
    (define index-name "index.sexp")
+   (define active-navbutton "main")
    (define chapters '())
    
    (define (compile-chapter source)
@@ -83,15 +87,18 @@
 			     (list (xml-element 'div '((class . "menu"))
 				      (list
 					 (xml-element 'img '((class . "logo") (src . "bgl.svg")) '())
-					 (xml-element 'ul '((class . "menu"))
+					 (xml-element 'ul `((class . "menu") (data-active . ,active-navbutton))
 					    (list
-					       (xml-element 'li '() (list (xml-element 'a '() (list "Home"))))
-					       (xml-element 'li navbutton-attrs
+					       (xml-element 'li (navbutton-attrs "home")
+                                                  (list (xml-element 'a '() (list "Home"))))
+					       (xml-element 'li (navbutton-attrs "stdlib")
 						  (list
 						     (xml-element 'a '() (list "Stdlib"))
 						     (xml-main-toc all-chapters)))
-					       (xml-element 'li '() (list (xml-element 'a '() (list "Modules"))))
-					       (xml-element 'li '() (list (xml-element 'a '() (list "Objects"))))))
+					       (xml-element 'li (navbutton-attrs "Modules")
+                                                  (list (xml-element 'a '() (list "Modules"))))
+					       (xml-element 'li (navbutton-attrs "Objects")
+                                                  (list (xml-element 'a '() (list "Objects"))))))
 					 (xml-element 'span '((class . "version"))
 					    (list (xml-element 'text '() (list (bigloo-config 'release-number)))))))))
 			  (xml-element 'div '((class . "chapter"))
@@ -106,6 +113,8 @@
        (args-parse-usage #f))
       ((("-r" "--reset-index") (help "Reset the index"))
        (set! reset-index #t))
+      ((("-t" "--tab") ?tab (help "Set the active navbutton"))
+       (set! active-navbutton tab))
       (("-o" ?filename (help "target"))
        (set! target filename))
       (else

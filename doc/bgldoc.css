@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0a/doc/doc.css                     */
+/*    serrano/prgm/project/bigloo/5.0a/doc/bgldoc.css                  */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Wed Apr 22 09:59:40 2026 (serrano)                */
+/*    Last change :  Sat Apr 25 09:22:06 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -18,6 +18,8 @@
 
     --menuColor: #9d9d9d;
     --menuBackgroundColor: #33393f;
+    --menuButtonActiveBackground: #555555;
+    --menuButtonActive: #fff;
 
     --versionColor: #fff;
     --versionBackgroundColor: #777;
@@ -56,6 +58,8 @@
     --chapterTocBorder: #d2d2d2;
 
     --hoverColor: #f91a03;
+
+    --blockquoteBorder: #999;
 }
 
 /*---------------------------------------------------------------------*/
@@ -93,12 +97,14 @@ nav.menu {
     color: var(--menuColor);
     background: var(--menuBackgroundColor);
     font-size: 120%;
-    padding-top: 4px;
+    padding-top: 0;
 }
 
 div.menu {
     position: relative;
     cursor: pointer;
+    height: 100%;
+    background: var(--menuBackgroundColor);
 }
 
 .menu img.logo {
@@ -126,20 +132,30 @@ div.menu {
 
 ul.menu {
     float: left;
-    margin: 1.5ex 0 0 0;
+    margin: 0;
     list-style: none;
-    font-size: 110%;
 }
 
-ul.menu > li {
+ul.menu > li.navbutton {
     float: left;
     position: relative;
     display: block;
     border-bottom: 3px solid transparent;
+    height: calc(100% - 3px);
+    margin: 0;
+}
+
+ul.menu[data-active="stdlib"] > li.navbutton.stdlib {
+    border-bottom-color: red;
+    background-color: var(--menuButtonActiveBackground);
+    color: var(--menuButtonActive);
 }
 
 ul.menu > li > a {
-    padding: 2ex 1em;
+    padding-left: 1.5em;
+    padding-right: 1.5em;
+    padding-top: 1ex;
+    display: inline-block;
 }
 
 ul.menu > li.navbutton > a:after {
@@ -336,6 +352,7 @@ pre .fontifier-prog-symbol {
     width: 70%;
     padding-left: 3em;
     padding-right: 3em;
+    padding-top: 2ex;
 }
 
 .chapter .toc {
@@ -384,4 +401,14 @@ pre .fontifier-prog-symbol {
 
 .chapter .toc li.def a {
     color: var(--chapterTocLinkColor);
+}
+
+/*---------------------------------------------------------------------*/
+/*    Blockquote                                                       */
+/*---------------------------------------------------------------------*/
+blockquote {
+    border-left: 2px solid var(--blockquoteBorder);
+    margin-left: 0;
+    padding-left: 1em;
+    font-style: italic;
 }

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Thu Apr 23 19:19:02 2026 (serrano)                */
+#*    Last change :  Sat Apr 25 09:18:48 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -65,7 +65,7 @@ objs_c/%.$(C_OBJ_EXTENSION): src/%.bgl
 	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
 
 %.html: %.md bin/bgldoc
-	bin/bgldoc $< > $@ || rm -f $@
+	bin/bgldoc -t stdlib $< > $@ || rm -f $@
 
 #*---------------------------------------------------------------------*/
 #*    sub-directories                                                  */
