@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/weakhash.scm       */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/weakhash.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Tue Oct 14 08:44:17 2025 (serrano)                */
+;*    Last change :  Sun Apr 26 17:26:02 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The weak hash tables.                                            */
 ;*    -------------------------------------------------------------    */
@@ -193,12 +193,13 @@
    (let* ((buckets (%hashtable-buckets table))
 	  (buckets-len (vector-length buckets)))
       (let loop ((i 0))
-	 (unless (=fx i buckets-len)
+	 (when (<fx i buckets-len)
 	    (let ((bucket (vector-ref buckets i)))
 	       (for-each (lambda (p)
 			    (unless (eq? (weakptr-data p) #unspecified)
 			       (fun (weakptr-data p) (weakptr-ref p))))
-		  bucket))))))
+		  bucket)
+               (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    old-traverse-hash ...                                            */

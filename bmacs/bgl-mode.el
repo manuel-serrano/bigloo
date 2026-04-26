@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Fri Apr 24 09:38:20 2026 (serrano)                */
+;*    Last change :  Sun Apr 26 17:46:01 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -58,6 +58,43 @@
   "*Force special indentation for quoted lists and vectors"
   :group 'bgl
   :type '(choice (const (left) (const column))))
+
+;; flycheck configuration
+(defcustom bgl-flycheck-file-extensions '("bgl" "bgh")
+  "*The file extensions that automatically start flycheck"
+  :group 'bgl
+  :type '(repeat (string)))
+
+(defcustom bgl-flycheck-args '("-coerce")
+  "*The compiler options passed to flycheck"
+  :group 'bgl
+  :type '(repeat (string))
+  :safe #'string-listp)
+
+(defcustom bgl-flycheck-size-limit 100000
+  "*The maximum file size for automatic flycheck start"
+  :group 'bgl
+  :type 'number)
+
+(defcustom bgl-flycheck-compiler "/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo"
+  "*The bigloo compiler used by flycheck"
+  :group 'bgl
+  :type 'string)
+
+(defcustom bgl-flycdoc-p t
+  "*Enable on the fly documentation"
+  :group 'bgl
+  :type 'string)
+
+(defcustom bgl-flycdoc-browser "chromium"
+  "*The web browser used for the documentation"
+  :group 'bgl
+  :type 'string)
+
+(defcustom bgl-doc-index "/home/serrano/prgm/project/bigloo/5.0a/doc/index.sexp"
+  "*The pre-computed index of the Bigloo documentation"
+  :group 'bgl
+  :type 'string)
 
 ;; bgl fontification
 (defcustom bgl-font-lock-keywords
@@ -182,27 +219,6 @@
   :group 'bgl
   :type 'boolean)
 
-;; flycheck configuration
-(defcustom bgl-flycheck-file-extensions '("bgl" "bgh")
-  "*The file extensions that automatically start flycheck"
-  :group 'bgl
-  :type '(repeat (string)))
-
-(defcustom bgl-flycheck-args '("-coerce")
-  "*The compiler options passed to flycheck"
-  :group 'bgl
-  :type '(repeat (string))
-  :safe #'string-listp)
-
-(defcustom bgl-flycheck-size-limit 100000
-  "*The maximum file size for automatic flycheck start"
-  :group 'bgl
-  :type 'number)
-(defcustom bgl-flycheck-compiler "/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo"
-  "*The bigloo compiler"
-  :group 'bgl
-  :type 'string)
-
 ;*---------------------------------------------------------------------*/
 ;*    Font Lock                                                        */
 ;*---------------------------------------------------------------------*/
@@ -211,11 +227,16 @@
   :group 'bgl
   :type 'boolean)
 
+(defface bgl-doc-face
+  '((((class color) (background light)) (:foreground "goldenrod" :bold t)))
+  "Bgl doc color"
+  :group 'bgl)
+
 (defface bgl-font-lock-face-1
   '((((class color) (background light)) (:foreground "slateblue3" :bold t))
     (((class color) (background dark)) (:foreground "Plum1" :bold t))
     (t (:bold t)))
-  "Bee face 1."
+  "Bgl face 1."
   :group 'bgl)
 (defvar bgl-font-lock-face-1 'bgl-font-lock-face-1)
 
@@ -223,7 +244,7 @@
   '((((class color) (background light)) (:foreground "blue" :bold t))
     (((class color) (background dark)) (:foreground "tomato2" :bold t))
     (t (:bold t)))
-  "Bee face 2."
+  "Bgl face 2."
   :group 'bgl)
 (defvar bgl-font-lock-face-2 'bgl-font-lock-face-2)
 
@@ -231,7 +252,7 @@
   '((((class color) (background light)) (:foreground "tomato2" :bold t))
     (((class color) (background dark)) (:foreground "SkyBlue" :bold t))
     (t (:bold t)))
-  "Bee face 3."
+  "Bgl face 3."
   :group 'bgl)
 (defvar bgl-font-lock-face-3 'bgl-font-lock-face-3)
 
@@ -239,7 +260,7 @@
   '((((class color) (background light)) (:foreground "green3" :bold t))
     (((class color) (background dark)) (:foreground "green" :bold t))
     (t (:bold t)))
-  "Bee face 4."
+  "Bgl face 4."
   :group 'bgl)
 (defvar bgl-font-lock-face-4 'bgl-font-lock-face-4)
 
@@ -247,7 +268,7 @@
   '((((class color) (background light)) (:foreground "red" :bold t))
     (((class color) (background dark)) (:foreground "yellow" :bold t))
     (t (:bold t)))
-  "Bee face 5."
+  "Bgl face 5."
   :group 'bgl)
 (defvar bgl-font-lock-face-5 'bgl-font-lock-face-5)
 
@@ -255,7 +276,7 @@
   '((((class color) (background light)) (:foreground "BlueViolet" :bold t))
     (((class color) (background dark)) (:foreground "yellow" :bold t))
     (t (:bold t)))
-  "Bee face 6."
+  "Bgl face 6."
   :group 'bgl)
 (defvar bgl-font-lock-face-6 'bgl-font-lock-face-6)
 
@@ -263,7 +284,7 @@
   '((((class color) (background light)) (:foreground "green4" :bold t))
     (((class color) (background dark)) (:foreground "green2" :bold t))
     (t (:bold t)))
-  "Bee face 7."
+  "Bgl face 7."
   :group 'bgl)
 (defvar bgl-font-lock-face-7 'bgl-font-lock-face-7)
 
@@ -271,7 +292,7 @@
   '((((class color) (background light)) (:foreground "#ff2020" :bold t))
     (((class color) (background dark)) (:foreground "red2" :bold t))
     (t (:bold t)))
-  "Bee face 8."
+  "Bgl face 8."
   :group 'bgl)
 (defvar bgl-font-lock-face-8 'bgl-font-lock-face-8)
 
@@ -279,7 +300,7 @@
   '((((class color) (background light)) (:foreground "#e72c9f" :bold t))
     (((class color) (background dark)) (:foreground "blue2" :bold t))
     (t (:bold t)))
-  "Bee face 9."
+  "Bgl face 9."
   :group 'bgl)
 (defvar bgl-font-lock-face-9 'bgl-font-lock-face-9)
 
@@ -287,7 +308,7 @@
   '((((class color) (background light)) (:foreground "#492ead" :bold t))
     (((class color) (background dark)) (:foreground "#492ead" :bold t))
     (t (:bold t)))
-  "Bee face 10."
+  "Bgl face 10."
   :group 'bgl)
 (defvar bgl-font-lock-face-10 'bgl-font-lock-face-10)
 
@@ -295,7 +316,7 @@
   '((((class color) (background light)) (:foreground "#492ead" :bold nil))
     (((class color) (background dark)) (:foreground "#492ead" :bold nil))
     (t (:bold t)))
-  "Bee face 11."
+  "Bgl face 11."
   :group 'bgl)
 (defvar bgl-font-lock-face-11 'bgl-font-lock-face-11)
 
@@ -303,7 +324,7 @@
   '((((class color) (background light)) (:foreground "#87910F" :bold t))
     (((class color) (background dark)) (:foreground "#701680" :bold t))
     (t (:bold t)))
-  "Bee face 12."
+  "Bgl face 12."
   :group 'bgl)
 (defvar bgl-font-lock-face-12 'bgl-font-lock-face-12)
 
@@ -350,7 +371,7 @@
 (defface bgl-error-face
   '((((class color)) (:foreground "red" :bold t))
     (t (:bold t)))
-  "Bee error face."
+  "Bgl error face."
   :group 'bgl)
 (defvar bgl-error-face 'bgl-error-face)
 
@@ -358,14 +379,14 @@
   '((((class color) (background light)) (:foreground "green3" :bold t))
     (((class color) (background dark)) (:foreground "green" :bold t))
     (t (:bold t)))
-  "Bee ok face."
+  "Bgl ok face."
   :group 'bgl)
 (defvar bgl-ok-face 'bgl-ok-face)
 
 (defface bgl-italic-face
   '((((class color)) (:bold t :italic t))
     (t (:bold t)))
-  "Bee face to display italic text."
+  "Bgl face to display italic text."
   :group 'bgl)
 
 ;*---------------------------------------------------------------------*/
@@ -408,21 +429,16 @@
   (define-key bgl-prefixed-map "\C-rt"        'bgl-repl-send-toplevel-sexp)
   (define-key bgl-prefixed-map "\C-rr"        'bgl-repl-send-region)
 
-  ;; bugloo
-  (define-key bgl-prefixed-map "\C-b\C-b"     'bgl-debug)
-  (define-key bgl-prefixed-map "\C-b\c"       'bgl-toggle-connect-buffer)
-
   ;; indent
   (define-key bgl-prefixed-map "\C-i\C-i"     'bgl-external-indent)
   (define-key bgl-prefixed-map "\C-i\C-d"     'bgl-indent-define)
   (define-key bgl-prefixed-map "\C-i\C-l"     'bgl-indent-last-sexp)
   (define-key bgl-prefixed-map "\C-i\C-t"     'bgl-indent-toplevel-sexp)
 
-  (if bgl-elisp-like-keymap-p
-      (progn
-	(define-key bgl-mode-map "\C-c;"      'comment-region)
-	(define-key bgl-mode-map "\C-x\C-e"   'bgl-repl-send-last-sexp)
-	(define-key bgl-mode-map "\C-\M-x"    'bgl-repl-send-define))))
+  (when bgl-elisp-like-keymap-p
+    (define-key bgl-mode-map "\C-c;"      'comment-region)
+    (define-key bgl-mode-map "\C-x\C-e"   'bgl-repl-send-last-sexp)
+    (define-key bgl-mode-map "\C-\M-x"    'bgl-repl-send-define)))
   
 ;*---------------------------------------------------------------------*/
 ;*    bgl-mode-syntax-table ...                                        */
@@ -1336,7 +1352,12 @@ if that value is non-nil."
 ;*   ;; lsp configuration                                              */
 ;*   (when (package-installed-p 'lsp-mode)                             */
 ;*     (bgl-lsp-init))                                                 */
-  
+
+  ;; load the documentation index
+  (when bgl-flydoc-p
+    (bgl-load-doc-index)
+    (run-with-idle-timer 0.5 t #'bgl-doc-at-point))
+
   ;; activate th emode
   (font-lock-mode t)
 
@@ -1466,3 +1487,45 @@ if that value is non-nil."
 	    (add-to-list 'lsp-language-id-configuration '(bgl-mode . "bgl"))
 	    (global-set-key (kbd "C-c l s") 'lsp-workspace-restart)
 	    (lsp))))))
+
+;*---------------------------------------------------------------------*/
+;*    doc-table-index ...                                              */
+;*---------------------------------------------------------------------*/
+(defvar bgl-doc-table-index (make-hash-table :test 'equal))
+
+;*---------------------------------------------------------------------*/
+;*    bgl-load-doc-index ...                                           */
+;*    -------------------------------------------------------------    */
+;*    Load the documentation index                                     */
+;*---------------------------------------------------------------------*/
+(defun bgl-load-doc-index ()
+  (when (file-exists-p bgl-doc-index)
+    (let ((l (save-excursion
+	       (with-temp-buffer
+		 (progn
+		   (insert-file-contents bgl-doc-index)
+		   (goto-char (point-min))
+		   (while (search-forward "#" nil t)
+		     (replace-match "%"))
+		   (goto-char (point-min))
+		   (read (current-buffer)))))))
+      (mapc #'(lambda (el)
+		(puthash (car el) (cdr el) bgl-doc-table-index))
+	    l))))
+
+;*---------------------------------------------------------------------*/
+;*    bgl-last-symbol ...                                              */
+;*---------------------------------------------------------------------*/
+(defvar bgl-last-symbol nil)
+
+;*---------------------------------------------------------------------*/
+;*    bgl-doc-at-point ...                                             */
+;*---------------------------------------------------------------------*/
+(defun bgl-doc-at-point ()
+  (let ((sym (thing-at-point 'symbol t)))
+    (unless (equal sym bgl-last-symbol)
+      (when sym
+	(let ((e (gethash sym bgl-doc-table-index)))
+	  (when e
+	    (let ((s (replace-regexp-in-string "__" "#" (format "%s" (car e)))))
+              (message "%s" (propertize s 'face 'bgl-doc-face)))))))))

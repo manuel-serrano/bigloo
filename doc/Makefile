@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Sat Apr 25 09:18:48 2026 (serrano)                */
+#*    Last change :  Sun Apr 26 17:37:15 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -31,7 +31,7 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 COMMON = main fontifier
 
-C_OBJECTS = $(COMMON:%=%.$(C_OBJ_EXTENSION)) $(C_SPECIFIC:%=%.$(C_OBJ_EXTENSION))
+C_OBJECTS = $(COMMON:%=%.o)
 
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
@@ -42,7 +42,7 @@ MD = hash pair string vector
 #*     Les suffixes ...                                                */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .$(C_OBJ_EXTENSION) .scm .c .class .java .obj
+.SUFFIXES: .o .scm .c .class .java
 
 #*---------------------------------------------------------------------*/
 #*    tests                                                            */
@@ -59,9 +59,42 @@ bin/bgldoc: $(C_OBJECTS:%=objs_c/%)
 index.html: $(MD:%=%.html)
 
 #*---------------------------------------------------------------------*/
-#*    .scm.$(C_OBJ_EXTENSION)                                          */
+#*    install                                                          */
 #*---------------------------------------------------------------------*/
-objs_c/%.$(C_OBJ_EXTENSION): src/%.bgl
+.PHONY: install install-html install-index uninstall
+
+install: install-html install-index
+
+install-html:
+	if [ $(DOCDIR) != $(BOOTDIR)/manuals ]; then \
+	    mkdir -p $(DOCDIR)/bigloo; \
+	    chmod $(MODDIR)$(DOCDIR)/bigloo; \
+	    echo "cp *.html $(DOCDIR)/bigloo"; \
+	    cp *.html $(DOCDIR)/bigloo && \
+            chmod $(MODFILE) $(DOCDIR)/bigloo/*.html; \
+          fi \
+        fi
+
+install-index:
+	if [ $(DOCDIR) != $(BOOTDIR)/manuals ]; then \
+	    mkdir -p $(DOCDIR)/bigloo; \
+	    chmod $(MODDIR)$(DOCDIR)/bigloo; \
+	    echo "cp index.sexp $(DOCDIR)/bigloo"; \
+	    cp index.sexp $(DOCDIR)/bigloo && \
+            chmod $(MODFILE) $(DOCDIR)/bigloo/index.sexp; \
+          fi \
+        fi
+
+uninstall:
+	if [ $(DOCDIR) != $(BOOTDIR)/manuals ]; then \
+	  rm -rf $(DOCDIR)/bigloo;
+	fi
+
+
+#*---------------------------------------------------------------------*/
+#*    .scm.o                                                           */
+#*---------------------------------------------------------------------*/
+objs_c/%.o: src/%.bgl
 	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
 
 %.html: %.md bin/bgldoc

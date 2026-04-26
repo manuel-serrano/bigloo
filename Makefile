@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Apr 22 07:27:03 2026 (serrano)                */
+#*    Last change :  Sun Apr 26 17:35:55 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -790,7 +790,8 @@ install-api: install-dirs
 	done
 
 install-docs: install-dirs
-	$(MAKE) -C manuals install
+	$(MAKE) -C doc manuals
+	$(MAKE) -C doc install
 
 install-jigloo: install-dirs
 	@ if [ "$(JVMBACKEND) " = "yes " ]; then \

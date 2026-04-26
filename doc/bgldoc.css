@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Sat Apr 25 09:22:06 2026 (serrano)                */
+/*    Last change :  Sun Apr 26 17:30:59 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -17,7 +17,7 @@
     --textShadow: #ccc;
 
     --menuColor: #9d9d9d;
-    --menuBackgroundColor: #33393f;
+    --menuBackgroundColor: #22222f;
     --menuButtonActiveBackground: #555555;
     --menuButtonActive: #fff;
 
@@ -154,7 +154,7 @@ ul.menu[data-active="stdlib"] > li.navbutton.stdlib {
 ul.menu > li > a {
     padding-left: 1.5em;
     padding-right: 1.5em;
-    padding-top: 1ex;
+    padding-top: 1.5ex;
     display: inline-block;
 }
 
