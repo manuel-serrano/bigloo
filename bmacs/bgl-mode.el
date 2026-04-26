@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Sun Apr 26 17:46:01 2026 (serrano)                */
+;*    Last change :  Sun Apr 26 20:36:25 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -81,7 +81,7 @@
   :group 'bgl
   :type 'string)
 
-(defcustom bgl-flycdoc-p t
+(defcustom bgl-flydoc-p t
   "*Enable on the fly documentation"
   :group 'bgl
   :type 'string)
