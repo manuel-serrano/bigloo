@@ -1,0 +1,459 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0a/test/src/hash.bgl               */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Tue Apr 14 08:32:16 2026                          */
+;*    Last change :  Sun Apr 26 17:29:56 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing hash tables                                              */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    hash                                                             */
+;*---------------------------------------------------------------------*/
+(module hash
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "hash" tests))
+      (test-all verbose "hash")))
+
+;*---------------------------------------------------------------------*/
+;*    tests ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-test create-hashtable
+   (let ((t (create-hashtable :weak 'open-string)))
+      (hashtable-put! t "foo" "bar")
+      (hashtable-get t "foo"))
+   :expected "bar")
+
+(define-test hashtable? (hashtable? (create-hashtable :size 2))
+   :expected #t)
+
+(define-test hashtable? (hashtable? (vector 10))
+   :expected #f)
+(define-test hashtable-weak-keys? (hashtable-weak-keys? (create-hashtable :weak 'open-string))
+   :expected #f)
+(define-test hashtable-weak-keys? (hashtable-weak-keys? (create-hashtable :weak 'both))
+   :expected #t)
+(define-test hashtable-weak-keys? (hashtable-weak-keys? (create-hashtable :weak 'keys))
+   :expected #t)
+(define-test hashtable-weak-data? (hashtable-weak-data? (create-hashtable :weak 'open-string))
+   :expected #f)
+(define-test hashtable-weak-data? (hashtable-weak-data? (create-hashtable :weak 'both))
+   :expected #t)
+(define-test hashtable-weak-data? (hashtable-weak-data? (create-hashtable :weak 'data))
+   :expected #t)
+(define-test hashtable-open-string? (hashtable-open-string? (create-hashtable :weak 'open-string))
+   :expected #t)
+(define-test hashtable-open-string? (hashtable-open-string? (create-hashtable :weak 'both))
+   :expected #f)
+(define-test hashtable-open-string? (hashtable-open-string? (create-hashtable :weak 'data))
+   :expected #f)
+
+(define-test hashtable-size (hashtable-size (create-hashtable))
+   :expected 0)
+(define-test hashtable-size (let ((t (create-hashtable :weak 'open-string))) (hashtable-put! t "foo" 3) (hashtable-size t))
+   :expected 1)
+
+(define-test hashtable-contains?
+   (let ((t (create-hashtable)))
+      (hashtable-put! t 'foo "bar")
+      (hashtable-put! t "gee" "hux")
+      (cons (hashtable-contains? t 'foo)
+         (hashtable-contains? t 'bar)))
+   :expected '(#t . #f))
+
+(define-test open-string-hashtable-contains?
+   (let ((t (create-hashtable :weak 'open-string)))
+      (hashtable-put! t "foo" "bar")
+      (hashtable-put! t "gee" "hux")
+      (cons (hashtable-contains? t "foo")
+         (hashtable-contains? t "bar")))
+   :expected '(#t . #f))
+
+(define-test hashtable-get
+   (let ((t (create-hashtable)))
+      (hashtable-put! t 123 "123")
+      (cons (hashtable-get t 123) (hashtable-get t 124)))
+   :expected (cons "123" #f))
+
+(define-test open-string-hashtable-get
+   (let ((t (create-hashtable :weak 'open-string)))
+      (hashtable-put! t "123" 123)
+      (cons (hashtable-get t "123") (hashtable-get t "124")))
+   :expected (cons 123 #f))
+
+(define-test hashtable-put!
+   (let ((t (create-hashtable)))
+      (hashtable-put! t 123 (cons 'foo 'bar))
+      (hashtable-put! t 123 (cons 'gee 'bar))
+      (hashtable-get t 123))
+   :expected (cons 'gee 'bar))
+
+(define-test open-string-hashtable-put!
+   (let ((t (create-hashtable :weak 'open-string)))
+      (open-string-hashtable-put! t "123" (cons 'foo 'bar))
+      (hashtable-put! t "123" (cons 'gee 'bar))
+      (hashtable-get t "123"))
+   :expected (cons 'gee 'bar))
+
+(define-test hashtable-remove!
+   (let ((t (create-hashtable)))
+      (hashtable-put! t 'bar 123)
+      (hashtable-remove! t 'bar)
+      (hashtable-get t 'bar))
+   :expected #f)
+
+(define-test open-string-hashtable-remove!
+   (let ((t (create-hashtable :weak 'open-string)))
+      (open-string-hashtable-put! t "123" "bar")
+      (open-string-hashtable-remove! t "123")
+      (open-string-hashtable-get t "123"))
+   :expected #f)
+
+(define-test hashtable-add!
+   (let ((t (create-hashtable)))
+      (hashtable-add! t 'foo cons "foo1" '())
+      (hashtable-add! t 'bar cons "bar1" '())
+      (hashtable-add! t 'foo cons "foo2" '())
+      (hashtable-get t 'foo))
+   :expected '("foo2" "foo1"))
+
+(define-test open-string-hashtable-add!
+   (let ((t (create-hashtable :weak 'open-string)))
+      (open-string-hashtable-add! t "foo" cons "foo1" '())
+      (open-string-hashtable-add! t "bar" cons "bar1" '())
+      (open-string-hashtable-add! t "foo" cons "foo2" '())
+      (open-string-hashtable-get t "foo"))
+   :expected '("foo2" "foo1"))
+
+(define-test hashtable->vector
+   (let ((t (create-hashtable)))
+      (hashtable-put! t 'foo "bar")
+      (hashtable-put! t "gee" "hux")
+      (sort string<=? (hashtable->vector t)))
+   :expected '#("bar" "hux"))
+
+(define-test hashtable->vector
+   (let ((t (create-hashtable :weak 'both)))
+      (hashtable-put! t 'foo "bar")
+      (hashtable-put! t "gee" "hux")
+      (sort string<=? (hashtable->vector t)))
+   :expected '#("bar" "hux"))
+
+(define-test open-string-hashtable->vector
+   (let ((t (create-hashtable :weak 'open-string)))
+      (open-string-hashtable-put! t "foo" "bar")
+      (open-string-hashtable-put! t "gee" "hux")
+      (open-string-hashtable->vector t))
+   :expected '#("bar" "hux"))
+
+(define-test hashtable->list
+   (let ((t (create-hashtable)))
+      (hashtable-put! t 'foo "bar")
+      (hashtable-put! t "gee" "hux")
+      (sort string<=? (hashtable->list t)))
+   :expected '("bar" "hux"))
+
+(define-test hashtable->list
+   (let ((t (create-hashtable :weak 'keys)))
+      (hashtable-put! t 'foo "bar")
+      (hashtable-put! t "gee" "hux")
+      (sort string<=? (hashtable->list t)))
+   :expected '("bar" "hux"))
+
+(define-test open-string-hashtable->list
+   (let ((t (create-hashtable :weak 'open-string)))
+      (hashtable-put! t "foo" "bar")
+      (hashtable-put! t "gee" "hux")
+      (sort string<=? (hashtable->list t)))
+   :expected '("bar" "hux"))
+
+(define-test hashtable-key-list
+   (let ((t (create-hashtable)))
+      (hashtable-put! t 123 "bar")
+      (hashtable-put! t 200 "hux")
+      (sort <= (hashtable-key-list t)))
+   :expected '(123 200))
+
+(define-test open-string-hashtable-key-list
+   (let ((t (create-hashtable :weak 'open-string)))
+      (hashtable-put! t "foo" "bar")
+      (hashtable-put! t "gee" "hux")
+      (sort string<=? (hashtable-key-list t)))
+   :expected '("foo" "gee"))
+
+(define-test hashtable-map
+   (let ((t (create-hashtable)))
+      (hashtable-put! t 123 "foo")
+      (hashtable-put! t 124 "bar")
+      (sort (lambda (x y) (< (car x) (car y))) (hashtable-map t cons)))
+   :expected '((123 . "foo") (124 . "bar")))
+
+(define-test open-string-hashtable-map
+   (let ((t (create-hashtable :weak 'open-string)))
+      (open-string-hashtable-put! t "foo" 123)
+      (open-string-hashtable-put! t "bar" 124)
+      (sort (lambda (x y) (string>? (car x) (car y))) (open-string-hashtable-map t cons)))
+   :expected '(("foo" . 123) ("bar" . 124)))
+      
+(define-test hashtable-for-each
+   (let ((t (create-hashtable))
+         (r '()))
+      (hashtable-put! t 123 "foo")
+      (hashtable-put! t 124 "bar")
+      (sort (lambda (x y) (< (car x) (car y)))
+         (begin
+            (hashtable-for-each t
+               (lambda (x y)
+                  (set! r (cons (cons x y) r))))
+            r)))
+   :expected '((123 . "foo") (124 . "bar")))
+
+(define-test open-string-hashtable-for-each
+   (let ((t (create-hashtable :weak 'open-string))
+         (r '()))
+      (open-string-hashtable-put! t "foo" 123)
+      (open-string-hashtable-put! t "bar" 124)
+      (sort (lambda (x y) (string>? (car x) (car y)))
+         (begin
+            (open-string-hashtable-for-each t
+               (lambda (x y)
+                  (set! r (cons (cons x y) r))))
+            r)))
+   :expected '(("foo" . 123) ("bar" . 124)))
+      
+(define-test hashtable-filter
+   (let ((t (create-hashtable)))
+      (hashtable-put! t 123 "foo")
+      (hashtable-put! t 124 "bar")
+      (hashtable-filter t (lambda (x y) (< x 124))))
+   :expected '("foo"))
+
+(define-test hashtable-filter
+   (let ((t (create-hashtable :weak 'keys)))
+      (hashtable-put! t 123 "foo")
+      (hashtable-put! t 124 "bar")
+      (hashtable-filter t (lambda (x y) (< x 124))))
+   :expected '("foo"))
+
+(define-test open-string-hashtable-filter
+   (let ((t (create-hashtable :weak 'open-string)))
+      (open-string-hashtable-put! t "foo" 123)
+      (open-string-hashtable-put! t "bar" 124)
+      (open-string-hashtable-filter t (lambda (x y) (string=? x "foo"))))
+   :expected '(123))
+      
+(define-test hashtable-filter!
+   (let ((t (create-hashtable)))
+      (hashtable-put! t 123 "foo")
+      (hashtable-put! t 124 "bar")
+      (hashtable-filter! t (lambda (x y) (< x 124)))
+      (hashtable->list t))
+   :expected '("foo"))
+
+(define-test hashtable-filter!
+   (let ((t (create-hashtable :weak 'keys)))
+      (hashtable-put! t 123 "foo")
+      (hashtable-put! t 124 "bar")
+      (hashtable-filter! t (lambda (x y) (< x 124)))
+      (hashtable->list t))
+   :expected '("foo"))
+
+(define-test open-string-hashtable-filter!
+   (let ((t (create-hashtable :weak 'open-string)))
+      (open-string-hashtable-put! t "foo" 123)
+      (open-string-hashtable-put! t "bar" 124)
+      (open-string-hashtable-filter! t (lambda (x y) (string=? x "foo")))
+      (hashtable->list t))
+   :expected '(123))
+
+(define-test hashtable-filter-map
+   (let ((t (create-hashtable)))
+      (hashtable-put! t 123 "foo")
+      (hashtable-put! t 124 "bar")
+      (hashtable-filter-map t
+         (lambda (x y)
+            (when (< x 124) 'yes))))
+   :expected '(yes))
+
+(define-test open-string-hashtable-filter-map
+   (let ((t (create-hashtable :weak 'open-string)))
+      (open-string-hashtable-put! t "foo" 123)
+      (open-string-hashtable-put! t "bar" 124)
+      (open-string-hashtable-filter-map t
+         (lambda (x y)
+            (when (< y 124) 'yes))))
+   :expected '(yes))
+
+(define-test hashtable-clear!
+   (let ((t (create-hashtable)))
+      (hashtable-put! t "foo" 1)
+      (hashtable-put! t "bar" 1)
+      (hashtable-clear! t)
+      (hashtable-size t))
+   :expected 0)
+
+(define-test hashtable-collisions
+   (let ((t (create-hashtable)))
+      (hashtable-put! t "foo" 1)
+      (hashtable-put! t "bar" 1)
+      (hashtable-put! t "gee" 1)
+      (hashtable-collisions t))
+   :expected '())
+
+(define-test get-hashnumber
+   (integer? (get-hashnumber (cons 1 2)))
+   :expected #t)
+
+(define-test get-hashnumber-persistent
+   (integer? (get-hashnumber-persistent (vector 1 2)))
+   :expected #t)
+
+(define-test object-hashnumber
+   (integer? (object-hashnumber (instantiate::&error (proc 1) (obj 2) (msg 3))))
+   :expected #t)
+
+(define-test string-hash
+   (integer? (string-hash "a string"))
+   :expected #t)
+   
+;*---------------------------------------------------------------------*/
+;*    test1-new ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-test test1-new
+   (let ((table (make-hashtable 2)))
+      (let loop ((i 1024))
+	 (if (=fx i 0)
+	     (and (=fx (hashtable-get table "object834") 834)
+		  (=fx (hashtable-get table "object835") 835)
+		  (=fx (hashtable-get table "object836") 836)
+		  (=fx (hashtable-get table "object837") 837)
+		  (not (=fx (hashtable-get table "object134") 834))
+		  (not (=fx (hashtable-get table "object135") 835))
+		  (not (=fx (hashtable-get table "object136") 836))
+		  (not (=fx (hashtable-get table "object137") 837)))
+	     (begin
+		(hashtable-put! table
+				(string-append "object" (number->string i))
+				i)
+		(loop (-fx i 1))))))
+   :expected #t)
+
+;*---------------------------------------------------------------------*/
+;*    test2-new ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-test test2-new
+   (let ((table (make-hashtable)))
+      (let loop ((i 10024))
+	 (if (=fx i 0)
+	     (and (= (hashtable-get table "object5834") 5834)
+		  (= (hashtable-get table "object5835") 5835)
+		  (= (hashtable-get table "object5836") 5836)
+		  (= (hashtable-get table "object5837") 5837)
+		  (not (= (hashtable-get table "object9134") 5834))
+		  (not (= (hashtable-get table "object9135") 5835))
+		  (not (= (hashtable-get table "object9136") 5836))
+		  (not (= (hashtable-get table "object9137") 5837)))
+	     (begin
+		(hashtable-put! table
+				(string-append "object"
+					       (number->string i))
+			       i)
+		(loop (-fx i 1))))))
+   :expected #t)
+
+;*---------------------------------------------------------------------*/
+;*    test3-new ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-test test3-new
+   (let ((table (make-hashtable)))
+      (hashtable-put! table 123 123)
+      (let ((v (hashtable-get table 123)))
+	 (if (and (fixnum? v) (=fx v 123))
+	     (begin
+		(hashtable-remove! table 123)
+		(if (not (hashtable-get table 123))
+		    #t
+		    #f))
+	     #f)))
+   :expected #t)
+
+;*---------------------------------------------------------------------*/
+;*    test4-new ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-test test4-new
+   (let ((table (make-hashtable))
+	 (cell (cons 1 2)))
+      (hashtable-put! table "toto" 1)
+      (hashtable-put! table 'toto 2)
+      (hashtable-put! table 123 3)
+      (hashtable-put! table cell 5)
+      (hashtable-put! table cell 4)
+      (and (=fx (hashtable-get table "toto") 1)
+	   (=fx (hashtable-get table 'toto) 2)
+	   (=fx (hashtable-get table 123) 3)
+	   (=fx (hashtable-get table cell) 4)
+	   (begin
+	      (hashtable-remove! table "toto")
+	      (hashtable-remove! table 'toto)
+	      (hashtable-remove! table 123)
+	      (hashtable-remove! table cell)
+	      (and (not (hashtable-get table "toto"))
+		   (not (hashtable-get table 'toto))
+		   (not (hashtable-get table 123))
+		   (not (hashtable-get table cell))))))
+   :expected #t)
+
+;*---------------------------------------------------------------------*/
+;*    test5 ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-test test5
+   (let* ((d (current-date))
+	  (s1::obj (date->seconds d))
+	  (s2::obj (date->seconds d))
+	  (l1::obj (string->llong "124"))
+	  (l2::obj (string->llong "124"))
+	  (t (create-hashtable :eqtest equal?)))
+      (hashtable-put! t s1 'foo)
+      (hashtable-put! t l1 'bar)
+      (list (not (eq? s1 s2))
+	    (eq? (hashtable-get t s2) 'foo)
+	    (not (eq? l1 l2))
+	    (eq? (hashtable-get t l2) 'bar)))
+   :expected '(#t #t #t #t))
+
+;*---------------------------------------------------------------------*/
+;*    test-update ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-test test-update
+   (let ((table (make-hashtable)))
+      (hashtable-update! table 'foo (lambda (x) (+ 1 x)) 1)
+      (hashtable-put! table 'bar 1)
+      (let ((r1 (hashtable-get table 'foo)))
+	 (hashtable-update! table 'foo (lambda (x) (+ 1 x)) 1)
+	 (hashtable-update! table 'bar (lambda (x) (+ 1 x)) 1)
+	 (let ((r2 (hashtable-get table 'foo))
+	       (r3 (hashtable-get table 'bar)))
+	    (and (=fx r1 1) (=fx r2 2) (=fx r3 2)))))
+   :expected #t)
+
+;*---------------------------------------------------------------------*/
+;*    test-override ...                                                */
+;*---------------------------------------------------------------------*/
+(define-test test-override
+   (let ((ht (make-hashtable)))
+      (and (= 1 (hashtable-put! ht 'a 1))
+	   (= 1 (hashtable-put! ht 'a 2))
+	   (= 2 (hashtable-put! ht 'a 3))))
+   :expected #t)
