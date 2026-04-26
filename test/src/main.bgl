@@ -51,5 +51,12 @@
 		      (bigloo-jvm "jvm")
 		      (else "?"))))
       (if (=fx failures 0)
-	  (printf "all ~a (~a) tests ~a.\n" success backend (color 'ok "passed"))
-	  (printf "~a/~a (~a) tests ~a.\n" failures (+fx success failures) backend (color 'fail "failed")))))
+	  (begin
+             (printf "all ~a (~a) tests ~a.\n"
+                success backend (color 'ok "passed"))
+             (exit 0)
+	  (begin
+             (printf "~a/~a (~a) tests ~a.\n"
+                failures (+fx success failures) backend
+                (color 'fail "failed"))
+             (exit 1))))))

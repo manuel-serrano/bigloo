@@ -12,6 +12,7 @@
 ,(include "head.html")
 
 ,(implementation-path "../runtime/Llib/hash.scm")
+,(implementation-path "../runtime/Llib/object.scm")
 ,(example-path "../test/src/hash.bgl")
 
 
@@ -46,7 +47,7 @@ Creates a nea hash table. The arguments are as follows:
 ```
 
   * `hash`: specifies an hashing function. It defaults to `get-hashnumber`.    
-  * `weak`: might either be: `weak-keys`, `weak-data`, `weak-both`, or `open-string`. It
+  * `weak`: might either be: `keys`, `data`, `both`, or `open-string`. It
     specifies respectively whether the hash table should
     use weak pointers to store the keys and/or the data or if it should be an
     open ended string table (see below).  By default a
@@ -104,157 +105,161 @@ Returns the number of entries contained in `table`.
 Note that for a weak hash table the size does not guarantee the real size,
 since keys and/or data can dissapear before the next call to the hash table.
 
-
-@deffn {bigloo procedure} hashtable-contains? table key
+### hashtable-contains? ###
 Returns the boolean `#t` if it exists at least one entry whose key 
 is `key` in `table`. If not entry is found `#f` is returned.
 Note that for a weak hash table, the fact this procedure returns `#t` 
 does not guarantee that the key (or its associated data) will not dissapear
 before the next call to the hash table.
 
-
-@deffn {bigloo procedure} hashtable-get table key
+### hashtable-get ###
 Returns the entry whose key is `key` in `table`. If no entry
 is found, or if the key and/or value is weakly pointed to and has dissapeard, 
 `#f` is returned.
 
-
-@deffn {bigloo procedure} hashtable-put! table key obj
+### hashtable-put! ###
 Puts `obj` in `table` under the key `key`. This function 
 returns the object bound in the table. If there was an object 
 `obj-old` already in the table with the same key as `obj`, 
 this function returns `obj-old`; otherwise it returns `obj`.
 
+### hashtable-remove! ###
 
-@deffn {bigloo procedure} hashtable-remove! table key
-Removes the object associated to `key` from `table`, 
-returning `#t` if such object
-was bound in table and `#f` otherwise.
+Removes the object associated to `key` from `table`, returning `#t` if
+such object was bound in table and `#f` otherwise.
 
-
-@deffn {bigloo procedure} hashtable-add! table key update-fun obj init-value
+### hashtable-add! ###
 If key is already in table, the new value is calculated by
-`(update-fun obj current-value)`. Otherwise the `table` is extended
-by an entry linking key and `(update-fun obj init-value)`.
+`(update obj current-value)`. Otherwise the `table` is extended
+by an entry linking key and `(update obj init-value)`.
 
-
-@deffn {deprecated bigloo procedure} hashtable-update! table key update-fun init-value
-If key is already in table, the new value is calculated by
-`(update-fun current-value)`. Otherwise the `table` is extended
-by an entry linking key and `init-value`.
-
-
-@deffn {bigloo procedure} hashtable->vector table
-@deffnx {bigloo procedure} hashtable->list table
-Returns the hash table `table`'s data as a vector (respectively a list). 
+### hashtable->vector ###
+Returns the hash table `table`'s data as a vector. 
 If the hash table is weak, the result will consist only of the data which 
 haven't dissapeared yet and whose keys haven't dissapeared either.
 
+### hashtable->list ###
+Returns the hash table `table`'s data as a list.
+If the hash table is weak, the result will consist only of the data which 
+haven't dissapeared yet and whose keys haven't dissapeared either.
 
-@deffn {bigloo procedure} hashtable-key-list table
+### hashtable-key-list ###
 Returns the list of keys used in the `table`.
 If the hash table is weak, the result will consist only of the keys which 
 haven't dissapeared yet and whose data haven't dissapeared either.
 
+### hashtable-map ###
 
-@deffn {bigloo procedure} hashtable-map table fun
-Returns a list whose elements are the result of applying `fun` to 
-each of the keys and elements of `table` (no order is specified). In 
-consequence, `fun` must be a procedure of two arguments. The first 
-one is a key and the second one, an associated object.
-If the hash table is weak, `fun` will only be mapped on sets of key/datum
-which haven't dissapeared yet.
+Returns a list whose elements are the result of applying `fun` to each
+of the keys and elements of `table` (no order is specified). In
+consequence, `fun` must be a procedure of two arguments. The first one
+is a key and the second one, an associated object.  If the hash table
+is weak, `fun` will only be mapped on sets of key/datum which haven't
+dissapeared yet.
 
+### hashtable-for-each ###
 
-@deffn {bigloo procedure} hashtable-for-each table fun
-Applies `fun` to each of the keys and elements of `table` 
-(no order is specified). In consequence, `fun` must be a procedure
-of two arguments. The first one is a key and the second one, an
-associated object.
-If the hash table is weak, `fun` will only be called on sets of key/datum
-which haven't dissapeared yet.
+Applies `fun` to each of the keys and elements of `table` (no order is
+specified). In consequence, `fun` must be a procedure of two
+arguments. The first one is a key and the second one, an associated
+object.  If the hash table is weak, `fun` will only be called on sets
+of key/datum which haven't dissapeared yet.
 
-
-@deffn {bigloo procedure} hashtable-map filter fun
+### hashtable-filter ###
 Applies `fun` to each of the keys and elements of `table` 
 (no order is specified). In consequence, `fun` must be a procedure
 of two arguments. Returns a list of elements for which the predicate
 `fun` evaluated to `#t`.
 
+### hashtable-filter! ###
+Filter out elements from `table` according to predicate `fun`.
+If the hash table is weak, `fun` will only be called on sets of key/datum
+which haven't dissapeared yet.
 
-@deffn {bigloo procedure} hashtable-filter-map filter fun
+### hashtable-filter-map ###
 Applies `fun` to each of the keys and elements of `table` 
 (no order is specified). In consequence, `fun` must be a procedure
 of two arguments. Returns a list of values produced by the call to `fun`
 that did not return the value `#f`.
 
-
-@deffn {bigloo procedure} hashtable-filter! table fun
-Filter out elements from `table` according to predicate `fun`.
-If the hash table is weak, `fun` will only be called on sets of key/datum
-which haven't dissapeared yet.
-
-
-@deffn {bigloo procedure} hashtable-clear! table
+### hashtable-clear! ###
 Remove all the elements from `table`.
 
+### hashtable-collisions ###
 
-Here is an example of hash table.
-
-@smalllisp
-(define *table* (make-hashtable))
-
-(hashtable-put! *table* "toto" "tutu")
-(hashtable-put! *table* "tata" "titi")
-(hashtable-put! *table* "titi" 5)
-(hashtable-put! *table* "tutu" 'tutu)
-(hashtable-put! *table* 'foo 'foo)
-
-(print (hashtable-get *table* "toto"))
-   @print{} "tutu"
-(print (hashtable-get *table* 'foo))
-   @print{} 'foo
-(print (hashtable-get *table* 'bar))
-   @print{} #f
-
-(hashtable-for-each *table* (lambda (key obj) (print (cons key obj))))
-   @print{} ("toto" . "tutu")
-      ("tata" . "titi")
-      ("titi" . 5)
-      ("tutu" . TUTU)
-      (foo . foo)
-@end smalllisp
-
-@deffn {bigloo procedure} hashtable-collisions table
-Returns a list of collisions for the keys from `table`.
-A collision is represented by the number of extra steps (comparisons)
-needed for a key. The length of the result gives the number of keys with
+Returns a list of collisions for the keys from `table`.  A collision
+is represented by the number of extra steps (comparisons) needed for a
+key. The length of the result gives the number of keys with
 collisions, and the sum of all list elements is the sum of all extra
-steps needed. This function can help to test different hash functions and
-other hash table parameters.
+steps needed. This function can help to test different hash functions
+and other hash table parameters.
+
+### open-string-hashtable-contains? ###
+As `hashtable-contains?` but only for `open-string` hashtables. This is a
+faster function than the generic `hashtable-contains` because it does
+not discrimate on the type of the hashtable.
+
+### open-string-hashtable-get ###
+As `hashtable-get` but for `open-string` tables only.
+
+### open-string-hashtable-put! ###
+As `hashtable-put!` but for `open-string` tables only.
+
+### open-string-hashtable-remove! ###
+As `hashtable-remove!` but for `open-string` tables only.
+
+### open-string-hashtable-add! ###
+As `hashtable-add!` but for `open-string` tables only.
+
+### open-string-hashtable->vector ###
+As `hashtable->vector` but for `open-string` tables only.
+
+### open-string-hashtable->list ###
+As `hashtable->list` but for `open-string` tables only.
+
+### open-string-hashtable-key-list ###
+As `hashtable-key-list` but for `open-string` tables only.
+
+### open-string-hashtable-map ###
+As `hashtable-map` but for `open-string` tables only.
+
+### open-string-hashtable-for-each ###
+As `hashtable-for-each` but for `open-string` tables only.
+
+### open-string-hashtable-filter ###
+As `hashtable-filter` but for `open-string` tables only.
+
+### open-string-hashtable-filter! ###
+As `hashtable-filter!` but for `open-string` tables only.
+
+### open-string-hashtable-filter-map ###
+As `hashtable-filter-map` but for `open-string` tables only.
 
 
-@deffn {bigloo procedure} get-hashnumber obj
-@deffnx {bigloo procedure} get-hashnumber-persistent obj
+Hashing Functions
+-----------------
 
-Computes a hash number of the value @var{obj}, which can be of any type.
-The function `get-hashnumber-persistent` returns a hash number
-that is persistent accross program executions and execution platforms.
+### get-hashnumber ###
 
+Computes a hash number of the value `obj1, which can be of any type.
+The hashnumber computed by `get-hashnumber` may vary from one
+execution to another.
 
-@deffn {bigloo generic} object-hashnumber object
-This generic function computes a hash number of the instance @var{object}.
+### get-hashnumber-persistent ###
 
-Example:
-@smalllisp
-(define-method (object-hashnumber pt::point)
-   (with-access::point pt (x y)
-      (+fx (*fx x 10) y)))
-@end smalllisp
+Computes a hash number of the value `obj`, which can be of any type.
+Contrary to `get-hashtnumber`, `get-hashnumber-persistent` returns a
+hash number that is persistent accross program executions and
+execution platforms.
 
+### object-hashnumber ###
 
-@deffn {bigloo procedure} string-hash string [start 0] [len (string-length string)]
-Compute a hash value for @var{string}, starting at index @var{start}, ending
+This generic function computes a hash number of the instance `object`.
+It can be overriden for subclasses.
+
+### string-hash ###
+
+Compute a hash value for `string`, starting at index `start1, ending
 at length @var{len}.
 
 

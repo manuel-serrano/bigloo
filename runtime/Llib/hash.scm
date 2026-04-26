@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Sat Apr 25 09:57:44 2026 (serrano)                */
+;*    Last change :  Sat Apr 25 20:08:46 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -115,7 +115,7 @@
 	       (max-length 16384)
 	       (bucket-expansion 1.9)
 	       (persistent #f))
-	    (create-hashtable-open-string)
+	    (create-hashtable-open-string::struct)
 	    (get-hashnumber::long ::obj)
 	    (get-hashnumber-persistent::long ::obj)
 	    (inline get-pointer-hashnumber::long ::obj ::long)
@@ -124,6 +124,7 @@
 	    (hashtable?::bool ::obj)
 	    (hashtable-weak-data?::bool ::struct)
 	    (hashtable-weak-keys?::bool ::struct)
+            (hashtable-open-string?::bool ::struct)
 	    (hashtable-size::long ::struct)
 	    (hashtable-contains?::bool ::struct ::obj)
 	    (hashtable-get::obj ::struct ::obj)
@@ -139,18 +140,20 @@
 	    (hashtable->vector::vector ::struct)
 	    (hashtable->list::pair-nil ::struct)
 	    (hashtable-key-list::pair-nil ::struct)
-	    (hashtable-map ::struct ::procedure)
+	    (hashtable-map::pair-nil ::struct ::procedure)
 	    (hashtable-for-each ::struct ::procedure)
 	    (hashtable-filter ::struct ::procedure)
 	    (hashtable-filter-map ::struct ::procedure)
 	    (hashtable-filter! ::struct ::procedure)
 	    (hashtable-clear! ::struct)
             (hashtable-collisions::pair-nil ::struct)
-	    (open-string-hashtable-contains?::obj ::struct ::bstring)
+	    (open-string-hashtable-contains?::bool ::struct ::bstring)
 	    (open-string-hashtable-update!::obj ::struct ::bstring ::procedure ::obj)
 	    (open-string-hashtable-add! ::struct ::bstring ::procedure obj init)
 	    (open-string-hashtable-remove! ::struct ::bstring)
-	    (open-string-hashtable-map ::struct ::procedure)
+            (open-string-hashtable->vector::vector table::struct)
+            (open-string-hashtable->list::pair-nil table::struct)
+	    (open-string-hashtable-map::pair-nil ::struct ::procedure)
 	    (open-string-hashtable-filter ::struct ::procedure)
 	    (open-string-hashtable-filter-map ::struct ::procedure)
 	    (open-string-hashtable-for-each ::struct ::procedure)
@@ -319,12 +322,6 @@
    (not (=fx 0 (bit-and (%hashtable-weak table) (weak-both)))))
 
 ;*---------------------------------------------------------------------*/
-;*    hashtable-open-string? ...                                       */
-;*---------------------------------------------------------------------*/
-(define (hashtable-open-string?::bool table::struct)
-   (not (=fx 0 (bit-and (%hashtable-weak table) (weak-open-string)))))
-
-;*---------------------------------------------------------------------*/
 ;*    hashtable-string? ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (hashtable-string?::bool table::struct)
@@ -343,6 +340,12 @@
    (not (=fx 0 (bit-and (weak-data) (%hashtable-weak table)))))
 
 ;*---------------------------------------------------------------------*/
+;*    hashtable-open-string? ...                                       */
+;*---------------------------------------------------------------------*/
+(define (hashtable-open-string?::bool table::struct)
+   (=fx (weak-open-string) (%hashtable-weak table)))
+
+;*---------------------------------------------------------------------*/
 ;*    hashtable-size ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (hashtable-size::long table::struct)
@@ -351,7 +354,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable->vector ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (hashtable->vector table::struct)
+(define (hashtable->vector::vector table::struct)
    (cond
       ((hashtable-open-string? table)
        (open-string-hashtable->vector table))
@@ -363,11 +366,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-string-hashtable->vector ...                                */
 ;*---------------------------------------------------------------------*/
-(define (open-string-hashtable->vector table::struct)
+(define (open-string-hashtable->vector::vector table::struct)
    (let* ((size (%hashtable-max-bucket-len table))
 	  (size3 (*fx 3 size))
 	  (buckets (%hashtable-buckets table))
-	  (vec (make-vector size)))
+	  (vec (make-vector (%hashtable-size table))))
       (let loop ((i 0)
 		 (w 0))
 	 (if (=fx i size3)
@@ -400,7 +403,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable->list ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (hashtable->list table::struct)
+(define (hashtable->list::pair-nil table::struct)
    (cond
       ((hashtable-open-string? table)
        (open-string-hashtable->list table))
@@ -412,7 +415,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-string-hashtable->list ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (open-string-hashtable->list table::struct)
+(define (open-string-hashtable->list::pair-nil table::struct)
    (let* ((size (%hashtable-max-bucket-len table))
 	  (size3 (*fx 3 size))
 	  (buckets (%hashtable-buckets table)))
@@ -444,7 +447,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-key-list ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-key-list table::struct)
+(define (hashtable-key-list::pair-nil table::struct)
    (cond
       ((hashtable-open-string? table)
        (open-string-hashtable-key-list table))
@@ -456,7 +459,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-string-hashtable-key-list ...                               */
 ;*---------------------------------------------------------------------*/
-(define (open-string-hashtable-key-list table::struct)
+(define (open-string-hashtable-key-list::pair-nil table::struct)
    (let* ((size (%hashtable-max-bucket-len table))
 	  (size3 (*fx 3 size))
 	  (buckets (%hashtable-buckets table)))
@@ -488,7 +491,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-map ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-map table::struct fun::procedure)
+(define (hashtable-map::pair-nil table::struct fun::procedure)
    (cond
       ((hashtable-open-string? table)
        (open-string-hashtable-map table fun))
@@ -500,7 +503,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-string-hashtable-map ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (open-string-hashtable-map table::struct fun)
+(define (open-string-hashtable-map::pair-nil table::struct fun)
    (let* ((size (%hashtable-max-bucket-len table))
 	  (size3 (*fx 3 size))
 	  (buckets (%hashtable-buckets table)))
@@ -597,7 +600,8 @@
 	     res
 	     (if (and (vector-ref buckets i) (vector-ref buckets (+fx i 2)))
 		 (let* ((c (vector-ref buckets (+fx i 1)))
-			(v (fun (vector-ref buckets i) c)))
+                        (o (vector-ref buckets i))
+			(v (fun o c)))
 		    (loop (+fx i 3)
 		       (if v (cons c res) res)))
 		 (loop (+fx i 3) res))))))
@@ -618,7 +622,7 @@
 		    (let* ((c (car lst))
 			   (v (fun (car c) (cdr c))))
 		       (liip (cdr lst)
-			  (if v (cons c res) res)))))
+			  (if v (cons (cdr c) res) res)))))
 	     res))))
 
 ;*---------------------------------------------------------------------*/
@@ -753,7 +757,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-contains? ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-contains? table::struct key::obj)
+(define (hashtable-contains?::bool table::struct key::obj)
    (cond
       ((hashtable-open-string? table)
        (open-string-hashtable-contains? table key))
@@ -765,7 +769,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-string-hashtable-contains? ...                              */
 ;*---------------------------------------------------------------------*/
-(define (open-string-hashtable-contains? t key)
+(define (open-string-hashtable-contains?::bool t::struct key::bstring)
    (let* ((size (%hashtable-max-bucket-len t))
 	  (buckets (%hashtable-buckets t))
 	  (hash ($string-hash key 0 (string-length key))))
@@ -776,7 +780,7 @@
 	    (when (vector-ref buckets off3)
 	       (if (string=? (vector-ref buckets off3) key)
 		   (when (vector-ref buckets (+fx off3 1))
-		      (vector-ref buckets (+fx off3 1)))
+		      #t)
 		   (let ((noff (+fx off (*fx i i))))
 		      (if (>=fx noff size)
 			  (loop (remainderfx noff size) (+fx i 1))
@@ -903,7 +907,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-string-hashtable-put! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (open-string-hashtable-put! table key obj)
+(define (open-string-hashtable-put! table::struct key::bstring obj)
    (open-string-hashtable-put/hash! table key obj
       ($string-hash key 0 (string-length key))))
 
@@ -1074,14 +1078,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-add! ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-add! table::struct key::obj p2::procedure obj init)
+(define (hashtable-add! table::struct key::obj update::procedure obj init)
    (cond
       ((hashtable-open-string? table)
-       (open-string-hashtable-add! table key p2 obj init))
+       (open-string-hashtable-add! table key update obj init))
       ((hashtable-weak? table)
-       (weak-hashtable-add! table key p2 obj init))
+       (weak-hashtable-add! table key update obj init))
       (else
-       (plain-hashtable-add! table key p2 obj init))))
+       (plain-hashtable-add! table key update obj init))))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-string-hashtable-add! ...                                   */
@@ -1099,7 +1103,7 @@
 		    (if (vector-ref buckets (+fx off3 2))
 			(let ((oval (vector-ref buckets (+fx off3 1))))
 			   (vector-set! buckets (+fx off3 1)
-			      (proc oval init)))
+			      (proc obj oval)))
 			(vector-set! buckets (+fx off3 1)
 			   (proc obj init)))
 		    (let ((noff (+fx off (*fx i i))))
@@ -1155,9 +1159,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-string-hashtable-remove! ...                                */
 ;*---------------------------------------------------------------------*/
-(define (open-string-hashtable-remove! t key)
-   (let* ((size (%hashtable-max-bucket-len t))
-	  (buckets (%hashtable-buckets t))
+(define (open-string-hashtable-remove! table::struct key::bstring)
+   (let* ((size (%hashtable-max-bucket-len table))
+	  (buckets (%hashtable-buckets table))
 	  (hash ($string-hash key 0 (string-length key))))
       ;; empty bucket
       (let loop ((off (remainderfx hash size))
@@ -1168,7 +1172,7 @@
 		   (begin
 		      (vector-set! buckets (+fx off3 1) #f)
 		      (vector-set! buckets (+fx off3 2) #f)
-		      (open-string-hashtable-ntombstone-inc! t))
+		      (open-string-hashtable-ntombstone-inc! table))
 		   (let ((noff (+fx off (*fx i i))))
 		      (if (>=fx noff size)
 			  (loop (remainderfx noff size) (+fx i 1))

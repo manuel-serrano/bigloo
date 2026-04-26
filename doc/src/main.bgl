@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sat Apr 25 09:18:33 2026 (serrano)                */
+;*    Last change :  Sun Apr 26 09:50:25 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -212,25 +212,27 @@
 					       (car (xml-element-children e))))))
 				(def (hashtable-get definitions-table name))
 				(tests (hashtable-get tests-table name)))
-			    (let ((md (definition->markdown def)))
-			       (xml-element-children-set! e md)
-			       (xml-element-attribute-set! e 'class (definition-class def))
-			       (if (pair? tests)
-				   (let loop ((next (xml-element-next-sibling e))
-					      (prev e))
-				      (cond
-					 ((or (not next)
-					      (let ((next::XmlElement next))
-						 (memq (-> next tag) '(h1 h2 h3 h4))))
-					  (for-each (lambda (el)
-						       (xml-element-append-child! prev el))
-					     (test->markdown (reverse tests))))
-					 (else
-					  (loop (xml-element-next-sibling next) next))))
-				   (error "doc" "Cannot find test" name))
-			       (set! index
-				  (cons (list name def (xml-element-attribute e 'id) target)
-				     index)))))
+                            (if (not def)
+                                (error "doc" "Cannot find definition" name)
+                                (let ((md (definition->markdown def)))
+                                   (xml-element-children-set! e md)
+                                   (xml-element-attribute-set! e 'class (definition-class def))
+                                   (if (pair? tests)
+                                       (let loop ((next (xml-element-next-sibling e))
+                                                  (prev e))
+                                          (cond
+                                             ((or (not next)
+                                                  (let ((next::XmlElement next))
+                                                     (memq (-> next tag) '(h1 h2 h3 h4))))
+                                              (for-each (lambda (el)
+                                                           (xml-element-append-child! prev el))
+                                                 (test->markdown (reverse tests))))
+                                             (else
+                                              (loop (xml-element-next-sibling next) next))))
+                                       (error "doc" "Cannot find test" name))
+                                   (set! index
+                                      (cons (list name def (xml-element-attribute e 'id) target)
+                                         index))))))
 	       (xml-get-elements-by-tag doc 'h3))
 	    (values doc toc index)))))
    
@@ -287,6 +289,7 @@
       `("(" ,@(markdown-ident fun "definition") ,@(markdown-arguments args) ")"))
    
    (define (variable->markdown var)
+      (tprint "var=" var)
       (list (xml-element 'span '((class . "definition")) (list (symbol->string var)))))
 
    (match-case def
@@ -315,11 +318,20 @@
 	    (list (if (pair? (cdr ts)) "Examples" "Example")))
 	 (xml-element 'pre '((class . "test"))
 	    (append-map (lambda (t)
-			   (list
-			      (fontify (format "~s" (car t)))
-			      (xml-element 'span '((class . "result")) (list "&rarr;"))
-			      (fontify (format "~s" (cdr t)))
-			      "\n"))
+                           (let ((s (format "~s" (car t))))
+                              (if (>fx (string-length s) 80)
+                                  (list
+                                     (fontify (call-with-output-string
+                                                 (lambda (op)
+                                                    (pp (car t) op))))
+                                     (xml-element 'span '((class . "result")) (list "   &rarr;"))
+                                     (fontify (format "~s" (cdr t)))
+                                     "\n")
+                                  (list
+                                     (fontify s)
+                                     (xml-element 'span '((class . "result")) (list "&rarr;"))
+                                     (fontify (format "~s" (cdr t)))
+                                     "\n"))))
 	       ts)))))
 
 ;*---------------------------------------------------------------------*/
