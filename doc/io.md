@@ -114,20 +114,6 @@ The optional argument `buffer` can either be:
 The optional argument `timeout`, an integer represents a microseconds 
 timeout for the open operation.
 
-### call-with-input-file ###
-
-Invokes `proc` with an input port opened on `file`. Returns the result
-of the call and closes the port. It can be implemented as:
-
-```bigloo
-(define (call-with-input-file file proc)
-   (let ((p (open-input-file file)))
-      (unwind-protect
-         (proc p)
-         (close-input-port p))))
-```
-&nbsp;
-
 Predicates
 ----------
 
@@ -153,10 +139,41 @@ Returns `#t` iff `obj` is an `output-port` opened on a string. Returns
 
 Returns `#t` if `obj` is any kind of ports. Returns `#f` otherwise.
 
+Properties
+----------
 
-@deffn {library procedure} call-with-input-file
-@deffnx {bigloo procedure} call-with-input-string
-@deffnx {library procedure} call-with-output-file
+### input-port-name ###
+
+Returns the name of the file used to open the `input-port`.
+
+### input-port-position ###
+
+The character position in the input-port.
+
+### output-port-position ###
+
+Returns the current position (a character number), in the `port`.
+
+
+Library Functions
+-----------------
+
+### call-with-input-file ###
+
+Invokes `proc` with an input port opened on `file`. Returns the result
+of the call and closes the port. Triggers an error is `file` cannot
+be opened.
+
+### call-with-input-string ###
+
+Invokes `proc` on an input port opened on `string`.
+
+### call-with-output-file ###
+
+Invokes `proc` on an output port opened on `string`.
+
+
+
 @deffnx {library procedure} call-with-append-file
 @deffnx {library procedure} call-with-output-string
 These two procedures call @var{proc} with one argument, a port obtained
@@ -305,107 +322,6 @@ of @var{thunk}.
 (with-output-to-port (current-error-port) 
    (lambda () (display "hello")))
 @end smalllisp
-
-
-@deffn {procedure} open-input-file
-
-If @var{file-name} is a regular file name, @code{open-input-file} behaves as
-the function defined in the Scheme report. If @var{file-name} starts with
-special prefixes it behaves differently. Here are the recognized prefixes:
-
-@itemize @bullet
-@item @code{| } (a string made of the characters @code{#\|} and @code{#\space})
-Instead of opening a regular file, Bigloo opens an input pipe. 
-The same syntax is used for output file. 
-
-@smalllisp
-(define pin (open-input-file "| cat /etc/passwd"))
-(define pout (open-output-file "| wc -l"))
-
-(display (read pin) pout)
-(close-input-port pin)
-(newline pout)
-(close-output-port pout)
-@end smalllisp
-
-@item @code{pipe:}
-Same as @code{| }.
-
-@item @code{file:}
-Opens a regular file.
-
-@item @code{fd:}
-Opens a file descriptor.
-
-@smalllisp
-(with-input-from-file "fd:0"
-   (lambda ()
-      (read)))
-@end smalllisp
-
-
-@item @code{gzip:}
-Opens a port on a gzipped filed. This is equivalent to 
-@code{open-input-gzip-file}. 
-Example:
-
-@smalllisp
-(with-input-from-file "gzip:bigloo.tar.gz"
-   (lambda ()
-      (send-chars (current-input-port) (current-output-port))))
-@end smalllisp
-
-@item @code{string:}
-Opens a port on a string. This is equivalent to @code{open-input-string}. 
-Example:
-
-@smalllisp
-(with-input-from-file "string:foo bar Gee"
-   (lambda ()
-      (print (read))
-      (print (read))
-      (print (read))))
-   @print{} foo
-   @print{} bar
-   @print{} Gee
-@end smalllisp
-
-@item @code{http://server/path}
-
-Opens an @emph{http} connection on @code{server} and open an input file
-on file @code{path}.
-
-@item @code{http://server:port-number/path}
-@item @code{http://user:password@@server:port-number/path}
-
-Opens an @emph{http} connection on @code{server}, on port number
-@code{port} with an authentication and open an input file on file @code{path}.
-
-@item @code{ftp://server/path}
-@item @code{ftp://user:password@@server/path}
-
-Opens an @emph{ftp} connection on @code{server} and open an input file
-on file @code{path}. Log in as anonymous.
-
-@item @code{ressource:}
-
-Opens a JVM @emph{ressource} file. Opening a @code{ressource:} file in 
-non JVM backend always return @code{#f}. On the JVM backend it returns
-a input port if the ressource exists. Otherwise, it returns @code{#f}.
-
-@end itemize
-
-The optional argument @var{buffer} can either be:
-
-@itemize @bullet
-@item A positive fixnum, this gives the size of the buffer.
-@item The boolean @code{#t}, a buffer is allocated.
-@item The boolean @code{#f}, the socket is unbufferized.
-@item A string, it is used as buffer.
-@end itemize
-
-The optional argument @var{timeout}, an integer represents a microseconds 
-timeout for the open operation.
 
 
 @deffn {bigloo procedure} open-input-gzip-file@deffnx {bigloo procedure} open-input-gzip-port
@@ -607,14 +523,6 @@ returned is the string consisting of all characters sent to the port.
 Predicates that return @code{#t} if and if their associated port is closed.
 Return @code{#f} otherwise.
 
-
-@deffn {bigloo procedure} input-port-name
-Returns the name of the file used to open the @var{input-port}.
-
-
-@deffn {bigloo procedure} input-port-position
-@deffnx {bigloo procedure} output-port-position
-Returns the current position (a character number), in the @var{port}.
 
 
 @deffn {bigloo procedure} set-input-port-position

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/cports.c           */
+/*    serrano/prgm/project/bigloo/5.0a/runtime/Clib/cports.c           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Nov 19 11:30:52 2024 (serrano)                */
+/*    Last change :  Tue Apr 28 11:33:06 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input/Output ports native implementation.                        */
 /*=====================================================================*/
@@ -1119,11 +1119,11 @@ bgl_file_to_output_port(FILE *f, obj_t buf) {
    if (!port_name) port_name = string_to_bstring("<c-port>");
    
    return bgl_make_output_port(port_name,
-				(bgl_stream_t)_FILENO(f),
-				_STREAM_TYPE,
-				KINDOF_FILE, 
-				buf, 
-				bgl_syswrite,
+                               (bgl_stream_t)_FILENO(f),
+                               _STREAM_TYPE,
+                               KINDOF_FILE, 
+                               buf, 
+                               bgl_syswrite,
                                (long (*)(void*, long, int))_LSEEK,
                                (int (*)(void*))_CLOSE);
 }
@@ -1146,9 +1146,9 @@ bgl_open_output_file(obj_t name, obj_t buf) {
       setvbuf(file, 0, _IONBF, 0);
 	       
       return bgl_make_output_port(name, (bgl_stream_t)file,
-				   BGL_STREAM_TYPE_FILE,
-				   KINDOF_PIPE,
-				   buf,
+                                  BGL_STREAM_TYPE_FILE,
+                                  KINDOF_PIPE,
+                                  buf,
                                   (ssize_t (*)(void*, void*, size_t))bgl_posix_write,
                                   (long (*)(void*, long, int))_LSEEK,
                                   (int (*)(void*))pclose);
@@ -1169,9 +1169,9 @@ bgl_open_output_file(obj_t name, obj_t buf) {
          return BFALSE;
       else
 	 return bgl_make_output_port(name, (bgl_stream_t)fd,
-				      _STREAM_TYPE,
-				      KINDOF_FILE,
-				      buf,
+                                     _STREAM_TYPE,
+                                     KINDOF_FILE,
+                                     buf,
                                      (ssize_t (*)(void*, void*, size_t))bgl_syswrite,
                                      (long (*)(void*, long, int))_LSEEK,
 				     (int (*)(void*)) _CLOSE);
@@ -1193,9 +1193,9 @@ bgl_append_output_file(obj_t name, obj_t buf) {
 	 return BFALSE;
       } else {
 	 return bgl_make_output_port(name, (bgl_stream_t)fd,
-				      _STREAM_TYPE,
-				      KINDOF_FILE,
-				      buf, 
+                                     _STREAM_TYPE,
+                                     KINDOF_FILE,
+                                     buf, 
                                      (ssize_t (*)(void*, void*, size_t))bgl_syswrite,
                                      (long (*)(void*, long, int))_LSEEK,
                                      (int (*)(void*)) _CLOSE);
@@ -1214,10 +1214,10 @@ bgl_open_output_string(obj_t buf) {
    if (!port_name) port_name = string_to_bstring("string");
 
    obj_t port = bgl_make_output_port(
-       port_name, (bgl_stream_t)0, BGL_STREAM_TYPE_CHANNEL, KINDOF_STRING, buf,
-       (ssize_t (*)(void *, void *, size_t))strwrite,
-       (long (*)(void *, long, int))strseek,
-       0);
+      port_name, (bgl_stream_t)0, BGL_STREAM_TYPE_CHANNEL, KINDOF_STRING, buf,
+      (ssize_t (*)(void *, void *, size_t))strwrite,
+      (long (*)(void *, long, int))strseek,
+      0);
    PORT_CHANNEL(port) = port;
    OUTPUT_PORT(port).bufmode = BGL_IOEBF;
    OUTPUT_PORT(port).sysflush = (obj_t (*)(void *))get_output_string;
@@ -1992,13 +1992,17 @@ bgl_output_port_filepos(obj_t port) {
    long bufsz = (unsigned char *)(OUTPUT_PORT(port).ptr) - buf;
 
    if (sysseek) {
-      switch(OUTPUT_PORT(port).stream_type) {
+      switch (OUTPUT_PORT(port).stream_type) {
 	 case BGL_STREAM_TYPE_FD: 
 	    return bufsz + sysseek(((void *)(long)PORT_FD(port)), 0, SEEK_CUR);
 	 case BGL_STREAM_TYPE_FILE: 
 	    return bufsz + sysseek(PORT_FILE(port), 0, SEEK_CUR);
-	 case BGL_STREAM_TYPE_CHANNEL: 
-	    return bufsz + sysseek(PORT_CHANNEL(port), 0, SEEK_CUR);
+	 case BGL_STREAM_TYPE_CHANNEL:
+            if (PORT(port).kindof == KINDOF_STRING) {
+               return sysseek(PORT_CHANNEL(port), 0, SEEK_CUR);;
+            } else {
+               return bufsz + sysseek(PORT_CHANNEL(port), 0, SEEK_CUR);
+            }
 	 default:
 	    return bufsz;
       }

@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Jlib/process.java            */
+/*    serrano/prgm/project/bigloo/5.0a/runtime/Jlib/process.java       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Dec  8 07:55:39 2000                          */
-/*    Last change :  Mon Oct 24 13:46:07 2016 (serrano)                */
-/*    Copyright   :  2000-16 Manuel Serrano                            */
+/*    Last change :  Tue Apr 28 18:25:17 2026 (serrano)                */
+/*    Copyright   :  2000-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The simplified JVM Bigloo process implementation.                */
 /*=====================================================================*/
@@ -103,29 +103,22 @@ public class process extends obj
     // building the command arguments
     final Vector cmd_vector = new Vector();
 
-    if (host != null)
-    {
+    if (host != null) {
       cmd_vector.add( "rsh" );
       cmd_vector.add( new String( host ) );
-    }
-    else
-    {
-      if (System.getProperty( "os.name" ).toLowerCase().startsWith( "windows" ))
-      {
+    } else {
+      if (System.getProperty( "os.name" ).toLowerCase().startsWith( "windows" )) {
         cmd_vector.add( "cmd.exe" );
         cmd_vector.add( "/C" );
-      }
-      else
-      {
+      } else {
         cmd_vector.add( "sh" );
         cmd_vector.add( "-c" );
       }
     }
 
     {
-       String cmd = new String( bcommand );
-       while (bargs instanceof pair)
-       {
+       String cmd = new String(bcommand);
+       while (bargs instanceof pair) {
 	  cmd += " \"" + new String( (byte[])(((pair)bargs).car) ) + "\"";
 	  bargs = ((pair)bargs).cdr;
        }
@@ -139,22 +132,19 @@ public class process extends obj
 /*     }                                                               */
 
        // re-directions
-       if (!(binput instanceof keyword))
-       {
+       if (!(binput instanceof keyword)) {
 	  input_port = bigloo.foreign.BFALSE;
 	  if (binput instanceof byte[])
 	     cmd += "<" + new String( (byte[])binput);
        }
 
-       if (!(boutput instanceof keyword))
-       {
+       if (!(boutput instanceof keyword)) {
 	  output_port = bigloo.foreign.BFALSE;
 	  if (boutput instanceof byte[])
 	     cmd += ">" + new String( (byte[])boutput );
        }
 
-       if (!(berror instanceof keyword))
-       {
+       if (!(berror instanceof keyword)) {
 	  error_port = bigloo.foreign.BFALSE;
 	  if (berror instanceof byte[])
 	  {
@@ -198,13 +188,13 @@ public class process extends obj
 
     // the re-directions
     if (binput instanceof keyword)
-      input_port = new output_port( process.getOutputStream(), bcommand );
+      input_port = new output_stream_port(process.getOutputStream(), bcommand);
 
     if (boutput instanceof keyword)
-      output_port = new input_pipe_port( process.getInputStream(), bcommand );
+      output_port = new input_pipe_port(process.getInputStream(), bcommand);
 
     if (berror instanceof keyword)
-      error_port = new input_pipe_port( process.getErrorStream(), bcommand );
+      error_port = new input_pipe_port(process.getErrorStream(), bcommand);
 
     // and we store the Java object into the process table
     proc_arr[index] = this;

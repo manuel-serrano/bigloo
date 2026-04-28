@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Wed Apr 22 09:27:29 2026 (serrano)                */
+/*    Last change :  Tue Apr 28 11:38:56 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -44,7 +44,7 @@ public final class foreign {
    }
    
    public static void trace_exit() {
-      // System.out.println( "Good bye." );
+      // System.out.println("Good bye.");
    }
 
    public static void dump_stack(output_port p) {
@@ -112,9 +112,9 @@ public final class foreign {
 	 cn = buf[pos++];
 	 if (((byte) '0' <= cn) && (cn <= (byte) '9'))
 	    result = result * radix + (cn - (byte) '0');
-	 else if( (cn >= (byte)'A') && (cn <= (byte) 'F') )
+	 else if ((cn >= (byte)'A') && (cn <= (byte) 'F'))
 	    result = result * radix + 10 + (cn - (byte) 'A');
-	 else if( (cn >= (byte)'a') && (cn <= (byte) 'f') )
+	 else if ((cn >= (byte)'a') && (cn <= (byte) 'f'))
 	    result = result * radix + 10 + (cn - (byte) 'a');
       }
 
@@ -139,9 +139,9 @@ public final class foreign {
 	 cn = buf[pos++];
 	 if (((byte) '0' <= cn) && (cn <= (byte) '9'))
 	    result = result * radix + (cn - (byte) '0');
-	 else if( (cn >= (byte)'A') && (cn <= (byte) 'F') )
+	 else if ((cn >= (byte)'A') && (cn <= (byte) 'F'))
 	    result = result * radix + 10 + (cn - (byte) 'A');
-	 else if( (cn >= (byte)'a') && (cn <= (byte) 'f') )
+	 else if ((cn >= (byte)'a') && (cn <= (byte) 'f'))
 	    result = result * radix + 10 + (cn - (byte) 'a');
       }
 
@@ -174,14 +174,14 @@ public final class foreign {
       }
 
       while (pos < bout) {
-	 cn = charDigit2Val( buf[pos] );
+	 cn = charDigit2Val(buf[pos]);
 
 	 if (result > MAX_VALUE_FX / radix - cn) {
 	    long lresult = result; 
 	    while (pos < bout) {
 	       cn = charDigit2Val(buf[pos]);
 	       if (lresult > MAX_VALUE_ELONG / radix - cn)
-		  return bgl_string_to_bignum( new String(buf, initPos, bout - initPos), radix );
+		  return bgl_string_to_bignum(new String(buf, initPos, bout - initPos), radix);
 
 	       lresult = lresult * radix + cn;
 	       pos++;
@@ -686,51 +686,51 @@ public final class foreign {
       return new bignum(n);
    }
 
-   public static bint8 BGL_INT8_TO_BINT8( byte n ) {
-      return new bint8( n );
+   public static bint8 BGL_INT8_TO_BINT8(byte n) {
+      return new bint8(n);
    }
       
-   public static byte BGL_BINT8_TO_INT8( bint8 n ) {
+   public static byte BGL_BINT8_TO_INT8(bint8 n) {
       return n.value;
    }
       
-   public static bint16 BGL_INT16_TO_BINT16( short n ) {
-      return new bint16( n );
+   public static bint16 BGL_INT16_TO_BINT16(short n) {
+      return new bint16(n);
    }
       
-   public static short BGL_BINT16_TO_INT16( bint16 n ) {
+   public static short BGL_BINT16_TO_INT16(bint16 n) {
       return n.value;
    }
       
-   public static bint32 BGL_INT32_TO_BINT32( int n ) {
-      return new bint32( n );
+   public static bint32 BGL_INT32_TO_BINT32(int n) {
+      return new bint32(n);
    }
       
-   public static int BGL_BINT32_TO_INT32( bint32 n ) {
+   public static int BGL_BINT32_TO_INT32(bint32 n) {
       return n.value;
    }
       
-   public static bint64 BGL_INT64_TO_BINT64( long n ) {
-      return new bint64( n );
+   public static bint64 BGL_INT64_TO_BINT64(long n) {
+      return new bint64(n);
    }
 
-   public static long BGL_BINT64_TO_INT64( bint64 n ) {
+   public static long BGL_BINT64_TO_INT64(bint64 n) {
       return n.value;
    }
       
-   public static byte BGL_INT8_ID( byte n ) { 
+   public static byte BGL_INT8_ID(byte n) { 
       return n;
    }
       
-   public static short BGL_INT16_ID( short n ) { 
+   public static short BGL_INT16_ID(short n) { 
       return n;
    }
       
-   public static int BGL_INT32_ID( int n ) { 
+   public static int BGL_INT32_ID(int n) { 
       return n;
    }
       
-   public static long BGL_INT64_ID( long n ) { 
+   public static long BGL_INT64_ID(long n) { 
       return n;
    }
       
@@ -774,11 +774,11 @@ public final class foreign {
    }
    
    public static bint BINT(byte v) {
-      return BINT( (int)v );
+      return BINT((int)v);
    }
 
    public static bint BINT(short v) {
-      return BINT( (int)v );
+      return BINT((int)v);
    }
 
    public static int CINT(bint v) {
@@ -1671,19 +1671,19 @@ public final class foreign {
    }
 
    public static long DOUBLE_TO_LLONG_BITS(double n) {
-      return Double.doubleToLongBits( n );
+      return Double.doubleToLongBits(n);
    }
 
    public static double LLONG_BITS_TO_DOUBLE(long n) {
-      return Double.longBitsToDouble( n );
+      return Double.longBitsToDouble(n);
    }
 
    public static int FLOAT_TO_INT_BITS(float n) {
-      return Float.floatToIntBits( n );
+      return Float.floatToIntBits(n);
    }
 
    public static float INT_BITS_TO_FLOAT(int n) {
-      return Float.intBitsToFloat( n );
+      return Float.intBitsToFloat(n);
    }
 
    public static double RANDOMFL() {
@@ -1808,7 +1808,7 @@ public final class foreign {
    }
 
    public static boolean isfinite(double n) {
-      return !( Double.isInfinite( n ) || Double.isNaN( n ) );
+      return !(Double.isInfinite(n) || Double.isNaN(n));
    }
 
    public static boolean isinf(double n) {
@@ -2004,25 +2004,25 @@ public final class foreign {
    }
 
    public static boolean ucs2_string_cilt(char[]o1, char[]o2) {
-      // !!!!! JDK 1.2:  return ((new String( o1 )).compareToIgnoreCase( new String( o2 ) ) < 0);
+      // !!!!! JDK 1.2:  return ((new String(o1)).compareToIgnoreCase(new String(o2)) < 0);
       return ((new String(o1)).toLowerCase().compareTo((new String(o2)).
 						       toLowerCase()) < 0);
    }
 
    public static boolean ucs2_string_cigt(char[]o1, char[]o2) {
-      // !!!!! JDK 1.2:  return ((new String( o1 )).compareToIgnoreCase( new String( o2 ) ) > 0);
+      // !!!!! JDK 1.2:  return ((new String(o1)).compareToIgnoreCase(new String(o2)) > 0);
       return ((new String(o1)).toLowerCase().compareTo((new String(o2)).
 						       toLowerCase()) > 0);
    }
 
    public static boolean ucs2_string_cile(char[]o1, char[]o2) {
-      // !!!!! JDK 1.2:  return ((new String( o1 )).compareTo( new String( o2 ) ) <= 0);
+      // !!!!! JDK 1.2:  return ((new String(o1)).compareTo(new String(o2)) <= 0);
       return ((new String(o1)).toLowerCase().compareTo((new String(o2)).
 						       toLowerCase()) <= 0);
    }
 
    public static boolean ucs2_string_cige(char[]o1, char[]o2) {
-      // !!!!! JDK 1.2:  return ((new String( o1 )).compareToIgnoreCase( new String( o2 ) ) >= 0);
+      // !!!!! JDK 1.2:  return ((new String(o1)).compareToIgnoreCase(new String(o2)) >= 0);
       return ((new String(o1)).toLowerCase().compareTo((new String(o2)).
 						       toLowerCase()) >= 0);
    }
@@ -2122,7 +2122,7 @@ public final class foreign {
       return chars;
    }
 
-   public static int bgl_utf8_string_locale_compare3( byte[] left, byte[] right ) { return 0;
+   public static int bgl_utf8_string_locale_compare3(byte[] left, byte[] right) { return 0;
    }
 
    
@@ -2175,7 +2175,7 @@ public final class foreign {
    }
 
    public static Object c_process_wait(process o) {
-      o.waitfor();
+      o.waitfor ();
       return bigloo.foreign.BUNSPEC;
    }
 
@@ -2216,8 +2216,8 @@ public final class foreign {
       final int len = o.length();
       byte[] res = new byte[ len ];
 
-      for( int i = 0; i < len; i++ ) {
-	 res[ i ] = (byte)o.charAt( i );
+      for (int i = 0; i < len; i++) {
+	 res[ i ] = (byte)o.charAt(i);
       }
 
       return res;
@@ -2272,7 +2272,7 @@ public final class foreign {
 
    public static byte[] unsigned_to_string(int n, int radix) {
       // CARE open this code to avoid triple allocation...
-      switch( radix ) {
+      switch(radix) {
 	 case 2:
 	    return Integer.toBinaryString(n).getBytes();
 	 case 8:
@@ -2284,7 +2284,7 @@ public final class foreign {
 
    public static byte[] uelong_to_string(long n, int radix) {
       // CARE open this code to avoid triple allocation...
-      switch( radix ) {
+      switch(radix) {
 	 case 2:
 	    return Long.toBinaryString(n).getBytes();
 	 case 8:
@@ -2296,7 +2296,7 @@ public final class foreign {
 
    public static byte[] ullong_to_string(long n, int radix) {
       // CARE open this code to avoid triple allocation...
-      switch( radix ) {
+      switch(radix) {
 	 case 2:
 	    return Long.toBinaryString(n).getBytes();
 	 case 8:
@@ -2308,15 +2308,15 @@ public final class foreign {
 
    public static byte[] integer_to_string_padding(int n, int padding, int radix) {
       byte[] tmp = Integer.toString(n < 0 ? -n : n, radix).getBytes();
-      if( tmp.length < padding ) {
+      if (tmp.length < padding) {
 	 byte[] result = new byte[ padding ];
 	 System.arraycopy(tmp, 0, result, (padding-tmp.length), tmp.length);
 	 
-	 for( int i = (padding - tmp.length) - 1; i >= 0; i-- ) {
+	 for (int i = (padding - tmp.length) - 1; i >= 0; i--) {
 	    result[ i ] = '0';
 	 }
 	 
-	 if( n < 0 ) result[ 0 ] = '-';
+	 if (n < 0) result[ 0 ] = '-';
 	 
 	 return result;
       } else {
@@ -2335,7 +2335,7 @@ public final class foreign {
    }
 
    public static double strtod(byte[] s, int i) {
-      // !!!!! JDK 1.2:  return Double.parseDouble( new String( s, i, (s.length - i) ) );
+      // !!!!! JDK 1.2:  return Double.parseDouble(new String(s, i, (s.length - i)));
 
       final int len = s.length;
 
@@ -2344,9 +2344,9 @@ public final class foreign {
    }
 
    public static double strtod(byte[] s) {
-      // !!!!! JDK 1.2:  return Double.parseDouble( new String( s, i, (s.length - i) ) );
+      // !!!!! JDK 1.2:  return Double.parseDouble(new String(s, i, (s.length - i)));
 
-      return strtod( s, 0 );
+      return strtod(s, 0);
    }
 
    // Open functions
@@ -2441,7 +2441,7 @@ public final class foreign {
       return (((byte) '0' <= cn) && (cn <= (byte) '9'));
    }
 
-   private static boolean isxdigit( byte b ) {
+   private static boolean isxdigit(byte b) {
       if (isdigit(b)) {
 	 return true;
       } else if (b <= (byte)'F') {
@@ -2449,7 +2449,7 @@ public final class foreign {
       } else return (b <= (byte)'f') && (b >= (byte)'a');
    }
 
-   private static byte xdigit_to_byte( byte b ) {
+   private static byte xdigit_to_byte(byte b) {
       if (isdigit(b))
 	 return (byte)(b - (byte)'0');
       else if ((byte) 'a' <= b)
@@ -2840,7 +2840,7 @@ public final class foreign {
    public static Object MAKE_VOID_STAR_NULL() { return null;
    }
 
-   public static foreign void_star_to_obj( Object o ) {
+   public static foreign void_star_to_obj(Object o) {
       return new bigloo.foreign();
    }
 
@@ -2862,7 +2862,7 @@ public final class foreign {
 
    public static symbol FOREIGN_ID(Object f) {
       // CARE where defined?
-      if( f == null ) {
+      if (f == null) {
 	 return string_to_symbol("null".getBytes());
       } else {
 	 return string_to_symbol(f.getClass().getName().getBytes());
@@ -2933,7 +2933,7 @@ public final class foreign {
    public static date bgl_update_date(date date, long ns, int s,
 				      int min, int h, int d, int mon,
 				      int y, int tz, boolean istz, int dst) {
-      date tmp = bgl_make_date( ns, s, min, h, d, mon,
+      date tmp = bgl_make_date(ns, s, min, h, d, mon,
 				y, tz, istz, dst);
 
       date.nsec = tmp.nsec;
@@ -2948,7 +2948,7 @@ public final class foreign {
    }
 
    public static date bgl_seconds_to_gmtdate(long sec) {
-      return bgl_seconds_to_date( sec );
+      return bgl_seconds_to_date(sec);
    }
 
    public static date bgl_nanoseconds_to_date(long nsec) {
@@ -3050,7 +3050,7 @@ public final class foreign {
    }
 
    public static int BGL_DATE_ISDST(date d) {
-      return ( d.calendar.get(Calendar.DST_OFFSET) > 0 ) ? 1 : -1;
+      return (d.calendar.get(Calendar.DST_OFFSET) > 0) ? 1 : -1;
    }
 
    public static boolean BGL_DATE_ISGMT(date d) {
@@ -3259,14 +3259,14 @@ public final class foreign {
    public static Object[] list_to_vector(Object l) {
       int n = list_length(l);
       Object [] r = new Object[n];
-      for(int i=0 ; l != nil.nil ; l = ((pair) l).cdr, i++)
+      for (int i=0 ; l != nil.nil ; l = ((pair) l).cdr, i++)
 	 r[i] = ((pair) l).car;
       return(r);
    }
 
    static int list_length(Object l) {
       int i = 0;
-      for( ; l != nil.nil ;  l = ((pair) l).cdr, i++);
+      for (; l != nil.nil ;  l = ((pair) l).cdr, i++);
       return(i);
    }
 
@@ -3548,7 +3548,7 @@ public final class foreign {
    }
 
    public static float BGL_F32_U8VREF(u8vector v, int l) {
-      return Float.intBitsToFloat( BGL_S32_U8VREF( v, l ) );
+      return Float.intBitsToFloat(BGL_S32_U8VREF(v, l));
    }
    
    public static void BGL_F32_U8VSET(u8vector v, int l, float f) {
@@ -3560,7 +3560,7 @@ public final class foreign {
    }
    
    public static double BGL_F64_U8VREF(u8vector v, int l) {
-      return Double.longBitsToDouble( BGL_S64_U8VREF( v, l ) );
+      return Double.longBitsToDouble(BGL_S64_U8VREF(v, l));
    }
    
    public static void BGL_F64_U8VSET(u8vector v, int l, double f) {
@@ -3575,53 +3575,53 @@ public final class foreign {
       v.objs[l+7] = (byte)((bits >> 54) & 0xff);
    }
    
-   public static void BGL_SU8VECTOR_COPY(u8vector t, int ts, u8vector s, int ss, int se ) {
+   public static void BGL_SU8VECTOR_COPY(u8vector t, int ts, u8vector s, int ss, int se) {
       int len = se - ss;
       System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
 
-   public static void BGL_SU8VECTOR_COPY(s8vector t, int ts, s8vector s, int ss, int se ) {
+   public static void BGL_SU8VECTOR_COPY(s8vector t, int ts, s8vector s, int ss, int se) {
       int len = se - ss;
       System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
  
    
-   public static void BGL_SU16VECTOR_COPY(u16vector t, int ts, u16vector s, int ss, int se ) {
+   public static void BGL_SU16VECTOR_COPY(u16vector t, int ts, u16vector s, int ss, int se) {
       int len = se - ss;
       System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
 
-   public static void BGL_SU16VECTOR_COPY(s16vector t, int ts, s16vector s, int ss, int se ) {
+   public static void BGL_SU16VECTOR_COPY(s16vector t, int ts, s16vector s, int ss, int se) {
       int len = se - ss;
       System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
  
-   public static void BGL_SU32VECTOR_COPY(u32vector t, int ts, u32vector s, int ss, int se ) {
+   public static void BGL_SU32VECTOR_COPY(u32vector t, int ts, u32vector s, int ss, int se) {
       int len = se - ss;
       System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
 
-   public static void BGL_SU32VECTOR_COPY(s32vector t, int ts, s32vector s, int ss, int se ) {
+   public static void BGL_SU32VECTOR_COPY(s32vector t, int ts, s32vector s, int ss, int se) {
       int len = se - ss;
       System.arraycopy(s.objs, ss, t.objs, ts, len);  
    }
   
-   public static void BGL_SU64VECTOR_COPY(u64vector t, int ts, u64vector s, int ss, int se ) {
+   public static void BGL_SU64VECTOR_COPY(u64vector t, int ts, u64vector s, int ss, int se) {
       int len = se - ss;
       System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
 
-   public static void BGL_SU64VECTOR_COPY(s64vector t, int ts, s64vector s, int ss, int se ) {
+   public static void BGL_SU64VECTOR_COPY(s64vector t, int ts, s64vector s, int ss, int se) {
       int len = se - ss;
       System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
     
-   public static void BGL_F32VECTOR_COPY(f32vector t, int ts, f32vector s, int ss, int se ) {
+   public static void BGL_F32VECTOR_COPY(f32vector t, int ts, f32vector s, int ss, int se) {
       int len = se - ss;
       System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
    
-   public static void BGL_F64VECTOR_COPY(f64vector t, int ts, f64vector s, int ss, int se ) {
+   public static void BGL_F64VECTOR_COPY(f64vector t, int ts, f64vector s, int ss, int se) {
       int len = se - ss;
       System.arraycopy(s.objs, ss, t.objs, ts, len);
    }
@@ -3792,8 +3792,8 @@ public final class foreign {
       return BGL_OBJECT_CLASS_NUM_SET(o, BGL_CLASS_INDEX(c));
    }
 
-   public static procedure bgl_make_generic( procedure p ) {
-      return new generic( p.index, p.arity, 3, p );
+   public static procedure bgl_make_generic(procedure p) {
+      return new generic(p.index, p.arity, 3, p);
    }
    
    public static Object BGL_HEAP_DEBUG_MARK_OBJ(Object o) {
@@ -3815,7 +3815,7 @@ public final class foreign {
       return (o instanceof bclass);
    }
 
-   public static Object bgl_make_class( symbol name, symbol module,
+   public static Object bgl_make_class(symbol name, symbol module,
 					int num, int inheritance_num,
 					Object bsuper, Object sub,
 					procedure alloc, int hash,
@@ -3824,15 +3824,15 @@ public final class foreign {
 					Object nw, procedure nil,
 					Object shrink,
 					int depth,
-					Object evdata ) {
-      return new bclass( name, module, num,
+					Object evdata) {
+      return new bclass(name, module, num,
 			 bsuper, sub,
 			 alloc, hash,
 			 fd, allfd,
 			 constr, virt, nw,
 			 nil, shrink,
 			 depth,
-			 evdata );
+			 evdata);
    }
 
    public static symbol BGL_CLASS_NAME(bclass c) {
@@ -4016,18 +4016,18 @@ public final class foreign {
       return p;
    }
 
-   public static procedure bgl_make_procedure( Object e, int a, int l ) {
-      fail( "make-procedure", "not impleemented", e );
+   public static procedure bgl_make_procedure(Object e, int a, int l) {
+      fail("make-procedure", "not impleemented", e);
       return new procedure();
    }
    
    public static byte[] bgl_procedure_entry_to_string(procedure p) {
-      fail( "procedure-entry->string", "not impleemented", p );
+      fail("procedure-entry->string", "not impleemented", p);
       return "".getBytes();
    }
    
    public static Object bgl_string_to_procedure_entry(byte [] s) {
-      fail( "string->procedure-entry", "not impleemented", s );
+      fail("string->procedure-entry", "not impleemented", s);
       return unspecified.unspecified;
    }
    
@@ -4178,7 +4178,7 @@ public final class foreign {
    }
 
    public static void BGL_ERROR_HANDLER_PUSH(Object h, Object hdl) {
-      bgldynamic.abgldynamic.get().error_handler = MAKE_PAIR( h, hdl );
+      bgldynamic.abgldynamic.get().error_handler = MAKE_PAIR(h, hdl);
    }
 
    public static Object BGL_UNCAUGHT_EXCEPTION_HANDLER_GET() {
@@ -4297,11 +4297,11 @@ public final class foreign {
       return bgldynamic.abgldynamic.get().exitd_top;
    }
 
-   public static Object BGL_ENV_EXITD_TOP_AS_OBJ( bgldynamic env) {
+   public static Object BGL_ENV_EXITD_TOP_AS_OBJ(bgldynamic env) {
       return env.get().exitd_top;
    }
 
-   public static boolean BGL_EXITD_BOTTOMP( Object o ) {
+   public static boolean BGL_EXITD_BOTTOMP(Object o) {
       return ((exit)o).prev == null;
    }
       
@@ -4394,37 +4394,37 @@ public final class foreign {
 
    public static void notify_exception(Throwable e) throws Throwable {
       if (e instanceof ClassCastException) {
-	 Pattern p = Pattern.compile( "bigloo.([_A-Za-z0-9]+) cannot be cast to bigloo.([_A-Za-z0-9]+)");
-	 Matcher m = p.matcher( e.getMessage() );
+	 Pattern p = Pattern.compile("bigloo.([_A-Za-z0-9]+) cannot be cast to bigloo.([_A-Za-z0-9]+)");
+	 Matcher m = p.matcher(e.getMessage());
 
 	 if (m.matches()) {
-	    String s1 = m.group( 1 );
-	    String s2 = m.group( 2 );
+	    String s1 = m.group(1);
+	    String s2 = m.group(2);
 
 	    bigloo.runtime.Llib.error.bgl_system_failure(
 	       BGL_TYPENAME_ERROR,
 	       stack_trace.get_top(),
 	       s2.getBytes(),
-	       s1.getBytes() );
+	       s1.getBytes());
 	 } else {
 	    bigloo.runtime.Llib.error.bgl_system_failure(
 	       BGL_TYPE_ERROR,
 	       stack_trace.get_top(),
 	       e.getMessage().getBytes(),
-	       JDK.getExceptionCause( e ) );
+	       JDK.getExceptionCause(e));
 	 }
       } else if (e instanceof IndexOutOfBoundsException) {
 	 bigloo.runtime.Llib.error.bgl_system_failure(
 	    BGL_INDEX_OUT_OF_BOUND_ERROR,
 	    stack_trace.get_top(),
 	    e.getMessage().getBytes(),
-	    JDK.getExceptionCause( e ) );
+	    JDK.getExceptionCause(e));
       } else {
 	 bigloo.runtime.Llib.error.bgl_system_failure(
-	    throwable_errno( e ),
-	    symbol.make_symbol( e.getClass().getName().getBytes() ),
+	    throwable_errno(e),
+	    symbol.make_symbol(e.getClass().getName().getBytes()),
 	    e.getMessage().getBytes(),
-	    JDK.getExceptionCause( e ) );
+	    JDK.getExceptionCause(e));
       }
    }
    
@@ -4495,7 +4495,7 @@ public final class foreign {
       return e;
    }
 
-   public static Throwable fail( Throwable e, Object proc, Object msg, Object env) {
+   public static Throwable fail(Throwable e, Object proc, Object msg, Object env) {
       final stackwriter sw = new stackwriter(System.err, true);
 
       e.printStackTrace(sw);
@@ -4560,8 +4560,8 @@ public final class foreign {
       try {
 	 bgldynamic.abgldynamic.get().exitd_top =
 	    ((exit) bgldynamic.abgldynamic.get().exitd_top).prev;
-      } catch( Throwable _t ) {
-	 System.err.println( "\n\n\n******************* POP_EXIT: " + _t );
+      } catch(Throwable _t) {
+	 System.err.println("\n\n\n******************* POP_EXIT: " + _t);
       }
       return unspecified.unspecified;
    }
@@ -4570,8 +4570,8 @@ public final class foreign {
       try {
 	 env.get().exitd_top =
 	    ((exit) env.get().exitd_top).prev;
-      } catch( Throwable _t ) {
-	 System.err.println( "\n\n\n******************* POP_EXIT: " + _t );
+      } catch(Throwable _t) {
+	 System.err.println("\n\n\n******************* POP_EXIT: " + _t);
       }
       return unspecified.unspecified;
    }
@@ -4707,10 +4707,10 @@ public final class foreign {
    public static boolean is_resourcep(byte[] file) {
       byte[] r = "/resource/".getBytes();
 
-      if( file.length > r.length ) {
+      if (file.length > r.length) {
 	 int i;
-	 for( i = 0; i < r.length; i++ ) {
-	    if( file[ i ] != r[ i ] )
+	 for (i = 0; i < r.length; i++) {
+	    if (file[ i ] != r[ i ])
 	       return false;
 	 }
 
@@ -4724,14 +4724,14 @@ public final class foreign {
       byte[] r = "/resource/".getBytes();
       byte[] name = new byte[ file.length - r.length ];
       
-      System.arraycopy( file, r.length, name, 0, file.length - r.length  );
+      System.arraycopy(file, r.length, name, 0, file.length - r.length );
 
-      return new String( name );
+      return new String(name);
    }
       
    public static boolean fexists(byte[]file) {
-      if( is_resourcep( file ) ) {
-	 return bigloo.input_resource_port.exists( resource_name( file ) );
+      if (is_resourcep(file)) {
+	 return bigloo.input_resource_port.exists(resource_name(file));
       } else {
 	 return (new File(new String(file)).exists());
       }
@@ -4747,21 +4747,21 @@ public final class foreign {
 	 FileOutputStream stream = new FileOutputStream(new String(path));
 	 try {
 	    return JDK.truncate(stream, size);
-	 } catch( Exception _e ) {
+	 } catch(Exception _e) {
 	    return false;
 	 } finally {
 	    stream.close();
 	 }
-      } catch( Exception _e ) {
+      } catch(Exception _e) {
 	 return false;
       }
    }
 
    public static boolean truncate(output_port port, long size) {
-      if( port.out instanceof FileOutputStream ) {
+      if (port.out instanceof FileOutputStream) {
 	 try {
 	    return JDK.truncate((FileOutputStream)port.out, size);
-	 } catch( Exception _e ) {
+	 } catch(Exception _e) {
 	    return false;
 	 }
       } else {
@@ -4774,7 +4774,7 @@ public final class foreign {
    }
 
    public static boolean bgl_directoryp(byte[]file) {
-      if( is_resourcep( file ) ) {
+      if (is_resourcep(file)) {
 	 return bigloo.input_resource_port.bgl_directoryp(resource_name(file));
       } else {
 	 return (new File(new String(file))).isDirectory();
@@ -4782,15 +4782,15 @@ public final class foreign {
    }
 
    public static long bgl_file_size(byte[]file) {
-      if( is_resourcep( file ) ) {
-	 return bigloo.input_resource_port.file_size( resource_name( file ) );
+      if (is_resourcep(file)) {
+	 return bigloo.input_resource_port.file_size(resource_name(file));
       } else {
 	 return (long) (new File(new String(file))).length();
       }
    }
 
    public static long bgl_last_modification_time(byte[]file) {
-      if( is_resourcep( file ) ) {
+      if (is_resourcep(file)) {
 	 return (long) 0;
       } else {
 	 return (long) (new File(new String(file))).lastModified();
@@ -4798,7 +4798,7 @@ public final class foreign {
    }
 
    public static long bgl_last_change_time(byte[]file) {
-      if( is_resourcep( file ) ) {
+      if (is_resourcep(file)) {
 	 return (long) 0;
       } else {
 	 return (long) 0;
@@ -4810,10 +4810,10 @@ public final class foreign {
    }
 
    public static int bgl_utime(byte[]file, long atime, long mtime) {
-      if( is_resourcep( file ) ) {
+      if (is_resourcep(file)) {
 	 return 0;
       } else {
-	 if( (new File(new String(file))).setLastModified( mtime ) ) {
+	 if ((new File(new String(file))).setLastModified(mtime)) {
 	    return 0;
 	 } else {
 	    return 1;
@@ -4822,8 +4822,8 @@ public final class foreign {
    }
 
    public static int bgl_directory_length(byte[] name) {
-      if( is_resourcep( name ) ) {
-	 return bigloo.input_resource_port.bgl_directory_length( resource_name( name ) );
+      if (is_resourcep(name)) {
+	 return bigloo.input_resource_port.bgl_directory_length(resource_name(name));
       } else {
 	 final String[] files = (new File(new String(name))).list();
 	 return files.length;
@@ -4831,8 +4831,8 @@ public final class foreign {
    }
       
    public static Object bgl_directory_to_list(byte[]name) {
-      if( is_resourcep( name ) ) {
-	 return bigloo.input_resource_port.bgl_directory_to_list( resource_name( name ) );
+      if (is_resourcep(name)) {
+	 return bigloo.input_resource_port.bgl_directory_to_list(resource_name(name));
       } else {
 	 final String[] files = (new File(new String(name))).list();
 	 Object result = BNIL;
@@ -4849,8 +4849,8 @@ public final class foreign {
    }
 
    public static Object bgl_directory_to_vector(byte[]name) {
-      if( is_resourcep( name ) ) {
-	 return bigloo.input_resource_port.bgl_directory_to_vector( resource_name( name ) );
+      if (is_resourcep(name)) {
+	 return bigloo.input_resource_port.bgl_directory_to_vector(resource_name(name));
       } else {
 	 final String[] files = (new File(new String(name))).list();            
 	 if (files != null) {
@@ -4866,48 +4866,48 @@ public final class foreign {
       }
    }
 
-   public static symbol bgl_file_type( byte[]file ) {
-      if( is_resourcep( file ) ) {
-	 return string_to_symbol( "resource" );
+   public static symbol bgl_file_type(byte[]file) {
+      if (is_resourcep(file)) {
+	 return string_to_symbol("resource");
       } else {
 	 File f = (new File(new String(file)));
 
-	 if( !f.exists() ) {
-	    return string_to_symbol( "does-not-exist" );
+	 if (!f.exists()) {
+	    return string_to_symbol("does-not-exist");
 	 }
 
-	 if( f.isDirectory() ) {
-	    return string_to_symbol( "directory" );
+	 if (f.isDirectory()) {
+	    return string_to_symbol("directory");
 	 }
 
-	 return string_to_symbol( "regular" );
+	 return string_to_symbol("regular");
       }
    }
 
-   public static int bgl_symlink( byte[] path1, byte[] path2 ) {
+   public static int bgl_symlink(byte[] path1, byte[] path2) {
       bigloo.runtime.Llib.error.bgl_system_failure(
 	 BGL_IO_ERROR,
 	 stack_trace.get_top(),
 	 "make-symlink",
-	 "feature not supported" );
+	 "feature not supported");
       return 0;
    }
 
-   public static Object bgl_select( int timeout, Object r, Object w, Object e ) {
-      BGL_MVALUES_NUMBER_SET( 3 );
-      BGL_MVALUES_VAL_SET( 1, BNIL );
-      BGL_MVALUES_VAL_SET( 2, BNIL );
+   public static Object bgl_select(int timeout, Object r, Object w, Object e) {
+      BGL_MVALUES_NUMBER_SET(3);
+      BGL_MVALUES_VAL_SET(1, BNIL);
+      BGL_MVALUES_VAL_SET(2, BNIL);
       return BNIL;
    }
 	 
-   public static Object bgl_open_pipes( Object name ) {
+   public static Object bgl_open_pipes(Object name) {
       bigloo.runtime.Llib.error.bgl_system_failure(
 	 BGL_IO_ERROR,
 	 stack_trace.get_top(),
-	 "open-pipes", "feature not supported" );
+	 "open-pipes", "feature not supported");
       
-      BGL_MVALUES_NUMBER_SET( 1 );
-      BGL_MVALUES_VAL_SET( 1, BFALSE );
+      BGL_MVALUES_NUMBER_SET(1);
+      BGL_MVALUES_VAL_SET(1, BFALSE);
       
       return BFALSE;
    }
@@ -4954,7 +4954,7 @@ public final class foreign {
    }
 
    static byte[] get_property(String name, String def) {
-      // !!!!! JDK 1.1: System.getProperty( name, def ) ?????
+      // !!!!! JDK 1.1: System.getProperty(name, def) ?????
       final Properties p = System.getProperties();
       final String s = p.getProperty(name);
 
@@ -4970,7 +4970,7 @@ public final class foreign {
    public static byte[] getenv(byte[]name) {
       final String sname = new String(name);
 
-      if (sname.equals("HOME") || sname.equals("USERPROFILE") )
+      if (sname.equals("HOME") || sname.equals("USERPROFILE"))
 	 return get_property("user.home", null);
       if (sname.equals("USER"))
 	 return get_property("user.name", null);
@@ -4983,38 +4983,38 @@ public final class foreign {
       return get_property("bigloo." + new String(name), null);
    }
 
-   public static boolean getenv_exists( byte[]name ) {
-      final String sname = new String( name );
+   public static boolean getenv_exists(byte[]name) {
+      final String sname = new String(name);
       
       return (sname.equals("HOME")
 	      || sname.equals("USERPROFILE")
 	      || sname.equals("USER")
 	      || sname.equals("CLASSPATH")
 	      || sname.equals("TMPDIR")
-	      || (get_property("bigloo." + sname, null) != null) );
+	      || (get_property("bigloo." + sname, null) != null));
    }
 
    public static Object getenv_all() {
       Object res = BNIL;
 
-      res = MAKE_PAIR( 
-	 MAKE_PAIR( "HOME".getBytes(),get_property("user.home", null) ),
-	 res );
       res = MAKE_PAIR(
-	 MAKE_PAIR( "USER".getBytes(),get_property("user.name", null) ),
-	 res );
+	 MAKE_PAIR("HOME".getBytes(),get_property("user.home", null)),
+	 res);
       res = MAKE_PAIR(
-	 MAKE_PAIR( "CLASSPATH".getBytes(),get_property("java.library.path", null) ),
-	 res );
+	 MAKE_PAIR("USER".getBytes(),get_property("user.name", null)),
+	 res);
       res = MAKE_PAIR(
-	 MAKE_PAIR( "TMPDIR".getBytes(),get_property("java.io.tmpdir", null) ),
-	 res );
+	 MAKE_PAIR("CLASSPATH".getBytes(),get_property("java.library.path", null)),
+	 res);
       res = MAKE_PAIR(
-	 MAKE_PAIR( "BIGLOOSTACKDEPTH".getBytes(),get_property("bigloo.BIGLOOSTACKDEPTH", null) ),
-	 res );
+	 MAKE_PAIR("TMPDIR".getBytes(),get_property("java.io.tmpdir", null)),
+	 res);
       res = MAKE_PAIR(
-	 MAKE_PAIR( "BIGLOOLIVEPROCESS".getBytes(),get_property("bigloo.BIGLOOLIVEPROCESS", null) ),
-	 res );
+	 MAKE_PAIR("BIGLOOSTACKDEPTH".getBytes(),get_property("bigloo.BIGLOOSTACKDEPTH", null)),
+	 res);
+      res = MAKE_PAIR(
+	 MAKE_PAIR("BIGLOOLIVEPROCESS".getBytes(),get_property("bigloo.BIGLOOLIVEPROCESS", null)),
+	 res);
       
       return res;
    }
@@ -5023,7 +5023,7 @@ public final class foreign {
       return 0;
    }
 
-   public static Object bgl_time( procedure p ) {
+   public static Object bgl_time(procedure p) {
       bgldynamic env = BGL_CURRENT_DYNAMIC_ENV();
       long start, end;
       Object res;
@@ -5033,9 +5033,9 @@ public final class foreign {
       end = System.currentTimeMillis();
 
       env.mvalues_number = 4;
-      env.mvalues_values[ 1 ] = BINT( end - start );
-      env.mvalues_values[ 2 ] = BINT( 0 );
-      env.mvalues_values[ 3 ] = BINT( 0 );
+      env.mvalues_values[ 1 ] = BINT(end - start);
+      env.mvalues_values[ 2 ] = BINT(0);
+      env.mvalues_values[ 3 ] = BINT(0);
       
       return res;
    }
@@ -5071,7 +5071,7 @@ public final class foreign {
 	 final Process process = Runtime.getRuntime().exec(cmd.toString());
 
 	 try {
-	    process.waitFor();
+	    process.waitFor ();
 	 } catch  (InterruptedException _i) {
 	 }
 
@@ -5090,7 +5090,7 @@ public final class foreign {
 	    Runtime.getRuntime().exec(cmd + new String(f));
 
 	 try {
-	    process.waitFor();
+	    process.waitFor ();
 	 } catch  (InterruptedException _i) {
 	 }
 
@@ -5105,7 +5105,7 @@ public final class foreign {
 
       System.out.println("***WARNING: JVM chdir is not implemented yet");	// !!!!! ?????
 
-      // !!!!! JDK 1.2:  System.setProperty( "user.dir", new String( path ) );
+      // !!!!! JDK 1.2:  System.setProperty("user.dir", new String(path));
       p.put("user.dir", new String(path));
       return false;
    }
@@ -5128,7 +5128,7 @@ public final class foreign {
       return 0;
    }
 
-   public static int umask( int m ) {
+   public static int umask(int m) {
       return 0;
    }
    
@@ -5153,11 +5153,11 @@ public final class foreign {
    public static final byte[] BGL_DYNAMIC_LOAD_INIT =
       "BGL_DYNAMIC_LOAD_INIT".getBytes();
 
-   public static Object bgl_dload( byte[] filename, byte[] init_sym, byte[] mod_sym ) {
-      return bigloo.dlopen.dload( filename, init_sym, mod_sym );
+   public static Object bgl_dload(byte[] filename, byte[] init_sym, byte[] mod_sym) {
+      return bigloo.dlopen.dload(filename, init_sym, mod_sym);
    }
 
-   public static int bgl_dunload( byte[] filename ) {
+   public static int bgl_dunload(byte[] filename) {
       return 1;
    }
 
@@ -5165,17 +5165,17 @@ public final class foreign {
       return bigloo.dlopen.dload_error();
    }
 
-   public static custom bgl_dlsym( byte[] filename, byte[] id, byte[] mod ) {
+   public static custom bgl_dlsym(byte[] filename, byte[] id, byte[] mod) {
       // MS 12mar2019: TODO
       return bgl_custom_nil();
    }
 
-   public static Object bgl_dlsym_get( custom obj ) {
+   public static Object bgl_dlsym_get(custom obj) {
       // MS 12mar2019: TODO
       return BFALSE;
    }
 
-   public static Object bgl_dlsym_set( custom obj, Object val ) {
+   public static Object bgl_dlsym_set(custom obj, Object val) {
       // MS 12mar2019: TODO
       return BFALSE;
    }
@@ -5184,23 +5184,23 @@ public final class foreign {
    //////
    // SOCKET
    //////
-   public static byte[] bgl_host( byte[] hostname ) {
+   public static byte[] bgl_host(byte[] hostname) {
       try {
-	 return java.net.InetAddress.getByName( new String( hostname ) ).getHostAddress().getBytes();
+	 return java.net.InetAddress.getByName(new String(hostname)).getHostAddress().getBytes();
       }
-      catch( Exception _e ) {
+      catch(Exception _e) {
 	 bigloo.runtime.Llib.error.bgl_system_failure(
 	    BGL_IO_UNKNOWN_HOST_ERROR,
 	    "host".getBytes(),
 	    "unknown or misspelled host name".getBytes(),
-	    hostname );
+	    hostname);
 	 return "error".getBytes();
       }
    }
    
-   public static Object bgl_hostinfo( byte[] hostname ) {
-      pair p = MAKE_PAIR( bgl_host( hostname ), BNIL );
-      return MAKE_PAIR( MAKE_PAIR( "addresses", p ), BNIL );
+   public static Object bgl_hostinfo(byte[] hostname) {
+      pair p = MAKE_PAIR(bgl_host(hostname), BNIL);
+      return MAKE_PAIR(MAKE_PAIR("addresses", p), BNIL);
    }
    
    public static boolean SOCKETP(Object o) {
@@ -5215,13 +5215,13 @@ public final class foreign {
       return (o instanceof client_socket);
    }
 
-   public static socket bgl_make_client_socket( byte[] hostname,
+   public static socket bgl_make_client_socket(byte[] hostname,
 						int port,
 						int timeo,
 						byte[] inbuf,
 						byte[] outbuf,
                                                 symbol family) {
-      return new client_socket(hostname, port, inbuf, outbuf );
+      return new client_socket(hostname, port, inbuf, outbuf);
    }
 
    public static socket bgl_make_server_socket(Object name,
@@ -5282,26 +5282,26 @@ public final class foreign {
       return BNIL;
    }
 
-   public static Object bgl_getprotobyname( byte[] name ) {
+   public static Object bgl_getprotobyname(byte[] name) {
       return BFALSE;
    }
       
-   public static Object bgl_getprotobynumber( int n ) {
+   public static Object bgl_getprotobynumber(int n) {
       return BFALSE;
    }
       
-   public static Object bgl_getsockopt( socket s, keyword se ) {
+   public static Object bgl_getsockopt(socket s, keyword se) {
       try {
-	 return s.getsockopt( se );
-      } catch( IOException _i ) {
+	 return s.getsockopt(se);
+      } catch(IOException _i) {
 	 return BFALSE;
       }
    }
 
-   public static Object bgl_setsockopt( socket s, keyword se, Object flag ) {
+   public static Object bgl_setsockopt(socket s, keyword se, Object flag) {
       try {
-	 return s.setsockopt( se, flag );
-      } catch( IOException _i ) {
+	 return s.setsockopt(se, flag);
+      } catch(IOException _i) {
 	 return BUNSPEC;
       }
    }
@@ -5321,68 +5321,68 @@ public final class foreign {
       return (o instanceof datagram_client_socket);
    }
 
-   public static datagram_socket bgl_make_datagram_client_socket( byte[] hostname,
+   public static datagram_socket bgl_make_datagram_client_socket(byte[] hostname,
 								  int port,
 								  boolean bcast,
-                                                                  symbol family ) {
-      return new datagram_client_socket( hostname, port, bcast, family );
+                                                                  symbol family) {
+      return new datagram_client_socket(hostname, port, bcast, family);
    }
 
-   public static datagram_socket bgl_make_datagram_server_socket( int port,
-                                                                  symbol family ) {
-      return new datagram_server_socket( port, family );
+   public static datagram_socket bgl_make_datagram_server_socket(int port,
+                                                                  symbol family) {
+      return new datagram_server_socket(port, family);
    }
 
-   public static datagram_socket bgl_make_datagram_unbound_socket( symbol family ) {
-      return new datagram_server_socket( family );
+   public static datagram_socket bgl_make_datagram_unbound_socket(symbol family) {
+      return new datagram_server_socket(family);
    }
 
-   public static Object BGL_DATAGRAM_SOCKET_HOSTNAME( datagram_socket s ) {
+   public static Object BGL_DATAGRAM_SOCKET_HOSTNAME(datagram_socket s) {
       return s.HOSTNAME();
    }
 
-   public static Object BGL_DATAGRAM_SOCKET_HOSTIP( datagram_socket s) {
+   public static Object BGL_DATAGRAM_SOCKET_HOSTIP(datagram_socket s) {
       return s.HOSTIP();
    }
 
-   public static obj BGL_DATAGRAM_SOCKET_PORT( datagram_socket s ) {
+   public static obj BGL_DATAGRAM_SOCKET_PORT(datagram_socket s) {
       return s.PORT();
    }
 
-   public static int BGL_DATAGRAM_SOCKET_PORTNUM( datagram_socket s ) {
+   public static int BGL_DATAGRAM_SOCKET_PORTNUM(datagram_socket s) {
       return s.PORTNUM();
    }
    
-   public static Object bgl_datagram_socket_close( datagram_socket s ) {
+   public static Object bgl_datagram_socket_close(datagram_socket s) {
       s.close();
       return BUNSPEC;
    }
 
-   public static Object bgl_datagram_socket_receive( datagram_socket s, int len ) {
-      return s.receive( len );
+   public static Object bgl_datagram_socket_receive(datagram_socket s, int len) {
+      return s.receive(len);
    }
 
-   public static int bgl_datagram_socket_send( datagram_socket s, byte[] string, byte[] host, int port ) {
+   public static int bgl_datagram_socket_send(datagram_socket s, byte[] string, byte[] host, int port) {
       try {
-	 return s.send( string, host, port );
-      } catch( IOException e ) {
+	 return s.send(string, host, port);
+      } catch(IOException e) {
 	 fail("send", e.getMessage(), s);
 	 return -1;
       }
    }
 
-   public static Object bgl_dgetsockopt( datagram_socket s, keyword se ) {
+   public static Object bgl_dgetsockopt(datagram_socket s, keyword se) {
       try {
-	 return s.getsockopt( se );
-      } catch( IOException _i ) {
+	 return s.getsockopt(se);
+      } catch(IOException _i) {
 	 return BFALSE;
       }
    }
 
-   public static Object bgl_dsetsockopt( datagram_socket s, keyword se, Object flag ) {
+   public static Object bgl_dsetsockopt(datagram_socket s, keyword se, Object flag) {
       try {
-	 return s.setsockopt( se, flag );
-      } catch( IOException _i ) {
+	 return s.setsockopt(se, flag);
+      } catch(IOException _i) {
 	 return BUNSPEC;
       }
    }
@@ -5415,7 +5415,7 @@ public final class foreign {
       return o;
    }
 
-   public static regexp bgl_regcomp(byte[] pat, Object opt_args, boolean finalize ) {
+   public static regexp bgl_regcomp(byte[] pat, Object opt_args, boolean finalize) {
       return new regexp(pat,true);
    }
 
@@ -5452,7 +5452,7 @@ public final class foreign {
       return (o instanceof input_gzip_port);
    }
 
-   public static input_port getCurrentInputPort( bgldynamic env ) {
+   public static input_port getCurrentInputPort(bgldynamic env) {
       return env.current_input_port;
    }
 
@@ -5507,7 +5507,7 @@ public final class foreign {
    public static void bgl_input_port_buffer_set(input_port o, byte[] b) {
       o.buffer = b;
 	 
-      if( (o instanceof input_string_port) ) {
+      if ((o instanceof input_string_port)) {
 	 o.length = b.length;
       }
    }
@@ -5556,7 +5556,7 @@ public final class foreign {
    }
 
    public static input_port bgl_open_input_substring_bang(byte[] s, int start, int end) {
-      return new input_string_port( s, start, end, true );
+      return new input_string_port(s, start, end, true);
    }
 
    public static input_port bgl_open_input_mmap(mmap mm, byte[] b, int start, int end) {
@@ -5568,18 +5568,18 @@ public final class foreign {
    }
 
    public static Object bgl_open_input_procedure(procedure p, byte[] b) {
-      return new input_procedure_port( p, b );
+      return new input_procedure_port(p, b);
    }
 
-   public static Object bgl_open_input_gzip_port(procedure p, input_port ip, byte[] b ) {
-      return new input_gzip_port( p, ip, b );
+   public static Object bgl_open_input_gzip_port(procedure p, input_port ip, byte[] b) {
+      return new input_gzip_port(p, ip, b);
    }
 
-   public static input_port BGL_INPUT_GZIP_PORT_INPUT_PORT( input_port p ) {
-      if( p instanceof input_gzip_port )
+   public static input_port BGL_INPUT_GZIP_PORT_INPUT_PORT(input_port p) {
+      if (p instanceof input_gzip_port)
 	 return ((input_gzip_port)p).input_port;
       else {
-	 fail( "input-gzip-port-input-port", "Illegal input port", p );
+	 fail("input-gzip-port-input-port", "Illegal input port", p);
 	 return p;
       }
    }
@@ -5612,7 +5612,7 @@ public final class foreign {
    public static void bgl_input_port_seek(input_port p, int pos) {
       try {
 	 p.bgl_input_port_seek(pos);
-      } catch( Exception e ) {
+      } catch(Exception e) {
 	 fail("set-input-port-position!", e.getMessage(), p);
       }
    }
@@ -5624,11 +5624,10 @@ public final class foreign {
 
    public static Object bgl_input_port_clone(input_port dst, input_port src)
       throws IOException {
-      return dst.bgl_input_port_clone( src );
+      return dst.bgl_input_port_clone(src);
    }
 
-   public static Object bgl_output_port_seek(output_port p,
-					     int pos)
+   public static Object bgl_output_port_seek(output_port p, int pos)
       throws IOException {
       return p.bgl_output_port_seek(pos);
    }
@@ -5674,7 +5673,7 @@ public final class foreign {
    }
 
    public static void INPUT_PORT_NAME_SET(input_port p, byte[] v) {
-      p.name = new String( v );
+      p.name = new String(v);
    }
 
    public static byte[] OUTPUT_PORT_NAME(output_port p) {
@@ -5717,9 +5716,9 @@ public final class foreign {
       int bufpos = p.bufpos;
       int matchstop = p.matchstop;
 
-      if ( matchstop >= amount ) return;
+      if (matchstop >= amount) return;
 
-      if ( (matchstop + (bufsize - (bufpos))) >= amount ) {
+      if ((matchstop + (bufsize - (bufpos))) >= amount) {
 	 // shift the buffer to the right
 	 int diff = amount - matchstop;
 
@@ -5734,12 +5733,12 @@ public final class foreign {
    }
    
    public static boolean rgc_buffer_insert_substring(input_port p, byte[] s, int from, int to) {
-      if ( from < 0 ) return false;
-      if ( to > s.length ) return false;
-      if ( (p.buffer.length == 2) && !(p instanceof input_string_port))
+      if (from < 0) return false;
+      if (to > s.length) return false;
+      if ((p.buffer.length == 2) && !(p instanceof input_string_port))
 	 return false; // unbuffered port
-      if ( CLOSED_RGC_BUFFER( p )) return false;
-      if ( from >= to ) return true;
+      if (CLOSED_RGC_BUFFER(p)) return false;
+      if (from >= to) return true;
 
       int len = to - from;
 
@@ -5749,7 +5748,7 @@ public final class foreign {
 
       System.arraycopy(s, from, p.buffer, (matchstop - len), len);
 
-      if ( p.filepos >= len )
+      if (p.filepos >= len)
 	 p.filepos -= len;
       else
 	 p.filepos = 0;
@@ -5761,7 +5760,7 @@ public final class foreign {
    }
 
    public static boolean rgc_buffer_insert_char(input_port p, int c) {
-      if ( (p.buffer.length == 2) && !(p instanceof input_string_port))
+      if ((p.buffer.length == 2) && !(p instanceof input_string_port))
 	 return false;
 	    
       rgc_buffer_reserve_space(p, 1);
@@ -5770,7 +5769,7 @@ public final class foreign {
 
       p.buffer[matchstop - 1] = (byte) c;
 
-      if ( p.filepos > 0 )
+      if (p.filepos > 0)
 	 p.filepos--;
       else
 	 p.filepos = 0;
@@ -5805,8 +5804,8 @@ public final class foreign {
       return p.rgc_charready();
    }
 
-   public static byte[] bgl_password( byte[] prompt ) {
-      return JDK.password( prompt );
+   public static byte[] bgl_password(byte[] prompt) {
+      return JDK.password(prompt);
    }
    
    public static boolean rgc_buffer_eof_p(input_port p) {
@@ -5814,17 +5813,17 @@ public final class foreign {
    }
 
    public static boolean rgc_buffer_eof2_p(input_port p, int forward, int bufpos) {
-      if( forward < bufpos ) {
+      if (forward < bufpos) {
 	 p.forward = forward;
 	 p.bufpos = bufpos;
 	 return false;
       } else {
-	 if( p.eof ) {
+	 if (p.eof) {
 	    p.forward = forward;
 	    p.bufpos = bufpos;
 	    return true;
 	 } else {
-	    boolean r = rgc_fill_buffer( p );
+	    boolean r = rgc_fill_buffer(p);
 	    return !r;
 	 }
       }
@@ -5840,7 +5839,7 @@ public final class foreign {
 	 p.forward = p.bufpos;
 	 rgc_fill_buffer(p);
 	 // less characters are available
-	 if( (p.bufpos - p.forward) < fsize ) break;
+	 if ((p.bufpos - p.forward) < fsize) break;
       }
 
       if ((p.bufpos - p.matchstart) <= l)
@@ -5858,12 +5857,12 @@ public final class foreign {
       throws IOException {
       final int bs = p.buffer.length;
 
-      if( CLOSED_RGC_BUFFER( p ) ) {
+      if (CLOSED_RGC_BUFFER(p)) {
 	 bigloo.runtime.Llib.error.bgl_system_failure(
 	    BGL_IO_CLOSED_ERROR,
 	    "rgc-blit-string".getBytes(),
 	    "input-port closed".getBytes(),
-	    p );
+	    p);
       }
       
       if (l <= bs)
@@ -5875,7 +5874,7 @@ public final class foreign {
 	    result += r;
 	    o += bs;
 	    l -= bs;
-	    if( r < l ) break;
+	    if (r < l) break;
 	 }
 	 result += rgc_do_blit(p, s, o, l);
 	 return result;
@@ -5893,11 +5892,11 @@ public final class foreign {
 	 return (p.lastchar == (byte) '\n');
    }
 
-   public static boolean rgc_buffer_eol_p(input_port p, int forward, int bufpos )
+   public static boolean rgc_buffer_eol_p(input_port p, int forward, int bufpos)
       throws IOException {
-      if( forward == bufpos ) {
+      if (forward == bufpos) {
 	 if (rgc_fill_buffer(p))
-	    return rgc_buffer_eol_p(p, p.forward, p.bufpos );
+	    return rgc_buffer_eol_p(p, p.forward, p.bufpos);
 	 else
 	    return false;
       } else {
@@ -5916,20 +5915,20 @@ public final class foreign {
 
       try {
 	 return p.rgc_fill_buffer();
-      } catch( Exception e ) {
+      } catch(Exception e) {
 	 String msg = e.getMessage();
 
          // Commenting out the following stack trace printing to reduce noisy and confusing
          // ouput. If debugging problems, uncomment.
-	 // final stackwriter sw = new stackwriter( System.out, true );
-         // e.printStackTrace( sw );
+	 // final stackwriter sw = new stackwriter(System.out, true);
+         // e.printStackTrace(sw);
 	 
 	 bigloo.runtime.Llib.error.bgl_system_failure(
 	    (e instanceof java.net.SocketTimeoutException ?
 	     BGL_IO_TIMEOUT_ERROR : BGL_IO_READ_ERROR),
 	    "read".getBytes(),
-	    (msg != null ? msg.getBytes() : FOREIGN_TYPE_NAME( e )),
-	    p );
+	    (msg != null ? msg.getBytes() : FOREIGN_TYPE_NAME(e)),
+	    p);
 	 return false;
       }
    }
@@ -6004,7 +6003,7 @@ public final class foreign {
       final int n = stop - start - 1;
       final byte[] name = new byte[n];
 
-      if( p.buffer[start] == ':' ) start++;
+      if (p.buffer[start] == ':') start++;
 
       for (int i = 0; i < n; ++i, ++start)
 	 name[i] = (byte) toupper(p.buffer[start] & 0xFF);
@@ -6018,7 +6017,7 @@ public final class foreign {
       final int n = stop - start - 1;
       final byte[] name = new byte[n];
 
-      if( p.buffer[start] == ':' ) start++;
+      if (p.buffer[start] == ':') start++;
 
       for (int i = 0; i < n; ++i, ++start)
 	 name[i] = (byte) tolower(p.buffer[start] & 0xFF);
@@ -6032,7 +6031,7 @@ public final class foreign {
       final int n = stop - start - 1;
       final byte[] name = new byte[n];
 
-      if( p.buffer[start] == ':' ) start++;
+      if (p.buffer[start] == ':') start++;
 
       for (int i = 0; i < n; ++i, ++start)
 	 name[i] = (byte) (p.buffer[start] & 0xFF);
@@ -6049,7 +6048,7 @@ public final class foreign {
    }
 
    public static double rgc_buffer_flonum(input_port p) {
-      // !!!!! JDK 1.2:  return Double.parseDouble( new String( c_substring( p.buffer, p.matchstart, p.matchstop ) ) );
+      // !!!!! JDK 1.2:  return Double.parseDouble(new String(c_substring(p.buffer, p.matchstart, p.matchstop)));
       return Double.valueOf(new String(c_substring(p.buffer, p.matchstart,
 						   p.matchstop))).doubleValue();
    }
@@ -6095,19 +6094,19 @@ public final class foreign {
 
    public static Object open_input_binary_file(byte[]file)
       throws FileNotFoundException {
-      String s = new String( file );
-      if( s.startsWith( "/resource/" ) ) {
-	 String r = s.substring( 10 ).replace( '\\', '/' );
-	 InputStream in = foreign.class.getClassLoader().getResourceAsStream( r );
-	 if( in == null ) {
+      String s = new String(file);
+      if (s.startsWith("/resource/")) {
+	 String r = s.substring(10).replace('\\', '/');
+	 InputStream in = foreign.class.getClassLoader().getResourceAsStream(r);
+	 if (in == null) {
 	    return BFALSE;
 	 } else {
-	    return new binary_port( in );
+	    return new binary_port(in);
 	 }
       } else {
 	 try {
 	    return new binary_port(new FileInputStream(new String(file)));
-	 } catch( Exception _e ) {
+	 } catch(Exception _e) {
 	    return BFALSE;
 	 }
       }
@@ -6153,8 +6152,8 @@ public final class foreign {
       byte[] buf = new byte[ len ];
       int l = ((FileInputStream) p.stream).read(buf);
 
-      if( l < len )
-	 return bgl_string_shrink( buf, l );
+      if (l < len)
+	 return bgl_string_shrink(buf, l);
       else
 	 return buf;
    }
@@ -6173,7 +6172,7 @@ public final class foreign {
    //////
    // OUTPUT
    //////
-   public static output_port getCurrentOutputPort( bgldynamic env ) {
+   public static output_port getCurrentOutputPort(bgldynamic env) {
       return env.current_output_port;
    }
 
@@ -6181,7 +6180,7 @@ public final class foreign {
       env.current_output_port = o;
    }
 
-   public static output_port getCurrentErrorPort( bgldynamic env ) {
+   public static output_port getCurrentErrorPort(bgldynamic env) {
       return env.current_error_port;
    }
 
@@ -6213,21 +6212,23 @@ public final class foreign {
       return p;
    }
 
-   public static Object bgl_open_output_file(byte[]file, byte[] buf)
+   public static Object bgl_open_output_file(byte[] file, byte[] buf)
       throws IOException {
-      if( output_pipe_port.pipe_name_p(file) )
-	 return (Object) new output_pipe_port( file, buf );
+      if (output_pipe_port.pipe_name_p(file))
+	 return (Object) new output_pipe_port(file, buf);
 	 
-      if (bigloo_strcmp( file, "null:".getBytes() ))
-	 return output_buffered_port.make_output_buffered_port( (foreign.bigloo_strcmp( os.OS_CLASS, "unix".getBytes() )
-								 ? "/dev/null"
-								 : "NUL:").getBytes(), buf );
-      else
+      if (bigloo_strcmp(file, "null:".getBytes())) {
+	 byte[] dev = (foreign.bigloo_strcmp(os.OS_CLASS, "unix".getBytes())
+			? "/dev/null"
+			: "NUL:").getBytes();
+	 return output_buffered_port.make_output_buffered_port(dev, buf);
+      else {
 	 return output_buffered_port.make_output_buffered_port(file, buf);
+      }
    }
 
-   public static Object bgl_append_output_file(byte[]file, byte[] buf)
-      throws IOException       {
+   public static Object bgl_append_output_file(byte[] file, byte[] buf)
+      throws IOException {
       return output_buffered_port.make_output_buffered_port(file, buf, true);
    }
 
@@ -6527,7 +6528,7 @@ public final class foreign {
    }
 
    public static int bgl_string_hash_number(byte[] s) {
-      return bgl_string_hash( s, 0, s.length );
+      return bgl_string_hash(s, 0, s.length);
    }
    
    public static int bgl_symbol_hash_number(symbol obj) {
@@ -6587,21 +6588,21 @@ public final class foreign {
    public static bignum bgl_rand_bignum(bignum range) {
       bignum b = new bignum(new java.math.BigInteger(range.value.bitLength(), randg));
       if (b.value.compareTo(range.value) >= 0)
-	 return new bignum( b.value.mod(range.value) );
+	 return new bignum(b.value.mod(range.value));
       else
 	 return b;
    }
 
-   public static void srand( int seed ) {
-      randg = new Random( seed );
+   public static void srand(int seed) {
+      randg = new Random(seed);
    }
 
-   public static void bgl_sleep( int microsecs ) {
+   public static void bgl_sleep(int microsecs) {
       try {
-	 Thread.sleep( (long)(microsecs / 1000),
-		       (int)(1000*(microsecs % 1000)) );
-      } catch( Exception e ) {
-	 if ( e instanceof InterruptedException ) {
+	 Thread.sleep((long)(microsecs / 1000),
+		       (int)(1000*(microsecs % 1000)));
+      } catch(Exception e) {
+	 if (e instanceof InterruptedException) {
 	    Thread.currentThread().interrupt();
 	 }
       }
@@ -6611,23 +6612,23 @@ public final class foreign {
       try {
 	 InetAddress addr = java.net.InetAddress.getLocalHost();
 	 return addr.getHostName().getBytes();
-      } catch( Exception _e ) {
+      } catch(Exception _e) {
 	 return "localhost".getBytes();
       }
    }
 
    public static byte[] bgl_gethostname_by_address(byte[] ip) {
       try {
-	 InetAddress addr = java.net.InetAddress.getByName( new String( ip ) );
+	 InetAddress addr = java.net.InetAddress.getByName(new String(ip));
 	 return addr.getHostName().getBytes();
-      } catch( Exception _e ) {
+      } catch(Exception _e) {
 	 return "".getBytes();
       }
    }
 
    public static Object bgl_gethostinterfaces() {
       // to be implemented
-      System.err.println( "foreign.java: bgl_hostinterfaces not implemented" );
+      System.err.println("foreign.java: bgl_hostinterfaces not implemented");
       return BNIL;
    }
 
@@ -6639,7 +6640,7 @@ public final class foreign {
       return (o instanceof mutex);
    }
 
-   public static mutex bigloo_generic_mutex = bgl_make_mutex( BFALSE );
+   public static mutex bigloo_generic_mutex = bgl_make_mutex(BFALSE);
    
    public static mutex bgl_make_mutex(Object o) {
       return mutex.make(o);
@@ -6694,11 +6695,11 @@ public final class foreign {
    }
 
    public static boolean bgl_condvar_wait(condvar c, mutex o) {
-      return c.wait( o );
+      return c.wait(o);
    }
 
    public static boolean bgl_condvar_timed_wait(condvar c, mutex o, int ms) {
-      return c.timed_wait( o, ms );
+      return c.timed_wait(o, ms);
    }
 
    public static boolean bgl_condvar_broadcast(condvar c) {
@@ -6719,30 +6720,30 @@ public final class foreign {
    //////
    // MMAP
    //////
-   public static boolean BGL_MMAPP( Object o ) {
+   public static boolean BGL_MMAPP(Object o) {
       return (o instanceof mmap);
    }
 
-   public static mmap bgl_open_mmap( byte[] fname, boolean r, boolean w ) {
-      if( is_resourcep( fname ) ) {
-	 if( w ) {
-	    fail( "mmap", "Cannot mmap resource file for write", fname);
+   public static mmap bgl_open_mmap(byte[] fname, boolean r, boolean w) {
+      if (is_resourcep(fname)) {
+	 if (w) {
+	    fail("mmap", "Cannot mmap resource file for write", fname);
 	 } else {
-	    if( !r ) {
-	       fail( "mmap", "resource file has been mmap for reading", fname);
+	    if (!r) {
+	       fail("mmap", "resource file has been mmap for reading", fname);
 	    }
 	 }
-	 return new mmap( resource_name( fname ) );
+	 return new mmap(resource_name(fname));
       } else {
-	 return new mmap( fname, r, w );
+	 return new mmap(fname, r, w);
       }
    }
 
-   public static mmap bgl_string_to_mmap( byte[] s, boolean r, boolean w ) {
-      return new mmaps( s, r, w );
+   public static mmap bgl_string_to_mmap(byte[] s, boolean r, boolean w) {
+      return new mmaps(s, r, w);
    }
 
-   public static byte[] bgl_mmap_to_string( mmap m ) {
+   public static byte[] bgl_mmap_to_string(mmap m) {
       if (m instanceof mmaps) {
          return m.name;
       } else {
@@ -6750,53 +6751,53 @@ public final class foreign {
       }
    }
 
-   public static Object bgl_close_mmap( mmap o ) {
+   public static Object bgl_close_mmap(mmap o) {
       return o.close();
    }
 
-   public static Object bgl_sync_mmap( mmap o ) {
+   public static Object bgl_sync_mmap(mmap o) {
       o.map.force();
       return o;
    }
 
-   public static int BGL_MMAP_REF( mmap o, long i ) {
-      if( o.map == null ) {
-	 return o.get( i );
+   public static int BGL_MMAP_REF(mmap o, long i) {
+      if (o.map == null) {
+	 return o.get(i);
       } else {
-	 return o.map.get( (int)i ) & 0xff;
+	 return o.map.get((int)i) & 0xff;
       }
    }
    
-   public static Object BGL_MMAP_SET( mmap o, long i, int c ) {
-      if( o.map == null ) {
-	 o.put( i, (byte)(c & 0xff) );
+   public static Object BGL_MMAP_SET(mmap o, long i, int c) {
+      if (o.map == null) {
+	 o.put(i, (byte)(c & 0xff));
       } else {
-	 o.map.put( (int)i, (byte)(c & 0xff) );
+	 o.map.put((int)i, (byte)(c & 0xff));
       }
       return o;
    }
 
-   public static long BGL_MMAP_LENGTH( mmap o ) {
+   public static long BGL_MMAP_LENGTH(mmap o) {
       return o.len;
    }
       
-   public static Object BGL_MMAP_NAME( mmap o ) {
+   public static Object BGL_MMAP_NAME(mmap o) {
       return o.name;
    }
 
-   public static long BGL_MMAP_RP_GET( mmap o ) {
+   public static long BGL_MMAP_RP_GET(mmap o) {
       return o.rp;
    }
    
-   public static void BGL_MMAP_RP_SET( mmap o, long i ) {
+   public static void BGL_MMAP_RP_SET(mmap o, long i) {
       o.rp = i;
    }
    
-   public static long BGL_MMAP_WP_GET( mmap o ) {
+   public static long BGL_MMAP_WP_GET(mmap o) {
       return o.wp;
    }
    
-   public static void BGL_MMAP_WP_SET( mmap o, long i ) {
+   public static void BGL_MMAP_WP_SET(mmap o, long i) {
       o.wp = i;
    }
 }

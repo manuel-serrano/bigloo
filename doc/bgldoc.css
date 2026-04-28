@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Sun Apr 26 17:30:59 2026 (serrano)                */
+/*    Last change :  Tue Apr 28 10:16:40 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -52,6 +52,8 @@
 
     --fontifierString: #f91a03;
     --fontifierSymbol: #f91a03;
+    --fontifierDefine: #6a5ac9;
+    --fontifierImportant: #fa1a03;
 
     --chapterTocLinkColor: #777;
     --chapterTocBackground: #fff;
@@ -335,6 +337,16 @@ pre .fontifier-prog-reserved {
 
 pre .fontifier-prog-string {
     color: var(--fontifierString);
+}
+
+pre .fontifier-prog-define {
+    color: var(--fontifierDefine);
+    font-weight: bold;
+}
+
+pre .fontifier-prog-important {
+    color: var(--fontifierImportant);
+    font-weight: bold;
 }
 
 pre .fontifier-prog-symbol {

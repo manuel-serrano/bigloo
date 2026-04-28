@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Apr 28 09:56:47 2026 (serrano)                */
+;*    Last change :  Tue Apr 28 11:19:34 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1348,7 +1348,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    input-port-position ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-port-position port)
+(define-inline (input-port-position::long port::input-port)
    ($input-port-position port))
 
 ;*---------------------------------------------------------------------*/
@@ -1373,13 +1373,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    output-port-name ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-port-name port)
+(define-inline (output-port-name::bstring port::output-port)
    ($output-port-name port))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-port-name-set! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-port-name-set! port name)
+(define-inline (output-port-name-set! port::output-port name::bstring)
    ($output-port-name-set! port name))
 
 ;*---------------------------------------------------------------------*/
@@ -1393,13 +1393,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    output-port-position ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-port-position port)
+(define-inline (output-port-position::long port::output-port)
    ($output-port-position port))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-port-isatty? ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-port-isatty? port)
+(define-inline (output-port-isatty?::bool port::output-port)
    (cond-expand
       (bigloo-c ($port-isatty? port))
       (else #t)))
@@ -1407,19 +1407,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    input-port-name ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-port-name port)
+(define-inline (input-port-name::bstring port::input-port)
    ($input-port-name port))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port-name-set! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-port-name-set! port name)
+(define-inline (input-port-name-set! port::input-port name::bstring)
    ($input-port-name-set! port name))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port-length ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-port-length port)
+(define-inline (input-port-length::elong port::input-port)
    ($input-port-length port))
 
 ;*---------------------------------------------------------------------*/

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wports.wat         */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Wlib/wports.wat         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Mon Jul 28 07:42:51 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Tue Apr 28 11:35:24 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
 ;*=====================================================================*/
@@ -665,7 +665,13 @@
 		   (struct.get $file-output-port $position
 		      (ref.cast (ref $file-output-port) (local.get $op)))))
 	     (else
-	      (i64.const 0)))))
+              (if (result i64) (ref.test (ref $string-output-port) (local.get $op))
+                  (then
+                     (i64.extend_i32_u
+                        (struct.get $string-output-port $index
+                           (ref.cast (ref $string-output-port) (local.get $op)))))
+                  (else
+                   (i64.const 0)))))))
 
     (func $BGL_INPUT_PORT_BUFFER (export "BGL_INPUT_PORT_BUFFER")
       (param $ip (ref $input-port))

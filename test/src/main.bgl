@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Mon Apr 27 17:49:47 2026 (serrano)                */
+;*    Last change :  Tue Apr 28 11:52:00 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -56,9 +56,9 @@
 	  (begin
              (printf "all ~a (~a) tests ~a.\n"
                 success backend (color 'ok "passed"))
-             (exit 0)
+             (exit 0))
 	  (begin
              (printf "~a/~a (~a) tests ~a.\n"
                 failures (+fx success failures) backend
                 (color 'fail "failed"))
-             (exit 1))))))
+             (exit 1)))))

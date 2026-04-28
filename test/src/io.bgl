@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Tue Apr 28 07:45:18 2026 (serrano)                */
+;*    Last change :  Tue Apr 28 10:20:46 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing I/O                                                      */
@@ -84,3 +84,33 @@
          (peek-char port)
          (read-char port)))
    :expected #\e)
+
+(define-test call-with-input-string
+   (call-with-input-string "(foo 2.3)" read)
+   :expected '(foo 2.3))
+
+(define-test call-with-output-file
+   (call-with-output-file "/dev/null" output-port?)
+   :expected #t)
+
+(define-test input-port-name
+   (call-with-input-file "/etc/passwd" input-port-name)
+   :expected "/etc/passwd")
+
+(define-test input-port-position
+   (call-with-input-file "/etc/passwd"
+      (lambda (ip)
+         (read-chars 10 ip)
+         (input-port-position ip)))
+   :expected 10)
+
+(define-test output-port-position
+   (let ((op (open-output-string)))
+      (unwind-protect
+         (begin
+            (display "foo" op)
+            (set-output-port-position! op 1)
+            (display "bar" op)
+            (output-port-position op))
+         (close-output-port op)))
+   :expected 4)
