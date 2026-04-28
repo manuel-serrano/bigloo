@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Apr 22 09:18:00 2026 (serrano)                */
+#*    Last change :  Tue Apr 28 10:05:40 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -689,7 +689,7 @@ objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: \
 #*---------------------------------------------------------------------*/
 #*    Wasm heap specific                                               */
 #*---------------------------------------------------------------------*/
-Llib/make_lib.wasm.sch: $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_UNSAFE_SRC) $(W_WLIB)
+Llib/make_lib.wasm.sch: .afile $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_UNSAFE_SRC) $(W_WLIB)
 	$(BIGLOO) -i ../tools/gen_make_lib_wasm.scm -- $^ > $@
 
 #*---------------------------------------------------------------------*/

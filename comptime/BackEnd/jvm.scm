@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Wed Apr 22 08:07:12 2026 (serrano)                */
+;*    Last change :  Tue Apr 28 08:02:18 2026 (serrano)                */
 ;*    Copyright   :  2012-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -177,12 +177,7 @@
 (define *jvm-dir-name* ".")
 
 (define (jvmasdump classfile port)
-   (let ((ow *pp-width*) (oc *pp-case*))
-      (set! *pp-width* 10240)
-      '(set! *pp-case* 'lower)
-      (pp classfile port)
-      (set! *pp-case* oc)
-      (set! *pp-width* ow)))
+   (pp classfile :width 10240 :case-sensitivity 'lower port))
 
 (define (addsuffix name)
    (string-append name

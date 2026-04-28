@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Tools/dsssl.scm             */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Tools/dsssl.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Thu Apr  3 14:42:11 1997                          */
-;*    Last change :  Sat Oct 13 07:37:57 2012 (serrano)                */
-;*    Copyright   :  1997-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Apr 28 08:42:16 2026 (serrano)                */
+;*    Copyright   :  1997-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some dsssl goodies (see also runtime/Llib/dsssl.scm).            */
 ;*=====================================================================*/
@@ -37,14 +37,10 @@
 (define (dsssl-prototype? args)
    (let loop ((args args))
       (cond
-	 ((null? args)
-	  #f)
-	 ((not (pair? args))
-	  #f)
-	 ((dsssl-named-constant? (car args))
-	  #t)
-	 (else
-	  (loop (cdr args))))))
+	 ((null? args) #f)
+	 ((not (pair? args)) #f)
+	 ((dsssl-named-constant? (car args)) #t)
+	 (else (loop (cdr args))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dsssl-only? ...                                                  */
@@ -53,16 +49,11 @@
    (let loop ((args args)
 	      (r #f))
       (cond
-	 ((null? args)
-	  r)
-	 ((not (pair? args))
-	  r)
-	 ((eq? (car args) dsssl)
-	  (loop (cdr args) #t))
-	 ((dsssl-named-constant? (car args))
-	  #f)
-	 (else
-	  (loop (cdr args) r)))))
+	 ((null? args) r)
+	 ((not (pair? args)) r)
+	 ((eq? (car args) dsssl) (loop (cdr args) #t))
+	 ((dsssl-named-constant? (car args)) #f)
+	 (else (loop (cdr args) r)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dsssl-optional-only-prototype? ...                               */
@@ -198,16 +189,16 @@
        #f)
       ((not (pair? args))
        (internal-error "dsssl-find-first-formal"
-		       "Illegal dsssl formal list"
-		       args))
+	  "Illegal dsssl formal list"
+	  args))
       ((dsssl-named-constant? (car args))
        (dsssl-find-first-formal (cdr args)))
       ((dsssl-defaulted-formal? (car args))
        (dsssl-default-formal (car args)))
       ((not (symbol? (car args)))
        (internal-error "dsssl-find-first-formal"
-		       "Illegal dsssl formal list"
-		       args))
+	  "Illegal dsssl formal list"
+	  args))
       (else
        (car args))))
        
@@ -288,9 +279,8 @@
 ;*---------------------------------------------------------------------*/
 (define (dsssl-key-args-sort args)
    (sort args
-	 (lambda (s1 s2)
-	    (string<? (symbol->string (car s1))
-		      (symbol->string (car s2))))))
+      (lambda (s1 s2)
+	 (string<? (symbol->string (car s1)) (symbol->string (car s2))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dsssl-before-dsssl ...                                           */
@@ -301,8 +291,6 @@
 (define (dsssl-before-dsssl args)
    (let loop ((args args)
 	      (res '()))
-      (cond
-	 ((dsssl-named-constant? (car args))
-	  (reverse! res))
-	 (else
-	  (loop (cdr args) (cons (car args) res))))))
+      (if (dsssl-named-constant? (car args))
+	  (reverse! res)
+	  (loop (cdr args) (cons (car args) res)))))

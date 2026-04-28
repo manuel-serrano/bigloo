@@ -13,26 +13,27 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module fontifier
-
+   
    (library web)
    
-   (export lisp
-	   xml
-	   wat
-	   hiphop
-	   hss
-	   ebnf
-	   plain
-	   sh
-	   c
-	   js
-	   hopscript
-	   typescript
-	   json
-	   tex
-	   asm
-	   mermaid
-	   line-number))
+   (export bigloo
+      lisp
+      xml
+      wat
+      hiphop
+      hss
+      ebnf
+      plain
+      sh
+      c
+      js
+      hopscript
+      typescript
+      json
+      tex
+      asm
+      mermaid
+      line-number))
 
 ;*---------------------------------------------------------------------*/
 ;*    <SPAN> ...                                                       */
@@ -467,6 +468,33 @@
 		   (hashtable-put! t k "class"))
 	 '("generic" "class" "final-class" "wide-class" "abstract-class"))
       t))
+
+;*---------------------------------------------------------------------*/
+;*    lisp ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (bigloo ip::input-port #!key line-begin line-end keyword)
+   
+   (define (bigloo-keyword x op)
+      (let ((s (xml-string-encode x))
+	    (l (string-length x)))
+	 (cond
+	    ((and (procedure? keyword) (keyword s))
+	     => 
+	     (lambda (k) k))
+	    ((and (char=? (string-ref x 0) #\<)
+		  (char=? (string-ref x (-fx l 1)) #\>))
+	     (<SPAN> :class "fontifier-prog-tag" s))
+	    ((hashtable-get *hop-keywords* s)
+	     =>
+	     (lambda (k)
+		(<SPAN> :class (string-append "fontifier-prog-" k) s)))
+	    (else
+	     (<SPAN> s)))))
+
+   (read/rp *lisp-grammar* ip bigloo-keyword
+      line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1))
+      '() 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    lisp ...                                                         */

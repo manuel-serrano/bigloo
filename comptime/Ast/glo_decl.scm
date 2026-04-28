@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Ast/glo_decl.scm                    */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/glo_decl.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */

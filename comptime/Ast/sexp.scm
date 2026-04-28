@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Fri Apr 17 08:46:28 2026 (serrano)                */
+;*    Last change :  Tue Apr 28 09:30:05 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -112,58 +112,59 @@
 ;*    `site' is a information on the place the sexp takes place        */
 ;*---------------------------------------------------------------------*/
 (define (sexp->node exp stack loc site genv)
-   (assert (site) (memq site *sites*))
-   (trace (ast 2) "sexp->node(" loc "): " (shape exp))
-   (trace (ast 3) " site: " site)
-   (trace (ast 2) #\Newline)
-   (match-case exp
-      ;; illegal empty list
-      (()
-       (error-sexp->node "Illegal `()' expression" exp loc genv))
-      ;; already built node
-      ((? node?)
-       (when (extern? exp)
-	  (with-access::extern exp (expr* loc)
-	     (map! (lambda (e) (sexp->node e stack loc 'value genv)) expr*)))
-       (when (app? exp)
-	  (with-access::app exp (args loc)
-	     (map! (lambda (e) (sexp->node e stack loc 'value genv)) args)))
-       exp)
-      ;; atom
-      ((atom ?atom)
-       (cond
-	  ((or (local? atom) (global? atom))
-	   (variable->node atom loc site genv))
-	  ((or (struct? atom)
-	       (vector? atom) (homogeneous-vector? atom)
-	       (object? atom)
-	       (procedure? atom))
-	   (error-sexp->node "Illegal atom in s-expression" exp loc genv))
-	  ((not (symbol? atom))
-	   (instantiate::literal
-	      (loc loc)
-	      (type (get-type-atom atom))
-	      (value atom)))
-	  ((find-local atom stack)
-	   =>
-	   (lambda (i) (variable->node i loc site genv)))
-	  (else
-	   (let ((global (find-global genv atom))
-		 (loc (find-location/loc atom loc)))
-	      (cond
-		 ((or (not (global? global)) (global-hidden? global))
-		  (trace (ast 2) "*** UNBOUND VARIALBLE " exp " " loc)
-		  (error-sexp->node "Unbound variable" exp loc genv))
-		 ((eq? (global-import global) 'eval)
-		  (sexp->node `(eval ',atom) stack loc site genv))
-		 (else
-		  (variable->node global loc site genv)))))))
-      ;; special form or call
-      (((? symbol?) . ?-)
-       (special-form->node exp stack loc site genv))
-      ;; optimization or call
-      (else
-       (optimization->node exp stack loc site genv))))
+   (with-trace 'ast "sexp->node"
+      (trace-item "exp=" exp)
+      (trace-item "stack=" (map shape stack))
+      (trace-item "loc=" loc)
+      (trace-item "site=" site)
+      (match-case exp
+	 ;; illegal empty list
+	 (()
+	  (error-sexp->node "Illegal `()' expression" exp loc genv))
+	 ;; already built node
+	 ((? node?)
+	  (when (extern? exp)
+	     (with-access::extern exp (expr* loc)
+		(map! (lambda (e) (sexp->node e stack loc 'value genv)) expr*)))
+	  (when (app? exp)
+	     (with-access::app exp (args loc)
+		(map! (lambda (e) (sexp->node e stack loc 'value genv)) args)))
+	  exp)
+	 ;; atom
+	 ((atom ?atom)
+	  (cond
+	     ((or (local? atom) (global? atom))
+	      (variable->node atom loc site genv))
+	     ((or (struct? atom)
+		  (vector? atom) (homogeneous-vector? atom)
+		  (object? atom)
+		  (procedure? atom))
+	      (error-sexp->node "Illegal atom in s-expression" exp loc genv))
+	     ((not (symbol? atom))
+	      (instantiate::literal
+		 (loc loc)
+		 (type (get-type-atom atom))
+		 (value atom)))
+	     ((find-local atom stack)
+	      =>
+	      (lambda (i) (variable->node i loc site genv)))
+	     (else
+	      (let ((global (find-global genv atom))
+		    (loc (find-location/loc atom loc)))
+		 (cond
+		    ((or (not (global? global)) (global-hidden? global))
+		     (trace-item  "*** UNBOUND VARIALBLE " exp " " loc)
+		     (error-sexp->node "Unbound variable" exp loc genv))
+		    ((eq? (global-import global) 'eval)
+		     (sexp->node `(eval ',atom) stack loc site genv))
+		    (else
+		     (variable->node global loc site genv)))))))
+	 ;; special form or call
+	 (((? symbol?) . ?-)
+	  (special-form->node exp stack loc site genv))
+	 ;; optimization or call
+	 (else
+	  (optimization->node exp stack loc site genv)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    special-form->node ...                                           */

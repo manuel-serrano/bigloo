@@ -33,63 +33,23 @@ differently. Here are the recognized prefixes:
    Instead of opening a regular file, Bigloo opens an input pipe. 
    The same syntax is used for output file. 
 
-```
-(define pin (open-input-file "| cat /etc/passwd"))
-(define pout (open-output-file "| wc -l"))
-
-(display (read pin) pout)
-(close-input-port pin)
-(newline pout)
-(close-output-port pout)
-```
-
   * `pipe:`, same as `| `.
 
   * `file`: opens a regular file.
 
   * `fd`: opens a file descriptor.
 
-```
-(with-input-from-file "fd:0"
-   (lambda ()
-      (read)))
-```
-
   * `gzip:` opens a port on a gzipped filed. This is equivalent to 
 `open-input-gzip-file`. 
-
-Example:
-
-```
-(with-input-from-file "gzip:bigloo.tar.gz"
-   (lambda ()
-      (send-chars (current-input-port) (current-output-port))))
-```
-
   * `string:` opens a port on a string. This is equivalent to 
     `open-input-string`. 
     
-Example:
-
-```
-(with-input-from-file "string:foo bar Gee"
-   (lambda ()
-      (print (read))
-      (print (read))
-      (print (read))))
-   &rarr; foo
-   &rarr; bar
-   &rarr; Gee
-```
-
   * `http:` opens an `http` connection. More precisely:
   
-    * `http://server/path` opens an `http` connection on `server and open an 
+    * `http://server/path` opens an `http` connection on `server` and open an 
       input file on file `path`.
-    * `http://server:port-number/path`
-    * `http://user:password@@server:port-number/path`
-      Opens an `http` connection on `server`, on port number
-      `port` with an authentication and open an input file on file `path`.
+    * `http://server:port-number/path`.
+    * `http://user:password@@server:port-number/path`.
 
   * `ftp:` Opens an `ftp` connection on `server` and open an input file
      on file `path`. Log in as anonymous.
@@ -102,6 +62,48 @@ Example:
     a input port if the ressource exists. Otherwise, it returns `#f`.
 
 
+Example of a pipe port:
+
+```bigloo
+(define pin (open-input-file "| cat /etc/passwd"))
+(define pout (open-output-file "| wc -l"))
+
+(display (read pin) pout)
+(close-input-port pin)
+(newline pout)
+(close-output-port pout)
+```
+
+
+Example of a file descriptor port:
+```bigloo
+(with-input-from-file "fd:0"
+   (lambda ()
+      (read)))
+```
+
+Example of a string port:
+```bigloo
+(with-input-from-file "string:foo bar Gee"
+   (lambda ()
+      (print (read))
+      (print (read))
+      (print (read))))
+   &rarr; foo
+   &rarr; bar
+   &rarr; Gee
+```
+
+
+Example of a gzip port:
+
+```bigloo
+(with-input-from-file "gzip:bigloo.tar.gz"
+   (lambda ()
+      (send-chars (current-input-port) (current-output-port))))
+```
+
+
 The optional argument `buffer` can either be:
 
   * A positive fixnum, this gives the size of the buffer.
@@ -112,12 +114,26 @@ The optional argument `buffer` can either be:
 The optional argument `timeout`, an integer represents a microseconds 
 timeout for the open operation.
 
+### call-with-input-file ###
+
+Invokes `proc` with an input port opened on `file`. Returns the result
+of the call and closes the port. It can be implemented as:
+
+```bigloo
+(define (call-with-input-file file proc)
+   (let ((p (open-input-file file)))
+      (unwind-protect
+         (proc p)
+         (close-input-port p))))
+```
+&nbsp;
+
 Predicates
 ----------
 
 ### input-port? ###
 
-Returns `#t iff `obj` is an `input-port`. Returns `#f` otherwise.
+Returns `#t` iff `obj` is an `input-port`. Returns `#f` otherwise.
 
 ### input-string-port? ###
 
@@ -126,11 +142,11 @@ Returns `#t iff `obj` is an `input-port` opened on a string. Returns
 
 ### output-port? ###
 
-Returns `#t iff `obj` is an `output-port`. Returns `#f` otherwise.
+Returns `#t` iff `obj` is an `output-port`. Returns `#f` otherwise.
 
 ### output-string-port? ###
 
-Returns `#t iff `obj` is an `output-port` opened on a string. Returns
+Returns `#t` iff `obj` is an `output-port` opened on a string. Returns
 `#f` otherwise.
 
 ### port? ###
@@ -148,6 +164,7 @@ by opening @var{string}.
 See @ref{Ports,,r5rs.info,R5RS}, for more details.
 
 @smalllisp
+
 (call-with-input-file "/etc/passwd"
    (lambda (port)
       (let loop ((line (read-line port)))

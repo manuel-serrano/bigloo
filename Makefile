@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sun Apr 26 17:35:55 2026 (serrano)                */
+#*    Last change :  Tue Apr 28 10:08:45 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -446,9 +446,8 @@ fullbootstrap-sans-configure:
 	$(MAKE) -C runtime -i touchall; $(MAKE) -C runtime heap libs-c
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime
-	if [ "$(JVMBACKEND)" = "yes" ]; then \
-	  $(MAKE) -C runtime heap-jvm libs-jvm; \
-        fi
+	$(MAKE) fullbootstrap-jvm
+	$(MAKE) fullbootstrap-wasm
 	$(MAKE) -C bde -i clean
 	$(MAKE) -C bde WASMBACKEND=no
 	$(MAKE) -C api fullbootstrap WASMBACKEND=no
@@ -458,6 +457,16 @@ fullbootstrap-sans-configure:
         fi
 	$(MAKE) -C cigloo -i clean; $(MAKE) -C cigloo
 	$(MAKE) -C api boot
+
+fullbootstrap-jvm:
+	if [ "$(JVMBACKEND)" = "yes" ]; then \
+	  $(MAKE) -C runtime heap-jvm libs-jvm; \
+        fi
+
+fullbootstrap-wasm:
+	if [ "$(WASMBACKEND)" = "yes" ]; then \
+	  $(MAKE) -C runtime heap-wasm libs-wasm; \
+        fi
 
 # only used for continuous integration, as of 4may2021, fullboostrap
 # is became too long and travis stops the job before it completes!

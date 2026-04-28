@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:29:03 1994                          */
-;*    Last change :  Thu Jan 29 11:17:10 2026 (serrano)                */
+;*    Last change :  Tue Apr 28 08:00:34 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast pretty-printer                                           */
@@ -43,8 +43,6 @@
 	     (error "write-ast" "Can't open output file" output-name)
 	     (unwind-protect
 		(begin
-		   (if (not *ast-case-sensitive*)
-		       (set! *pp-case* 'lower))
 		   (write-scheme-file-header port
 		      (string-append "The AST ("
 			 *current-pass*
@@ -69,6 +67,8 @@
 					 (map shape (sfun-args fun))
 					 (sfun-arity fun)))
 				  ,(shape (sfun-body fun)))
+			       :case-sensitivity
+			       (if *ast-case-sensitive* 'respect 'lower)
 			       port)))
 		      globals))
 		(close-output-port port))))))

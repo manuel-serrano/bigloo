@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/dsssl.scm        */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/dsssl.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Sun Aug 25 09:08:52 2019 (serrano)                */
+;*    Last change :  Tue Apr 28 08:28:08 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -62,8 +62,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-dsssl-function-prelude ...                                  */
 ;*    -------------------------------------------------------------    */
-;*    This function decodes a DSSSL formal parameter list and          */
-;*    produce a header decoding the actual values.                     */
+;*    This function decodes a DSSSL formal parameters list and         */
+;*    produces a header decoding the actual values.                    */
 ;*    -------------------------------------------------------------    */
 ;*    It implements a finite automata where each state is represented  */
 ;*    by a function.                                                   */
@@ -99,11 +99,11 @@
 	     (match-case (car as)
 		((? symbol?)
 		 (let ((dsssl-arg (gensym 'dsssl)))
-		    `(let ((,dsssl-arg ,(car as)))
+		    `(let ((,dsssl-arg ,(id-sans-type (car as))))
 			,(next-state args dsssl-arg))))
 		(((? symbol?) ?-)
 		 (let ((dsssl-arg (gensym 'dsssl)))
-		    `(let ((,dsssl-arg ,(car (car as))))
+		    `(let ((,dsssl-arg ,(id-sans-type (car (car as)))))
 			,(next-state args dsssl-arg))))
 		(else
 		 (err where "Illegal formal list.3" (cons (car as) formals))))))))
@@ -127,10 +127,10 @@
 		       res)
 		      ((symbol? (car args))
 		       (loop (cdr args)
-			     (cons (symbol->keyword (car args)) res)))
+			     (cons (symbol->keyword (id-sans-type (car args))) res)))
 		      (else
 		       (loop (cdr args)
-			     (cons (symbol->keyword (caar args)) res))))))
+			     (cons (symbol->keyword (id-sans-type (caar args))) res))))))
 	       (else
 		(loop (cdr args))))))
 
@@ -143,15 +143,8 @@
 				 (memq (car ,dsssl-arg) ',keyword-arguments))
 			     ,initializer
 			     (let ((,tmp (car ,dsssl-arg)))
-				;; MS: 30 sep 2008
-				;; Don't forget the explicit begin because
-				;; the DSSSL code is no longer post
-				;; macro-expanded by eval (for avoiding
-				;; duplicated macro-expansion of all function
-				;; definitions).
-				(begin
-				   (set! ,dsssl-arg (cdr ,dsssl-arg))
-				   ,tmp)))))
+				(set! ,dsssl-arg (cdr ,dsssl-arg))
+				,tmp))))
 		,(optional-args rest))))
 
       (define (optional-args args)
@@ -209,9 +202,9 @@
 	 (map (lambda (x)
 		 (cond
 		    ((and (pair? x) (symbol? (car x)))
-		     (symbol->keyword (car x)))
+		     (symbol->keyword (id-sans-type (car x))))
 		    ((symbol? x)
-		     (symbol->keyword x))
+		     (symbol->keyword (id-sans-type x)))
 		    (else
 		     (err where "Illegal #!keys parameters" formals))))
 	    args))
@@ -238,9 +231,9 @@
 	       (else
 		(match-case (car args)
 		   ((and (? symbol?) ?arg)
-		    (loop (cdr args) (cons (symbol->keyword arg) aux)))
+		    (loop (cdr args) (cons (symbol->keyword (id-sans-type arg)) aux)))
 		   (((and (? symbol?) ?arg) ?-)
-		    (loop (cdr args) (cons (symbol->keyword arg) aux)))
+		    (loop (cdr args) (cons (symbol->keyword (id-sans-type arg)) aux)))
 		   (else
 		    (err where "Illegal DSSSL formal list (#!key)" formals)))))))
       
@@ -257,10 +250,10 @@
       
       (define (one-key-arg arg initializer collected-keys)
 	 `(let ((,arg (dsssl-get-key-arg ,dsssl-arg
-			 ,(symbol->keyword arg) ,initializer)))
+			 ,(symbol->keyword (id-sans-type arg)) ,initializer)))
 	     ,(key-state (cdr args)
 		 dsssl-arg
-		 (cons (symbol->keyword arg) collected-keys)
+		 (cons (symbol->keyword (id-sans-type arg)) collected-keys)
 		 allow-restp)))
       
       (define (rest-key-arg arg body)

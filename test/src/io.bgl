@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Mon Apr 27 18:24:06 2026 (serrano)                */
+;*    Last change :  Tue Apr 28 07:45:18 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing I/O                                                      */
@@ -74,3 +74,13 @@
    :expected #t)
 (define-test port? (port? (open-output-string))
    :expected #t)
+
+(define-test call-with-input-file
+   (call-with-input-file "misc/input.txt"
+      (lambda (port)
+         (read-chars 10 port)
+         (read-char port)
+         (read-chars 30 port)
+         (peek-char port)
+         (read-char port)))
+   :expected #\e)

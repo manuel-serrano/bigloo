@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/show.scm                */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/show.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar  8 18:51:37 1995                          */
-;*    Last change :  Mon May 15 07:35:16 2000 (serrano)                */
-;*    Copyright   :  1995-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Apr 28 08:01:46 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We show the result of the cfa.                                   */
 ;*=====================================================================*/
@@ -49,27 +49,25 @@
 	     (get-allocs))
    (trace cfa #\Newline)
    (trace cfa
-	  (let ((old-case *pp-case*))
-	     (set! *pp-case* 'lower)
-	     (for-each (lambda (g)
-			  (let ((fun (global-value g)))
-			     (write-scheme-comment *trace-port* (shape g))
-			     (pp `(,(case (sfun-class fun)
-				       ((sgfun)
-					'define-generic)
-				       ((sifun)
-					'define-inline)
-				       ((smfun)
-					'define-method)
-				       (else
-					'define))
-				   (,(shape g)
-				    ,@(map shape (sfun-args fun)))
-				   ,(shape (sfun-body fun)))
-				 *trace-port*)))
-		       globals)
-	     (set! *pp-case* old-case)
-	     #\Newline #\Newline)))
+      (for-each (lambda (g)
+		   (let ((fun (global-value g)))
+		      (write-scheme-comment *trace-port* (shape g))
+		      (pp `(,(case (sfun-class fun)
+				((sgfun)
+				 'define-generic)
+				((sifun)
+				 'define-inline)
+				((smfun)
+				 'define-method)
+				(else
+				 'define))
+			    (,(shape g)
+			     ,@(map shape (sfun-args fun)))
+			    ,(shape (sfun-body fun)))
+			 :case-sensitivity 'lower
+			 *trace-port*)))
+	 globals)
+      #\Newline #\Newline))
 
 ;*---------------------------------------------------------------------*/
 ;*    shape ...                                                        */

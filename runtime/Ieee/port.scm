@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/port.scm           */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/port.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Thu Jul 17 14:28:41 2025 (serrano)                */
+;*    Last change :  Tue Apr 28 09:56:47 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -594,7 +594,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    call-with-input-file ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (call-with-input-file string proc)
+(define (call-with-input-file string::bstring proc::procedure)
    (let ((port (open-input-file string)))
       (if (input-port? port)
 	  (unwind-protect
@@ -606,7 +606,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    call-with-input-string ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (call-with-input-string string proc)
+(define (call-with-input-string string::bstring proc::procedure)
    (let ((port (open-input-string string)))
       ;; No need to force closing it, will be garbage collected anyhow.
       (let ((res (proc port)))
@@ -616,7 +616,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    call-with-output-file ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (call-with-output-file string proc) 
+(define (call-with-output-file string::bstring proc::procedure) 
    (let ((port (open-output-file string)))
       (if (output-port? port)
 	  (unwind-protect
@@ -648,67 +648,67 @@
 ;*---------------------------------------------------------------------*/
 ;*    input-port? ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-port? obj)
+(define-inline (input-port?::bool obj)
    ($input-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-string-port? ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-string-port? obj)
+(define-inline (input-string-port?::bool obj)
    (c-input-string-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-procedure-port? ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-procedure-port? obj)
+(define-inline (input-procedure-port?::bool obj)
    (c-input-procedure-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-gzip-port? ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-gzip-port? obj)
+(define-inline (input-gzip-port?::bool obj)
    (c-input-gzip-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-mmap-port? ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-mmap-port? obj)
+(define-inline (input-mmap-port?::bool obj)
    ($input-mmap-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-port? ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-port? obj)
+(define-inline (output-port?::bool obj)
    ($output-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-string-port? ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-string-port? obj)
+(define-inline (output-string-port?::bool obj)
    ($output-string-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-procedure-port? ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-procedure-port? obj)
+(define-inline (output-procedure-port?::bool obj)
    ($output-procedure-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    current-input-port ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (current-input-port)
+(define-inline (current-input-port::input-port)
    (c-current-input-port ($current-dynamic-env)))
 
 ;*---------------------------------------------------------------------*/
 ;*    current-output-port ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (current-output-port)
+(define-inline (current-output-port::output-port)
    (c-current-output-port ($current-dynamic-env)))
 
 ;*---------------------------------------------------------------------*/
 ;*    current-error-port ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (current-error-port)
+(define-inline (current-error-port::output-port)
    (c-current-error-port ($current-dynamic-env)))
 
 ;*---------------------------------------------------------------------*/
@@ -728,7 +728,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-input-from-file@ ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (with-input-from-file string thunk)
+(define (with-input-from-file string::bstring thunk::procedure)
    (let ((port (open-input-file string)))
       (if (input-port? port)
 	  (let* ((denv ($current-dynamic-env))
@@ -746,7 +746,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-input-from-string@ ...                               */
 ;*---------------------------------------------------------------------*/
-(define (with-input-from-string string thunk)
+(define (with-input-from-string string::bstring thunk::procedure)
    (let* ((port (open-input-string string))
 	  (denv ($current-dynamic-env))
 	  (old-input-port (c-current-input-port denv)))
@@ -761,7 +761,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    with-input-from-port ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (with-input-from-port port thunk)
+(define (with-input-from-port port::input-port thunk::procedure)
    (let* ((denv ($current-dynamic-env))
 	  (old-input-port (c-current-input-port denv)))
       (unwind-protect
@@ -773,7 +773,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-input-from-procedure@ ...                            */
 ;*---------------------------------------------------------------------*/
-(define (with-input-from-procedure proc thunk)
+(define (with-input-from-procedure proc::procedure thunk::procedure)
    (let ((port (open-input-procedure proc)))
       (if (input-port? port)
 	  (let* ((denv ($current-dynamic-env))
@@ -790,7 +790,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    with-output-to-file ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (with-output-to-file string thunk)
+(define (with-output-to-file string::bstring thunk::procedure)
    (let ((port (open-output-file string)))
       (if (output-port? port)
 	  (let* ((denv ($current-dynamic-env))
@@ -808,7 +808,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    with-append-to-file ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (with-append-to-file string thunk)
+(define (with-append-to-file string::bstring thunk::procedure)
    (let ((port (append-output-file string)))
       (if (output-port? port)
 	  (let* ((denv ($current-dynamic-env))
@@ -826,7 +826,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-output-to-port@ ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (with-output-to-port port thunk)
+(define (with-output-to-port port::output-port thunk::procedure)
    (let* ((denv ($current-dynamic-env))
 	  (old-output-port (c-current-output-port denv)))
       (unwind-protect
@@ -838,7 +838,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-output-to-string@ ...                                */
 ;*---------------------------------------------------------------------*/
-(define (with-output-to-string thunk)
+(define (with-output-to-string thunk::procedure)
    (let* ((port (open-output-string))
 	  (denv ($current-dynamic-env))
 	  (old-output-port (c-current-output-port denv))
@@ -855,7 +855,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    with-output-to-procedure ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (with-output-to-procedure proc thunk)
+(define (with-output-to-procedure proc::procedure thunk::procedure)
    (let* ((port (open-output-procedure proc))
 	  (denv ($current-dynamic-env))
 	  (old-output-port (c-current-output-port denv))
@@ -872,7 +872,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-error-to-string@ ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (with-error-to-string thunk)
+(define (with-error-to-string thunk::procedure)
    (let ((port (open-output-string)))
       (if (output-port? port)
 	  (let* ((denv ($current-dynamic-env))
@@ -897,7 +897,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-error-to-file@ ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (with-error-to-file string thunk)
+(define (with-error-to-file string::bstring thunk::procedure)
    (let ((port (open-output-file string)))
       (if (output-port? port)
 	  (let* ((denv ($current-dynamic-env))
@@ -916,7 +916,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    with-error-to-port ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (with-error-to-port port thunk)
+(define (with-error-to-port port::output-port thunk::procedure)
    (let* ((denv ($current-dynamic-env))
 	  (old-output-port (c-current-error-port denv)))
       (unwind-protect
@@ -928,7 +928,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    with-error-to-procedure ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (with-error-to-procedure proc thunk)
+(define (with-error-to-procedure proc::procedure thunk::procedure)
    (let* ((port (open-output-procedure proc))
 	  (denv ($current-dynamic-env))
 	  (old-error-port (c-current-error-port denv))
@@ -1111,7 +1111,7 @@
 ;*    thus, (STRING-LENGTH <a-constant-string>) is replaced with the   */
 ;*    actual length of the constant.                                   */
 ;*---------------------------------------------------------------------*/
-(define (open-input-file string #!optional (bufinfo #t) (timeout 5000000))
+(define (open-input-file string::bstring #!optional (bufinfo #t) (timeout 5000000))
    (let ((buffer (get-port-buffer "open-input-file" bufinfo c-default-io-bufsiz)))
       (let loop ((protos *input-port-protocols*))
 	 (if (null? protos)

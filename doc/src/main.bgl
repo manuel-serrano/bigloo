@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sun Apr 26 09:50:25 2026 (serrano)                */
+;*    Last change :  Tue Apr 28 08:03:49 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -202,7 +202,7 @@
 			:eval (make-doc-eval (dirname source))
 			:fontifier (lambda (lang id lines)
 				      (call-with-input-string (apply string-append lines)
-					 fontifier.lisp))))
+					 fontifier.bigloo))))
 		(index '())
 		(toc (chapter-toc doc)))
 	    (for-each (lambda (e)
@@ -301,10 +301,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    fontify ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (fontify text::bstring #!key (lang::bstring "bgl"))
+(define (fontify text::bstring #!key (lang::bstring "bigloo"))
    (cond
-      ((string=? lang "bgl")
-       (call-with-input-string text fontifier.lisp))
+      ((string=? lang "bigloo")
+       (call-with-input-string text fontifier.bigloo))
       (else
        (format "~s" text))))
 
@@ -323,7 +323,7 @@
                                   (list
                                      (fontify (call-with-output-string
                                                  (lambda (op)
-                                                    (pp (car t) op))))
+                                                   (pp (car t) op :width 100))))
                                      (xml-element 'span '((class . "result")) (list "   &rarr;"))
                                      (fontify (format "~s" (cdr t)))
                                      "\n")

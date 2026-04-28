@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/toplevel.scm       */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/toplevel.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct 20 15:11:28 2025                          */
-;*    Last change :  Mon Oct 20 17:50:17 2025 (serrano)                */
-;*    Copyright   :  2025 Manuel Serrano                               */
+;*    Last change :  Tue Apr 28 09:35:49 2026 (serrano)                */
+;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST construction of the toplevel forms                           */
 ;*=====================================================================*/
@@ -555,7 +555,7 @@
 	     ;; be checked when defining the global variable
 	     (reverse! (cons (make-user-local-svar id type) res))))
 	 ((dsssl-named-constant? (car args))
-	  (let ((arg (dsssl-find-first-formal args)))
+	  (let ((arg (id-of-id (dsssl-find-first-formal args) loc)))
 	     (if arg
 		 (reverse! (cons (make-user-local-svar arg *obj*) res))
 		 (reverse! res))))
