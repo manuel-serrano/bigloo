@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/api/mail/src/Llib/maildir.scm     */
+;*    .../prgm/project/bigloo/5.0a/api/mail/src/Llib/maildir.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Thu Aug 19 17:38:29 2021 (serrano)                */
-;*    Copyright   :  2007-21 Manuel Serrano                            */
+;*    Last change :  Mon Apr 27 10:49:52 2026 (serrano)                */
+;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
 ;*=====================================================================*/
@@ -380,8 +380,8 @@
 ;*---------------------------------------------------------------------*/
 (define (make-folder-uidtable folder cur)
    (let ((path (make-file-name folder "bigloomail-uidlist"))
-	 (table (make-hashtable 50 10 =fx (lambda (x) x)))
-	 (taux (make-hashtable 50 10 string=?))
+	 (table (create-hashtable :size 50 :max-bucket-length 10 :eqtest =fx :hash (lambda (x) x)))
+	 (taux (create-hashtable :size 50 :max-bucket-length 10 :eqtest string=?))
 	 (files (filter! (lambda (f) (string-index f ","))
 			 (directory->list cur)))
 	 (uid 1))

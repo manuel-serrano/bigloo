@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct 24 10:32:46 2000                          */
-;*    Last change :  Wed Apr 22 08:36:04 2026 (serrano)                */
+;*    Last change :  Mon Apr 27 10:15:01 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The pseudo Jvm link (generation of a script shell that will run  */
@@ -250,7 +250,7 @@
 ;*    unique ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (unique lst)
-   (let ((t (make-hashtable)))
+   (let ((t (create-hashtable)))
       (for-each (lambda (f) (hashtable-put! t f f)) lst)
       (hashtable->list t)))
       

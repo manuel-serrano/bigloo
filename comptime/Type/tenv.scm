@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Wed Mar 18 09:38:03 2026 (serrano)                */
+;*    Last change :  Mon Apr 27 10:15:31 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -79,7 +79,7 @@
 ;*    new-tenv ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (new-tenv)
-   (make-hashtable))
+   (create-hashtable))
 
 ;*---------------------------------------------------------------------*/
 ;*    initialize-tenv! ...                                             */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/hash.scm                */
+;*    serrano/prgm/project/bigloo/5.0a/recette/hash.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 26 11:50:50 1994                          */
-;*    Last change :  Thu Oct  9 15:05:22 2025 (serrano)                */
+;*    Last change :  Mon Apr 27 10:52:49 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    On test les tables de hash                                       */
 ;*=====================================================================*/
@@ -20,7 +20,7 @@
 ;*    test1-new ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (test1-new)
-   (let ((table (make-hashtable 2)))
+   (let ((table (create-hashtable :size 2)))
       (let loop ((i 1024))
 	 (if (=fx i 0)
 	     (and (=fx (hashtable-get table "object834") 834)

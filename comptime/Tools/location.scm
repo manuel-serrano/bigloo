@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Tools/location.scm                  */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Tools/location.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:00:44 1996                          */
-;*    Last change :  Sun Feb 15 07:28:42 2026 (serrano)                */
+;*    Last change :  Mon Apr 27 10:15:25 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The location managment                                           */
@@ -27,7 +27,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    *file-lines-table* ...                                           */
 ;*---------------------------------------------------------------------*/
-(define *file-lines-table* (make-hashtable))
+(define *file-lines-table* (create-hashtable))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-file-lines ...                                               */

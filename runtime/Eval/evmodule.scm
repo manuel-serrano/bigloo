@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sat Mar 28 14:47:33 2026 (serrano)                */
+;*    Last change :  Mon Apr 27 10:45:57 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -183,12 +183,12 @@
       (trace-item "id=" id)
       (trace-item "path=" path)
       (synchronize *modules-mutex*
-	 (let* ((env (make-hashtable 100 #unspecified eq?))
-		(mactable (make-hashtable 64))
+	 (let* ((env (create-hashtable :size 100 :eqtest eq?))
+		(mactable (create-hashtable :size 64))
 		(mod (%evmodule make-%evmodule id path env '() mactable '() #unspecified)))
 	    (if (not (hashtable? *modules-table*))
 		(begin
-		   (set! *modules-table* (make-hashtable 256))
+		   (set! *modules-table* (create-hashtable :size 256))
 		   (hashtable-put! *modules-table* id mod))
 		(let ((old (hashtable-get *modules-table* id)))
 		   (if old

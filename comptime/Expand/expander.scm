@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/Expand/expander.scm        */
+;*    .../prgm/project/bigloo/5.0a/comptime/Expand/expander.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 16:05:29 1994                          */
-;*    Last change :  Mon Oct 20 09:42:16 2025 (serrano)                */
-;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Apr 27 10:14:34 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The O-expander creation.                                         */
 ;*=====================================================================*/
@@ -39,7 +39,7 @@
 ;*    initialize-expander-Oenv! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (initialize-expander-Oenv!)
-   (set! *Oenv* (make-hashtable)))
+   (set! *Oenv* (create-hashtable)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *Genv* ...                                                       */
@@ -50,7 +50,7 @@
 ;*    initialize-expander-Genv! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (initialize-expander-Genv!)
-   (set! *Genv* (make-hashtable)))
+   (set! *Genv* (create-hashtable)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *O-macro-toplevel* ...                                           */

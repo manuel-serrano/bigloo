@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Sun Apr 26 20:36:25 2026 (serrano)                */
+;*    Last change :  Mon Apr 27 09:00:26 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -86,12 +86,17 @@
   :group 'bgl
   :type 'string)
 
-(defcustom bgl-flycdoc-browser "chromium"
+(defcustom bgl-flycdoc-browser nil
   "*The web browser used for the documentation"
+  :group 'bgl
+  :type '(choice (const 'nil) string))
+
+(defcustom bgl-doc-dir "/home/serrano/prgm/project/bigloo/5.0a/doc"
+  "*The Bigloo documentation directory."
   :group 'bgl
   :type 'string)
 
-(defcustom bgl-doc-index "/home/serrano/prgm/project/bigloo/5.0a/doc/index.sexp"
+(defcustom bgl-doc-index (concat bgl-doc-dir "/index.sexp")
   "*The pre-computed index of the Bigloo documentation"
   :group 'bgl
   :type 'string)
@@ -411,34 +416,35 @@
 (defun bgl-keymap-init ()
 
   ;; bgl bindings
-  (define-key bgl-mode-map "\t"               'bgl-indent-line)
-  (define-key bgl-mode-map "\e\C-q"           'bgl-indent-sexp)
-  (define-key bgl-mode-map "\C-m"             'bgl-return)
-  (define-key bgl-mode-map "\e\C-m"           'newline)
-  (define-key bgl-mode-map "\e\C- "           'mark-sexp)
+  (define-key bgl-mode-map "\t" 'bgl-indent-line)
+  (define-key bgl-mode-map "\e\C-q" 'bgl-indent-sexp)
+  (define-key bgl-mode-map "\C-m" 'bgl-return)
+  (define-key bgl-mode-map "\e\C-m" 'newline)
+  (define-key bgl-mode-map "\e\C- " 'mark-sexp)
+  (define-key bgl-mode-map "\e\C-d" 'bgl-browse-doc-at-point)
 
   ;; C-' keymap
-  (define-key bgl-mode-map [(control \c)]     'bgl-prefix)
+  (define-key bgl-mode-map [(control \c)] 'bgl-prefix)
   (fset 'bgl-prefix bgl-prefixed-map)
 
   ;; repl
-  (define-key bgl-prefixed-map "\C-r\C-r"     'bgl-repl-other-frame)
-  (define-key bgl-prefixed-map "\C-rb"        'bgl-repl-send-buffer)
-  (define-key bgl-prefixed-map "\C-rd"        'bgl-repl-send-define)
-  (define-key bgl-prefixed-map "\C-rl"        'bgl-repl-send-last-sexp)
-  (define-key bgl-prefixed-map "\C-rt"        'bgl-repl-send-toplevel-sexp)
-  (define-key bgl-prefixed-map "\C-rr"        'bgl-repl-send-region)
+  (define-key bgl-prefixed-map "\C-r\C-r" 'bgl-repl-other-frame)
+  (define-key bgl-prefixed-map "\C-rb" 'bgl-repl-send-buffer)
+  (define-key bgl-prefixed-map "\C-rd" 'bgl-repl-send-define)
+  (define-key bgl-prefixed-map "\C-rl" 'bgl-repl-send-last-sexp)
+  (define-key bgl-prefixed-map "\C-rt" 'bgl-repl-send-toplevel-sexp)
+  (define-key bgl-prefixed-map "\C-rr" 'bgl-repl-send-region)
 
   ;; indent
-  (define-key bgl-prefixed-map "\C-i\C-i"     'bgl-external-indent)
-  (define-key bgl-prefixed-map "\C-i\C-d"     'bgl-indent-define)
-  (define-key bgl-prefixed-map "\C-i\C-l"     'bgl-indent-last-sexp)
-  (define-key bgl-prefixed-map "\C-i\C-t"     'bgl-indent-toplevel-sexp)
+  (define-key bgl-prefixed-map "\C-i\C-i" 'bgl-external-indent)
+  (define-key bgl-prefixed-map "\C-i\C-d" 'bgl-indent-define)
+  (define-key bgl-prefixed-map "\C-i\C-l" 'bgl-indent-last-sexp)
+  (define-key bgl-prefixed-map "\C-i\C-t" 'bgl-indent-toplevel-sexp)
 
   (when bgl-elisp-like-keymap-p
-    (define-key bgl-mode-map "\C-c;"      'comment-region)
-    (define-key bgl-mode-map "\C-x\C-e"   'bgl-repl-send-last-sexp)
-    (define-key bgl-mode-map "\C-\M-x"    'bgl-repl-send-define)))
+    (define-key bgl-mode-map "\C-c;" 'comment-region)
+    (define-key bgl-mode-map "\C-x\C-e" 'bgl-repl-send-last-sexp)
+    (define-key bgl-mode-map "\C-\M-x" 'bgl-repl-send-define)))
   
 ;*---------------------------------------------------------------------*/
 ;*    bgl-mode-syntax-table ...                                        */
@@ -1207,16 +1213,6 @@ of the start of the containing expression."
 (put 'and                       'bgl-indent-hook -1)
 (put 'else                      'bgl-indent-hook -1)
 
-;; module
-;* (put 'static                    'bgl-indent-hook 'bgl-module-indent-hook) */
-;* (put 'import                    'bgl-indent-hook 'bgl-module-indent-hook) */
-;* (put 'export                    'bgl-indent-hook 'bgl-module-indent-hook) */
-;* (put 'include                   'bgl-indent-hook 'bgl-module-indent-hook) */
-;* (put 'library                   'bgl-indent-hook 'bgl-module-indent-hook) */
-;* (put 'use                       'bgl-indent-hook 'bgl-module-indent-hook) */
-;* (put 'from                      'bgl-indent-hook 'bgl-module-indent-hook) */
-;* (put 'pragma                    'bgl-indent-hook 'bgl-module-indent-hook) */
-
 ;; binding forms
 (put 'let                       'bgl-indent-hook 'bgl-let-indent)
 (put 'let*                      'bgl-indent-hook 1)
@@ -1357,7 +1353,7 @@ if that value is non-nil."
   (when bgl-flydoc-p
     (bgl-load-doc-index)
     (run-with-idle-timer 0.5 t #'bgl-doc-at-point))
-
+  
   ;; activate th emode
   (font-lock-mode t)
 
@@ -1517,15 +1513,47 @@ if that value is non-nil."
 ;*    bgl-last-symbol ...                                              */
 ;*---------------------------------------------------------------------*/
 (defvar bgl-last-symbol nil)
+(defvar bgl-last-doc-entry nil)
 
+;*---------------------------------------------------------------------*/
+;*    bgl-doc-entry-at-point ...                                       */
+;*---------------------------------------------------------------------*/
+(defun bgl-doc-entry-at-point ()
+  "Get the doc entry of the symbol at point."
+  (let ((sym (thing-at-point 'symbol t)))
+    (if (equal sym bgl-last-symbol)
+	bgl-last-doc-entry
+	(progn
+	 (setq bgl-last-symbol sym)
+	 (if sym
+	     (setq bgl-last-doc-entry (gethash sym bgl-doc-table-index))
+	     (setq bgl-last-doc-entry nil))))
+    bgl-last-doc-entry))
+  
 ;*---------------------------------------------------------------------*/
 ;*    bgl-doc-at-point ...                                             */
 ;*---------------------------------------------------------------------*/
 (defun bgl-doc-at-point ()
-  (let ((sym (thing-at-point 'symbol t)))
-    (unless (equal sym bgl-last-symbol)
-      (when sym
-	(let ((e (gethash sym bgl-doc-table-index)))
-	  (when e
-	    (let ((s (replace-regexp-in-string "__" "#" (format "%s" (car e)))))
-              (message "%s" (propertize s 'face 'bgl-doc-face)))))))))
+  "Show the prototype of the symbol at point in the minibuffer."
+  (let ((e (bgl-doc-entry-at-point)))
+    (when e
+      (let ((s (replace-regexp-in-string "__" "#" (format "%s" (car e)))))
+        (message "%s" (propertize s 'face 'bgl-doc-face))))))
+
+;*---------------------------------------------------------------------*/
+;*    bgl-browse-doc-at-point ...                                      */
+;*---------------------------------------------------------------------*/
+(defun bgl-browse-doc-at-point ()
+  "Browse the Bigloo documentation for the symbol at point."
+  (interactive)
+  (let ((e (bgl-doc-entry-at-point)))
+    (let ((file (if e
+		    (format "%s/%s#%s" bgl-doc-dir (caddr e) (cadr e))
+		    (format "%s/index.html" bgl-doc-dir))))
+      (if (stringp bgl-flycdoc-browser)
+	  (let ((process-connection-type nil)
+		(url (contact "http://" file)))
+	    (start-process "doc" nil bgl-flycdoc-browser url))
+	  (progn
+	    (select-frame (make-frame))
+	    (eww-open-file file))))))

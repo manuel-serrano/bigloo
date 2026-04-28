@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/sqlite/src/Llib/lexer.scm        */
+;*    .../prgm/project/bigloo/5.0a/api/sqlite/src/Llib/lexer.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 18 08:28:42 2007                          */
-;*    Last change :  Tue May  5 12:35:49 2009 (serrano)                */
-;*    Copyright   :  2007-09 Manuel Serrano                            */
+;*    Last change :  Mon Apr 27 10:50:27 2026 (serrano)                */
+;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable sqltiny lexer                                           */
 ;*=====================================================================*/
@@ -37,19 +37,19 @@
 			"UNION" "INTERSECT" "EXCEPT" "OR" "IF" "EXISTS"
 			"USING" "DELETE" "REPLACE" "SET" "UPDATE" "VACUUM"
 			"PRAGMA"))
-	  (t (make-hashtable (* 3 (length l)))))
+	  (t (create-hashtable :size (* 3 (length l)))))
       (for-each (lambda (v) (hashtable-put! t v #t)) l)
       t))
 
 (define *like*
    (let ((l '("LIKE" "GLOB" "REGEXP" "MATCH"))
-	 (t (make-hashtable 12)))
+	 (t (create-hashtable :size 12)))
       (for-each (lambda (v) (hashtable-put! t v #t)) l)
       t))
 
 (define *join*
    (let* ((l '("NATURAL" "LEFT" "RIGHT" "FULL" "OUTER" "INNER" "CROSS" "JOIN"))
-	  (t (make-hashtable (* 3 (length l)))))
+	  (t (create-hashtable :size (* 3 (length l)))))
       (for-each (lambda (v) (hashtable-put! t v #t)) l)
       t))
 

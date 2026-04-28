@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Wed Mar 11 08:32:49 2026 (serrano)                */
+;*    Last change :  Mon Apr 27 10:14:40 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -144,8 +144,8 @@
 	 (if (string? fname)
 	     (multiple-value-bind (genv tenv)
 		(read-cache-heap fname)
-		(let ((ge (make-hashtable))
-		      (te (make-hashtable)))
+		(let ((ge (create-hashtable))
+		      (te (create-hashtable)))
 		   (hashtable-for-each genv
 		      (lambda (k e) (hashtable-put! ge k e)))
 		   (hashtable-for-each tenv

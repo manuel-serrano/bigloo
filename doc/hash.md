@@ -25,33 +25,12 @@ are described functions which define and use them.
 Constructors
 ------------
 
-### create-hashtable ###
+### make-hashtable ###
 
-Creates a nea hash table. The arguments are as follows:
+Creates a new hash table. The arguments are as follows:
 
+  * `keys`: the type of the keys, either `string` or `obj`;
   * `size`: the initial bucket size;
-  * `max-bucket-len`: specifies when the table should be
-     resized. If provided, these two values have to be exact integers greater or
-     equal to 1. Normally you could ignore `size` and `max-bucket-len`
-     arguments. 
-  * `eqtest: when provided specifies of a comparison function. The first
-     argument of this function is the keys contained in the table. The second
-     argument is the searched key. By default,
-     hash tables rely on `hashtable-equal?`, which is defined as:
-
-```(define (hashtable-equal? obj1 obj2)
-   (or (eq? obj1 obj2)
-       (and (string? obj1)
-            (string? obj2)
-            (string=? obj1 obj2))))
-```
-
-  * `hash`: specifies an hashing function. It defaults to `get-hashnumber`.    
-  * `weak`: might either be: `keys`, `data`, `both`, or `open-string`. It
-    specifies respectively whether the hash table should
-    use weak pointers to store the keys and/or the data or if it should be an
-    open ended string table (see below).  By default a
-    hash table uses strong pointers for both keys and data.  
   * `max-length`: specifies a maximum length (in number of
     buckets) for this hashtable. It defaults to `16384`. If during the
     execution, the hashtable tries to expand itself more than
@@ -64,15 +43,46 @@ Creates a nea hash table. The arguments are as follows:
   * `bucket-expansion`: controls how `max-bucket-len` is
     expanded each time the table grows. This is a floating point number that
     is a multiplicative coefficient. It defaults to `1.2`.
+  * `max-bucket-len`: specifies when the table should be
+     resized. If provided, these two values have to be exact integers greater or
+     equal to 1. Normally you could ignore `size` and `max-bucket-len`
+     arguments. 
+  
+If `keys` is not `string`, the other arguments can be used:
+
+
+  * `eqtest: when provided specifies of a comparison function.  The first
+     argument of this function is the keys contained in the table. The second
+     argument is the searched key. By default,
+     hash tables rely on `hashtable-equal?`, which is defined as:
+
+```
+(define (hashtable-equal? obj1 obj2)
+   (or (eq? obj1 obj2)
+       (and (string? obj1)
+            (string? obj2)
+            (string=? obj1 obj2))))
+```
+
+  * `hash`: specifies an hashing function. It defaults to `get-hashnumber`.
+  * `weak`: might either be: `keys`, `data`, `both`, or `open-string`. It
+    specifies respectively whether the hash table should
+    use weak pointers to store the keys and/or the data or if it should be an
+    open ended string table (see below).  By default a
+    hash table uses strong pointers for both keys and data.
     
+> [!WARNING]
+> An error will be raised if one of `eqtest`, `hash`, or `weak` is used
+> in conjunction of `keys` being `string`.
+
 Each optional arguments `size`, `max-bucket-len`, `eqtest`, `hash`,
 `weak-keys`, and `weak-data` can be bound to the Bigloo value
 `#unspecified` which forces its default.
 
 > [!NOTE]
-> Open-ended hashtables are significantly more efficient than any other sort of
-> hashtables but they can be used only for keys that are strings. As much as 
-> possible, they should be prefered to all the other sort of hashtables.
+> String hashtables are significantly more efficient than any other sort of
+> hashtables. As much as possible, they should be prefered to all the 
+> other sort of hashtables.
 
 Predicates
 ----------
@@ -91,8 +101,8 @@ Returns `#t` if `table` is a hash table with weakly pointed keys.
 Returns `#t` if `table` is a hash table with weakly pointed data.
 
 
-### hashtable-open-string? ###
-Returns `#t` if `table` is a hash table is an open-string hashtale. 
+### hashtable-string? ###
+Returns `#t` if `table` is a hash table is an string hashtale. 
 Retiurn `#f` otherwis.
 
 
@@ -194,46 +204,46 @@ collisions, and the sum of all list elements is the sum of all extra
 steps needed. This function can help to test different hash functions
 and other hash table parameters.
 
-### open-string-hashtable-contains? ###
-As `hashtable-contains?` but only for `open-string` hashtables. This is a
+### string-hashtable-contains? ###
+As `hashtable-contains?` but only for `string` hashtables. This is a
 faster function than the generic `hashtable-contains` because it does
 not discrimate on the type of the hashtable.
 
-### open-string-hashtable-get ###
-As `hashtable-get` but for `open-string` tables only.
+### string-hashtable-get ###
+As `hashtable-get` but for `string` tables only.
 
-### open-string-hashtable-put! ###
-As `hashtable-put!` but for `open-string` tables only.
+### string-hashtable-put! ###
+As `hashtable-put!` but for `string` tables only.
 
-### open-string-hashtable-remove! ###
-As `hashtable-remove!` but for `open-string` tables only.
+### string-hashtable-remove! ###
+As `hashtable-remove!` but for `string` tables only.
 
-### open-string-hashtable-add! ###
-As `hashtable-add!` but for `open-string` tables only.
+### string-hashtable-add! ###
+As `hashtable-add!` but for `string` tables only.
 
-### open-string-hashtable->vector ###
-As `hashtable->vector` but for `open-string` tables only.
+### string-hashtable->vector ###
+As `hashtable->vector` but for `string` tables only.
 
-### open-string-hashtable->list ###
-As `hashtable->list` but for `open-string` tables only.
+### string-hashtable->list ###
+As `hashtable->list` but for `string` tables only.
 
-### open-string-hashtable-key-list ###
-As `hashtable-key-list` but for `open-string` tables only.
+### string-hashtable-key-list ###
+As `hashtable-key-list` but for `string` tables only.
 
-### open-string-hashtable-map ###
-As `hashtable-map` but for `open-string` tables only.
+### string-hashtable-map ###
+As `hashtable-map` but for `string` tables only.
 
-### open-string-hashtable-for-each ###
-As `hashtable-for-each` but for `open-string` tables only.
+### string-hashtable-for-each ###
+As `hashtable-for-each` but for `string` tables only.
 
-### open-string-hashtable-filter ###
-As `hashtable-filter` but for `open-string` tables only.
+### string-hashtable-filter ###
+As `hashtable-filter` but for `string` tables only.
 
-### open-string-hashtable-filter! ###
-As `hashtable-filter!` but for `open-string` tables only.
+### string-hashtable-filter! ###
+As `hashtable-filter!` but for `string` tables only.
 
-### open-string-hashtable-filter-map ###
-As `hashtable-filter-map` but for `open-string` tables only.
+### string-hashtable-filter-map ###
+As `hashtable-filter-map` but for `string` tables only.
 
 
 Hashing Functions

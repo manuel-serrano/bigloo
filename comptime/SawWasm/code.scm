@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/SawWasm/code.scm                    */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/SawWasm/code.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Fri Feb 13 06:59:36 2026 (serrano)                */
+;*    Last change :  Mon Apr 27 10:15:10 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -1686,7 +1686,7 @@
 ;*    Literal wasm                                                     */
 ;*    strings                                                          */
 ;*---------------------------------------------------------------------*/
-(define *allocated-strings* (make-hashtable))
+(define *allocated-strings* (create-hashtable))
 (define *string-current-offset* 0)
 
 ;*---------------------------------------------------------------------*/

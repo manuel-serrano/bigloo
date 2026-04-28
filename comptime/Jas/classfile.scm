@@ -43,7 +43,7 @@
        (globals (default '()))
        (pool (default '()))
        (pool-size (default 1))
-       (pooled-names (default (make-hashtable)))
+       (pooled-names (default (create-hashtable)))
        (flags (default #f))
        (me (default #f))
        (super (default #f))

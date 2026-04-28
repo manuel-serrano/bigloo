@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 08:59:04 1994                          */
-;*    Last change :  Sat Mar 14 09:24:57 2026 (serrano)                */
+;*    Last change :  Mon Apr 27 10:45:54 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation des macros (de l'interprete et du compilateur).  */
 ;*=====================================================================*/
@@ -77,8 +77,8 @@
 ;*    Global hash tables                                               */
 ;*---------------------------------------------------------------------*/
 (define *module5-env* #f)
-(define *eval-macro-table* (make-hashtable))
-(define *compiler-macro-table* (make-hashtable))
+(define *eval-macro-table* (create-hashtable))
+(define *compiler-macro-table* (create-hashtable))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-macro-table ...                                           */

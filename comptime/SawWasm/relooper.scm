@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/SawWasm/relooper.scm       */
+;*    .../prgm/project/bigloo/5.0a/comptime/SawWasm/relooper.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Fri Sep 13 14:15:02 2024                          */
-;*    Last change :  Tue Jun  3 14:45:54 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Mon Apr 27 10:15:16 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Relooper implementation                                          */
 ;*    -------------------------------------------------------------    */
@@ -101,7 +101,7 @@
    
    (define stack '())
    
-   (define visited (make-hashtable))
+   (define visited (create-hashtable))
    
    (define (dfs block)
       (let ((node (make-dom-tree-node block '() '() #f #f #f '() 0)))

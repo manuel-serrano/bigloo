@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/runtime/Ieee/symbol-generic.sch     */
+;*    .../prgm/project/bigloo/5.0a/runtime/Ieee/symbol-generic.sch     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 13:46:43 2024                          */
-;*    Last change :  Thu Jul 24 16:23:56 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Mon Apr 27 17:12:05 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Symbol generic implementation                                    */
 ;*=====================================================================*/
@@ -33,12 +33,12 @@
    (synchronize *symbol-mutex*
       ;; don't use hashtable? predicate because of symbols bootstrap
       (unless (struct? *symbol-table*)
-	 (set! *symbol-table* (create-hashtable-open-string)))
-      (let ((old (open-string-hashtable-get *symbol-table* string)))
+	 (set! *symbol-table* (create-hashtable-string)))
+      (let ((old (string-hashtable-get *symbol-table* string)))
 	 (if (symbol? old)
 	     old
 	     (let ((sym ($make-symbol (string-copy string))))
-		(open-string-hashtable-put! *symbol-table* string sym)
+		(string-hashtable-put! *symbol-table* string sym)
 		sym)))))
 
 ;*---------------------------------------------------------------------*/
@@ -46,7 +46,7 @@
 ;*---------------------------------------------------------------------*/
 (define ($$symbol-exists? sym)
    (synchronize *symbol-mutex*
-      (open-string-hashtable-get *symbol-table* sym)))
+      (string-hashtable-get *symbol-table* sym)))
    
 ;*---------------------------------------------------------------------*/
 ;*    keyword table                                                    */
@@ -61,10 +61,10 @@
    (synchronize *keyword-mutex*
       ;; don't use hashtable? predicate because of symbols bootstrap
       (unless (struct? *keyword-table*)
-	 (set! *keyword-table* (create-hashtable-open-string)))
-      (let ((old (open-string-hashtable-get *keyword-table* string)))
+	 (set! *keyword-table* (create-hashtable-string)))
+      (let ((old (string-hashtable-get *keyword-table* string)))
 	 (if (keyword? old)
 	     old
 	     (let ((key ($make-keyword string)))
-		(open-string-hashtable-put! *keyword-table* string key)
+		(string-hashtable-put! *keyword-table* string key)
 		key)))))

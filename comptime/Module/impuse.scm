@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/impuse.scm      */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/impuse.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Mon Oct 20 17:39:45 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Apr 27 10:14:53 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
 ;*=====================================================================*/
@@ -98,7 +98,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    *imports* ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define *imports* (make-hashtable))
+(define *imports* (create-hashtable))
 (define *import-number* 0)
 
 ;*---------------------------------------------------------------------*/

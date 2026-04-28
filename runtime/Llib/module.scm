@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/module.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/module.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Wed Sep 24 17:51:11 2025 (serrano)                */
-;*    Copyright   :  2009-25 Manuel Serrano                            */
+;*    Last change :  Mon Apr 27 10:45:53 2026 (serrano)                */
+;*    Copyright   :  2009-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
 ;*    that is in charge of mapping module names to file names.         */
@@ -220,7 +220,7 @@
 ;*    *afiles-table* ...                                               */
 ;*---------------------------------------------------------------------*/
 (define *afiles-table*
-   (make-hashtable 256))
+   (create-hashtable :size 256))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-load-access-file ...                                      */

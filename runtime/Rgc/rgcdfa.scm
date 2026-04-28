@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Rgc/rgcdfa.scm               */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Rgc/rgcdfa.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 11 16:36:03 1998                          */
-;*    Last change :  Tue Apr 17 07:40:09 2012 (serrano)                */
+;*    Last change :  Mon Apr 27 10:45:51 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    From the set of followpos (see the tree construction) and the    */
 ;*    association position x character, we build the DFA.              */
@@ -164,7 +164,7 @@
 ;*---------------------------------------------------------------------*/
 (define (init-states!)
    (set! *state-num* -1)
-   (set! *states* (make-hashtable 1024 bucket-len rgcset-equal? rgcset->hash)))
+   (set! *states* (create-hashtable :size 1024 :max-bucket-length bucket-len :eqtest rgcset-equal? :hash rgcset->hash)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *state-num* ...                                                  */

@@ -1,0 +1,76 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0a/test/src/io.bgl                 */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
+;*    Last change :  Mon Apr 27 18:24:06 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing I/O                                                      */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    i/o                                                              */
+;*---------------------------------------------------------------------*/
+(module i/o
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "i/o" tests))
+      (test-all verbose "i/o")))
+
+;*---------------------------------------------------------------------*/
+;*    tests ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-test open-input-file (let ((p (open-input-file "misc/input.txt")))
+                                (unwind-protect
+                                   (input-port? p)
+                                   (close-input-port p)))
+   :expected #t)
+(define-test open-input-file (input-string-port? (open-input-file "string:foo"))
+   :expected #t)
+(define-test open-input-file (input-port? (open-input-file "wrong"))
+   :expected #f)
+
+(define-test input-port? (input-port? (current-input-port))
+   :expected #t)
+(define-test input-port? (input-port? (current-output-port))
+   :expected #f)
+(define-test input-port? (input-port? (open-input-string "foo"))
+   :expected #t)
+
+(define-test input-string-port? (input-string-port? (current-input-port))
+   :expected #f)
+(define-test input-string-port? (input-string-port? (current-output-port))
+   :expected #f)
+(define-test input-string-port? (input-string-port? (open-input-string "foo"))
+   :expected #t)
+
+(define-test output-port? (output-port? (current-output-port))
+   :expected #t)
+(define-test output-port? (output-port? (current-output-port))
+   :expected #t)
+(define-test output-port? (output-port? (open-output-string))
+   :expected #t)
+
+(define-test output-string-port? (output-string-port? (current-output-port))
+   :expected #f)
+(define-test output-string-port? (output-string-port? (current-output-port))
+   :expected #f)
+(define-test output-string-port? (output-port? (open-output-string))
+   :expected #t)
+
+(define-test port? (port? (current-output-port))
+   :expected #t)
+(define-test port? (port? (current-output-port))
+   :expected #t)
+(define-test port? (port? (open-output-string))
+   :expected #t)

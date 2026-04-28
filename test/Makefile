@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Thu Apr 23 19:03:57 2026 (serrano)                */
+#*    Last change :  Mon Apr 27 17:48:59 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -38,7 +38,7 @@ BJFLAGS = -jvm
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
-COMMON = main hash pair string vector
+COMMON = main hash io pair string vector
 
 C_OBJECTS = $(COMMON:%=%.o) $(C_SPECIFIC:%=%.o)
 J_OBJECTS = $(COMMON:%=%.class)

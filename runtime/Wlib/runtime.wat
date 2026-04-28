@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Tue Apr 14 06:21:49 2026 (serrano)                */
+;*    Last change :  Mon Apr 27 10:26:42 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -318,6 +318,13 @@
       (param $num i64)
       (result (ref eq))
       (struct.set $BgL_objectz00_bglt $header (local.get $o) (local.get $num))
+      (global.get $BUNSPEC))
+   
+   (func $BGL_OBJECT_CLASS_NUM_INIT (export "BGL_OBJECT_CLASS_NUM_INIT")
+      (param $o (ref $BgL_objectz00_bglt))
+      (param $c (ref $class))
+      (result (ref eq))
+      (struct.set $BgL_objectz00_bglt $header (local.get $o) (struct.get $class $index (local.get $c)))
       (global.get $BUNSPEC))
    
    ;; --------------------------------------------------------

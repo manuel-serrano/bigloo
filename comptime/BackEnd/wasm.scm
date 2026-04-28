@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/BackEnd/wasm.scm                    */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/BackEnd/wasm.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Feb 13 07:02:03 2026 (serrano)                */
+;*    Last change :  Mon Apr 27 10:14:09 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1091,7 +1091,7 @@ esac")
    ;; Sorts classes such that all classes appear after their super class
    ;; (if any). This is required by WASM: struct types must be defined after
    ;; their supertype.
-   (let ((orders (make-hashtable))
+   (let ((orders (create-hashtable))
 	 (current-order 0))
       
       (define (dfs class)
@@ -1562,6 +1562,12 @@ esac")
 	      (param (ref $bexception))
 	      (param (ref $exit))
 	      (result (ref eq))))
+	(import ,($bigloo) "BGL_OBJECT_CLASS_NUM_INIT"
+	   (func $BGL_OBJECT_CLASS_NUM_INIT
+	      (param $o (ref $BgL_objectz00_bglt))
+	      (param $c (ref $class))
+	      (result (ref eq))))
+
 ;* 	(import ,($bigloo) "BGL_DYNAMIC_ENV_DEFAULT_VALUE"             */
 ;* 	   (global $BGL_DYNAMIC_ENV_DEFAULT_VALUE (ref $dynamic-env))) */
 	(import ,($bigloo) "BGL_STORE_TRACE"

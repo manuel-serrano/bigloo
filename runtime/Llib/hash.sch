@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 15 07:24:23 2007                          */
 ;*    Last change :  Thu Jan  9 15:45:34 2025 (serrano)                */
-;*    Copyright   :  2007-25 Manuel Serrano                            */
+;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Hastable structure                                               */
 ;*=====================================================================*/

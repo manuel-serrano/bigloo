@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expdargs.scm            */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/expdargs.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr  1 06:28:06 2000                          */
-;*    Last change :  Tue Aug 13 07:29:47 2013 (serrano)                */
-;*    Copyright   :  2001-13 Manuel Serrano                            */
+;*    Last change :  Mon Apr 27 10:45:55 2026 (serrano)                */
+;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    args-parse expansion.                                            */
 ;*    -------------------------------------------------------------    */
@@ -86,7 +86,7 @@
 (define (do-expand-args-parse x e)
    (let* ((exp (cadr x))
 	  (clauses (cddr x))
-	  (otable (make-hashtable 20))
+	  (otable (create-hashtable :size 20))
 	  (parsers (map (lambda (c) (make-parser c otable)) clauses))
 	  (last-parser `(lambda (a v)
 			   (if (null? a)

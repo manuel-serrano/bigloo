@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Sun Apr 26 17:37:15 2026 (serrano)                */
+#*    Last change :  Mon Apr 27 17:46:52 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -36,7 +36,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = hash pair string vector
+MD = hash io pair string vector
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */

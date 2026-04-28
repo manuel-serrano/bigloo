@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Wed Apr 22 11:08:27 2026 (serrano)                */
+;*    Last change :  Mon Apr 27 10:50:55 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
@@ -137,7 +137,7 @@
 
    (define (html-entity str i)
       (let ((len (string-length str)))
-	 (unless (=fx i (-fx len 1))
+	 (unless (>=fx i (-fx len 1))
 	    (cond
 	       ((char-alphabetic? (string-ref str i))
 		(let loop ((i i))
@@ -215,7 +215,7 @@
 ;*    make-unhtml-table ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (make-unhtml-table)
-   (let ((t (make-hashtable 64)))
+   (let ((t (create-hashtable :size 64)))
       (for-each (lambda (e) (hashtable-put! t (car e) (cdr e)))
 		'(("&lt;" . "<")
 		  ("&gt;" . ">")

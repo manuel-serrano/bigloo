@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Cnst/alloc.scm         */
+;*    serrano/prgm/project/bigloo/5.0a/comptime/Cnst/alloc.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Mon Oct 20 08:56:29 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Apr 27 10:14:22 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
 ;*=====================================================================*/
@@ -194,11 +194,11 @@
 	    (memq 'bdb (backend-debug-support (the-backend))))
        (global-import-set! *cnst-table* 'static))
    (set! *cnst-offset* 0)
-   (set! *string-env* (make-hashtable))
-   (set! *ucs2string-env* (make-hashtable))
+   (set! *string-env* (create-hashtable))
+   (set! *ucs2string-env* (create-hashtable))
    (set! *real-env* '())
-   (set! *symbol-env* (make-hashtable))
-   (set! *keyword-env* (make-hashtable))
+   (set! *symbol-env* (create-hashtable))
+   (set! *keyword-env* (create-hashtable))
    (set! *bignum-env* '())
    #t)
 

@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/bde/Makefile                    */
+#*    serrano/prgm/project/bigloo/5.0a/bde/Makefile                    */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Sun Oct 19 04:13:05 2025 (serrano)                */
-#*    Copyright   :  1998-2025 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Apr 27 14:48:14 2026 (serrano)                */
+#*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
 #*=====================================================================*/
@@ -200,7 +200,7 @@ $(BOOTBINDIR)/bgljas: $(JAS_LINKSRC) $(JAS_AFILE) $(JAS_OBJ) $(JAS_LINKOBJ)
 
 watib: $(BOOTBINDIR)/bglwatib
 $(BOOTBINDIR)/bglwatib: $(WATIB_LINKSRC) $(WATIB_AFILE) $(WATIB_OBJ) $(WATIB_LINKOBJ)
-	(cd watib; $(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $(WATIB_OBJ:watib/%=%) $(WATIB_LINKOBJ:watib/%=%))
+	(cd watib; $(BIGLOO) -cg $(BFLAGS) $(EFLAGS) -o $@ $(WATIB_OBJ:watib/%=%) $(WATIB_LINKOBJ:watib/%=%))
 
 $(BOOTBINDIR)/bglcache: $(BCACHE_OBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
@@ -263,6 +263,7 @@ clean:
 	@- $(RM) -f $(OBJECTS)
 	@- $(RM) -f $(JAS_LINKOBJ)
 	@- $(RM) -f $(JAS_LINKFILE:%=jas/%.c)
+	@- $(RM) -f $(WATIB_LINKOBJ)
 	@- $(RM) -f $(OBJECTS:%.o=%.c)
 	@- $(RM) -f .afile
 	@- $(RM) -f jas/.afile
