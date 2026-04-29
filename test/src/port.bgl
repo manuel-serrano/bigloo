@@ -1,0 +1,230 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0a/test/src/port.bgl               */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
+;*    Last change :  Wed Apr 29 19:20:40 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing ports                                                    */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    port                                                             */
+;*---------------------------------------------------------------------*/
+(module port
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "port" tests))
+      (test-all verbose "port")))
+
+;*---------------------------------------------------------------------*/
+;*    tests ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-test current-input-port (input-port? (current-input-port))
+   :expected #t)
+   
+(define-test current-error-port (output-port? (current-error-port))
+   :expected #t)
+   
+(define-test current-error-port (output-port? (current-output-port))
+   :expected #t)
+   
+(define-test open-input-file (let ((p (open-input-file "misc/input.txt")))
+                                (unwind-protect
+                                   (input-port? p)
+                                   (close-input-port p)))
+   :expected #t)
+(define-test open-input-file (input-string-port? (open-input-file "string:foo"))
+   :expected #t)
+(define-test open-input-file (input-port? (open-input-file "wrong"))
+   :expected #f)
+
+(define-test input-port-reopen!
+   (call-with-input-string "\"foo\" bar gee"
+      (lambda (ip)
+         (read ip)
+         (input-port-reopen! ip)
+         (read ip)))
+   :expected "foo")
+
+(define-test open-input-procedure
+   (let ((p (open-input-procedure
+               (let ((s #t))
+                  (lambda ()
+                     (if s
+                         (begin
+                            (set! s #f)
+                            "foobar")
+                         s))))))
+      (unwind-protect
+         (read p)
+         (close-input-port p)))
+   :expected 'foobar)
+                              
+(define-test open-input-descriptor
+   (let ((p (open-input-descriptor 0)))
+      (unwind-protect
+         (input-port? p)
+         (close-input-port p)))
+   :expected #t)
+
+(define-test open-input-string
+   (read-char (open-input-string "A"))
+   :expected #\A)
+
+(define-test open-input-string!
+   (read (open-input-string! "1900"))
+   :expected 1900)
+
+(define-test close-input-port
+   (closed-input-port? (close-input-port (open-input-file "/dev/null")))
+   :expected #t)
+
+(define-test closed-input-port?
+   (closed-input-port? (close-input-port (open-input-file "/dev/null")))
+   :expected #t)
+
+(define-test close-output-port
+   (begin (close-output-port (open-output-file "/dev/null")) #unspecified)
+   :expected #unspecified)
+
+(define-test close-output-port
+   (let ((p (open-output-string)))
+      (display "foo" p)
+      (close-output-port p))
+   :expected "foo")
+
+(define-test open-output-file
+   (let ((p (open-output-file "/dev/null")))
+      (unwind-protect
+         (output-port? p)
+         (close-output-port p))))
+
+(define-test open-output-string
+   (let ((p (open-output-string)))
+      (display "foo" p)
+      (display 100 p)
+      (close-output-port p))
+   :expected "foo100")
+
+(define-test input-port? (input-port? (current-input-port))
+   :expected #t)
+(define-test input-port? (input-port? (current-output-port))
+   :expected #f)
+(define-test input-port? (input-port? (open-input-string "foo"))
+   :expected #t)
+
+(define-test input-string-port? (input-string-port? (current-input-port))
+   :expected #f)
+(define-test input-string-port? (input-string-port? (current-output-port))
+   :expected #f)
+(define-test input-string-port? (input-string-port? (open-input-string "foo"))
+   :expected #t)
+
+(define-test output-port? (output-port? (current-output-port))
+   :expected #t)
+(define-test output-port? (output-port? (current-output-port))
+   :expected #t)
+(define-test output-port? (output-port? (open-output-string))
+   :expected #t)
+
+(define-test output-string-port? (output-string-port? (current-output-port))
+   :expected #f)
+(define-test output-string-port? (output-string-port? (current-output-port))
+   :expected #f)
+(define-test output-string-port? (output-port? (open-output-string))
+   :expected #t)
+
+(define-test port? (port? (current-output-port))
+   :expected #t)
+(define-test port? (port? (current-output-port))
+   :expected #t)
+(define-test port? (port? (open-output-string))
+   :expected #t)
+
+(define-test call-with-input-file
+   (call-with-input-file "misc/input.txt"
+      (lambda (port)
+         (read-chars 10 port)
+         (read-char port)
+         (read-chars 30 port)
+         (peek-char port)
+         (read-char port)))
+   :expected #\e)
+
+(define-test call-with-input-string
+   (call-with-input-string "(foo 2.3)" read)
+   :expected '(foo 2.3))
+
+(define-test call-with-output-file
+   (call-with-output-file "/dev/null" output-port?)
+   :expected #t)
+
+(define-test call-with-append-file
+   (call-with-append-file "/dev/null" output-port?)
+   :expected #t)
+
+(define-test call-with-output-string
+   (call-with-output-string (lambda (op) (display '(1 2) op)))
+   :expected "(1 2)")
+
+(define-test input-port-name
+   (call-with-input-file "/etc/passwd" input-port-name)
+   :expected "/etc/passwd")
+
+(define-test input-port-name-set!
+   (begin
+      (input-port-name-set! (current-input-port) "foo")
+      (input-port-name (current-input-port)))
+   :expected "foo")
+
+(define-test output-port-name
+   (call-with-output-file "/dev/null" output-port-name)
+   :expected "/dev/null")
+
+(define-test output-port-name-set!
+   (begin
+      (output-port-name-set! (current-output-port) "foo")
+      (output-port-name (current-output-port)))
+   :expected "foo")
+
+(define-test input-port-position
+   (call-with-input-file "/etc/passwd"
+      (lambda (ip)
+         (read-chars 10 ip)
+         (input-port-position ip)))
+   :expected 10)
+
+(define-test output-port-position
+   (let ((op (open-output-string)))
+      (unwind-protect
+         (begin
+            (display "foo" op)
+            (set-output-port-position! op 1)
+            (display "bar" op)
+            (output-port-position op))
+         (close-output-port op)))
+   :expected 4)
+
+(define-test input-port-length
+   (call-with-input-string "foo" input-port-length)
+   :expected 3)
+
+(define-test get-output-string
+   (let ((p (open-output-string)))
+      (display 1234 p)
+      (let ((s (get-output-string p)))
+         (display "foo" p)
+         (close-output-port p)
+         s))
+   :expected "1234")

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Wed Apr 29 06:59:09 2026 (serrano)                */
+/*    Last change :  Wed Apr 29 19:27:50 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -5523,7 +5523,11 @@ public final class foreign {
    }
 
    public static Object bgl_open_input_descriptor(int fd, byte[] b) {
-      return BFALSE;
+      if (fd == 0) {
+         return getCurrentInputPort(BGL_CURRENT_DYNAMIC_ENV());
+      } else {
+         return BFALSE;
+      }
    }
 
    public static Object bgl_open_input_pipe(byte[] s, byte[] b) {

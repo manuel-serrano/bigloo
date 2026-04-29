@@ -14,7 +14,7 @@
 ,(implementation-path "../runtime/Ieee/port.scm")
 ,(implementation-path "../runtime/Ieee/output.scm")
 ,(implementation-path "../runtime/Ieee/input.scm")
-,(example-path "../test/src/io.bgl")
+,(example-path "../test/src/port.bgl")
 
 Input/Output
 ============
