@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Mon Apr 27 17:48:59 2026 (serrano)                */
+#*    Last change :  Wed Apr 29 16:02:57 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -97,6 +97,8 @@ check_wasm:
 	@if [ "$(WASMBACKEND)" = "yes" ]; then \
 	  $(MAKE) wasm && ./test_wasm; \
         fi
+
+distrib: clean
 
 #*---------------------------------------------------------------------*/
 #*    compilation rules                                                */
