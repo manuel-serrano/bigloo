@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Wed Apr 29 16:03:29 2026 (serrano)                */
+#*    Last change :  Wed Apr 29 16:06:51 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -58,7 +58,7 @@ bin/bgldoc: $(C_OBJECTS:%=objs_c/%)
 
 index.html: $(MD:%=%.html)
 
-distrib: index.html
+distrib: clean
 
 #*---------------------------------------------------------------------*/
 #*    install                                                          */
