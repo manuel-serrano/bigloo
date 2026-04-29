@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Tue Apr 28 10:20:46 2026 (serrano)                */
+;*    Last change :  Wed Apr 29 15:27:44 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing I/O                                                      */
@@ -30,6 +30,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests ...                                                        */
 ;*---------------------------------------------------------------------*/
+(define-test current-input-port (input-port? (current-input-port))
+   :expected #t)
+   
+(define-test current-error-port (output-port? (current-error-port))
+   :expected #t)
+   
+(define-test current-error-port (output-port? (current-output-port))
+   :expected #t)
+   
 (define-test open-input-file (let ((p (open-input-file "misc/input.txt")))
                                 (unwind-protect
                                    (input-port? p)
@@ -93,9 +102,33 @@
    (call-with-output-file "/dev/null" output-port?)
    :expected #t)
 
+(define-test call-with-append-file
+   (call-with-append-file "/dev/null" output-port?)
+   :expected #t)
+
+(define-test call-with-output-string
+   (call-with-output-string (lambda (op) (display '(1 2) op)))
+   :expected "(1 2)")
+
 (define-test input-port-name
    (call-with-input-file "/etc/passwd" input-port-name)
    :expected "/etc/passwd")
+
+(define-test input-port-name-set!
+   (begin
+      (input-port-name-set! (current-input-port) "foo")
+      (input-port-name (current-input-port)))
+   :expected "foo")
+
+(define-test output-port-name
+   (call-with-output-file "/dev/null" output-port-name)
+   :expected "/dev/null")
+
+(define-test output-port-name-set!
+   (begin
+      (output-port-name-set! (current-output-port) "foo")
+      (output-port-name (current-output-port)))
+   :expected "foo")
 
 (define-test input-port-position
    (call-with-input-file "/etc/passwd"
@@ -114,3 +147,7 @@
             (output-port-position op))
          (close-output-port op)))
    :expected 4)
+
+(define-test input-port-length
+   (call-with-input-string "foo" input-port-length)
+   :expected 3)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Apr 28 11:19:34 2026 (serrano)                */
+;*    Last change :  Wed Apr 29 15:37:01 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -382,7 +382,7 @@
 	       (method static $input-port-last-token-position::long (::input-port)
 		  "INPUT_PORT_TOKENPOS")
 	       (method static $input-port-name-set!::void (::input-port ::bstring)
-		  "INPUT_PORT_NAME")
+		  "INPUT_PORT_NAME_SET")
 	       (method static $input-port-name::bstring (::input-port)
 		  "INPUT_PORT_NAME")
 	       (method static $output-port-name::bstring (::output-port)

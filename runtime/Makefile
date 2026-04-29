@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Apr 28 18:24:38 2026 (serrano)                */
+#*    Last change :  Wed Apr 29 07:48:38 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -220,7 +220,7 @@ JLIB		= callable foreign buffer configure stackwriter\
 		  eof object generic \
 		  exit optional \
 		  extended_pair binary_port \
-                  output_port output_buffered_port output_pipe_port \
+                  output_port output_random_port output_pipe_port \
 		  socket client_socket server_socket input_socket_port \
                   datagram_socket output_datagram_port input_datagram_port \
                   datagram_client_socket datagram_server_socket \
@@ -587,6 +587,8 @@ $(BOOTLIBDIR)/$(LIBRARYNAME)$(LIBSUFFIX).zip: $(CLASSES) class$(LIBSUFFIX)/jlib 
                  $(SCM_SYS_SRC:%.scm=bigloo/runtime/%.class) \
                  $(SCM_USR_SRC:%.scm=bigloo/runtime/%.class) \
                  bigloo/runtime/*/*_KBGl_*.class \
+                 bigloo/ByteBufferOutputStream.class \
+                 bigloo/ProcedureOutputStream.class \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%.class) \
                  $(JAVA_JLIB:Jlib/%.java=bigloo/%[$$]*.class)) || exit 1
 	@ echo "\e[1;38m$(@)\e[0m done."

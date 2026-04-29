@@ -1,17 +1,13 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/bigloo/runtime/Jlib/bgldynamic.java      */
+/*    .../prgm/project/bigloo/5.0a/runtime/Jlib/bgldynamic.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Oct 19 10:42:04 2002                          */
-/*    Last change :  Thu Sep 16 17:44:39 2021 (serrano)                */
-/*    Copyright   :  2002-21 Manuel Serrano                            */
+/*    Last change :  Wed Apr 29 07:02:27 2026 (serrano)                */
+/*    Copyright   :  2002-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Handling global dynamic environments (current_output_port et al) */
 /*=====================================================================*/
-
-/*---------------------------------------------------------------------*/
-/*    The package                                                      */
-/*---------------------------------------------------------------------*/
 package bigloo;
 
 import java.lang.*;
@@ -20,8 +16,7 @@ import bigloo.foreign;
 /*---------------------------------------------------------------------*/
 /*    bgldynamic                                                       */
 /*---------------------------------------------------------------------*/
-public class bgldynamic
-{
+public class bgldynamic {
    protected static bgldynamic current_dynamic_env = new bgldynamic();
    public static bgldynamic abgldynamic = new bgldynamic();
 
@@ -38,21 +33,21 @@ public class bgldynamic
    
    public int mvalues_number;
    public final Object[] mvalues_values= { unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified,
-					   unspecified.unspecified };
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified,
+      unspecified.unspecified };
    
    public Object exitd_top;
    public Object exitd_val;
@@ -74,29 +69,29 @@ public class bgldynamic
    // constructor
    public bgldynamic() {
       exitd_top = new exit();
-      exitd_val = new pair( new pair(unspecified.unspecified,
-				     unspecified.unspecified),
-			    unspecified.unspecified );
+      exitd_val = new pair(new pair(unspecified.unspecified,
+				    unspecified.unspecified),
+			   unspecified.unspecified);
 
-      error_handler = new pair( unspecified.unspecified, bigloo.foreign.BFALSE );
+      error_handler = new pair(unspecified.unspecified, bigloo.foreign.BFALSE);
       uncaught_exception_handler = bigloo.nil.nil;
 
       mvalues_number = 1;
 
-      current_input_port = new input_console_port( new byte[ foreign.default_io_bufsiz ] );
-      current_output_port = new output_port( System.out );
-      current_error_port = new output_port( System.err );
+      current_input_port = new input_console_port(new byte[ foreign.default_io_bufsiz ]);
+      current_output_port = new output_stream_port(System.out);
+      current_error_port = new output_stream_port(System.err);
    }
 
    // constructor
-   public bgldynamic( final bgldynamic o ) {
+   public bgldynamic(final bgldynamic o) {
       exitd_top = new exit();
-      exitd_val = new pair( new pair(unspecified.unspecified,
-				     unspecified.unspecified),
-			    unspecified.unspecified );
+      exitd_val = new pair(new pair(unspecified.unspecified,
+				    unspecified.unspecified),
+			   unspecified.unspecified);
       
       //error_handler = nil.nil;
-      error_handler = new pair( unspecified.unspecified, bigloo.foreign.BFALSE );
+      error_handler = new pair(unspecified.unspecified, bigloo.foreign.BFALSE);
       uncaught_exception_handler = bigloo.nil.nil;
       
       mvalues_number = 1;

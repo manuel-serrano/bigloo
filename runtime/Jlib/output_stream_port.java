@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Tue Apr 28 18:22:05 2026                          */
-/*    Last change :  Tue Apr 28 18:30:49 2026 (serrano)                */
+/*    Last change :  Wed Apr 29 06:40:34 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Output stream ports                                              */
@@ -16,7 +16,11 @@ import java.io.*;
 /*    output_stream_port ...                                           */
 /*---------------------------------------------------------------------*/
 public class output_stream_port extends output_port {
-   public OutputStream out;
+   OutputStream out;
+
+   public output_stream_port(byte[] name) {
+      super(name);
+   }
 
    public output_stream_port(OutputStream _out) {
       super();
@@ -126,4 +130,19 @@ public class output_stream_port extends output_port {
       p.write("#<output_port:" + new String(name) + ">");
    }
 
+   public boolean truncate(long size) {
+      if (out instanceof FileOutputStream) {
+	 try {
+	    return JDK.truncate((FileOutputStream)out, size);
+	 } catch(Exception _e) {
+	    return false;
+	 }
+      } else {
+	 return false;
+      }
+   }
+
+   public OutputStream getOutputStream() {
+      return out;
+   }
 }

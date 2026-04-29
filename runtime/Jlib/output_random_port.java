@@ -1,78 +1,80 @@
 /*=====================================================================*/
-/*    .../bigloo/5.0a/runtime/Jlib/output_buffered_port.java           */
+/*    .../project/bigloo/5.0a/runtime/Jlib/output_random_port.java     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
-/*    Creation    :  Wed Apr 29 08:11:07 2026                          */
-/*    Last change :  Wed Apr 29 08:11:32 2026 (serrano)                */
+/*    Creation    :  Tue Apr 28 17:13:10 2026                          */
+/*    Last change :  Wed Apr 29 15:24:08 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
-/*    Buffered OutputStream                                            */
+/*    Output file ports                                                */
 /*=====================================================================*/
 package bigloo;
+
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.*;
 
 /*---------------------------------------------------------------------*/
-/*    output_buffered_port ...                                         */
-/*                                                                     */
+/*    output_random_port ...                                           */
 /*---------------------------------------------------------------------*/
-public class output_buffered_port extends output_stream_port {
+public class output_random_port extends output_port {
+   RandomAccessFile out;
    byte[] buffer;
    int count;
    
-   public output_buffered_port() {
+   public output_random_port() {
       super();
       buffer = null;
       count = 0;
    }
    
-   public output_buffered_port(final OutputStream stream, byte[] _buffer, final byte[] name) {
-      super(stream, name);
+   public output_random_port(final byte[] file) throws IOException {
+      super();
+      out = new RandomAccessFile(new String(file), "rw");
+      buffer = new byte[0];
+      count = 0;
+   }
+   
+   public output_random_port(final byte[] file, byte[] _buffer, boolean append) throws IOException {
+      super();
+      out = new RandomAccessFile(new String(file), "rw");
+      out.seek(out.length());
       buffer = _buffer;
       count = 0;
    }
    
-   public output_buffered_port(final byte[] file, byte[] _buffer, final boolean append) throws IOException {
-      super(file, append);
-      buffer = _buffer;
-      count = 0;
-   }
-   
-   public output_buffered_port(final byte[] file,
-			       byte[] _buffer)
-      throws IOException {
+   public output_random_port(final byte[] file, byte[] _buffer) throws IOException {
       super(file);
+      out = new RandomAccessFile(new String(file), "rw");
       buffer = _buffer;
       count = 0;
    }
    
-   public static output_port make_output_buffered_port(final OutputStream stream, byte[] buffer, final byte[] name) {
+   public static output_port make_output_random_port(final byte[] file, byte[] buffer, final boolean app) throws IOException {
       if (buffer == null || buffer.length == 0) {
-	 return new output_stream_port(stream, name);
+	 String fname = new String(file);
+	 return new output_stream_port(new FileOutputStream(fname, app));
       } else {
-	 return new output_buffered_port(stream, buffer, name);
+	 return new output_random_port(file, buffer, app);
       }
    }
    
-   public static output_port make_output_buffered_port(final byte[] file, byte[] buffer, final boolean app)
-      throws IOException {
+   public static output_port make_output_random_port(final byte[] file, byte[] buffer) throws IOException {
       if (buffer == null || buffer.length == 0) {
-	 return new output_stream_port(file, app);
+	 return new output_random_port(file);
       } else {
-	 return new output_buffered_port(file, buffer, app);
-      }
-   }
-   
-   public static output_port make_output_buffered_port(final byte[] file, byte[] buffer) throws IOException {
-      if (buffer == null || buffer.length == 0) {
-	 return new output_stream_port(file);
-      } else {
-	 return new output_buffered_port(file, buffer);
+	 return new output_random_port(file, buffer);
       }
    }
    
    public Object close() {
       flush();
-      
+      try {
+	 out.close();
+      } catch(Throwable t) {
+	 ;
+      }
       return super.close();
    }
    
@@ -88,7 +90,7 @@ public class output_buffered_port extends output_stream_port {
       }
 
       try {
-	 super.flush();
+	 out.getFD().sync();
       } catch(Throwable _t) {
 	 return bbool.faux;
       }
@@ -123,9 +125,8 @@ public class output_buffered_port extends output_stream_port {
 	       count = 0;
 	    }
 
-	    if (s.length > 0) {
+	    if (s.length > 0)
 	       invoke_flush_hook(bigloo.foreign.BINT(s.length));
-	    }
 	    out.write(s);
 	 }
       } catch(final Exception e) {
@@ -176,6 +177,31 @@ public class output_buffered_port extends output_stream_port {
 	 }
       } catch (final Exception e) {
 	 if (out != null) foreign.fail("write", e, this);
+      }
+   }
+
+   public boolean truncate(long size) {
+      try {
+	 out.setLength(size);
+      } catch (Throwable t) {
+	 return false;
+      }
+      return true;
+   }
+
+   public int filepos() {
+      try {
+         return (int)out.getFilePointer();
+      } catch (IOException e) {
+         return 0;
+      }
+   }
+   
+   public OutputStream getOutputStream() {
+      try {
+	 return new FileOutputStream(out.getFD());
+      } catch (Throwable t) {
+	 return null;
       }
    }
 }

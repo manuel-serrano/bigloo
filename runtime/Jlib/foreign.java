@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Tue Apr 28 11:38:56 2026 (serrano)                */
+/*    Last change :  Wed Apr 29 06:59:09 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -49,7 +49,7 @@ public final class foreign {
 
    public static void dump_stack(output_port p) {
       final Exception o = new Exception("JVM Bigloo Error");
-      final stackwriter sw = new stackwriter(p.out, true);
+      final stackwriter sw = new stackwriter(p.getOutputStream(), true);
 
       synchronized (p) {
 	 o.printStackTrace(sw);
@@ -4758,15 +4758,7 @@ public final class foreign {
    }
 
    public static boolean truncate(output_port port, long size) {
-      if (port.out instanceof FileOutputStream) {
-	 try {
-	    return JDK.truncate((FileOutputStream)port.out, size);
-	 } catch(Exception _e) {
-	    return false;
-	 }
-      } else {
-	 return false;
-      }
+      return port.truncate(size);
    }
 
    public static boolean mkdir(byte[]path, int mode) {
@@ -5665,7 +5657,7 @@ public final class foreign {
    }
 
    public static int OUTPUT_PORT_FILEPOS(output_port p) {
-      return 0;
+      return p.filepos();
    }
 
    public static byte[] INPUT_PORT_NAME(input_port p) {
@@ -6221,15 +6213,15 @@ public final class foreign {
 	 byte[] dev = (foreign.bigloo_strcmp(os.OS_CLASS, "unix".getBytes())
 			? "/dev/null"
 			: "NUL:").getBytes();
-	 return output_buffered_port.make_output_buffered_port(dev, buf);
-      else {
-	 return output_buffered_port.make_output_buffered_port(file, buf);
+	 return new output_stream_port(new FileOutputStream(new String(dev)));
+      } else {
+	 return new output_random_port(file, buf);
       }
    }
 
    public static Object bgl_append_output_file(byte[] file, byte[] buf)
       throws IOException {
-      return output_buffered_port.make_output_buffered_port(file, buf, true);
+      return output_random_port.make_output_random_port(file, buf, true);
    }
 
    public static output_port bgl_open_output_string(byte[] buf) {

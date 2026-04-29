@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Tue Apr 28 11:39:51 2026                          */
-/*    Last change :                                                    */
+/*    Last change :  Wed Apr 29 06:55:15 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Output ports                                                     */
@@ -15,7 +15,7 @@ import java.io.*;
 /*---------------------------------------------------------------------*/
 /*    output_port ...                                                  */
 /*---------------------------------------------------------------------*/
-public class output_port extends obj {
+public abstract class output_port extends obj {
    public byte[] name;
    public Object chook = bigloo.foreign.BUNSPEC;
    public Object fhook = bigloo.foreign.BUNSPEC;
@@ -30,8 +30,7 @@ public class output_port extends obj {
       name = _name;
    }
 
-   public output_port(final byte[] file, final boolean append) throws IOException {
-      this(new FileOutputStream( new String(file), append));
+   public output_port(final byte[] file, boolean append) throws IOException {
       name = file;
    }
 
@@ -43,13 +42,7 @@ public class output_port extends obj {
       return this;
    }
 
-   public Object flush() {
-      try {
-         return bbool.vrai;
-      } catch (final Exception e) {
-         return bbool.faux;
-      }
-   }
+   public abstract Object flush();
 
    public Object bgl_output_port_seek(final int pos) throws IOException {
       return bigloo.foreign.BFALSE;
@@ -70,11 +63,11 @@ public class output_port extends obj {
    }
 
    public void write(final byte[] s, int offset, int len) {
-      invoke_flush_hook(bigloo.foreign.BINT( len - offset));
+      invoke_flush_hook(bigloo.foreign.BINT(len - offset));
    }
 
    public void write(final String s) {
-      invoke_flush_hook(bigloo.foreign.BINT(len));
+      invoke_flush_hook(bigloo.foreign.BINT(s.length()));
    }
 
    public void write(final output_port p) {
@@ -84,4 +77,10 @@ public class output_port extends obj {
    public boolean truncate(long size) {
       return false;
    }
+
+   public int filepos() {
+      return 0;
+   }
+   
+   public abstract OutputStream getOutputStream();
 }

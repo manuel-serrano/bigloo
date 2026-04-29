@@ -114,6 +114,24 @@ The optional argument `buffer` can either be:
 The optional argument `timeout`, an integer represents a microseconds 
 timeout for the open operation.
 
+Default ports
+-------------
+
+### current-input-port ###
+
+Returns the current input-port which default to the standard input
+port of the application.
+
+### current-output-port ###
+
+Returns the current output-port which default to the standard output
+port of the application.
+
+### current-error-port ###
+
+Returns the current error output-port which default to the standard error
+port of the application.
+
 Predicates
 ----------
 
@@ -146,9 +164,26 @@ Properties
 
 Returns the name of the file used to open the `input-port`.
 
+### input-port-name-set! ###
+
+Sets a different name for the input-port.
+
 ### input-port-position ###
 
 The character position in the input-port.
+
+### input-port-length ###
+
+Returns the number of bytes contained in the input-port of -` if
+that number is unknown (typically for a pipe).
+
+### output-port-name ###
+
+Returns the name of the file used to open the `output-port`.
+
+### output-port-name-set! ###
+
+Sets a different name for the output-port.
 
 ### output-port-position ###
 
@@ -172,37 +207,16 @@ Invokes `proc` on an input port opened on `string`.
 
 Invokes `proc` on an output port opened on `string`.
 
+### call-with-append-file ###
 
+Invokes `proc` on an output port opened on `string` for appending new
+characters.
 
-@deffnx {library procedure} call-with-append-file
-@deffnx {library procedure} call-with-output-string
-These two procedures call @var{proc} with one argument, a port obtained
-by opening @var{string}.
-See @ref{Ports,,r5rs.info,R5RS}, for more details.
+### call-with-output-string ###
 
-@smalllisp
+As `call-with-output-file` but opens a string port instead of a file
+port.
 
-(call-with-input-file "/etc/passwd"
-   (lambda (port)
-      (let loop ((line (read-line port)))
-         (if (not (eof-object? line))
-             (begin
-                (print line)
-                (loop (read-line port)))))))
-@end smalllisp
-
-
-@deffn {bigloo procedure} input-port-name
-@deffnx {bigloo procedure} input-port-name-set
-@deffnx {bigloo procedure} output-port-name
-@deffnx {bigloo procedure} output-port-name-set
-Returns/sets the file name for which @var{obj} has been opened.
-
-
-@deffn {bigloo (>=3.8d) procedure} input-port-length
-Returns the source number of bytes, i.e., the number characters contains
-in the source. Returns @code{-1} if that number is unknown (typically
-for a pipe).
 
 
 @deffn {bigloo (>=3.6b) procedure} input-port-timeout
