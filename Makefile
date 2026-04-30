@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Apr 30 19:13:19 2026 (serrano)                */
+#*    Last change :  Thu Apr 30 21:34:52 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -466,6 +466,7 @@ fullbootstrap-jvm:
 
 fullbootstrap-wasm:
 	if [ "$(WASMBACKEND)" = "yes" ]; then \
+	  $(MAKE) -C bde all-wasm; \
 	  $(MAKE) -C runtime heap-wasm libs-wasm; \
         fi
 
