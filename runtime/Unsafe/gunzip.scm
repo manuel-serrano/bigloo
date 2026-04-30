@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/gunzip.scm            */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Unsafe/gunzip.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  5 07:43:02 2006                          */
-;*    Last change :  Sun Dec 27 17:31:33 2015 (serrano)                */
-;*    Copyright   :  2006-15 Manuel Serrano                            */
+;*    Last change :  Thu Apr 30 10:45:18 2026 (serrano)                */
+;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Traduction of gzip's inflate.c inspired from Mzscheme's port.    */
 ;*    -------------------------------------------------------------    */
@@ -1111,7 +1111,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-gzip-file ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (open-input-gzip-file name #!optional (bufinfo #t) (timeout 1000000))
+(define (open-input-gzip-file name::bstring #!optional (bufinfo #t) (timeout 1000000))
    (let ((p (open-input-file name bufinfo)))
       (and (input-port? p)
 	   (let ((pi (port->gzip-port p #t)))

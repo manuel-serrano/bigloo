@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Thu Apr 30 08:56:54 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 11:32:39 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -523,7 +523,9 @@
 	    (inline output-port-position::long ::output-port)
 	    (inline output-port-isatty?::bool ::output-port)
 	    (inline set-output-port-position! ::output-port ::long)
+	    (inline output-port-position-set! ::output-port ::long)
 	    (set-input-port-position! ::input-port ::long)
+	    (input-port-position-set! ::input-port ::long)
 	    (inline input-port-position::long ::input-port)
 	    (inline input-port-fill-barrier ::input-port)
 	    (inline input-port-fill-barrier-set! ::input-port ::long)
@@ -1335,15 +1337,22 @@
    (c-reset-eof port))
 
 ;*---------------------------------------------------------------------*/
-;*    set-input-port-position! ...                                     */
+;*    input-port-position-set! ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (set-input-port-position! port::input-port pos::long)
+(define (input-port-position-set! port::input-port pos::long)
    (let ((useek ($input-port-useek port)))
       (if (procedure? useek)
 	  (useek port pos)
 	  ($set-input-port-position! port pos)))
    #unspecified)
    
+;*---------------------------------------------------------------------*/
+;*    set-input-port-position! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (set-input-port-position! port::input-port pos::long)
+   ;; MS 30apr2026: TBR 
+   (input-port-position-set! port pos))
+
 ;*---------------------------------------------------------------------*/
 ;*    input-port-position ...                                          */
 ;*---------------------------------------------------------------------*/
@@ -1385,6 +1394,15 @@
 ;*    set-output-port-position! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (set-output-port-position! port::output-port pos::long)
+   ;; MS 30apr2026: TBR 
+   (unless (c-set-output-port-position! port pos)
+      (error/errno $errno-io-port-error
+	 "set-output-port-position!" "Cannot seek port" port)))
+   
+;*---------------------------------------------------------------------*/
+;*    output-port-position-set! ...                                    */
+;*---------------------------------------------------------------------*/
+(define-inline (output-port-position-set! port::output-port pos::long)
    (unless (c-set-output-port-position! port pos)
       (error/errno $errno-io-port-error
 	 "set-output-port-position!" "Cannot seek port" port)))
@@ -1447,13 +1465,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    output-port-flush-hook ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-port-flush-hook port)
+(define-inline (output-port-flush-hook port::output-port)
    ($output-port-fhook port))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-port-flush-hook-set! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (output-port-flush-hook-set! port proc)
+(define (output-port-flush-hook-set! port::output-port proc::procedure)
    (if (and (procedure? proc) (not (correct-arity? proc 2)))
        (error/errno $errno-io-port-error
 	  "output-port-flush-hook-set!" "Illegal hook" proc)
@@ -1464,26 +1482,26 @@
 ;*---------------------------------------------------------------------*/
 ;*    output-port-flush-buffer ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-port-flush-buffer port)
+(define-inline (output-port-flush-buffer port::output-port)
    ($output-port-flushbuf port))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-port-flush-buffer-set! ...                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-port-flush-buffer-set! port buf)
+(define-inline (output-port-flush-buffer-set! port::output-port buf)
    ($output-port-flushbuf-set! port buf)
    buf)
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port-close-hook ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-port-close-hook port)
+(define-inline (input-port-close-hook port::input-port)
    ($input-port-chook port))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port-close-hook-set! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (input-port-close-hook-set! port proc)
+(define (input-port-close-hook-set! port::input-port proc::procedure)
    (if (not (and (procedure? proc) (correct-arity? proc 1)))
        (error/errno $errno-io-port-error
 	  "input-port-close-hook-set!" "Illegal hook" proc)

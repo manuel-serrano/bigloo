@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Mon Apr 27 09:00:26 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 10:48:37 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -165,12 +165,14 @@
 	 'bgl-font-lock-face-2)
    (list (concat "\(\\(error\\|error/location\\|error/source\\|warning\\|pragma\\|trace\\|"
 		 "with-trace\\|trace-item\\|when-trace\\|"
-		 "bind-exit\\|call/cc\\|try\\|unwind-protect\\|cond-expand\\|"
+		 "bind-exit\\|call/cc\\|try\\|unwind-protect\\|"
 		 "with-exception-handler\\|with-handler\\|with-alarm\\|current-exception-handler\\|raise\\|"
 		 "profile\\|profile/gc\\|delay\\|force\\)"
 		 "[ \n\t:]")
 	 1
 	 'bgl-font-lock-face-8)
+   (cons "cond-expand"
+	 'bgl-font-lock-face-compile)
    (list (concat "\(\\(make-mutex\\>\\|mutex-lock!\\>\\|mutex-unlock!\\>"
 		 "\\|make-thread\\>\\|thread-start!\\>\\|thread-yield!\\>"
 		 "\\|thread-start-joinable!\\>"
@@ -332,6 +334,14 @@
   "Bgl face 12."
   :group 'bgl)
 (defvar bgl-font-lock-face-12 'bgl-font-lock-face-12)
+
+(defface bgl-font-lock-face-compile
+  '((((class color) (background light)) (:background "#ffa435" :foreground "#ffffff" :bold t))
+    (t (:bold t)))
+  "Bgl face for compilation keywords."
+  :group 'bgl)
+(defvar bgl-font-lock-face-compile 'bgl-font-lock-face-compile)
+
 
 ;; cf bgl-invisible-face
 (if (featurep 'xemacs)
