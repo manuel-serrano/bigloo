@@ -16,8 +16,8 @@
 ,(implementation-path "../runtime/Ieee/input.scm")
 ,(example-path "../test/src/io.bgl")
 
-Ports
-=====
+Input/Output
+============
 
 
 Predicates

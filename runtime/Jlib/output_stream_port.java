@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Tue Apr 28 18:22:05 2026                          */
-/*    Last change :  Wed Apr 29 06:40:34 2026 (serrano)                */
+/*    Last change :  Thu Apr 30 12:40:18 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Output stream ports                                              */
@@ -42,16 +42,16 @@ public class output_stream_port extends output_port {
       return super.close();
    }
    
-  public Object flush() {
-     try {
-	out.flush();
-	return bbool.vrai;
-     } catch (final Exception e) {
-	if (out != null)
-	   foreign.fail("flush", e, this);
-	return bbool.faux;
-     }
-  }
+   public Object flush() {
+      try {
+         out.flush();
+         return bbool.vrai;
+      } catch (final Exception e) {
+         if (out != null)
+            foreign.fail("flush", e, this);
+         return bbool.faux;
+      }
+   }
 
    public Object bgl_output_port_seek(final int pos) throws IOException {
       return bigloo.foreign.BFALSE;

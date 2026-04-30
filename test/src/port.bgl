@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Thu Apr 30 11:34:00 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 12:03:34 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing ports                                                    */
@@ -82,9 +82,17 @@
    (read-char (open-input-string "A"))
    :expected #\A)
 
+(define-test open-input-string
+   (read-string (open-input-string "ABCDE" 1 3))
+   :expected "BC")
+
 (define-test open-input-string!
    (read (open-input-string! "1900"))
    :expected 1900)
+
+(define-test open-input-c-string
+   (read-char (open-input-c-string "A"))
+   :expected #\A)
 
 (define-test open-input-mmap
    (let* ((mmap (open-mmap "misc/input.txt" :read #t :write #f))
@@ -130,6 +138,14 @@
       (display "foo" p)
       (close-output-port p))
    :expected "foo")
+
+(define-test closed-output-port?
+   (closed-output-port? (close-output-port (open-output-file "/dev/null")))
+   :expected #t)
+
+(define-test closed-output-port?
+   (closed-output-port? (open-output-string ""))
+   :expected #f)
 
 (define-test open-output-file
    (let ((p (open-output-file "/dev/null")))

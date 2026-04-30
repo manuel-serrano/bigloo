@@ -17,10 +17,10 @@
 ,(implementation-path "../runtime/Unsafe/gunzip.scm")
 ,(example-path "../test/src/port.bgl")
 
-Input/Output
-============
+Ports
+=====
 
-#### Buffers ####
+#### Ports buffers ####
 <!-- [:buffers@section] --> 
 
 Many ports functions accept an optional argument named `bufinfo`. It is
@@ -31,6 +31,9 @@ value can either be:
   * `#f`: no buffer is used;
   * a string: it is used as read buffer;
   * a fixnum: the size of the buffer to be used;
+
+In case of doubt, the `buffinfo` argument can be ignored, i.e., left to
+its default value.
 
 Constructors
 ------------
@@ -150,6 +153,11 @@ The arguments `start` and `end` must be exact integers satisfying 0
 The function `open-input-string!` acts as `open-input-string`
 but it might modify the string it receives as parameter.
 
+### open-input-c-string ###
+Returns an `input-port` able to deliver characters from
+C `string1. The buffer used by the input port is the exact
+same string as the argument. That is, no buffer is allocated.
+
 ### open-input-procedure ###
 Returns an `input-port` able to deliver characters from
 `procedure`. Each time a character has to be read, the `procedure`
@@ -248,7 +256,11 @@ Returns `#t` iff `obj` is an `output-port` opened on a string. Returns
 `#f` otherwise.
 
 ### closed-input-port? ###
-Predicates that returns `#t` if and if their associated port is closed.
+Predicates that returns `#t` if and only if its argument is closed.
+It return `#f` otherwise.
+
+### closed-output-port? ###
+Predicate that returns `#t` if and only if its arguments is is closed.
 It return `#f` otherwise.
 
 
@@ -470,14 +482,6 @@ close hook is a procedure of one argument, the closed port.
 Open respectively a zlib file for input and a port on a zlib stream.
 Note that closing a zlib port opened from a port @var{pi} does not close
 the @var{pi} port.
-
-
-
-@deffn {bigloo procedure} open-input-c-string
-Returns an @code{input-port} able to deliver characters from
-C @var{string}. The buffer used by the input port is the exact
-same string as the argument. That is, no buffer is allocated.
-
 
 @deffn {bigloo procedure} open-input-ftp-file
 Returns an @code{input-port} able to deliver characters from a

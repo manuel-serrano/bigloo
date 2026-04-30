@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Thu Apr 30 11:32:39 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 12:01:50 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -539,7 +539,7 @@
 	    (inline closed-output-port?::bool ::output-port)
 	    (output-port-close-hook-set! ::output-port ::procedure)
 	    (inline output-port-flush-hook::obj ::output-port)
-	    (output-port-flush-hook-set! ::output-port ::obj)
+	    (output-port-flush-hook-set! ::output-port ::procedure)
 	    (inline output-port-flush-buffer::obj ::output-port)
 	    (inline output-port-flush-buffer-set! ::output-port ::obj)
 	    (inline input-port-close-hook::obj ::input-port)
@@ -1207,7 +1207,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-c-string ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (open-input-c-string string)
+(define-inline (open-input-c-string string::string)
    ($open-input-c-string string))
 
 ;*---------------------------------------------------------------------*/
@@ -1440,22 +1440,22 @@
    ($input-port-length port))
 
 ;*---------------------------------------------------------------------*/
-;*    output-port-close-hook ...                                       */
-;*---------------------------------------------------------------------*/
-(define-inline (output-port-close-hook port)
-   ($output-port-chook port))
-
-;*---------------------------------------------------------------------*/
 ;*    closed-output-port? ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (closed-output-port? port)
+(define-inline (closed-output-port? port::output-port)
    ($closed-output-port? port))
+
+;*---------------------------------------------------------------------*/
+;*    output-port-close-hook ...                                       */
+;*---------------------------------------------------------------------*/
+(define-inline (output-port-close-hook port::output-port)
+   ($output-port-chook port))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-port-close-hook-set! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (output-port-close-hook-set! port proc)
-   (if (not (and (procedure? proc) (correct-arity? proc 1)))
+(define (output-port-close-hook-set! port::output-port proc::procedure)
+   (if (not (correct-arity? proc 1))
        (error/errno $errno-io-port-error
 	  "output-port-close-hook-set!" "Illegal hook" proc)
        (begin
@@ -1472,7 +1472,7 @@
 ;*    output-port-flush-hook-set! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (output-port-flush-hook-set! port::output-port proc::procedure)
-   (if (and (procedure? proc) (not (correct-arity? proc 2)))
+   (if (not (correct-arity? proc 2))
        (error/errno $errno-io-port-error
 	  "output-port-flush-hook-set!" "Illegal hook" proc)
        (begin
@@ -1502,7 +1502,7 @@
 ;*    input-port-close-hook-set! ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (input-port-close-hook-set! port::input-port proc::procedure)
-   (if (not (and (procedure? proc) (correct-arity? proc 1)))
+   (if (not (correct-arity? proc 1))
        (error/errno $errno-io-port-error
 	  "input-port-close-hook-set!" "Illegal hook" proc)
        (begin
