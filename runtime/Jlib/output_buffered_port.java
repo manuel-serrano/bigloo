@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Apr 29 08:11:07 2026                          */
-/*    Last change :  Wed Apr 29 08:11:32 2026 (serrano)                */
+/*    Last change :  Wed Apr 29 18:56:47 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Buffered OutputStream                                            */
@@ -19,28 +19,8 @@ public class output_buffered_port extends output_stream_port {
    byte[] buffer;
    int count;
    
-   public output_buffered_port() {
-      super();
-      buffer = null;
-      count = 0;
-   }
-   
    public output_buffered_port(final OutputStream stream, byte[] _buffer, final byte[] name) {
       super(stream, name);
-      buffer = _buffer;
-      count = 0;
-   }
-   
-   public output_buffered_port(final byte[] file, byte[] _buffer, final boolean append) throws IOException {
-      super(file, append);
-      buffer = _buffer;
-      count = 0;
-   }
-   
-   public output_buffered_port(final byte[] file,
-			       byte[] _buffer)
-      throws IOException {
-      super(file);
       buffer = _buffer;
       count = 0;
    }
@@ -50,23 +30,6 @@ public class output_buffered_port extends output_stream_port {
 	 return new output_stream_port(stream, name);
       } else {
 	 return new output_buffered_port(stream, buffer, name);
-      }
-   }
-   
-   public static output_port make_output_buffered_port(final byte[] file, byte[] buffer, final boolean app)
-      throws IOException {
-      if (buffer == null || buffer.length == 0) {
-	 return new output_stream_port(file, app);
-      } else {
-	 return new output_buffered_port(file, buffer, app);
-      }
-   }
-   
-   public static output_port make_output_buffered_port(final byte[] file, byte[] buffer) throws IOException {
-      if (buffer == null || buffer.length == 0) {
-	 return new output_stream_port(file);
-      } else {
-	 return new output_buffered_port(file, buffer);
       }
    }
    

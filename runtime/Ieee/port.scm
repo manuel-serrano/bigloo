@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed Apr 29 15:37:01 2026 (serrano)                */
+;*    Last change :  Wed Apr 29 19:47:46 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -109,7 +109,6 @@
 	    ($append-output-file::obj (::bstring ::bstring) "bgl_append_output_file")
 	    ($open-output-string::output-port (::bstring) "bgl_open_output_string")
 	    ($open-output-procedure::obj (::procedure ::procedure ::procedure ::bstring) "bgl_open_output_procedure")
-		;; FIXME: normally this function takes a obj (but WHY????)
 	    ($close-input-port::obj (::input-port) "bgl_close_input_port")
 	    ($input-port-reopen!::obj (::input-port) "bgl_input_port_reopen")
 	    ($input-port-clone!::input-port (::input-port ::input-port) "bgl_input_port_clone")
@@ -499,7 +498,7 @@
 	       #!optional (start 0) (end (string-length string)))
 	    (open-input-mmap::input-port mmap::mmap
 	       #!optional (start 0) (end (elong->fixnum (mmap-length mmap))))
-	    (open-input-procedure ::procedure #!optional (bufinfo #t))
+	    (open-input-procedure::input-port ::procedure #!optional (bufinfo #t))
 	    (open-input-gzip-port ::input-port  #!optional (bufinfo #t))
 	    
 	    (inline input-port-timeout::long ::input-port)
@@ -561,8 +560,8 @@
 	    (inline truncate-file::bool ::string ::long)
 	    (inline output-port-truncate::bool ::output-port ::long)
 	    (copy-file ::string ::string)
-	    (inline directory?::bool ::string)
-	    (inline directory-length ::string)
+	    (inline directory?::bool ::bstring)
+	    (inline directory-length::long ::bstring)
 	    (inline directory->list ::string)
 	    (directory->path-list ::bstring)
 	    (inline directory->vector::vector ::string)
@@ -628,7 +627,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    call-with-append-file ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (call-with-append-file string proc) 
+(define (call-with-append-file string::bstring proc::procedure) 
    (let ((port (append-output-file string)))
       (if (output-port? port)
 	  (unwind-protect
@@ -640,7 +639,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    call-with-output-string ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (call-with-output-string proc) 
+(define (call-with-output-string::bstring proc::procedure) 
    (let ((port (open-output-string)))
       (proc port)
       (close-output-port port)))
@@ -838,7 +837,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-output-to-string@ ...                                */
 ;*---------------------------------------------------------------------*/
-(define (with-output-to-string thunk::procedure)
+(define (with-output-to-string::bstring thunk::procedure)
    (let* ((port (open-output-string))
 	  (denv ($current-dynamic-env))
 	  (old-output-port (c-current-output-port denv))
@@ -1130,14 +1129,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-descriptor ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (open-input-descriptor fd #!optional (bufinfo #t))
+(define (open-input-descriptor fd::int #!optional (bufinfo #t))
    (let ((buffer (get-port-buffer "open-input-file" bufinfo c-default-io-bufsiz)))
       ($open-input-descriptor fd buffer)))
    
 ;*---------------------------------------------------------------------*/
 ;*    open-input-string ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (open-input-string string
+(define (open-input-string::input-port string::bstring
 	   #!optional (start 0) (end (string-length string)))
    (cond
       ((<fx start 0)
@@ -1154,7 +1153,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-string! ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (open-input-string! string
+(define (open-input-string!::input-port string::bstring
 	   #!optional (start 0) (end (string-length string)))
    (cond
       ((<fx start 0)
@@ -1171,7 +1170,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-mmap ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (open-input-mmap mmap::mmap
+(define (open-input-mmap::input-port mmap::mmap
 	   #!optional (start 0) (end (elong->fixnum (mmap-length mmap))))
    (cond
       ((<fx start 0)
@@ -1192,7 +1191,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-procedure ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (open-input-procedure proc #!optional (bufinfo #t))
+(define (open-input-procedure::input-port proc::procedure #!optional (bufinfo #t))
    (let ((buf (get-port-buffer "open-input-procedure" bufinfo 1024)))
       ($open-input-procedure proc buf)))
 
@@ -1236,7 +1235,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-output-file ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (open-output-file string #!optional (bufinfo #t))
+(define (open-output-file string::bstring #!optional (bufinfo #t))
    (let ((buf (get-port-buffer "open-output-file" bufinfo c-default-io-bufsiz)))
       ($open-output-file string buf)))
 
@@ -1250,7 +1249,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-output-string ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (open-output-string #!optional (bufinfo #t))
+(define (open-output-string::output-port #!optional (bufinfo #t))
    (let ((buf (get-port-buffer "open-output-file" bufinfo 128)))
       ($open-output-string buf)))
 
@@ -1281,7 +1280,7 @@
 	  "Illegal close procedure"
 	  flush))
       (else
-       (let ((buf (get-port-buffer "open-output-procedure" bufinfo 128)))
+       (let ((buf (get-port-buffer "open-output-procedure" bufinfo 0)))
 	  ($open-output-procedure proc flush close buf)))))
 
 ;*---------------------------------------------------------------------*/
@@ -1293,31 +1292,31 @@
 ;*---------------------------------------------------------------------*/
 ;*    closed-input-port? ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (closed-input-port? port)
+(define-inline (closed-input-port?::bool port::input-port)
    (c-closed-input-port? port))
 
 ;*---------------------------------------------------------------------*/
 ;*    close-input-port ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (close-input-port port)
+(define-inline (close-input-port port::input-port)
    ($close-input-port port))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-output-string ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (get-output-string port)
+(define-inline (get-output-string::bstring port::output-port)
    (c-get-output-string port))
 
 ;*---------------------------------------------------------------------*/
 ;*    close-output-port ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (close-output-port port)
+(define-inline (close-output-port port::output-port)
    ($close-output-port port))
 
 ;*---------------------------------------------------------------------*/
 ;*    flush-output-port ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (flush-output-port port)
+(define-inline (flush-output-port port::output-port)
    (c-flush-output-port port))
 
 ;*---------------------------------------------------------------------*/
@@ -1628,19 +1627,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    port? ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (port? obj)
+(define-inline (port?::bool obj)
    (or (output-port? obj) (input-port? obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    directory? ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (directory? string)
+(define-inline (directory?::bool string::bstring)
    ($directory? string))
 
 ;*---------------------------------------------------------------------*/
 ;*    directory-length ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (directory-length string)
+(define-inline (directory-length::long string::bstring)
    ($directory-length string))
 
 ;*---------------------------------------------------------------------*/

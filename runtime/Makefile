@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Apr 29 07:48:38 2026 (serrano)                */
+#*    Last change :  Wed Apr 29 18:56:09 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -206,8 +206,9 @@ endif
 
 JLIB		= callable foreign buffer configure stackwriter\
                   bbool output_string_port output_procedure_port \
-		  output_stream_port bchar input_console_port pair \
-		  bexception input_file_port  input_mmap_port\
+		  output_stream_port output_buffered_port bchar \
+                  input_console_port pair bexception input_file_port \
+                  input_mmap_port \
                   procedure \
 		  bignum bint input_port real \
 		  bllong belong input_string_port input_pipe_port rest \

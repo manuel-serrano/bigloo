@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Tue Apr 28 08:03:49 2026 (serrano)                */
+;*    Last change :  Wed Apr 29 19:46:51 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -41,6 +41,7 @@
      ("hash" . "hash.html")
      ("i/o" . "io.html")
      ("pairs and lists" . "pair.html")
+     ("ports" . "port.html")
      ("strings" . "string.html")
      ("vectors" . "vector.html")))
 

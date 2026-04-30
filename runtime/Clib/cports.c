@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Apr 28 11:33:06 2026 (serrano)                */
+/*    Last change :  Thu Apr 30 07:14:48 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input/Output ports native implementation.                        */
 /*=====================================================================*/
@@ -1239,7 +1239,6 @@ bgl_open_output_procedure(obj_t proc, obj_t flush, obj_t close, obj_t buf) {
 				     KINDOF_PROCEDURE,
 				     make_string_sans_fill(0),
 				     (ssize_t (*) (void*, void*, size_t))procwrite, 0L, 0L);
-   /* MS, 9 apri 2009: used to be create_vector(5)! */
    obj_t udata = create_vector(4);
    
    PORT_CHANNEL(port) = port;
@@ -3143,19 +3142,26 @@ procwrite(obj_t port, void *str, size_t sz) {
    obj_t buf = VECTOR_REF(PORT(port).userdata, 1);
    int len = BGL_STRING_LENGTH(buf);
 
-   if (sz > len) {
-      buf = make_string_sans_fill(sz + 1);
-      len = sz + 1;
-      VECTOR_SET(PORT(port).userdata, 1, buf);
-   }
+   if (len == 0) {
+      obj_t tmp = make_string_sans_fill(sz);
+      memcpy(&STRING_REF(tmp, 0), str, sz);
+      BGL_PROCEDURE_CALL1(proc, tmp);
+   } else {
+   
+      if (sz > len) {
+	 buf = make_string_sans_fill(sz + 1);
+	 len = sz + 1;
+	 VECTOR_SET(PORT(port).userdata, 1, buf);
+      }
       
-   memcpy(&STRING_REF(buf, 0), str, sz);
-   STRING_SET(buf, sz, '\0');
-   BGL_STRING_LENGTH_SET(buf, sz);
+      memcpy(&STRING_REF(buf, 0), str, sz);
+      STRING_SET(buf, sz, '\0');
+      BGL_STRING_LENGTH_SET(buf, sz);
    
-   BGL_PROCEDURE_CALL1(proc, buf);
+      BGL_PROCEDURE_CALL1(proc, buf);
    
-   BGL_STRING_LENGTH_SET(buf, len);
+      BGL_STRING_LENGTH_SET(buf, len);
+   }
 
    return sz;
 }

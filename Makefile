@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Apr 28 10:08:45 2026 (serrano)                */
+#*    Last change :  Wed Apr 29 18:01:03 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -799,7 +799,6 @@ install-api: install-dirs
 	done
 
 install-docs: install-dirs
-	$(MAKE) -C doc manuals
 	$(MAKE) -C doc install
 
 install-jigloo: install-dirs

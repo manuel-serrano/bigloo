@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Wed Apr 29 06:59:09 2026 (serrano)                */
+/*    Last change :  Thu Apr 30 06:53:31 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -5523,7 +5523,11 @@ public final class foreign {
    }
 
    public static Object bgl_open_input_descriptor(int fd, byte[] b) {
-      return BFALSE;
+      if (fd == 0) {
+         return new input_console_port(new byte[ foreign.default_io_bufsiz ]);
+      } else {
+         return BFALSE;
+      }
    }
 
    public static Object bgl_open_input_pipe(byte[] s, byte[] b) {
@@ -5586,7 +5590,7 @@ public final class foreign {
    }
 
    public static int bgl_input_port_timeout(input_port p) {
-      return 0;
+      return p.timeout();
    }
    
    public static boolean bgl_input_port_timeout_set(input_port p, int to) {
