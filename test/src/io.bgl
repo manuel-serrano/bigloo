@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Wed Apr 29 19:04:43 2026 (serrano)                */
+;*    Last change :  Wed Apr 29 19:44:26 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing I/O                                                      */
@@ -32,4 +32,9 @@
 ;*---------------------------------------------------------------------*/
 (define-test read (call-with-input-string "(foo \"bar\" 1)" read)
    :expected '(foo "bar" 1))
-   
+
+(define-test eof-object? (eof-object? '())
+   :expected #f)
+
+(define-test eof-objects? (eof-object? (read (open-input-string "")))
+   :expected #t)

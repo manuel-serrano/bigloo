@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/runtime/Jlib/input_datagram_port.java         */
+/*    .../bigloo/5.0a/runtime/Jlib/input_datagram_port.java            */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 11:53:13 2000                          */
-/*    Last change :  Mon Oct 24 13:45:50 2016 (serrano)                */
-/*    Copyright   :  2000-16 Manuel Serrano                            */
+/*    Last change :  Thu Apr 30 08:20:41 2026 (serrano)                */
+/*    Copyright   :  2000-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JVM Socket input ports implementation.                           */
 /*=====================================================================*/
@@ -20,9 +20,8 @@ public class input_datagram_port extends input_port {
    private int port;
    private datagram_server_socket socket;
 
-   public input_datagram_port( final datagram_server_socket s,
-			       final int p ) {
-      super( "[datagram-socket]", null );
+   public input_datagram_port(final datagram_server_socket s, final int p) {
+      super("[datagram-socket]", null);
       socket = s;
       port = p;
    }
@@ -45,14 +44,14 @@ public class input_datagram_port extends input_port {
 
       // if the buffer is not full, we fill it */
       if (bufpose < bufsize)
-	 return rgc_size_fill_con_buffer( bufpose, bufsize-bufpose );
+	 return rgc_size_fill_con_buffer(bufpose, bufsize-bufpose);
 
       if (0 < matchstart) {
 	 // we shift the buffer left and we fill the buffer */
 	 final byte[] buffer = this.buffer;
 	 final int movesize = bufpose-matchstart;
 
-	 for ( int i = 0 ; i < movesize ; ++i )
+	 for (int i = 0 ; i < movesize ; ++i)
 	    buffer[i] = buffer[matchstart+i];
 
 	 bufpose -= matchstart;
@@ -61,7 +60,7 @@ public class input_datagram_port extends input_port {
 	 this.forward -= matchstart;
 	 this.lastchar = buffer[matchstart-1];
 
-	 return rgc_size_fill_con_buffer( bufpose, bufsize-bufpose );
+	 return rgc_size_fill_con_buffer(bufpose, bufsize-bufpose);
       }
 
       // we current token is too large for the buffer */
@@ -71,13 +70,12 @@ public class input_datagram_port extends input_port {
       return rgc_fill_buffer();
    }
 
-   final boolean rgc_size_fill_con_buffer( int bufpose, final int size )
-      throws IOException {
+   final boolean rgc_size_fill_con_buffer(int bufpose, final int size) throws IOException {
       // we start reading at BUFPOSE - 1 because we have */
       // to remove the '\0' sentinel that ends the buffer */
       final byte[] buffer = this.buffer;
 
-      socket.socket.receive( new DatagramPacket( buffer, bufpose, size ) );
+      socket.socket.receive(new DatagramPacket(buffer, bufpose, size));
       
       final int nbread = size;
 
@@ -90,19 +88,26 @@ public class input_datagram_port extends input_port {
       return (0 < bufpos);
    }
 
-   public Object bgl_input_port_clone( input_port src )
-      {
-	 super.bgl_input_port_clone( src );
-	 socket = ((input_datagram_port)src).socket;
+   public Object bgl_input_port_clone(input_port src) {
+      super.bgl_input_port_clone(src);
+      socket = ((input_datagram_port)src).socket;
 
-	 return this;
-      }
-   
-   public boolean timeout_set( int to ) {
+      return this;
+   }
+
+   public int timeout() {
       try {
-	 socket.socket.setSoTimeout( to );
+	 return socket.socket.getSoTimeout() * 1000;
+      } catch (SocketException e) {
+	 return 0;
+      }
+   }
+   
+   public boolean timeout_set(int to) {
+      try {
+	 socket.socket.setSoTimeout(to);
 	 return true;
-      } catch( Exception _e ) {
+      } catch(Exception _e) {
 	 return false;
       }
    }

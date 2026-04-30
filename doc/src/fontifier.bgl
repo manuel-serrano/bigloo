@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Wed Apr 22 11:16:42 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 08:31:03 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -441,6 +441,9 @@
 ;*---------------------------------------------------------------------*/
 (define *hop-keywords*
    (let ((t (make-hashtable)))
+      (for-each (lambda (k)
+                   (hashtable-put! t k "compilation"))
+         '("cond-expand"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "define"))
 	 '("define" "module" "define-macro" "define-generic" "define-inline"

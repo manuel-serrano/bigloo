@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/runtime/Jlib/input_socket_port.java      */
+/*    .../project/bigloo/5.0a/runtime/Jlib/input_socket_port.java      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 11:53:13 2000                          */
-/*    Last change :  Mon Oct 24 13:45:28 2016 (serrano)                */
-/*    Copyright   :  2000-16 Manuel Serrano                            */
+/*    Last change :  Thu Apr 30 08:27:02 2026 (serrano)                */
+/*    Copyright   :  2000-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JVM Socket input ports implementation.                           */
 /*=====================================================================*/
@@ -20,20 +20,21 @@ public class input_socket_port extends input_port {
    public InputStream in;
    private Socket socket;
 
-   public input_socket_port( final Socket s, final byte[] buf ) {
-      super( "[socket]", buf );
+   public input_socket_port(final Socket s, final byte[] buf) {
+      super("[socket]", buf);
       socket = s;
       InputStream is;
       
       try { 
 	 is = socket.getInputStream();
-      } catch( IOException _i ) {
+      } catch(IOException _i) {
 	 is = null;
       }
 
       in = is;
-      if( in == null )
-	 foreign.fail( "socket", "Cannot find socket input stream", this );
+      if (in == null) {
+	 foreign.fail("socket", "Cannot find socket input stream", this);
+      }
    }
 
    public void close() {
@@ -42,7 +43,7 @@ public class input_socket_port extends input_port {
       buffer = null;
       try {
 	 in.close();
-      } catch( Throwable _t ) {
+      } catch(Throwable _t) {
 	 ;
       }
       super.close();
@@ -50,7 +51,7 @@ public class input_socket_port extends input_port {
 
    public boolean rgc_charready() {
       try {
-	 return ( (forward+1) < bufpos) || (0 < in.available());
+	 return ((forward+1) < bufpos) || (0 < in.available());
       } catch (final Exception _e) {
 	 return false;
       }
@@ -63,7 +64,7 @@ public class input_socket_port extends input_port {
 
       // if the buffer is not full, we fill it */
       if (bufpose < bufsize) {
-	 return rgc_size_fill_con_buffer( bufpose, bufsize-bufpose );
+	 return rgc_size_fill_con_buffer(bufpose, bufsize-bufpose);
       }
 
       if (0 < matchstart) {
@@ -71,7 +72,7 @@ public class input_socket_port extends input_port {
 	 final byte[] buffer = this.buffer;
 	 final int movesize = bufpose-matchstart;
 
-	 for ( int i = 0 ; i < movesize ; ++i )
+	 for (int i = 0 ; i < movesize ; ++i)
 	    buffer[i] = buffer[matchstart+i];
 
 	 bufpose -= matchstart;
@@ -80,7 +81,7 @@ public class input_socket_port extends input_port {
 	 this.forward -= matchstart;
 	 this.lastchar = buffer[matchstart-1];
 
-	 return rgc_size_fill_con_buffer( bufpose, bufsize-bufpose );
+	 return rgc_size_fill_con_buffer(bufpose, bufsize-bufpose);
       }
 
       // we current token is too large for the buffer */
@@ -90,39 +91,47 @@ public class input_socket_port extends input_port {
       return rgc_fill_buffer();
    }
 
-   final boolean rgc_size_fill_con_buffer( int bufpose, final int size )
+   final boolean rgc_size_fill_con_buffer(int bufpose, final int size)
       throws IOException {
       // we start reading at BUFPOSE - 1 because we have */
       // to remove the '\0' sentinel that ends the buffer */
       final byte[] buffer = this.buffer;
 
       // FIX Dustin DeWeese" <dustin.deweese gmail.com> Feb 2006.
-      // final int nbread = in.read( buffer, bufpose-1, (a < size ? a : size) );
-      final int nbread = in.read( buffer, bufpose, size );
+      // final int nbread = in.read(buffer, bufpose-1, (a < size ? a : size));
+      final int nbread = in.read(buffer, bufpose, size);
      
-      if (nbread == -1)
+      if (nbread == -1) {
 	 eof = true;
-      else
+      } else {
 	 bufpose += nbread;
+      }
 
       this.bufpos = bufpose;
       return (0 < bufpos);
    }
 
-   public Object bgl_input_port_clone( input_port src )
-      {
-	 super.bgl_input_port_clone( src );
-	 in = ((input_socket_port)src).in;
-	 socket = ((input_socket_port)src).socket;
+   public Object bgl_input_port_clone(input_port src) {
+      super.bgl_input_port_clone(src);
+      in = ((input_socket_port)src).in;
+      socket = ((input_socket_port)src).socket;
 
-	 return this;
-      }
-   
-   public boolean timeout_set( int to ) {
+      return this;
+   }
+
+   public int timeout() {
       try {
-	 socket.setSoTimeout( to );
+	 return socket.getSoTimeout() * 1000;
+      } catch (SocketException e) {
+	 return 0;
+      }
+   }
+   
+   public boolean timeout_set(int to) {
+      try {
+	 socket.setSoTimeout(to);
 	 return true;
-      } catch( Exception _e ) {
+      } catch (Exception _e) {
 	 return false;
       }
    }

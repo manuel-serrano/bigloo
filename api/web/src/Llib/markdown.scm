@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 17:38:56 2026                          */
-;*    Last change :  Wed Apr 22 10:05:56 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 07:38:05 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Markdown parser                                                  */
@@ -1077,7 +1077,7 @@
 			  (href)
 			  (consume-token! 'CPAR)
 			  (state-add! state
-			     (xml-element 'URL `((url . url) (title . title))
+			     (xml-element 'A `((href . ,url) (title . ,title))
 				(reverse! (-> lstate elements))))))
 		      ((text)
 		       (let ((tok (consume-any!)))
