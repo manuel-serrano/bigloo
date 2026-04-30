@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Apr 24 07:53:17 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 09:48:41 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -159,9 +159,11 @@
       (unless (null? *rest-args*)
 	 (warning "Don't know what to do with arguments: " *rest-args*))
       
-      ;; we read access file
+      ;; read access file (for module 4)
       (profile afile (read-access-files))
-      (profile package (read-jfile))
+      (when (eq? (backend-language (the-backend)) 'jvm)
+         ;; read the java package/class association table
+         (profile package (read-jfile)))
 
       ;; create (or restore) the compilation environment
       (if *lib-mode*

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Thu Apr 30 08:31:03 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 09:13:42 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -450,7 +450,8 @@
 	   "define-method" "define-service" "define-expander" "define-tag"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "reserved"))
-	 '("lambda" "service" "let" "let*" "letrec" "if" "when" "unless"
+	 '("lambda" "service" "let" "let*" "letrec" "letrec*"
+           "if" "when" "unless"
 	   "begin" "cond" "case" "instantiate" "set!" "else" "with-access"
 	   "multiple-value-bind" "values" "match-case" "node-style-set!"))
       (for-each (lambda (k)

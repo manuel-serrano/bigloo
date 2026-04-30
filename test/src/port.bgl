@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Wed Apr 29 19:46:02 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 08:51:58 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing ports                                                    */
@@ -86,6 +86,33 @@
    (read (open-input-string! "1900"))
    :expected 1900)
 
+(define-test open-input-mmap
+   (let* ((mmap (open-mmap "misc/input.txt" :read #t :write #f))
+          (ip (open-input-mmap mmap)))
+      (unwind-protect
+         (read ip)
+         (begin
+            (close-input-port ip)
+            (close-mmap mmap))))
+   :expected 'Toto)
+
+(define-test open-input-gzip-file
+   (let ((ip (open-input-gzip-file "misc/input.txt.gz")))
+      (unwind-protect
+         (read ip)
+         (close-input-port ip)))
+   :expected 'Toto)
+
+(define-test open-input-gzip-port
+   (let* ((zp (open-input-file "misc/input.txt.gz"))
+          (ip (open-input-gzip-port zp)))
+      (unwind-protect
+         (read ip)
+         (begin
+            (close-input-port ip)
+            (close-input-port zp))))
+   :expected 'Toto)
+
 (define-test close-input-port
    (closed-input-port? (close-input-port (open-input-file "/dev/null")))
    :expected #t)
@@ -116,6 +143,25 @@
       (display 100 p)
       (close-output-port p))
    :expected "foo100")
+
+(define-test open-output-procedure
+   (letrec* ((buf #f)
+             (last #f)
+             (flush #unspecified)
+             (op (open-output-procedure
+                    (lambda (x)
+                       (set! last x)
+                       (set! buf x))
+                    (lambda ()
+                       (set! flush last)))))
+      (unwind-protect
+         (begin
+            (display "foo" op)
+            (flush-output-port op)
+            (display "bar" op)
+            (cons flush buf))
+         (close-output-port op)))
+   :expected '("foo" . "bar"))
 
 (define-test input-port? (input-port? (current-input-port))
    :expected #t)
@@ -204,7 +250,15 @@
       (lambda ()
          (read)))
    :expected 1)
-         
+
+(define-test with-input-from-port
+   (call-with-input-string "(7 8)"
+      (lambda (ip)
+         (with-input-from-port ip
+            (lambda ()
+               (read)))))
+   :expected '(7 8))
+            
 (define-test with-output-to-file
    (with-output-to-file "/dev/null"
       (lambda ()
@@ -224,7 +278,7 @@
       (lambda ()
          (display 1)))
    :expected "1")
-         
+
 (define-test with-output-to-procedure
    (let ((buf #f)
          (last #f))
@@ -238,7 +292,15 @@
                (display #f)))
          buf))
    :expected "#f")
-         
+
+(define-test with-output-to-port
+   (call-with-output-string
+      (lambda (op)
+         (with-output-to-port op
+            (lambda ()
+               (display '#(123))))))
+   :expected "#(123)")
+   
 (define-test with-error-to-string
    (with-error-to-string
       (lambda ()
@@ -261,6 +323,14 @@
          buf))
    :expected "123")
          
+(define-test with-error-to-port
+   (call-with-output-string
+      (lambda (op)
+         (with-error-to-port op
+            (lambda ()
+               (display '#(123) (current-error-port))))))
+   :expected "#(123)")
+
 (define-test input-port-name
    (call-with-input-file "/etc/passwd" input-port-name)
    :expected "/etc/passwd")

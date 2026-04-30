@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed Apr 29 19:47:46 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 08:56:54 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -871,7 +871,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-error-to-string@ ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (with-error-to-string thunk::procedure)
+(define (with-error-to-string::bstring thunk::procedure)
    (let ((port (open-output-string)))
       (if (output-port? port)
 	  (let* ((denv ($current-dynamic-env))

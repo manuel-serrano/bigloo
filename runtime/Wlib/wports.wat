@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Tue Apr 28 11:35:24 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 10:33:27 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -1615,16 +1615,9 @@
       (param $start i32)
       (param $size i32)
       (result (ref eq))
-      (call $output_flush (local.get $op)
+      (return_call $output_flush (local.get $op)
 	 (local.get $str) (local.get $start) (local.get $size)
 	 (i32.const 0) (i32.const 1))
-      (if (ref.is_null (struct.get $output-port $sysflush (local.get $op)))
-	  (then
-	     (return (global.get $BTRUE)))
-	  (else
-	   (return_call_ref $sysflush_t
-	      (local.get $op)
-	      (struct.get $output-port $sysflush (local.get $op)))))
       (unreachable))
 
    ;; $charbuf

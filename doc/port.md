@@ -157,6 +157,25 @@ the boolean `#f`. This last value stands for the end of file.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
+### open-input-mmap ###
+
+The arguments `start` and `end` must be exact integers satisfying:
+0 &le; `start` &le; `end` &le; `(mmap-length string)`.
+
+Returns an `input-port` able to deliver characters from `mmap`.
+
+See the [mmap](mmap.html) documentation.
+
+### open-input-gzip-file ###
+
+Open a gzipped file for input and a port on a gzipped stream.
+
+### open-input-gzip-port ###
+
+Open a gzipped port for input and a port on a gzipped stream.
+Note that closing a gzip port opened from a port `pi` does not close
+the `pi` port.
+
 ### open-output-file ###
 The same syntax as `open-input-file` for file names applies here.
 When a file name starts with `| `, Bigloo opens an output pipe
@@ -175,13 +194,18 @@ characters accumulated in the port.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
-### close-input-port ###
-Closes an `input-port`.
+### open-output-procedure ###
+This function returns an _output procedure port_. This object has almost
+the same purpose as `output-port`. It can be used with all
+the printer functions which accept `output-port`. An output
+on a _output procedure port_ invokes the `proc` procedure
+each time it is used for writing. That is, `proc` is invoked with a
+string denoting the displayed characters. When the function
+`flush-output-port` is called on such a port, the optional
+`flush` procedure is invoked. When the function `close-output-port`
+is called on such a port, the optional `close` procedure is invoked.
 
-### close-output-port ###
-Closes an `output-port`. If it was created using
-@code{open-output-string}, the value returned is the string consisting
-of all characters sent to the port.
+For the the optional argument `bufinfo` see [buffers](#buffers).
 
 Default ports
 -------------
@@ -201,6 +225,9 @@ port of the application.
 Predicates
 ----------
 
+### port? ###
+Returns `#t` if `obj` is any kind of ports. Returns `#f` otherwise.
+
 ### input-port? ###
 Returns `#t` iff `obj` is an `input-port`. Returns `#f` otherwise.
 
@@ -214,9 +241,6 @@ Returns `#t` iff `obj` is an `output-port`. Returns `#f` otherwise.
 ### output-string-port? ###
 Returns `#t` iff `obj` is an `output-port` opened on a string. Returns
 `#f` otherwise.
-
-### port? ###
-Returns `#t` if `obj` is any kind of ports. Returns `#f` otherwise.
 
 ### closed-input-port? ###
 Predicates that returns `#t` if and if their associated port is closed.
@@ -279,12 +303,28 @@ Reading on an output port which exceeds the timeout triggers an exception.
 > value returned by `output-port-timeout` means that timeouts for this
 > output port are not supported.
 
-### output -port-timeout-set! ###
-Sets a timeout of this `port`. The timeout is expressed in microseconds 
-(1 second = 1,000,000 microseconds).
+### output-port-timeout-set! ###
+If the `timeout` limit (expressed in microseconds) exceededs, an exception
+of time `&io-timeout-error` is raised.
+
+Setting a timeout equal to 0, restore the socket in blocking mode. Setting
+a timeout with a value lesser than 0 is ignored.
+
+> [!NOTE]
+> Ports created from sockets share their internal file descriptor. Hence
+> it is erroneous to set a timeout for only one of the two ports. Both
+> must be set.
 
 Library Functions
 -----------------
+
+### close-input-port ###
+Closes an `input-port`.
+
+### close-output-port ###
+Closes an `output-port`. If it was created using
+`open-output-string`, the value returned is the string consisting
+of all characters sent to the port.
 
 ### call-with-input-file ###
 Invokes `proc` with an input port opened on `file`. Returns the result
@@ -317,6 +357,9 @@ current input port and `thunk` is called.
 A port is opened from the `procedure`. This `port` is made the
 current input port and `thunk` is called. 
 
+### with-input-from-port ###
+Invokes `thunk` with `port` being made the current input port.
+
 ### with-output-to-file ###
 A port is opened from file `string`. This port is made the
 current output port and `thunk` is called. 
@@ -334,6 +377,9 @@ Returns the string formed by all the written characters.
 A procedure port is opened. This port is made the
 current iutput port and `thunk` is called. 
 
+### with-output-to-port ###
+Invokes `thunk` with `port` being made the current output port.
+
 ### with-error-to-file ###
 A port is opened from file `string`. This port is made the
 current error port and `thunk` is called. 
@@ -346,24 +392,13 @@ current error port and `thunk` is called.
 An error port is opened. This port is made the
 current error port and `thunk` is called. 
 
+### with-error-to-port ###
+Invokes `thunk` with `port` being made the current error port.
+
 ### get-output-string ###
 Given an output port created by `open-output-string`, 
 returns a string consisting of the characters that have been 
 output to the port so far. 
-
-@deffnx {bigloo (>=3.6b) procedure} output-port-timeout
-@deffnx {bigloo (>=2.8b) procedure} output-port-timeout-set
-Setting a port timeout limits the time an read or write operation may last.
-If the @var{time} limit (expressed in microseconds) exceeded, an exception
-of time @code{&io-timeout-error} is raised.
-
-Setting a timeout equal to 0, restore the socket in blocking mode. Setting
-a timeout with a value lesser than 0 is ignored.
-
-Note: ports created from sockets share their internal file descriptor. Hence
-it is erroneous to set a timeout for only one of the two ports. Both
-must be set.
-
 
 @deffn {bigloo procedure} output-port-flush-hook
 @deffnx {bigloo procedure} output-port-flush-hook-set
@@ -417,52 +452,6 @@ Example:
   (close-input-port p))
 @end smalllisp
 
-
-
-@deffn {bigloo procedure} with-input-from-port
-@deffnx {bigloo procedure} with-output-to-port
-@deffnx {bigloo procedure} with-error-to-port
-
-@code{with-input-from-port}, @code{with-output-to-port} and
-@code{with-error-to-port} all suppose @var{port} to be a legal port. They 
-call @var{thunk} making @var{port} the current input (resp. output or
-error) port. None of these functions close @var{port} on the continuation 
-of @var{thunk}.
-
-@smalllisp
-(with-output-to-port (current-error-port) 
-   (lambda () (display "hello")))
-@end smalllisp
-
-
-@deffn {bigloo procedure} open-input-gzip-file
-@deffnx {bigloo procedure} open-input-gzip-port
-@cindex zip
-@cindex gzip
-
-Open respectively a gzipped file for input and a port on a gzipped stream.
-Note that closing a gzip port opened from a port @var{pi} does not close
-the @var{pi} port.
-
-@smalllisp
-(let ((p (open-input-gzip-file "bigloo.tar.gz")))
-   (unwind-protect
-      (read-line p1)
-      (close-input-port p)))
-@end smalllisp
-
-This can be decomposed as:
-
-@smalllisp
-(let* ((p1 (open-input-file "bigloo.tar.gz"))
-       (p2 (open-input-gzip-port p1)))
-   (unwind-protect
-      (read-line p2)
-      (close-input-port p2)
-      (close-input-port p1)))
-@end smalllisp
-
-
 @deffn {bigloo procedure} open-input-zlib-file@deffnx {bigloo procedure} open-input-zlib-port
 @cindex zip
 @cindex gzip
@@ -503,19 +492,6 @@ The file name may contain user authentication such as:
 
 
 
-@deffn {bigloo procedure} open-input-mmap
-@var{mmap} must be a mmap, and @var{start} and @var{end} must be
-exact integers satisfying:
-
-@smallexample
-  0 <= START <= END <= (mmap-length STRING)
-@end smallexample
-
-The optional argument @var{end} defaults to @code{(mmap-length STRING)}.
-
-Returns an @code{input-port} able to deliver characters from
-@var{mmap}.
-
 
 @deffn {bigloo procedure} unread-char
 @deffnx {bigloo procedure} unread-string
@@ -543,17 +519,6 @@ Example:
 
 
 
-@deffn {bigloo procedure} open-output-procedure
-This function returns an @emph{output procedure port}. This object has almost
-the same purpose as @code{output-port}. It can be used with all
-the printer functions which accept @code{output-port}. An output
-on a @emph{output procedure port} invokes the @var{proc} procedure
-each time it is used for writing. That is, @var{proc} is invoked with a
-string denoting the displayed characters. When the function
-@code{flush-output-port} is called on such a port, the optional
-@var{flush} procedure is invoked. When the function @code{close-output-port}
-is called on such a port, the optional @var{close} procedure is invoked.
-
 
 @deffn {bigloo procedure} set-input-port-position
 @deffnx {bigloo procedure} set-output-port-position
@@ -562,11 +527,6 @@ position, measured in bytes, is specified by @var{pos}. It is an error
 to seek a port that cannot be changed (for instance, a procedure or a 
 console port). The result of these functions is unspecified. An error
 is raised if the position cannot be changed.
-
-
-@deffn {bigloo procedure} input-port-reopen
-This function re-opens the input @code{input-port}. That is, it reset the
-position in the @var{input-port} to the first character.
 
 
 @deffn {procedure} read
