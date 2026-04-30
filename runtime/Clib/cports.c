@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Thu Apr 30 07:14:48 2026 (serrano)                */
+/*    Last change :  Thu Apr 30 10:57:14 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input/Output ports native implementation.                        */
 /*=====================================================================*/
@@ -1911,7 +1911,6 @@ bgl_open_input_gzip_port(obj_t fun, obj_t in, obj_t buffer) {
 					buffer);
 
       CREF(port)->port.stream.channel = port;
-      //CREF(port)->port.name = fun;
       CREF(port)->input_procedure_port.proc = fun;
       CREF(port)->input_procedure_port.pbuffer = BUNSPEC;
       CREF(port)->input_procedure_port.pbufpos = 0;

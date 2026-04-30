@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Tue Apr 28 11:39:51 2026                          */
-/*    Last change :  Wed Apr 29 06:55:15 2026 (serrano)                */
+/*    Last change :  Thu Apr 30 12:40:34 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Output ports                                                     */
@@ -39,6 +39,7 @@ public abstract class output_port extends obj {
          ((procedure)chook).funcall1(this);
       }
 
+      isclosed = true;
       return this;
    }
 

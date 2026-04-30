@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Wed Apr 29 19:46:02 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 12:03:34 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing ports                                                    */
@@ -82,9 +82,44 @@
    (read-char (open-input-string "A"))
    :expected #\A)
 
+(define-test open-input-string
+   (read-string (open-input-string "ABCDE" 1 3))
+   :expected "BC")
+
 (define-test open-input-string!
    (read (open-input-string! "1900"))
    :expected 1900)
+
+(define-test open-input-c-string
+   (read-char (open-input-c-string "A"))
+   :expected #\A)
+
+(define-test open-input-mmap
+   (let* ((mmap (open-mmap "misc/input.txt" :read #t :write #f))
+          (ip (open-input-mmap mmap)))
+      (unwind-protect
+         (read ip)
+         (begin
+            (close-input-port ip)
+            (close-mmap mmap))))
+   :expected 'Toto)
+
+(define-test open-input-gzip-file
+   (let ((ip (open-input-gzip-file "misc/input.txt.gz")))
+      (unwind-protect
+         (read ip)
+         (close-input-port ip)))
+   :expected 'Toto)
+
+(define-test open-input-gzip-port
+   (let* ((zp (open-input-file "misc/input.txt.gz"))
+          (ip (open-input-gzip-port zp)))
+      (unwind-protect
+         (read ip)
+         (begin
+            (close-input-port ip)
+            (close-input-port zp))))
+   :expected 'Toto)
 
 (define-test close-input-port
    (closed-input-port? (close-input-port (open-input-file "/dev/null")))
@@ -104,6 +139,14 @@
       (close-output-port p))
    :expected "foo")
 
+(define-test closed-output-port?
+   (closed-output-port? (close-output-port (open-output-file "/dev/null")))
+   :expected #t)
+
+(define-test closed-output-port?
+   (closed-output-port? (open-output-string ""))
+   :expected #f)
+
 (define-test open-output-file
    (let ((p (open-output-file "/dev/null")))
       (unwind-protect
@@ -116,6 +159,25 @@
       (display 100 p)
       (close-output-port p))
    :expected "foo100")
+
+(define-test open-output-procedure
+   (letrec* ((buf #f)
+             (last #f)
+             (flush #unspecified)
+             (op (open-output-procedure
+                    (lambda (x)
+                       (set! last x)
+                       (set! buf x))
+                    (lambda ()
+                       (set! flush last)))))
+      (unwind-protect
+         (begin
+            (display "foo" op)
+            (flush-output-port op)
+            (display "bar" op)
+            (cons flush buf))
+         (close-output-port op)))
+   :expected '("foo" . "bar"))
 
 (define-test input-port? (input-port? (current-input-port))
    :expected #t)
@@ -204,7 +266,15 @@
       (lambda ()
          (read)))
    :expected 1)
-         
+
+(define-test with-input-from-port
+   (call-with-input-string "(7 8)"
+      (lambda (ip)
+         (with-input-from-port ip
+            (lambda ()
+               (read)))))
+   :expected '(7 8))
+            
 (define-test with-output-to-file
    (with-output-to-file "/dev/null"
       (lambda ()
@@ -224,7 +294,7 @@
       (lambda ()
          (display 1)))
    :expected "1")
-         
+
 (define-test with-output-to-procedure
    (let ((buf #f)
          (last #f))
@@ -238,7 +308,15 @@
                (display #f)))
          buf))
    :expected "#f")
-         
+
+(define-test with-output-to-port
+   (call-with-output-string
+      (lambda (op)
+         (with-output-to-port op
+            (lambda ()
+               (display '#(123))))))
+   :expected "#(123)")
+   
 (define-test with-error-to-string
    (with-error-to-string
       (lambda ()
@@ -261,6 +339,14 @@
          buf))
    :expected "123")
          
+(define-test with-error-to-port
+   (call-with-output-string
+      (lambda (op)
+         (with-error-to-port op
+            (lambda ()
+               (display '#(123) (current-error-port))))))
+   :expected "#(123)")
+
 (define-test input-port-name
    (call-with-input-file "/etc/passwd" input-port-name)
    :expected "/etc/passwd")
@@ -288,12 +374,31 @@
          (input-port-position ip)))
    :expected 10)
 
+(define-test input-port-position-set!
+   (call-with-input-file "/etc/passwd"
+      (lambda (ip)
+         (input-port-position-set! ip 10)
+         (read-chars 10 ip)
+         (input-port-position ip)))
+   :expected 20)
+
 (define-test output-port-position
    (let ((op (open-output-string)))
       (unwind-protect
          (begin
             (display "foo" op)
-            (set-output-port-position! op 1)
+            (output-port-position-set! op 1)
+            (display "bar" op)
+            (output-port-position op))
+         (close-output-port op)))
+   :expected 4)
+
+(define-test output-port-position-set!
+   (let ((op (open-output-string)))
+      (unwind-protect
+         (begin
+            (display "foo" op)
+            (output-port-position-set! op 1)
             (display "bar" op)
             (output-port-position op))
          (close-output-port op)))
@@ -337,24 +442,62 @@
    :expected #t)
 
 (define-test output-port-timeout-set!
-   (let ((ip (open-output-string)))
+   (let ((op (open-output-string)))
       (unwind-protect
          (begin
-            (output-port-timeout-set! ip 10000)
-            (integer? (output-port-timeout ip)))
-         (close-output-port ip)))
+            (output-port-timeout-set! op 10000)
+            (integer? (output-port-timeout op)))
+         (close-output-port op)))
    :expected #t)
 
 (define-test output-port-timeout-set!
-   (let ((ip (open-output-string)))
+   (let ((op (open-output-string)))
       (unwind-protect
          (begin
-            (output-port-timeout-set! ip 10000)
+            (output-port-timeout-set! op 10000)
             (cond-expand
-               (c (output-port-timeout ip))
+               (c (output-port-timeout op))
                (else 10000)))
-         (close-output-port ip)))
+         (close-output-port op)))
    :expected 10000)
 
+(define-test output-port-flush-hook
+   (output-port-flush-hook (open-output-string ""))
+   :expected #unspecified)
 
+(define-test output-port-flush-hook-set!
+   (let ((res #unspecified))
+      (call-with-output-string
+         (lambda (op)
+            (output-port-flush-hook-set! op
+               (lambda (p l)
+                  (set! res (cons (eq? p op) (integer? l)))))
+            (display "foo" op)
+            (flush-output-port op)))
+      res)
+   :expected '(#t . #t))
+
+(define-test input-port-close-hook
+   (input-port-close-hook (open-input-string ""))
+   :expected #unspecified)
+
+(define-test input-port-close-hook-set!
+   (let ((ip (open-input-string ""))
+         (res #f))
+      (input-port-close-hook-set! ip (lambda (p) (set! res (eq? ip p))))
+      (close-input-port ip)
+      res)
+   :expected #t)
+      
+(define-test output-port-close-hook
+   (output-port-close-hook (open-output-string ""))
+   :expected #unspecified)
+
+(define-test output-port-close-hook-set!
+   (let ((ip (open-output-string ""))
+         (res #f))
+      (output-port-close-hook-set! ip (lambda (p) (set! res (eq? ip p))))
+      (close-output-port ip)
+      res)
+   :expected #t)
       

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Tue Apr 28 11:35:24 2026 (serrano)                */
+;*    Last change :  Thu Apr 30 11:01:27 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -530,7 +530,7 @@
 
    ;; procedure-input-port
    (type $procedure-input-port
-      (sub final $input-port
+      (sub $input-port
 	 (struct
 	    (field $name (mut (ref $bstring)))
 	    (field $chook (mut (ref eq)))
@@ -561,7 +561,7 @@
 	    (field $start i64)
 	    (field $end i64))))
 
-      ;; procedure-input-port
+   ;; socket-input-port
    (type $socket-input-port
       (sub final $input-port
 	 (struct
@@ -574,6 +574,23 @@
 	    (field $sysread (mut (ref null $sysread_t)))
 	    (field $rgc (ref $rgc))
 	    (field $sock externref))))
+
+   ;; gzip-input-port
+   (type $gzip-input-port
+      (sub $procedure-input-port
+	 (struct
+	    (field $name (mut (ref $bstring)))
+	    (field $chook (mut (ref eq)))
+	    (field $isclosed (mut i32))
+	    (field $sysclose (mut (ref null $sysclose_t)))
+	    (field $sysseek (mut (ref null $sysseek_t)))
+	    (field $userseek (mut (ref eq)))
+	    (field $sysread (mut (ref null $sysread_t)))
+	    (field $rgc (ref $rgc))
+	    (field $proc (ref $procedure))
+	    (field $pbuffer (mut (ref eq)))
+	    (field $pbufpos (mut i32))
+            (field $gzipport (ref $input-port)))))
 
    ;; -----------------------------------------------------------------
    ;; Predicates
@@ -602,8 +619,7 @@
    (func $INPUT_GZIP_PORTP (export "INPUT_GZIP_PORTP")
       (param $port (ref eq))
       (result i32)
-      ;;(ref.test (ref $gzip-input-port) (local.get $port))
-      (i32.const 0))
+      (ref.test (ref $gzip-input-port) (local.get $port)))
 
    (func $OUTPUT_PORTP (export "OUTPUT_PORTP")
       (param $o (ref eq))
@@ -769,6 +785,13 @@
       (struct.set $rgc $bufpos (local.get $rgc) (i32.const 0))
       (struct.set $rgc $lastchar (local.get $rgc) (i32.const 13))
       (struct.set $rgc $buf (local.get $rgc) (local.get $buffer)))
+
+   (func $BGL_INPUT_GZIP_PORT_INPUT_PORT (export "BGL_INPUT_GZIP_PORT_INPUT_PORT")
+      (param $ip (ref $input-port))
+      (result (ref $input-port))
+
+      (return (struct.get $gzip-input-port $gzipport
+                 (ref.cast (ref $gzip-input-port) (local.get $ip)))))
    
    ;; -----------------------------------------------------------------
    ;; Global variables 
@@ -1615,16 +1638,9 @@
       (param $start i32)
       (param $size i32)
       (result (ref eq))
-      (call $output_flush (local.get $op)
+      (return_call $output_flush (local.get $op)
 	 (local.get $str) (local.get $start) (local.get $size)
 	 (i32.const 0) (i32.const 1))
-      (if (ref.is_null (struct.get $output-port $sysflush (local.get $op)))
-	  (then
-	     (return (global.get $BTRUE)))
-	  (else
-	   (return_call_ref $sysflush_t
-	      (local.get $op)
-	      (struct.get $output-port $sysflush (local.get $op)))))
       (unreachable))
 
    ;; $charbuf
@@ -2201,6 +2217,63 @@
 	    (local.get $rgc)
 	    ;; socket
 	    (local.get $sock))))
+
+   ;; bgl_open_input_gzip_port
+   (func $bgl_open_input_gzip_port
+      (export "bgl_open_input_gzip_port")
+      (param $fun (ref $procedure))
+      (param $in (ref $input-port))
+      (param $buffer (ref $bstring))
+      (result (ref $input-port))
+      
+      (local $rgc (ref $rgc))
+      (local.set $rgc
+	 (struct.new $rgc
+	    ;; eof
+	    (i32.const 0)
+	    ;; filepos
+	    (i32.const 0)
+	    ;; fillbarrier
+	    (i32.const -1)
+	    ;; forward
+	    (i32.const 0)
+	    ;; bufpos
+	    (i32.const 0)
+	    ;; matchstart
+	    (i32.const 0)
+	    ;; matchstop
+	    (i32.const 0)
+	    ;; lastchar
+	    (i32.const 13)
+	    ;; buffer
+	    (local.get $buffer)))
+      
+      (return
+	 (struct.new $gzip-input-port
+	    ;; name
+            (struct.get $input-port $name (local.get $in))
+	    ;; chook
+	    (global.get $BUNSPEC)
+	    ;; isclosed
+	    (i32.const 0)
+	    ;; sysclose
+	    (ref.null $sysclose_t)
+	    ;; sysseek
+	    (ref.null $sysseek_t)
+	    ;; userseek
+	    (global.get $BUNSPEC)
+	    ;; sysread
+	    (ref.func $bgl_procread)
+	    ;; rgc
+	    (local.get $rgc)
+	    ;; proc
+	    (local.get $fun)
+	    ;; pbuffer
+	    (global.get $BUNSPEC)
+	    ;; pbufpos
+	    (i32.const 0)
+            ;; gzipport
+            (local.get $in))))
 
    ;; open_output_file
    (func $open_output_file
