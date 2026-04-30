@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Apr 29 18:01:03 2026 (serrano)                */
+#*    Last change :  Thu Apr 30 19:13:19 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -247,6 +247,7 @@ boot-jvm: checkgmake
 	$(MAKE) -C jigloo
 
 boot-wasm: checkgmake
+	$(MAKE) -C bde all-wasm
 	$(MAKE) -C runtime boot-wasm
 
 boot-bde:

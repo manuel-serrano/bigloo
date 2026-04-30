@@ -475,7 +475,8 @@ Returns the _close hook_ of the `port`
 Sets the _close hook_ of the input `port1. The
 close hook is a procedure of one argument, the closed port.
 
-@deffn {bigloo procedure} open-input-zlib-file@deffnx {bigloo procedure} open-input-zlib-port
+@deffn {bigloo procedure} open-input-zlib-file
+@deffnx {bigloo procedure} open-input-zlib-port
 @cindex zip
 @cindex gzip
 
