@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  5 07:43:02 2006                          */
-;*    Last change :  Thu Apr 30 10:45:18 2026 (serrano)                */
+;*    Last change :  Fri May  1 06:48:55 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Traduction of gzip's inflate.c inspired from Mzscheme's port.    */
@@ -1155,7 +1155,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-zlib-file ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (open-input-zlib-file name #!optional (bufinfo #t) (timeout 1000000))
+(define (open-input-zlib-file name::bstring #!optional (bufinfo #t) (timeout 1000000))
    (let ((p (open-input-file name bufinfo)))
       (and (input-port? p)
 	   (let ((pi (port->zlib-port p)))

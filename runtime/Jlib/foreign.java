@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Thu Apr 30 06:53:31 2026 (serrano)                */
+/*    Last change :  Fri May  1 06:55:48 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -5580,11 +5580,11 @@ public final class foreign {
       }
    }
 
-   public static Object bgl_open_input_c_string(byte[] s) {
+   public static input_port bgl_open_input_c_string(byte[] s) {
       return new input_string_port(s, 0, s.length);
    }
 
-   public static Object bgl_reopen_input_c_string(input_port p, byte[] s) {
+   public static input_port bgl_reopen_input_c_string(input_port p, byte[] s) {
       ((input_string_port) p).reopen_input_c_string(s);
       return p;
    }

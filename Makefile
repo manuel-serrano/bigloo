@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Apr 30 21:34:52 2026 (serrano)                */
+#*    Last change :  Fri May  1 07:27:58 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -462,12 +462,12 @@ fullbootstrap-sans-configure:
 fullbootstrap-jvm:
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) -C runtime heap-jvm libs-jvm; \
+	  $(MAKE) -C jigloo -i clean; $(MAKE) -C jigloo; \
         fi
 
 fullbootstrap-wasm:
 	if [ "$(WASMBACKEND)" = "yes" ]; then \
-	  $(MAKE) -C bde all-wasm; \
-	  $(MAKE) -C runtime heap-wasm libs-wasm; \
+	  $(MAKE) -C runtime heap-wasm libs-wasm-sans-validation; \
         fi
 
 # only used for continuous integration, as of 4may2021, fullboostrap

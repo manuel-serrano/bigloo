@@ -15,6 +15,7 @@
 ,(implementation-path "../runtime/Ieee/output.scm")
 ,(implementation-path "../runtime/Ieee/input.scm")
 ,(implementation-path "../runtime/Unsafe/gunzip.scm")
+,(implementation-path "../runtime/Unsafe/ftp.scm")
 ,(example-path "../test/src/port.bgl")
 
 Ports
@@ -167,7 +168,6 @@ the boolean `#f`. This last value stands for the end of file.
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
 ### open-input-mmap ###
-
 The arguments `start` and `end` must be exact integers satisfying:
 0 &le; `start` &le; `end` &le; `(mmap-length string)`.
 
@@ -176,16 +176,26 @@ Returns an `input-port` able to deliver characters from `mmap`.
 See the [mmap](mmap.html) documentation.
 
 ### open-input-gzip-file ###
-
 Open a gzipped file for input and a port on a gzipped stream.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
 ### open-input-gzip-port ###
-
 Open a gzipped port for input and a port on a gzipped stream.
 Note that closing a gzip port opened from a port `pi` does not close
 the `pi` port.
+
+For the the optional argument `bufinfo` see [buffers](#buffers).
+
+### open-input-zlib-file ###
+Open a zlib file for input. 
+
+For the the optional argument `bufinfo` see [buffers](#buffers).
+
+### open-input-zlib-port ###
+Open a port on a zlib stream for input.
+Note that closing a zlib port opened from a port `pi` does not close
+the `pi port.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
@@ -451,14 +461,15 @@ A flush hook can return two types of values:
     flush buffer (see `output-port-flush-buffer) that have to be
     displayed on the system stream.
 
+### output-port-flush-buffer ###
+Returns the flush buffer of the output port.
 
-@deffn {bigloo procedure} output-port-flush-buffer
-@deffnx {bigloo procedure} output-port-flush-buffer-set
-These functions gets and sets a buffer that can be used by program by the
-flush hooks. The runtime system makes no provision for automatically allocated
-these buffers that hence must be manually allocated by programs. The motivation
-for flush buffer is to allow programs to write flush hooks that don't have
-to allocate a new string each time invoked.
+### output-port-flush-buffer-set! ###
+Sets a buffer that can be used by program by the flush hooks. The
+runtime system makes no provision for automatically allocated these
+buffers that hence must be manually allocated by programs. The
+motivation for flush buffer is to allow programs to write flush hooks
+that don't have to allocate a new string each time invoked.
 
 ### output-port-close-hook ###
 Returns the _close hook_ of the `port`
@@ -475,17 +486,8 @@ Returns the _close hook_ of the `port`
 Sets the _close hook_ of the input `port1. The
 close hook is a procedure of one argument, the closed port.
 
-@deffn {bigloo procedure} open-input-zlib-file
-@deffnx {bigloo procedure} open-input-zlib-port
-@cindex zip
-@cindex gzip
-
-Open respectively a zlib file for input and a port on a zlib stream.
-Note that closing a zlib port opened from a port @var{pi} does not close
-the @var{pi} port.
-
-@deffn {bigloo procedure} open-input-ftp-file
-Returns an @code{input-port} able to deliver characters from a
+### open-input-ftp-file ###
+Returns an `input-port` able to deliver characters from a
 remote file located on a FTP server.
 
 Example:
