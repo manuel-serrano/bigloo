@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Fri May  1 06:55:48 2026 (serrano)                */
+/*    Last change :  Fri May  1 15:15:33 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -4893,17 +4893,24 @@ public final class foreign {
    }
 	 
    public static Object bgl_open_pipes(Object name) {
-      bigloo.runtime.Llib.error.bgl_system_failure(
-	 BGL_IO_ERROR,
-	 stack_trace.get_top(),
-	 "open-pipes", "feature not supported");
+      try {
+         PipedOutputStream out = new PipedOutputStream();
+         PipedInputStream in = new PipedInputStream(out);
+         input_port bin = new input_pipe_port(in, "pipes".getBytes());
+         output_port bout = new output_stream_port(out);
       
-      BGL_MVALUES_NUMBER_SET(1);
-      BGL_MVALUES_VAL_SET(1, BFALSE);
+         BGL_MVALUES_NUMBER_SET(1);
+         BGL_MVALUES_VAL_SET(1, bout);
       
-      return BFALSE;
+         return bin;
+      } catch(IOException e) {
+         BGL_MVALUES_NUMBER_SET(1);
+         BGL_MVALUES_VAL_SET(1, BFALSE);
+      
+         return BFALSE;
+      }
    }
-	 
+   
    //////
    // SYSTEM and OS
    //////

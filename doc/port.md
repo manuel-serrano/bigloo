@@ -199,6 +199,10 @@ the `pi port.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
+### open-input-ftp-file ###
+Returns an `input-port` able to deliver characters from a
+remote file located on a FTP server.
+
 ### open-output-file ###
 The same syntax as `open-input-file` for file names applies here.
 When a file name starts with `| `, Bigloo opens an output pipe
@@ -229,6 +233,14 @@ string denoting the displayed characters. When the function
 is called on such a port, the optional `close` procedure is invoked.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
+
+### open-pipes ###
+Opens a bi-directional pipes. Returns two values, an `input-port` and
+an `output-port`. The optional argument `name` is only used for
+debugging.
+
+> [!WARNING]
+> The wasm backend does not currently supports pipes.
 
 Default ports
 -------------
@@ -485,43 +497,6 @@ Returns the _close hook_ of the `port`
 ### input-port-close-hook-set! ###
 Sets the _close hook_ of the input `port1. The
 close hook is a procedure of one argument, the closed port.
-
-### open-input-ftp-file ###
-Returns an `input-port` able to deliver characters from a
-remote file located on a FTP server.
-
-Example:
-
-@smalllisp
-(let ((p (open-input-ftp-file "ftp-sop.inria.fr/ls-lR.gz'')))
-  (unwind-protect
-     (read-string p)
-     (close-input-port p)))
-@end smalllisp
-  
-The file name may contain user authentication such as:
-
-@smalllisp
-(let ((p (open-input-ftp-file "anonymous:foo@@ftp-sop.inria.fr/ls-lR.gz'')))
-  (unwind-protect
-     (read-string p)
-     (close-input-port p)))
-@end smalllisp
-
-
-@deffn {bigloo procedure} open-pipes
-Opens a bi-directional pipes. Returns two values, an @code{input-port} and
-an @code{output-port}. The optional argument @var{name} is only used for
-debugging.
-
-Example:
-@smalllisp
-(multiple-value-bind (in out)
-  (open-pipes "my pipe")
-  (write-char #\z out)
-  (flush-output-port out))
-@end smalllisp
-
 
 @deffn {bigloo procedure} select
 A wrapper of the Posix @code{select} function. Returns three values,

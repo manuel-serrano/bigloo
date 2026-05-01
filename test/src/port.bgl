@@ -546,4 +546,16 @@
              (close-input-port p))
           #t))
    :expected #t)
-   
+
+(define-test open-pipes
+   (cond-expand
+      (bigloo-wasm #t)
+      (else
+       (multiple-value-bind (in out)
+          (open-pipes)
+          (write-char #\z out)
+          (flush-output-port out)
+          (close-input-port in)
+          (close-output-port out)
+          #t)))
+   :expected #t)
