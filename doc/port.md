@@ -498,70 +498,30 @@ Returns the _close hook_ of the `port`
 Sets the _close hook_ of the input `port1. The
 close hook is a procedure of one argument, the closed port.
 
-@deffn {bigloo procedure} select
-A wrapper of the Posix @code{select} function. Returns three values,
+### select ###
+A wrapper of the Posix `select` function. Returns three values,
 the three lists of objects that are ready for reading, respectively writing,
 or that are in error.
 
-Example:
-@smalllisp
-(define *inpipe* #f)
-(define *outpipe* #f)
-(define *watch-mutex* (make-mutex "watch"))
-(define *sockets* '())
+> [!WARNING]
+> Only supported by the C backend.
 
-(define (watch socket onclose)
-   (synchronize *watch-mutex*
-      (set! *sockets* (cons socket *sockets*))
-      (if *outpipe*
-	  (begin
-	     (write-char *outpipe*)
-	     (flush-output-port *outpipe*))
-	  (thread-start!
-	     (instantiate::hopthread
-		(body (watch-thread onclose)))))))
+### lockf ###
+Locks a file descriptor or an output port. It is an error to call
+`lockf` with an port which is not open on a plain file (i.e., a port open
+with `open-output-file`, or its variants).
 
-(define (watch-thread onclose)
-   (let loop ()
-      (synchronize *watch-mutex*
-	 (unless *inpipe*
-	    (multiple-value-bind (in out)
-	       (open-pipes)
-	       (set! *inpipe* in)
-	       (set! *outpipe* out))))
-      (multiple-value-bind (readfs _ _)
-	 (select :read (cons *inpipe* *sockets*))
-	 (let ((socks (filter socket? readfs)))
-	    (for-each onclose socks)
-	    (synchronize *watch-mutex*
-	       (for-each (lambda (s)
-			    (set! *sockets* (remq! s *sockets*)))
-		  socks)
-	       (unless (pair? *sockets*)
-		  (close-input-port *inpipe*)
-		  (close-output-port *outpipe*)
-		  (set! *inpipe* #f)
-		  (set! *outpipe* #f)))
-	    (when *outpipe*
-	       (loop))))))
-@end smalllisp
+The `command` argument is one of:
 
+  * `lock`: locks the file, raises an error on failure.
+  * `ulock`: unlocks the file, raises an error on failure.
+  * `test: tests whether a file is locked or not.
+  * `tlock`: tries to lock a file, return `#t` upon success and
+  `#f` otherwise.
 
-@deffn {bigloo procedure} lockf
-Lock a file descriptor or an output port. It is an error to call
-@code{lockf} with an port which is not open on a plain file (i.e., a port open
-with @code{open-output-file}, or its variants).
+The argument `len` is the portion of the file to be locked.
 
-The @var{command} argument is one of:
-
-@itemize @bullet
-@item @code{lock}: locks the file, raises an error on failure.
-@item @code{ulock}: unlocks the file, raises an error on failure.
-@item @code{test}: tests whether a file is locked or not.
-@item @code{tlock}: tries to lock a file, return @code{#t} upon success and
-  @code{#f} otherwise.
-@end itemize
-
-The argument @var{len} is the portion of the file to be locked.
+> [!WARNING]
+> Only supported by the C backend.
 
 

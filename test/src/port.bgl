@@ -559,3 +559,31 @@
           (close-output-port out)
           #t)))
    :expected #t)
+
+(define-test select
+   (cond-expand
+      (bigloo-c
+       (call-with-input-file "misc/input.txt"
+          (lambda (ip)
+             (multiple-value-bind (readfs _ _)
+                (select :read (list (current-input-port) ip))
+                (>fx (length readfs) 0)))))
+      (else #t))
+   :expected #t)
+
+(define-test lockf
+   (cond-expand
+      (bigloo-c
+       (let ((path "/tmp/bigloo-test-lock"))
+          (unwind-protect 
+             (call-with-output-file path
+                (lambda (op)
+                   (lockf op 'lock)
+                   (let ((res (lockf op 'test)))
+                      (lockf op 'ulock)
+                      res)))
+             (when (file-exists? path)
+                (delete-file path)))))
+      (else #t))
+   :expected #t)
+              
