@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Apr 14 08:25:10 2026 (serrano)                */
+/*    Last change :  Fri May  1 07:52:36 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -422,9 +422,10 @@ class BglNodeRuntime extends BglRuntime {
 
 	 make_client: (host_addr, host_len, port, timeout) => {
 	    const host = self.loadString(host_addr, host_len);
-	    console.log("host=[" + host + "] port=" + port);
 	    return createConnection({ host, port }, () => { console.log("connected"); });
-	 }
+	 },
+
+	 close: (sock) => sock.destroy()
       };
    }
 

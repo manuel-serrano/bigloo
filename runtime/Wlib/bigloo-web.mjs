@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/bigloo-web.mjs     */
+/*    serrano/prgm/project/bigloo/5.0a/runtime/Wlib/bigloo-web.mjs     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Mon Sep 15 10:36:11 2025 (serrano)                */
-/*    Copyright   :  2024-25 manuel serrano                            */
+/*    Last change :  Fri May  1 08:39:14 2026 (serrano)                */
+/*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
 /*=====================================================================*/
@@ -482,7 +482,9 @@ class BglWebRuntime extends BglRuntime {
 
 	 make_client: (hostname_addr, hostname_len, portnum, timeout) => {
 	    return undefined;
-	 }
+	 },
+
+	 close: sock => undefined
       };
    }
 

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wsocket.wat        */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Wlib/wsocket.wat        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Mon Jul 28 11:22:19 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Fri May  1 08:32:01 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM sockets                                                     */
 ;*=====================================================================*/
@@ -121,6 +121,7 @@
    (import "__js_socket" "make_server" (func $js_make_server_socket (param i32 i32 i32 i32 i32) (result externref)))
    (import "__js_socket" "make_client" (func $js_make_client_socket (param i32 i32 i32 i32) (result externref)))
    (import "__js_socket" "accept" (func $js_accept (param externref) (result i32)))
+   (import "__js_socket" "close" (func $js_close (param externref)))
    
    ;; -----------------------------------------------------------------
    ;; Global variables 
@@ -287,8 +288,14 @@
       (param $outb (ref eq))
       (result (ref eq))
 
-      (call $js_trace
-	 (call $js_accept (struct.get $socket $sock (local.get $serv))))
+      (call $js_accept (struct.get $socket $sock (local.get $serv)))
+      (return (global.get $BUNSPEC)))
+
+   (func $socket_close (export "socket_close")
+      (param $s (ref $socket))
+      (result (ref eq))
+      
+      (call $js_close (struct.get $socket $sock (local.get $s)))
       (return (global.get $BUNSPEC)))
 
    (func $bgl_make_client_socket (export "bgl_make_client_socket")
