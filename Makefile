@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri May  1 07:27:58 2026 (serrano)                */
+#*    Last change :  Fri May  1 10:07:01 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -305,7 +305,7 @@ hostboot:
             echo "Use \"$(MAKE) dohostboot\" if you know what you are doing!"; \
             exit 0; \
           else \
-            $(MAKE) dohostboot; \
+            $(MAKE) dohostboot JVMBACKEND=no WASMBACKEND=no; \
           fi
 
 dohostboot:
