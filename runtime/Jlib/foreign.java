@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Thu Apr 30 06:53:31 2026 (serrano)                */
+/*    Last change :  Fri May  1 15:15:33 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -4893,17 +4893,24 @@ public final class foreign {
    }
 	 
    public static Object bgl_open_pipes(Object name) {
-      bigloo.runtime.Llib.error.bgl_system_failure(
-	 BGL_IO_ERROR,
-	 stack_trace.get_top(),
-	 "open-pipes", "feature not supported");
+      try {
+         PipedOutputStream out = new PipedOutputStream();
+         PipedInputStream in = new PipedInputStream(out);
+         input_port bin = new input_pipe_port(in, "pipes".getBytes());
+         output_port bout = new output_stream_port(out);
       
-      BGL_MVALUES_NUMBER_SET(1);
-      BGL_MVALUES_VAL_SET(1, BFALSE);
+         BGL_MVALUES_NUMBER_SET(1);
+         BGL_MVALUES_VAL_SET(1, bout);
       
-      return BFALSE;
+         return bin;
+      } catch(IOException e) {
+         BGL_MVALUES_NUMBER_SET(1);
+         BGL_MVALUES_VAL_SET(1, BFALSE);
+      
+         return BFALSE;
+      }
    }
-	 
+   
    //////
    // SYSTEM and OS
    //////
@@ -5580,11 +5587,11 @@ public final class foreign {
       }
    }
 
-   public static Object bgl_open_input_c_string(byte[] s) {
+   public static input_port bgl_open_input_c_string(byte[] s) {
       return new input_string_port(s, 0, s.length);
    }
 
-   public static Object bgl_reopen_input_c_string(input_port p, byte[] s) {
+   public static input_port bgl_reopen_input_c_string(input_port p, byte[] s) {
       ((input_string_port) p).reopen_input_c_string(s);
       return p;
    }

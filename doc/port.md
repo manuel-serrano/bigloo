@@ -15,6 +15,7 @@
 ,(implementation-path "../runtime/Ieee/output.scm")
 ,(implementation-path "../runtime/Ieee/input.scm")
 ,(implementation-path "../runtime/Unsafe/gunzip.scm")
+,(implementation-path "../runtime/Unsafe/ftp.scm")
 ,(example-path "../test/src/port.bgl")
 
 Ports
@@ -167,7 +168,6 @@ the boolean `#f`. This last value stands for the end of file.
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
 ### open-input-mmap ###
-
 The arguments `start` and `end` must be exact integers satisfying:
 0 &le; `start` &le; `end` &le; `(mmap-length string)`.
 
@@ -176,18 +176,32 @@ Returns an `input-port` able to deliver characters from `mmap`.
 See the [mmap](mmap.html) documentation.
 
 ### open-input-gzip-file ###
-
 Open a gzipped file for input and a port on a gzipped stream.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
 ### open-input-gzip-port ###
-
 Open a gzipped port for input and a port on a gzipped stream.
 Note that closing a gzip port opened from a port `pi` does not close
 the `pi` port.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
+
+### open-input-zlib-file ###
+Open a zlib file for input. 
+
+For the the optional argument `bufinfo` see [buffers](#buffers).
+
+### open-input-zlib-port ###
+Open a port on a zlib stream for input.
+Note that closing a zlib port opened from a port `pi` does not close
+the `pi port.
+
+For the the optional argument `bufinfo` see [buffers](#buffers).
+
+### open-input-ftp-file ###
+Returns an `input-port` able to deliver characters from a
+remote file located on a FTP server.
 
 ### open-output-file ###
 The same syntax as `open-input-file` for file names applies here.
@@ -219,6 +233,14 @@ string denoting the displayed characters. When the function
 is called on such a port, the optional `close` procedure is invoked.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
+
+### open-pipes ###
+Opens a bi-directional pipes. Returns two values, an `input-port` and
+an `output-port`. The optional argument `name` is only used for
+debugging.
+
+> [!WARNING]
+> The wasm backend does not currently supports pipes.
 
 Default ports
 -------------
@@ -451,14 +473,15 @@ A flush hook can return two types of values:
     flush buffer (see `output-port-flush-buffer) that have to be
     displayed on the system stream.
 
+### output-port-flush-buffer ###
+Returns the flush buffer of the output port.
 
-@deffn {bigloo procedure} output-port-flush-buffer
-@deffnx {bigloo procedure} output-port-flush-buffer-set
-These functions gets and sets a buffer that can be used by program by the
-flush hooks. The runtime system makes no provision for automatically allocated
-these buffers that hence must be manually allocated by programs. The motivation
-for flush buffer is to allow programs to write flush hooks that don't have
-to allocate a new string each time invoked.
+### output-port-flush-buffer-set! ###
+Sets a buffer that can be used by program by the flush hooks. The
+runtime system makes no provision for automatically allocated these
+buffers that hence must be manually allocated by programs. The
+motivation for flush buffer is to allow programs to write flush hooks
+that don't have to allocate a new string each time invoked.
 
 ### output-port-close-hook ###
 Returns the _close hook_ of the `port`
@@ -475,115 +498,30 @@ Returns the _close hook_ of the `port`
 Sets the _close hook_ of the input `port1. The
 close hook is a procedure of one argument, the closed port.
 
-@deffn {bigloo procedure} open-input-zlib-file@deffnx {bigloo procedure} open-input-zlib-port
-@cindex zip
-@cindex gzip
-
-Open respectively a zlib file for input and a port on a zlib stream.
-Note that closing a zlib port opened from a port @var{pi} does not close
-the @var{pi} port.
-
-@deffn {bigloo procedure} open-input-ftp-file
-Returns an @code{input-port} able to deliver characters from a
-remote file located on a FTP server.
-
-Example:
-
-@smalllisp
-(let ((p (open-input-ftp-file "ftp-sop.inria.fr/ls-lR.gz'')))
-  (unwind-protect
-     (read-string p)
-     (close-input-port p)))
-@end smalllisp
-  
-The file name may contain user authentication such as:
-
-@smalllisp
-(let ((p (open-input-ftp-file "anonymous:foo@@ftp-sop.inria.fr/ls-lR.gz'')))
-  (unwind-protect
-     (read-string p)
-     (close-input-port p)))
-@end smalllisp
-
-
-@deffn {bigloo procedure} open-pipes
-Opens a bi-directional pipes. Returns two values, an @code{input-port} and
-an @code{output-port}. The optional argument @var{name} is only used for
-debugging.
-
-Example:
-@smalllisp
-(multiple-value-bind (in out)
-  (open-pipes "my pipe")
-  (write-char #\z out)
-  (flush-output-port out))
-@end smalllisp
-
-
-@deffn {bigloo procedure} select
-A wrapper of the Posix @code{select} function. Returns three values,
+### select ###
+A wrapper of the Posix `select` function. Returns three values,
 the three lists of objects that are ready for reading, respectively writing,
 or that are in error.
 
-Example:
-@smalllisp
-(define *inpipe* #f)
-(define *outpipe* #f)
-(define *watch-mutex* (make-mutex "watch"))
-(define *sockets* '())
+> [!WARNING]
+> Only supported by the C backend.
 
-(define (watch socket onclose)
-   (synchronize *watch-mutex*
-      (set! *sockets* (cons socket *sockets*))
-      (if *outpipe*
-	  (begin
-	     (write-char *outpipe*)
-	     (flush-output-port *outpipe*))
-	  (thread-start!
-	     (instantiate::hopthread
-		(body (watch-thread onclose)))))))
+### lockf ###
+Locks a file descriptor or an output port. It is an error to call
+`lockf` with an port which is not open on a plain file (i.e., a port open
+with `open-output-file`, or its variants).
 
-(define (watch-thread onclose)
-   (let loop ()
-      (synchronize *watch-mutex*
-	 (unless *inpipe*
-	    (multiple-value-bind (in out)
-	       (open-pipes)
-	       (set! *inpipe* in)
-	       (set! *outpipe* out))))
-      (multiple-value-bind (readfs _ _)
-	 (select :read (cons *inpipe* *sockets*))
-	 (let ((socks (filter socket? readfs)))
-	    (for-each onclose socks)
-	    (synchronize *watch-mutex*
-	       (for-each (lambda (s)
-			    (set! *sockets* (remq! s *sockets*)))
-		  socks)
-	       (unless (pair? *sockets*)
-		  (close-input-port *inpipe*)
-		  (close-output-port *outpipe*)
-		  (set! *inpipe* #f)
-		  (set! *outpipe* #f)))
-	    (when *outpipe*
-	       (loop))))))
-@end smalllisp
+The `command` argument is one of:
 
+  * `lock`: locks the file, raises an error on failure.
+  * `ulock`: unlocks the file, raises an error on failure.
+  * `test: tests whether a file is locked or not.
+  * `tlock`: tries to lock a file, return `#t` upon success and
+  `#f` otherwise.
 
-@deffn {bigloo procedure} lockf
-Lock a file descriptor or an output port. It is an error to call
-@code{lockf} with an port which is not open on a plain file (i.e., a port open
-with @code{open-output-file}, or its variants).
+The argument `len` is the portion of the file to be locked.
 
-The @var{command} argument is one of:
-
-@itemize @bullet
-@item @code{lock}: locks the file, raises an error on failure.
-@item @code{ulock}: unlocks the file, raises an error on failure.
-@item @code{test}: tests whether a file is locked or not.
-@item @code{tlock}: tries to lock a file, return @code{#t} upon success and
-  @code{#f} otherwise.
-@end itemize
-
-The argument @var{len} is the portion of the file to be locked.
+> [!WARNING]
+> Only supported by the C backend.
 
 

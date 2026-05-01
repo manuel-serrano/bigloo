@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/wasm/runtime/Wlib/bigloo-mozjs.mjs       */
+/*    .../prgm/project/bigloo/5.0a/runtime/Wlib/bigloo-mozjs.mjs       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Sep  9 08:38:49 2025 (serrano)                */
-/*    Copyright   :  2024-25 manuel serrano                            */
+/*    Last change :  Fri May  1 08:39:00 2026 (serrano)                */
+/*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, Mozilla specific                 */
 /*=====================================================================*/
@@ -436,7 +436,9 @@ class BglMozRuntime extends BglRuntime {
 
 	 make_client: (hostname_addr, hostname_len, portnum, timeout) => {
 	    return undefined;
-	 }
+	 },
+
+	 close: sock => undefined
       };
    }
 

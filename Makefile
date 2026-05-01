@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Apr 29 18:01:03 2026 (serrano)                */
+#*    Last change :  Fri May  1 10:07:01 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -247,6 +247,7 @@ boot-jvm: checkgmake
 	$(MAKE) -C jigloo
 
 boot-wasm: checkgmake
+	$(MAKE) -C bde all-wasm
 	$(MAKE) -C runtime boot-wasm
 
 boot-bde:
@@ -304,7 +305,7 @@ hostboot:
             echo "Use \"$(MAKE) dohostboot\" if you know what you are doing!"; \
             exit 0; \
           else \
-            $(MAKE) dohostboot; \
+            $(MAKE) dohostboot JVMBACKEND=no WASMBACKEND=no; \
           fi
 
 dohostboot:
@@ -461,11 +462,12 @@ fullbootstrap-sans-configure:
 fullbootstrap-jvm:
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) -C runtime heap-jvm libs-jvm; \
+	  $(MAKE) -C jigloo -i clean; $(MAKE) -C jigloo; \
         fi
 
 fullbootstrap-wasm:
 	if [ "$(WASMBACKEND)" = "yes" ]; then \
-	  $(MAKE) -C runtime heap-wasm libs-wasm; \
+	  $(MAKE) -C runtime heap-wasm libs-wasm-sans-validation; \
         fi
 
 # only used for continuous integration, as of 4may2021, fullboostrap

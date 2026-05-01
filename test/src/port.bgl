@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Thu Apr 30 12:03:34 2026 (serrano)                */
+;*    Last change :  Fri May  1 06:45:16 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing ports                                                    */
@@ -114,6 +114,23 @@
 (define-test open-input-gzip-port
    (let* ((zp (open-input-file "misc/input.txt.gz"))
           (ip (open-input-gzip-port zp)))
+      (unwind-protect
+         (read ip)
+         (begin
+            (close-input-port ip)
+            (close-input-port zp))))
+   :expected 'Toto)
+
+(define-test open-input-zlib-file
+   (let ((ip (open-input-zlib-file "misc/input.txt.zlib")))
+      (unwind-protect
+         (read ip)
+         (close-input-port ip)))
+   :expected 'Toto)
+
+(define-test open-input-zlib-port
+   (let* ((zp (open-input-file "misc/input.txt.zlib"))
+          (ip (open-input-zlib-port zp)))
       (unwind-protect
          (read ip)
          (begin
@@ -477,6 +494,17 @@
       res)
    :expected '(#t . #t))
 
+(define-test output-port-flush-buffer
+   (output-port-flush-buffer (current-output-port))
+   :expected #unspecified)
+
+(define-test output-port-flush-buffer-set!
+   (let* ((buf (make-string 80))
+          (p (open-output-string)))
+      (output-port-flush-buffer-set! p buf)
+      (eq? buf (output-port-flush-buffer p)))
+   :expected #t)
+
 (define-test input-port-close-hook
    (input-port-close-hook (open-input-string ""))
    :expected #unspecified)
@@ -501,3 +529,61 @@
       res)
    :expected #t)
       
+(define-test open-input-ftp-file
+   (let ((p (open-input-ftp-file "ftp-sop.inria.fr/ls-lR.gz")))
+      (if (input-port? p)
+          (unwind-protect
+             (string? (read-string p))
+             (close-input-port p))
+          #t))
+   :expected #t)
+
+(define-test open-input-ftp-file
+   (let ((p (open-input-ftp-file "anonymous:foo@ftp-sop.inria.fr/ls-lR.gz")))
+      (if (input-port? p)
+          (unwind-protect
+             (string? (read-string p))
+             (close-input-port p))
+          #t))
+   :expected #t)
+
+(define-test open-pipes
+   (cond-expand
+      (bigloo-wasm #t)
+      (else
+       (multiple-value-bind (in out)
+          (open-pipes)
+          (write-char #\z out)
+          (flush-output-port out)
+          (close-input-port in)
+          (close-output-port out)
+          #t)))
+   :expected #t)
+
+(define-test select
+   (cond-expand
+      (bigloo-c
+       (call-with-input-file "misc/input.txt"
+          (lambda (ip)
+             (multiple-value-bind (readfs _ _)
+                (select :read (list (current-input-port) ip))
+                (>fx (length readfs) 0)))))
+      (else #t))
+   :expected #t)
+
+(define-test lockf
+   (cond-expand
+      (bigloo-c
+       (let ((path "/tmp/bigloo-test-lock"))
+          (unwind-protect 
+             (call-with-output-file path
+                (lambda (op)
+                   (lockf op 'lock)
+                   (let ((res (lockf op 'test)))
+                      (lockf op 'ulock)
+                      res)))
+             (when (file-exists? path)
+                (delete-file path)))))
+      (else #t))
+   :expected #t)
+              

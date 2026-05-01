@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/ftp.scm               */
+;*    serrano/prgm/project/bigloo/5.0a/runtime/Unsafe/ftp.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Wed Aug 18 14:30:52 2010                          */
-;*    Last change :  Mon Nov 14 11:42:20 2011 (serrano)                */
-;*    Copyright   :  2010-11 Cyprien Nicolas, Manuel Serrano           */
+;*    Last change :  Fri May  1 07:47:45 2026 (serrano)                */
+;*    Copyright   :  2010-26 Cyprien Nicolas, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    FTP client implementation.                                       */
 ;*=====================================================================*/
@@ -184,7 +184,7 @@
 	    (else
 	     (raise (instantiate::&ftp-error
 		       (proc "%ftp-read-dtp")
-		       (msg  "Dunno what to read")
+		       (msg "Dunno what to read")
 		       (obj what))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -277,7 +277,8 @@
 		   (ftpport->hostport
                     (map string->number
                          (string-split
-			    (substring mesg 1 (-fx (string-length mesg) 1)) ",")))
+			    (substring mesg (string-length "Entering Passive Mode (")
+                               (-fx (string-length mesg) 1)) ",")))
 		   (%ftp-dtp-pasv-init ftp host port)
 		   (%ftp-dtp-pasv-setup ftp)))
 	       ((230)
@@ -697,7 +698,7 @@
 	      ip)
 	     (else
 	      ip))))
-   
+
    (multiple-value-bind (protocol login host port abspath)
       (url-sans-protocol-parse string "ftp")
       (let* ((i (when (string? login) (string-index login #\:)))

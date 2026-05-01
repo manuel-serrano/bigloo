@@ -2017,14 +2017,14 @@
    ;; bgl_open_input_c_string
    (func $bgl_open_input_c_string (export "bgl_open_input_c_string")
       (param $str (ref $bstring))
-      (result (ref $string-input-port))
+      (result (ref $input-port))
       (return_call $bgl_open_input_string (local.get $str) (i64.const 0)))
 
    ;; bgl_reopen_input_c_string
    (func $bgl_reopen_input_c_string (export "bgl_reopen_input_c_string")
       (param $ip (ref $input-port))
       (param $str (ref $bstring))
-      (result (ref eq))
+      (result (ref $input-port))
 
       (local $rgc (ref $rgc))
       (local $buf (ref $bstring))

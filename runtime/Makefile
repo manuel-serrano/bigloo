@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Apr 29 18:56:09 2026 (serrano)                */
+#*    Last change :  Fri May  1 07:30:08 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -617,21 +617,29 @@ class_p/jlib: $(CLASSES)
 #*---------------------------------------------------------------------*/
 #*    Bigloo WASM libraries compilation                                */
 #*---------------------------------------------------------------------*/
-.PHONY: lib-wasm lib-wasm_s lib-wasm_u libs-wasm validate-wasm
+.PHONY: lib-wasm lib-wasm_s lib-wasm_u libs-wasm validate-wasm libs-wasm-sans-validation
 
 libs-wasm:
 	@ $(MAKE) lib-wasm_s
 	@ $(MAKE) lib-wasm_u
 
+libs-wasm-sans-validation:
+	@ $(MAKE) lib-wasm_s-sans-validation
+	@ $(MAKE) lib-wasm_u-sans-validation
+
 lib-wasm: lib-wasm_s
 lib-wasm_s: includes validate-wasm
+	$(MAKE) lib-wasm_s-sans-validation
+lib-wasm_s-sans-validation: includes
 	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS)" \
                 WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_s \
                 LIBSUFFIX=_s
 
-lib-wasm_u: includes validate-wasm
+lib-wasm_u-sans: includes validate-wasm
+	$(MAKE) lib-wasm_u-sans-validation
+lib-wasm_u-sans-validation: includes
 	$(MAKE) one-lib-wasm \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \

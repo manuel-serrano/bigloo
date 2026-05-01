@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Thu Apr 30 12:01:50 2026 (serrano)                */
+;*    Last change :  Fri May  1 15:49:48 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -95,8 +95,8 @@
 	    ($open-input-descriptor::obj (::int ::bstring) "bgl_open_input_descriptor")
 	    ($open-input-pipe::obj (::bstring ::bstring) "bgl_open_input_pipe")
 	    ($open-input-resource::obj (::bstring ::bstring) "bgl_open_input_resource")
- 	    ($open-input-c-string::obj (::string) "bgl_open_input_c_string")
-	    ($reopen-input-c-string::obj (::input-port ::string) "bgl_reopen_input_c_string")
+ 	    ($open-input-c-string::input-port (::string) "bgl_open_input_c_string")
+	    ($reopen-input-c-string::input-port (::input-port ::string) "bgl_reopen_input_c_string")
 	    ($open-input-substring::input-port (::bstring ::long ::long) "bgl_open_input_substring")
 	    ($open-input-substring!::input-port (::bstring ::long ::long) "bgl_open_input_substring_bang")
 	    ($open-input-mmap::input-port (::mmap ::bstring ::long ::long) "bgl_open_input_mmap")
@@ -288,9 +288,9 @@
 		  "bgl_open_input_pipe")
 	       (method static $open-input-resource::obj (::bstring ::bstring)
 		  "bgl_open_input_resource")
-	       (method static $open-input-c-string::obj (::string)
+	       (method static $open-input-c-string::input-port (::string)
 		  "bgl_open_input_c_string")
-	       (method static $reopen-input-c-string::obj (::input-port ::string)
+	       (method static $reopen-input-c-string::input-port (::input-port ::string)
 		  "bgl_reopen_input_c_string")
 	       (method static $open-input-substring::input-port (::bstring ::int ::int)
 		  "bgl_open_input_substring")
@@ -499,14 +499,14 @@
 	    (open-input-mmap::input-port mmap::mmap
 	       #!optional (start 0) (end (elong->fixnum (mmap-length mmap))))
 	    (open-input-procedure::input-port ::procedure #!optional (bufinfo #t))
-	    (open-input-gzip-port ::input-port  #!optional (bufinfo #t))
-	    
+	    (open-input-gzip-port::input-port ::input-port  #!optional (bufinfo #t))
+            (open-input-zlib-port::input-port ::input-port #!optional (bufinfo #t))
 	    (inline input-port-timeout::long ::input-port)
 	    (inline input-port-timeout-set! ::input-port ::long)
 	    (inline output-port-timeout::long ::output-port)
 	    (inline output-port-timeout-set! ::output-port ::long)
-	    (inline open-input-c-string ::string)
-	    (inline reopen-input-c-string ::input-port ::string)
+	    (inline open-input-c-string::input-port ::string)
+	    (inline reopen-input-c-string::input-port ::input-port ::string)
 	    (open-output-file ::bstring #!optional (bufinfo #t))
 	    (append-output-file ::bstring #!optional (bufinfo #t))
 	    (open-output-string::output-port #!optional (bufinfo #t))
@@ -1200,20 +1200,27 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-gzip-port ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (open-input-gzip-port in::input-port #!optional (bufinfo #t))
+(define (open-input-gzip-port::input-port in::input-port #!optional (bufinfo #t))
    (let ((buf (get-port-buffer "open-input-gzip-port" bufinfo c-default-io-bufsiz)))
       (port->gzip-port in buf)))
 
 ;*---------------------------------------------------------------------*/
+;*    open-input-zlib-port ...                                         */
+;*---------------------------------------------------------------------*/
+(define (open-input-zlib-port::input-port in::input-port #!optional (bufinfo #t))
+   (let ((buf (get-port-buffer "open-input-zlib-port" bufinfo c-default-io-bufsiz)))
+      (port->zlib-port in buf)))
+
+;*---------------------------------------------------------------------*/
 ;*    open-input-c-string ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (open-input-c-string string::string)
+(define-inline (open-input-c-string::input-port string::string)
    ($open-input-c-string string))
 
 ;*---------------------------------------------------------------------*/
 ;*    reopen-input-c-string ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (reopen-input-c-string port::input-port string)
+(define-inline (reopen-input-c-string::input-port port::input-port string)
    ($reopen-input-c-string port string))
 
 ;*---------------------------------------------------------------------*/
@@ -1797,7 +1804,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    lockf ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (lockf port cmd #!optional (len 0))
+(define (lockf::bool port::output-port cmd::symbol #!optional (len 0))
    (cond-expand
       (bigloo-c
        (case cmd
