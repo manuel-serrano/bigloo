@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Wed Aug 18 14:30:52 2010                          */
-;*    Last change :  Fri May  1 07:17:01 2026 (serrano)                */
+;*    Last change :  Fri May  1 07:47:45 2026 (serrano)                */
 ;*    Copyright   :  2010-26 Cyprien Nicolas, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    FTP client implementation.                                       */
@@ -197,7 +197,6 @@
    (when cmd (apply %ftp-send-cmd ftp cmd cmds))
    (multiple-value-bind (code mesg)
       (%ftp-read-cmd ftp)
-      (tprint "CODE=" code " mesg=" mesg)
       (bind-exit (escape)
 	 (define (close x)
 	    (%ftp-close ftp)
