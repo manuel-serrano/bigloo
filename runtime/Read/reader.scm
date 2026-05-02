@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Sun Apr 19 11:17:22 2026 (serrano)                */
+;*    Last change :  Sat May  2 07:09:01 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -86,9 +86,9 @@
 	    (get-source-location obj)
 	    (read #!optional (iport::input-port (current-input-port)) location)
 	    (bigloo-regular-grammar)
-	    (read/case case . port)
-	    (read-case-sensitive . port)
-	    (read-case-insensitive . port)
+ 	    (read/case sensitivity::symbol #!optional (iport::input-port (current-input-port)))
+	    (read-case-sensitive #!optional (iport::input-port (current-input-port)))
+	    (read-case-insensitive #!optional (iport::input-port (current-input-port)))
 	    (reader-reset!)
 	    (port->list::pair-nil ::procedure ::input-port)
 	    (port->sexp-list::pair-nil ::input-port #!optional location)
@@ -864,11 +864,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    read/case ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (read/case case . input-port)
+(define (read/case sensitivity::symbol #!optional (iport::input-port (current-input-port)))
    (let ((old (bigloo-case-sensitivity)))
-      (bigloo-case-sensitivity-set! case)
+      (bigloo-case-sensitivity-set! sensitivity)
       (unwind-protect
-	 (apply read input-port)
+	 (read iport)
 	 (bigloo-case-sensitivity-set! old))))
    
 ;*---------------------------------------------------------------------*/
@@ -876,16 +876,16 @@
 ;*    -------------------------------------------------------------    */
 ;*    Case sensitive read.                                             */
 ;*---------------------------------------------------------------------*/
-(define (read-case-sensitive . input-port)
-   (apply read/case 'sensitive input-port))
+(define (read-case-sensitive #!optional (iport::input-port (current-input-port)))
+   (read/case 'sensitive iport))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-case-insensitive ...                                        */
 ;*    -------------------------------------------------------------    */
 ;*    Case unsensitive read.                                           */
 ;*---------------------------------------------------------------------*/
-(define (read-case-insensitive . input-port)
-   (apply read/case 'downcase input-port))
+(define (read-case-insensitive #!optional (iport::input-port (current-input-port)))
+   (read/case 'downcase iport))
 
 ;*---------------------------------------------------------------------*/
 ;*    port->list ...                                                   */

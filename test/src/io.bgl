@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Wed Apr 29 19:44:26 2026 (serrano)                */
+;*    Last change :  Sat May  2 06:49:31 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing I/O                                                      */
@@ -30,11 +30,122 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-test read (call-with-input-string "(foo \"bar\" 1)" read)
-   :expected '(foo "bar" 1))
-
 (define-test eof-object? (eof-object? '())
    :expected #f)
 
-(define-test eof-objects? (eof-object? (read (open-input-string "")))
+(define-test eof-object? (eof-object? (read (open-input-string "")))
    :expected #t)
+
+(define-test read-char
+   (call-with-input-string "AB" (lambda (ip) (read-char ip) (read-char ip)))
+   :expected #\B)
+
+(define-test read-byte
+   (call-with-input-string "AB" (lambda (ip) (read-char ip) (read-byte ip)))
+   :expected (char->integer #\B))
+
+(define-test peek-char
+   (call-with-input-string "AB" (lambda (ip) (peek-char ip) (read-char ip)))
+   :expected #\A)
+
+(define-test peek-byte
+   (call-with-input-string "AB" (lambda (ip) (peek-byte ip) (read-byte ip)))
+   :expected (char->integer #\A))
+
+(define-test char-ready?
+   (let* ((proc (run-process "/bin/ls" "-l" "/bin" output: pipe:))
+	  (port (process-output-port proc))
+	  (ready #f))
+      (let loop ((line (read-line port)))
+	 (set! ready (or (char-ready? port) ready))
+	 (if (eof-object? line)
+	     (begin
+		(close-input-port port)
+		ready)
+             (loop (read-line port)))))
+   :expected #t)
+
+(define-test unread-char!
+   (call-with-input-string "AB"
+      (lambda (ip)
+         (read-char ip)
+         (unread-char! #\C ip)
+         (read-char ip)))
+   :expected #\C)
+
+(define-test unread-string!
+   (call-with-input-string "AB"
+      (lambda (ip)
+         (read-char ip)
+         (unread-string! "DE" ip)
+         (read-char ip)))
+   :expected #\D)
+
+(define-test unread-substring!
+   (call-with-input-string "AB"
+      (lambda (ip)
+         (read-char ip)
+         (unread-substring! "DEFG" 1 3 ip)
+         (read-char ip)))
+   :expected #\E)
+
+(define-test read (call-with-input-string "(Foo \"Bar\" Gee)" read)
+   :expected '(Foo "Bar" Gee))
+
+(define-test read-line (call-with-input-string "foo\nbar\ngee" read-line)
+   :expected "foo")
+
+(define-test read-line-newline (call-with-input-string "foo\nbar\ngee" read-line-newline)
+   :expected "foo\n")
+
+(define-test read-lines (call-with-input-string "foo\nbar\ngee" read-lines)
+   :expected '("foo" "bar" "gee"))
+
+(define-test read-of-strings (call-with-input-string "abcd efgh ijkl" read-of-strings)
+   :expected "abcd")
+
+(define-test read-string (call-with-input-string "abcd efgh ijkl" read-string)
+   :expected "abcd efgh ijkl")
+
+(define-test read-chars
+   (call-with-input-string "abcd efgh ijkl"
+      (lambda (ip) (read-chars 3 ip)))
+   :expected "abc")
+
+(define-test read-chars!
+   (call-with-input-string "abcd efgh ijkl"
+      (lambda (ip)
+	 (let ((s (make-string 11)))
+	    (read-chars! s 11 ip)
+            s)))
+   :expected "abcd efgh i")
+
+(define-test read-fill-string!
+   (let* ((str "abcdefgihjkl")
+          (len (string-length str))
+          (res (make-string len #\space)))
+      (with-input-from-string str
+         (lambda ()
+            (read-fill-string! res 0 len (current-input-port))))
+      res)
+   :expected "abcdefgihjkl")
+
+(define-test port->string-list
+   (call-with-input-string "abcd 123 efgh ijkl" port->string-list)
+   :expected '("abcd" "123" "efgh" "ijkl"))
+
+(define-test port->list
+   (call-with-input-string "abcd 123" (lambda (ip) (port->list read-char ip)))
+   :expected '(#\a #\b #\c #\d #\space #\1 #\2 #\3))
+
+(define-test port->sexp-list
+   (call-with-input-string "abcd 123 efgh ijkl" port->sexp-list)
+   :expected '(abcd 123 efgh ijkl))
+
+(define-test file->string
+   (>fx (string-length (file->string "misc/input.txt")) 0)
+   :expected #t)
+
+
+
+

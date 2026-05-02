@@ -327,6 +327,17 @@ Reading on an input port which exceeds the timeout triggers an exception.
 Sets a timeout of this `port`. The timeout is expressed in microseconds 
 (1 second = 1,000,000 microseconds).
 
+Setting a port timeout limits the time an read or write operation may
+last.  If the `time` limit exceededs, an exception of time
+`&io-timeout-error1 is raised.
+
+Setting a timeout equal to 0, restore the socket in blocking mode. Setting
+a timeout with a value lesser than 0 is ignored.
+
+Note: ports created from sockets share their internal file descriptor. Hence
+it is erroneous to set a timeout for only one of the two ports. Both
+must be set.
+
 ### output-port-name ###
 Returns the name of the file used to open the `output-port`.
 

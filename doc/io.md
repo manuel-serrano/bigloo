@@ -14,6 +14,7 @@
 ,(implementation-path "../runtime/Ieee/port.scm")
 ,(implementation-path "../runtime/Ieee/output.scm")
 ,(implementation-path "../runtime/Ieee/input.scm")
+,(implementation-path "../runtime/Read/reader.scm")
 ,(example-path "../test/src/io.bgl")
 
 Input/Output
@@ -24,310 +25,127 @@ Predicates
 ----------
 
 ### eof-object? ###
-
 Returns `#t` is `obj` is the object denoting end-of-file. Returns `#f`
 otherwise.
 
-Properties
-----------
+### char-ready? ###
+As specified in the R5Rs, `char-ready?
+returns `#t` if a character is ready on the input `ip` and
+returns `#f` otherwise.  If `char-ready` returns `#t` then
+the next `read-char` operation on the given `ip` is guaranteed
+not to hang.  If the port `ip` is at end of file then `char-ready?`
+returns `#t`. The argument `ip` may be omitted, in which case it defaults to
+the value returned by `current-input-port`.
 
+When using `char-ready?` consider the latency that may exists
+before characters are available. For instance, executing the
+following source code:
+
+For a discussion of Bigloo processes, [Process](process).
 
 
 Library Functions
 -----------------
 
-@deffn {bigloo (>=3.6b) procedure} input-port-timeout
-@deffnx {bigloo (>=2.8b) procedure} input-port-timeout-set
-@deffnx {bigloo (>=3.6b) procedure} output-port-timeout
-@deffnx {bigloo (>=2.8b) procedure} output-port-timeout-set
-Setting a port timeout limits the time an read or write operation may last.
-If the @var{time} limit (expressed in microseconds) exceeded, an exception
-of time @code{&io-timeout-error} is raised.
+### read-char ###
+Reads a character from `ip`. Returns either a character or the end-of-file
+object.
 
-Setting a timeout equal to 0, restore the socket in blocking mode. Setting
-a timeout with a value lesser than 0 is ignored.
+### read-byte ###
+Reads a byte from `ip`. Returns either a fixnum or the end-of-file object.
 
-Note: ports created from sockets share their internal file descriptor. Hence
-it is erroneous to set a timeout for only one of the two ports. Both
-must be set.
+### peek-char ###
+Reads a character from `ip` without consuming it. Returns either a
+character or the end-of-file object.
 
+@deffnx {procedure} peek-byte
+Reads a byte from `ip` without consuming it. Returns either a
+byte or the end-of-file object.
 
-@deffn {bigloo procedure} output-port-flush-hook
-@deffnx {bigloo procedure} output-port-flush-hook-set
-Returns (resp. sets) the @emph{flush hook} of the output
-@var{port}. The flush hook is a procedure of two arguments, the output
-port and the number of characters that are to be actually written out
-during the flush. It is unspecified when the hook is invoked, however,
-one may expect the C back-end to invoke the hook only when output
-buffers are full. The other back-ends (JVM and DOTNET) are likely to
-invoke the hook as soon as a character is to be written.
-
-A flush hook can return two types of values:
-
-@itemize @bullet
-@item A string, which is then directly displayed to the system stream
-associated with the output port.
-
-@item An integer, which denotes the number of characters of the output port
-flush buffer (see @code{output-port-flush-buffer}) that have to be
-displayed on the system stream.
-@end itemize
-
-
-
-@deffn {bigloo procedure} output-port-flush-buffer
-@deffnx {bigloo procedure} output-port-flush-buffer-set
-These functions gets and sets a buffer that can be used by program by the
-flush hooks. The runtime system makes no provision for automatically allocated
-these buffers that hence must be manually allocated by programs. The motivation
-for flush buffer is to allow programs to write flush hooks that don't have
-to allocate a new string each time invoked.
-
-
-@deffn {bigloo procedure} output-port-close-hook
-@deffnx {bigloo procedure} output-port-close-hook-set
-Returns (resp. sets) the @emph{close hook} of the output @var{port}. The
-close hook is a procedure of one argument, the closed port. The hook 
-is invoked @emph{after} the @var{port} is closed.
-
-
-@deffn {bigloo procedure} input-port-close-hook
-@deffnx {bigloo procedure} input-port-close-hook-set
-Returns (resp. sets) the @emph{close hook} of the input @var{port}. The
-close hook is a procedure of one argument, the closed port.
-
-Example:
-@smalllisp
-(let ((p (open-input-string "/etc/passwd")))
-  (input-port-close-hook-set! p (lambda () (display 'done)))
-  ...
-  (close-input-port p))
-@end smalllisp
-
-
-@deffn {bigloo procedure} input-port-reopen
-Re-open the input port @var{obj}. That is, re-start reading from the first
-character of the input port.
-
-
-@deffn {procedure} current-input-port@deffnx {procedure} current-output-port
-@deffnx {bigloo procedure} current-error-port
-
-@deffn {optional procedure} with-input-from-file
-@deffnx {optional procedure} with-input-from-string
-@deffnx {optional procedure} with-input-from-procedure
-@deffnx {optional procedure} with-output-to-file
-@deffnx {optional procedure} with-append-to-file
-@deffnx {bigloo procedure} with-error-to-file
-@deffnx {bigloo procedure} with-output-to-string
-@deffnx {bigloo procedure} with-output-to-procedure
-@deffnx {bigloo procedure} with-error-to-string
-@deffnx {bigloo procedure} with-error-to-procedure
-A port is opened from file @var{string}. This port is made the
-current input port (resp. the current output port or the current error port) 
-and @var{thunk} is called. 
-See @ref{Ports,,r5rs.info,R5RS}, for more details.
-
-@smalllisp
-(with-input-from-file "/etc/passwd"
-   (lambda ()
-      (let loop ((line (read-line (current-input-port))))
-         (if (not (eof-object? line))
-             (begin
-                (print line)
-                (loop (read-line (current-input-port))))))))
-@end smalllisp
-
-
-@deffn {bigloo procedure} with-input-from-port
-@deffnx {bigloo procedure} with-output-to-port
-@deffnx {bigloo procedure} with-error-to-port
-
-@code{with-input-from-port}, @code{with-output-to-port} and
-@code{with-error-to-port} all suppose @var{port} to be a legal port. They 
-call @var{thunk} making @var{port} the current input (resp. output or
-error) port. None of these functions close @var{port} on the continuation 
-of @var{thunk}.
-
-@smalllisp
-(with-output-to-port (current-error-port) 
-   (lambda () (display "hello")))
-@end smalllisp
-
-
-@deffn {bigloo procedure} open-input-gzip-file
-@deffnx {bigloo procedure} open-input-gzip-port
-@cindex zip
-@cindex gzip
-
-Open respectively a gzipped file for input and a port on a gzipped stream.
-Note that closing a gzip port opened from a port @var{pi} does not close
-the @var{pi} port.
-
-@smalllisp
-(let ((p (open-input-gzip-file "bigloo.tar.gz")))
-   (unwind-protect
-      (read-line p1)
-      (close-input-port p)))
-@end smalllisp
-
-This can be decomposed as:
-
-@smalllisp
-(let* ((p1 (open-input-file "bigloo.tar.gz"))
-       (p2 (open-input-gzip-port p1)))
-   (unwind-protect
-      (read-line p2)
-      (close-input-port p2)
-      (close-input-port p1)))
-@end smalllisp
-
-
-@deffn {bigloo procedure} open-input-zlib-file@deffnx {bigloo procedure} open-input-zlib-port
-@cindex zip
-@cindex gzip
-
-Open respectively a zlib file for input and a port on a zlib stream.
-Note that closing a zlib port opened from a port @var{pi} does not close
-the @var{pi} port.
-
-
-
-@deffn {bigloo procedure} open-input-c-string
-Returns an @code{input-port} able to deliver characters from
-C @var{string}. The buffer used by the input port is the exact
-same string as the argument. That is, no buffer is allocated.
-
-
-@deffn {bigloo procedure} open-input-ftp-file
-Returns an @code{input-port} able to deliver characters from a
-remote file located on a FTP server.
-
-Example:
-
-@smalllisp
-(let ((p (open-input-ftp-file "ftp-sop.inria.fr/ls-lR.gz'')))
-  (unwind-protect
-     (read-string p)
-     (close-input-port p)))
-@end smalllisp
-  
-The file name may contain user authentication such as:
-
-@smalllisp
-(let ((p (open-input-ftp-file "anonymous:foo@@ftp-sop.inria.fr/ls-lR.gz'')))
-  (unwind-protect
-     (read-string p)
-     (close-input-port p)))
-@end smalllisp
-
-
-
-@deffn {bigloo procedure} open-input-mmap
-@var{mmap} must be a mmap, and @var{start} and @var{end} must be
-exact integers satisfying:
-
-@smallexample
-  0 <= START <= END <= (mmap-length STRING)
-@end smallexample
-
-The optional argument @var{end} defaults to @code{(mmap-length STRING)}.
-
-Returns an @code{input-port} able to deliver characters from
-@var{mmap}.
-
-
-@deffn {bigloo procedure} unread-char
-@deffnx {bigloo procedure} unread-string
-@deffnx {bigloo procedure} unread-substring
-Pushes the given @var{char}, @var{string} or substring into the input-port.
-The next read character(s) will be the pushed ones. The @var{input-port} must
+### unread-char! ###
+Pushes the given `char`, into the input-port.
+The next read character will be the pushed one. The `input-port` must
 be buffered and not be closed.
 
-Example:
+### unread-string! ###
+Pushes the given string into the input-port.
+The next read character(s) will be the pushed ones. The `input-port` must
+be buffered and not be closed.
 
-@smalllisp
-(define p (open-input-string "a ymbol c"))
-(read p)                       @result{} a
-(read-char p)                  @result{} #\space
-(unread-char! #\s p)
-(read p)                       @result{} symbol
-(read-char p)                  @result{} #\space
-(read p)                       @result{} c
-(char-ready? p)                @result{} #f
-(unread-string! "sym1 sym2" p)
-(char-ready? p)                @result{} #t
-(read p)                       @result{} sym1
-(read p)                       @result{} sym2
-@end smalllisp
+### unread-substring! ###
+Pushes the given substring into the input-port.
+The next read character(s) will be the pushed ones. The `input-port` must
+be buffered and not be closed.
 
+### read ###
+Reads a lisp expression from `ip`. If the argument `location` is `#t`, read
+list are composed of epairs instead of plain pairs, whose `cer` denotes
+the position in `ip` where the list was read from.
 
+### read-line ###
+Reads characters from `input-port` until a `#\Newline`, a `#\Return`
+or an `end of file` condition is encountered.  The function
+`read-line` returns a newly allocated string composed of the
+characters read.
 
-@deffn {bigloo procedure} open-output-procedure
-This function returns an @emph{output procedure port}. This object has almost
-the same purpose as @code{output-port}. It can be used with all
-the printer functions which accept @code{output-port}. An output
-on a @emph{output procedure port} invokes the @var{proc} procedure
-each time it is used for writing. That is, @var{proc} is invoked with a
-string denoting the displayed characters. When the function
-@code{flush-output-port} is called on such a port, the optional
-@var{flush} procedure is invoked. When the function @code{close-output-port}
-is called on such a port, the optional @var{close} procedure is invoked.
+The strings returned by `read-line` do not contain the newline delimiters.
 
+### read-line-newline ###
+Reads characters from `input-port` until a `#\Newline`, a `#\Return`
+or an `end of file` condition is encountered.  The function
+`read-line` returns a newly allocated string composed of the
+characters read.
 
-@deffn {bigloo procedure} set-input-port-position
-@deffnx {bigloo procedure} set-output-port-position
-These functions set the file position indicator for @var{port}. The new 
-position, measured in bytes, is specified by @var{pos}. It is an error 
-to seek a port that cannot be changed (for instance, a procedure or a 
-console port). The result of these functions is unspecified. An error
-is raised if the position cannot be changed.
+The strings returned by `read-line-newline` do contain the newline delimiters.
 
+### read-lines ###
+Accumulates all the line of an `input-port` into a list.
 
-@deffn {bigloo procedure} input-port-reopen
-This function re-opens the input @code{input-port}. That is, it reset the
-position in the @var{input-port} to the first character.
+### read-of-strings ###
+Reads a sequence of non-space characters on `input-port`, makes a
+string of them and returns the string.
 
+### read-string ###
+Reads all the characters of `input-port` into a string.
 
-@deffn {procedure} read
-@deffnx {bigloo procedure} read
-@deffnx {bigloo procedure} read-case-sensitive
-@deffnx {bigloo procedure} read-case-insensitive
-Read a lisp expression. The case sensitivity of @code{read} is unspecified. 
-If have to to enforce a special behavior regarding the case, use 
-@code{read/case}, @code{read-case-sensitive} or @code{read-case-insensitive}. 
-Let us consider the following source code: The value of the @code{read/case}'s
-@var{case} argument may either be @code{upcase}, @code{downcase} or 
-@code{sensitive}. Using any other value is an error.
+### read-chars ###
+The function `read-chars` returns a newly allocated strings made
+of `size` characters read from `input-port` (or from
+`(current-input-port)` if `input-port` is not provided). If
+less than `size` characters are available on the input port, the
+returned string is smaller than `size`. Its size is the number of
+available characters.
 
-```
-(define (main argv)
-   (let loop ((exp (read-case-sensitive)))
-      (if (not (eof-object? exp))
-          (begin
-             (display "exp: ")
-             (write exp)
-             (display " [")
-             (display exp)
-             (display "]")
-             (print " eq?: " (eq? exp 'FOO) " " (eq? exp 'foo))
-             (loop (read-case-sensitive))))))
-```
+### read-chars! ###
+The `read-chars!` fills the buffer `buf` with at most
+`size` characters, read from `input-port`.
 
-Thus:
+### read-fill-string! ###
+Fills the string `s` starting at offset `o` with at
+most `len` characters read from the input port `input-port`
+(or from `(current-input-port)` if `input-port` is not provided).
+This function returns the number of read characters (which may be smaller
+than `len` if less characters are available) or the end of file object.
+The argument `len` is a small integer.
 
-```
-> a.out
-foo
-  &rarr; exp: foo [foo] eq?: #f #t
-FOO
-  &rarr; exp: FOO [FOO] eq?: #t #f
-```
+The function `read-fill-string!` is similar to `read-chars!`
+except that it returns the `end-of-file` object on termination while
+`read-chars!` returns 0.
 
-@deffn {bigloo procedure} read
-@deffnx {bigloo procedure} read
-These functions are fully explained in @ref{Regular Parsing},
-and @ref{Lalr Parsing}.
+### port->string-list ###
+Returns a list of strings composed of the elements of `input-port`.
+
+### port->list ###
+The function `port->list` applies reader to port repeatedly until it 
+returns EOF, then returns a list of results. 
+
+### port->sexp-list ###
+The function `port->sexp-list` is equivalent to `(port->list read port)`.
+
+### file->string ###
+This function builds a new string out of all the characters of the file 
+`path`. If the file cannot be open or read, an `&io-exception`
+is raised.
 
 
 @deffn {bigloo procedure} define-reader-ctor
@@ -386,139 +204,6 @@ Example:
 		   (loop (peek-char port)
                       (cons exp exps))))))))
 @end smalllisp
-
-
-
-@deffn {procedure} read-char
-@deffnx {procedure} read-byte
-@deffnx {procedure} peek-char
-@deffnx {procedure} peek-byte
-@deffnx {procedure} eof-object
-
-
-@deffn {procedure} char-ready
-@cindex run-process and char-ready?
-@cindex char-ready? and run-process
-@cindex run-process and input/output
-As specified in the R5Rs, @ref{Ports,,r5rs.info,R5RS}, @code{char-ready?}
-returns @t{#t} if a character is ready on the input @var{port} and
-returns @t{#f} otherwise.  If @samp{char-ready} returns @t{#t} then
-the next @samp{read-char} operation on the given @var{port} is guaranteed
-not to hang.  If the @var{port} is at end of file then @samp{char-ready?}
-returns @t{#t}.  @var{Port} may be omitted, in which case it defaults to
-the value returned by @samp{current-input-port}.
-
-When using @code{char-ready?} consider the latency that may exists
-before characters are available. For instance, executing the
-following source code:
-
-@smalllisp
-(let* ((proc (run-process "/bin/ls" "-l" "/bin" output: pipe:))
-       (port (process-output-port proc)))
-   (let loop ((line (read-line port)))
-      (print "char ready " (char-ready? port))
-      (if (eof-object? line)
-          (close-input-port port)
-          (begin
-             (print line)
-             (loop (read-line port))))))
-@end smalllisp
-
-@noindent Produces outputs such as:
-
-@display
-char ready #f
-total 7168
-char ready #f
--rwxr-xr-x    1 root     root         2896 Sep  6  2001 arch
-char ready #f
--rwxr-xr-x    1 root     root        66428 Aug 25  2001 ash
-char ready #t
-...
-@end display
-
-For a discussion of Bigloo processes, see @ref{Process}.
-
-@emph{Note:} Thanks to Todd Dukes for the example and the suggestion
-of including it this documentation.
-
-
-@deffn {bigloo procedure} read-line
-@deffnx {bigloo procedure} read-line-newline
-Reads characters from @var{input-port} until a @code{#\Newline}, 
-a @code{#\Return} or an @code{end of file} condition is encountered. 
-@code{read-line} returns a newly allocated string composed of the characters 
-read.
-
-The strings returned by @code{read-line} do not contain the newline delimiters.
-The strings returned by @code{read-line-newline} do contain them.
-
-
-@deffn {bigloo procedure} read-lines
-Accumulates all the line of an @var{input-port} into a list.
-
-
-@deffn {bigloo procedure} read-of-strings
-Reads a sequence of non-space characters on @var{input-port}, makes a
-string of them and returns the string.
-
-
-@deffn {bigloo procedure} read-string
-Reads all the characters of @var{input-port} into a string.
-
-
-@deffn {bigloo procedure} read-chars
-@deffnx {bigloo procedure} read-chars
-
-The function @code{read-chars} returns a newly allocated strings made
-of @var{size} characters read from @var{input-port} (or from
-@code{(current-input-port)} if @var{input-port} is not provided). If
-less than @var{size} characters are available on the input port, the
-returned string is smaller than @var{size}. Its size is the number of
-available characters.
-
-The function @code{read-chars!} fills the buffer @var{buf} with at most
-@var{size} characters.
-
-
-@deffn {bigloo procedure} read-fill-string
-Fills the string @var{s} starting at offset @var{o} with at
-most @var{len} characters read from the input port @var{input-port}
-(or from @code{(current-input-port)} if @var{input-port} is not provided).
-This function returns the number of read characters (which may be smaller
-than @var{len} if less characters are available) or the end of file object.
-The argument @code{len} is a small integer.
-
-The function @code{read-fill-string!} is similar to @code{read-chars!}
-except that it returns the @emph{end-of-file} object on termination while
-@code{read-chars!} returns 0.
-
-Example:
-@smalllisp
-(let ((s (make-string 10 #\-)))
-   (with-input-from-string "abcdefghijlkmnops"
-      (lambda ()
-         (read-fill-string! s 3 5)
-         s)))
-   @result{} ---abcde--
-@end smalllisp
-
-
-@deffn {bigloo procedure} port-
-Returns a list of strings composed of the elements of @var{input-port}.
-
-
-@deffn {bigloo procedure} port-
-@deffnx {bigloo procedure} port-
-@code{Port->list} applies reader to port repeatedly until it returns EOF, 
-then returns a list of results. 
-@code{Port->list-sexp} is equivalent to @code{(port->list read port)}.
-
-
-@deffn {bigloo procedure} file-
-This function builds a new string out of all the characters of the file 
-@var{path}. If the file cannot be open or read, an @code{IO_EXCEPTION}
-is raised.
 
 
 @deffn {bigloo procedure} send-chars
