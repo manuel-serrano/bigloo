@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Wed Apr 29 14:55:55 2026 (serrano)                */
+;*    Last change :  Sat May  2 16:33:21 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -60,43 +60,6 @@
 ;*---------------------------------------------------------------------*/
 (define (vital:let*)
    (let* ((x 1) (x (+ 1 x))) x))
-
-;*---------------------------------------------------------------------*/
-;*    vital:write ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (vital:write s)
-   (let ((p (open-output-string)))
-      (write s p)
-      (let* ((s (close-output-port p))
-	     (p (open-input-string s)))
-	 (let ((res (read p)))
-	    (close-input-port p)
-	    res))))
-
-;*---------------------------------------------------------------------*/
-;*    vital:write2 ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (vital:write2 s)
-   (with-input-from-string (with-output-to-string
-			      (lambda ()
-				 (write s)))
-      (lambda ()
-	 (let ((res (read)))
-	    res))))
-
-;*---------------------------------------------------------------------*/
-;*    vital:write3 ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (vital:write3 s)
-   (with-input-from-string (with-error-to-string
-			      (lambda ()
-				 (with-output-to-string
-				    (lambda ()
-				       (display 1 (current-error-port))
-				       (write s)))))
-      (lambda ()
-	 (let ((res (read)))
-	    res))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vital:hoist ...                                                  */
@@ -483,14 +446,6 @@
    (test "gensym.5" (eq? (gensym 'foo) (gensym 'foo)) #f)n
    (let ((s (gensym)))
       (test "gensym.6" (eq? s (string->symbol (symbol->string s))) #t))
-   (let ((s "toto\"\\\ntiti"))
-      (test "write.1" (vital:write s) s))
-   (let ((s "toto\"\\\ntiti"))
-      (test "write.2" (vital:write2 s) s))
-   (let ((s #"toto\"\\\nti\tti"))
-      (test "write.3" (vital:write2 s) s))
-   (test "write.3" (vital:write3 "foobar") 1)
-   (test "write.4" (vital:write (string->symbol "01234")) '|01234|)
    (test "flonum" (real? (string->obj (obj->string 0.5))) #t)
    (let ((o '(#s8:0 #s8:1 #s8:-1 #u8:0 #u8:1 #u8:250
 	      #s16:0 #s16:1 #s16:-1 #u16:0 #u16:1 #u16:250
@@ -822,34 +777,7 @@
       (test "manling.3" (bigloo-demangle (bigloo-mangle s)) s))
    (test "mangling.4" (bigloo-mangled? "BgLtoto") #f)
    (test "mangling.5" (bigloo-mangled? (bigloo-mangle "BgL_toto")) #t)
-   (let* ((obj (list 1 2 3 4))
-	  (v   (vector 2 3 obj 5)))
-      (set-car! obj v)
-      (set-car! (cdr obj) obj)
-      (test "cycles.1" (let ((port (open-output-string)))
-			(write-circle obj port)
-			(let* ((str (close-output-port port))
-			       (port (open-input-string str)))
-			   (let ((new-obj (read port)))
-			      (close-input-port port)
-			      (let ((port (open-output-string)))
-				 (write-circle new-obj port)
-				 (close-output-port port)))))
-	    (let ((port (open-output-string)))
-	       (write-circle obj port)
-	       (close-output-port port))))
-   (let ((s "#0=(#0# #1=(#1#))"))
-      (test "cycles.2"
-	 (call-with-output-string
-	    (lambda (op)
-	       (write-circle (call-with-input-string s read) op)))
-	 s))
-   (let ((s "#0=(#0# #1=(#1# #2=(#2#)) #2#)"))
-      (test "cycles.3"
-	 (call-with-output-string
-	    (lambda (op)
-	       (write-circle (call-with-input-string s read) op)))
-	 s))
+   
    (test "args-parse" (test-args-parse) (bit-or 31 (bit-or 32 64)))
    (cond-expand
       (bigloo-wasm

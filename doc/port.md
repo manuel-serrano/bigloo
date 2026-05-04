@@ -390,6 +390,16 @@ Closes an `output-port`. If it was created using
 `open-output-string`, the value returned is the string consisting
 of all characters sent to the port.
 
+### flush-output-port ###
+Flushes the output port @var{output-port}. It
+_does not_ reset characters accumulated in string port. For this
+uses, `reset-output-port`.
+
+### reset-output-port ###
+This function is equivalent to `flush-output-port` but in addition,
+for string ports, it reset the internal buffer that accumulates the
+displayed characters.
+
 ### call-with-input-file ###
 Invokes `proc` with an input port opened on `file`. Returns the result
 of the call and closes the port. Triggers an error is `file` cannot
