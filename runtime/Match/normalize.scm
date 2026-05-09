@@ -141,6 +141,8 @@
         ((vector? e) (standardize-vector e))
         ((struct? e) (standardize-struct e))
         ((atom? e) (standardize-quote e))
+        ((and (pair? e) (eq? (car e) 'isa))
+         (standardize-class-pattern (cdr e)))
         (else (standardize-patterns e)) ) )
 
 ;(define (standardize-patterns e*)
@@ -246,7 +248,7 @@
 (define (standardize-segment-variable e f*)
   (lambda (r c)
     (let ((name (segment-variable-true-name e)))
-      (if (eq? (lookup r name) unbound-pattern)
+      (if (not (lookup r name))
           ((standardize-patterns f*)
            (extend-alist r name 'segment)
            (lambda (pattern rr)
@@ -291,7 +293,7 @@
   (if (null? f*)
       (lambda (r c)
         (let ((name (lispish-segment-variable-true-name e)))
-          (if (eq? (lookup r name) unbound-pattern)
+          (if (not (lookup r name))
               (c `(var ,name (any))
                  (extend-alist r name 'segment) )
               (c `(var ,name) r) ) ) )
@@ -609,3 +611,23 @@
                            fields)
                       (cdr f)))))
          ((standardize-pattern pattern) r c))))
+
+
+;;;--------------------------------------------------------------------*/
+;;;   Class pattern matching (purely symbolic, no reflection needed)   */
+;;;   Syntax: (isa ClassName (field pat) ...)                          */
+;;;   Fields not mentioned are ignored (partial matching).             */
+;;;--------------------------------------------------------------------*/
+
+(define (standardize-class-pattern args)
+   ;; args = (ClassName (field1 pat1) (field2 pat2) ...)
+   (lambda (r c)
+      (let* ((klass-name (car args))
+             (pats (cdr args))
+             (field-patterns
+              (map (lambda (fp)
+                      (cons (car fp)
+                         (normalize-pattern (cadr fp))))
+                 pats)))
+         (c `(class-pat ,klass-name ,@field-patterns)
+            r))))
