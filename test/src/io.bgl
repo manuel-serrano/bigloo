@@ -150,7 +150,7 @@
    (>fx (string-length (file->string "misc/input.txt")) 0)
    :expected #t)
 
-(define display-circle
+(define-test display-circle
    (with-output-to-string
       (lambda ()
          (define l (list 1 2 3))
@@ -165,7 +165,7 @@
 
 (define-test format
    (format "Error, list is too short: ~s~%" '(one "two" 3))
-   :expected "Error, list is too short: (one \"two\" 3)")
+   :expected "Error, list is too short: (one \"two\" 3)\n")
 
 (define-test format 
    (format "a ~l: ~l" "list" '(1 2 3))
@@ -177,7 +177,7 @@
 
 (define-test format
    (format "~3d ~3,-d ~3x ~3,0d" 4 4 16 5)
-   :expected "4 --4 16 005")
+   :expected "  4 --4  10 005")
 
 (define-test define-reader-ctor
    (begin
@@ -235,11 +235,9 @@
 (define-test write
    (with-input-from-string (with-output-to-string
                               (lambda ()
-                                 (write "toto\"\\\ntiti")))
-      (lambda ()
-         (let ((res (read)))
-            res)))
-   :expected 'toto)
+                                 (write "T\"\\\ni\tt")))
+      read-string)
+   :expected (list->string '(#\" #\T #\\ #\" #\\ #\\ #\\ #\n #\i #\\ #\t #\t #\")))
 
 (define-test write
    (let ((s #"toto\"\\\nti\tti"))
