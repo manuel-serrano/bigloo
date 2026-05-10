@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Fri May  1 06:45:16 2026 (serrano)                */
+;*    Last change :  Sat May  2 16:23:09 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing ports                                                    */
@@ -142,6 +142,13 @@
    (closed-input-port? (close-input-port (open-input-file "/dev/null")))
    :expected #t)
 
+(define-test close-input-port
+   (let ((p (open-input-file "misc/input.txt")))
+      (close-input-port p)
+      (close-input-port p)
+      #f)
+   :expected #f)
+
 (define-test closed-input-port?
    (closed-input-port? (close-input-port (open-input-file "/dev/null")))
    :expected #t)
@@ -163,6 +170,25 @@
 (define-test closed-output-port?
    (closed-output-port? (open-output-string ""))
    :expected #f)
+
+(define-test flush-output-port
+   (let ((outp (open-output-string)))
+      (display "this is some text" outp)
+      (let* ((v1 (flush-output-port outp))
+             (v2 (flush-output-port outp)))
+         (display "zot" outp)
+         (list v1 v2 (flush-output-port outp))))
+   :expected '("this is some text" "this is some text" "this is some textzot"))
+
+(define-test reset-output-port
+   (let ((outp (open-output-string)))
+      (display "this is some text" outp)
+      (let* ((v1 (flush-output-port outp))
+             (_ (reset-output-port outp))
+             (v2 (flush-output-port outp)))
+         (display "zot" outp)
+         (list v1 v2 (flush-output-port outp))))
+   :expected '("this is some text" "" "zot"))
 
 (define-test open-output-file
    (let ((p (open-output-file "/dev/null")))
@@ -493,6 +519,20 @@
             (flush-output-port op)))
       res)
    :expected '(#t . #t))
+
+(define-test output-port-flush-hook-set!
+   (let* ((p (open-output-file "/tmp/recette.TMP" 10))
+	  (n 0)
+	  (fhook (lambda (p s) (set! n (+ s n)))))
+      (output-port-flush-hook-set! p fhook)
+      (flush-output-port p)
+      (write "foo" p)
+      (write "bar" p)
+      (write '(1 2 3) p)
+      (close-output-port p)
+      (delete-file "recette.TMP")
+      n)
+   :expected 17)
 
 (define-test output-port-flush-buffer
    (output-port-flush-buffer (current-output-port))

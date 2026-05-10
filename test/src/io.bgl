@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Wed Apr 29 19:44:26 2026 (serrano)                */
+;*    Last change :  Sat May  2 14:19:30 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing I/O                                                      */
@@ -30,11 +30,275 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-test read (call-with-input-string "(foo \"bar\" 1)" read)
-   :expected '(foo "bar" 1))
-
 (define-test eof-object? (eof-object? '())
    :expected #f)
 
-(define-test eof-objects? (eof-object? (read (open-input-string "")))
+(define-test eof-object? (eof-object? (read (open-input-string "")))
    :expected #t)
+
+(define-test read-char
+   (call-with-input-string "AB" (lambda (ip) (read-char ip) (read-char ip)))
+   :expected #\B)
+
+(define-test read-byte
+   (call-with-input-string "AB" (lambda (ip) (read-char ip) (read-byte ip)))
+   :expected (char->integer #\B))
+
+(define-test peek-char
+   (call-with-input-string "AB" (lambda (ip) (peek-char ip) (read-char ip)))
+   :expected #\A)
+
+(define-test peek-byte
+   (call-with-input-string "AB" (lambda (ip) (peek-byte ip) (read-byte ip)))
+   :expected (char->integer #\A))
+
+(define-test char-ready?
+   (cond-expand
+      (bigloo-wasm
+       #t)
+      (else
+       (let* ((proc (run-process "/bin/ls" "-l" "/bin" output: pipe:))
+              (port (process-output-port proc))
+              (ready #f))
+          (let loop ((line (read-line port)))
+             (set! ready (or (char-ready? port) ready))
+             (if (eof-object? line)
+                 (begin
+                    (close-input-port port)
+                    ready)
+                 (loop (read-line port)))))))
+   :expected #t)
+
+(define-test unread-char!
+   (call-with-input-string "AB"
+      (lambda (ip)
+         (read-char ip)
+         (unread-char! #\C ip)
+         (read-char ip)))
+   :expected #\C)
+
+(define-test unread-string!
+   (call-with-input-string "AB"
+      (lambda (ip)
+         (read-char ip)
+         (unread-string! "DE" ip)
+         (read-char ip)))
+   :expected #\D)
+
+(define-test unread-substring!
+   (call-with-input-string "AB"
+      (lambda (ip)
+         (read-char ip)
+         (unread-substring! "DEFG" 1 3 ip)
+         (read-char ip)))
+   :expected #\E)
+
+(define-test read (call-with-input-string "(Foo \"Bar\" Gee)" read)
+   :expected '(Foo "Bar" Gee))
+
+(define-test read-line (call-with-input-string "foo\nbar\ngee" read-line)
+   :expected "foo")
+
+(define-test read-line-newline (call-with-input-string "foo\nbar\ngee" read-line-newline)
+   :expected "foo\n")
+
+(define-test read-lines (call-with-input-string "foo\nbar\ngee" read-lines)
+   :expected '("foo" "bar" "gee"))
+
+(define-test read-of-strings (call-with-input-string "abcd efgh ijkl" read-of-strings)
+   :expected "abcd")
+
+(define-test read-string (call-with-input-string "abcd efgh ijkl" read-string)
+   :expected "abcd efgh ijkl")
+
+(define-test read-chars
+   (call-with-input-string "abcd efgh ijkl"
+      (lambda (ip) (read-chars 3 ip)))
+   :expected "abc")
+
+(define-test read-chars!
+   (call-with-input-string "abcd efgh ijkl"
+      (lambda (ip)
+	 (let ((s (make-string 11)))
+	    (read-chars! s 11 ip)
+            s)))
+   :expected "abcd efgh i")
+
+(define-test read-fill-string!
+   (let* ((str "abcdefgihjkl")
+          (len (string-length str))
+          (res (make-string len #\space)))
+      (with-input-from-string str
+         (lambda ()
+            (read-fill-string! res 0 len (current-input-port))))
+      res)
+   :expected "abcdefgihjkl")
+
+(define-test port->string-list
+   (call-with-input-string "abcd 123 efgh ijkl" port->string-list)
+   :expected '("abcd" "123" "efgh" "ijkl"))
+
+(define-test port->list
+   (call-with-input-string "abcd 123" (lambda (ip) (port->list read-char ip)))
+   :expected '(#\a #\b #\c #\d #\space #\1 #\2 #\3))
+
+(define-test port->sexp-list
+   (call-with-input-string "abcd 123 efgh ijkl" port->sexp-list)
+   :expected '(abcd 123 efgh ijkl))
+
+(define-test file->string
+   (>fx (string-length (file->string "misc/input.txt")) 0)
+   :expected #t)
+
+(define display-circle
+   (with-output-to-string
+      (lambda ()
+         (define l (list 1 2 3))
+         (set-car! (cdr l) l)
+         (set-car! (cddr l) l)
+         (display-circle l)))
+   :expected "#0=(1 #0# #0#)")
+
+(define-test format
+   (format "Hello, ~a" "World!") 
+   :expected "Hello, World!")
+
+(define-test format
+   (format "Error, list is too short: ~s~%" '(one "two" 3))
+   :expected "Error, list is too short: (one \"two\" 3)")
+
+(define-test format 
+   (format "a ~l: ~l" "list" '(1 2 3))
+   :expected "a list: 1 2 3")
+
+(define-test format 
+   (format "a ~l: ~(, )" "list" '(1 2 3))
+   :expected "a list: 1, 2, 3")
+
+(define-test format
+   (format "~3d ~3,-d ~3x ~3,0d" 4 4 16 5)
+   :expected "4 --4 16 005")
+
+(define-test define-reader-ctor
+   (begin
+      (define-reader-ctor 'list list)
+      (with-input-from-string "#,(list 1 2 #f \"4 5\")" read))
+   :expected '(1 2 #f "4 5"))
+
+(define-test define-reader-ctor
+   (begin
+      (define-reader-ctor '+ +)
+      (with-input-from-string "#,(+ 1 2)" read))
+   :expected 3)
+
+(define-test password
+   (procedure? password)
+   :expected #t)
+
+(define-test send-chars
+   (call-with-input-string "foo bar"
+      (lambda (ip)
+         (call-with-output-string
+            (lambda (op)
+               (send-chars ip op)))))
+   :expected "foo bar")
+
+(define-test send-file
+   (call-with-output-string
+      (lambda (op)
+         (send-file "misc/input.txt" op)))
+   :expected (file->string "misc/input.txt"))
+
+(define-test write
+   (let ((s "toto\"\\\ntiti"))
+      (let ((p (open-output-string)))
+         (write s p)
+         (string=? 
+            (let* ((s (close-output-port p))
+                   (p (open-input-string s)))
+               (let ((res (read p)))
+                  (close-input-port p)
+                  res))
+            s)))
+   :expected #t)
+
+(define-test write
+   (let ((s (string->symbol "01234")))
+      (with-input-from-string (with-output-to-string
+                                 (lambda ()
+                                    (write s)))
+         (lambda ()
+            (let ((res (read)))
+               res))))
+   :expected '|01234|)
+
+(define-test write
+   (with-input-from-string (with-output-to-string
+                              (lambda ()
+                                 (write "toto\"\\\ntiti")))
+      (lambda ()
+         (let ((res (read)))
+            res)))
+   :expected 'toto)
+
+(define-test write
+   (let ((s #"toto\"\\\nti\tti"))
+      (with-input-from-string (with-error-to-string
+                                 (lambda ()
+                                    (with-output-to-string
+                                       (lambda ()
+                                          (display 1 (current-error-port))
+                                          (write s)))))
+         (lambda ()
+            (let ((res (read)))
+               res))))
+   :expected 1)
+
+(define-test write
+   (with-input-from-string (with-error-to-string
+                              (lambda ()
+                                 (with-output-to-string
+                                    (lambda ()
+                                       (display 1 (current-error-port))
+                                       (write #"foobar")))))
+      (lambda ()
+         (let ((res (read)))
+            res)))
+   :expected 1)
+
+(define-test write-circle
+   (let* ((obj (list 1 2 3 4))
+	  (v   (vector 2 3 obj 5)))
+      (set-car! obj v)
+      (set-car! (cdr obj) obj)
+      (equal? (let ((port (open-output-string)))
+                 (write-circle obj port)
+                 (let* ((str (close-output-port port))
+                        (port (open-input-string str)))
+                    (let ((new-obj (read port)))
+                       (close-input-port port)
+                       (let ((port (open-output-string)))
+                          (write-circle new-obj port)
+                          (close-output-port port)))))
+         (let ((port (open-output-string)))
+            (write-circle obj port)
+            (close-output-port port))))
+   :expected #t)
+
+(define-test write-circle
+   (let ((s "#0=(#0# #1=(#1#))"))
+      (string=? 
+         (call-with-output-string
+	    (lambda (op)
+	       (write-circle (call-with-input-string s read) op)))
+         s))
+   :expected #t)
+
+(define-test write-circle
+   (let ((s "#0=(#0# #1=(#1# #2=(#2#)) #2#)"))
+      (string=? 
+         (call-with-output-string
+            (lambda (op)
+               (write-circle (call-with-input-string s read) op)))
+         s)))
+   

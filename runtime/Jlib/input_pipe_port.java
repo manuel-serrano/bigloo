@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/runtime/Jlib/input_pipe_port.java        */
+/*    .../project/bigloo/5.0a/runtime/Jlib/input_pipe_port.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Dec  9 11:49:41 2000                          */
-/*    Last change :  Mon Oct 24 13:44:07 2016 (serrano)                */
-/*    Copyright   :  2000-16 Manuel Serrano                            */
+/*    Last change :  Sat May  2 10:01:48 2026 (serrano)                */
+/*    Copyright   :  2000-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo JVM input pipe ports.                                     */
 /*=====================================================================*/
