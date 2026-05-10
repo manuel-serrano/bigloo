@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon Apr 27 10:14:09 2026 (serrano)                */
+;*    Last change :  Fri May  1 17:07:11 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -258,7 +258,7 @@
 (define wasm-script "#!/bin/sh
 JS=${JS:-node}
 
-BIGLOOLIBDIR=@LIBDIR@
+BIGLOOLIBDIR=${BIGLOOLIBDIR:-@LIBDIR@}
 
 WASMOPT=${WASMOPT:-}
 
