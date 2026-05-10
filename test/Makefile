@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Wed Apr 29 19:19:51 2026 (serrano)                */
+#*    Last change :  Sat May  2 10:30:40 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -95,7 +95,7 @@ test_wasm: $(W_OBJECTS:%=objs_wasm/%)
 
 check_wasm:
 	@if [ "$(WASMBACKEND)" = "yes" ]; then \
-	  $(MAKE) wasm && ./test_wasm; \
+	  $(MAKE) wasm && BIGLOOLIBDIR=$(BOOTDIR)/lib/bigloo/$(RELEASE) BIGLOOJSDIR=$(BOOTDIR)/runtime/Wlib ./test_wasm; \
         fi
 
 distrib: clean

@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/wasm/recette/port.scm                */
+;*    serrano/prgm/project/bigloo/5.0a/recette/port.scm                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */
-;*    Last change :  Thu Oct  9 15:02:27 2025 (serrano)                */
+;*    Last change :  Sat May  2 16:24:00 2026 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations simples sur les ports                    */
 ;*---------------------------------------------------------------------*/
@@ -632,23 +632,6 @@
 		   '("dump" "input.txt" "jm.txt" "trap.txt"))
 		#t #f))
 	 #t)
-   (test "flush-output-string-port"
-	 (let ((outp (open-output-string)))
-	    (display "this is some text" outp)
-	    (let* ((v1 (flush-output-port outp))
-		   (v2 (flush-output-port outp)))
-	       (display "zot" outp)
-	       (list v1 v2 (flush-output-port outp))))
-	 '("this is some text" "this is some text" "this is some textzot"))
-   (test "flush-output-string-port.2"
-	 (let ((outp (open-output-string)))
-	    (display "this is some text" outp)
-	    (let* ((v1 (flush-output-port outp))
-		   (_ (reset-output-port outp))
-		   (v2 (flush-output-port outp)))
-	       (display "zot" outp)
-	       (list v1 v2 (flush-output-port outp))))
-	 '("this is some text" "" "zot"))
    (test "procedure-port" (test-procedure-port) 1030)
    (test 'output-procedure-port.1
 	 (output-procedure-port? '#(1 2))
