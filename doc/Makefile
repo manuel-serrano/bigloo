@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/doc/Makefile                    */
+#*    serrano/prgm/project/bigloo/5.0.x/doc/Makefile                   */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Thu Apr 30 13:02:04 2026 (serrano)                */
+#*    Last change :  Mon May 11 08:16:34 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -70,7 +70,7 @@ install: install-html install-index
 install-html:
 	if [ $(DOCDIR) != $(BOOTDIR)/doc ]; then \
 	    mkdir -p $(DOCDIR)/bigloo; \
-	    chmod $(MODDIR)$(DOCDIR)/bigloo; \
+	    chmod $(MODDIR) $(DOCDIR)/bigloo; \
 	    echo "cp *.html $(DOCDIR)/bigloo"; \
 	    cp *.html $(DOCDIR)/bigloo && \
             chmod $(MODFILE) $(DOCDIR)/bigloo/*.html; \
@@ -79,7 +79,7 @@ install-html:
 install-index:
 	if [ $(DOCDIR) != $(BOOTDIR)/doc ]; then \
 	    mkdir -p $(DOCDIR)/bigloo; \
-	    chmod $(MODDIR)$(DOCDIR)/bigloo; \
+	    chmod $(MODDIR) $(DOCDIR)/bigloo; \
 	    echo "cp index.sexp $(DOCDIR)/bigloo"; \
 	    cp index.sexp $(DOCDIR)/bigloo && \
             chmod $(MODFILE) $(DOCDIR)/bigloo/index.sexp; \

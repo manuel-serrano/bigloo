@@ -13,13 +13,11 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=5.0a
+release=5.0.0
 buildrelease=unstable
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 bigloohttp=http://www-sop.inria.fr/indes/fp/Bigloo/download
-
-bigloosvn=ssh://hop@hop.inria.fr/bigloo
 
 buildtag=`git log -1 --abbrev-commit --pretty="%h"`
 git status -s | grep M > /dev/null
@@ -3746,7 +3744,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh bglwatib.sh jigloo.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
-      rel=`$echo $release | sed -e "s|[.]|_|"`;
+      rel=`$echo $release | sed -e "s|[.]|_|g"`;
       gciscustom=1
 
       if [ $customgc != "yes" ]; then
@@ -4269,10 +4267,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # The Bigloo release number
   $echo "RELEASE=$release" >> $makefile_cfg
   $echo "VERSION=$version" >> $makefile_cfg
-  $echo >> $makefile_cfg
-
-  # The repository
-  $echo "BIGLOOSVN=$bigloosvn" >> $makefile_cfg
   $echo >> $makefile_cfg
 
   # The OS

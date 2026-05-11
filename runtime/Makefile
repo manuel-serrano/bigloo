@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/runtime/Makefile                */
+#*    serrano/prgm/project/bigloo/5.0.x/runtime/Makefile               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri May  1 07:30:08 2026 (serrano)                */
+#*    Last change :  Mon May 11 09:38:12 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -455,7 +455,7 @@ heap-jvm: .afile .jfile includes lib-jvm_u
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
 	@ echo "\e[1;35m$(HEAPJVM_FILE)\e[0m done."
 
-heap-wasm: .afile includes Llib/make_lib.wasm.sch
+heap-wasm: .afile includes Llib/make_lib.wasm.sch $(BOOTLIBDIR)/types.wat
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPWASM_FILE)
 	$(BIGLOO) -wasm -target wasm -L $(BOOTLIBDIR) $(BHEAPFLAGSWASM) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPWASM_FILE)

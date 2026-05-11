@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/bmacs/bgl-mode.el               */
+;*    serrano/prgm/project/bigloo/5.0.x/bmacs/bgl-mode.el              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Thu Apr 30 10:48:37 2026 (serrano)                */
+;*    Last change :  Mon May 11 08:24:16 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -18,7 +18,7 @@
 ;*    Configuration                                                    */
 ;*---------------------------------------------------------------------*/
 ;; bgl version
-(defconst bgl-version "0.1"
+(defconst bgl-version "0.0.1"
   "*The Bgl version.")
 
 ;; bgl group
@@ -28,7 +28,6 @@
   :prefix "bgl-"
   :group 'processes)
 
-;; Bigloo suffix
 (defcustom bgl-suffixes '("bgl" "bgh")
   "*Bigloo source suffixes."
   :group 'bgl
@@ -76,7 +75,7 @@
   :group 'bgl
   :type 'number)
 
-(defcustom bgl-flycheck-compiler "/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo"
+(defcustom bgl-flycheck-compiler "/home/serrano/prgm/project/bigloo/5.0.x/bin/bigloo"
   "*The bigloo compiler used by flycheck"
   :group 'bgl
   :type 'string)
@@ -91,12 +90,12 @@
   :group 'bgl
   :type '(choice (const 'nil) string))
 
-(defcustom bgl-doc-dir "/home/serrano/prgm/project/bigloo/5.0a/doc"
+(defcustom bgl-doc-dir "/home/serrano/prgm/project/bigloo/5.0.x/doc"
   "*The Bigloo documentation directory."
   :group 'bgl
   :type 'string)
 
-(defcustom bgl-doc-index (concat bgl-doc-dir "/index.sexp")
+(defcustom bgl-doc-index "index.sexp"
   "*The pre-computed index of the Bigloo documentation"
   :group 'bgl
   :type 'string)
@@ -227,15 +226,15 @@
   :type 'boolean)
 
 ;*---------------------------------------------------------------------*/
-;*    Font Lock                                                        */
+;*    bgl faces                                                        */
 ;*---------------------------------------------------------------------*/
-(defcustom bgl-paren-adapt-p t
-  "*True means change parentheses highlighting."
-  :group 'bgl
-  :type 'boolean)
+(defface bgl-popup-doc-face
+    '((t (:background "goldenrod" :foreground "black")))
+  "Popup menu for doc entries."
+  :group 'bgl)
 
 (defface bgl-doc-face
-  '((((class color) (background light)) (:foreground "goldenrod" :bold t)))
+    '((((class color) (background light)) (:foreground "goldenrod" :bold t)))
   "Bgl doc color"
   :group 'bgl)
 
@@ -1433,7 +1432,7 @@ if that value is non-nil."
       (with-eval-after-load 'flycheck
 	(flycheck-define-checker bgl
 	  "A bgl syntax checker using the bgl compiler."
-	  :command ("/home/serrano/prgm/project/bigloo/5.0a/bin/bigloo"
+	  :command ("/home/serrano/prgm/project/bigloo/5.0.x/bin/bigloo"
 		    (eval bgl-flycheck-args)
 		    source-inplace)
 	  :error-patterns
@@ -1505,19 +1504,20 @@ if that value is non-nil."
 ;*    Load the documentation index                                     */
 ;*---------------------------------------------------------------------*/
 (defun bgl-load-doc-index ()
-  (when (file-exists-p bgl-doc-index)
-    (let ((l (save-excursion
-	       (with-temp-buffer
-		 (progn
-		   (insert-file-contents bgl-doc-index)
-		   (goto-char (point-min))
-		   (while (search-forward "#" nil t)
-		     (replace-match "%"))
-		   (goto-char (point-min))
-		   (read (current-buffer)))))))
-      (mapc #'(lambda (el)
-		(puthash (car el) (cdr el) bgl-doc-table-index))
-	    l))))
+  (let ((index (concat bgl-doc-dir "/" bgl-doc-index)))
+    (when (file-exists-p index)
+      (let ((l (save-excursion
+		 (with-temp-buffer
+		   (progn
+		     (insert-file-contents index)
+		     (goto-char (point-min))
+		     (while (search-forward "#" nil t)
+		       (replace-match "%"))
+		     (goto-char (point-min))
+		     (read (current-buffer)))))))
+	(mapc #'(lambda (el)
+		  (puthash (car el) (cdr el) bgl-doc-table-index))
+	      l)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-last-symbol ...                                              */
@@ -1530,7 +1530,7 @@ if that value is non-nil."
 ;*---------------------------------------------------------------------*/
 (defun bgl-doc-entry-at-point ()
   "Get the doc entry of the symbol at point."
-  (let ((sym (thing-at-point 'symbol t)))
+  (let ((sym (symbol-at-point)))
     (if (equal sym bgl-last-symbol)
 	bgl-last-doc-entry
 	(progn
@@ -1547,8 +1547,11 @@ if that value is non-nil."
   "Show the prototype of the symbol at point in the minibuffer."
   (let ((e (bgl-doc-entry-at-point)))
     (when e
-      (let ((s (replace-regexp-in-string "__" "#" (format "%s" (car e)))))
-        (message "%s" (propertize s 'face 'bgl-doc-face))))))
+      (let ((s (replace-regexp-in-string "__" "#" (format "%s" (car e))))
+	    (b (bounds-of-thing-at-point 'symbol))
+	    (ov (make-overlay (car b) (cdr b))))
+	(overlay-put ov 'help-echo s 'face 'bgl-popup-doc-face)
+	(message (format "%s" s))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-browse-doc-at-point ...                                      */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/comptime/Init/parse_args.scm        */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Init/parse_args.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Apr 17 07:53:47 2026 (serrano)                */
+;*    Last change :  Mon May 11 08:41:12 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -153,12 +153,15 @@
       ;; srfi ressources
       (case *target-language*
 	 ((jvm)
+	  (register-srfi! 'jvm)
 	  (register-srfi! 'bigloo-jvm))
 	 ((wasm)
+	  (register-srfi! 'wasm)
 	  (register-srfi! 'bigloo-wasm))
 	 ((c native)
 	  (set! *target-language* (if *saw* 'c-saw 'c))
 	  (when *saw* (register-srfi! 'bigloo-saw))
+	  (register-srfi! 'C)
 	  (register-srfi! 'bigloo-c)))
       ;; and we are done for the arguments parsing
       pres))
