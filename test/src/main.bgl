@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/test/src/main.bgl               */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/main.bgl              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Wed Apr 29 19:20:11 2026 (serrano)                */
+;*    Last change :  Mon May 11 16:06:51 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -13,6 +13,7 @@
 ;*    main                                                             */
 ;*---------------------------------------------------------------------*/
 (module main
+   (import "./bool.bgl" . bool)
    (import "./hash.bgl" . hash)
    (import "./io.bgl" . io)
    (import "./pair.bgl" . pair)
@@ -41,6 +42,7 @@
        (set! tests (cons else tests))))
    
    (let* ((res (list
+                  (bool.test verbose tests)
 		  (hash.test verbose tests)
 		  (io.test verbose tests)
 		  (pair.test verbose tests)

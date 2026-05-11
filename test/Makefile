@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/test/Makefile                   */
+#*    serrano/prgm/project/bigloo/5.0.x/test/Makefile                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Sat May  2 10:30:40 2026 (serrano)                */
+#*    Last change :  Mon May 11 16:06:38 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -38,7 +38,7 @@ BJFLAGS = -jvm
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
-COMMON = main hash io pair port string vector
+COMMON = main bool hash io pair port string vector
 
 C_OBJECTS = $(COMMON:%=%.o) $(C_SPECIFIC:%=%.o)
 J_OBJECTS = $(COMMON:%=%.class)

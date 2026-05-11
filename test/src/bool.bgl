@@ -1,0 +1,119 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/bool.bgl              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Mon May 11 16:25:50 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing boolean and equivalence functions                        */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    booleans                                                         */
+;*---------------------------------------------------------------------*/
+(module booleans
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "boolean" tests))
+      (test-all verbose "boolean")))
+
+(define-test boolean? (boolean? #f)
+   :expected #t)
+
+(define-test boolean? (boolean? 0)
+   :expected #f)
+
+(define-test boolean? (boolean? '())
+   :expected #f)
+
+(define-test not (not #t)
+   :expected #f)
+
+(define-test not (not 3)
+   :expected #f)
+
+(define-test not (not #f)
+   :expected #t)
+
+(define-test not (not (list 3))
+   :expected #f)
+
+(define-test not (not '())
+   :expected #f)
+
+(define-test not (not (list))
+   :expected #f)
+
+(define-test eq? (eq? 'a 'a)
+   :expected #t)
+
+(define-test eq? (eq? (list 'a) (list 'a))
+   :expected #f)
+
+(define-test eq? (eq? '() '())
+   :expected #t)
+
+(define-test eq? (eq? car car)
+   :expected #t)
+
+(define-test eq? (let ((x '(a))) (eq? x x))
+   :expected #t)
+
+(define-test eq? (let ((x '#())) (eq? x x))
+   :expected #t)
+
+(define-test eq? (let ((p (lambda (x) x))) (eq? p p))
+   :expected #t)
+
+(define-test eqv? (eqv? 'a 'a)
+   :expected #t)
+
+(define-test eqv? (eqv? 2 2)
+   :expected #t)
+
+(define-test eqv? (eqv? (cons 1 2) (cons 1 2))
+   :expected #f)
+
+(define-test eqv? (eqv? '() '())
+   :expected #t)
+
+(define-test eqv? (eqv? 100000000 100000000)
+   :expected #t)
+
+(define-test eqv? (eqv? (lambda () 1) (lambda () 2))
+   :expected #f)
+
+(define-test eqv? (eqv? #f '())
+   :expected #f)
+
+(define-test equal? (equal? '(a) '(a))
+   :expected #t)
+
+(define-test equal? (equal? '(a (b) c) '(a (b) c))
+   :expected #t)
+
+(define-test equal? (equal? "abc" "abc")
+   :expected #t)
+
+(define-test equal? (equal? 'a 'a)
+   :expected #t)
+
+(define-test equal? (equal? '2 '2)
+   :expected #t)
+
+(define-test equal? (equal? (make-vector 5 'a) (make-vector 5 'a))
+   :expected #t)
+
+
+
+
