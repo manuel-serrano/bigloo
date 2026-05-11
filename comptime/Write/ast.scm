@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Write/ast.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Write/ast.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:29:03 1994                          */
-;*    Last change :  Tue Apr 28 08:00:34 2026 (serrano)                */
+;*    Last change :  Mon May 11 11:38:20 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast pretty-printer                                           */
@@ -67,9 +67,9 @@
 					 (map shape (sfun-args fun))
 					 (sfun-arity fun)))
 				  ,(shape (sfun-body fun)))
+			       port
 			       :case-sensitivity
-			       (if *ast-case-sensitive* 'respect 'lower)
-			       port)))
+			       (if *ast-case-sensitive* 'respect 'lower))))
 		      globals))
 		(close-output-port port))))))
 

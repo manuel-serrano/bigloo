@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/test/src/io.bgl                 */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/io.bgl                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Sat May  2 14:19:30 2026 (serrano)                */
+;*    Last change :  Mon May 11 11:44:33 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing I/O                                                      */
@@ -54,7 +54,7 @@
 
 (define-test char-ready?
    (cond-expand
-      (bigloo-wasm
+      (wasm
        #t)
       (else
        (let* ((proc (run-process "/bin/ls" "-l" "/bin" output: pipe:))
@@ -247,9 +247,7 @@
                                        (lambda ()
                                           (display 1 (current-error-port))
                                           (write s)))))
-         (lambda ()
-            (let ((res (read)))
-               res))))
+         read))
    :expected 1)
 
 (define-test write
@@ -259,10 +257,71 @@
                                     (lambda ()
                                        (display 1 (current-error-port))
                                        (write #"foobar")))))
-      (lambda ()
-         (let ((res (read)))
-            res)))
+      read)
    :expected 1)
+
+(define-test display
+   (with-input-from-string (with-output-to-string
+                              (lambda ()
+                                 (display "T\"\\\ni\tt")))
+      read-string)
+   :expected (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t)))
+
+(define-test display*
+   (with-input-from-string (with-output-to-string
+                              (lambda ()
+                                 (display* "T\"\\\n" "i\tt")))
+      read-string)
+   :expected (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t)))
+
+(define-test print
+   (with-input-from-string (with-output-to-string
+                              (lambda ()
+                                 (print "T\"\\\n" "i\tt")))
+      read-string)
+   :expected (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t #\Newline)))
+
+(define-test fprint
+   (with-input-from-string (with-error-to-string
+                              (lambda ()
+                                 (fprint (current-error-port) "T\"\\\n" "i\tt")))
+      read-string)
+   :expected (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t #\Newline)))
+
+(define-test display-string
+   (with-input-from-string (with-output-to-string
+                              (lambda ()
+                                 (display-string "T\"\\\ni\tt" (current-output-port))))
+      read-string)
+   :expected (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t)))
+
+(define-test display-substring
+   (with-input-from-string (with-output-to-string
+                              (lambda ()
+                                 (display-substring "T\"\\\ni\tt" 1 7 (current-output-port))))
+      read-string)
+   :expected (list->string '(#\" #\\ #\newline #\i #\tab #\t)))
+
+(define-test write-char
+   (with-input-from-string (with-output-to-string
+                              (lambda ()
+                                 (write-char #\Z)))
+      read)
+   :expected 'Z)
+
+(define-test write-byte
+   (with-input-from-string (with-output-to-string
+                              (lambda ()
+                                 (write-byte (char->integer #\A))))
+      read)
+   :expected 'A)
+
+(define-test newline
+   (with-input-from-string (with-output-to-string
+                              (lambda ()
+                                 (newline)))
+      read-string)
+   :expected "\n")
 
 (define-test write-circle
    (let* ((obj (list 1 2 3 4))

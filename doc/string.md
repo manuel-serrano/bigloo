@@ -89,7 +89,7 @@ Returns `#t` if and only if `obj` is a empty string. Returns `#f` otherwise.
 
 ### empty-string? ###
 
-Return `#t' if and only if `string' is the empty string. Returns `#f' otherwise.
+Return `#t` if and only if `string` is the empty string. Returns `#f` otherwise.
 
 
 ### string=? ###

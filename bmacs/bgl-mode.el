@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Mon May 11 08:24:16 2026 (serrano)                */
+;*    Last change :  Mon May 11 11:40:07 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -13,6 +13,7 @@
 ;*---------------------------------------------------------------------*/
 (provide 'bgl-mode)
 (require 'font-lock)
+(require 'posframe)
 
 ;*---------------------------------------------------------------------*/
 ;*    Configuration                                                    */
@@ -99,6 +100,11 @@
   "*The pre-computed index of the Bigloo documentation"
   :group 'bgl
   :type 'string)
+
+(defcustom bgl-tooltip-visibility-duration 4
+  "*The number of seconds tooltips are visible"
+  :group 'bgl
+  :type 'number)
 
 ;; bgl fontification
 (defcustom bgl-font-lock-keywords
@@ -228,16 +234,6 @@
 ;*---------------------------------------------------------------------*/
 ;*    bgl faces                                                        */
 ;*---------------------------------------------------------------------*/
-(defface bgl-popup-doc-face
-    '((t (:background "goldenrod" :foreground "black")))
-  "Popup menu for doc entries."
-  :group 'bgl)
-
-(defface bgl-doc-face
-    '((((class color) (background light)) (:foreground "goldenrod" :bold t)))
-  "Bgl doc color"
-  :group 'bgl)
-
 (defface bgl-font-lock-face-1
   '((((class color) (background light)) (:foreground "slateblue3" :bold t))
     (((class color) (background dark)) (:foreground "Plum1" :bold t))
@@ -1516,7 +1512,10 @@ if that value is non-nil."
 		     (goto-char (point-min))
 		     (read (current-buffer)))))))
 	(mapc #'(lambda (el)
-		  (puthash (car el) (cdr el) bgl-doc-table-index))
+		  (let* ((name (car el))
+			 (i (string-match-p "::" name))
+			 (k (if i (substring name 0 i) name)))
+		    (puthash k (cdr el) bgl-doc-table-index)))
 	      l)))))
 
 ;*---------------------------------------------------------------------*/
@@ -1524,13 +1523,15 @@ if that value is non-nil."
 ;*---------------------------------------------------------------------*/
 (defvar bgl-last-symbol nil)
 (defvar bgl-last-doc-entry nil)
+(defvar bgl-popup-buffer "*bgl-mode-popup*")
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-doc-entry-at-point ...                                       */
 ;*---------------------------------------------------------------------*/
 (defun bgl-doc-entry-at-point ()
   "Get the doc entry of the symbol at point."
-  (let ((sym (symbol-at-point)))
+  (interactive)
+  (let ((sym (thing-at-point 'symbol t)))
     (if (equal sym bgl-last-symbol)
 	bgl-last-doc-entry
 	(progn
@@ -1545,13 +1546,30 @@ if that value is non-nil."
 ;*---------------------------------------------------------------------*/
 (defun bgl-doc-at-point ()
   "Show the prototype of the symbol at point in the minibuffer."
+  (interactive)
   (let ((e (bgl-doc-entry-at-point)))
-    (when e
-      (let ((s (replace-regexp-in-string "__" "#" (format "%s" (car e))))
-	    (b (bounds-of-thing-at-point 'symbol))
-	    (ov (make-overlay (car b) (cdr b))))
-	(overlay-put ov 'help-echo s 'face 'bgl-popup-doc-face)
-	(message (format "%s" s))))))
+    (if e
+	(let ((s (replace-regexp-in-string "%" "#" (format "%s" (car e)))))
+	  (when (and (> (length s) 50) (string-match " " s))
+	    (setq s (replace-match "\n  " t t s)))
+	  (setq s
+		(replace-regexp-in-string
+		 "::[^ )]+"
+		 '(lambda (match) (propertize match 'face 'bgl-font-lock-face-4))
+		 s))
+	  (posframe-show
+	   bgl-popup-buffer
+	   :string s
+	   :background-color "#ffffcc"
+	   :foreground-color "black"
+	   :border-width 1
+	   :border-color "#cccccc"
+	   :internal-border-width 4
+	   :poshandler #'posframe-poshandler-point-bottom-left-corner)
+	  (run-at-time bgl-tooltip-visibility-duration
+		       nil #'(lambda () (posframe-hide bgl-popup-buffer)))
+	  (message (format "%s" s)))
+	(posframe-hide bgl-popup-buffer))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-browse-doc-at-point ...                                      */
