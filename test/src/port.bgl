@@ -589,7 +589,7 @@
 
 (define-test open-pipes
    (cond-expand
-      (bigloo-wasm #t)
+      (wasm #t)
       (else
        (multiple-value-bind (in out)
           (open-pipes)
@@ -602,7 +602,7 @@
 
 (define-test select
    (cond-expand
-      (bigloo-c
+      (c
        (call-with-input-file "misc/input.txt"
           (lambda (ip)
              (multiple-value-bind (readfs _ _)
@@ -613,7 +613,7 @@
 
 (define-test lockf
    (cond-expand
-      (bigloo-c
+      (c
        (let ((path "/tmp/bigloo-test-lock"))
           (unwind-protect 
              (call-with-output-file path

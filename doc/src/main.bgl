@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/doc/src/main.bgl                */
+;*    serrano/prgm/project/bigloo/5.0.x/doc/src/main.bgl               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Wed Apr 29 19:46:51 2026 (serrano)                */
+;*    Last change :  Tue May 12 07:49:49 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -33,17 +33,44 @@
      (onclick . "this.setAttribute('open', this.getAttribute('open') === 'true' ? 'false' : 'true')")))
 
 ;*---------------------------------------------------------------------*/
+;*    all-menus ...                                                    */
+;*---------------------------------------------------------------------*/
+(define all-menus
+   '(("home" . "index.html")
+     ("stdlib" . "bool.html")))
+
+;*---------------------------------------------------------------------*/
 ;*    all-chapters ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define all-chapters
-   '(("numbers" . "number.html")
+   '(("booleans" . "bool.html")
      ("characters" . "character.html")
      ("hash" . "hash.html")
      ("i/o" . "io.html")
+     ("numbers" . "number.html")
      ("pairs and lists" . "pair.html")
      ("ports" . "port.html")
      ("strings" . "string.html")
      ("vectors" . "vector.html")))
+
+;*---------------------------------------------------------------------*/
+;*    find-chapter-title ...                                           */
+;*---------------------------------------------------------------------*/
+(define (find-chapter-title source)
+   (let* ((p (prefix (basename source)))
+          (c (find (lambda (x) (string=? (prefix (cdr x)) p)) all-chapters)))
+      (if (pair? c)
+          (prefix (cdr c))
+          (error "find-chapter-title" "Cannot find title for source" source))))
+
+;*---------------------------------------------------------------------*/
+;*    find-menu-href ...                                               */
+;*---------------------------------------------------------------------*/
+(define (find-menu-href label)
+   (let ((c (assoc label all-menus)))
+      (if (pair? c)
+          (cdr c)
+          (error "find-menu-href" "Cannot find href for label" label))))
 
 ;*---------------------------------------------------------------------*/
 ;*    let+ :: ...                                                      */
@@ -66,7 +93,39 @@
    (define index-name "index.sexp")
    (define active-navbutton "main")
    (define chapters '())
-   
+   (define main-title (xml-element 'span '((class . "main")) '("bigloo")))
+
+   (define (menubar title::pair-nil #!key (home "") (stdlib "") modules objects)
+      (xml-element 'nav '((class . "menu"))
+         (list (xml-element 'div '((class . "menu"))
+                  (list
+                     (xml-element 'div '((class . "title"))
+                        (cons main-title title))
+                     (xml-element 'ul `((class . "menu")
+                                        (data-active . ,active-navbutton))
+                        (list
+                           (xml-element 'li (navbutton-attrs "home")
+                              (list
+                                 (xml-element 'a
+                                    `((class . "home")
+                                      (href . ,(find-menu-href "home")))
+                                    (list "Home"))
+                                 home))
+                           (xml-element 'li (navbutton-attrs "stdlib")
+                              (list
+                                 (xml-element 'a
+                                    `((class . "stdlib submenu"))
+                                    (list "Stdlib"))
+                                 stdlib))
+                           (xml-element 'li (navbutton-attrs "Modules")
+                              (list (xml-element 'a '() (list "Modules"))))
+                           (xml-element 'li (navbutton-attrs "Objects")
+                              (list (xml-element 'a '() (list "Objects"))))))
+                     (xml-element 'span '((class . "version"))
+                        (list
+                           (xml-element 'text '()
+                              (list (bigloo-config 'release-number))))))))))
+      
    (define (compile-chapter source)
       (let+ ((chapter toc new-index) (chapter source (or target (string-append (prefix source) ".html"))))
 
@@ -80,34 +139,45 @@
 	       (lambda (op)
 		  (write index op))))
 	 
-	 (display "<!-- GENERATED by doc.bgl -->\n")
+	 (display "<!-- GENERATED by main.bgl -->\n")
 	 (let ((doc (xml-element 'html '((class . "bgldoc"))
 		       (list
 			  (call-with-input-file "head.html" html-parse)
-			  (xml-element 'nav '((class . "menu"))
-			     (list (xml-element 'div '((class . "menu"))
-				      (list
-					 (xml-element 'img '((class . "logo") (src . "bgl.svg")) '())
-					 (xml-element 'ul `((class . "menu") (data-active . ,active-navbutton))
-					    (list
-					       (xml-element 'li (navbutton-attrs "home")
-                                                  (list (xml-element 'a '() (list "Home"))))
-					       (xml-element 'li (navbutton-attrs "stdlib")
-						  (list
-						     (xml-element 'a '() (list "Stdlib"))
-						     (xml-main-toc all-chapters)))
-					       (xml-element 'li (navbutton-attrs "Modules")
-                                                  (list (xml-element 'a '() (list "Modules"))))
-					       (xml-element 'li (navbutton-attrs "Objects")
-                                                  (list (xml-element 'a '() (list "Objects"))))))
-					 (xml-element 'span '((class . "version"))
-					    (list (xml-element 'text '() (list (bigloo-config 'release-number)))))))))
+                          (menubar (list
+                                      (xml-element 'span '((class . "sep"))
+                                         '("/"))
+                                      (find-chapter-title source))
+                             :stdlib (xml-main-toc all-chapters))
 			  (xml-element 'div '((class . "chapter"))
 			     (list
 				(xml-element 'div '((class . "body"))
 				   (xml-element-children chapter))
 				(xml-toc toc)))))))
 	    (write-html doc))))
+
+   (define (compile-home sources)
+      (display "<!-- GENERATED by main.bgl -->\n")
+      (let ((doc (xml-element 'html '((class . "bgldoc home"))
+                    (list
+                       (call-with-input-file "head.html" html-parse)
+                       (menubar '()
+                          :stdlib (xml-main-toc all-chapters))
+                       (xml-element 'div '((class . "home"))
+                          (list
+                             (xml-element 'img '((class . "logo") (src . "bgl.svg")) '())
+                             main-title))
+                       (xml-element 'div '((class . "body"))
+                          (map (lambda (source)
+                                  (call-with-input-file source
+                                     (lambda (ip)
+                                        (markdown-parse ip
+                                           :eval (make-doc-eval (dirname source))
+                                           :fontifier (lambda (lang id lines)
+                                                         (call-with-input-string (apply string-append lines)
+                                                            fontifier.bigloo))))))
+                             sources))))))
+         (write-html doc)))
+      
    
    (args-parse (cdr argv)
       ((("-h" "--help") (help "This help message"))
@@ -120,8 +190,10 @@
        (set! target filename))
       (else
        (set! chapters (cons else chapters))))
-   
-   (for-each compile-chapter chapters))
+
+   (if (string=? active-navbutton "home")
+       (compile-home chapters)
+       (for-each compile-chapter chapters)))
 
 ;*---------------------------------------------------------------------*/
 ;*    xml-main-toc ...                                                 */

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0a/doc/bgldoc.css                  */
+/*    serrano/prgm/project/bigloo/5.0.x/doc/bgldoc.css                 */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Thu Apr 30 07:47:24 2026 (serrano)                */
+/*    Last change :  Tue May 12 08:08:37 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -24,10 +24,13 @@
     --versionColor: #fff;
     --versionBackgroundColor: #777;
 
-    --navMenuBackgroundColor: #222;
-    --navMenuCcolor: #9d9d9d;
+    --navMenuBackgroundColor: #33393f;
+    --navMenuColor: #9d9d9d;
     --navMenuBorderColor: #777;
     --navHeight: 6ex;
+    --navActiveColor: red;
+
+    --homeBackgroundColor: #33393f;
     
     --sectionBorder: #777777;
 
@@ -97,6 +100,7 @@ nav.menu {
     background: var(--menuBackgroundColor);
     font-size: 120%;
     padding-top: 0;
+    z-index: 2;
 }
 
 div.menu {
@@ -104,6 +108,38 @@ div.menu {
     cursor: pointer;
     height: 100%;
     background: var(--menuBackgroundColor);
+}
+
+.menu div.title {
+    display: inline-block;
+    height: 3em;
+    float: left;
+    font-size: 160%;
+    font-weight: bold;
+    margin-top: 8px;
+    margin-left: 2em;
+    margin-right: 1em;
+    width: 8em;
+ }
+
+.menu div.title .main {
+    text-transform: capitalize;
+    color: var(--navActiveColor);
+    margin-right: 0.2em;
+    font-size: 105%;
+}
+
+.menu div.title .sep {
+    margin-right: 0.2em;
+}
+
+.menu a {
+    color: var(--navMenuColor);
+    text-decoration: none;
+}
+
+.menu[data-active="stdlib"] a.stdlib {
+    color: var(--menuButtonActive);
 }
 
 .menu img.logo {
@@ -145,7 +181,7 @@ ul.menu > li.navbutton {
 }
 
 ul.menu[data-active="stdlib"] > li.navbutton.stdlib {
-    border-bottom-color: red;
+    border-bottom-color: var(--navActiveColor);
     background-color: var(--menuButtonActiveBackground);
     color: var(--menuButtonActive);
 }
@@ -157,13 +193,13 @@ ul.menu > li > a {
     display: inline-block;
 }
 
-ul.menu > li.navbutton > a:after {
+ul.menu > li.navbutton > a.submenu:after {
     content: "\25be";
     font-weight: bold;
     margin-left: 5px;
 }
 
-ul.menu > li.navbutton[open="true"] > a:after {
+ul.menu > li.navbutton[open="true"] > a.submenu:after {
     content: "\25b4";
     font-weight: bold;
     margin-left: 5px;
@@ -189,6 +225,7 @@ div.nav-menu {
 
 li[open="true"] > div.nav-menu {
     visibility: visible;
+    z-index: 2;
 }
 
 div.nav-menu ul {
@@ -207,6 +244,43 @@ div.nav-menu a {
 
 div.nav-menu a:hover {
     color: var(--hoverColor);
+}
+
+/*---------------------------------------------------------------------*/
+/*    home                                                             */
+/*---------------------------------------------------------------------*/
+html.home body {
+    margin: 0;
+}
+
+html.home nav.menu div.title {
+    visibility: hidden;
+}
+
+div.home {
+    background: var(--homeBackgroundColor);
+    width: 100%;
+    padding: 2ex 3em 2ex 3em;
+    margin-top: var(--navHeight);
+    color: var(--background);
+    z-index: 0;
+    position: relative;
+}
+
+div.home .logo {
+    width: 12em;
+    height: 12em;
+    vertical-align: middle;
+}
+
+div.home .main {
+    font-size: 500%;
+    font-weight: bold;
+    text-transform: capitalize;
+    margin-left: 1em;
+    position: relative;
+    top: 0.5ex;
+    color: var(--navActiveColor);
 }
 
 /*---------------------------------------------------------------------*/
