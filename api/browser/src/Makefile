@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/api/browser/src/Makefile        */
+#*    serrano/prgm/project/bigloo/5.0.x/api/browser/src/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Mar 10 15:44:07 2026 (serrano)                */
+#*    Last change :  Tue May 12 16:37:00 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -38,8 +38,6 @@ BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) \
 BHEAPFLAGS	= -unsafe -q \
                   -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
-# wasm as
-WASMAS		= $(BGLWATIB)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
@@ -53,7 +51,7 @@ OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 
 
-WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) \
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) $(_BGL5_OBJECTS:%=objs/%.wat) \
                   Wlib/wbrowser.wat
 WEOBJECTS	= objs/make_lib.wat
 

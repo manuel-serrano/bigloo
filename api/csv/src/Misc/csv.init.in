@@ -15,6 +15,6 @@
 (declare-library! 'csv 
    :srfi '(csv)
    :basename "bigloocsv"
-   :module-init 'csv
+   :module-init '__csv
    :module-eval '__csv_make_lib)
 

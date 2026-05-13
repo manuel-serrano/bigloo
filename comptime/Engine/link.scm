@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Engine/link.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Engine/link.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Wed Apr 22 08:25:06 2026 (serrano)                */
+;*    Last change :  Tue May 12 11:12:26 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -216,7 +216,8 @@
 	  'main)
 	 (((include . ?includes) . ?rest)
 	  (or (any (lambda (include)
-		       (find-main5 (call-with-input-file include read)))
+		      (let ((p (find-file/path include *load-path*)))
+			 (find-main5 (call-with-input-file p read))))
 		 includes)
 	      (loop rest)))
 	 (((cond-expand . ?-) . ?rest)

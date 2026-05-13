@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/Module/alibrary.scm        */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Module/alibrary.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Feb 28 10:20:55 1998                          */

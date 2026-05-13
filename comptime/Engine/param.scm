@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Engine/param.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Engine/param.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Apr 22 09:13:55 2026 (serrano)                */
+;*    Last change :  Tue May 12 17:14:36 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -265,6 +265,7 @@
 	    *wasm-fixnum*
 	    *wasm-post-optimizations*
 	    *wasm-post-optimizer*
+	    *wasm-target-module*
 	    (bigloo-variables-usage ::bool)
 	    (reinitialize-bigloo-variables!))
    (eval    (export-all)))
@@ -1349,5 +1350,12 @@
 ;*---------------------------------------------------------------------*/
 (param-define *wasm-post-optimizer*
    "wasm post optimizer"
+   #f)
+
+;*---------------------------------------------------------------------*/
+;*    *wasm-target-module* ...                                         */
+;*---------------------------------------------------------------------*/
+(define *wasm-target-module*
+   "wasm target module"
    #f)
 		 

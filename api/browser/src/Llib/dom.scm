@@ -4,7 +4,7 @@
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Sep 11 08:10:30 2025                          */
 ;*    Last change :  Wed Oct  1 15:52:52 2025 (serrano)                */
-;*    Copyright   :  2025 manuel serrano                               */
+;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo DOM binding for the wasm backend.                         */
 ;*=====================================================================*/

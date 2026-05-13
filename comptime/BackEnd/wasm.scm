@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/BackEnd/wasm.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/BackEnd/wasm.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Sat May  2 10:28:40 2026 (serrano)                */
+;*    Last change :  Tue May 12 15:57:00 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -118,6 +118,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link me::wasm result)
    (when (string? result)
+      (when (and (eq? *pass* 'cc) (not (string? *dest*)))
+	 (set! *dest*
+	    (string-append (basename (prefix (car *src-files*))) ".wat")))
       (if (and (string? *dest*) (string=? (suffix *dest*) "wat"))
 	  (when (string? *dest*) (rename-file result *dest*))
 	  (with-handler
@@ -613,7 +616,11 @@ esac")
 ;*    wasm-module-name ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (wasm-module-name file)
-   (string->symbol (string-append "$" (prefix (basename file)))))
+   (string->symbol
+      (string-append "$"
+	 (if (string? *wasm-target-module*)
+	     *wasm-target-module*
+	     (prefix (basename file))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-interference! ...                                           */
@@ -715,7 +722,6 @@ esac")
 	       `(module ,(wasm-sym (symbol->string *module*))
 		   ,@(if *wasm-local-preinit*
 			 (list (emit-default-constants)) '())
-		   
 		   (comment "imports" ,@(emit-imports))
 		   (comment "memory" ,@(emit-memory))
 		   (comment "types and tags" ,@(emit-types-and-tags))
@@ -1612,6 +1618,7 @@ esac")
 	 (library (global-library variable))
 	 (module (global-module variable)))
       (let ((is-macro (isa? variable cfun)))
+	 (tprint "WASM-MODULE " (shape variable) " " (shape library))
 	 (cond
 	    (library
 	     (string-append "__" (symbol->string library)))

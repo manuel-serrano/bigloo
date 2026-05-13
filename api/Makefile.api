@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/api/Makefile.api                */
+#*    serrano/prgm/project/bigloo/5.0.x/api/Makefile.api               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Sun Mar  8 10:12:33 2026 (serrano)                */
+#*    Last change :  Tue May 12 17:15:59 2026 (serrano)                */
 #*    Copyright   :  2010-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -363,10 +363,10 @@ $(BOOTLIBDIR)/bigloo$(API)_es.wasm: $(BOOTLIBDIR)/bigloo$(API)_es.wat
 	$(WASMAS) $< -o $@
 
 $(BOOTLIBDIR)/bigloo$(API)_s.wat: $(WOBJECTS)
-	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w $^ -o $@
+	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -package __$(API) -y -w $^ -o $@
 
 $(BOOTLIBDIR)/bigloo$(API)_es.wat: $(WEOBJECTS)
-	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -y -w $^ -o $@
+	$(BIGLOO) -wasm -wasmas "$(WASMAS)" -package __$(API) -y -w $^ -o $@
 
 api-clean-wasm:
 	$(RM) -f $(BOOTLIBDIR)/$(API).wheap

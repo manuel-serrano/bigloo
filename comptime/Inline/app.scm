@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Inline/app.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Inline/app.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Sat Mar 28 20:00:47 2026 (serrano)                */
+;*    Last change :  Tue May 12 13:23:32 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
@@ -112,6 +112,7 @@
 		       (isfun-original-body sfun)
 		       (sfun-body sfun))))
 	 (trace-item "class=" (sfun-class sfun))
+	 (trace-item "sfun=" (typeof sfun) " " (isfun? sfun))
 	 (trace-item "body=" (typeof body))
 	 (cond
 	    ((not (isa? body node))

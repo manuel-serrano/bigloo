@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/BackEnd/cplib.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/BackEnd/cplib.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Wed Mar 11 09:12:47 2026 (serrano)                */
+;*    Last change :  Tue May 12 13:52:14 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
@@ -232,12 +232,9 @@
 ;*---------------------------------------------------------------------*/
 (define (type->class type)
    (cond
-      ((tclass? type)
-       type)
-      ((wclass? type)
-       (wclass-its-class type))
-      (else
-       (internal-error 'get-declared-fields "Illegal type" type))))
+      ((tclass? type) type)
+      ((wclass? type) (wclass-its-class type))
+      (else (internal-error 'get-declared-fields "Illegal type" type))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-its-super                                                    */
@@ -251,10 +248,14 @@
 (define (get-declared-fields type::type)
    ;; Get the fields declared (not herited) by a class.
    (let ((class (type->class type)))
-      (filter (lambda (slot::slot)
-		 (and (not (slot-virtual? slot))
-		      (eq? class (slot-class-owner slot))))
-	      (tclass-slots class))))
+      (if (pair? (tclass-slots class))
+	  (filter (lambda (slot::slot)
+		     (and (not (slot-virtual? slot))
+			  (eq? class (slot-class-owner slot))))
+	     (tclass-slots class))
+	  ;; class referenced in imported bindings only might have
+	  ;; no slots
+	  '())))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-field-type ...                                               */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Tue May 12 08:08:37 2026 (serrano)                */
+/*    Last change :  Tue May 12 10:55:13 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -13,6 +13,7 @@
 /*    Colors and dimensions                                            */
 /*---------------------------------------------------------------------*/
 :root {
+    --bodyColor: #444;
     --background: #fafafa;
     --textShadow: #ccc;
 
@@ -58,6 +59,7 @@
     --fontifierDefine: #6a5ac9;
     --fontifierImportant: #fa1a03;
     --fontifierCompilation: #ffa435;
+    --fontifierComment: #faa404;
 
     --chapterTocLinkColor: #777;
     --chapterTocBackground: #fff;
@@ -84,7 +86,8 @@
 body {
     background: var(--background);
     font-family: "Helvetica Neue", "Hevetica", Arial, sans-serif;
-    font-size: 14px;
+    font-size: 16px;
+    color: var(--bodyColor);
 }
 
 /*---------------------------------------------------------------------*/
@@ -435,6 +438,11 @@ pre .fontifier-prog-important {
 
 pre .fontifier-prog-symbol {
     color: var(--fontifierSymbol);
+}
+
+pre .fontifier-prog-line-comment {
+    color: var(--fontifierComment);
+    font-weight: bold;
 }
 
 pre .fontifier-prog-compilation {

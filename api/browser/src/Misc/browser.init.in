@@ -1,3 +1,4 @@
+;; -*- mode: bee -*-
 ;*=====================================================================*/
 ;*    serrano/prgm/project/bigloo/api/browser/src/Misc/browser.init    */
 ;*    -------------------------------------------------------------    */
@@ -15,7 +16,7 @@
 (declare-library! 'browser
    :srfi '(browser)
    :basename "bigloobrowser"
-   :module-init '__browser_browser
+   :module-init '__browser_dom
    :module-eval '__browser_makelib
    :wasm-js #t)
    

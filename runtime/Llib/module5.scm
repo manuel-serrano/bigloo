@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/module5.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/module5.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Apr 25 06:42:14 2026 (serrano)                */
+;*    Last change :  Tue May 12 11:20:14 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -97,7 +97,7 @@
 	      (resolved::bool (default #f))
 	      ;; the optional cache directory for the imported modules
 	      (cache-dir (default #f))
-	      ;; the default heap extension
+	      ;; the heap the module comes from, if any
 	      (heap (default #f))
 	      ;; the qualified name when compiling to Java
 	      (qualified-name (default #unspecified)))
@@ -520,8 +520,7 @@
 		   :heap-suffix hsuffix
 		   :expand expand)))
 	    ((?heap . ?path)
-	     (let* ((hmod::Module (module5-read-heap heap
-				     (-> d id) mod))
+	     (let* ((hmod::Module (module5-read-heap heap (-> d id) mod))
 		    (def::Def (module5-get-export-def hmod (-> d id) (-> d expr)))
 		    (decl::Decl (-> def decl)))
 		(set! (-> d mod) (-> decl mod))))
@@ -1247,7 +1246,7 @@
    
    (define (parse-library-some clause expr::pair mod::Module expand)
       (let* ((lib (cadr clause))
-	     (bindings (caddr clause))
+	     (bindings (cddr clause))
 	     (rlib (module5-resolve-library lib lib-path)))
 	 (if (string? rlib)
 	     (let ((lmod::Module (module5-read-library rlib clause mod hsuffix)))
@@ -1306,7 +1305,7 @@
 	  (parse-library-all id clause expr mod expand))
 	 ((library (? symbol?))
 	  (parse-library-all #f clause expr mod expand))
-	 ((library (? symbol?) (? list?))
+	 ((library (? symbol?) . (? list?))
 	  (parse-library-some clause expr mod expand))
 	 ((extern (and (? string?) ?name) . ?clauses)
 	  (parse-extern clause expr mod expand))

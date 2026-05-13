@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon May 11 08:41:12 2026 (serrano)                */
+;*    Last change :  Tue May 12 17:11:40 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -261,8 +261,9 @@
       (("-jfile" ?file (help "Name of the Jvm package file"))
        (set! *qualified-type-file* file))
       ;; jvm package
-      (("-package" ?pkg (help "Set default package (jvm only)"))
-       (default-jvm-package-set! (string->symbol (string-replace pkg #\/ #\.))))
+      (("-package" ?pkg (help "Set default package (jvm and wasm only)"))
+       (default-jvm-package-set! (string->symbol (string-replace pkg #\/ #\.)))
+       (set! *wasm-target-module* pkg))
       ;; main function
       (("-main" ?fun (help "Set the main function"))
        (set! *main* (string->symbol fun)))

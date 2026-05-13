@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/c.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/BackEnd/c.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Fri Jan 30 18:59:06 2026 (serrano)                */
+;*    Last change :  Tue May 12 11:27:00 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -292,6 +292,22 @@
 	 (car *src-suffix*))))
 
 ;*---------------------------------------------------------------------*/
+;*    use-libraries ...                                                */
+;*---------------------------------------------------------------------*/
+(define (use-libraries libs)
+   (case (module5-default-version)
+      ((5) (if (pair? libs) (use-library! (car libs))))
+      (else (for-each use-library! libs))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-libraries ...                                               */
+;*---------------------------------------------------------------------*/
+(define (eval-libraries libs)
+   (case (module5-default-version)
+      ((5) (if (pair? libs) (add-eval-library! (car libs))))
+      (else (for-each add-eval-library! libs))))
+
+;*---------------------------------------------------------------------*/
 ;*    backend-link-objects ::cvm ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link-objects me::cvm sources)
@@ -312,17 +328,20 @@
 	  (if (null? sources)
 	      (if (or main (not *auto-link-main*) (eq? *pass* 'so))
 		  (let ((first (prefix (car *o-files*))))
+		     (when (and (string? fmain)
+				(string=? (suffix fmain) "bgl"))
+			(module5-default-version-set! 5))
 		     ;; if libraries are used by some module we add them
 		     ;; to the link
 		     (for-each (lambda (lib)
 				  (match-case lib
 				     ((library . ?libs)
-				      (for-each use-library! libs))
+				      (use-libraries libs))
 				     ((eval . ?clauses)
 				      (for-each (match-lambda
 						   ((library . ?libs)
-						    (for-each use-library! libs)
-						    (for-each add-eval-library! libs)))
+						    (use-libraries libs)
+						    (eval-libraries libs)))
 					 clauses))))
 			libraries)
 		     ;; we load the library init files.

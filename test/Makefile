@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Mon May 11 16:06:38 2026 (serrano)                */
+#*    Last change :  Tue May 12 10:40:43 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -29,8 +29,9 @@ SHELL = /bin/sh
 EFLAGS = 
 BFLAGS = -cg -g -O3 -q -Wall -init-lib -gself \
   -lib-dir $(BOOTLIBDIR) -no-auto-link-main
+BM$FLAGS = -module4
 
-BLFLAGS = -I src
+BLFLAGS = -I src -I src/modules
 BCFLAGS =
 BWFLAGS = -wasm
 BJFLAGS = -jvm
@@ -38,7 +39,14 @@ BJFLAGS = -jvm
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
-COMMON = main bool hash io pair port string vector
+TESTS = main bool hash io module pair port string vector
+MODULES4 = module4_ex12
+MODULES5 = module5_ex14 module5_ex1 module5_ex6 module5_ex0 module5_ex15 \
+  module5_ex2 module5_ex7 module5_ex10 module5_ex16 module5_ex3 \
+  module5_ex8 module5_ex11 module5_ex17 module5_ex4 module5_ex9 \
+  module5_ex13 module5_ex18 module5_ex5
+
+COMMON=$(TESTS:%=%) $(MODULES4:%=modules/%) $(MODULES5:%=modules/%)
 
 C_OBJECTS = $(COMMON:%=%.o) $(C_SPECIFIC:%=%.o)
 J_OBJECTS = $(COMMON:%=%.class)
@@ -112,20 +120,32 @@ objs_wasm/%.wat: src/%.bgl src/test.bgh
 objs_jvm/%.class: src/%.bgl src/test.bgh
 	$(BIGLOO) -c $(BFLAGS) $(BJFLAGS) $(EFLAGS) $< -o $@
 
+objs_c/%.o: src/%.scm src/test.bgh
+	$(BIGLOO) -c $(BFLAGS) $(BM$FLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
+
+objs_wasm/%.wat: src/%.scm src/test.bgh
+	$(BIGLOO) -c $(BFLAGS) $(BM4FLAGS) $(BWFLAGS) $(EFLAGS) $< -o $@
+
+objs_jvm/%.class: src/%.scm src/test.bgh
+	$(BIGLOO) -c $(BFLAGS) $(BM4FLAGS) $(BJFLAGS) $(EFLAGS) $< -o $@
+
 .jfile:
-	$(BGLJFILE) --strip 1 $(J_OBJECTS:%.class=src/%.bgl) -o $@
+	$(BGLJFILE) --strip 1 $(TESTS:%=src/%.bgl) $(MODULES5:%=src/modules/%.bgl) $(MODULES4:%=src/modules/%.scm) -o $@
 
 #*---------------------------------------------------------------------*/
 #*    sub-directories                                                  */
 #*---------------------------------------------------------------------*/
 objs_c:
 	@ mkdir -p $@
+	@ mkdir -p $@/modules
 
 objs_jvm:
 	@ mkdir -p $@
+	@ mkdir -p $@/modules
 
 objs_wasm:
 	@ mkdir -p $@
+	@ mkdir -p $@/modules
 
 #*---------------------------------------------------------------------*/
 #*    clean                                                            */

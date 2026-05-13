@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/library.scm     */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Module/library.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 16:05:09 1996                          */
-;*    Last change :  Mon Oct 20 08:50:35 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed May 13 07:32:30 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Library finalizer                                                */
 ;*=====================================================================*/
@@ -18,6 +18,7 @@
 	    backend_backend
 	    ast_var
 	    ast_env
+	    tools_shape
 	    module_module
 	    module_impuse
 	    engine_param
@@ -33,7 +34,7 @@
    (set! *key* (gensym))
    ;; we mark the already imported modules
    (for-each (lambda (module) (putprop! module *key* #t))
-	     (get-imported-modules))
+      (get-imported-modules))
    ;; we also mark the dummy `foreign' module
    (putprop! 'foreign *key* #t)
    ;; and, of course, the current module
@@ -41,11 +42,11 @@
    ;; first, we collect all the needed library modules
    (for-each-global! (get-genv)
       (lambda (global)
-	 (with-access::global global (occurrence module
-					library value)
+	 (with-access::global global (occurrence module library value)
 	    (when (and (>fx occurrence 0)
 		       library
 		       (not (or (cfun? value) (cvar? value))))
+	       (tprint "ICI need " (shape global) " " module)
 	       (need-library-module! module)))))
    ;; when compiling for bdb we must initialize the bdb module
    (if (and (>fx *bdb-debug* 0)
@@ -67,26 +68,26 @@
 	     (if (null? modules)
 		 (let ((body (if (and (>fx *debug-module* 0)
 				      (memq 'module
-					    (backend-debug-support
-					     (the-backend))))
+					 (backend-debug-support
+					    (the-backend))))
 				 `((begin
 				      (pragma::void
-				       ,(string-append
-					 "bgl_init_module_debug_library(\""
-					 (symbol->string *module*)
-					 "\")"))
+					 ,(string-append
+					     "bgl_init_module_debug_library(\""
+					     (symbol->string *module*)
+					     "\")"))
 				      ,@init-call*))
 				 init-call*)))
 		    (unit 'library-modules 2 body #t #f))
 		 (let* ((id (car modules))
 			(init-fun-id (module-initialization-id id)))
 		    (loop (cdr modules)
-			  (cons `((@ ,init-fun-id ,id)
-				  0
-				  ;; 0 means here not to perform version
-				  ;; checking about library
-				  ,(symbol->string *module*))
-				init-call*))))))))
+		       (cons `((@ ,init-fun-id ,id)
+			       0
+			       ;; 0 means here not to perform version
+			       ;; checking about library
+			       ,(symbol->string *module*))
+			  init-call*))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *needed-modules* ...                                             */

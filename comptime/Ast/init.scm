@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/init.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/init.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 19 14:33:36 2005                          */
-;*    Last change :  Mon Oct 20 13:57:08 2025 (serrano)                */
-;*    Copyright   :  2005-25 Manuel Serrano                            */
+;*    Last change :  Tue May 12 18:23:57 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The initialization part of the AST                               */
 ;*=====================================================================*/

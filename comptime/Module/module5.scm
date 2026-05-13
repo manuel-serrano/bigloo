@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/module5.scm     */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Module/module5.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Apr 24 09:30:54 2026 (serrano)                */
+;*    Last change :  Tue May 12 12:53:15 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -203,6 +203,7 @@
 			(let ((var (declare-global-svar! env id alias mid scope expr expr)))
 			   (global-type-set! var (find-type/expr 'class expr))
 			   (global-set-read-only! var)
+			   (def-library-set! def var)
 			   (cond
 			      ((not (type-exists? id))
 			       (let* ((sup (and super (find-type/expr super expr)))
@@ -241,20 +242,24 @@
 	 (trace-item "kind=" kind)
 	 (case kind
 	    ((variable)
-	     (declare-global-svar! env (make-typed-ident id type) alias
-		mid scope expr expr))
+	     (def-library-set! def
+		(declare-global-svar! env (make-typed-ident id type) alias
+		   mid scope expr expr)))
 	    ((procedure)
-	     (declare-global-sfun! env (make-typed-ident id type) alias
-		(procedure-args expr id mid)
-		mid scope 'sfun expr expr))
+	     (def-library-set! def
+		(declare-global-sfun! env (make-typed-ident id type) alias
+		   (procedure-args expr id mid)
+		   mid scope 'sfun expr expr)))
 	    ((inline)
-	     (declare-global-sfun! env (make-typed-ident id type) alias
-		(procedure-args expr id mid)
-		mid scope 'sifun expr expr))
+	     (def-library-set! def
+		(declare-global-sfun! env (make-typed-ident id type) alias
+		   (procedure-args expr id mid)
+		   mid scope 'sifun expr expr)))
 	    ((generic)
-	     (declare-global-sfun! env (make-typed-ident id type) alias
-		(procedure-args expr id mid)
-		mid scope 'sgfun expr expr))
+	     (def-library-set! def
+		(declare-global-sfun! env (make-typed-ident id type) alias
+		   (procedure-args expr id mid)
+		   mid scope 'sgfun expr expr)))
 	    ((macro)
 	     (with-access::Def def (expr)
 		(add-macro-definition! expr id)))
@@ -382,7 +387,20 @@
 			     (else
 			      (loop (cdr lclasses)
 				 (cons s (append (find-imported-classes (list s)) iclasses)))))))))))))
-   
+
+   (define (def-library-set!::global d::Def g::global)
+      ;; propagate library name from the module5 declaration to the
+      ;; ast global variable
+      '(with-access::Def d (decl id)
+	 (when (isa? decl Decl)
+	    (with-access::Decl decl (mod)
+	       (with-access::Module mod (heap)
+		  (when (string? heap)
+		     (let ((lib (string->symbol (prefix (basename heap)))))
+			(tprint (shape g) " LIB=" lib)
+			(global-library-set! g lib)))))))
+      g)
+      
    (with-trace 'module5 "module5-ast!"
       (with-access::Module mod (defs imports (mid id))
 	 (trace-item "mid=" mid)
@@ -570,9 +588,10 @@
 	       (with-access::Decl decl (xid id (imod mod) alias attributes)
 		  (let ((def (module5-get-export-def imod (or xid id)))
 			(g (find-global env alias)))
-		     ;;(tprint "IMPORT INLINE ID=" id " ALIAS=" alias " G=" (shape g))
-		     (when (and (isa? def Def) (or (not g) (not (eq? id alias))))
-			(with-access::Def def (kind expr decl)
+		     ;; MS 12may26, I'm not sure if this is correct to consider
+		     ;; (eq? id alias) only for hiding identifiers
+		     (when (and (isa? def Def) (or (not g) (or #t (not (eq? id alias)))))
+			(with-access::Def def (id kind expr decl)
 			   (when (eq? kind 'inline)
 			      (with-access::Decl decl ((imod mod))
 				 (with-access::Module imod ((mid id))
@@ -587,8 +606,9 @@
 					      (args (sfun-args fi))
 					      (node (sexp->node (sfun-body fi)
 						       (sfun-args fi) loc 'value env)))
-					  ;; mark the function as hidden for the symbol resolution
-					  (global-pragma-set! gi (cons 'hidden (global-pragma gi)))
+					  ;; hide the function for the symbol resolution
+					  (unless (eq? id alias)
+					     (global-pragma-set! gi (cons 'hidden (global-pragma gi))))
 					  ;; force concrete types for all arguments in order
 					  ;; to preserve the semantics of imported external function
 					  (for-each (lambda (a)
@@ -1060,9 +1080,9 @@
 		       (if (pair? deps)
 			   (set! attributes
 			      (cons* (cons 'wasm deps)
-				 (cons 'qualified-type-name name)
+				 ;(cons 'qualified-type-name name)
 				 attributes))
-			   (set! attributes
+			   '(set! attributes
 			      (cons (cons 'qualified-type-name name)
 				 attributes))))
 		    (error/loc "mod" "Cannot find declaration" clause expr)))))
