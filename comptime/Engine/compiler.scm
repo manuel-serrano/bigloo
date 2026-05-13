@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue May 12 09:59:02 2026 (serrano)                */
+;*    Last change :  Wed May 13 09:04:24 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -582,7 +582,7 @@
 	       :default-package (default-jvm-package)
 	       :qualified-names (jvm-qualified-names))
 	    (module5-checksum! mod)
-
+	    
 	    (hashtable-for-each decls
 	       (lambda (k d)
 		  (with-access::Decl d (scope alias id)
@@ -780,7 +780,8 @@
 	 
 	 ;; once library clauses have been parsed
 	 ;; we must restore again additional heaps
-	 (restore-additional-heaps genv)
+	 ;; MS 13may2026: heap restore already called in do-module (module.scm)
+	 ;; (restore-additional-heaps genv)
 	 (additional-heap-restore-globals! genv)
 	 (unit-sexp*-add-head! tu (get-alibrary-inits))
 	 

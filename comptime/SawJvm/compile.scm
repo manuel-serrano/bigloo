@@ -127,7 +127,7 @@
       ;; Init the module right now! CARE use a flag
       (code! me '(iconst_0))
       (code! me '(aconst_null))
-      (call-global me (find-global (get-genv) 'module-initialization *module*))
+      (call-global me (find-global (get-genv) (module-initialization-id *module*) *module*))
       (code! me '(pop)))
    (code! me '(return))
    (close-method me) )
@@ -250,7 +250,7 @@
    (declare-locals me '() '())
    (code! me '(iconst_0))
    (code! me '(aconst_null))
-   (call-global me (find-global (get-genv) 'module-initialization *module*))
+   (call-global me (find-global (get-genv) (module-initialization-id *module*) *module*))
    (code! me '(pop))
    (code! me '(return))
    (close-method me) )

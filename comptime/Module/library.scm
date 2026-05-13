@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 16:05:09 1996                          */
-;*    Last change :  Wed May 13 07:32:30 2026 (serrano)                */
+;*    Last change :  Wed May 13 09:34:22 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Library finalizer                                                */
@@ -18,6 +18,7 @@
 	    backend_backend
 	    ast_var
 	    ast_env
+	    ast_glo-decl
 	    tools_shape
 	    module_module
 	    module_impuse
@@ -46,7 +47,6 @@
 	    (when (and (>fx occurrence 0)
 		       library
 		       (not (or (cfun? value) (cvar? value))))
-	       (tprint "ICI need " (shape global) " " module)
 	       (need-library-module! module)))))
    ;; when compiling for bdb we must initialize the bdb module
    (if (and (>fx *bdb-debug* 0)
@@ -79,15 +79,24 @@
 				      ,@init-call*))
 				 init-call*)))
 		    (unit 'library-modules 2 body #t #f))
-		 (let* ((id (car modules))
-			(init-fun-id (module-initialization-id id)))
+		 (let* ((mid (car modules))
+			(id (module-initialization-id mid)))
+		    (module-declare-init! (get-genv) id mid)
 		    (loop (cdr modules)
-		       (cons `((@ ,init-fun-id ,id)
+		       (cons `((@ ,id ,mid)
 			       0
 			       ;; 0 means here not to perform version
 			       ;; checking about library
 			       ,(symbol->string *module*))
 			  init-call*))))))))
+
+;*---------------------------------------------------------------------*/
+;*    module-declare-init! ...                                         */
+;*---------------------------------------------------------------------*/
+(define (module-declare-init! env id::symbol mid::symbol)
+   (unless (find-global/module env id mid)
+      (declare-global-sfun! env id id
+	 '(checksum::long path::string) mid 'import 'sfun #f #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *needed-modules* ...                                             */

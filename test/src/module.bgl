@@ -1,0 +1,134 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/module.bgl            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Fri Oct 17 10:40:09 2025                          */
+;*    Last change :  Tue May 12 13:15:07 2026 (serrano)                */
+;*    Copyright   :  2025-26 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    Module5 tests                                                    */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    modules                                                          */
+;*---------------------------------------------------------------------*/
+(module modules
+   (import "modules/module5_ex0.bgl" ex0a ex0b ex0c)
+   (import "modules/module5_ex1.bgl" . ex1)
+   (import "modules/module5_ex1.bgl" ex1a EX1b)
+   (import "modules/module5_ex2.bgl" (EX2A EX2a))
+   (import "modules/module5_ex3.bgl" ex3a ex3b)
+   (import "modules/module5_ex4.bgl" . ex4)
+   (import "modules/module5_ex7.bgl")
+   (import "modules/module5_ex8.bgl" ex8m ex8f)
+   (import "modules/module5_ex9.bgl" ex9ma (EX9MB ex9mb) ex9f)
+   (import "modules/module5_ex10.bgl" ex10i)
+   (import "modules/module5_ex11.bgl" C1 C2 ex11f ex11g ex11-count ex11h ex11i)
+   (import :version 4 "modules/module4_ex12.scm")
+   (import "modules/module5_ex13.bgl" G)
+   (import "modules/module5_ex14.bgl" ex14)
+   (import "modules/module5_ex15.bgl" ex15f)
+   (import "modules/module5_ex16.bgl" (ex16a ex5a))
+   (import "modules/module5_ex17.bgl" . ex17)
+   (import "modules/module5_ex18.bgl" ex18 ex18-shadow)
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test.sch                                                         */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "module" tests))
+      (test-all verbose "module")))
+
+;*---------------------------------------------------------------------*/
+;*    test-module5 ...                                                 */
+;*---------------------------------------------------------------------*/
+(ex10i "from module5.scm")
+
+(define-test ex0_1 (typeof ex0a)
+   :expected "procedure")
+(define-test ex0_2 (ex0a 4)
+   :expected 4)
+(define-test ex0_3 (ex0b 1 2)
+   :expected (cons 1 2))
+(define-test ex0_4 (ex0a 1 2)
+   :expected (list 1 2))
+(define-test ex1_1 (typeof ex1a)
+   :expected "procedure")
+(define-test ex1_2 (typeof EX1b)
+   :expected "procedure")
+(define-test ex1_3 (EX1b 100 200)
+   :expected (cons* 'ex1b 100 200))
+(define-test ex1_4 (ex1.ex1c 100 200)
+   :expected (cons* 'ex1c 100 200))
+(define-test ex2_1 (typeof EX2A)
+   :expected "procedure")
+(define-test ex2_2 (EX2A 100 200)
+   :expected (list 'ex2a 100 200))
+(define-test ex3_1 (ex3a 200)
+   :expected (vector 'ex3a 200))
+(define-test ex3_2 (ex3b 'x 'y 'z)
+   :expected (list 'ex3b 'x 'y 'z))
+(define-test ex3_3 (ex4.ex3b 'a 'b 'c)
+   :expected (list 'ex3b 'a 'b 'c))
+(define-test ex4i_1 (ex4.EX4A 'abc)
+   :expected (vector 'ex3a 'abc))
+(define-test ex8_1 (ex8m "from module5.bgl")
+   :expected (cons "from module5.bgl" 'ex8m))
+(define-test ex8_2 (ex8f)
+   :expected (cons 124 'ex8m))
+(define-test ex9_1 (ex9ma "from module5.bgl")
+   :expected (cons "from module5.bgl" 'ex9m))
+(define-test ex9.2 (EX9MB "from module5.bgl")
+   :expected (cons "from module5.bgl" 'ex9mb))
+(define-test ex9_3 (ex9f)
+   :expected (cons 340 'ex9m))
+(define-test ex10_1 (ex10i "from module5.bgl")
+   :expected (cons 'ex10m "from module5.bgl"))
+(define-test ex11_1 (ex11f)
+   :expected (list 10 20 "C2"))
+(define-test ex11_2 (isa? (ex11g) C1)
+   :expected #t)
+(define-test ex11_3 ex11-count
+   :expected 40)
+(define-test ex11_4 (ex11h)
+   :expected #t)
+(define-test ex11_i (ex11i 4 3 9)
+   :expected -2)
+(define-test ex12_1 (to-string (ex12 4))
+   :expected "==> C12  4")
+(define-test ex12_2 (to-string (ex12i 4 3 9))
+   :expected "==> -2 bint ")
+(define-test ex13_1 G
+   :expected 45)
+(define-test ex14_1 (ex14 '(1 2 3))
+   :expected 2)
+(define-test ex15_1 (ex15f)
+   :expected "procedure")
+(define-test ex16_1 (ex16a)
+   :expected 'ex5a)
+(define-test ex17_1 (ex17.ex5a)
+   :expected 'ex5a)
+(define-test ex17_2 (ex17.ex17a 1 2)
+   :expected (list 1 2))
+(define-test ex18_1 (ex18)
+   :expected 'not-shadowed)
+(define-test ex18_2 (ex18-shadow-macro)
+   :expected 'not-shadowed)
+
+;*---------------------------------------------------------------------*/
+;*    ex18-shadow ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (ex18-shadow)
+   'shadowed)
+
+;*---------------------------------------------------------------------*/
+;*    ex18-shadow-macro ...                                            */
+;*---------------------------------------------------------------------*/
+(define (ex18-shadow-macro)
+   'not-shadowed)

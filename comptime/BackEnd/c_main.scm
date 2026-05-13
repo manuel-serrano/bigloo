@@ -1,12 +1,12 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/c_main.scm     */
+;*    .../prgm/project/bigloo/5.0.x/comptime/BackEnd/c_main.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Mon Oct 20 14:24:25 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed May 13 14:27:09 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    We produce a Bigloo's `main' function.                           */
+;*    The Bigloo's `main' function.                                    */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/

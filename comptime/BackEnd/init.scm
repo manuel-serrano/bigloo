@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/BackEnd/init.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/BackEnd/init.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Mon Oct 20 14:24:03 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed May 13 09:41:23 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
 ;*=====================================================================*/
@@ -111,7 +111,7 @@
 		   (list cvar nvar)
 		   *module*
 		   'sfun
-		   'module-initialization
+		   (module-initialization-id *module*)
 		   'now
 		   node)))
       (set-variable-name! req)

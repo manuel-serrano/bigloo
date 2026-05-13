@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue May 12 11:20:14 2026 (serrano)                */
+;*    Last change :  Wed May 13 09:49:03 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -130,7 +130,7 @@
 	      (id::symbol read-only)
 	      ;; the type of the variable
 	      (type::obj (default #unspecified))
-	      ;; the declaration kind, one of: macro, expander, class, inline
+	      ;; the decl kind, one of: macro, expander, class, inline
 	      kind::symbol
 	      ;; the definition expression
 	      (expr (default #unspecified))
@@ -678,7 +678,7 @@
 		       :heap-suffix hsuffix
 		       :expand expand
 		       :stack (cons path stack))))))))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    module5-read ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -1209,11 +1209,6 @@
 						lib-path cache-dir hsuffix expand stack))
 				   (port->sexp-list p #t))))))
 		      (else
-		       (tprint "TBR")
-		       (with-output-to-file "/tmp/LOG"
-			  (lambda ()
-			     (display* "Cannot find include file " f " " (-> mod path) "\n")
-			     (display* "current " (pwd) "\n")))
 		       (error/loc mod "Cannot find include file" f clause))))
 	 (cdr clause)))
 
@@ -1236,8 +1231,7 @@
 				    (alias alias)
 				    (scope 'import))))
 			 (hashtable-put! (-> mod decls) k nd)
-			 (hashtable-put! (-> mod imports) k nd)
-			 )))
+			 (hashtable-put! (-> mod imports) k nd))))
 		(set! (-> mod inits)
 		   (append! (-> mod inits) (list lmod)))
 		(set! (-> mod libraries)
@@ -2463,7 +2457,7 @@
 		   (if (isa? def Def)
 		       (with-access::Def def (ronly kind)
 			  (unless (eq? ronly #unspecified)
-			     (error/loc mod "Illegally mutated inline function"
+			     (error/loc mod "Illegal inline function assignment"
 				id expr))
 			  (begin
 			     (set! ronly #t)
@@ -2476,7 +2470,7 @@
 		   (if (isa? def Def)
 		       (with-access::Def def (ronly kind)
 			  (unless (eq? ronly #unspecified)
-			     (error/loc mod "Illegally mutated generic function"
+			     (error/loc mod "Illegal generic function assignment"
 				id expr))
 			  (begin
 			     (set! ronly #t)
@@ -2489,7 +2483,7 @@
 		   (if (isa? def Def)
 		       (with-access::Def def (ronly kind)
 			  (unless (eq? ronly #unspecified)
-			     (error/loc mod "Illegally mutated class"
+			     (error/loc mod "Illegal class assignment"
 				id expr))
 			  (begin
 			     (set! ronly #t)
@@ -2550,19 +2544,18 @@
    
    (with-access::Module mod (defs decls checksum)
       (when (<fx checksum 0)
-	 (let ((cs (+fx (hashtable-size defs) (hashtable-size decls))))
-	    (hashtable-for-each decls
-	       (lambda (k d)
-		  (with-access::Decl d (alias scope)
-		     (set! cs (add-hash (scope-number scope) cs))
-		     
-		     (set! cs (add-hash (get-hashnumber k) cs))
-		     (set! cs (add-hash (get-hashnumber alias) cs)))))
+	 (let ((cs 0))
 	    (hashtable-for-each defs
 	       (lambda (k d)
-		  (with-access::Def d (kind)
-		     (set! cs (add-hash (+fx 3 (get-hashnumber k)) cs))
-		     (set! cs (add-hash (kind-number kind) cs)))))
+		  (with-access::Def d (kind decl)
+		     (when (isa? decl Decl)
+			(with-access::Decl decl (alias scope)
+			   (when (eq? scope 'export)
+			      (set! cs (add-hash 1 cs))
+			      (set! cs (add-hash (scope-number scope) cs))
+			      (set! cs (add-hash (get-hashnumber alias) cs))
+			      (set! cs (add-hash (get-hashnumber k) cs))
+			      (set! cs (add-hash (kind-number kind) cs))))))))
 	    (set! checksum cs)))
       mod))
 

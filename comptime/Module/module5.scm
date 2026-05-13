@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue May 12 12:53:15 2026 (serrano)                */
+;*    Last change :  Wed May 13 09:06:42 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -391,13 +391,12 @@
    (define (def-library-set!::global d::Def g::global)
       ;; propagate library name from the module5 declaration to the
       ;; ast global variable
-      '(with-access::Def d (decl id)
+      (with-access::Def d (decl id)
 	 (when (isa? decl Decl)
 	    (with-access::Decl decl (mod)
 	       (with-access::Module mod (heap)
 		  (when (string? heap)
 		     (let ((lib (string->symbol (prefix (basename heap)))))
-			(tprint (shape g) " LIB=" lib)
 			(global-library-set! g lib)))))))
       g)
       
@@ -518,10 +517,7 @@
 	    (if (=fx version 5)
 		(module5-checksum! imod)
 		(set! checksum (module-checksum expr '())))
-	    (declare-global-sfun! env 'module-initialization
-	       'module-initialization
-	       '(checksum::long path::string) id 'import 'sfun
-	       #f #f)
+	    (module5-declare-init! env (module-initialization-id id) id)
 	    `((@ module-initialization ,id) ,checksum ,path))))
 
    (with-access::Module mod (inits path)
@@ -529,6 +525,14 @@
 	 (trace-item "path=" path)
 	 (let ((body (map (lambda (m) (init-module! m path)) inits)))
 	    (unit 'imported-modules 12 body #f #f)))))
+
+;*---------------------------------------------------------------------*/
+;*    module5-declare-init! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (module5-declare-init! env id::symbol mid::symbol)
+   (unless (find-global/module env id mid)
+      (declare-global-sfun! env id id
+	 '(checksum::long path::string) mid 'import 'sfun #f #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-object-unit ...                                          */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/impuse.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Module/impuse.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Mon Apr 27 10:14:53 2026 (serrano)                */
+;*    Last change :  Wed May 13 14:30:19 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
@@ -29,6 +29,7 @@
 	    tools_error
 	    tools_location
 	    tools_progn
+	    tools_shape
 	    type_type
 	    object_class
 	    read_access

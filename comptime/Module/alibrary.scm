@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Feb 28 10:20:55 1998                          */
-;*    Last change :  Fri Jan 30 18:24:35 2026 (serrano)                */
+;*    Last change :  Wed May 13 09:43:23 2026 (serrano)                */
 ;*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler library clause compilation                          */
@@ -120,7 +120,8 @@
 				`(pragma ,(format "~a()"
 					     (libinfo-init_s info))))
 			    ,(when (libinfo-module_s info)
-				(let ((v (find-global (get-genv) 'module-initialization
+				(let ((v (find-global (get-genv)
+					    (module-initialization-id (libinfo-module_s info))
 					    (libinfo-module_s info))))
 				   (if (global? v)
 				       (let ((f (if (string? (car *src-files*))
