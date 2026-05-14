@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/5.0a/runtime/Wlib/bigloo-node.mjs        */
+/*    .../prgm/project/bigloo/5.0.x/runtime/Wlib/bigloo-node.mjs       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri May  1 07:52:36 2026 (serrano)                */
+/*    Last change :  Thu May 14 09:42:19 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -550,13 +550,13 @@ class BglNodeRuntime extends BglRuntime {
 
    js_system(self) {
       return {
-	 argc: argv.length - 2,
+	 argc: argv.length,
 	 
-	 command_line_size: () => process.argv.length,
+	 command_line_size: () => argv.length,
 	 
-	 command_line_entry: (num, addr) => self.storeString(process.argv[num], addr),
+	 command_line_entry: (num, addr) => self.storeString(argv[num], addr),
 	 
-	 executable_name: (addr) => self.storeString(process.argv[0], addr),
+	 executable_name: (addr) => self.storeString(argv[0], addr),
 	 
 	 get_arg: (idx, addr) => {
 	    let real_idx = idx + 2;
@@ -727,11 +727,11 @@ async function runDynamic(client, rts, libs) {
 /*---------------------------------------------------------------------*/
 /*    Minimalist command line parsing                                  */
 /*---------------------------------------------------------------------*/
-const argv = (globalThis.window && "Deno" in window)
+const processArgv = (globalThis.window && "Deno" in window)
    ? (await import('node:process')).argv
    : process.argv;
 
-const { client, rts, libs } = bglParseArgs(argv);
+const { client, rts, libs, argv } = bglParseArgs(processArgv);
 
 
 /*---------------------------------------------------------------------*/

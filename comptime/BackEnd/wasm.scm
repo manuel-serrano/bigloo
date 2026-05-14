@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue May 12 15:57:00 2026 (serrano)                */
+;*    Last change :  Thu May 14 08:56:41 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -21,6 +21,7 @@
    
    (import engine_param
 	   engine_configure
+	   engine_link
 	   tools_license
 	   tools_error
 	   tools_shape
@@ -32,6 +33,7 @@
 	   backend_cplib
 	   module_module
 	   module_alibrary
+	   module_eval
 	   type_type
 	   type_cache
 	   type_tools
@@ -43,6 +45,7 @@
 	   ast_env
 	   ast_ident
 	   ast_occur
+	   read_reader
 	   
 	   tvector_tvector
 	   tvector_cnst
@@ -138,8 +141,7 @@
 		      (format "~a ~( )" *wasmas* *wasmas-options*)
 		      *wasmas*))
 	  (target (or *dest* "a.out"))
-	  (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat"))
-	  (libs (delete-duplicates *additional-bigloo-libraries*)))
+	  (tmp (make-tmp-file-name (or *dest* (car srcobj)) "wat")))
       (verbose 1 "   . Wasm" #\Newline)
       (cond
 	 ((and (null? *o-files*) (eq? *pass* 'so))
@@ -160,6 +162,8 @@
 	 ((null? sources)
 	  (error "wasm-link" "No source file provided" *dest*))
 	 (*static-bigloo?*
+	  (use-libraries! sources)
+	  (load-library-init)
 	  (let* ((lib (if *unsafe-library* "bigloo_u.wat" "bigloo_s.wat"))
 		 (runtime-file (find-file-in-path lib *lib-dir*))
 		 (objects (delete-duplicates! (append srcobj *o-files*) string=?))
@@ -180,12 +184,14 @@
 				  `(("@LIBDIR@" . ,(bigloo-config 'library-directory))
 				    ("@WASM@" . ,wasmtgt)
 				    ("@STATIC@" . "")
-				    ("@LIBS@" . ""))))
+				    ("@LIBS@" . ,(additional-bigloo-wasm-libraries)))))
 			    (newline)))
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*
 		      (delete-file tmp))))))
 	 (else
+	  (use-libraries! sources)
+	  (load-library-init)
 	  (let ((objects (delete-duplicates! (append srcobj *o-files*) string=?))
 		(wasmtgt (if (eq? *pass* 'cc)
 			     target
@@ -207,11 +213,50 @@
 				  `(("@LIBDIR@" . ,(bigloo-config 'library-directory))
 				    ("@WASM@" . ,wasmtgt)
 				    ("@STATIC@" . ,(if *unsafe-library* "-s $BIGLOOLIBDIR/bigloo_u.wasm" "-s $BIGLOOLIBDIR/bigloo_s.wasm"))
-				    ("@LIBS@" . ,(additional-wasm-libraries)))))
+				    ("@LIBS@" . ,(additional-bigloo-wasm-libraries)))))
 			    (newline)))
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*
 		      (delete-file tmp)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    use-libraries! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (use-libraries! sources)
+   
+   (define (use-libraries libs version)
+      (case version
+	 ((5) (if (pair? libs) (use-library! (car libs))))
+	 (else (for-each use-library! libs))))
+   
+   (define (eval-libraries libs version)
+      (case version
+	 ((5) (if (pair? libs) (add-eval-library! (car libs))))
+	 (else (for-each add-eval-library! libs))))
+   
+   (for-each (lambda (source)
+		(let ((port (open-input-file (car source))))
+		   (if (not (input-port? port))
+		       (error "wasm" "Illegal file" (caar sources))
+		       (let ((exp (compiler-read port))
+			     (version (if (string=? (suffix (car source)) "bgl")
+					  5
+					  (module5-default-version))))
+			  (close-input-port port)
+			  (match-case exp
+			     ((module ?name . ?clauses)
+			      (for-each (lambda (lib)
+					   (match-case lib
+					      ((library . ?libs)
+					       (use-libraries libs version))
+					      ((eval . ?clauses)
+					       (for-each (match-lambda
+							    ((library . ?libs)
+							     (use-libraries libs version)
+							     (eval-libraries libs version)))
+						  clauses))))
+				 (find-libraries clauses))))))))
+      sources))
 
 ;*---------------------------------------------------------------------*/
 ;*    post-optimizations ...                                           */
@@ -229,9 +274,9 @@
 	 (rename-file tmp wasm))))
 
 ;*---------------------------------------------------------------------*/
-;*    additional-wasm-libraries ...                                    */
+;*    additional-bigloo-wasm-libraries ...                             */
 ;*---------------------------------------------------------------------*/
-(define (additional-wasm-libraries)
+(define (additional-bigloo-wasm-libraries)
    (format "~( )"
       (map (lambda (l)
 	      (let* ((i (library-info l))
@@ -240,7 +285,7 @@
 			     (if *unsafe-library* "u" "s")))
 		     (js (if (libinfo-wasm-js i) (libinfo-basename i) "none")))
 		 (format "-l __~a $BIGLOOLIBDIR/~a ~a" l lib js)))
-	 *additional-bigloo-libraries*)))
+	 (delete-duplicates *additional-bigloo-libraries*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sed ...                                                          */
@@ -1618,7 +1663,6 @@ esac")
 	 (library (global-library variable))
 	 (module (global-module variable)))
       (let ((is-macro (isa? variable cfun)))
-	 (tprint "WASM-MODULE " (shape variable) " " (shape library))
 	 (cond
 	    (library
 	     (string-append "__" (symbol->string library)))

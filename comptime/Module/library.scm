@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 16:05:09 1996                          */
-;*    Last change :  Wed May 13 09:34:22 2026 (serrano)                */
+;*    Last change :  Wed May 13 20:07:51 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Library finalizer                                                */
@@ -31,23 +31,23 @@
 ;*    library-finalizer ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (library-finalizer)
-   ;; we set the key
+   ;; set the key for using symbols as a hashtable
    (set! *key* (gensym))
-   ;; we mark the already imported modules
+   ;; mark the already imported modules
    (for-each (lambda (module) (putprop! module *key* #t))
       (get-imported-modules))
-   ;; we also mark the dummy `foreign' module
+   ;; mark also the dummy `foreign' module
    (putprop! 'foreign *key* #t)
    ;; and, of course, the current module
    (putprop! *module* *key* #t)
-   ;; first, we collect all the needed library modules
+   ;; collect all the needed library modules
    (for-each-global! (get-genv)
       (lambda (global)
 	 (with-access::global global (occurrence module library value)
 	    (when (and (>fx occurrence 0)
 		       library
 		       (not (or (cfun? value) (cvar? value))))
-	       (need-library-module! module)))))
+	       (need-library-module! module library)))))
    ;; when compiling for bdb we must initialize the bdb module
    (if (and (>fx *bdb-debug* 0)
 	    (memq 'bdb (backend-debug-support (the-backend))))
@@ -56,7 +56,7 @@
 	    (not *lib-mode*)
 	    (memq 'jvm (backend-debug-support (the-backend))))
        (for-each need-library-module! *jvm-debug-module*))
-   ;; we mark all the WITH modules (i.e. modules mentionned in a with module
+   ;; mark all the WITH modules (i.e. modules mentionned in a with module
    ;; clause or in a -with command line option)
    (for-each need-library-module! *with-library-modules*)
    ;; then we declare a special unit
@@ -95,8 +95,24 @@
 ;*---------------------------------------------------------------------*/
 (define (module-declare-init! env id::symbol mid::symbol)
    (unless (find-global/module env id mid)
-      (declare-global-sfun! env id id
-	 '(checksum::long path::string) mid 'import 'sfun #f #f)))
+      (let ((g (declare-global-sfun! env id id
+		  '(checksum::long path::string) mid 'import 'sfun #f #f)))
+	 (let ((lib (library-module mid)))
+	    (global-library-set! g lib))
+	 g)))
+
+;*---------------------------------------------------------------------*/
+;*    library-module ...                                               */
+;*---------------------------------------------------------------------*/
+(define (library-module mid)
+   (let ((c (assq mid *library-modules*)))
+      (when (pair? c)
+	 (cdr c))))
+
+;*---------------------------------------------------------------------*/
+;*    *library-modules* ...                                            */
+;*---------------------------------------------------------------------*/
+(define *library-modules* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    *needed-modules* ...                                             */
@@ -111,11 +127,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    need-library-module! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (need-library-module! module::symbol)
-   (if (not (getprop module *key*))
-       (begin
-	  (putprop! module *key* #t)
-	  (set! *needed-modules* (cons module *needed-modules*)))))
+(define (need-library-module! module::symbol #!optional library)
+   (unless (getprop module *key*)
+      (putprop! module *key* #t)
+      (set! *needed-modules* (cons module *needed-modules*))
+      (when library
+	 (set! *library-modules*
+	    (cons (cons module library) *library-modules*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *with-key* ...                                                   */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Wed May 13 14:30:19 2026 (serrano)                */
+;*    Last change :  Thu May 14 08:42:53 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
@@ -319,7 +319,7 @@
 		 (symbol->string (get-init *module*))
 		 (symbol->string (import-module import))))
 	  ,call))
-   
+
    (let* ((calls (map initialize-module *imported-modules-in-unit*)))
       (if (and (>fx *debug-module* 0)
 	       (memq 'module (backend-debug-support (the-backend))))

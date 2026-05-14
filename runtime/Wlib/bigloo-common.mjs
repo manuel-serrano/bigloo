@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/wasm/runtime/Wlib/bigloo-common.mjs      */
+/*    .../prgm/project/bigloo/5.0.x/runtime/Wlib/bigloo-common.mjs     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Wed Sep 10 10:53:32 2025 (serrano)                */
-/*    Copyright   :  2025 Manuel Serrano                               */
+/*    Last change :  Thu May 14 09:42:38 2026 (serrano)                */
+/*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
 /*=====================================================================*/
@@ -386,26 +386,28 @@ export class BglRuntime {
 /*---------------------------------------------------------------------*/
 /*    bglParseArgs ...                                                 */
 /*---------------------------------------------------------------------*/
-export function bglParseArgs(argv) {
-   let client = undefined, rts = undefined , libs = [];
+export function bglParseArgs(args) {
+   let client = undefined, rts = undefined , libs = [], argv = [];
 
-   if (argv[2] === "-s") {
-      argv.splice(1, 2);
+   if (args[2] === "-s") {
+      args.splice(1, 2);
       
-      for (let i = 0; i < argv.length; i++) {
-	 if (argv[i] === "-l") {
-	    const lib = { exports: argv[i + 1], lib: argv[i + 2], js: argv[i + 3] };
+      for (let i = 0; i < args.length; i++) {
+	 if (args[i] === "-l") {
+	    const lib = { exports: args[i + 1], lib: args[i + 2], js: args[i + 3] };
 	    libs.push(lib);
 	    i += 3;
-	 } else if (/[.]wasm$/.test(argv[i])) {
+	 } else if (/[.]wasm$/.test(args[i])) {
 	    if (!rts) {
-	       rts = argv[i];
+	       rts = args[i];
 	    } else if (!client) {
-	       client = argv[i];
+	       client = args[i];
 	    } else {
-	       console.error("*** ERROR: duplicate wasm source", argv[i]);
+	       console.error("*** ERROR: duplicate wasm source", args[i]);
 	       process.exit(1)
 	    }
+	 } else {
+	    argv.push(args[i]);
 	 }
       }
       
@@ -414,8 +416,8 @@ export function bglParseArgs(argv) {
 	 process.exit(1);
       }
 	 
-      return {client, rts, libs};
+      return { client, rts, libs, argv };
    } else {
-      return { client: argv[2], rts, libs };
+      return { client: args[2], rts, libs, argv };
    }
 }
