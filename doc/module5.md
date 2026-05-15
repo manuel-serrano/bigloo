@@ -13,21 +13,20 @@
 Modules
 =======
 
-Revision 5 introduces a new module system, namely called
-_module 5_. Old modules, _module 4_ are still maintained and will be to
-ensure backward compatibility with existing code. New modules 5 can
+Revision 5 introduces a new module system, henceforth refereed to as
+_module 5_. Old modules, _module 4_, are still maintained and will be to
+ensure backward compatibility with existing code. Modules 5 can
 import modules 4 but not it opposite. As much as possible, new code
-should use the new modules exclusiverly.
+should use modules 5 exclusively.
 
 The main characteristics of modules 5 are:
 
-  * Imports are acyclic;
-  * All imported bindings must be declared;
+  * Dependency graphs are acyclic, i.e., a module cannot import itself;
+  * All imported bindings must be explicitly declared;
   * Modules can re-export imported bindings;
-  * Import and export can renamed bindings;
+  * Imports and exports can renamed bindings;
   * Exported bindings are immutable from outside their module of definition;
-  * A module is associated to one file;
-  * One file defines one module;
+  * A module is associated to one file, one file defines one module;
   * Modules are referenced by files path.
   
 
@@ -44,15 +43,20 @@ Syntax
 
 <MExpression> --> <MClause> | <Include> | <CondExpand>
 
-<MClause> --> <MReExport> | <MExport> | <MImport> | <MMain> | <MLibrary>
+<MClause> --> <MExport> 
+  | <MReExport> 
+  | <MImport> 
+  | <MMain> 
+  | <MLibrary>
+  | <MExtern>
+
+<MExport> --> ( export <Alias>+ )
 
 <MReExport> --> <MReExportAll> | <MReExportSome>
-
 <MReExportAll> --> ( export <FilePath> )
   | ( export :version 4 <FilePath>+ )
 <MReExportSome> --> ( export <FilePath> <Alias> )
 
-<MExport> --> ( export <Alias>+ )
 
 <MImport> --> <MImportInit> | <MImportAll> | <MImportSome>
 <MImportInit> --> ( import <FilePath> )
@@ -64,6 +68,10 @@ Syntax
 <MMain> --> ( main ) | ( main <Ident> )
   
 <MLibrary> --> ( library <Ident> )
+
+<MExtern> --> ( export <String> <EClause>+ )
+
+<EClause> --> extern language depend clause
 
 <Include> --> ( include <FilePath> )
 

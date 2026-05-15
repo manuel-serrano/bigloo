@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Fri May 15 07:17:17 2026 (serrano)                */
+/*    Last change :  Fri May 15 09:46:16 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -462,6 +462,7 @@ pre .fontifier-prog-compilation {
 /*---------------------------------------------------------------------*/
 pre.bnf {
     border-left-color: var(--bnfBorderColor);
+    font-size: 90%;
 }
 
 pre.bnf span,
