@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Tue May 12 10:55:13 2026 (serrano)                */
+/*    Last change :  Fri May 15 07:17:17 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -61,6 +61,13 @@
     --fontifierCompilation: #ffa435;
     --fontifierComment: #faa404;
 
+    --bnfBorderColor: #1467e6;
+    --fontifierBnfSymbol: #1467e6;
+    --fontifierBnfKeyword: #6a5ac9;
+    --fontifierBnfTag: #555;
+    --fontifierBnfDefine: #111;
+    --fontifierBnfArrow: #555;
+    
     --chapterTocLinkColor: #777;
     --chapterTocBackground: #fff;
     --chapterTocBorder: #d2d2d2;
@@ -141,10 +148,6 @@ div.menu {
     text-decoration: none;
 }
 
-.menu[data-active="stdlib"] a.stdlib {
-    color: var(--menuButtonActive);
-}
-
 .menu img.logo {
     width: 3em;
     height: 3em;
@@ -180,13 +183,17 @@ ul.menu > li.navbutton {
     display: block;
     border-bottom: 3px solid transparent;
     height: calc(100% - 3px);
-    margin: 0;
 }
 
-ul.menu[data-active="stdlib"] > li.navbutton.stdlib {
+.menu[data-active="stdlib"] a.stdlib,
+.menu[data-active="modules"] a.modules {
+    color: var(--menuButtonActive);
+}
+
+ul.menu[data-active="stdlib"] > li.navbutton.stdlib,
+ul.menu[data-active="modules"] > li.navbutton.modules {
     border-bottom-color: var(--navActiveColor);
     background-color: var(--menuButtonActiveBackground);
-    color: var(--menuButtonActive);
 }
 
 ul.menu > li > a {
@@ -400,11 +407,8 @@ pre {
 
 code {
     padding: 2px 2px;
-    font-size: 90%;
-    background-color: var(--codeBackground);
+    font-size: 95%;
     color: var(--code);
-    border: 1px solid var(--codeBorder);
-    border-radius: 1px;
 }
 		   
 .result {
@@ -451,6 +455,36 @@ pre .fontifier-prog-compilation {
     border-radius: 2px;
     font-weight: bold;
     padding: 0 1px;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bnf                                                              */
+/*---------------------------------------------------------------------*/
+pre.bnf {
+    border-left-color: var(--bnfBorderColor);
+}
+
+pre.bnf span,
+pre.bnf .fontifier-prog-symbol {
+    color: var(--fontifierBnfSymbol);
+}
+
+pre.bnf .ebnf-tag {
+    font-weight: normal;
+    color: var(--fontifierBnfTag);
+}
+
+pre.bnf .fontifier-prog-define {
+    color: var(--fontifierBnfDefine);
+}    
+
+pre.bnf .ebnf-meta,
+pre.bnf .ebnf-pipe {
+    color: var(--hoverColor);
+}
+
+pre.bnf .ebnf-arrow {
+    color: var(--fontifierBnfArrow);
 }
 
 /*---------------------------------------------------------------------*/

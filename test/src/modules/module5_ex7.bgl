@@ -1,5 +1,5 @@
 (module ex7
-   (extern "c"
+   (extern "C"
       (include "stdio.h")
       (macro $printf::long (::string ::long) "printf"))
    (extern "wasm"

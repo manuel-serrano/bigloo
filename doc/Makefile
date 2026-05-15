@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue May 12 08:05:56 2026 (serrano)                */
+#*    Last change :  Fri May 15 07:00:13 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -29,14 +29,15 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
-COMMON = main fontifier
+COMMON = bgldoc fontifier
 
 C_OBJECTS = $(COMMON:%=%.o)
 
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = bool hash io pair port string vector
+MD = bool hash io pair port string vector \
+ module5
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
@@ -98,6 +99,9 @@ objs_c/%.o: src/%.bgl
 
 %.html: %.md bin/bgldoc
 	bin/bgldoc -t stdlib $< > $@ || rm -f $@
+
+module5.html: module5.md bin/bgldoc
+	bin/bgldoc -t modules $< > $@ || rm -f $@
 
 index.html: index.md bin/bgldoc
 	bin/bgldoc -t home $< > $@ || rm -f $@

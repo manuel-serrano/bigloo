@@ -41,6 +41,34 @@ function`the-encoded-string` are documented in [regular grammar](rgc.md).
 The function `utf8-string->ucs2-string` is documented in
 [unicode](unicode.md).
 
+The type `::string` denotes host native strings of characters. Values
+of types `::bstring` and `::string` are cast automatically. That is,
+for instance, that is legal to invoke a function that accepts a `::string`
+argument with a `::bstring` value.
+
+The implementation of host `::string` depends on the backend, as does the
+operation to cast a `::bstring` in a `::string` and vice-versa:
+
+  * C: a `::string` is represented as a C `char *`. Casting from `::bstring`
+  to `::string` is a mere pointer shift. Casting from `::string` to `::bstring`
+  requires a whole copy of the characters. This is why the `::string` type
+  should not be used in Bigloo code as it might implie many hidden copies
+  of the sequence of characters.
+   
+  * Java: a `::string` is represented as a Java `byte []`. There is no 
+  dynamic operation, i.e., no runtime code in a `::bstring` from and to
+  a `::string`.
+  
+  * Wasm: a `::string` is an array of `i8` fixnums.  There is no 
+  dynamic operation, i.e., no runtime code in a `::bstring` from and to
+  a `::string`.
+  
+Summary:
+
+|                            | C             | Java | Wasm |
+| `::bstring` to `::string`  | pointer shift |  _   |   _  |
+| `::string` to `::bstring`  | copy          |  _   |   _  |
+
 
 Constructors
 ------------
@@ -58,7 +86,7 @@ optional arguments, that must all be characters.
 
 ### substring ###
 
-Returns a substring of `str`, which must be a string, and `start` and `end` must be exact integers satisfying: `0 &le; start &le; end &le; (string-length str)`.
+Returns a substring of `str`, which must be a string, and `start` and `end` must be exact integers satisfying: `0` &le; `start` &le; `end` &le; `(string-length str)`.
 The optional argument `end` defaults to `(string-length str)`.
 
 The function `substring` returns a newly allocated string formed from the
@@ -182,14 +210,14 @@ Returns the size of the `string`.
 ### string-ref ###
 
 Returns the character at position `k` in `string`. If the argument 
-`k` is not in the range `0 &le; k &lt; string.length`, an exception is 
+`k` is not in the range `0` &le; `k` &lt; `string.length`, an exception is 
 triggered.
 
 
 ### string-set! ###
 
 Sets the character at position `k` of `string`. If the argument 
-`k` is not in the range `0 &le; k &lt; string.length`, an exception is 
+`k` is not in the range `0` &le; `k` &lt; `string.length`, an exception is 
 triggered.
 
 

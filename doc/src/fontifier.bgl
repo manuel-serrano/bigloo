@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/doc/src/fontifier.bgl           */
+;*    serrano/prgm/project/bigloo/5.0.x/doc/src/fontifier.bgl          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Thu Apr 30 09:13:42 2026 (serrano)                */
+;*    Last change :  Fri May 15 09:07:22 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -730,7 +730,7 @@
 ;*---------------------------------------------------------------------*/
 (define (ebnf ip #!key line-begin line-end)
    
-   '(define *ebnf-grammar*
+   (define *ebnf-grammar*
       (regular-grammar (line-begin line-end incollect res column)
 	 
 	 (define (add! s)
@@ -808,7 +808,7 @@
 		 (reverse! res)
 		 (error 'ebnf "Unexpected character" c))))))
    
-   '(read/rp *ebnf-grammar* ip
+   (read/rp *ebnf-grammar* ip
       line-begin line-end
       (or (not (integer? line-begin)) (=fx line-begin 1))
       '() 0))

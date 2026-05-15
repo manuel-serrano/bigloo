@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/check_type.scm     */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Ast/check_type.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Fri Dec 27 09:53:38 2024 (serrano)                */
-;*    Copyright   :  2000-24 Manuel Serrano                            */
+;*    Last change :  Fri May 15 09:10:45 2026 (serrano)                */
+;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
 ;*    nodes that are inconsitently typed.                              */
@@ -76,7 +76,8 @@
 (define (err node t1 t2)
    (user-error/location (node-loc node)
       (format "check-node-type (~a)" *check-type-pass*)
-      (format "Inconsistent type [~a], \"~a\" expected, \"~a\" provided" (typeof node) (shape t2) (shape t1))
+      (format "Inconsistent type [~a], \"~a\" expected, \"~a\" provided"
+	 (typeof node) (shape t2) (shape t1))
       (shape node)))
 
 ;*---------------------------------------------------------------------*/
@@ -273,8 +274,9 @@
 (define-method (check-node-type node::box-ref)
    (with-access::box-ref node (type var)
       (check-node-type var)
-      (unless (eqtype? *cell* (node-type var))
-	 (err node type (variable-type (var-variable var))))))
+      (let ((vty (node-type var)))
+	 (unless (or (eqtype? *cell* vty) (eqtype? *obj* vty))
+	    (err node type (variable-type (var-variable var)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-node-type ::box-set! ...                                   */

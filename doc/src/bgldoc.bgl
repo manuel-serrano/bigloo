@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/doc/src/main.bgl               */
+;*    serrano/prgm/project/bigloo/5.0.x/doc/src/bgldoc.bgl             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Tue May 12 07:49:49 2026 (serrano)                */
+;*    Last change :  Fri May 15 09:06:49 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -37,12 +37,13 @@
 ;*---------------------------------------------------------------------*/
 (define all-menus
    '(("home" . "index.html")
-     ("stdlib" . "bool.html")))
+     ("stdlib" . "bool.html")
+     ("module" . "module5.html")))
 
 ;*---------------------------------------------------------------------*/
-;*    all-chapters ...                                                 */
+;*    stdlib-chapters ...                                              */
 ;*---------------------------------------------------------------------*/
-(define all-chapters
+(define stdlib-chapters
    '(("booleans" . "bool.html")
      ("characters" . "character.html")
      ("hash" . "hash.html")
@@ -54,11 +55,19 @@
      ("vectors" . "vector.html")))
 
 ;*---------------------------------------------------------------------*/
+;*    module-chapters ...                                              */
+;*---------------------------------------------------------------------*/
+(define module-chapters
+   '(("module 5" . "module5.html")
+     ("module 4" . "module4.html")))
+
+;*---------------------------------------------------------------------*/
 ;*    find-chapter-title ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (find-chapter-title source)
    (let* ((p (prefix (basename source)))
-          (c (find (lambda (x) (string=? (prefix (cdr x)) p)) all-chapters)))
+          (c (find (lambda (x) (string=? (prefix (cdr x)) p))
+                (append module-chapters stdlib-chapters))))
       (if (pair? c)
           (prefix (cdr c))
           (error "find-chapter-title" "Cannot find title for source" source))))
@@ -95,7 +104,8 @@
    (define chapters '())
    (define main-title (xml-element 'span '((class . "main")) '("bigloo")))
 
-   (define (menubar title::pair-nil #!key (home "") (stdlib "") modules objects)
+   (define (menubar title::pair-nil
+              #!key (home "") (stdlib "") (modules "") objects)
       (xml-element 'nav '((class . "menu"))
          (list (xml-element 'div '((class . "menu"))
                   (list
@@ -114,11 +124,15 @@
                            (xml-element 'li (navbutton-attrs "stdlib")
                               (list
                                  (xml-element 'a
-                                    `((class . "stdlib submenu"))
+                                    '((class . "stdlib submenu"))
                                     (list "Stdlib"))
                                  stdlib))
                            (xml-element 'li (navbutton-attrs "Modules")
-                              (list (xml-element 'a '() (list "Modules"))))
+                              (list
+                                 (xml-element 'a
+                                    '((class . "modules submenu"))
+                                    (list "Modules"))
+                                 modules))
                            (xml-element 'li (navbutton-attrs "Objects")
                               (list (xml-element 'a '() (list "Objects"))))))
                      (xml-element 'span '((class . "version"))
@@ -147,7 +161,8 @@
                                       (xml-element 'span '((class . "sep"))
                                          '("/"))
                                       (find-chapter-title source))
-                             :stdlib (xml-main-toc all-chapters))
+                             :stdlib (xml-chapter-toc 'stdlib stdlib-chapters)
+                             :modules (xml-chapter-toc 'modules module-chapters))
 			  (xml-element 'div '((class . "chapter"))
 			     (list
 				(xml-element 'div '((class . "body"))
@@ -161,7 +176,8 @@
                     (list
                        (call-with-input-file "head.html" html-parse)
                        (menubar '()
-                          :stdlib (xml-main-toc all-chapters))
+                          :stdlib (xml-chapter-toc 'stdlib stdlib-chapters)
+                          :modules (xml-chapter-toc 'modules module-chapters))
                        (xml-element 'div '((class . "home"))
                           (list
                              (xml-element 'img '((class . "logo") (src . "bgl.svg")) '())
@@ -173,8 +189,13 @@
                                         (markdown-parse ip
                                            :eval (make-doc-eval (dirname source))
                                            :fontifier (lambda (lang id lines)
-                                                         (call-with-input-string (apply string-append lines)
-                                                            fontifier.bigloo))))))
+                                                         (call-with-input-string
+                                                               (apply string-append lines)
+                                                            (cond
+                                                               ((string=? lang "bnf")
+                                                                fontifier.ebnf)
+                                                               (else
+                                                                fontifier.bigloo))))))))
                              sources))))))
          (write-html doc)))
       
@@ -196,10 +217,10 @@
        (for-each compile-chapter chapters)))
 
 ;*---------------------------------------------------------------------*/
-;*    xml-main-toc ...                                                 */
+;*    xml-chapter-toc ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (xml-main-toc chapters)
-   (xml-element 'div '((class . "nav-menu") (id . "stdlib"))
+(define (xml-chapter-toc id chapters)
+   (xml-element 'div `((class . "nav-menu") (id . ,id))
       (list
 	 (xml-element 'nav '()
 	    (list
@@ -275,7 +296,11 @@
 			:eval (make-doc-eval (dirname source))
 			:fontifier (lambda (lang id lines)
 				      (call-with-input-string (apply string-append lines)
-					 fontifier.bigloo))))
+                                         (cond
+                                            ((string=? lang "bnf")
+                                             fontifier.ebnf)
+                                            (else
+                                             fontifier.bigloo))))))
 		(index '())
 		(toc (chapter-toc doc)))
 	    (for-each (lambda (e)
@@ -362,7 +387,6 @@
       `("(" ,@(markdown-ident fun "definition") ,@(markdown-arguments args) ")"))
    
    (define (variable->markdown var)
-      (tprint "var=" var)
       (list (xml-element 'span '((class . "definition")) (list (symbol->string var)))))
 
    (match-case def
@@ -378,6 +402,8 @@
    (cond
       ((string=? lang "bigloo")
        (call-with-input-string text fontifier.bigloo))
+      ((string=? lang "bnf")
+       (call-with-input-string text fontifier.ebnf))
       (else
        (format "~s" text))))
 
