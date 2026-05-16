@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Fri May 15 09:06:49 2026 (serrano)                */
+;*    Last change :  Sat May 16 06:59:25 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -303,6 +303,7 @@
                                              fontifier.bigloo))))))
 		(index '())
 		(toc (chapter-toc doc)))
+            ;; test examples 
 	    (for-each (lambda (e)
 			 (let* ((name (string-trim-both
 					 (apply string-append
@@ -332,6 +333,15 @@
                                       (cons (list name def (xml-element-attribute e 'id) target)
                                          index))))))
 	       (xml-get-elements-by-tag doc 'h3))
+            ;; inline examples
+            (for-each (lambda (e::XmlElement)
+                         (let* ((path (xml-element-attribute e 'href))
+                                (qpath (make-file-name (dirname target) path)))
+                            (when (and (file-exists? qpath) (string=? (suffix path) "bgl"))
+                               (xml-element-replace-child! e
+                                  (xml-element 'pre '((class . "example"))
+                                     (fontify (call-with-input-file qpath read-string)))))))
+               (xml-get-elements-by-tag doc 'a))
 	    (values doc toc index)))))
    
 ;*---------------------------------------------------------------------*/

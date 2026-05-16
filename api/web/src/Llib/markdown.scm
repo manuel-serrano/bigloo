@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/api/web/src/Llib/markdown.scm       */
+;*    .../prgm/project/bigloo/5.0.x/api/web/src/Llib/markdown.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 17:38:56 2026                          */
-;*    Last change :  Thu Apr 30 07:38:05 2026 (serrano)                */
+;*    Last change :  Sat May 16 06:49:25 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Markdown parser                                                  */
@@ -935,9 +935,9 @@
    (define (href)
       (let (url (title #f))
 	 (case (peek-token-type)
-	    ((text)
+	    ((text O_ O__)
 	     (let loop ((str (list (conv (token-value (consume-any!))))))
-		(if (eq? (peek-token-type) 'text)
+		(if (memq (peek-token-type) '(text O_ O__))
 		    (loop (cons (conv (token-value (consume-any!))) str))
 		    (let* ((str (apply string-append (reverse! str)))
 			   (i (string-index str #\space)))
@@ -947,17 +947,20 @@
 			      (set! title (substring str
 					     (+fx i 2)
 					     (-fx (string-length str) 1))))
-			   (set! url str))))))
+			   (set! url str)))))
+	     (values url title))
 	    ((expr)
 	     (set! url (token-value (consume-any!)))
-	     (cond
-		((memq (peek-token-type) '(expr text))
-		 (set! title (token-value (consume-any!))))
-		((eq? (peek-token-type) 'CPAR)
-		 #f)
-		(else
-		 (parse-token-error "Illegal href token \"~a\"" (consume-any!))))))
-	 (values url title)))
+	     (let loop ((title '()))
+		(cond
+		   ((memq (peek-token-type) '(expr text O_ O__))
+		    (loop (cons (token-value (consume-any!)) title)))
+		   ((eq? (peek-token-type) 'CPAR)
+		    (values url (apply string-append (reverse title))))
+		   (else
+		    (parse-token-error "Illegal href token \"~a\"" (consume-any!))))))
+	    (else
+	     (values url title)))))
 
    (define (lref)
       (let loop ((res ""))
@@ -1045,7 +1048,7 @@
 				 (tag 'a)
 				 (parent state)))
 	     (level (let loop ((level 0))
-		       ;; count the number of "[" character that are part
+		       ;; count the number of "[" characters that are part
 		       ;; of the title string
 		       (if (eq? (peek-token-type) 'OBRA)
 			   (begin
@@ -1077,7 +1080,7 @@
 			  (href)
 			  (consume-token! 'CPAR)
 			  (state-add! state
-			     (xml-element 'A `((href . ,url) (title . ,title))
+			     (xml-element 'a `((href . ,url) (title . ,title))
 				(reverse! (-> lstate elements))))))
 		      ((text)
 		       (let ((tok (consume-any!)))

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/api/web/src/Llib/xml.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/api/web/src/Llib/xml.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & joe Donaldson                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Wed Apr 22 10:17:05 2026 (serrano)                */
+;*    Last change :  Sat May 16 07:10:50 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -32,6 +32,7 @@
 	   (inline xml-element-children::pair-nil ::XmlElement)
 	   (xml-element-children-set!::pair-nil ::XmlElement ::pair-nil)
 	   (xml-element-append-child!::pair-nil ::XmlElement ::obj)
+	   (xml-element-replace-child! ::XmlElement ::XmlElement)
 	   (xml-element-next-sibling ::XmlElement)
 	   (xml-element-previous-sibling ::XmlElement)
 	   (xml-get-elements-by-tag::pair-nil ::XmlElement ::symbol)
@@ -205,6 +206,18 @@
       (set! (-> e %children) nc)
       nc))
 
+;*---------------------------------------------------------------------*/
+;*    xml-element-replace-child! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (xml-element-replace-child! e::XmlElement n::XmlElement)
+   (let ((parent (-> e %parent)))
+      (when parent
+	 (let loop ((children (-> (cast::XmlElement parent) %children)))
+	    (when (pair? children)
+	       (if (eq? (car children) e)
+		   (set-car! children n)
+		   (loop (cdr children))))))))
+	 
 ;*---------------------------------------------------------------------*/
 ;*    xml-element-next-sibling ...                                     */
 ;*---------------------------------------------------------------------*/

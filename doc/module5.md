@@ -75,5 +75,24 @@ Syntax
 
 <Include> --> ( include <FilePath> )
 
-<CondExpand> --> bigloo cond-expand form
+<CondExpand> --> bigloo cond-expand form that expands into an <MExpression>
 ```
+
+Export
+------
+
+A module exports some of the definitions it declared with the `export` clause.
+Functions, generic functions, inline functions, variables, and classes can
+all be exported. Variables are mutable inside the module that defines them
+but immutable in modules that import them.
+
+Simple export example:
+
+[simple export](../test/src/modules/module5_ex8.bgl)
+
+An export clause can alias an exported declaration, i.e., it can make
+the declaration visible under another name from the module that import it.
+
+Example of exports with and without aliasing:
+
+[aliasing](../test/src/modules/module5_ex1.bgl)
