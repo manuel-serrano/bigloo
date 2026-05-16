@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri May 15 07:07:32 2026 (serrano)                */
+;*    Last change :  Sat May 16 08:52:08 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -660,7 +660,7 @@
 		    (backend-force-register-gc-roots (the-backend)))
 	    (set! units (cons (make-gc-roots-unit) units)))
 
-	 ;; foreigtn code
+	 ;; foreign code
 	 (case *target-language*
 	    ((c)
 	     (let ((u (foreign-finalizer)))

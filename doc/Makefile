@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri May 15 07:00:13 2026 (serrano)                */
+#*    Last change :  Sat May 16 09:35:54 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -37,7 +37,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
 MD = bool hash io pair port string vector \
- module5
+ module5 module4
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
@@ -101,6 +101,9 @@ objs_c/%.o: src/%.bgl
 	bin/bgldoc -t stdlib $< > $@ || rm -f $@
 
 module5.html: module5.md bin/bgldoc
+	bin/bgldoc -t modules $< > $@ || rm -f $@
+
+module4.html: module4.md bin/bgldoc
 	bin/bgldoc -t modules $< > $@ || rm -f $@
 
 index.html: index.md bin/bgldoc

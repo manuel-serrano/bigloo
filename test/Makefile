@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue May 12 10:40:43 2026 (serrano)                */
+#*    Last change :  Sat May 16 08:15:23 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -44,7 +44,7 @@ MODULES4 = module4_ex12
 MODULES5 = module5_ex14 module5_ex1 module5_ex6 module5_ex0 module5_ex15 \
   module5_ex2 module5_ex7 module5_ex10 module5_ex16 module5_ex3 \
   module5_ex8 module5_ex11 module5_ex17 module5_ex4 module5_ex9 \
-  module5_ex13 module5_ex18 module5_ex5
+  module5_ex13 module5_ex18 module5_ex5 module5_ex19 module5_ex20
 
 COMMON=$(TESTS:%=%) $(MODULES4:%=modules/%) $(MODULES5:%=modules/%)
 

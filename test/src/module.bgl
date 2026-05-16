@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 17 10:40:09 2025                          */
-;*    Last change :  Tue May 12 13:15:07 2026 (serrano)                */
+;*    Last change :  Sat May 16 08:49:58 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 tests                                                    */
@@ -16,7 +16,7 @@
    (import "modules/module5_ex0.bgl" ex0a ex0b ex0c)
    (import "modules/module5_ex1.bgl" . ex1)
    (import "modules/module5_ex1.bgl" ex1a EX1b)
-   (import "modules/module5_ex2.bgl" (EX2A EX2a))
+   (import "modules/module5_ex2.bgl" (EX2A EX2a) ex2c)
    (import "modules/module5_ex3.bgl" ex3a ex3b)
    (import "modules/module5_ex4.bgl" . ex4)
    (import "modules/module5_ex7.bgl")
@@ -31,6 +31,8 @@
    (import "modules/module5_ex16.bgl" (ex16a ex5a))
    (import "modules/module5_ex17.bgl" . ex17)
    (import "modules/module5_ex18.bgl" ex18 ex18-shadow)
+   (import "modules/module5_ex19.bgl")
+   (import "modules/module5_ex20.bgl" hyphenize)
    (export test))
 
 ;*---------------------------------------------------------------------*/
@@ -70,6 +72,8 @@
    :expected "procedure")
 (define-test ex2_2 (EX2A 100 200)
    :expected (list 'ex2a 100 200))
+(define-test ex2c (string? ex2c)
+   :expected #t)
 (define-test ex3_1 (ex3a 200)
    :expected (vector 'ex3a 200))
 (define-test ex3_2 (ex3b 'x 'y 'z)
@@ -120,6 +124,10 @@
    :expected 'not-shadowed)
 (define-test ex18_2 (ex18-shadow-macro)
    :expected 'not-shadowed)
+(define-test modules.filename (basename modules.filename)
+   :expected "module.bgl")
+(define-test ex20 (pair? (hyphenize "Anticonstitutionnellement"))
+   :expected #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    ex18-shadow ...                                                  */

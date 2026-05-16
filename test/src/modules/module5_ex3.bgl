@@ -1,5 +1,6 @@
+;; module5_ex3.bgl
 (module ex3
-   (include "module5_ex3.sch")
+   (include "module5_ex3.bgh")
    (export ex3b))
 
 (define (ex3a x)
@@ -7,4 +8,3 @@
 
 (define (ex3b a b c)
    (list 'ex3b a b c))
-

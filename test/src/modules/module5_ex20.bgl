@@ -1,0 +1,7 @@
+;; module5_ex20.bgl
+(module ex20
+   (library text)
+   (export hyphenize))
+
+(define (hyphenize::pair word::bstring)
+   (hyphenate word (load-hyphens 'fr)))

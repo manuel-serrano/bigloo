@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Fri May 15 09:46:16 2026 (serrano)                */
+/*    Last change :  Sat May 16 07:48:56 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -403,6 +403,7 @@ pre {
     border-left: 2px solid var(--programBorderLeft);
     padding: 0.5em;
     overflow-x: auto;
+    font-size: 90%;
 }
 
 code {

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sat May 16 06:59:25 2026 (serrano)                */
+;*    Last change :  Sat May 16 07:57:47 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -337,7 +337,7 @@
             (for-each (lambda (e::XmlElement)
                          (let* ((path (xml-element-attribute e 'href))
                                 (qpath (make-file-name (dirname target) path)))
-                            (when (and (file-exists? qpath) (string=? (suffix path) "bgl"))
+                            (when (and (file-exists? qpath) (member (suffix path) '("bgl" "bgh")))
                                (xml-element-replace-child! e
                                   (xml-element 'pre '((class . "example"))
                                      (fontify (call-with-input-file qpath read-string)))))))

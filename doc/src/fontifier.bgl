@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Fri May 15 09:07:22 2026 (serrano)                */
+;*    Last change :  Sat May 16 08:01:53 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -446,7 +446,8 @@
          '("cond-expand"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "define"))
-	 '("define" "module" "define-macro" "define-generic" "define-inline"
+	 '("define" "module" "export" "import" "include" "extern" "library"
+           "define-macro" "define-generic" "define-inline"
 	   "define-method" "define-service" "define-expander" "define-tag"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "reserved"))
