@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Tue May 12 13:52:14 2026 (serrano)                */
+;*    Last change :  Sun May 17 09:08:13 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
@@ -27,6 +27,7 @@
 	    read_jvm
 	    module_java
 	    engine_param
+	    module_module
 	    backend_backend
 	    backend_c_prototype
 	    tools_error)
@@ -218,14 +219,25 @@
 (define (get-declared-classes)
    ;; Get the classes declared (not imported) in the current module.
    ;; CARE (global-import (tclass-holder (get-object-type))) is import ?!?!
-   (let ((r '()))
-      (for-each (lambda (c)
-		   (unless (or (eq? (global-import (tclass-holder c)) 'import)
-			       (eq? c (get-object-type)) )
-		      (set! r (cons (if (wide-class? c) (wide->chunk c) c)
-				    r ))))
-		(get-class-list))
-      r))
+   (filter-map (lambda (c)
+		  (let* ((h (tclass-holder c))
+			 (scope (global-import h)))
+		     (unless (or (eq? scope 'import)
+				 (and (eq? scope 'static)
+				      (not (eq? *module* (global-module h))))
+				 (eq? c (get-object-type)))
+			(if (wide-class? c) (wide->chunk c) c))))
+      (get-class-list)))
+		  
+;*    (let ((r '()))                                                   */
+;*       (for-each (lambda (c)                                         */
+;* 		   (tprint "C=" (shape c) " " (global-import (tclass-holder c))) */
+;* 		   (unless (or (eq? (global-import (tclass-holder c)) 'import) */
+;* 			       (eq? c (get-object-type)) )             */
+;* 		      (set! r (cons (if (wide-class? c) (wide->chunk c) c) */
+;* 				    r ))))                             */
+;* 		(get-class-list))                                      */
+;*       r))                                                           */
 
 ;*---------------------------------------------------------------------*/
 ;*    type->class ...                                                  */

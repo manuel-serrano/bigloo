@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/BackEnd/jvm.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/BackEnd/jvm.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Tue Apr 28 08:02:18 2026 (serrano)                */
+;*    Last change :  Sun May 17 07:37:22 2026 (serrano)                */
 ;*    Copyright   :  2012-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -177,7 +177,7 @@
 (define *jvm-dir-name* ".")
 
 (define (jvmasdump classfile port)
-   (pp classfile :width 10240 :case-sensitivity 'lower port))
+   (pp classfile port :width 10240 :case-sensitivity 'lower))
 
 (define (addsuffix name)
    (string-append name
@@ -267,6 +267,22 @@
    (string-append (make-link-package) ".bgl"))
  
 ;*---------------------------------------------------------------------*/
+;*    use-libraries ...                                                */
+;*---------------------------------------------------------------------*/
+(define (use-libraries libs)
+   (case (module5-default-version)
+      ((5) (if (pair? libs) (use-library! (car libs))))
+      (else (for-each use-library! libs))))
+
+;*---------------------------------------------------------------------*/
+;*    eval-libraries ...                                               */
+;*---------------------------------------------------------------------*/
+(define (eval-libraries libs)
+   (case (module5-default-version)
+      ((5) (if (pair? libs) (add-eval-library! (car libs))))
+      (else (for-each add-eval-library! libs))))
+
+;*---------------------------------------------------------------------*/
 ;*    backend-link-objects ::jvm ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link-objects me::jvm sources)
@@ -293,17 +309,19 @@
 		 (if main
 		     ;; no need to generate a main, one alread exists
 		     (let ((first (prefix (car *o-files*))))
+			(when (string=? (suffix (car src)) "bgl")
+			   (module5-default-version-set! 5))
 			;; if libraries are used by some module we add them
 			;; to the link
 			(for-each (lambda (lib)
 				     (match-case lib
 					((library . ?libs)
-					 (for-each use-library! libs))
+					 (use-libraries libs))
 					((eval . ?clauses)
 					 (for-each (match-lambda
 						      ((library . ?libs)
-						       (for-each use-library! libs)
-						       (for-each add-eval-library! libs)))
+						       (use-libraries libs)
+						       (eval-libraries libs)))
 					    clauses))))
 			   libraries)
 			;; we load the library init files.

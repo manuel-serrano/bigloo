@@ -32,7 +32,7 @@
    (import "modules/module5_ex17.bgl" . ex17)
    (import "modules/module5_ex18.bgl" ex18 ex18-shadow)
    (import "modules/module5_ex19.bgl")
-   (import "modules/module5_ex20.bgl" hyphenize)
+   (import "modules/module5_ex20.bgl" . libs)
    (export test))
 
 ;*---------------------------------------------------------------------*/
@@ -126,7 +126,11 @@
    :expected 'not-shadowed)
 (define-test modules.filename (basename modules.filename)
    :expected "module.bgl")
-(define-test ex20 (pair? (hyphenize "Anticonstitutionnellement"))
+(define-test ex20_1 (libs.read-csv "a,b,c")
+   :expected '("a" "b" "c"))
+(define-test ex20_2 (pair? (libs.hyphenize "Anticonstitutionnellement"))
+   :expected #t)
+(define-test ex20_3 (string? (libs.wdate))
    :expected #t)
 
 ;*---------------------------------------------------------------------*/

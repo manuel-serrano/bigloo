@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/venv.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/venv.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Mon Apr 27 10:13:57 2026 (serrano)                */
+;*    Last change :  Sun May 17 09:59:00 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -65,29 +65,30 @@
 ;*---------------------------------------------------------------------*/
 (define (add-genv! Genv)
    (hashtable-for-each
-    Genv
-    (lambda (k bucket)
-       (for-each (lambda (new)
-		    (delay-restore-global! new)
-		    (let* ((module (global-module new))
-			   (id     (global-id new))
-			   (bucket (hashtable-get *Genv* id)))
-		       (cond
-			  ((not (pair? bucket))
-			   (hashtable-put! *Genv* id (list id new)))
-			  ((or (eq? module *module*)
-			       (not (eq? *module*
+      Genv
+      (lambda (k bucket)
+	 (for-each (lambda (new)
+		      (delay-restore-global! new)
+		      (let* ((module (global-module new))
+			     (id (global-id new))
+			     (bucket (hashtable-get *Genv* id)))
+			 (cond
+			    ((not (pair? bucket))
+			     (hashtable-put! *Genv* id (list id new)))
+			    ((or (eq? module *module*)
+				 (not (eq? *module*
 					 (global-module (cadr bucket)))))
-			   ;; we add the new global in first position if:
-			   ;;   - we are binding a variable of the current
-			   ;;     module
-			   ;;   - the first global already bound is not owned
-			   ;;     by the current module
-			   (let ((new-bucket (cons new (cdr bucket))))
-			      (set-cdr! bucket new-bucket)))
-			  (else
-			   (set-cdr! (cdr bucket) (cons new (cddr bucket)))))))
-		 (cdr bucket))))
+			     ;; we add the new global in first position if:
+			     ;;   - we are binding a variable of the current
+			     ;;     module
+			     ;;   - the first global already bound is not owned
+			     ;;     by the current module
+			     (let ((new-bucket (cons new (cdr bucket))))
+				(set-cdr! bucket new-bucket)))
+			    (else
+			     (set-cdr! (cdr bucket)
+				(cons new (cddr bucket)))))))
+	    (cdr bucket))))
    (set! *restored* '()))
 
 ;*---------------------------------------------------------------------*/

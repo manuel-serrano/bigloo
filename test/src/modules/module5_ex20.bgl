@@ -1,7 +1,15 @@
 ;; module5_ex20.bgl
 (module ex20
-   (library text)
-   (export hyphenize))
+   (library csv)
+   (library text . t)
+   (library web date->w3c-datetime)
+   (export read-csv hyphenize wdate))
+
+(define (read-csv text::bstring)
+   (call-with-input-string text csv.read-csv-record))
 
 (define (hyphenize::pair word::bstring)
-   (hyphenate word (load-hyphens 'fr)))
+   (t.hyphenate word (t.load-hyphens 'fr)))
+
+(define (wdate::bstring)
+   (date->w3c-datetime (current-date)))

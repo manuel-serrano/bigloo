@@ -43,13 +43,15 @@ Syntax
 
 <MExpression> --> <MClause> | <Include> | <CondExpand>
 
-<MClause> --> <MExport> 
+<MClause> --> <MMain> 
+  | <MExport> 
   | <MReExport> 
   | <MImport> 
-  | <MMain> 
   | <MLibrary>
   | <MExtern>
 
+<MMain> --> ( main ) | ( main <Ident> )
+  
 <MExport> --> ( export <Alias>+ )
 
 <MReExport> --> <MReExportAll> | <MReExportSome>
@@ -65,9 +67,9 @@ Syntax
   | ( import :version 4 <FilePath> )
   | ( import <FilePath> <Alias>+ )
   
-<MMain> --> ( main ) | ( main <Ident> )
-  
-<MLibrary> --> ( library <Ident>* )
+<MLibrary> --> ( library <Ident> )
+  | <MLibrary> --> ( library <Ident> . <Ident> )
+  | <MLibrary> --> ( library <Ident> <Alias+> )
 
 <MExtern> --> ( export <String> <EClause>+ )
 
@@ -77,6 +79,24 @@ Syntax
 
 <CondExpand> --> bigloo cond-expand form that expands into an <MExpression>
 ```
+
+Main
+----
+
+The `main` clause specifies the _entry point_ of the application. An application
+contains at most one module that defines a _entry point_. When building an
+application, if no _entry point_ is defined, the execution will consists in
+executing all the top-level forms of all the modules.
+
+The _entry point_ is a function of one argument. It is automatically called
+_after_ all the top-level forms have been executed. It receives as parameter
+a list containing all the arguments pass on the command line when running
+the application as strings.
+
+The form `(main)` specifies that the module defines a function of one argument
+that will act as en entry point that this function is named `main`. The
+form `(main &lt;Ident&gt;)` lets the module uses another identifier than `main`
+for the entry point.
 
 Export
 ------
@@ -191,12 +211,11 @@ not declaration of `$printf` for that backend.
 Library
 -------
 
-A library is a collection of modules grouped together and exposed as if
-implemented in a single module. Using variables of a library differ
-from importing variable from a module in that all the variables a library
-exports can be used inside a module without explicitly mentioning them.
-In the following example, several variables of the `text` library are
-used from within `module5_ex20.bgl`.
+Libraries are extensions of the Bigloo runtime system. They are
+designated by an identifier. They are globally installed and not
+dependend of each applications. The form `(library &lt;Ident&gt;
+. &lt;Ident&gt;)` also uses qualified names but the prefix is the
+specified in the library rule. The last form imports only some variables of the library.
 
 [using libraries](../test/src/modules/module5_ex20.bgl)
 

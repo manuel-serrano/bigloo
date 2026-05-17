@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed May 13 09:06:42 2026 (serrano)                */
+;*    Last change :  Sun May 17 09:23:36 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -131,8 +131,14 @@
 (define (module5-ast! mod::Module env mode::symbol)
    
    (define unsorted-classes '())
-   
-   (define (procedure-args src id mid)
+
+   (define (args->list args)
+      (cond
+	 ((null? args) args)
+	 ((symbol? args) (list args))
+	 (else (cons (car args) (args->list (cdr args))))))
+	 
+   (define (procedure-args-sans-def src id mid)
       (match-case src
 	 ((define (?- . ?args) . ?-) args)
 	 ((define-inline (?- . ?args) . ?-) args)
@@ -140,6 +146,53 @@
 	 ((define-generic (?- . ?args) . ?-) args)
 	 ((define (and (? symbol?)) (lambda ?args . ?-)) args)
 	 (else (error mid (format "Illegal procedure expression \"~a\"" id) src))))
+
+   (define (type-arg farg::symbol carg::symbol def::Def)
+      (multiple-value-bind (_ ctype)
+	 (parse-ident carg (-> def expr) mod)
+	 (if (string? ctype)
+	     (multiple-value-bind (fid _)
+		(parse-ident farg (-> def expr) mod)
+		(string->symbol (format "~a::~a" fid ctype)))
+	     farg)))
+   
+   (define (procedure-args src id mid def::Def)
+      (let ((dfargs (procedure-args-sans-def src id mid)))
+	 (cond
+	    ((>=fx (-> mod version) 5)
+	     dfargs)
+	    ((isa? (-> def decl) Decl)
+	     (with-access::Decl (-> def decl) (expr)
+		(let ((dcargs (match-case expr
+				 ((inline ?- . ?args) (args->list args))
+				 ((generic ?- . ?args) (args->list args))
+				 (else (args->list (cdr expr))))))
+		   (tprint "id=" id " dfargs=" dfargs " dcargs=" dcargs
+		      " " (-> def kind) " mod=" (-> mod id) " expr=" expr)
+		   (let loop ((dfargs dfargs)
+			      (dcargs dcargs)
+			      (args '()))
+		      ;; this assumes that dfargs and dcargs compatibility
+		      ;; has already been checked
+		      (cond
+			 ((null? dfargs)
+			  (reverse! args))
+			 ((symbol? dfargs)
+			  (reverse (cons (type-arg dfargs dcargs def) args)))
+			 ((symbol? (car dfargs))
+			  (loop (cdr dfargs) (cdr dcargs)
+			     (cons (type-arg (car dfargs) (car dcargs) def)
+				args)))
+			 ((pair? (car dfargs))
+			  (loop (cdr dfargs) (cdr dcargs)
+			     (cons (list (type-arg (caar dfargs) (caar dcargs) def) (cadar dfargs))
+				args)))
+			 ((memq (car dfargs) '(#!optional #!key #!rest))
+			  (loop (cdr dfargs) (cdr dcargs) (cons (car dfargs) args)))
+			 (else
+			  (error "procedure-args" "Illegal argument list" dfargs)))))))
+	    (else
+	     dfargs))))
    
    (define (import-kind src ronly)
       (if (not ronly)
@@ -159,7 +212,7 @@
 	 (if (and (pair? virtual) (>=fx (cdr virtual) 0))
 	     (make-class-virtual-slot p i ty expr)
 	     (make-class-direct-slot p i ty expr))))
-
+   
    (define (make-class-virtual-slot p i ty expr)
       (let ((id (cdr (assq 'id p))))
 	 (instantiate::slot
@@ -173,7 +226,7 @@
 	    (getter (cdr (assq 'get p)))
 	    (setter (cdr (assq 'set p)))
 	    (type (find-type/expr (cdr (assq 'type p)) expr)))))
-
+   
    (define (make-class-direct-slot p i ty expr)
       (let ((id (cdr (assq 'id p))))
 	 (instantiate::slot
@@ -184,13 +237,13 @@
 	    (class-owner ty)
 	    (user-info #f)
 	    (type (find-type/expr (cdr (assq 'type p)) expr)))))
-
+   
    (define (type-class-module id)
       (let ((old (find-type id)))
 	 (when (isa? old tclass)
 	    (with-access::tclass old (holder)
 	       (global-module holder)))))
-
+   
    (define (declare-class-definition! kind id alias scope src def::KDef)
       (with-trace 'module5 "declare-class-definition!"
 	 (with-access::KDef def (expr id decl super ctor kkind properties)
@@ -220,7 +273,7 @@
 				  src))
 			      (else
 			       #f))))))))))
-
+   
    (define (declare-class-slots! id alias src def::KDef ty::tclass)
       (with-access::KDef def (properties)
 	 (let* ((sup (tclass-its-super ty))
@@ -230,12 +283,12 @@
 			   properties
 			   (iota (length properties) (length sslots)))))
 	    (tclass-slots-set! ty (append sslots nslots)))))
-
+   
    (define (make-typed-ident id type)
       (if (string? type)
 	  (string->symbol (format "~a::~a" id type))
 	  id))
-      
+   
    (define (declare-definition! kind id type alias mid scope expr def::Def)
       (with-trace 'module5 "declare-definition!"
 	 (trace-item "id=" id)
@@ -248,17 +301,17 @@
 	    ((procedure)
 	     (def-library-set! def
 		(declare-global-sfun! env (make-typed-ident id type) alias
-		   (procedure-args expr id mid)
+		   (procedure-args expr id mid def)
 		   mid scope 'sfun expr expr)))
 	    ((inline)
 	     (def-library-set! def
 		(declare-global-sfun! env (make-typed-ident id type) alias
-		   (procedure-args expr id mid)
+		   (procedure-args expr id mid def)
 		   mid scope 'sifun expr expr)))
 	    ((generic)
 	     (def-library-set! def
 		(declare-global-sfun! env (make-typed-ident id type) alias
-		   (procedure-args expr id mid)
+		   (procedure-args expr id mid def)
 		   mid scope 'sgfun expr expr)))
 	    ((macro)
 	     (with-access::Def def (expr)
@@ -321,7 +374,7 @@
 			      ((isa? def TDef) (set! types (cons e types)))
 			      (else (set! others (cons e others))))))))))
 	 (values types classes others)))
-
+   
    (define (split-imported-declarations mid decls)
       (let ((types '())
 	    (classes '())
@@ -337,7 +390,7 @@
 			   ((isa? d TDef) (set! types (cons e types)))
 			   (else (set! others (cons e others)))))))))
 	 (values types classes others)))
-
+   
    (define (split-definitions mid defs decls)
       (multiple-value-bind (deft defc defo)
 	 (split-local-definitions mid defs)
@@ -346,7 +399,7 @@
 	    (values (append declt deft)
 	       (append declc defc)
 	       (append declo defo)))))
-
+   
    (define (super-kdef k::KDef)
       (with-access::KDef k (super decl expr id)
 	 (when (symbol? super)
@@ -354,7 +407,7 @@
 	       (let ((d (module5-get-decl* mod super expr)))
 		  (with-access::Decl d (def)
 		     def))))))
-
+   
    (define (same-kdef? kx ky)
       (with-access::KDef kx ((dx decl))
 	 (with-access::KDef ky ((dy decl))
@@ -378,7 +431,7 @@
 		(if (not s)
 		    (loop (cdr lclasses) iclasses)
 		    (with-access::KDef s (decl)
-		       (with-access::Decl decl ((imod mod))
+		       (with-access::Decl decl ((imod mod) id scope)
 			  (cond
 			     ((eq? mod imod)
 			      (loop (cdr lclasses) iclasses))
@@ -387,7 +440,7 @@
 			     (else
 			      (loop (cdr lclasses)
 				 (cons s (append (find-imported-classes (list s)) iclasses)))))))))))))
-
+   
    (define (def-library-set!::global d::Def g::global)
       ;; propagate library name from the module5 declaration to the
       ;; ast global variable
@@ -399,14 +452,14 @@
 		     (let ((lib (string->symbol (prefix (basename heap)))))
 			(global-library-set! g lib)))))))
       g)
-      
+   
    (with-trace 'module5 "module5-ast!"
       (with-access::Module mod (defs imports (mid id))
 	 (trace-item "mid=" mid)
-
+	 
 	 (multiple-value-bind (types classes others)
 	    (split-definitions mid defs imports)
-
+	    
 	    ;; declare all C types
 	    (for-each (lambda (e)
 			 (let ((t::Def (vector-ref e 0)))
@@ -429,7 +482,7 @@
 				      (trace-item "scope=" scope)
 				      (declare-type! id name 'C))))))
 	       types)
-
+	    
 	    ;; declare all classes
 	    (let* ((iclasses (find-imported-classes
 				(map (lambda (v) (vector-ref v 0))
@@ -492,9 +545,21 @@
       (when main
 	 (let ((v (find-global/module env main id)))
 	    (if v
-		(with-access::global v (import)
-		   (set! import 'export)
-		   v)
+		(with-access::global v (import value type)
+		   (if (isa? value sfun)
+		       (with-access::sfun value (args)
+			  (cond
+			     ((not (and (pair? args) (null? (cdr args))))
+			      (error id "Main must be a function of one argument" main))
+			     ((or (eq? (car args) *_*) (eq? (car args) *obj*))
+			      (set! args (list *pair-nil*)))
+			     ((eq? (local-type (car args)) *pair-nil*)
+			      #unspecified)
+			     (else
+			      (error id "Main first argument must be ::pair-nil" main)))
+			  (set! import 'export)
+			  v)
+		       (error id "Main is not a function" main)))
 		(error id "Cannot find main definition" main))))))
 
 ;*---------------------------------------------------------------------*/

@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/api/text/src/Makefile           */
+#*    serrano/prgm/project/bigloo/5.0.x/api/text/src/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Mar 10 14:42:40 2026 (serrano)                */
+#*    Last change :  Sun May 17 07:53:31 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -42,8 +42,6 @@ BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) \
 BHEAPFLAGS	= -unsafe -q \
                   -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
-# wasm as
-WASMAS		= $(BGLWATIB)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
@@ -65,14 +63,6 @@ _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
 
 SOURCES		= $(_BGL_SOURCES)
  
-#*---------------------------------------------------------------------*/
-#*    Sources                                                          */
-#*---------------------------------------------------------------------*/
-POPULATION	= $(SOURCES) \
-                  $(MISC_SRC_DIR)/make_lib.scm \
-                  $(MISC_SRC_DIR)/$(API).init \
-                  Makefile
-
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
@@ -97,12 +87,6 @@ build-jvm: api-jvm
 
 wasm: build-wasm
 build-wasm: api-wasm
-
-#*---------------------------------------------------------------------*/
-#*    pop ...                                                          */
-#*---------------------------------------------------------------------*/
-pop:
-	@ echo $(POPULATION:%=$(API)/src/%)
 
 #*---------------------------------------------------------------------*/
 #*    clean                                                            */

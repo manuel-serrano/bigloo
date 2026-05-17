@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/api/web/src/Makefile            */
+#*    serrano/prgm/project/bigloo/5.0.x/api/web/src/Makefile           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Apr 21 09:47:29 2026 (serrano)                */
+#*    Last change :  Sun May 17 07:54:12 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -55,22 +55,17 @@ EOBJECTS	= objs/make_lib.o
 BGL_CLASSES	= $(_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat)
+WEOBJECTS	= $(EOBJECTS:%.o=%.wat)
+
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
 
 SOURCES		= $(_BGL_SOURCES)
  
 #*---------------------------------------------------------------------*/
-#*    Sources                                                          */
-#*---------------------------------------------------------------------*/
-POPULATION	= $(SOURCES) \
-                  $(MISC_SRC_DIR)/make_lib.scm \
-                  $(MISC_SRC_DIR)/$(API).init \
-                  Makefile
-
-#*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: c jvm build-c build-jvm
+.PHONY: c jvm build-c build-jvm build-wasm
 
 all:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -79,6 +74,9 @@ all:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
 	  fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+             $(MAKE) build-wasm; \
+	  fi
 
 c: build-c
 build-c: api-c
@@ -86,11 +84,8 @@ build-c: api-c
 jvm: build-jvm
 build-jvm: api-jvm
 
-#*---------------------------------------------------------------------*/
-#*    pop ...                                                          */
-#*---------------------------------------------------------------------*/
-pop:
-	@ echo $(POPULATION:%=$(API)/src/%)
+wasm: build-wasm
+build-wasm: api-wasm
 
 #*---------------------------------------------------------------------*/
 #*    clean                                                            */
