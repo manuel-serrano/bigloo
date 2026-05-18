@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/tar.scm               */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/tar.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 23 17:07:04 2006                          */
-;*    Last change :  Mon Jun 23 12:54:47 2014 (serrano)                */
-;*    Copyright   :  2006-20 Manuel Serrano                            */
+;*    Last change :  Mon May 18 09:27:06 2026 (serrano)                */
+;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Read TAR files (rfc1505)                                         */
 ;*    -------------------------------------------------------------    */
@@ -68,8 +68,8 @@
 	      (devmajor::long read-only)
 	      (devminor::long read-only))
 	   
-	   (tar-read-header #!optional (port (current-input-port)) longname)
-	   (tar-read-block ::obj #!optional (p (current-input-port)))
+	   (tar-read-header #!optional (port::input-port (current-input-port)) longname)
+	   (tar-read-block ::obj #!optional (p::input-port (current-input-port)))
 	   (tar-round-up-to-record-size::long ::obj)
 	   (untar ::obj #!key (directory (pwd)) file (files '()))))
 
@@ -135,7 +135,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    tar-read-header ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (tar-read-header #!optional (port (current-input-port)) longname)
+(define (tar-read-header #!optional (port::input-port (current-input-port)) longname)
    (unless (input-port? port)
       (bigloo-type-error "tar-read-header" "input-port" port))
    (let* ((ptr 0)
@@ -223,7 +223,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    tar-read-block ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (tar-read-block h #!optional (p (current-input-port)))
+(define (tar-read-block h #!optional (p::input-port (current-input-port)))
    (cond
       ((not (input-port? p))
        (bigloo-type-error "tar-read-header" "input-port" p))

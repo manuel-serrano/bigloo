@@ -26,12 +26,12 @@ defined and where classes are defined. Recent versions of Bigloo
 
 > [!WARNING]
 > Modules 4 are obsolete and should not be used for new code.
-> Instead [modules 5](./module5.html) should be used. Module 4
+> Instead [modules 5](./module5.html) should be used. Modules 4
 > are and will be maintained for backward compatibility with old code.
 
 > [!WARNING] 
 > Contrary to the other chapters, the examples used in this
-> chapter are not directly extraced from the test suite and should
+> chapter are not directly extracted from test programs and should
 > then be considered carefully and verified.
 
 Program Structure
@@ -54,8 +54,8 @@ containing the module; other expressions form the body of the
 module. The module body contains global variables, function
 definitions and _top level_ expressions.
 
-Module Declaration
-------------------
+Module 4 Declaration
+--------------------
 
 ### (module name clause ...) ###
 
@@ -153,11 +153,11 @@ example:
 An `import` is a list of the form:
 
 ```bnf
-<import> --> <iclause> ...
-<iclause> --> (<bind-name> ... <bind-name> <module-name> <file-name> ...)
-  | (<bind-name> ... <bind-name> <module-name>)
+<import> --> <iclause>+
+<iclause> --> (<bind-name>+ <module-name> <file-name> ...)
+  | (<bind-name>+  <module-name>)
   | <module-name>
-  | (<module-name> <file-name> ...)
+  | (<module-name> <file-name>+)
 <bind-name> --> <r5rs-ident>
   | <alias-name>
 <alias-name> --> (<r5rs-ident> <r5rs-ident>)
@@ -172,143 +172,136 @@ but without specifying the name of the file where the module is located.
 The third and the fourth form import all the exported variables of the module
 `module-name`.
 
-@emph{Note}: The need for specifying in which files modules are located comes
-from the fact that there is no automatic mapping between module names
-and files names. Such a mapping can be defined in a ``module access file''
-(@pxref{Module Access File}) or in the import clause itself, as
-in the first and fourth alternatives in @var{iclause} above.
+> [!NOTE]
+> The need for specifying in which files modules are located comes
+> from the fact that there is no automatic mapping between module names
+> and files names. Such a mapping can be defined in a "module access file"
+> or in the import clause itself, as
+> in the first and fourth alternatives in `iclause` above.
 
-Here is an example of an import clause:
-
-@smalllisp
+```bigloo
 (module foo
    (import 
-      @r{;; import all @code{bar} exported bindings:}
+      ;; import all bar exported bindings:
       bar
-      @r{;; import the @code{hux} binding exported by}
-      @r{;; the module @code{hux}:}
+      ;; import the hux binding exported by
+      ;; the module hux
       (hux hux)       
-      @r{;; import the @code{fun1}, @code{fun2} and @code{fun3} bindings exported by}
-      @r{;; the module @code{mod}:}
+      ;; import the fun1, fun2 and fun3 bindings exported by
+      ;; the module mode
       (fun1 fun2 fun3 mod)       
-      @r{;; import the @code{fun4} bindings that will be known in this module}
-      @r{;; under the alias name @code{f}}
+      ;; import the fun4 bindings that will be known in this module
+      ;; under the alias name f
       ((f fun4) mod)
-      @r{;; import all @code{gee} bindings. the @code{gee} module}
-      @r{;; is located in a file called @file{gee.scm}:}
-      (gee "gee.scm")))
-@end smalllisp
+      ;; import all gee bindings. the gee} module
+      ;; is located in a file called gee.scm:
+      (gee "gee.scm"))
+```
 
-@end deffn
+### (use use ...) ###
 
-@c -- (use use...) --------------------------------------------------- @c
-@deffn {bigloo module clause} use use ...
-
-@code{use} has the same meaning as @code{import} except that modules
-which are @emph{used} are not initialized (@pxref{Module Initialization}).
+The `use` clause has the same meaning as `import` except that modules
+which are `used` are not initialized.
 Used modules are read before imported modules.
-@end deffn
 
-@c -- (with with...) ------------------------------------------------- @c
-@deffn {bigloo module clause} with with ...
+### (with with ...) ###
 
 This clause specifies a list of modules which have to be
 initialized at runtime and is used to force the initialization
 of modules which are never imported but which are required by an 
-application (@pxref{Embedded Bigloo applications}).
-@end deffn
+application.
 
-@c -- (export export...) --------------------------------------------- @c
-@deffn {bigloo module clause} export export ...
+### (export export ...) ###
 
 In order to make a module's global bindings available to other modules, they
-have to be @emph{exported}. Export clauses are in charge of this task and an
-@var{export} is a list of the form:
+have to be _exported_. Export clauses are in charge of this task and an
+`export` is a list of the form:
 
-@smallexample
-<export>      --> <eclause> ...
-<eclause>     --> <varexport>
-                | <funexport>
-                | <macroexport>
-                | <classexport>
-<varexport>   --> <ident>
-<funexport>   --> | (<ident> <ident> ...)
-                | (inline <ident> <ident> ...)
-                | (generic <ident> <ident> <ident> ...)
+```bnf
+<export> --> <eclause>+
+<eclause> --> <varexport>
+  | <funexport>
+  | <macroexport>
+  | <classexport>
+<varexport> --> <ident>
+<funexport> --> | (<ident>+)
+  | (inline <ident> <ident>*)
+  | (generic <ident> <ident>*)
 <classexport> --> <class>
-<macroexport> --> (macro <ident> <ident> ...)
-                | (expander <ident>)
-                | (syntax <ident>)
-@end smallexample
+<macroexport> --> (macro <ident> <ident>*)
+  | (expander <ident>)
+  | (syntax <ident>)
+```
 
-Note: Only bindings defined in module @code{m} can be @emph{exported} 
-by @code{m} (i.e. bindings @emph{imported} by @code{m} cannot be 
-@emph{exported} by @code{m}).
+> [!NOTE] 
+> Only bindings defined in module `m` can be _exported_
+> by `m` (i.e. bindings _imported_ by `m` cannot be 
+> _exported_ by it).
 
-The first form of @var{varexport} allows the variable @var{ident} be
+The first form of `varexport` allows the variable `ident` be
 exported.  Exported variables are mutable. That is, modules importing
 a variable can change its value.
 
-The form @var{funexport} exports functions. An exported function is
+The form `funexport` exports functions. An exported function is
 read-only. No module can modify its value. The prototype of exported
 functions must be explicitly specified.
 
-Type information, specified in any @var{ident} in an export clause, is
+Type information, specified in any `ident` in an export clause, is
 used by Bigloo. Where no type information is given, a default generic
-type named @code{obj} is used.
+type named `obj` is used.
 
-Note: The last formal argument of a multiple arity function can
-not be typed because this argument is bound to be a @code{pair}
-or @code{null}. This union cannot be denoted by any type.
+> [!NOTE]
+> The last formal argument of a multiple arity function can
+> not be typed because this argument is bound to be a `pair`
+> or `null`. This union cannot be denoted by any type.
 
-Inline functions (@pxref{Inline Procedures}) prototypes are prefixed
-by the @code{inline} keyword. Pay attention that in order to export an
-inline function, all the variables used in that function body must be
-exported too.  It is an error to export a non-inline function using
-the @code{inline} keyword. Example:
+Inline functions prototypes are prefixed by the `inline`
+keyword. Pay attention that in order to export an inline function, all
+the variables used in that function body must be exported too.  It is
+an error to export a non-inline function using the `inline`
+keyword. Example:
 
-@smalllisp
+```bigloo
 (module mod-exp
    (export 
-      @r{;; export the @code{bar} mutable variable}
+      ;; export the bar mutable variable
       bar
-      @r{;; export the @code{hux} function. this}
-      @r{;; function takes exactly two arguments}
+      ;; export the hux function. this
+      ;; function takes exactly two arguments
       (hux x y)       
-      @r{;; export the inline function @code{gee}}
-      @r{;; that takes at least one argument.}
+      ;; export the inline function gee
+      ;; that takes at least one argument.
       (inline gee x . z)))
-@end smalllisp
+```
 
-Generic functions (@pxref{Generic functions}) are exported by using
-the @code{generic} keyword.  Note that methods are not exported. Only
-the generic function they are attached to are. It is an error to
-export a non-generic function using the @code{inline} keyword.
-Example:
+Generic functions are exported by using the `generic` keyword.
+Note that methods are not exported. Only the generic function they are
+attached to are. It is an error to export a non-generic function using
+the `inline` keyword.  Example:
 
-@smalllisp
+```bigloo
 (module mod-exp-object
    (export 
-      @r{;; define tow classes an export them}
+      ;; define two classes an export them
       (class point2d x y)
       (class point3d::point2d z)
-      @r{;; export a generic function}
+      ;; export a generic function
       (generic show ::point2d ::output-port)))
-@end smalllisp
+```
 
 It is an error to export an inline or a generic function without using
 the proper keyword. 
 
-The last form @var{macroexport} enables macro and expanders to be
+The last form `macroexport` enables macro and expanders to be
 exported. The prototype of the macro should be specified on the export
 clause. Example:
 
-@smalllisp
+```bigloo
 (module mod-exp-macros
    (export 
-      @r{;; exports the ``add'' macro}
+      ;; exports the macro "add"
       (macro add x y)
-      @r{;; exports the ``+'' expander}
+      ;; exports the expander "+"
       (expander +)))
 
 (define-macro (add x y)
@@ -321,66 +314,60 @@ clause. Example:
       (match-case x
          ((+ ?n ?m) (+ n m))
          (else (map (lambda (z e) (e z e)) x)))))
-@end smalllisp
+```
 
+### (static static ...) ###
 
-@end deffn
-
-@c -- (static static...) --------------------------------------------- @c
-@deffn {bigloo module clause} static static ...
-
-A @code{static} clause has exactly the same syntax as an export
+A `static` clause has exactly the same syntax as an export
 clause. However, bindings declared static are local to the module. Since
-the default scope of all bindings is static, @code{static} module clauses
+the default scope of all bindings is static, `static` module clauses
 are useful only for program documentation.
 
-@end deffn
+### (from from ...) ###
 
-@c -- (from from...) ------------------------------------------------- @c
-@deffn {bigloo module clause} from from ...
-
-@code{from} clauses have the syntax of @code{import} 
+A `from` clauses has the syntax of `import`
 clauses. The allow the re-exportation of imported bindings. That is, any 
-module can export any bindings imported via a @var{from} clause.
+module can export any bindings imported via a `from` clause.
 
-As an example, suppose we have module @code{bar}:
+As an example, suppose we have module `bar`:
 
-@smalllisp
+```bigloo
 (module bar
    (export (fun)))
 
 (define (fun) "bar")
-@end smalllisp
+```
 
-Now, suppose we have a module @code{foo} that imports @code{bar}, by the
-means of a @code{from} clause. Module @code{foo} is able to re-export the
-@code{bar} binding of module @code{bar}:
+Now, suppose we have a module `foo` that imports `bar`, by the
+means of a `from` clause. Module `foo` is able to re-export the
+`bar` binding of module `bar`:
 
-@smalllisp
+```bigloo
 (module foo
    (from (fun bar "bar.scm")))
-@end smalllisp
+```
 
-A third module, let's name it @code{gee}, importing module @code{foo}, can see
-the binding for function @code{bar}:
+A third module, let's name it `gee`, importing module `foo`, can see
+the binding for function `bar`:
 
-@smalllisp
+```bigloo
 (module gee
    (import (foo "foo.scm")))
 
 (print (fun))
-@end smalllisp
+```
 
 This feature is very useful when compiling modules exporting functions
 with type annotations. In particular, one may write:
 
-@smalllisp
+```bigloo
 (module foo
   (export (class c1 x)))
-@end smalllisp
+```
 
 Then,
-@smalllisp
+
+```bigloo
 (module bar
   (import foo)
   (from foo)
@@ -388,11 +375,11 @@ Then,
 
 (define (fun)
    (instantiate::c1 (x 10)))
-@end smalllisp
+```
 
 And,
 
-@smalllisp
+```bigloo
 (module gee
    (import bar)
    (main main))
@@ -401,90 +388,80 @@ And,
    (let ((o (fun)))
       (print o)
       (print (c1? o))))
-@end smalllisp
+```
 
-@end deffn
+### (load load ...) ###
 
-@c -- (load load...) ------------------------------------------------- @c
-@deffn {bigloo module clause} load load ...
+A `load` is a list of the form:
 
-A @var{load} is a list of the form:
-
-@smallexample
-<load>    --> <lclause> ...
+```bnf
+<load> --> <lclause>+
 <lclause> --> (<module-name> <file-name>)
-            | <module-name>
-@end smallexample
+  | <module-name>
+```
 
-This clause forces Bigloo to load the module specified in the @var{lclause}
+This clause forces Bigloo to load the module specified in the `lclause`
 in the environment used by the macro expansion mechanism. This means that
 the user's macros can use all the bindings of all the @code{load}ed modules
-but the @code{load}ed bindings remains unknown to the compiler.
+but the `load`ed bindings remains unknown to the compiler.
 
-If the module @code{foo} is defined by:
+If the module `foo` is defined by:
 
-@smalllisp
+```bigloo
 (module foo
    (export (foo x)))
 
 (define (foo x)
    `(cons ,x ,x))
-@end smalllisp
+```
 
 then,
 
-@smalllisp
+```bigloo
 (module gee
    (load (foo "foo.scm")))
 
 (define-macro (gee x)
    `(cons ,(-fx x 1) ,(foo x)))
 
-(gee 5)   --> (cons 4 (cons 5 5))
-          @result{} (4 5 . 5)
-@end smalllisp
-@end deffn
+(gee 5)   
+  &rarr; (cons 4 (cons 5 5))
+  &rarr; (4 5 . 5)
+```
 
-@c -- (eval eval...) ------------------------------------------------- @c
-@deffn {bigloo module clause} eval eval...
+### (eval eval...) ###
 
 This form allows interactions between compiled code and interpreted
-code. (See the Section @ref{Eval, , Eval command line options} for a
-presentation of compilation flags that enable compilation tuning for
-@code{eval}.)  Each @var{eval} has the following syntax:
+code. Each `eval` has the following syntax:
 
-@smallexample
+```bnf
 <eval> --> (export-all)
-         | (export-module)
-         | (export-exports)
-         | (export <bind-name>)
-         | (export (@@ <bind-name> <module-name>))
-         | (import <bind-name>)
-         | (class <bind-name>)
-         | (library lib1 ...)
-@end smallexample
-@pindex module export-all
-@pindex module export-module
-@pindex module export-exports
-@pindex module class
+  | (export-module)
+  | (export-exports)
+  | (export <bind-name>)
+  | (export (@ <bind-name> <module-name>))
+  | (import <bind-name>)
+  | (class <bind-name>)
+  | (library lib1 ...)
+```
 
-The first clause, @code{(export-all)}, exports all the variables bound
+The first clause, `(export-all)`, exports all the variables bound
 in the module (i.e., the variables defined in the module and the
-imported variables).  The second clause, @code{(export-module)}, exports
+imported variables). The second clause, `(export-module)`, exports
 the module to eval to so that it can be imported by other evaluated
 modules; the third exports all the exports (i.e. the ones present
-inside an @code{export} clause) variables to the interpreter; the fourth
+inside an `export` clause) variables to the interpreter; the fourth
 and fifth clause each export one variable to the interpreter. The last
 clause imports a variable from the interpreter and all such imported
-variables are immutable (i.e.@ they cannot be the first argument of a
-@code{set!}  expression with the compiled code). Variables that are
-exported to the evaluators @emph{must} be exported.  If a variable is
-exported to the evaluators but not exported within an @code{export}
-clause, the compiler will produce an error message. The @code{library}
+variables are immutable (i.e. they cannot be the first argument of a
+`set!`  expression with the compiled code). Variables that are
+exported to the evaluators _must_ be exported.  If a variable is
+exported to the evaluators but not exported within an `export`
+clause, the compiler will produce an error message. The `library`
 clause makes the variables and functions of a library accessible from
 the interpreter.
 
-@smalllisp
+```bigloo
 (module foo
    (export (fib x))
    (eval (export fib)
@@ -492,152 +469,141 @@ the interpreter.
 
 (define (fib x) ...)
 (print bar)
-@end smalllisp
+```
 
-The clause @code{(class <bind-name>)} exports a class definition to
+The clause `(class <bind-name>)` exports a class definition to
 the interpreter. This makes the class constructor, the class predicate
 and the slots access functions available from the interpreter. The
 form 
-   @code{(instantiate::@var{class} ...)} 
+   `(instantiate::class ...)` 
 and 
-   @code{(with-access::@var{class} ...)} 
+   `(with-access::class ...)` 
 are also available from the interpreter.
-@end deffn
 
-@c -- (extern extern...) --------------------------------------------- @c
-@deffn {bigloo module clause} extern extern ...
+### (extern extern ...) ###
 
-Extern (aka foreign) clauses will be explained in the foreign interface
-(@pxref{C Interface}).
-@end deffn
+Extern (aka foreign) clauses will be explained in the foreign interface.
 
-@c -- (java extern...) ----------------------------------------------- @c
-@deffn {bigloo module clause} java java ...
+### (java java ...) ###
 
 Java clauses will be explained in the Java interface
-(@pxref{Java Interface}).
-@end deffn
 
-@c -- (option option...) --------------------------------------------- @c
-@deffn {bigloo module clause} option option ...
+### (option option ...) ###
 
 This clause enables variables which affect compilation to be set from inside
 a module and since the expressions, @var{option} ..., are evaluated
-@emph{when compiling}, no code is compiled for them.  They are allowed to
+_when compiling_, no code is compiled for them.  They are allowed to
 make side effects and to change the values of the global variables which
 describe how the compiler must compile. Usually they allow the control
-variables, which are described when Bigloo is invoked with the @code{-help2}
+variables, which are described when Bigloo is invoked with the `-help2`
 option, to be set as in the following example:
 
-@smalllisp
+```bigloo
 (module examplar
    (option (set! *debug* 3)
            (set! *verbose* 2)))
 
 (print 'dummy)
-@end smalllisp
+```
 
 Whatever arguments are passed on the command line, Bigloo will compile this
 module in both verbose mode and debug mode.
 @end deffn
 
-@c -- (library library...) ------------------------------------------- @c
-@deffn {bigloo module clause} library library ...
+### (library library ...) ###
 
-This clause enables libraries (@pxref{Bigloo Libraries}) when compiling and
-linking Bigloo modules. The expressions @var{library} ... are symbols
-naming the libraries to be used.
+This clause enables libraries when compiling and linking Bigloo
+modules. The expressions `library` ... are symbols naming the
+libraries to be used.
 
 Here is an example of a module declaration which makes use of a library
-named @code{format}:
+named `format`:
 
-@smalllisp
+```bigloo
 (module test
    (library format)
    (main    test-format)
    (import  (test2 "test2.scm")))
-@end smalllisp
+```
 
 Using a library does not automatically binds its variables and functions
 to the interpreter. In order to make these available to the interpreter
-an explicit use of an eval @code{library} clause must be used.
+an explicit use of an eval `library` clause must be used.
 @end deffn
 
-@c -- (library library...) ------------------------------------------- @c
-@deffn {bigloo module clause} type type ...
+### (type type ...) ###
 This forms is used to define builtin Bigloo types. It is not recommended
 to use it in user programs. So, it is left undocumented.
-@end deffn
 
 
-@c ------------------------------------------------------------------- @c
-@c    Module initialization                                            @c
-@c ------------------------------------------------------------------- @c
-@node  Module Initialization, Qualified Notation, Module Declaration, Modules
-@comment  node-name,  next,  previous,  up
-@section Module initialization
+Module 4 initialization
+-----------------------
 
-@emph{Initializing} a module means evaluating, at runtime, its
+_Initializing_ a module means evaluating, at runtime, its
 top level forms (global bindings are top level forms).
 
-When a module, @var{module1}, imports a module, @var{module2},
-@var{module2} is initialized before @var{module1}. Modules are
+When a module, `module1`, imports a module, `module2`,
+`module2` is initialized before `module1`. Modules are
 initialized only once, nothing being done if a module already met during 
 initialization is met again. Library modules are initialized before user
 modules and imported modules are initialized in the same order as they
 appear in import clauses.
 
-Here is a first example with two modules. First the module @code{foo}:
+Here is a first example with two modules. First the module `foo`:
 
-@smalllisp
-@r{;; module foo}
+```bigloo
+;; module foo
 (module foo
    (main main)
    (import (bar "bar.scm")))
 
 (define (main argv)
    (print "argv: " argv))
+   
 (print "foo")
-@end smalllisp
+```
 
-Then the module @code{bar}
-@smalllisp
-@r{;; module bar}
+Then the module `bar`:
+
+```bigloo
+;; module bar
 (module bar)
 
 (print "bar")
-@end smalllisp
+```
 
-These can be compiled into the executable @var{a.out} with:
-@smalllisp
+These can be compiled into the executable `a.out` with:
+
+```shell
 $ bigloo -c foo.scm
 $ bigloo -c bar.scm
 $ bigloo foo.o bar.o
-@end smalllisp
+```
 
-Execution of @var{a.out} produces:
-@smalllisp
+Execution of `a.out` produces:
+
+```shell
 $ a.out
-   @print{} bar
-      foo
-      argv: (a.out)
-@end smalllisp
+bar
+foo
+argv: (a.out)
+```
 
 The explanation is:
-@itemize @bullet
-@item module @code{foo} contains the program entry point so this is where
- initialization begins.
-@item because @code{foo} imports module @code{bar}, @code{bar} must be
- initialized @emph{before} @code{foo}. This explains why the word @code{bar}
- is printed before anything else.
-@item module initialization for @code{foo} is completed before @code{main}
- is called. This explains why word @code{foo} is printed before @code{main}
- is entered.
-@end itemize
+
+  1. module `foo` contains the program entry point so this is where
+  initialization begins.
+  2. because `foo` imports module `bar`, `bar` must be
+  initialized @emph{before} `foo`. This explains why the word `bar`
+  is printed before anything else.
+  3. module initialization for `foo` is completed before `main`
+  is called. This explains why word `foo` is printed before `main`
+  is entered.
 
 Let's consider another example with 3 modules:
-@smalllisp
-@r{;; @code{module1}}
+
+```bigloo
+;; module1
 (module module1
    (main main)
    (import (module2 "module2.scm")))
@@ -646,69 +612,65 @@ Let's consider another example with 3 modules:
    (print "argv: " argv))
 
 (print "module1")
-@end smalllisp
+```
 
 The second module:
-@smalllisp
-@r{;; @code{module2}}
+
+```bigloo
+;; module2
 (module module2
    (import (module3 "module3.scm")))
 
 (print "module2")
-@end smalllisp
+```
 
 The third module:
-@smalllisp 
-@r{;; @code{module3}}
+
+```bigloo
+;; module3
 (module module3
    (import (module1 "module1.scm")))
  
 (print "module3")
-@end smalllisp
+```
 
 Compile with:
-@smalllisp
+
+```shell
 $ bigloo module1.scm -c
 $ bigloo module2.scm -c
 $ bigloo module3.scm -c
 $ bigloo module1.o module2.o module3.o
-@end smalllisp
+```
 
 Execution produces:
 
-@smalllisp
+```shell
 $ a.out
-   @print{} module3
-      module2
-      module1
-      argv: (a.out)
-@end smalllisp
+module3
+module2
+module1
+argv: (a.out)
+```
 
-The order of module initialization can be explicitly specified using @code{with}
-and @code{use} clauses.
+The order of module initialization can be explicitly specified using `with`
+and `use` clauses.
    
-@c ------------------------------------------------------------------- @c
-@c    Qualified notation                                               @c
-@c ------------------------------------------------------------------- @c
-@node  Qualified Notation, Inline Procedures, Module Initialization, Modules
-@comment  node-name,  next,  previous,  up
-@section Qualified notation
-@cindex qualified notation
-@pindex @@
+Qualified notation
+------------------
 
 Global variables can be referenced using implicit notation or
-using @emph{qualified} notation. Implicit notation is used when
+using _qualified_ notation. Implicit notation is used when
 variables are referenced just by their name whereas qualified notation
 is used when variables are referenced by their name and 
 the name of the module which defines them. Qualified notation has
 the following syntax:
 
-@example
-(@@ <bind-name> <module-name>)
-@end example
+```bnf
+<qualified-name> --> (@ <bind-name> <module-name>)
+```
 
-@noindent
-and is useful when several imported modules export a
+This is useful when several imported modules export a
 variable with the same name. Using qualified notations instead of
 short notation only affects compilation.
 
@@ -718,15 +680,10 @@ variable is selected by an implicit reference: 1) the variable defined
 in a module has a higher precedence than all imported variables, 2)
 imported variables have a higher precedence than library variables.
 
-@c ------------------------------------------------------------------- @c
-@c    Inline procedures                                                @c
-@c ------------------------------------------------------------------- @c
-@node  Inline Procedures, Module Access File, Qualified Notation, Modules
-@comment  node-name,  next,  previous,  up
-@section Inline procedures
-@cindex inline procedure
+Inline procedures
+-----------------
 
-Bigloo allows procedures called @emph{inline} and which differ from
+Bigloo allows procedures called _inline_ and which differ from
 normal ones only in the type of code planted.  An inline procedure is a
 first class object which can be manipulated in the same way as any other
 procedure but when Bigloo sees a reference to one, rather than
@@ -734,104 +691,92 @@ generating a C function call to the function, the body of the inline
 procedure is open-coded.  The definition of an inline is given in the
 following way:
 
-@deffn {bigloo syntax} define-inline (name args ...) body
-@deffnx {bigloo syntax} define-inline (name args ... . arg) body
+### (define-inline (name args ...) body) ###
 
 Apart from the initial word, this form has the same syntax as that used by
-@code{define} for procedures. Inline procedures are exportable which means
+`define` for procedures. Inline procedures are exportable which means
 that the compiler scans imported files to find the bodies of all inline
 procedures. Here is a small example of a module which exports an inline and
 a module which imports it.
 
-@smalllisp
-@r{;; the exporter module}
+```bigloo
 (module exporter
         (export (inline make-list . objs)))
 
 (define-inline (make-list . objs) objs)
-@end smalllisp
+```
 
-@smalllisp
-@r{;; the importer module}
+The importer module: 
+
+```bigloo
 (module importer
         (import exporter))
 
 (print (make-list 1 2 3 4 5))
-@end smalllisp
+```
 
 Because of the open-coding of the exporter procedure, the above print
 statement is equivalent to:
 
-@smalllisp
+```bigloo
 (print (let ((objs (list 1 2 3 4 5)))
           objs))
-@end smalllisp
+```
 
 Any procedure can be an inline. Also any exported procedure can be an inline
 provided all global variables and functions it uses are also exported.
 
-Note: Bigloo can decide to inline procedures declared with
-@code{define}
-but this can be achieved only with local procedures whereas procedures
-declared with the @code{define-inline} form are open-coded even through
-module importation.
+> [!NOTE]
+> Bigloo can decide to inline procedures declared with `define`
+> but this can be achieved only with local procedures whereas procedures
+> declared with the `define-inline` form are open-coded even through
+> module importation.
 
-Note: Procedures declared @emph{inline} are macro expanded with 
-the macro defined in the module where they are invoked. That is, if 
-module @code{module1} declares an inline procedure @code{p} and module 
-@code{module2} imports it, @code{p} may have two different macro-expansions: 
-one for @code{module1} and one for @code{module2}.
-@end deffn
+> [!NOTE]
+> Procedures declared _inline_ are macro expanded with 
+> the macro defined in the module where they are invoked. That is, if 
+> module `module1` declares an inline procedure `p` and module 
+> `module2` imports it, `p` may have two different macro-expansions: 
+> one for `module1` and one for `module2`.
 
-@c ------------------------------------------------------------------- @c
-@c    Module access file                                               @c
-@c ------------------------------------------------------------------- @c
-@node Module Access File, Reading Path, Inline Procedures, Modules
-@comment  node-name,  next,  previous,  up
-@section Module access file
-@cindex module access file
-@pindex .afile
-@cindex bglafile 
-@cindex .afile
+Module access file
+------------------
 
-Bigloo is different from languages such as C where a module is defined by a
-file. For Bigloo, the module name is not necessarily the name of the file
-where the text of the module is written and modules can even be split across
-several files.
+> [!NOTE]
+> The relationship between module 5 and module 4 is one of the main
+> difference between them. Modules 5 are referenced via path names, while
+> modules 4 are referenced via symbol names, unrelated to path names.
+> This section **only** applies to module 4.
+
+Bigloo's module 4 are different from languages such as C where a
+module is defined by a file. For Bigloo, the module 4 name is not
+necessarily the name of the file where the text of the module is
+written and modules can even be split across several files.
 
 Since modules are defined independently of files, it is necessary to make a
 link between a module and its files and there are two ways of doing this.
 Choosing an import clause where the file-names are specified or creating a
-``module access file''. Such a file must contain only one @var{list}, each
+"module access file". Such a file must contain only one @var{list}, each
 element of the list being of the form:
 
-@smalllisp
+```lisp
 (module-name "file-name" ... "file-name")
-@end smalllisp
+```
 
-@noindent Use the @samp{-afile <file>} option to specify the ``module access
-file'' when compiling. By default Bigloo checks if a file named @code{.afile}
+Use the `-afile file` option to specify the "module access file" when 
+compiling. By default Bigloo checks if a file named `.afile`
 exists. If it exists it is loaded as a module access file.
 
-@xref{Compiler Description, , The Bigloo command line}.
+> [!NOTE] 
+> The Bigloo distribution contains a tool, `bglafile`,
+> that can automatically build a "module access file".
 
-Note: The Bigloo distribution contains a tool, @code{bglafile},
-that can automatically build a ``module access file''. See the manpage for
-@code{bglafile} for details.
 
-@c ------------------------------------------------------------------- @c
-@c    Read path                                                        @c
-@c ------------------------------------------------------------------- @c
-@node Reading Path, ,Module Access File, Modules
-@comment  node-name,  next,  previous,  up
-@section Reading path
-@cindex reading path
+Read path
+---------
 
-Imported, included or loaded files are sought first in the current directory
-and then in the directories, sequentially from start to end, of the list in
-the @code{*load-path*}
-@pindex *load-path*
-variable. This variable,
-initially set to the empty list, can be reset by the @samp{-I} option of the
-compiler.
+Imported, included or loaded files are sought first in the current
+directory and then in the directories, sequentially from start to end,
+of the list in the `*load-path*` This variable, initially set to the
+empty list, can be reset by the `-I` option of the compiler.
 

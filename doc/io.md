@@ -64,27 +64,32 @@ character or the end-of-file object.
 Reads a byte from `ip` without consuming it. Returns either a
 byte or the end-of-file object.
 
-### password ###
-Reads a password from the current input port. The reading stops when the user
-hits the `Enter` key.
+### read-string ###
+Reads all the characters of `input-port` into a string.
 
-### send-chars ###
-Transfer the characters from `input-port` to `output-port`. This
-procedure is sometimes mapped to a system call (such as `sendfile` under
-Linux) and might thus be more efficient than copying the ports by hand. The
-optional argument `offset` specifies an offset from which characters of
-`input-port` are sent. The function `send-chars` returns the number
-of characters sent.
+### read-chars ###
+The function `read-chars` returns a newly allocated strings made
+of `size` characters read from `input-port` (or from
+`(current-input-port)` if `input-port` is not provided). If
+less than `size` characters are available on the input port, the
+returned string is smaller than `size`. Its size is the number of
+available characters.
 
-### send-file ###
-The function `send-file` opens the file `filename` in order to
-get its input port. On some backends, `send-file` might be more efficient
-than `send-chars` because it may avoid creating a full-fledged Bigloo
-`input-port`.
+### read-chars! ###
+The `read-chars!` fills the buffer `buf` with at most
+`size` characters, read from `input-port`.
 
-> [!NOTE]
-> Note that the type of `len` and `offset` is
-> `elong` (i.e., exact long), which is also returned by `file-size`.
+### read-fill-string! ###
+Fills the string `s` starting at offset `o` with at
+most `len` characters read from the input port `input-port`
+(or from `(current-input-port)` if `input-port` is not provided).
+This function returns the number of read characters (which may be smaller
+than `len` if less characters are available) or the end of file object.
+The argument `len` is a small integer.
+
+The function `read-fill-string!` is similar to `read-chars!`
+except that it returns the `end-of-file` object on termination while
+`read-chars!` returns 0.
 
 ### unread-char! ###
 Pushes the given `char`, into the input-port.
@@ -129,32 +134,9 @@ Accumulates all the line of an `input-port` into a list.
 Reads a sequence of non-space characters on `input-port`, makes a
 string of them and returns the string.
 
-### read-string ###
-Reads all the characters of `input-port` into a string.
-
-### read-chars ###
-The function `read-chars` returns a newly allocated strings made
-of `size` characters read from `input-port` (or from
-`(current-input-port)` if `input-port` is not provided). If
-less than `size` characters are available on the input port, the
-returned string is smaller than `size`. Its size is the number of
-available characters.
-
-### read-chars! ###
-The `read-chars!` fills the buffer `buf` with at most
-`size` characters, read from `input-port`.
-
-### read-fill-string! ###
-Fills the string `s` starting at offset `o` with at
-most `len` characters read from the input port `input-port`
-(or from `(current-input-port)` if `input-port` is not provided).
-This function returns the number of read characters (which may be smaller
-than `len` if less characters are available) or the end of file object.
-The argument `len` is a small integer.
-
-The function `read-fill-string!` is similar to `read-chars!`
-except that it returns the `end-of-file` object on termination while
-`read-chars!` returns 0.
+### password ###
+Reads a password from the current input port. The reading stops when the user
+hits the `Enter` key.
 
 ### port->string-list ###
 Returns a list of strings composed of the elements of `input-port`.
@@ -213,6 +195,24 @@ Displays a byte to `output-port`.
 ### newline ###
 Displays a newline to `output-port`.
 
+### send-chars ###
+Transfer the characters from `input-port` to `output-port`. This
+procedure is sometimes mapped to a system call (such as `sendfile` under
+Linux) and might thus be more efficient than copying the ports by hand. The
+optional argument `offset` specifies an offset from which characters of
+`input-port` are sent. The function `send-chars` returns the number
+of characters sent.
+
+### send-file ###
+The function `send-file` opens the file `filename` in order to
+get its input port. On some backends, `send-file` might be more efficient
+than `send-chars` because it may avoid creating a full-fledged Bigloo
+`input-port`.
+
+> [!NOTE]
+> Note that the type of `len` and `offset` is
+> `elong` (i.e., exact long), which is also returned by `file-size`.
+
 ### format ###
 Accepts a message template (a Scheme String), and processes it,
 replacing any escape sequences in order with one or more characters,
@@ -241,13 +241,13 @@ follows:
   are inserted into the string, separated by whitespaces, without the 
   surrounding parenthesis. If the corresponding value is not a list, it 
   behaves as `~s`.
-  * `~(<sep>)` If the corresponding value is a proper list, its items 
-  are inserted into the string, separated from each other by `sep`, 
+  * `~(SEP)` If the corresponding value is a proper list, its items 
+  are inserted into the string, separated from each other by `SEP`, 
   without the surrounding parenthesis. If the corresponding value is not a 
   list, it behaves as `~s`.
   * `~Ndxob` Print a number in `N` columns with space padding.
-  * `~N,<padding>dxob` Print a number in `num` columns 
-  with `padding` padding.
+  * `~N,PADDINGdxob` Print a number in `num` columns 
+  with `PADDING` padding.
 
 When encountered, `~a` and `~s`, require a corresponding Scheme value
 to be present after the format string. The values provided as operands
@@ -257,10 +257,12 @@ values are provided than escape sequences that require them.
 The options `~%` and `~~` require no corresponding value.
 
 ### printf ###
-Formats `objs` to the current output port.
+Formats the sequence of `obj` according to `fmt` and outputs the result
+to the current output port.
 
 ### fprintf ###
-Formats `objs` to `port`.
+Formats the sequence of `obj` according to `fmt` and outputs the result
+to `port`.
 
 ### pp ###
 Pretty prints `obj` on `output-port`.
@@ -281,6 +283,5 @@ symbol.
 As a particular example and the reference implementation for the `#\x2c()`
 convention, this SRFI describes an interpretation of the `#\x2c()` external
 form as a read-time application.
-
 
 

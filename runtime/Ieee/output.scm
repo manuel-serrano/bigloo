@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/output.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Ieee/output.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Tue Apr 21 10:09:13 2026 (serrano)                */
+;*    Last change :  Mon May 18 09:06:33 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -388,7 +388,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    fprint ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (fprint port . obj)
+(define (fprint port::output-port . obj)
    (let loop ((l obj)
 	      (res '()))
       (if (null? l)
@@ -567,7 +567,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    format ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (format fmt . obj)
+(define (format::bstring fmt::bstring . obj)
    (let ((p (open-output-string)))
       (xprintf "format" p fmt obj)
       (close-output-port p)))
@@ -575,13 +575,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    printf ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (printf fmt . obj)
+(define (printf fmt::bstring . obj)
    (xprintf "printf" (current-output-port) fmt obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    fprintf ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (fprintf port fmt . obj)
+(define (fprintf port::output-port fmt::bstring . obj)
    (xprintf "fprintf" port fmt obj))
 
 ;*---------------------------------------------------------------------*/
@@ -864,13 +864,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    display-string ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (display-string obj port)
+(define-inline (display-string obj::bstring port::output-port)
    ($display-string obj port))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-substring ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (display-substring obj start end port)
+(define-inline (display-substring obj::bstring start::long end::long port::output-port)
    (if (and (>=fx end start)
 	    ($string-bound-check? end (+fx (string-length obj) 1))
 	    (>=fx start 0))
@@ -882,7 +882,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    write-string ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (write-string obj port)
+(define (write-string obj::bstring port::output-port)
    (if (bigloo-strict-r5rs-strings)
        (cond-expand
 	  (bigloo-c
@@ -903,7 +903,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    display-fixnum ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (display-fixnum obj port)
+(define-inline (display-fixnum obj::bint port::output-port)
    (cond-expand
       ((or bigloo-c bigloo-jvm)
        ($display-fixnum obj port))
@@ -913,13 +913,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    display-elong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (display-elong obj port)
+(define-inline (display-elong obj::elong port::output-port)
    ($display-elong obj port))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-flonum ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (display-flonum obj port)
+(define (display-flonum obj::real port::output-port)
    (display-string (real->string obj) port))
 
 ;*---------------------------------------------------------------------*/

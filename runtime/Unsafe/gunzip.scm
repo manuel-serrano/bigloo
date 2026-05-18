@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Unsafe/gunzip.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/gunzip.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  5 07:43:02 2006                          */
-;*    Last change :  Fri May  1 06:48:55 2026 (serrano)                */
+;*    Last change :  Mon May 18 09:26:01 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Traduction of gzip's inflate.c inspired from Mzscheme's port.    */
@@ -75,7 +75,7 @@
 	   (open-input-inflate-file ::bstring #!optional (bufinfo #t) (timeout 1000000))
 	   (gunzip-sendchars ::input-port ::output-port)
 	   (inflate-sendchars ::input-port ::output-port)
-	   (gunzip-parse-header in)))
+	   (gunzip-parse-header ::input-port)))
 
 #|
    Inflate deflated data
@@ -936,7 +936,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    gunzip-parse-header ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (gunzip-parse-header in)
+(define (gunzip-parse-header in::input-port)
    (define buf (make-string 4))
    (define (read-int2)
       (read-chars! buf 2 in)

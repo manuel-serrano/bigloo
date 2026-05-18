@@ -179,6 +179,24 @@
    (format "~3d ~3,-d ~3x ~3,0d" 4 4 16 5)
    :expected "  4 --4  10 005")
 
+(define-test printf
+   (with-output-to-string
+      (lambda ()
+         (printf "~3d ~3,-d ~3x ~3,0d" 4 4 16 5)))
+   :expected "  4 --4  10 005")
+
+(define-test fprintf
+   (call-with-output-string
+      (lambda (op)
+         (fprintf op "~3d ~3,-d ~3x ~3,0d" 4 4 16 5)))
+   :expected "  4 --4  10 005")
+
+(define-test pp
+   (call-with-output-string
+      (lambda (op)
+         (pp '(cons 1 2))))
+   :expected "(cons 1 2)")
+
 (define-test define-reader-ctor
    (begin
       (define-reader-ctor 'list list)

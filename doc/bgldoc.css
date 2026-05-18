@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Mon May 18 07:52:23 2026 (serrano)                */
+/*    Last change :  Mon May 18 08:25:16 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -43,7 +43,8 @@
 
     --programBackground: #ffffff;
     --programBorder: #eeeeee;
-    --programBorderLeft: #f91a03;
+    --programBorderColor: #f91a03;
+    --shellBorderColor: #a09103;
 
     --type: #05ca04;
     --expression: #444;
@@ -68,6 +69,10 @@
     --fontifierBnfTag: #555;
     --fontifierBnfDefine: #111;
     --fontifierBnfArrow: #555;
+
+    --fontifierShellPrompt: #fa1a03;
+    
+    --lispBorderColor: #14e667;
     
     --chapterTocLinkColor: #777;
     --chapterTocBackground: #fff;
@@ -75,7 +80,8 @@
 
     --hoverColor: #f91a03;
 
-    --blockquoteBorder: #999;
+    --blockquoteBackground: #efefef;
+    --blockquoteBorder: #ffd33a;
 }
 
 /*---------------------------------------------------------------------*/
@@ -410,7 +416,7 @@ pre {
     font-family: Bitstream Vera Sans Mon, Andale Mon, Monospace, DejaVu Sans Mono, monospace;
     background-color: var(--programBackground);
     border: 1px solid var(--programBorder);
-    border-left: 2px solid var(--programBorderLeft);
+    border-left: 2px solid;
     padding: 0.5em;
     overflow-x: auto;
     font-size: 90%;
@@ -433,6 +439,12 @@ code {
 /*---------------------------------------------------------------------*/
 /*    fontification                                                    */
 /*---------------------------------------------------------------------*/
+pre.test,
+pre.example,
+pre.bigloo {
+    border-left-color: var(--programBorderColor);
+}
+    
 pre .fontifier-prog-reserved {
     font-weight: bold;
 }
@@ -467,6 +479,26 @@ pre .fontifier-prog-compilation {
     font-weight: bold;
     padding: 0 1px;
 }
+
+/*---------------------------------------------------------------------*/
+/*    shell                                                            */
+/*---------------------------------------------------------------------*/
+pre.shell {
+    border-left-color: var(--shellBorderColor);
+}
+    
+pre.shell span.fontifier-prog-server {
+    font-weight: normal;
+    color: var(--fontifierShellPrompt);
+}
+
+/*---------------------------------------------------------------------*/
+/*    Lisp ...                                                         */
+/*---------------------------------------------------------------------*/
+pre.lisp {
+    border-left-color: var(--lispBorderColor);
+}
+    
 
 /*---------------------------------------------------------------------*/
 /*    bnf                                                              */
@@ -567,6 +599,8 @@ pre.bnf .ebnf-arrow {
 blockquote {
     border-left: 2px solid var(--blockquoteBorder);
     margin-left: 0;
-    padding-left: 1em;
+    margin-right: 0;
+    padding: 0.4em 0.2em 0.4em 1em;
     font-style: italic;
+    background-color: var(--blockquoteBackground);
 }

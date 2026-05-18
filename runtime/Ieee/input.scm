@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/input.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Ieee/input.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Thu Jul 17 14:29:12 2025 (serrano)                */
+;*    Last change :  Mon May 18 08:51:17 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -61,24 +61,24 @@
    (export  (read/rp ::procedure ::input-port . obj)
 	    (read/lalrp ::procedure ::procedure ::input-port . obj)
 	    
-	    (read-char #!optional (ip (current-input-port)))
-	    (peek-char #!optional (ip (current-input-port)))
-	    (read-byte #!optional (ip (current-input-port)))
-	    (peek-byte #!optional (ip (current-input-port)))
+	    (read-char #!optional (ip::input-port (current-input-port)))
+	    (peek-char #!optional (ip::input-port (current-input-port)))
+	    (read-byte #!optional (ip::input-port (current-input-port)))
+	    (peek-byte #!optional (ip::input-port (current-input-port)))
 	    (inline eof-object::obj)
 	    (inline eof-object?::bool ::obj)
-	    (inline char-ready?::bool #!optional (ip (current-input-port)))
-	    (read-line::obj #!optional (ip (current-input-port)))
-	    (read-line-newline::obj #!optional (ip (current-input-port)))
-	    (read-lines::pair-nil #!optional (ip (current-input-port)))
-	    (read-string::bstring #!optional (ip (current-input-port)))
-	    (read-of-strings::obj #!optional (ip (current-input-port)))
-	    (read-chars::obj ::obj #!optional (ip (current-input-port)))
-	    (read-chars!::obj ::bstring ::obj #!optional (ip (current-input-port)))
-	    (inline read-fill-string!::obj ::bstring ::long ::long #!optional (ip (current-input-port)))
-	    (unread-char! ::char #!optional (ip (current-input-port)))
-	    (unread-string! ::bstring #!optional (ip (current-input-port)))
-	    (unread-substring! ::bstring ::long ::long #!optional (ip (current-input-port)))
+	    (inline char-ready?::bool #!optional (ip::input-port (current-input-port)))
+	    (read-line::obj #!optional (ip::input-port (current-input-port)))
+	    (read-line-newline::obj #!optional (ip::input-port (current-input-port)))
+	    (read-lines::pair-nil #!optional (ip::input-port (current-input-port)))
+	    (read-string::bstring #!optional (ip::input-port (current-input-port)))
+	    (read-of-strings::obj #!optional (ip::input-port (current-input-port)))
+	    (read-chars::obj ::obj #!optional (ip::input-port (current-input-port)))
+	    (read-chars!::obj ::bstring ::obj #!optional (ip::input-port (current-input-port)))
+	    (inline read-fill-string!::obj ::bstring ::long ::long #!optional (ip::input-port (current-input-port)))
+	    (unread-char! ::char #!optional (ip::input-port (current-input-port)))
+	    (unread-string! ::bstring #!optional (ip::input-port (current-input-port)))
+	    (unread-substring! ::bstring ::long ::long #!optional (ip::input-port (current-input-port)))
 	    (port->string-list::pair-nil ::input-port)
 	    (file->string::bstring ::bstring)
 	    (send-chars::long ::input-port ::output-port
@@ -125,7 +125,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-char ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (read-char #!optional (ip (current-input-port)))
+(define (read-char #!optional (ip::input-port (current-input-port)))
    (let ((grammar (regular-grammar ()
 		     ((in all #\Newline) (the-character)))))
       (read/rp grammar ip)))
@@ -133,7 +133,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    peek-char ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (peek-char #!optional (ip (current-input-port)))
+(define (peek-char #!optional (ip::input-port (current-input-port)))
    (let ((grammar (regular-grammar ()
 		     ((in all #\Newline)
 		      (let ((c (the-character)))
@@ -144,7 +144,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-byte ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (read-byte #!optional (ip (current-input-port)))
+(define (read-byte #!optional (ip::input-port (current-input-port)))
    (let ((grammar (regular-grammar ()
 		     ((in all #\Newline) (the-byte)))))
       (read/rp grammar ip)))
@@ -152,7 +152,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    peek-byte ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (peek-byte #!optional (ip (current-input-port)))
+(define (peek-byte #!optional (ip::input-port (current-input-port)))
    (let ((grammar (regular-grammar ()
 		     ((in all #\Newline)
 		      (let ((c (the-byte)))
@@ -169,19 +169,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    eof-object? ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (eof-object? object)
+(define-inline (eof-object?::bool object)
    (c-eof-object? object))
 
 ;*---------------------------------------------------------------------*/
 ;*    char-ready? ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (char-ready? #!optional (ip (current-input-port)))
+(define-inline (char-ready?::bool #!optional (ip::input-port (current-input-port)))
    (c-char-ready? ip))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-line ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (read-line #!optional (ip (current-input-port)))
+(define (read-line #!optional (ip::input-port (current-input-port)))
    (if (>fx ($input-port-bufsiz ip) 2)
        (let ((grammar (regular-grammar ((xall (or (out #\Newline #\Return)
 						  #a000)))
@@ -232,7 +232,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-line-newline ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (read-line-newline #!optional (ip (current-input-port)))
+(define (read-line-newline #!optional (ip::input-port (current-input-port)))
    (if (>fx ($input-port-bufsiz ip) 2)
        (let ((grammar (regular-grammar ((xall (or (out #\Newline #\Return)
 						  #a000)))
@@ -284,7 +284,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-lines ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (read-lines #!optional (ip (current-input-port)))
+(define (read-lines::pair-nil #!optional (ip::input-port (current-input-port)))
    (let loop ((l (read-line ip))
 	      (ls '()))
       (if (eof-object? l)
@@ -294,7 +294,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-string ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (read-string #!optional (ip (current-input-port)))
+(define (read-string::bstring #!optional (ip::input-port (current-input-port)))
    (read/rp (regular-grammar ()
 	       ((+ (or all #\Newline)) (the-string))
 	       (else ""))
@@ -317,13 +317,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-of-strings ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (read-of-strings #!optional (ip (current-input-port)))
+(define (read-of-strings #!optional (ip::input-port (current-input-port)))
    (read/rp *read-of-strings-grammar* ip))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-chars ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (read-chars l #!optional (ip (current-input-port)))
+(define (read-chars l #!optional (ip::input-port (current-input-port)))
    (let ((len (cond
 		 ((fixnum? l) l)
 		 ((elong? l) (elong->fixnum l))
@@ -355,7 +355,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-chars! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (read-chars! buf l #!optional (ip (current-input-port)))
+(define (read-chars! buf l #!optional (ip::input-port (current-input-port)))
    (let ((len (cond
 		 ((fixnum? l) l)
 		 ((elong? l) (elong->fixnum l))
@@ -375,7 +375,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-fill-string! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (read-fill-string! s o len::long #!optional (ip (current-input-port)))
+(define-inline (read-fill-string! s o len::long #!optional (ip::input-port (current-input-port)))
    (cond-expand
       (bigloo-unsafe-range
        ;;; disable range all array bound checking
@@ -398,7 +398,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    unread-char! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (unread-char! c::char #!optional (ip (current-input-port)))
+(define (unread-char! c::char #!optional (ip::input-port (current-input-port)))
    (unless (rgc-buffer-insert-char! ip (char->integer c))
       (raise
 	 (instantiate::&io-error
@@ -409,7 +409,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    unread-string! ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (unread-string! str::bstring #!optional (ip (current-input-port)))
+(define (unread-string! str::bstring #!optional (ip::input-port (current-input-port)))
    (when (not (rgc-buffer-insert-substring! ip str 0 (string-length str)))
       (raise
        (instantiate::&io-error
@@ -420,8 +420,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    unread-substring! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (unread-substring! str::bstring from to
-			   #!optional (ip (current-input-port)))
+(define (unread-substring! str::bstring from::long to::long
+			   #!optional (ip::input-port (current-input-port)))
    (when (or (not (>=fx to from))
 	     (<fx from 0)
 	     (>fx to (string-length str)))
