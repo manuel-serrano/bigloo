@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon May 18 09:06:33 2026 (serrano)                */
+;*    Last change :  Mon May 18 15:19:51 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -242,7 +242,7 @@
 	    (write-symbol ::symbol ::output-port)
 	    (inline display-fixnum ::bint ::output-port)
 	    (inline display-elong ::elong ::output-port)
-	    (display-flonum ::real ::output-port)
+	    (display-flonum ::double ::output-port)
 	    (display-ucs2string ::ucs2string ::output-port)
 	    (write-ucs2string ::ucs2string ::output-port)
 	    (illegal-char-rep ::uchar) 
@@ -919,7 +919,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    display-flonum ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (display-flonum obj::real port::output-port)
+(define (display-flonum obj::double port::output-port)
    (display-string (real->string obj) port))
 
 ;*---------------------------------------------------------------------*/
