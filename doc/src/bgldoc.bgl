@@ -13,7 +13,13 @@
 ;*    bgldoc                                                           */
 ;*---------------------------------------------------------------------*/
 (module bgldoc
-   (library web)
+   (library web XmlElement xml-element xml-element-ctor xml-element-dup
+      xml-element-attribute xml-element-attribute-set!
+      xml-text-element-value xml-element-next-sibling
+      xml-get-elements-by-tag
+      xml-element-children  xml-element-children-set!
+      xml-element-append-child! xml-element-replace-child!
+      write-html html-parse markdown-parse)
    (import "./fontifier.bgl" . fontifier)
    (main))
 
@@ -311,8 +317,12 @@
 					       (car (xml-element-children e))))))
 				(def (hashtable-get definitions-table name))
 				(tests (hashtable-get tests-table name)))
-                            (if (not def)
-                                (error "doc" "Cannot find definition" name)
+                            (cond
+                               ((=fx (hashtable-size definitions-table) 0)
+                                e)
+                               ((not def)
+                                (error "doc" "Cannot find definition" name))
+                               (else
                                 (let ((md (definition->markdown def)))
                                    (xml-element-children-set! e md)
                                    (xml-element-attribute-set! e 'class (definition-class def))
@@ -331,7 +341,7 @@
                                        (error "doc" "Cannot find test" name))
                                    (set! index
                                       (cons (list name def (xml-element-attribute e 'id) target)
-                                         index))))))
+                                         index)))))))
 	       (xml-get-elements-by-tag doc 'h3))
             ;; inline examples
             (for-each (lambda (e::XmlElement)

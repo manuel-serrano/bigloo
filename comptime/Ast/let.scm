@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/let.scm            */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/let.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */

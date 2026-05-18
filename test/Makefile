@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Sat May 16 08:15:23 2026 (serrano)                */
+#*    Last change :  Mon May 18 07:05:54 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -61,7 +61,7 @@ W_OBJECTS = $(COMMON:%=%.wat) $(W_SPECIFIC:%=%.wat)
 #*---------------------------------------------------------------------*/
 #*    tests                                                            */
 #*---------------------------------------------------------------------*/
-all: c jvm wasm
+all: c
 	$(MAKE) c
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) jvm; \

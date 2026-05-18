@@ -14,7 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module fontifier
    
-   (library web)
+   (library web XmlElement xml-element xml-element-ctor xml-string-encode)
    
    (export bigloo
       lisp

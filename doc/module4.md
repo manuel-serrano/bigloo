@@ -57,13 +57,10 @@ definitions and _top level_ expressions.
 Module Declaration
 ------------------
 
-The module declaration form is
-
-@c -- (module name clause ...) --------------------------------------- @c
-@deffn {bigloo syntax} module name clause @dots{}
+### (module name clause ...) ###
 
 This form defines a module and must be the first in the file.  The
-argument @var{name} is a symbol naming the module. If the same
+argument `name` is a symbol naming the module. If the same
 module name is used more than once, Bigloo signals an error. The
 runtime library is composed of modules that are read when a user module
 is compiled and hence, if a user module has the same name as one of the
@@ -71,128 +68,109 @@ library modules, an error is signaled.
 
 A simple module can be:
 
-@smalllisp
+```bigloo
+;; zz.scm
 (module foo)
 
 (display "this is a module")
-@end smalllisp
+```
 
 The first line here is the complete module definition, the last line is
 the complete module body and together they form a complete Bigloo program. If
-these lines were stored in file @code{zz.scm}, invoking @samp{bigloo zz.scm}
-would create the executable @code{a.out} which, when obeyed, would
-display @samp{this is a module} on the terminal.
+these lines were stored in file `zz.scm`, invoking `bigloo zz.scm`
+would create the executable `a.out` which, when obeyed, would
+display `this is a module` on the terminal.
 
-@emph{Note}:
-Some special identifiers are reserved and can't be used to name modules.
-If such an identifier is used, the compiler will produce the message:
+> [!NOTE]
+> Some special identifiers are reserved and can't be used to name modules.
+> If such an identifier is used, the compiler will trigger an error.
+> The list of reserved identifiers may be enlarged for next release. For 
+> the current release that list is made of: `eval`, `foreign` and `t`.
 
-@smalllisp
-#(module t
-#^
-# *** ERROR:bigloo:TOP-LEVEL:Parse error
-# Illegal module name -- (MODULE eval ...
-@end smalllisp
-
-The list of reserved identifiers may be enlarged for next release. For 
-the current release that list is made of: @code{eval}, @code{foreign} and 
-@code{t}.
-@end deffn
-
-Module @var{clause}s can be:
-
-@c -- (main name) ---------------------------------------------------- @c
-@deffn {bigloo module clause} main name
+### (main name) ###
 
 This clause defines the entry point for a stand alone application to be
-procedure @var{name} of arity one. Bigloo invokes this procedure at the
+procedure `name` of arity one. Bigloo invokes this procedure at the
 beginning of execution providing the list, composed of the shell command
 line arguments, as its single argument.
 
-@smalllisp
+```bigloo
 (module foo
    (main start))
 
 (define (start argv)
    (display argv)
    (newline))
-@end smalllisp
+```
 
-Then if this program is compiled into @code{foo} and invoked using the
-command @samp{foo -t bar}, the list which is the argument for the main 
-procedure @code{start} would be @code{("foo" "-t" "bar")}. 
+Then if this program is compiled into `foo` and invoked using the
+command `foo -t bar`, the list which is the argument for the main 
+procedure `start` would be `("foo" "-t" "bar")`. 
 
-The special form @code{args-parse} helps main function argument parsing 
-(@pxref{Command Line Parsing}).
-@end deffn
+The special form `args-parse` helps main function argument parsing 
 
-@c -- (include file-name ...) ----------------------------------------- @c
-@deffn {bigloo module clause} include file-name @dots{}
-@pindex directives
+### (include file-name ...) ###
 
-This is a list of @var{file-name}s to be included in the source file. Include
+This is a list of `file-name`s to be included in the source file. Include
 files are not modules and may have a special syntax. Thus, besides containing
 Bigloo expressions, they can contain import and include clauses, which must
 be written in a single list whose first element is the keyword 
-@code{directives}. Includes files can be used to include implementation-neutral
+`directives`. Includes files can be used to include implementation-neutral
 Scheme expressions and definitions in a Bigloo module. Here is an example of 
 an include file.
 
-@smalllisp
-@r{;; @file{foo.sch}}
+```bigloo
+;; foo.sch
 (define-struct point x y)
-@end smalllisp
+```
 
-@noindent
-and the module that includes the @file{foo.sch} file:
+and the module that includes the `foo.sch` file:
 
-@smalllisp
-@r{;; @file{foo.scm}}
+```bigloo
+;; foo.scm
 (module foo
    (include "foo.sch"))
 
 (print (point 1 2))
-@end smalllisp
+```
 
 Include files, may contain module information. This is the role of the
-include @code{directives} clause here illustrated with the @file{bar.sch}
+include `directives` clause here illustrated with the `bar.sch`,
 example:
 
-@smalllisp
-@r{;; @file{bar.sch}}
-@r{;; the directives}
+```bigloo
+;; bar.sch}
+;; the directives
 (directives (include "foobar.sch")
             (import  hux))
 
-@r{;; expressions}
+;; expressions
 (define (gee x) (print x))
-@end smalllisp
-@end deffn
+```
 
-@c -- (import import...) --------------------------------------------- @c
-@deffn {bigloo module clause} import import @dots{}
+### (import import ...) ###
 
-An @var{import} is a list of the form:
+An `import` is a list of the form:
 
-@smallexample
-<import>      @expansion{} <iclause> @dots{}
-<iclause>     @expansion{} (<bind-name> @dots{} <bind-name> <module-name> <file-name> @dots{})
-                | (<bind-name> @dots{} <bind-name> <module-name>)
-                | <module-name>
-                | (<module-name> <file-name> @dots{})
-<bind-name>   @expansion{} <r5rs-ident>
-                | <alias-name>
-<alias-name>  @expansion{} (<r5rs-ident> <r5rs-ident>)
-<module-name> @expansion{} <r5rs-ident>
-<file-name>   @expansion{} <string>
-@end smallexample
+```bnf
+<import> --> <iclause> ...
+<iclause> --> (<bind-name> ... <bind-name> <module-name> <file-name> ...)
+  | (<bind-name> ... <bind-name> <module-name>)
+  | <module-name>
+  | (<module-name> <file-name> ...)
+<bind-name> --> <r5rs-ident>
+  | <alias-name>
+<alias-name> --> (<r5rs-ident> <r5rs-ident>)
+<module-name> --> <r5rs-ident>
+<file-name> --> <string>
+```
 
-The first alternative in @var{iclause} imports the variable named 
-@var{bind-name} which is defined in the module @var{module-name}, 
-located in the files @var{file-name} @dots{}. The second does the same 
+The first alternative in `iclause` imports the variable named 
+`bind-name` which is defined in the module `module-name`, 
+located in the files `file-name` .... The second does the same 
 but without specifying the name of the file where the module is located.  
 The third and the fourth form import all the exported variables of the module
-@var{module-name}.
+`module-name`.
 
 @emph{Note}: The need for specifying in which files modules are located comes
 from the fact that there is no automatic mapping between module names
@@ -224,7 +202,7 @@ Here is an example of an import clause:
 @end deffn
 
 @c -- (use use...) --------------------------------------------------- @c
-@deffn {bigloo module clause} use use @dots{}
+@deffn {bigloo module clause} use use ...
 
 @code{use} has the same meaning as @code{import} except that modules
 which are @emph{used} are not initialized (@pxref{Module Initialization}).
@@ -232,7 +210,7 @@ Used modules are read before imported modules.
 @end deffn
 
 @c -- (with with...) ------------------------------------------------- @c
-@deffn {bigloo module clause} with with @dots{}
+@deffn {bigloo module clause} with with ...
 
 This clause specifies a list of modules which have to be
 initialized at runtime and is used to force the initialization
@@ -241,24 +219,24 @@ application (@pxref{Embedded Bigloo applications}).
 @end deffn
 
 @c -- (export export...) --------------------------------------------- @c
-@deffn {bigloo module clause} export export @dots{}
+@deffn {bigloo module clause} export export ...
 
 In order to make a module's global bindings available to other modules, they
 have to be @emph{exported}. Export clauses are in charge of this task and an
 @var{export} is a list of the form:
 
 @smallexample
-<export>      @expansion{} <eclause> @dots{}
-<eclause>     @expansion{} <varexport>
+<export>      --> <eclause> ...
+<eclause>     --> <varexport>
                 | <funexport>
                 | <macroexport>
                 | <classexport>
-<varexport>   @expansion{} <ident>
-<funexport>   @expansion{} | (<ident> <ident> @dots{})
-                | (inline <ident> <ident> @dots{})
-                | (generic <ident> <ident> <ident> @dots{})
-<classexport> @expansion{} <class>
-<macroexport> @expansion{} (macro <ident> <ident> @dots{})
+<varexport>   --> <ident>
+<funexport>   --> | (<ident> <ident> ...)
+                | (inline <ident> <ident> ...)
+                | (generic <ident> <ident> <ident> ...)
+<classexport> --> <class>
+<macroexport> --> (macro <ident> <ident> ...)
                 | (expander <ident>)
                 | (syntax <ident>)
 @end smallexample
@@ -349,7 +327,7 @@ clause. Example:
 @end deffn
 
 @c -- (static static...) --------------------------------------------- @c
-@deffn {bigloo module clause} static static @dots{}
+@deffn {bigloo module clause} static static ...
 
 A @code{static} clause has exactly the same syntax as an export
 clause. However, bindings declared static are local to the module. Since
@@ -359,7 +337,7 @@ are useful only for program documentation.
 @end deffn
 
 @c -- (from from...) ------------------------------------------------- @c
-@deffn {bigloo module clause} from from @dots{}
+@deffn {bigloo module clause} from from ...
 
 @code{from} clauses have the syntax of @code{import} 
 clauses. The allow the re-exportation of imported bindings. That is, any 
@@ -428,13 +406,13 @@ And,
 @end deffn
 
 @c -- (load load...) ------------------------------------------------- @c
-@deffn {bigloo module clause} load load @dots{}
+@deffn {bigloo module clause} load load ...
 
 A @var{load} is a list of the form:
 
 @smallexample
-<load>    @expansion{} <lclause> @dots{}
-<lclause> @expansion{} (<module-name> <file-name>)
+<load>    --> <lclause> ...
+<lclause> --> (<module-name> <file-name>)
             | <module-name>
 @end smallexample
 
@@ -462,13 +440,13 @@ then,
 (define-macro (gee x)
    `(cons ,(-fx x 1) ,(foo x)))
 
-(gee 5)   @expansion{} (cons 4 (cons 5 5))
+(gee 5)   --> (cons 4 (cons 5 5))
           @result{} (4 5 . 5)
 @end smalllisp
 @end deffn
 
 @c -- (eval eval...) ------------------------------------------------- @c
-@deffn {bigloo module clause} eval eval@dots{}
+@deffn {bigloo module clause} eval eval...
 
 This form allows interactions between compiled code and interpreted
 code. (See the Section @ref{Eval, , Eval command line options} for a
@@ -476,7 +454,7 @@ presentation of compilation flags that enable compilation tuning for
 @code{eval}.)  Each @var{eval} has the following syntax:
 
 @smallexample
-<eval> @expansion{} (export-all)
+<eval> --> (export-all)
          | (export-module)
          | (export-exports)
          | (export <bind-name>)
@@ -527,24 +505,24 @@ are also available from the interpreter.
 @end deffn
 
 @c -- (extern extern...) --------------------------------------------- @c
-@deffn {bigloo module clause} extern extern @dots{}
+@deffn {bigloo module clause} extern extern ...
 
 Extern (aka foreign) clauses will be explained in the foreign interface
 (@pxref{C Interface}).
 @end deffn
 
 @c -- (java extern...) ----------------------------------------------- @c
-@deffn {bigloo module clause} java java @dots{}
+@deffn {bigloo module clause} java java ...
 
 Java clauses will be explained in the Java interface
 (@pxref{Java Interface}).
 @end deffn
 
 @c -- (option option...) --------------------------------------------- @c
-@deffn {bigloo module clause} option option @dots{}
+@deffn {bigloo module clause} option option ...
 
 This clause enables variables which affect compilation to be set from inside
-a module and since the expressions, @var{option} @dots{}, are evaluated
+a module and since the expressions, @var{option} ..., are evaluated
 @emph{when compiling}, no code is compiled for them.  They are allowed to
 make side effects and to change the values of the global variables which
 describe how the compiler must compile. Usually they allow the control
@@ -564,10 +542,10 @@ module in both verbose mode and debug mode.
 @end deffn
 
 @c -- (library library...) ------------------------------------------- @c
-@deffn {bigloo module clause} library library @dots{}
+@deffn {bigloo module clause} library library ...
 
 This clause enables libraries (@pxref{Bigloo Libraries}) when compiling and
-linking Bigloo modules. The expressions @var{library} @dots{} are symbols
+linking Bigloo modules. The expressions @var{library} ... are symbols
 naming the libraries to be used.
 
 Here is an example of a module declaration which makes use of a library
@@ -586,7 +564,7 @@ an explicit use of an eval @code{library} clause must be used.
 @end deffn
 
 @c -- (library library...) ------------------------------------------- @c
-@deffn {bigloo module clause} type type @dots{}
+@deffn {bigloo module clause} type type ...
 This forms is used to define builtin Bigloo types. It is not recommended
 to use it in user programs. So, it is left undocumented.
 @end deffn
@@ -756,8 +734,8 @@ generating a C function call to the function, the body of the inline
 procedure is open-coded.  The definition of an inline is given in the
 following way:
 
-@deffn {bigloo syntax} define-inline (name args @dots{}) body
-@deffnx {bigloo syntax} define-inline (name args @dots{} . arg) body
+@deffn {bigloo syntax} define-inline (name args ...) body
+@deffnx {bigloo syntax} define-inline (name args ... . arg) body
 
 Apart from the initial word, this form has the same syntax as that used by
 @code{define} for procedures. Inline procedures are exportable which means

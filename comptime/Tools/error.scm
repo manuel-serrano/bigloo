@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Tools/error.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Tools/error.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Fri Apr 24 07:56:54 2026 (serrano)                */
+;*    Last change :  Mon May 18 07:34:12 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
@@ -30,6 +30,7 @@
 	    (user-error <obj> <obj> <obj> . <obj>)
 	    (user-error/location ::obj <obj> <obj> <obj> . <obj>)
 	    (error/src proc msg obj src)
+	    (error/loc proc msg obj loc)
 	    (current-function)
 	    (enter-function ::symbol)
 	    (leave-function)
@@ -173,6 +174,18 @@
 	  (else
 	   (error proc msg obj)))
        (error proc msg obj)))
+
+;*---------------------------------------------------------------------*/
+;*    error/loc ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (error/loc proc msg obj loc)
+   (if (location? loc)
+       (error/location proc msg obj (location-fname loc) (location-pos loc))
+       (match-case loc
+	  ((at ?fname ?loc)
+	   (error/location proc msg obj fname loc))
+	  (else
+	   (error proc msg obj)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *sfun-stack*                                                     */

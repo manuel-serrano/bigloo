@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Sun May 17 09:59:55 2026 (serrano)                */
+;*    Last change :  Mon May 18 07:49:27 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -248,10 +248,6 @@
 			  (assert (Genv) (hashtable? Genv))
 			  (add-tenv! Tenv)
 			  (add-genv! Genv)
-			  (hashtable-for-each
-			     Genv
-			     (lambda (k bucket)
-				(for-each (lambda (n) (tprint (shape n))) (cdr bucket))))
 			  ;; in jvm mode, we have to propagate
 			  ;; the package/module association
 			  (when (backend-qualified-types (the-backend))

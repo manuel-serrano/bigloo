@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/private.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/private.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Wed Apr  8 08:14:02 2026 (serrano)                */
+;*    Last change :  Mon May 18 07:30:33 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -19,6 +19,7 @@
 	   type_cache
 	   type_env
 	   tools_shape
+	   tools_error
 	   object_class
 	   object_slots
 	   ast_sexp
@@ -120,19 +121,21 @@
 	  (c-format "")))
       ((?- new/args ?type ?args)
        (with-access::tclass (find-type/expr type sexp) (slots)
-	  (instantiate::new
-	     (loc loc)
-	     (type (use-type! type loc))
-	     (side-effect #t)
-	     (c-format "")
-	     (args-type (filter-map (lambda (s)
-				       (unless (>=fx (slot-virtual-num s) 0)
-					  (slot-type s)))
-			   slots))
-	     (expr* (if (null? args)
-			'()
-			(sexp*->node args stack loc 'value genv)))
-	     (side-effect #t))))
+	  (if (pair? slots)
+	      (instantiate::new
+		 (loc loc)
+		 (type (use-type! type loc))
+		 (side-effect #t)
+		 (c-format "")
+		 (args-type (filter-map (lambda (s)
+					   (unless (>=fx (slot-virtual-num s) 0)
+					      (slot-type s)))
+			       slots))
+		 (expr* (if (null? args)
+			    '()
+			    (sexp*->node args stack loc 'value genv)))
+		 (side-effect #t))
+	      (error/loc "new" "Class definition is missing" type loc))))
       ((?- new ?type (quote ?args-type) . ?rest)
        (if (null? rest)
 	   ;; not an external class

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Sat May 16 07:48:56 2026 (serrano)                */
+/*    Last change :  Mon May 18 07:52:23 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -39,6 +39,7 @@
     
     --functionBackground: #dfdfdf;
     --functionTag: #1467e6;
+    --defaultTag: #777;
 
     --programBackground: #ffffff;
     --programBorder: #eeeeee;
@@ -347,10 +348,19 @@ h3 {
     padding-bottom: 3px;
 }
 
-h3:before {
+h3.function:before {
     content: "\e041";
     font-size: 65%;
     color: var(--functionTag);
+    font-family: icons;
+    margin-left: 0.5em;
+    margin-right: 0.8em;
+}
+
+h3:before {
+    content: "\e041";
+    font-size: 65%;
+    color: var(--defaultTag);
     font-family: icons;
     margin-left: 0.5em;
     margin-right: 0.8em;
