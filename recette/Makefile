@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/recette/Makefile                */
+#*    serrano/prgm/project/bigloo/5.0.x/recette/Makefile               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Tue Apr 14 06:35:22 2026 (serrano)                */
+#*    Last change :  Mon May 18 11:31:20 2026 (serrano)                */
 #*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -41,7 +41,6 @@ BFLAGS          = $(VERBOSE) -cg -g -O3 -q -Wall -init-lib \
                   -lib-dir $(BOOTLIBDIR)
 
 BCFLAGS         = -afile .afile-c
-                  
 
 BJVMFLAGS       = $(BFLAGS) -afile .afile-jvm -jfile .jfile-jvm -g
 BPURIFYJVMFLAGS	=
@@ -170,16 +169,16 @@ wasm: objs_wasm .afile-wasm
 wasm-static: objs_wasm .afile-wasm
 	$(MAKE) recette-wasm-static
 
-recette-wasm: $(WASM_OBJECTS:%=objs_wasm/%) #objs_wasm/main.wasm
-	$(BIGLOO) -wasm $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette.wasm $^
+recette-wasm: $(WASM_OBJECTS:%=objs_wasm/%) objs_wasm/main.wat
+	$(BIGLOO) -wasm $(BFLAGS) $(BWASMFLAGS) $(EFLAGS) -o recette.wasm $^
 	@ echo "\e[1;36mrecette.wasm\e[0m done."
 
 recette-wasm-static: $(WASM_OBJECTS:%=objs_wasm/%)
-	$(BIGLOO) -static-bigloo -wasm $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o recette.wasm-static $^
+	$(BIGLOO) -static-bigloo -wasm $(BFLAGS) $(BWASMFLAGS) $(EFLAGS) -o recette.wasm-static $^
 	@ echo "\e[1;36mrecette.wasm-static\e[0m done."
 
 jvm: recette-jvm-nojar
-recette-jvm-nojar: .jfile-jvm .afile-jvm .afile-c objs_jvm
+recette-jvm-nojar: .jfile-jvm .afile-jvm objs_jvm
 	@ $(MAKE) recette-jvm
 
 recette-jvm: $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%) objs_jvm/main.class
@@ -273,7 +272,7 @@ distclean: lintclean
 	@- $(RM) -f *.jas
 	@- $(RM) -f *.obj
 	@- $(RM) -f *.escm
-	@- $(RM) -f .afile-c .afile-jvm
+	@- $(RM) -f .afile-c .afile-jvm .afile-wasm
 	@- $(RM) -f .etags
 	@- $(RM) -f Manifest*
 	@- $(RM) -f dummydir

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Unsafe/ftp.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/ftp.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Wed Aug 18 14:30:52 2010                          */
-;*    Last change :  Fri May  1 07:47:45 2026 (serrano)                */
+;*    Last change :  Mon May 18 10:03:53 2026 (serrano)                */
 ;*    Copyright   :  2010-26 Cyprien Nicolas, Manuel Serrano           */
 ;*    -------------------------------------------------------------    */
 ;*    FTP client implementation.                                       */
@@ -745,10 +745,11 @@
 (define (ftp-copy-file ftp from dst)
    (let ((r (ftp-retrieve ftp from)))
       (when (input-port? r)
-	 (with-output-to-file dst
-	    (lambda ()
-	       (display (read-string r))
-	       #t)))))
+	 (let ((r::input-port r))
+	    (with-output-to-file dst
+	       (lambda ()
+		  (display (read-string r))
+		  #t))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ftp-put-file ...                                                 */

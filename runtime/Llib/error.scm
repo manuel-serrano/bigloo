@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/error.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/error.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Mar 10 17:19:29 2026 (serrano)                */
+;*    Last change :  Mon May 18 10:08:37 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -861,21 +861,22 @@
 			   file))
 		(port (open-for-error fname)))
 	    (if (input-port? port)
-		(unwind-protect
-		   (let loop ((ostring #f)
-			      (lnum 1)
-			      (opos 0))
-		      (let ((lstring (read-line port)))
-			 (if (eof-object? lstring)
-			     (values (relative fname) lnum (+fx 1 (-fx point opos))
-				(if (string? ostring)
-				    (string-append ostring "<eof>")
-				    "<eof>"))
-			     (if (>fx (input-port-position port) point)
-				 (values (relative file) lnum (-fx point opos) lstring)
-				 (let ((opos (input-port-position port)))
-				    (loop lstring (+fx lnum 1) opos))))))
-		   (close-input-port port))
+		(let ((port::input-port port))
+		   (unwind-protect
+		      (let loop ((ostring #f)
+				 (lnum 1)
+				 (opos 0))
+			 (let ((lstring (read-line port)))
+			    (if (eof-object? lstring)
+				(values (relative fname) lnum (+fx 1 (-fx point opos))
+				   (if (string? ostring)
+				       (string-append ostring "<eof>")
+				       "<eof>"))
+				(if (>fx (input-port-position port) point)
+				    (values (relative file) lnum (-fx point opos) lstring)
+				    (let ((opos (input-port-position port)))
+				       (loop lstring (+fx lnum 1) opos))))))
+		      (close-input-port port)))
 		(values (relative file) #f point #f)))))
    
    (define (location-line-col file line col)
@@ -885,18 +886,19 @@
 			    file))
 		 (port (open-for-error fname)))
 	     (if (input-port? port)
-		 (unwind-protect
-		    (let loop ((ostring #f)
-			       (lnum line))
-		       (let ((lstring (read-line port)))
-			  (if (eof-object? lstring)
-			      (values (relative file) line (+fx col 1)
-				 (string-append ostring "<eof>"))
-			      (if (=fx lnum 0)
-				  (values (relative file) line col lstring)
-				  (let ((opos (input-port-position port)))
-				     (loop lstring (-fx lnum 1)))))))
-		    (close-input-port port))
+		 (let ((port::input-port port))
+		    (unwind-protect
+		       (let loop ((ostring #f)
+				  (lnum line))
+			  (let ((lstring (read-line port)))
+			     (if (eof-object? lstring)
+				 (values (relative file) line (+fx col 1)
+				    (string-append ostring "<eof>"))
+				 (if (=fx lnum 0)
+				     (values (relative file) line col lstring)
+				     (let ((opos (input-port-position port)))
+					(loop lstring (-fx lnum 1)))))))
+		       (close-input-port port)))
 		 (values (relative file) line col #f)))
 	  (values (relative file) line col #f)))
 

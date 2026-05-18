@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/runtime/Llib/os.scm                          */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/os.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Fri Feb 13 17:40:47 2026 (serrano)                */
+;*    Last change :  Mon May 18 10:09:25 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -434,7 +434,7 @@
 ;*    system->string ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (system->string . strings)
-   (let ((p (open-input-file (apply string-append "| " strings))))
+   (let ((p::input-port (open-input-file (apply string-append "| " strings))))
       (unwind-protect
 	 (read-string p)
 	 (close-input-port p))))

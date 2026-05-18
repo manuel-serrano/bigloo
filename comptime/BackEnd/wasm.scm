@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu May 14 08:56:41 2026 (serrano)                */
+;*    Last change :  Mon May 18 11:38:39 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -235,11 +235,12 @@
 	 (else (for-each add-eval-library! libs))))
    
    (for-each (lambda (source)
-		(let ((port (open-input-file (car source))))
+		(let* ((src (if (pair? source) (car source) source))
+		       (port (open-input-file src)))
 		   (if (not (input-port? port))
-		       (error "wasm" "Illegal file" (caar sources))
+		       (error "wasm" "Illegal file" src)
 		       (let ((exp (compiler-read port))
-			     (version (if (string=? (suffix (car source)) "bgl")
+			     (version (if (string=? (suffix src) "bgl")
 					  5
 					  (module5-default-version))))
 			  (close-input-port port)
