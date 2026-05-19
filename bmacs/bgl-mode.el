@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Tue May 19 11:39:46 2026 (serrano)                */
+;*    Last change :  Tue May 19 13:12:36 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -431,8 +431,8 @@
   (define-key bgl-mode-map "\C-m" 'bgl-return)
   (define-key bgl-mode-map "\e\C-m" 'newline)
   (define-key bgl-mode-map "\e\C- " 'mark-sexp)
-  (define-key bgl-mode-map "\e." 'bgl-browse-doc-at-point)
-  (define-key bgl-mode-map "\e," 'bgl-load-buffer-module-index)
+  (define-key bgl-mode-map "\e." 'bgl-goto-def)
+  (define-key bgl-mode-map "\e," 'bgl-load-module-index)
 
   ;; C-' keymap
   (define-key bgl-mode-map [(control \c)] 'bgl-prefix)
@@ -1363,7 +1363,8 @@ if that value is non-nil."
   ;; load the documentation index
   (when bgl-flydoc-p
     (bgl-load-doc-index)
-    (run-with-idle-timer 0.5 t #'bgl-doc-at-point))
+    (bgl-load-decl-index)
+    (run-with-idle-timer 0.5 t #'bgl-proto-at-point))
   
   ;; activate th emode
   (font-lock-mode t)
@@ -1499,8 +1500,22 @@ if that value is non-nil."
 ;*    doc-table-index ...                                              */
 ;*---------------------------------------------------------------------*/
 (defvar bgl-doc-table-index (make-hash-table :test 'equal))
-(defvar bgl-module-table-index (make-hash-table :test 'equal))
-(make-variable-buffer-local 'bgl-module-table-index)
+(defvar bgl-decl-table-index (make-hash-table :test 'equal))
+(make-variable-buffer-local 'bgl-decl-table-index)
+
+;*---------------------------------------------------------------------*/
+;*    bgl-last-symbol ...                                              */
+;*---------------------------------------------------------------------*/
+(defvar bgl-last-decl-symbol nil)
+(defvar bgl-last-decl-entry nil)
+(defvar bgl-last-doc-symbol nil)
+(defvar bgl-last-doc-entry nil)
+(defvar bgl-popup-buffer "*bgl-mode-popup*")
+
+(make-variable-buffer-local 'bgl-last-decl-symbol)
+(make-variable-buffer-local 'bgl-last-decl-entry)
+(make-variable-buffer-local 'bgl-last-doc-symbol)
+(make-variable-buffer-local 'bgl-last-doc-entry)
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-load-doc-index ...                                           */
@@ -1510,6 +1525,7 @@ if that value is non-nil."
 (defun bgl-load-doc-index ()
   (let ((index (concat bgl-doc-dir "/" bgl-doc-index)))
     (when (file-exists-p index)
+      (message "loading \"%s\" doc index..." index)
       (let ((l (save-excursion
 		 (with-temp-buffer
 		   (progn
@@ -1525,12 +1541,13 @@ if that value is non-nil."
 			 (i (string-match-p "::" name))
 			 (k (if i (substring name 0 i) name)))
 		    (puthash k (cdr el) bgl-doc-table-index)))
-	      l)))))
+	      l)
+	(setq bgl-last-doc-symbol nil)))))
 
 ;*---------------------------------------------------------------------*/
-;*    bgl-load-buffer-module-index ...                                 */
+;*    bgl-load-decl-index ...                                          */
 ;*---------------------------------------------------------------------*/
-(defun bgl-load-buffer-module-index ()
+(defun bgl-load-decl-index ()
   (interactive)
   (bgl-load-module-index (expand-file-name buffer-file-name)))
 
@@ -1561,19 +1578,14 @@ if that value is non-nil."
 	     (defs (assq 'defs (cddr mod))))
 	(when (consp imports)
 	  (mapc #'(lambda (e)
-		    (puthash (car e) (cadr e) bgl-module-table-index))
+		    (message "put %s" e)
+		    (puthash (car e) (cdr e) bgl-decl-table-index))
 		(cdr imports)))
 	(when (consp defs)
 	  (mapc #'(lambda (e)
-		    (puthash (car e) (cadr e) bgl-module-table-index))
-		(cdr defs)))))))
-
-;*---------------------------------------------------------------------*/
-;*    bgl-last-symbol ...                                              */
-;*---------------------------------------------------------------------*/
-(defvar bgl-last-symbol nil)
-(defvar bgl-last-doc-entry nil)
-(defvar bgl-popup-buffer "*bgl-mode-popup*")
+		    (puthash (car e) (cdr e) bgl-decl-table-index))
+		(cdr defs)))
+	(setq bgl-last-decl-symbol nil)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-doc-entry-at-point ...                                       */
@@ -1582,22 +1594,39 @@ if that value is non-nil."
   "Get the doc entry of the symbol at point."
   (interactive)
   (let ((sym (thing-at-point 'symbol t)))
-    (if (equal sym bgl-last-symbol)
+    (if (equal sym bgl-last-doc-symbol)
 	bgl-last-doc-entry
 	(progn
-	 (setq bgl-last-symbol sym)
+	 (setq bgl-last-doc-symbol sym)
 	 (if sym
 	     (setq bgl-last-doc-entry (gethash sym bgl-doc-table-index))
 	     (setq bgl-last-doc-entry nil))))
     bgl-last-doc-entry))
   
 ;*---------------------------------------------------------------------*/
-;*    bgl-doc-at-point ...                                             */
+;*    bgl-decl-entry-at-point ...                                      */
 ;*---------------------------------------------------------------------*/
-(defun bgl-doc-at-point ()
-  "Show the prototype of the symbol at point in the minibuffer."
+(defun bgl-decl-entry-at-point ()
+  "Get the doc entry of the symbol at point."
   (interactive)
-  (let ((e (bgl-doc-entry-at-point)))
+  (let ((sym (thing-at-point 'symbol t)))
+    (if (equal sym bgl-last-decl-symbol)
+	bgl-last-decl-entry
+	(progn
+	  (setq bgl-last-decl-symbol sym)
+	  (if sym
+	      (setq bgl-last-decl-entry (gethash sym bgl-decl-table-index))
+	      (setq bgl-last-decl-entry nil))))
+    bgl-last-decl-entry))
+  
+;*---------------------------------------------------------------------*/
+;*    bgl-proto-at-point ...                                           */
+;*---------------------------------------------------------------------*/
+(defun bgl-proto-at-point ()
+  "Show the prototype of the symbol at point."
+  (interactive)
+  (let* ((d (bgl-decl-entry-at-point))
+	 (e (or d (bgl-doc-entry-at-point))))
     (if e
 	(let* ((s (replace-regexp-in-string "%" "#" (format "%s" (car e))))
 	       (cs (replace-regexp-in-string
@@ -1610,7 +1639,7 @@ if that value is non-nil."
 	  (posframe-show
 	   bgl-popup-buffer
 	   :string ls
-	   :background-color "#ffffcc"
+	   :background-color (if d "#ffffcc" "#ccffff")
 	   :foreground-color "black"
 	   :border-width 1
 	   :border-color "#cccccc"
@@ -1619,8 +1648,28 @@ if that value is non-nil."
 	   :poshandler #'posframe-poshandler-point-bottom-left-corner)
 	  (run-at-time bgl-tooltip-visibility-duration
 		       nil #'(lambda () (posframe-hide bgl-popup-buffer)))
-	  (message (format "%s" cs)))
+	  (progn
+	    (message (format "%s" cs))
+	    t))
 	(posframe-hide bgl-popup-buffer))))
+  
+;*---------------------------------------------------------------------*/
+;*    bgl-browse-doc-at-point ...                                      */
+;*---------------------------------------------------------------------*/
+(defun bgl-browse-doc-at-point ()
+  "Browse the Bigloo documentation for the symbol at point."
+  (interactive)
+  (let ((e (bgl-doc-entry-at-point)))
+    (let ((file (if e
+		    (format "%s/%s#%s" bgl-doc-dir (caddr e) (cadr e))
+		    (format "%s/index.html" bgl-doc-dir))))
+      (if (stringp bgl-flycdoc-browser)
+	  (let ((process-connection-type nil)
+		(url (contact "http://" file)))
+	    (start-process "doc" nil bgl-flycdoc-browser url))
+	  (progn
+	    (select-frame (make-frame))
+	    (eww-open-file file))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-browse-doc-at-point ...                                      */
@@ -1639,3 +1688,18 @@ if that value is non-nil."
 	  (progn
 	    (select-frame (make-frame))
 	    (eww-open-file file))))))
+
+;*---------------------------------------------------------------------*/
+;*    bgl-goto-def ...                                                 */
+;*---------------------------------------------------------------------*/
+(defun bgl-goto-def ()
+  (interactive)
+  (let ((e (bgl-decl-entry-at-point)))
+    (if e
+	(let* ((loc (cadr e))
+	       (file (cadr loc))
+	       (pos (caddr loc)))
+	  (let ((buf (find-file-other-frame file)))
+	    (switch-to-buffer buf)
+	    (goto-char (+ 1 pos))))
+	(bgl-browse-doc-at-point))))
