@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue May 19 10:36:33 2026 (serrano)                */
+;*    Last change :  Tue May 19 11:42:55 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -1383,22 +1383,21 @@
 ;*---------------------------------------------------------------------*/
 (define-method (object-write mod::Module . port)
    (with-access::Module mod (path id imports defs)
-      (apply write `(module ,id :path ,path
-			    :imports
-			    ,@(hashtable-filter-map imports
-				 (lambda (k d::Decl)
-				    (with-access::Decl d (id def (dmod mod))
-				       (when (isa? def Def)
-					  (with-access::Def def (expr)
-					     (when (epair? expr)
-						`(,id ,(cer expr))))))))
-			    :defs
-			    ,@(hashtable-filter-map defs
-				 (lambda (k d::Def)
-				    (with-access::Def d (id kind expr decl)
-				       (if (isa? decl Decl)
-					   (with-access::Decl decl ((dmod mod))
-					      (when (eq? dmod mod)
-						 `(,id ,(cer expr))))
-					   `(,id ,(cer expr)))))))
+      (apply write `(module ,id
+		       (path ,path)
+		       (imports ,@(hashtable-filter-map imports
+				     (lambda (k d::Decl)
+					(with-access::Decl d (id def (dmod mod))
+					   (when (isa? def Def)
+					      (with-access::Def def (expr)
+						 (when (epair? expr)
+						    `(,id ,(cer expr)))))))))
+		       (defs ,@(hashtable-filter-map defs
+				  (lambda (k d::Def)
+				     (with-access::Def d (id kind expr decl)
+					(if (isa? decl Decl)
+					    (with-access::Decl decl ((dmod mod))
+					       (when (eq? dmod mod)
+						  `(,id ,(cer expr))))
+					    `(,id ,(cer expr))))))))
 	 port)))

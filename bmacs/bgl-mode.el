@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Tue May 19 07:45:01 2026 (serrano)                */
+;*    Last change :  Tue May 19 11:39:46 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1499,6 +1499,8 @@ if that value is non-nil."
 ;*    doc-table-index ...                                              */
 ;*---------------------------------------------------------------------*/
 (defvar bgl-doc-table-index (make-hash-table :test 'equal))
+(defvar bgl-module-table-index (make-hash-table :test 'equal))
+(make-variable-buffer-local 'bgl-module-table-index)
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-load-doc-index ...                                           */
@@ -1539,21 +1541,32 @@ if that value is non-nil."
 ;*    compler in order to resolve global variable definition.          */
 ;*---------------------------------------------------------------------*/
 (defun bgl-load-module-index (path)
-  (let* ((file (replace-regexp-in-string "/" "_" path))
-	 (mod (concat bgl-cache-dir "/" file)))
-    (when (file-exists-p mod)
+  (let ((file (concat (file-name-directory path) "/flycheck_"
+		      (file-name-sans-extension
+		       (file-name-nondirectory path))
+		      ".sexp")))
+    (when (file-exists-p file)
       (message "loading \"%s\" module..." path)
-      (let ((l (save-excursion
-		 (with-temp-buffer
-		   (progn
-		     (set-buffer-multibyte nil)
-		     (insert-file-contents index)
-		     (goto-char (point-min))
-		     (while (search-forward "#" nil t)
-		       (replace-match "%"))
-		     (goto-char (point-min))
-		     (read (current-buffer)))))))
-	(message "l=%s" l)))))
+      (let* ((mod (save-excursion
+		    (with-temp-buffer
+		      (progn
+			(set-buffer-multibyte nil)
+			(insert-file-contents file)
+			(goto-char (point-min))
+			(while (search-forward "#" nil t)
+			  (replace-match "%"))
+			(goto-char (point-min))
+			(read (current-buffer))))))
+	     (imports (assq 'imports (cddr mod)))
+	     (defs (assq 'defs (cddr mod))))
+	(when (consp imports)
+	  (mapc #'(lambda (e)
+		    (puthash (car e) (cadr e) bgl-module-table-index))
+		(cdr imports)))
+	(when (consp defs)
+	  (mapc #'(lambda (e)
+		    (puthash (car e) (cadr e) bgl-module-table-index))
+		(cdr defs)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-last-symbol ...                                              */
