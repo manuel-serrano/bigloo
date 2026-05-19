@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Tue May 12 11:27:00 2026 (serrano)                */
+;*    Last change :  Tue May 19 08:12:25 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -75,6 +75,7 @@
 (define (build-sawc-backend)
    (instantiate::sawc
       (language 'c-saw)
+      (name "C")
       (srfi0 'bigloo-c)
       (heap-compatible 'c)
       (trace-support #f)
@@ -87,6 +88,7 @@
 (define (build-cgen-backend)
    (instantiate::cgen
       (language 'c)
+      (name "C")
       (srfi0 'bigloo-c)
       (local-exit #t)
       (strict-type-cast #t)))

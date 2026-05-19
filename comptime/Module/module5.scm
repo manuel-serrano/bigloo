@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Mon May 18 06:46:08 2026 (serrano)                */
+;*    Last change :  Tue May 19 10:36:33 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -1287,19 +1287,18 @@
 	 (set-cdr! (last-pair (car m)) `((export ,id)))
 	 (set-cdr! (last-pair m) (list (src->def src)))))
    
-   (let ((mods '()))
-      (for-each set-class-depth! (get-class-list))
+   (for-each set-class-depth! (get-class-list))
       
-      (for-each (lambda (t::tclass)
-		   (with-access::tclass t (holder)
-		      (with-access::global holder (module)
-			 (let ((m (get-module module)))
-			    (module-export-class! m t)))))
-	 (sort (lambda (c1 c2)
-		  (with-access::tclass c1 ((d1 depth))
-		     (with-access::tclass c2 ((d2 depth))
-			(<fx d1 d2))))
-	    (get-class-list))))
+   (for-each (lambda (t::tclass)
+		(with-access::tclass t (holder)
+		   (with-access::global holder (module)
+		      (let ((m (get-module module)))
+			 (module-export-class! m t)))))
+      (sort (lambda (c1 c2)
+	       (with-access::tclass c1 ((d1 depth))
+		  (with-access::tclass c2 ((d2 depth))
+		     (<fx d1 d2))))
+	 (get-class-list)))
 
    (map (lambda (c)
 	   (let ((mi (cdr c)))
@@ -1378,3 +1377,28 @@
    (install-module5-expander xenv 'lambda #f lambda-expand)
    
    xenv)
+
+;*---------------------------------------------------------------------*/
+;*    object-write ::Module ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (object-write mod::Module . port)
+   (with-access::Module mod (path id imports defs)
+      (apply write `(module ,id :path ,path
+			    :imports
+			    ,@(hashtable-filter-map imports
+				 (lambda (k d::Decl)
+				    (with-access::Decl d (id def (dmod mod))
+				       (when (isa? def Def)
+					  (with-access::Def def (expr)
+					     (when (epair? expr)
+						`(,id ,(cer expr))))))))
+			    :defs
+			    ,@(hashtable-filter-map defs
+				 (lambda (k d::Def)
+				    (with-access::Def d (id kind expr decl)
+				       (if (isa? decl Decl)
+					   (with-access::Decl decl ((dmod mod))
+					      (when (eq? dmod mod)
+						 `(,id ,(cer expr))))
+					   `(,id ,(cer expr)))))))
+	 port)))

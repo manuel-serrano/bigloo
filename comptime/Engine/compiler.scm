@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat May 16 08:52:08 2026 (serrano)                */
+;*    Last change :  Tue May 19 09:37:54 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -404,7 +404,7 @@
 	    (check-type "fastfl" ast #t #t))
 	 
 	 (set! ast (profile coerce (coerce-walk! ast)))
-	 (stop-on-pass 'coerce (lambda () (write-ast ast)))
+	 (stop-on-pass 'coerce (lambda () (write-pass-result ast)))
 	 (check-sharing "coerce" ast)
 	 (check-type "coerce" ast #t #t)
 	 
@@ -593,6 +593,7 @@
 				 (add-macro-definition! expr alias))))))))
 	    
 	    (set! *module* id)
+	    (set! *module-mod* mod)
 	    (set! *module-clause* expr-mod)
 	    (set! *module-checksum* checksum)
 	    

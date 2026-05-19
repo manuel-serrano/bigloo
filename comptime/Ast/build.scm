@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 14:00:21 1996                          */
-;*    Last change :  Wed Oct 22 16:40:35 2025 (serrano)                */
+;*    Last change :  Tue May 19 09:36:19 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    From the code definition, we build the Ast                       */
 ;*=====================================================================*/
@@ -46,7 +46,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    build-ast-sans-remove ...                                        */
 ;*    -------------------------------------------------------------    */
-;*    All global variables are now bound, we can now, build the ast.   */
+;*    All global variables are now bound, build the ast which is a     */
+;*    mere list of global variables.                                   */
 ;*---------------------------------------------------------------------*/
 (define (build-ast-sans-remove units genv)
    (pass-prelude "Ast")

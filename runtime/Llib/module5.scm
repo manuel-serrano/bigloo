@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun May 17 07:10:30 2026 (serrano)                */
+;*    Last change :  Tue May 19 11:31:13 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1459,7 +1459,7 @@
 	    ;; static binding of the module filename
 	    (set! (-> mod body)
 	       (let ((id (string->symbol (format "~a.filename" (-> mod id)))))
-		  (cons `(define ,id ,(-> mod path))
+		  (cons (localize `(define ,id ,(-> mod path)) (-> mod expr))
 		     (-> mod body))))
 	    
 	    (when (pair? (-> mod body))

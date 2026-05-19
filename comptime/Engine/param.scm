@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue May 12 17:14:36 2026 (serrano)                */
+;*    Last change :  Tue May 19 08:09:13 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -201,6 +201,7 @@
 	    *garbage-collector*
 	    *auto-link-main*
 	    *pass*
+	    *pass-dump*
 	    *jvm-jar?*
 	    *jvm-shell*
 	    *jvm-jigloo*
@@ -745,6 +746,9 @@
 (param-define *pass*
    "Stop after the pass"
    'ld)
+(param-define *pass-dump*
+   "What do write when the pass completes"
+   "ast")
 (param-define *jvm-jar?*
    "Enable/disable a JAR file production for the JVM back-end"
    #f)
@@ -838,15 +842,16 @@
    #f)
 (param-define *module-cache-dir*
    "Optional disk cache to store resolved modules"
-   ;; TO BE REPLACED WITH (module5-cache-dir)
-   (or (getenv "BIGLOOCACHE")
-       (make-file-path
-	  (or (getenv "TMPDIR") "/tmp")
-	  (or (getenv "USER") "/anonymous")
-	  "cache"
-	  "bigloo"
-	  (bigloo-config 'release-number)
-	  (bigloo-config 'build-tag))))
+   (module5-cache-dir))
+;*    ;; TO BE REPLACED WITH (module5-cache-dir)                       */
+;*    (or (getenv "BIGLOOCACHE")                                       */
+;*        (make-file-path                                              */
+;* 	  (or (getenv "TMPDIR") "/tmp")                                */
+;* 	  (or (getenv "USER") "/anonymous")                            */
+;* 	  "cache"                                                      */
+;* 	  "bigloo"                                                     */
+;* 	  (bigloo-config 'release-number)                              */
+;* 	  (bigloo-config 'build-tag))))                                */
 (define *module-shape?* #f)
 (define *key-shape?* #f)
 (define *type-shape?* #f)

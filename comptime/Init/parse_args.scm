@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue May 12 17:11:40 2026 (serrano)                */
+;*    Last change :  Tue May 19 09:48:26 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -434,6 +434,7 @@
       ;; type refefinition
       (("-fallow-type-redefinition" (help "allow type redifinition"))
        (set! *allow-type-redefinition* #t))
+      
 ;*--- Optimization ----------------------------------------------------*/
       (section "Optimization")
       ;; benchmarking
@@ -1122,6 +1123,8 @@
        (set! *heap-name* *heap-jvm-name*)
        (set! *target-language* 'jvm)
        (set! *pass* 'jvmas))
+      (("-dump" ?kind (help "Either \"ast\" or \"module\")"))
+       (set! *pass-dump* kind))
       
 ;*--- Constant initialization -----------------------------------------*/
       (section "Constant initialization")
