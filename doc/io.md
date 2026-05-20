@@ -60,7 +60,7 @@ Reads a byte from `ip`. Returns either a fixnum or the end-of-file object.
 Reads a character from `ip` without consuming it. Returns either a
 character or the end-of-file object.
 
-@deffnx {procedure} peek-byte
+### peek-byte ###
 Reads a byte from `ip` without consuming it. Returns either a
 byte or the end-of-file object.
 
