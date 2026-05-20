@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Mon May 18 08:47:07 2026 (serrano)                */
+;*    Last change :  Wed May 20 16:57:56 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -448,13 +448,17 @@
 		   (hashtable-put! t k "define"))
 	 '("define" "module" "export" "import" "include" "extern" "library"
            "from" "option" "main"
-           "define-macro" "define-generic" "define-inline"
-	   "define-method" "define-service" "define-expander" "define-tag"))
+           "define-macro" "define-expander"
+           "define-generic" "define-method" "define-inline"
+           "define-class" "define-abstract-class" "define-final-class"
+           "define-wide-class"
+           "define-service" "define-tag"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "reserved"))
 	 '("lambda" "service" "let" "let*" "letrec" "letrec*"
            "if" "when" "unless"
-	   "begin" "cond" "case" "instantiate" "set!" "else" "with-access"
+	   "begin" "cond" "case" "instantiate" "duplicate" "co-instantiate"
+           "set!" "else" "with-access"
 	   "multiple-value-bind" "values" "match-case" "node-style-set!"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "important"))

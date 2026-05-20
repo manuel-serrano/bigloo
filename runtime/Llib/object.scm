@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed May 20 07:23:51 2026 (serrano)                */
+;*    Last change :  Wed May 20 17:03:47 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1420,7 +1420,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    The constant-time and thread-safe implementation of isa?         */
 ;*---------------------------------------------------------------------*/
-(define-inline (isa? obj class)
+(define-inline (isa?::bool obj class::class)
    (when (object? obj)
       (%isa-object/cdepth? ($as-object obj) class ($class-depth class))))
 

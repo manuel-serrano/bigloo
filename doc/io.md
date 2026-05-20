@@ -180,6 +180,12 @@ of string beginning with index `start` (inclusive) and ending with index
 satisfying
 0 &le; `start` &le; `end` &le; `(string-length string)`.
 
+### display-object ###
+This generic function is invoked by `display` to display objects.
+
+### write-object ###
+This generic function is invoked by `write` to display objects.
+
 ### print ###
 As `display*` but also print a newline.
 

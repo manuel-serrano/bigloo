@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sat May 16 07:57:47 2026 (serrano)                */
+;*    Last change :  Wed May 20 17:24:45 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -43,13 +43,13 @@
 ;*---------------------------------------------------------------------*/
 (define all-menus
    '(("home" . "index.html")
-     ("stdlib" . "bool.html")
-     ("module" . "module5.html")))
+     ("lang" . "module5.html")
+     ("libs" . "bool.html")))
 
 ;*---------------------------------------------------------------------*/
-;*    stdlib-chapters ...                                              */
+;*    libs-chapters ...                                                */
 ;*---------------------------------------------------------------------*/
-(define stdlib-chapters
+(define libs-chapters
    '(("booleans" . "bool.html")
      ("characters" . "character.html")
      ("hash" . "hash.html")
@@ -61,11 +61,12 @@
      ("vectors" . "vector.html")))
 
 ;*---------------------------------------------------------------------*/
-;*    module-chapters ...                                              */
+;*    lang-chapters ...                                                */
 ;*---------------------------------------------------------------------*/
-(define module-chapters
+(define lang-chapters
    '(("module 5" . "module5.html")
-     ("module 4" . "module4.html")))
+     ("module 4" . "module4.html")
+     ("objects" . "object.html")))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-chapter-title ...                                           */
@@ -73,7 +74,7 @@
 (define (find-chapter-title source)
    (let* ((p (prefix (basename source)))
           (c (find (lambda (x) (string=? (prefix (cdr x)) p))
-                (append module-chapters stdlib-chapters))))
+                (append lang-chapters libs-chapters))))
       (if (pair? c)
           (prefix (cdr c))
           (error "find-chapter-title" "Cannot find title for source" source))))
@@ -111,7 +112,7 @@
    (define main-title (xml-element 'span '((class . "main")) '("bigloo")))
 
    (define (menubar title::pair-nil
-              #!key (home "") (stdlib "") (modules "") objects)
+              #!key (home "") (lang "") (libs "") objects)
       (xml-element 'nav '((class . "menu"))
          (list (xml-element 'div '((class . "menu"))
                   (list
@@ -122,25 +123,23 @@
                         (list
                            (xml-element 'li (navbutton-attrs "home")
                               (list
-                                 (xml-element 'a
-                                    `((class . "home")
-                                      (href . ,(find-menu-href "home")))
-                                    (list "Home"))
+                                 (xml-element 'a `((class . "home")
+                                                   (href . ,(find-menu-href "home")))
+                                    (list (xml-element 'span '() '("Home"))))
                                  home))
-                           (xml-element 'li (navbutton-attrs "stdlib")
+                           (xml-element 'li (navbutton-attrs "Lang")
                               (list
-                                 (xml-element 'a
-                                    '((class . "stdlib submenu"))
-                                    (list "Stdlib"))
-                                 stdlib))
-                           (xml-element 'li (navbutton-attrs "Modules")
+                                 (xml-element 'a '((class . "lang submenu"))
+                                    (list (xml-element 'span '() '("Lang"))))
+                                 lang))
+                           (xml-element 'li (navbutton-attrs "Libs")
                               (list
-                                 (xml-element 'a
-                                    '((class . "modules submenu"))
-                                    (list "Modules"))
-                                 modules))
+                                 (xml-element 'a '((class . "libs submenu"))
+                                    (list (xml-element 'span '() '("Libs"))))
+                                 libs))
                            (xml-element 'li (navbutton-attrs "Objects")
-                              (list (xml-element 'a '() (list "Objects"))))))
+                              (list (xml-element 'a '((class . "objects submenu"))
+                                       (list (xml-element 'span '() '("Objects"))))))))
                      (xml-element 'span '((class . "version"))
                         (list
                            (xml-element 'text '()
@@ -167,8 +166,8 @@
                                       (xml-element 'span '((class . "sep"))
                                          '("/"))
                                       (find-chapter-title source))
-                             :stdlib (xml-chapter-toc 'stdlib stdlib-chapters)
-                             :modules (xml-chapter-toc 'modules module-chapters))
+                             :libs (xml-chapter-toc 'stdlib libs-chapters)
+                             :lang (xml-chapter-toc 'modules lang-chapters))
 			  (xml-element 'div '((class . "chapter"))
 			     (list
 				(xml-element 'div '((class . "body"))
@@ -182,8 +181,8 @@
                     (list
                        (call-with-input-file "head.html" html-parse)
                        (menubar '()
-                          :stdlib (xml-chapter-toc 'stdlib stdlib-chapters)
-                          :modules (xml-chapter-toc 'modules module-chapters))
+                          :libs (xml-chapter-toc 'stdlib libs-chapters)
+                          :lang (xml-chapter-toc 'modules lang-chapters))
                        (xml-element 'div '((class . "home"))
                           (list
                              (xml-element 'img '((class . "logo") (src . "bgl.svg")) '())
@@ -295,7 +294,18 @@
 				   defs))))
 		     (cons e (reverse! defs)))))
 	 (xml-get-elements-by-tag doc 'h2)))
-   
+
+   (define (backends bs)
+      (xml-element 'span '((class . "backends"))
+         (map (lambda (b)
+                 (xml-element 'span `((class . ,(format "icons ~a" b)) (title . ,b)) '("&#xe041;")))
+            bs)))
+
+   (define (class-backend klass)
+      (if (string? klass)
+          (backends (string-split klass #\-))
+          (backends '("C" "java" "wasm"))))
+
    (call-with-input-file source
       (lambda (ip)
 	 (let* ((doc (markdown-parse ip
@@ -315,16 +325,37 @@
 					 (apply string-append
 					    (xml-text-element-value
 					       (car (xml-element-children e))))))
+                                (klass (xml-element-attribute e 'class))
 				(def (hashtable-get definitions-table name))
 				(tests (hashtable-get tests-table name)))
                             (cond
                                ((=fx (hashtable-size definitions-table) 0)
                                 e)
                                ((not def)
-                                (error "doc" "Cannot find definition" name))
+                                (if (equal? klass "NoDef")
+                                    (let ((md (list (xml-element 'span '((class . "NoDef")) (list name)))))
+                                       (xml-element-children-set! e (cons (class-backend #f) md))
+                                       (xml-element-attribute-set! e 'class (definition-class def))
+                                       (if (pair? tests)
+                                           (let loop ((next (xml-element-next-sibling e))
+                                                      (prev e))
+                                              (cond
+                                                 ((or (not next)
+                                                      (let ((next::XmlElement next))
+                                                         (memq (-> next tag) '(h1 h2 h3 h4))))
+                                                  (for-each (lambda (el)
+                                                               (xml-element-append-child! prev el))
+                                                     (test->markdown (reverse tests))))
+                                                 (else
+                                                  (loop (xml-element-next-sibling next) next))))
+                                           (error "doc" "Cannot find test" name))
+                                       (set! index
+                                          (cons (list name def (xml-element-attribute e 'id) target)
+                                             index)))
+                                    (error "doc" "Cannot find definition" name)))
                                (else
                                 (let ((md (definition->markdown def)))
-                                   (xml-element-children-set! e md)
+                                   (xml-element-children-set! e (cons (class-backend klass) md))
                                    (xml-element-attribute-set! e 'class (definition-class def))
                                    (if (pair? tests)
                                        (let loop ((next (xml-element-next-sibling e))
@@ -359,7 +390,7 @@
 ;*---------------------------------------------------------------------*/
 (define (definition-class def)
    (match-case def
-      ((generic . ?-) "generic")
+      ((generic . ?-) "function generic")
       ((?- .  ?-) "function")
       (else "variable")))
 
@@ -406,10 +437,17 @@
    (define (function->markdown fun args)
       `("(" ,@(markdown-ident fun "definition") ,@(markdown-arguments args) ")"))
    
+   (define (generic->markdown fun args)
+      `("("
+          ,(xml-element 'span '((class . "generic")) (list "generic "))
+          ,@(markdown-ident fun "definition") ,@(markdown-arguments args) ")"))
+   
    (define (variable->markdown var)
       (list (xml-element 'span '((class . "definition")) (list (symbol->string var)))))
 
    (match-case def
+      ((generic ?fun . ?args)
+       (generic->markdown fun args))
       ((?fun . ?args)
        (function->markdown fun args))
       (else

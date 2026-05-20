@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Mon May 18 08:25:16 2026 (serrano)                */
+/*    Last change :  Wed May 20 17:24:31 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -41,6 +41,8 @@
     --functionTag: #1467e6;
     --defaultTag: #777;
 
+    --genericColor: #6a5ac9;
+    
     --programBackground: #ffffff;
     --programBorder: #eeeeee;
     --programBorderColor: #f91a03;
@@ -82,6 +84,10 @@
 
     --blockquoteBackground: #efefef;
     --blockquoteBorder: #ffd33a;
+
+    --CBackend: #e6383c;
+    --javaBackend: #f6a70e;
+    --wasmBackend: #4887ee;
 }
 
 /*---------------------------------------------------------------------*/
@@ -155,6 +161,24 @@ div.menu {
     text-decoration: none;
 }
 
+.menu a > span:before {
+    font-family: icons;
+    font-size: 80%;
+    margin-right: 0.3em;
+}
+
+.menu a.home > span:before {
+    content: "\e021";
+}
+
+.menu a.lang span:before {
+    content: "\e218";
+}
+
+.menu a.libs span:before {
+    content: "\e043";
+}
+
 .menu img.logo {
     width: 3em;
     height: 3em;
@@ -192,13 +216,13 @@ ul.menu > li.navbutton {
     height: calc(100% - 3px);
 }
 
-.menu[data-active="stdlib"] a.stdlib,
-.menu[data-active="modules"] a.modules {
+.menu[data-active="libs"] a.libs,
+.menu[data-active="lang"] a.lang {
     color: var(--menuButtonActive);
 }
 
-ul.menu[data-active="stdlib"] > li.navbutton.stdlib,
-ul.menu[data-active="modules"] > li.navbutton.modules {
+ul.menu[data-active="libs"] > li.navbutton.libs,
+ul.menu[data-active="lang"] > li.navbutton.lang {
     border-bottom-color: var(--navActiveColor);
     background-color: var(--menuButtonActiveBackground);
 }
@@ -354,22 +378,35 @@ h3 {
     padding-bottom: 3px;
 }
 
-h3.function:before {
-    content: "\e041";
+h3.function span.generic {
+    color: var(--genericColor);
+    font-weight: bold;
+}
+
+h3.variable span.backends,
+h3.function span.backends {
     font-size: 65%;
-    color: var(--functionTag);
-    font-family: icons;
     margin-left: 0.5em;
     margin-right: 0.8em;
 }
 
-h3:before {
-    content: "\e041";
-    font-size: 65%;
-    color: var(--defaultTag);
+h3.variable span.icons,
+h3.function span.icons {
+    color: var(--functionTag);
     font-family: icons;
-    margin-left: 0.5em;
-    margin-right: 0.8em;
+    margin-left: 0.4em;
+}
+
+h3 span.icons.C {
+    color: var(--CBackend);
+}
+
+h3 span.icons.java {
+    color: var(--javaBackend);
+}
+
+h3 span.icons.wasm {
+    color: var(--wasmBackend);
 }
 
 h3 .definition {

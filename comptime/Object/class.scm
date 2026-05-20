@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Object/class.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Object/class.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Sun Mar  8 09:31:34 2026 (serrano)                */
+;*    Last change :  Wed May 20 18:59:18 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -145,6 +145,8 @@
 ;*    declare-class-type! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (declare-class-type! id super ctor var widening final? abstract? src)
+   (tprint "DECL C id=" id " super=" (shape super) " final?=" final?
+      " w=" widening " var=" (shape var))
    (with-trace 'module "declare-class-type!"
       (trace-item "id=" id)
       (trace-item "super=" (shape super))

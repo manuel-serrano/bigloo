@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed May 20 08:42:54 2026 (serrano)                */
+;*    Last change :  Wed May 20 13:52:38 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -255,7 +255,9 @@
 			      ((not (type-exists? id))
 			       (let* ((sup (and super (find-type/expr super expr)))
 				      (ty (declare-class-type! id sup
-					     ctor var #f
+					     ctor var
+					     (when (eq? kkind 'define-wide-class)
+						'widening)
 					     (eq? kkind 'define-final-class)
 					     (eq? kkind 'define-abstract-class)
 					     src)))
@@ -1314,12 +1316,29 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-init-xenv! xenv mod)
 
+   (define (expand-args args e)
+      (let loop ((args args))
+	 (cond
+	    ((null? args)
+	     '())
+	    ((symbol? args)
+	     args)
+	    ((not (pair? args))
+	     (error "expand" "Illegal argument" args))
+	    ((not (and (pair? (car args))
+		       (pair? (cdr (car args)))
+		       (null? (cddr (car args)))))
+	     (cons (car args) (loop (cdr args))))
+	    (else
+	     (cons (list (car (car args)) (e (cadr (car args)) e))
+		(loop (cdr args)))))))
+       
    (define (define-expander x e)
       (match-case x
 	 ((?def ?proto ?body)
-	  (localize x `(,def ,proto ,(e body e))))
+	  (localize x `(,def ,(expand-args proto e) ,(e body e))))
 	 ((?def ?proto . ?body)
-	  (localize x `(,def ,proto ,@(map (lambda (x) (e x e)) body))))
+	  (localize x `(,def ,(expand-args proto e) ,@(map (lambda (x) (e x e)) body))))
 	 (else
 	  (error "expand" "Illegal form" x))))
 
@@ -1359,7 +1378,9 @@
    (define (lambda-expand x e)
       (match-case x
 	 ((lambda ?args . ?body)
-	  (localize x `(lambda ,args ,@(map (lambda (b) (e b e)) body))))
+	  (localize x
+	     `(lambda ,(expand-args args e)
+		 ,@(map (lambda (b) (e b e)) body))))
 	 (else
 	  (error "lambda" "Illegal form" x))))
 

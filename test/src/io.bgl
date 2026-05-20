@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Mon May 18 11:46:13 2026 (serrano)                */
+;*    Last change :  Wed May 20 17:21:35 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing I/O                                                      */
@@ -321,6 +321,20 @@
       read-string)
    :expected (list->string '(#\" #\\ #\newline #\i #\tab #\t)))
 
+(define-test display-object
+   (string?
+      (with-output-to-string
+         (lambda ()
+            (display-object (instantiate::&condition)))))
+   :expected #t)
+
+(define-test write-object
+   (string?
+      (call-with-output-string
+         (lambda (port)
+            (write-object (instantiate::&condition) port))))
+   :expected #t)
+                          
 (define-test write-char
    (with-input-from-string (with-output-to-string
                               (lambda ()

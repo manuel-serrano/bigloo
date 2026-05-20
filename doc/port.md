@@ -520,6 +520,8 @@ Sets the _close hook_ of the input `port1. The
 close hook is a procedure of one argument, the closed port.
 
 ### select ###
+<!-- [:@C] -->
+
 A wrapper of the Posix `select` function. Returns three values,
 the three lists of objects that are ready for reading, respectively writing,
 or that are in error.
@@ -528,6 +530,8 @@ or that are in error.
 > Only supported by the C backend.
 
 ### lockf ###
+<!-- [:@C] -->
+
 Locks a file descriptor or an output port. It is an error to call
 `lockf` with an port which is not open on a plain file (i.e., a port open
 with `open-output-file`, or its variants).

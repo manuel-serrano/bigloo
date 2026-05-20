@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Wed May 20 10:31:17 2026 (serrano)                */
+;*    Last change :  Wed May 20 17:11:57 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -119,18 +119,15 @@
 		 "\\|define-macro\\|define-generic\\|define-method\\|define-walk-method"
 		 "\\|define-syntax\\|define-expander"
 		 "\\|define-class\\|define-abstract-class\\|define-final-class"
-		 "\\|define-service\\|define-parameter\\|define-preferences"
-		 "\\|define-tag"
-		 "\\|define-command\\)[ ]")
+		 "\\|define-wide-class\\|define-parameter\\)[ ]")
 	 'font-lock-function-name-face)
    (list (concat "^\(\\(?:define\\|define-inline"
 		 "\\|define-struct\\|define-record-type\\|define-record"
 		 "\\|define-macro\\|define-generic\\|define-method\\|define-walk-method"
 		 "\\|define-syntax\\|define-expander"
 		 "\\|define-class\\|define-abstract-class\\|define-final-class"
-		 "\\|define-service\\|define-parameter\\|define-preferences"
-		 "\\|define-tag"
-		 "\\|define-command\\)[ ]\(?\\([^ \t\n]+\\)")
+		 "\\|define-wide-class\\|define-parameter"
+		 "\\)[ ]\(?\\([^ \t\n]+\\)")
 	 1
 	 'font-lock-function-name-face)
    (list "\(\\(\\(?:module\\|interface\\)[ ]+[^ \n]+\\)[ \t\n]"

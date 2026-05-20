@@ -1,0 +1,134 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/object.bgl            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
+;*    Last change :  Wed May 20 18:38:09 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing Objects and Classes                                      */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    object                                                           */
+;*---------------------------------------------------------------------*/
+(module object
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    class definitions                                                */
+;*---------------------------------------------------------------------*/
+(define-final-class Point
+   (point-ctor)
+   (x (default 0))
+   (y (default 0)))
+
+(define-wide-class ColorPoint::Point
+   (color (default 'black)))
+
+(define-wide-class Point3d::Point
+   (z (default 0)))
+
+(define point-cnt 0)
+
+(define (point-ctor x::Point)
+   (set! point-cnt (+fx point-cnt 1))
+   x)
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "object" tests))
+      (test-all verbose "object")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test isa? (isa? #t object)
+   :expected #f)
+
+(define-test isa? (isa? (instantiate::Point) Point)
+   :expected #t)
+
+(define-test isa? (isa? (instantiate::Point) Point3d)
+   :expected #f)
+
+(define-test isa? (isa? (instantiate::Point3d) Point)
+   :expected #t)
+
+(define-test instantiate (isa? (instantiate::Point) object)
+   :expected #t)
+
+(define-test instantiate (isa? (instantiate::Point (y 100)) Point)
+   :expected #t)
+
+(define-test instantiate (isa? (instantiate::ColorPoint (y 100)) Point3d)
+   :expected #f)
+
+(define-test class-nil (isa? (class-nil Point) Point)
+   :expected #t)
+
+(define-test with-access
+   (with-access::Point (instantiate::Point3d) (x) x)
+   :expected 0)
+
+(define-test with-access
+   (let ((o1 (instantiate::Point (x 1) (y 3)))
+         (o2 (instantiate::Point (y 3))))
+      (with-access::Point o1 (x (y1 y))
+         (with-access::Point o2 (y)
+            (set! x (- x))
+            (set! y1 (- y1 y))
+            (+ x y1))))
+   :expected -1)
+
+(define-test ->
+   (let ((p1::Point (instantiate::Point (x 1) (y 5)))
+         (p2::Point (instantiate::Point (x 2) (y 3))))
+      (set! (-> p1 x) (- (-> p1 x)))
+      (set! (-> p1 y) (- (-> p1 y) (-> p2 y)))
+      (-> p1 y))
+   :expected 2)
+
+(define-test co-instantiate
+   (co-instantiate ((p1 (instantiate::Point
+                           (x p2)
+                           (y 20)))
+                    (p2 (instantiate::Point
+                           (x 10)
+                           (y p1))))
+      (with-access::Point p1 (y)
+         (with-access::Point p2 (x)
+            (+ x y))))
+   :expected 30)
+
+(define-test duplicate
+   (let* ((p (instantiate::Point3d (z 30)))
+          (p2 (duplicate::Point3d p (x 10))))
+      (with-access::Point3d p2 (x y z)
+         (+ x y z)))
+   :expected 40)
+
+(define-test duplicate
+   (let* ((p (instantiate::Point (x 1)))
+          (p2 (duplicate::Point3d p (y 10) (z 30))))
+      (with-access::Point3d p2 (x y z)
+         (+ x y z)))
+   :expected 41)
+
+(define-test duplicate
+   (let* ((p (instantiate::Point3d (x 1)))
+          (p2 (duplicate::Point p (y 10))))
+      (with-access::Point p2 (x y)
+         (+ x y)))
+   :expected 11)
+
+(define-test ctor
+   (>fx point-cnt 5)
+   :expected #t)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Wed Apr  8 08:24:28 2026 (serrano)                */
+;*    Last change :  Wed May 20 18:07:54 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -472,17 +472,20 @@
 ;*---------------------------------------------------------------------*/
 ;*    duplicate-expander ...                                           */
 ;*    -------------------------------------------------------------    */
-;*    Create an duplicate expander, suitable for the interpreter       */
+;*    Create a duplicate expander, suitable for the interpreter        */
 ;*    and the compiler. Called during the expansion of a module 5.     */
 ;*---------------------------------------------------------------------*/
 (define (duplicate-expander class-info mod::Module)
    (lambda (x e)
+
+      (define (cast sym clazz)
+	 `(,(make-typed-ident 'cast clazz) ,sym))
+      
       (let* ((args (cddr x))
 	     (o (gensym 'o))
 	     (d (gensym 'd))
 	     (cid (class-info-id class-info))
 	     (mid (-> mod id))
-	     (td (make-typed-ident d cid))
 	     (to (make-typed-ident o cid)))
 	 ;; syntactic check
 	 (for-each (lambda (a)
@@ -492,7 +495,7 @@
 				 (class-info-properties class-info))
 			 (error/loc (car x) "Illegal property" (car a) a)))
 	    args)
-	 (let ((nx `(let* ((,td ,(cadr x))
+	 (let ((nx `(let* ((,d ,(cadr x))
 			   (,to ($class-allocate ,cid
 				   ;; concrete properties
 				   ,@(map (lambda (p)
@@ -503,7 +506,7 @@
 						 =>
 						 cadr)
 						(else
-						 `(-> ,d ,(prop-info-id p)))))
+						 `(-> ,(cast d (prop-info-class p)) ,(prop-info-id p)))))
 					(filter (lambda (p)
 						   (not (prop-info-virtual? p)))
 					   (class-info-properties class-info))))))
@@ -511,7 +514,7 @@
 		       ,@(if (class-info-ctor class-info)
 			     (list `(,(class-info-ctor class-info) ,o))
 			     '())
-		       ;; virtual propertys
+		       ;; duplicated properties
 		       ,@(filter-map (lambda (p)
 					(cond
 					   ((not (prop-info-virtual? p))
@@ -522,7 +525,7 @@
 					       (unless (prop-info-ronly? p)
 						  `(set! (-> ,o ,(prop-info-id p)) ,(cadr arg)))))
 					   ((not (prop-info-ronly? p))
-					    `(set! (-> ,o ,(prop-info-id p)) (-> ,d ,(prop-info-id p))))))
+					    `(set! (-> ,o ,(prop-info-id p)) (-> ,(cast d (prop-info-class p)) ,(prop-info-id p))))))
 			    (class-info-properties class-info))
 		       ;; done
 		       ,o)))
@@ -644,7 +647,8 @@
 				 (filter-map (lambda (a)
 						(match-case a
 						   (((and (? symbol?) ?p) ?val)
-						    `(set! (-> ,v ,p) ,val))
+						    (let ((cast (string->symbol (format "cast::~a" (class-info-id ci)))))
+						       `(set! (-> (,cast ,v) ,p) ,val)))
 						   (else
 						    (error/loc "co-instantiate"
 						       "Wrong instantiate form" a x))))

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Module/eval.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Module/eval.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Mon Oct 20 14:01:39 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed May 20 14:03:03 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
 ;*=====================================================================*/
@@ -75,12 +75,16 @@
        (set! *all-export-eval?* #t))
       ((export-module)
        (set! *all-module-eval?* #t))
-      ((export (and (? symbol?) ?var))
-       (set! *one-eval?* #t)
-       (remember-eval-exported! var #f proto))
-      ((export (@ (and (? symbol?) ?var) (and (? symbol?) ?module)))
-       (set! *one-eval?* #t)
-       (remember-eval-exported! var module proto))
+      ((export . (and (? list?) ?exports))
+       (for-each (lambda (e)
+		    (match-case e
+		       ((? symbol?)
+			(set! *one-eval?* #t)
+			(remember-eval-exported! e #f proto))
+		       ((@ (and (? symbol?) ?var) (and (? symbol?) ?module))
+			(set! *one-eval?* #t)
+			(remember-eval-exported! var module proto))))
+	  exports))
       ((class (and (? symbol?) ?class))
        (set! *eval-classes* (cons proto *eval-classes*)))
       ((import (and (? symbol?) ?var))
@@ -158,7 +162,7 @@
 	  (define-primop-ref->node g (location->node g genv) genv))
 	 (else
 	  (define-primop->node g genv))))
-   
+
    (if (or *one-eval?*
 	   *all-eval?*
 	   *all-export-eval?*

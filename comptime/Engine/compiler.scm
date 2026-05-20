@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue May 19 09:37:54 2026 (serrano)                */
+;*    Last change :  Wed May 20 14:10:39 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -642,7 +642,9 @@
 	 (unit-sexp*-add-head! tu (get-alibrary-inits))
 
 	 ;; eval code
-	 (eval-finalizer)
+	 (let ((u (eval-finalizer)))
+	    (when (pair? u)
+	       (set! units (cons (car u) units))))
 
 	 ;; user pass
 	 (user-walk tu)
