@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/toplevel.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/toplevel.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct 20 15:11:28 2025                          */
-;*    Last change :  Tue Apr 28 09:35:49 2026 (serrano)                */
+;*    Last change :  Wed May 20 07:56:43 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST construction of the toplevel forms                           */
@@ -541,6 +541,7 @@
 ;*    parse-fun-args ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (parse-fun-args args src loc)
+   (define args0 args)
    (let loop ((args args)
 	      (res '()))
       (cond
@@ -555,9 +556,13 @@
 	     ;; be checked when defining the global variable
 	     (reverse! (cons (make-user-local-svar id type) res))))
 	 ((dsssl-named-constant? (car args))
-	  (let ((arg (id-of-id (dsssl-find-first-formal args) loc)))
+	  (let ((arg (dsssl-find-first-formal args)))
 	     (if arg
-		 (reverse! (cons (make-user-local-svar arg *obj*) res))
+		 (let ((id (id-of-id arg loc))
+		       (ty (type-of-id arg loc)))
+		    ;; MS 20may2026, changed *obj* to ty to support
+		    ;; optionally typed arguments
+		    (reverse! (cons (make-user-local-svar id ty) res)))
 		 (reverse! res))))
 	 (else
 	  (let* ((pid (check-id (parse-id (car args) loc) src))

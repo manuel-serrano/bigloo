@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/api/avahi/src/Llib/avahi.scm      */
+;*    .../prgm/project/bigloo/5.0.x/api/avahi/src/Llib/avahi.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Fri Dec  8 17:31:00 2023 (serrano)                */
-;*    Copyright   :  2011-23 Manuel Serrano                            */
+;*    Last change :  Wed May 20 07:37:37 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
 ;*=====================================================================*/
@@ -205,21 +205,17 @@
       (%avahi-signal no-trace)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::avahi-client ...                                */
+;*    display-object ::avahi-client ...                                */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display o::avahi-client . port)
-   (with-output-to-port (if (null? port) (current-output-port) (car port))
-      (lambda ()
-	 (with-access::avahi-client o (hostname domainname state)
-	    (print "#<avahi-client(" state "):" hostname "." domainname)))))
+(define-method (display-object o::avahi-client #!optional (port::output-port (current-output-port)))
+   (with-access::avahi-client o (hostname domainname state)
+      (fprint port "#<avahi-client(" state "):" hostname "." domainname)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::avahi-poll ...                                  */
+;*    display-object ::avahi-poll ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display o::avahi-poll . port)
-   (with-output-to-port (if (null? port) (current-output-port) (car port))
-      (lambda ()
-	 (print "#<" (class-name (object-class o)) ">"))))
+(define-method (display-object o::avahi-poll #!optional (port::output-port (current-output-port)))
+   (fprint port "#<" (class-name (object-class o)) ">"))
 
 ;*---------------------------------------------------------------------*/
 ;*    *avahi-mutex* ...                                                */

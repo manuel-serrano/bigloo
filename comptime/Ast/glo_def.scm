@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/glo_def.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/glo_def.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Wed Oct 22 08:54:16 2025 (serrano)                */
+;*    Last change :  Wed May 20 07:40:58 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the functions used to def (define) a      */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -359,6 +359,8 @@
 		       ((not (compatible-type? sub?
 				(local-type (car locals))
 				(car types)))
+			(tprint "LT=" (shape (local-type (car locals)))
+			   " T=" (shape (car types)))
 			(mismatch-error generic
 			   src
 			   "(incompatible formal type)")

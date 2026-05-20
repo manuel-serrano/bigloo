@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Effect/feffect.scm                  */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Effect/feffect.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 26 08:48:52 2003                          */
-;*    Last change :  Mon Feb 16 15:12:03 2026 (serrano)                */
+;*    Last change :  Wed May 20 08:27:50 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The effect of the functions (i.e. does a function read a pair,   */
@@ -56,15 +56,6 @@
 		(set! changed #f)
 		(for-each iterate-function! globals)
 		(loop))))))
-
-;*---------------------------------------------------------------------*/
-;*    object-display ::feffect ...                                     */
-;*---------------------------------------------------------------------*/
-(define-method (object-display f::feffect . p)
-   (with-output-to-port (if (pair? p) (car p) (current-output-port))
-      (lambda ()
-	 (with-access::feffect f (read write)
-	    (printf "#|feffect: ~a ~a|" read write)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pre-created effects                                              */

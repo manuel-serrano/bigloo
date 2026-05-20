@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon May 18 15:19:51 2026 (serrano)                */
+;*    Last change :  Wed May 20 06:45:59 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -58,7 +58,6 @@
 	    __process
 	    __socket
 	    __custom
-	    __object
 	    __bigloo
 	    __binary
 	    __regexp
@@ -245,6 +244,8 @@
 	    (display-flonum ::double ::output-port)
 	    (display-ucs2string ::ucs2string ::output-port)
 	    (write-ucs2string ::ucs2string ::output-port)
+	    (generic display-object o::object #!optional (port::output-port (current-output-port)))
+	    (generic write-object o::object #!optional (port::output-port (current-output-port)))
 	    (illegal-char-rep ::uchar) 
 	    (display* . obj)
 	    (write* . obj)
@@ -933,6 +934,18 @@
 ;*---------------------------------------------------------------------*/
 (define (write-ucs2string obj port)
    ($write-utf8string (string-for-read (ucs2-string->utf8-string obj)) port))
+
+;*---------------------------------------------------------------------*/
+;*    display-object ...                                               */
+;*---------------------------------------------------------------------*/
+(define-generic (display-object obj::object #!optional (port::output-port (current-output-port)))
+   (object-print obj port display))
+
+;*---------------------------------------------------------------------*/
+;*    write-object ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-generic (write-object obj::object #!optional (port::output-port (current-output-port)))
+   (object-print obj port write))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-date ...                                                 */

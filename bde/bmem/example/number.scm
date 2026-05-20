@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bde/bmem/example/number.scm          */
+;*    .../prgm/project/bigloo/5.0.x/bde/bmem/example/number.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 24 08:59:38 2003                          */
-;*    Last change :  Thu Apr 24 09:40:50 2003 (serrano)                */
-;*    Copyright   :  2003 Manuel Serrano                               */
+;*    Last change :  Wed May 20 08:29:03 2026 (serrano)                */
+;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Classes implementing numbers                                     */
 ;*=====================================================================*/
@@ -23,16 +23,16 @@
 	   (generic =nb::bool ::nb ::nb)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::Integer ...                                     */
+;*    display-object ::Integer ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display nb::Integer . port)
-   (apply display (Integer-value nb) port))
+(define-method (display-object nb::Integer #!optional (port::output-port (current-output-port)))
+   (display (Integer-value nb) port))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::Real ...                                        */
+;*    display-object ::Real ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display nb::Real . port)
-   (apply display (Real-value nb) port))
+(define-method (display-object nb::Real #!optional (port::output-port (current-output-port)))
+   (display (Real-value nb) port))
 
 ;*---------------------------------------------------------------------*/
 ;*    operators ::number ...                                           */

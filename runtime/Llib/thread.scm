@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/thread.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/thread.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sun Feb  8 08:22:56 2026 (serrano)                */
+;*    Last change :  Wed May 20 08:25:12 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -367,28 +367,18 @@
 (define-generic (tb-condvar-initialize! tb::thread-backend condvar))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::thread ...                                      */
+;*    display-object ::thread ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display o::thread . port)
-   (with-output-to-port (if (pair? port) (car port) (current-output-port))
-      (lambda ()
-         (with-access::thread o (name)
-            (display* "#<" (class-name (object-class o)) ":" name ">")))))
+(define-method (display-object o::thread #!optional (port::output-port (current-output-port)))
+   (with-access::thread o (name)
+      (fprintf "#<~a:~a>" (class-name (object-class o)) name)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-write ::thread ...                                        */
+;*    write-object ::thread ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (object-write o::thread . port)
-   (with-output-to-port (if (pair? port) (car port) (current-output-port))
-      (lambda ()
-         (with-access::thread o (name)
-            (display* "#<" (class-name (object-class o)) ":" name ">")))))
-
-;*---------------------------------------------------------------------*/
-;*    object-print ::thread ...                                        */
-;*---------------------------------------------------------------------*/
-(define-method (object-print o::thread port print-slot)
-   (object-write o port))
+(define-method (write-object o::thread #!optional (port::output-port (current-output-port)))
+   (with-access::thread o (name)
+      (fprintf "#<~a:~a>" (class-name (object-class o)) name)))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-initialize! ::thread ...                                  */

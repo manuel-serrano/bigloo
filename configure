@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/configure                       */
+#*    serrano/prgm/project/bigloo/5.0.x/configure                      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Apr 22 09:09:31 2026 (serrano)                */
+#*    Last change :  Wed May 20 08:33:31 2026 (serrano)                */
 #*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -44,7 +44,7 @@ rpath=
 
 #*--- api -------------------------------------------------------------*/
 importantapis="pthread srfi18 ssl sqlite web multimedia mail srfi1 calendar text crypto openpgp csv upnp libuv libbacktrace"
-apis="$importantapis gstreamer alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat mqtt browser"
+apis="$importantapis alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat mqtt browser"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -248,15 +248,6 @@ sqltinyforce=no
 
 #*--- dbus library (left blank for autoconfiguration) -----------------*/
 dbuslibs=
-
-#*--- gstreamer (left blank for autoconfiguration) --------------------*/
-gstreamer=
-gstreamerlibs=
-gstreamercflags=
-gstreameraudio=
-gstreameraudiolibs=
-gstreameraudiocflags=
-gstusethread=0
 
 #*--- alsa (left blank for autoconfiguration) -------------------------*/
 alsa=
@@ -1066,7 +1057,7 @@ while : ; do
       threadsupport=no;
       napis=;
       for a in $apis; do
-         if [ $a != "fthread" -a $a != "pthread" -a $a != "gstreamer" -a $a != "srfi18" ]; then
+         if [ $a != "fthread" -a $a != "pthread" -a $a != "srfi18" ]; then
            if [ "$napis " = " " ]; then
              napis="$a";
            else
@@ -1084,12 +1075,6 @@ while : ; do
 
     --thread-local-storage=auto)
       pthreadlocalstorage=;;
-
-    --enable-gstreamer-thread)
-      gstusethread=1;;
-
-    --disable-gstreamer-thread)
-      gstusethread=0;;
 
     --no-gmp|--disable-gmp)
       gmpversion="no";;
@@ -1361,8 +1346,6 @@ while : ; do
       echo "   --enable-thread-local-storage" >&2;
       echo "   --disable-thread-local-storage" >&2;
       echo "   --thread-local-storage=auto (auto detect)" >&2;
-      echo "   --enable-gstreamer-thread" >&2;
-      echo "   --disable-gstreamer-thread" >&2;
       echo "   --disable-gmp (see --no-gmp)" >&2;
       echo "   --disable-revolv (see --no-resolv)" >&2;
       echo "   --disable-unistring (see --no-unistring)" >&2;
@@ -1573,7 +1556,6 @@ if [ "$action" != "bigloo_config_el" ]; then
   srfi27_is_enabled=no
   crypto_is_enabled=no
   openpgp_is_enabled=no
-  gstreamer_is_enabled=no
   libuv_is_enabled=no
   libbacktrace_is_enabled=no
   browser_is_enable=no
@@ -1590,7 +1572,6 @@ if [ "$action" != "bigloo_config_el" ]; then
       fthread) fthread_is_enabled="yes";;
       crypto) crypto_is_enabled="yes";;
       openpgp) openpgp_is_enabled="yes";;
-      gstreamer) gstreamer_is_enabled="yes";;
       libuv) libuv_is_enabled="yes";;
       libbacktrace) libbacktrace_is_enabled="yes";;
       browser) browser_is_enabled="yes";;
@@ -1616,14 +1597,6 @@ if [ "$action" != "bigloo_config_el" ]; then
   if [ $srfi18_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
       $echo "*** ERROR: srfi18 library requires pthread."
       $echo "Either disable srfi18 or enable pthread."
-      $echo
-      $echo "Enabled apis: $apis"
-      exit 1
-  fi
-  
-  if [ $gstreamer_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
-      $echo "*** ERROR: gstreamer library requires pthread."
-      $echo "Either disable gstreamer or enable pthread."
       $echo
       $echo "Enabled apis: $apis"
       exit 1
@@ -2691,44 +2664,6 @@ if [ "$dubs_is_enabled " = "yes " ]; then
   fi
 else
   dbusld=""
-fi
-
-#*---------------------------------------------------------------------*/
-#*    gstreamer                                                        */
-#*---------------------------------------------------------------------*/
-# find out the C library for gstreamer, the @VERSION@ is expansed
-# by the autoconf/gstreamer script
-pkg="gstreamer-@VERSION@ gstreamer-base-@VERSION@ gstreamer-plugins-base-@VERSION@"
-
-if [ "$gstreamer " = " " ]; then
-   gstreamer=`$autoconf gstreamer --pkg="$pkg"` || exit 1;
-fi
-
-if [ "$gstreamer " != " " ]; then
-  pkgv=`$echo $pkg | sed "s/@VERSION@/$gstreamer/g"`
-  gstreamercflags="`$autoconf bgl-pkg-config --cflags $pkgv`"
-
-  if [ "gstreamercflags " = " " ]; then
-    $echo "*** ERROR: Cannot configure gstreamer, cflags are empty";
-    $echo "Running the command \"pkg-config --cflags gstreamer-$gstreamer gstreamer-plugins-base-$gstreamer\" might help understanding what's wrong"
-    exit 1;
-  fi
-
-  if [ "$gstreameraudio " = " " ]; then
-    pkgaudio="$pkgv gstreamer-audio-$gstreamer"
-    audioflags="`$autoconf bgl-pkg-config --cflags --libs $pkgaudio`"
-
-    gstreameraudio=`$autoconf gstreameraudio --cflags="$audioflags"` || exit 1;
-    if [ "$gstreameraudio " != " " ]; then
-      gstaudio="#t"
-      gsthaveaudio="1"
-      gstreamerlibs="`$autoconf bgl-pkg-config --libs $pkgaudio`"
-    else
-      gstaudio="#f"
-      gsthaveaudio="0"
-      gstreamerlibs=`$autoconf bgl-pkg-config --libs $pkgv`
-    fi
-  fi
 fi
 
 #*---------------------------------------------------------------------*/
@@ -4619,7 +4554,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   else
     napis=;
     for a in $apis; do
-      if [ "pthread" != "$a" -a "srfi18" != "$a" -a "fthread" != "$a" -a "gstreamer" != "$a" ]; then
+      if [ "pthread" != "$a" -a "srfi18" != "$a" -a "fthread" != "$a" ]; then
         if [ "$napis " = " " ]; then
           napis="$a";
         else
@@ -4727,45 +4662,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       | sed -e "s|@SQLITELIBS@|$sqlitelibs|g" \
       | sed -e "s|@SQLITESRFI@|$sqlitesrfi|g" \
       >>  api/sqlite/src/Misc/sqlite.init
-
-  # GSTREAMER
-  if [ "$gstreamer " != " " ]; then
-    $echo "GSTREAMER=$gstreamer" >> $makefile_cfg
-    $echo "GSTREAMERLIBS=$gstreamerlibs" >> $makefile_cfg
-    $echo "GSTREAMERCFLAGS=$gstreamercflags" >> $makefile_cfg
-
-    # Patch the code of the GSTREAMER init file
-    $echo ";; automatically generated. Don't edit" > api/gstreamer/src/Misc/gstreamer.init
-    cat api/gstreamer/src/Misc/gstreamer.init.in \
-      | sed -e "s|@GSTREAMERLIBS@|$gstreamerlibs|g" \
-            -e "s|@GSTREAMERCFLAGS@|$gstreamercflags|g" \
-            -e "s|@GSTREAMERAUDIO@|$gstaudio|g" \
-      >>  api/gstreamer/src/Misc/gstreamer.init
-
-    # Produce the bglgst_config.h file
-    cat api/gstreamer/src/Clib/bglgst_config.h.in \
-      | sed -e "s|@CONFIGURE@|Automatically generated file (don't edit), `date`|" \
-            -e "s|@GSTREAMER_VERSION@|$gstreamer|g" \
-            -e "s|@GSTREAMER_USE_THREADS@|$gstusethread|g" \
-            -e "s|@GSTREAMER_HAVE_AUDIO@|$gsthaveaudio|g" \
-      >  api/gstreamer/src/Clib/bglgst_config.h
-
-  else
-    napis=;
-    for a in $apis; do
-       if [ "gstreamer" != $a ]; then
-         if [ "$napis " = " " ]; then
-           napis="$a";
-         else
-           napis="$napis $a";
-         fi
-       fi
-    done
-    apis=$napis;
-    $echo "GSTREAMER=" >> $makefile_cfg
-    $echo "GSTREAMERLIBS=" >> $makefile_cfg
-    $echo "GSTREAMERFLAGS=" >> $makefile_cfg
-  fi
 
   # ALSA
   if [ "$alsa " != "no " ]; then

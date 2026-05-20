@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/5.0a/api/pthread/src/Llib/pthread.scm         */
+;*    .../project/bigloo/5.0.x/api/pthread/src/Llib/pthread.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Tue Mar 10 19:59:53 2026 (serrano)                */
+;*    Last change :  Wed May 20 08:03:48 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -90,25 +90,18 @@
 (cond-expand (bigloo-jvm (register-srfi! 'pthread-timedjoin)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-write ::uncaught-exception ...                            */
+;*    write-object ::uncaught-exception ...                            */
 ;*---------------------------------------------------------------------*/
-(define-method (object-write o::uncaught-exception . port)
+(define-method (write-object o::uncaught-exception #!optional (port::output-port (current-output-port)))
    (with-access::uncaught-exception o (reason)
-      (apply object-write reason port)))
+      (write reason port)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::uncaught-exception ...                          */
+;*    display-object ::uncaught-exception ...                          */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display o::uncaught-exception . port)
+(define-method (display-object o::uncaught-exception #!optional (port::output-port (current-output-port)))
    (with-access::uncaught-exception o (reason)
-      (apply object-display reason port)))
-
-;*---------------------------------------------------------------------*/
-;*    object-print ...                                                 */
-;*---------------------------------------------------------------------*/
-(define-method (object-print o::uncaught-exception port print-slot)
-   (with-access::uncaught-exception o (reason)
-      (object-print reason port print-slot)))
+      (display reason port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %user-thread-yield! ...                                          */

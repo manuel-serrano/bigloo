@@ -140,6 +140,6 @@ unsupported and/or untried features.
   pthread and fthread libraries(the pthread and fthread libraries were
   supported in the past, so we may be able to re-enable support in the
   future; it needs to be investigated). Additionally, the api libraries
-  dependent upon traditionally unix based libraries (avahi, gstreamer,
-  and mpg123) may or may not work with win32 ports of these libraries; I
+  dependent upon traditionally unix based libraries (avahi and mpg123)
+  may or may not work with win32 ports of these libraries; I
   have personally not tried.

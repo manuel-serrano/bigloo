@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & joe Donaldson                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Sat May 16 07:10:50 2026 (serrano)                */
+;*    Last change :  Wed May 20 08:05:15 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -59,25 +59,18 @@
 	   (xml-metadata xml-tree::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-write ::XmlElement ...                                    */
+;*    write-object ::XmlElement ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (object-write m::XmlElement . port)
-   (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<XmlElement tag=~a attrs=~s children=~a parent=~a>"
+(define-method (write-object m::XmlElement #!optional (port::output-port (current-output-port)))
+   (fprintf port "#<XmlElement tag=~a attrs=~s children=~a parent=~a>"
       (-> m tag) (-> m attrs) (map typeof (-> m %children)) (typeof (-> m %parent))))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::XmlElement ...                                  */
+;*    display-object ::XmlElement ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display m::XmlElement . port)
-   (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<XmlElement tag=~a attrs=~s ...>" (-> m tag) (-> m attrs)))
-
-;*---------------------------------------------------------------------*/
-;*    object-print ::XmlElement ...                                    */
-;*---------------------------------------------------------------------*/
-(define-method (object-print m::XmlElement port ds)
-   (object-write m port))
+(define-method (display-object m::XmlElement #!optional (port::output-port (current-output-port)))
+   (fprintf port "#<XmlElement tag=~a attrs=~s ...>"
+      (-> m tag) (-> m attrs)))
 
 ;*---------------------------------------------------------------------*/
 ;*    xml-element-ctor ...                                             */

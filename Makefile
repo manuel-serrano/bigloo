@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/Makefile                        */
+#*    serrano/prgm/project/bigloo/5.0.x/Makefile                       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri May  1 10:07:01 2026 (serrano)                */
+#*    Last change :  Wed May 20 07:19:30 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -415,6 +415,7 @@ fullbootstrap-sans-log:
 	@ echo "-------------------------------"
 
 fullbootstrap-sans-configure:
+	$(BOOTBINDIR)/bigloo -cache-clean
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc clean; \
 	  $(MAKE) -C gc boot; \

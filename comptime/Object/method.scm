@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Object/method.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Object/method.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Mon Oct 20 08:58:22 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed May 20 08:13:08 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
 ;*=====================================================================*/
@@ -39,6 +39,7 @@
 	  (met (gensym 'next-method))
 	  (arity (global-arity args))
 	  (args-id (map local-id locals))
+	  (args-ty (map (lambda (l) (string->symbol (format "~a::~a" (local-id l) (type-id (local-type l))))) locals))
 	  (type (local-type (car locals)))
 	  (m-id (gensym (symbol-append id '- (type-id type)))))
       (cond
@@ -69,7 +70,7 @@
 			(tm-id (if (bigloo-type? (global-type generic))
 				   (make-typed-ident m-id (type-id (global-type generic)))
 				   m-id))
-			(bdg   `(,tm-id ,args ,ebody))
+			(bdg   `(,tm-id ,args-ty ,ebody))
 			(ebdg  (if (epair? src)
 				   (econs (car bdg) (cdr bdg) (cer src))
 				   bdg)))

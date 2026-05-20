@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/autoconf/Makefile               */
+#*    serrano/prgm/project/bigloo/5.0.x/autoconf/Makefile              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Tue Sep  9 09:13:04 2025 (serrano)                */
-#*    Copyright   :  1997-2025 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed May 20 08:32:37 2026 (serrano)                */
+#*    Copyright   :  1997-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -58,7 +58,6 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   stdint stdlibint unistdint stdc stdcwarning \
                   maemo.arm android \
                   gcversion gchavedoblocking gchavestartblocking nbprocs \
-                  gstreamer gstreameraudio \
                   alsa pulseaudio mpg123 flac pcre pcrefreestudy pcre2 avahi \
                   dbus gmp resolv resolvsym unistring limbs signbit rdynamic \
                   getuid getgid gecos getprotoent machdep arflags mixer \

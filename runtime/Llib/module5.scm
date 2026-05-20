@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue May 19 11:31:13 2026 (serrano)                */
+;*    Last change :  Wed May 20 08:06:02 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -196,72 +196,50 @@
    (set! *module-version* version))
 
 ;*---------------------------------------------------------------------*/
-;*    object-write ::Module ...                                        */
+;*    write-object ::Module ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (object-write m::Module . port)
-   (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<Module id=~a path=~s resolved=~a>" (-> m id) (-> m path) (-> m resolved)))
+(define-method (write-object m::Module #!optional (port::output-port (current-output-port)))
+   (fprintf port "#<Module id=~a path=~s resolved=~a>"
+      (-> m id) (-> m path) (-> m resolved)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::Module ...                                      */
+;*    display-object ::Module ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display m::Module . port)
-   (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<Module id=~a path=~s resolved=~a>" (-> m id) (-> m path) (-> m resolved)))
+(define-method (display-object m::Module #!optional (port::output-port (current-output-port)))
+   (fprintf port "#<Module id=~a path=~s resolved=~a>"
+      (-> m id) (-> m path) (-> m resolved)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-print ::Module ...                                        */
+;*    write-object ::Decl ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (object-print m::Module port ds)
-   (object-write m port))
-   
-;*---------------------------------------------------------------------*/
-;*    object-write ::Decl ...                                          */
-;*---------------------------------------------------------------------*/
-(define-method (object-write d::Decl . port)
+(define-method (write-object d::Decl #!optional (port::output-port (current-output-port)))
    (let ((m::Module (-> d mod)))
-      (fprintf (if (pair? port) (car port) (current-output-port))
-	 "#<Decl ~a/~a mod=~a scope=~a ronly=~a def=~a>"
+      (fprintf port "#<Decl ~a/~a mod=~a scope=~a ronly=~a def=~a>"
 	 (-> d id) (-> d alias) (-> m id) (-> d scope) (-> d ronly) (typeof (-> d def)))))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::Decl ...                                        */
+;*    display-object ::Decl ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display d::Decl . port)
+(define-method (display-object d::Decl #!optional (port::output-port (current-output-port)))
    (let ((m::Module (-> d mod)))
-      (fprintf (if (pair? port) (car port) (current-output-port))
-	 "#<Decl ~a/~a mod=~a scope=~a ronly=~a def=~a>"
+      (fprintf port "#<Decl ~a/~a mod=~a scope=~a ronly=~a def=~a>"
 	 (-> d id) (-> d alias) (-> m id) (-> d scope) (-> d ronly) (typeof (-> d def)))))
 
 ;*---------------------------------------------------------------------*/
-;*    object-print ::Decl ...                                          */
+;*    write-object ::Def ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (object-print d::Decl port ds)
-   (object-write d port))
-
-;*---------------------------------------------------------------------*/
-;*    object-write ::Def ...                                           */
-;*---------------------------------------------------------------------*/
-(define-method (object-write d::Def . port)
-   (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<~a ~a kind=~a ronly=~a>"
+(define-method (write-object d::Def #!optional (port::output-port (current-output-port)))
+   (fprintf port "#<~a ~a kind=~a ronly=~a>"
       (class-name (object-class d))
       (-> d id) (-> d kind) (-> d ronly)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::Def ...                                         */
+;*    display-object ::Def ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display d::Def . port)
-   (fprintf (if (pair? port) (car port) (current-output-port))
-      "#<~a ~a kind=~a ronly=~a>"
+(define-method (display-object d::Def #!optional (port::output-port (current-output-port)))
+   (fprintf port "#<~a ~a kind=~a ronly=~a>"
       (class-name (object-class d))
       (-> d id) (-> d kind) (-> d ronly)))
-
-;*---------------------------------------------------------------------*/
-;*    object-print ::Def ...                                           */
-;*---------------------------------------------------------------------*/
-(define-method (object-print d::Def port ds)
-   (object-write d port))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-copy ::Decl ...                                           */

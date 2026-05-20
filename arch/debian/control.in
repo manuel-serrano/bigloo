@@ -61,11 +61,6 @@ Description: Bigloo core Libraries
 @IFPKGLIB@ Depends: libsqlite-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @PKGLIBDEPEND@, @EXTRADEPEND@
 @IFPKGLIB@ Description: Bigloo PKG library
 
-@IFGSTREAMER@ Package: libgstreamer-bigloo
-@IFGSTREAMER@ Architecture: any
-@IFGSTREAMER@ Depends: libgstreamer0.10-0, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @GSTREAMERDEPEND@, @EXTRADEPEND@
-@IFGSTREAMER@ Description: Bigloo bindings for the GSTREAMER library
-
 Package: bigloo
 Architecture: any
 Depends: bigloo-libs, ${shlibs:Depends}, ${misc:Depends}

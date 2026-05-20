@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/object.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/object.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sat Feb  7 06:46:55 2026 (serrano)                */
+;*    Last change :  Wed May 20 07:23:51 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1485,6 +1485,8 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ...                                               */
+;*    -------------------------------------------------------------    */
+;*    !!! OBSOLETE, SHOULD BE REMOVE, USE DISPLAY-OBJECT               */
 ;*---------------------------------------------------------------------*/
 (define-generic (object-display obj::object . port)
    (let ((port (if (pair? port) (car port) (current-output-port))))
@@ -1492,6 +1494,8 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    object-write ...                                                 */
+;*    -------------------------------------------------------------    */
+;*    !!! OBSOLETE, SHOULD BE REMOVE, USE WRITE-OBJECT                 */
 ;*---------------------------------------------------------------------*/
 (define-generic (object-write obj::object . port)
    (let ((port (if (pair? port) (car port) (current-output-port))))
@@ -1533,7 +1537,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    object-print ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-generic (object-print obj::object port print-slot::procedure)
+(define-generic (object-print obj::object port::output-port print-slot::procedure)
    
    (define (class-field-write/display field)
       (let* ((name (class-field-name field))
@@ -1554,12 +1558,6 @@
       (if (nil? obj)
 	  (display " nil|" port)
 	  (display " ....|" port))))
-;* 	  (let loop ((i 0))                                            */
-;* 	     (if (=fx i len)                                           */
-;* 		 (display #\| port)                                    */
-;* 		 (begin                                                */
-;* 		    (class-field-write/display (vector-ref-ur fields i)) */
-;* 		    (loop (+fx i 1))))))))                             */
 
 ;*---------------------------------------------------------------------*/
 ;*    object-equal? ...                                                */
