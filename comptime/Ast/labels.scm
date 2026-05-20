@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/labels.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/labels.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Mon Oct 20 12:59:05 2025 (serrano)                */
+;*    Last change :  Wed May 20 09:55:26 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `labels->node' translator                                    */
 ;*=====================================================================*/
@@ -20,6 +20,7 @@
 	    tools_args
 	    tools_location
 	    tools_dsssl
+	    tools_shape
 	    type_cache
 	    ast_sexp
 	    ast_ident
@@ -92,13 +93,12 @@
 ;*---------------------------------------------------------------------*/
 (define (make-local-noopt-sfun loc src fun args body genv)
    (let* ((id-type (parse-id fun loc))
-	  (id      (car id-type))
-	  (type    (cdr id-type))
-	  (arity   (local-arity args))
-	  (formals (map (lambda (a)
-			   (parse-id a loc))
-			(dsssl-args*->args-list args))))
-      ;; we check that the last formals is correct
+	  (id (car id-type))
+	  (type (cdr id-type))
+	  (arity (local-arity args))
+	  (formals (map (lambda (a) (parse-id a loc))
+		      (dsssl-args*->args-list args))))
+      ;; check that the last formals is correct
       (if (or (>=fx arity 0)
 	      ;; empty DSSSL prototype (such as
 	      ;; (define (f #!optional) have a negative arity
@@ -113,7 +113,7 @@
 		     (set-cdr! larg *obj*)
 		     #t)
 		    (else
-		     #f))))
+		     (set-cdr! larg *obj*) #t))))
 	  (let* ((args (map (lambda (f)
 			       (if (user-symbol? (car f))
 				   (make-user-local-svar (car f) (cdr f))
@@ -130,7 +130,14 @@
 		 (make-local-sfun id type sfun)))
 	  (begin
 	     (error-sexp->node "Illegal formal type" src loc genv)
-	     '()))))
+	     ;; a dummy function not to trigger more errors
+	     (let ((sfun (instantiate::sfun
+			    (class 'plain)
+			    (arity arity)
+			    (loc (find-location/loc body loc))
+			    (args '())
+			    (args-name '()))))
+		(make-local-sfun id type sfun))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    labels-binding ...                                               */

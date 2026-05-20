@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/api/sqlite/src/Llib/sqltiny.scm     */
+;*    .../project/bigloo/5.0.x/api/sqlite/src/Llib/sqltiny.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 17:44:47 2007                          */
-;*    Last change :  Tue Mar 10 09:07:20 2026 (serrano)                */
+;*    Last change :  Wed May 20 08:37:16 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The portable replacement for sqlite                              */
@@ -28,33 +28,26 @@
 	   ($sqltiny-dump-table ::obj ::$sqltiny ::bstring ::output-port)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::$sqltiny-table ...                              */
+;*    display-object ::$sqltiny-table ...                              */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display o::$sqltiny-table . port)
-   (with-output-to-port (if (pair? port) (car port) (current-output-port))
-      (lambda ()
-         (with-access::$sqltiny-table o (name)
-            (display* "#<$sqltiny-table:" name ">")))))
+(define-method (display-object o::$sqltiny-table #!optional (port::output-port (current-output-port)))
+   (with-access::$sqltiny-table o (name)
+      (fprintf port "#<$sqltiny-table:~a>")))
 
 ;*---------------------------------------------------------------------*/
-;*    object-write ::$sqltiny-table ...                                */
+;*    write-object ::$sqltiny-table ...                                */
 ;*---------------------------------------------------------------------*/
-(define-method (object-write o::$sqltiny-table . port)
-   (with-output-to-port (if (pair? port) (car port) (current-output-port))
-      (lambda ()
-         (with-access::$sqltiny-table o (name columns)
-            (display* "#<sqltiny:" name ":")
-	    (for-each (lambda (c)
-			 (with-access::$sqltiny-column c (name)
-			    (display* name ",")))
-		      columns)
-	    (print ">")))))
-
-;*---------------------------------------------------------------------*/
-;*    object-print ::$sqltiny-table ...                                */
-;*---------------------------------------------------------------------*/
-(define-method (object-print o::$sqltiny-table port print-slot)
-   (object-write o port))
+(define-method (write-object o::$sqltiny-table #!optional (port::output-port (current-output-port)))
+   (with-access::$sqltiny-table o (name columns)
+      (display "#<sqltiny:" port)
+      (display name port)
+      (display ":" port)
+      (for-each (lambda (c)
+		   (with-access::$sqltiny-column c (name)
+		      (display name port)
+		      (display "," port)))
+	 columns)
+      (fprint port ">")))
 
 ;*---------------------------------------------------------------------*/
 ;*    $sqltiny-open ...                                                */

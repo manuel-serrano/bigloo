@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Tue May 19 13:12:36 2026 (serrano)                */
+;*    Last change :  Wed May 20 10:22:47 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1571,7 +1571,10 @@ if that value is non-nil."
 			(insert-file-contents file)
 			(goto-char (point-min))
 			(while (search-forward "#" nil t)
-			  (replace-match "%"))
+			  (replace-match "&amp;"))
+			(goto-char (point-min))
+			(while (search-forward "?" nil t)
+			  (replace-match "&qm;"))
 			(goto-char (point-min))
 			(read (current-buffer))))))
 	     (imports (assq 'imports (cddr mod)))
@@ -1628,18 +1631,19 @@ if that value is non-nil."
   (let* ((d (bgl-decl-entry-at-point))
 	 (e (or d (bgl-doc-entry-at-point))))
     (if e
-	(let* ((s (replace-regexp-in-string "%" "#" (format "%s" (car e))))
+	(let* ((s (replace-regexp-in-string "&amp;" "#" (format "%s" (car e))))
+	       (s2 (replace-regexp-in-string "&qm;" "?" (format "%s" (car e))))
 	       (cs (replace-regexp-in-string
 		    "::[^ )]+"
 		    '(lambda (match) (propertize match 'face 'bgl-font-lock-face-4))
-		    s))
+		    s2))
 	       (ls (if (and (> (length s) 60) (string-match " " s))
 		       (replace-match "\n  " t t s)
 		       cs)))
 	  (posframe-show
 	   bgl-popup-buffer
 	   :string ls
-	   :background-color (if d "#ffffcc" "#ccffff")
+	   :background-color (if d "#ccffcc" "#ccffff")
 	   :foreground-color "black"
 	   :border-width 1
 	   :border-color "#cccccc"

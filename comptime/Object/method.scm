@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Wed May 20 08:13:08 2026 (serrano)                */
+;*    Last change :  Wed May 20 08:46:42 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
@@ -39,7 +39,18 @@
 	  (met (gensym 'next-method))
 	  (arity (global-arity args))
 	  (args-id (map local-id locals))
-	  (args-ty (map (lambda (l) (string->symbol (format "~a::~a" (local-id l) (type-id (local-type l))))) locals))
+	  (args-ty (let loop ((args args)
+			      (locals locals))
+		      (cond
+			 ((null? args)
+			  '())
+			 ((not (pair? args))
+			  args)
+			 (else
+			  (cons (string->symbol
+				   (format "~a::~a"
+				      (local-id (car locals)) (type-id (local-type (car locals)))))
+			     (loop (cdr args) (cdr locals)))))))
 	  (type (local-type (car locals)))
 	  (m-id (gensym (symbol-append id '- (type-id type)))))
       (cond

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue May 19 13:07:01 2026 (serrano)                */
+;*    Last change :  Wed May 20 08:42:54 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -1382,6 +1382,11 @@
 ;*    object-write ::Module ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (object-write mod::Module . port)
+
+   (define (loc expr)
+      (if (epair? expr)
+	  (cer expr)
+	  `(at (-> mod path) 0)))
    
    (define (proto expr)
       (match-case expr
@@ -1401,13 +1406,13 @@
 					   (when (isa? def Def)
 					      (with-access::Def def (expr)
 						 (when (epair? expr)
-						    `(,(symbol->string id) ,(proto expr) ,(cer expr)))))))))
+						    `(,(symbol->string id) ,(proto expr) ,(loc expr)))))))))
 		       (defs ,@(hashtable-filter-map defs
 				  (lambda (k d::Def)
 				     (with-access::Def d (id kind expr decl)
 					(if (isa? decl Decl)
 					    (with-access::Decl decl ((dmod mod))
 					       (when (eq? dmod mod)
-						  `(,(symbol->string id) ,(cer expr))))
-					    `(,(symbol->string id) ,(proto expr) ,(cer expr))))))))
+						  `(,(symbol->string id) ,(loc expr))))
+					    `(,(symbol->string id) ,(proto expr) ,(loc expr))))))))
 	 port)))

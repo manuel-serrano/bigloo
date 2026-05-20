@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Wed May 20 08:25:12 2026 (serrano)                */
+;*    Last change :  Wed May 20 09:00:40 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -371,14 +371,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (display-object o::thread #!optional (port::output-port (current-output-port)))
    (with-access::thread o (name)
-      (fprintf "#<~a:~a>" (class-name (object-class o)) name)))
+      (fprintf port "#<~a:~a>" (class-name (object-class o)) name)))
 
 ;*---------------------------------------------------------------------*/
 ;*    write-object ::thread ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (write-object o::thread #!optional (port::output-port (current-output-port)))
    (with-access::thread o (name)
-      (fprintf "#<~a:~a>" (class-name (object-class o)) name)))
+      (fprintf port "#<~a:~a>" (class-name (object-class o)) name)))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-initialize! ::thread ...                                  */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/api/sqlite/src/Llib/sqlite.scm      */
+;*    .../prgm/project/bigloo/5.0.x/api/sqlite/src/Llib/sqlite.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Thu Nov 10 13:55:46 2005                          */
-;*    Last change :  Tue Mar 10 09:12:14 2026 (serrano)                */
+;*    Last change :  Wed May 20 08:35:56 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SQLITE Scheme binding                                            */
@@ -73,28 +73,18 @@
        ($_sqlite-nil))))
 
 ;*---------------------------------------------------------------------*/
-;*    object-display ::sqlite ...                                      */
+;*    display-object ::sqlite ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (object-display o::sqlite . port)
-   (with-output-to-port (if (pair? port) (car port) (current-output-port))
-      (lambda ()
-         (with-access::sqlite o (path)
-            (display* "#<sqlite:" path ">")))))
+(define-method (display-object o::sqlite #!optional (port::output-port (current-output-port)))
+   (with-access::sqlite o (path)
+      (fprintf port "#<sqlite:~a>" path)))
 
 ;*---------------------------------------------------------------------*/
-;*    object-write ::sqlite ...                                        */
+;*    write-object ::sqlite ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (object-write o::sqlite . port)
-   (with-output-to-port (if (pair? port) (car port) (current-output-port))
-      (lambda ()
-         (with-access::sqlite o (path)
-            (display* "#<sqlite:" path ">")))))
-
-;*---------------------------------------------------------------------*/
-;*    object-print ::sqlite ...                                        */
-;*---------------------------------------------------------------------*/
-(define-method (object-print o::sqlite port print-slot)
-   (object-write o port))
+(define-method (write-object o::sqlite #!optional (port::output-port (current-output-port)))
+   (with-access::sqlite o (path)
+      (fprintf port "#<sqlite:~a>" path)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %setup-sqlite! ...                                               */

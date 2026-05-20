@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed May 20 08:06:02 2026 (serrano)                */
+;*    Last change :  Wed May 20 09:46:16 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -2735,7 +2735,7 @@
 		 `(begin
 		     ,@(map (lambda (x) (e x e))
 			  (call-with-input-file f
-			     (lambda (p) (port->sexp-list p)))))))
+			     (lambda (p) (port->sexp-list p #t)))))))
 	     (else
 	      (error/loc mod "Cannot find include file" path x))))
 	 (else

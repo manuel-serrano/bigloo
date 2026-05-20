@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Wed May 20 07:40:58 2026 (serrano)                */
+;*    Last change :  Wed May 20 09:32:39 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the functions used to def (define) a      */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -359,8 +359,6 @@
 		       ((not (compatible-type? sub?
 				(local-type (car locals))
 				(car types)))
-			(tprint "LT=" (shape (local-type (car locals)))
-			   " T=" (shape (car types)))
 			(mismatch-error generic
 			   src
 			   "(incompatible formal type)")
