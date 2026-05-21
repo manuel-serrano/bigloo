@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Mon May 18 07:30:33 2026 (serrano)                */
+;*    Last change :  Thu May 21 07:48:56 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -74,10 +74,49 @@
 ;*    private-node ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (private-node sexp::pair stack loc site genv)
+   
    (define (bigloodemangle f)
       (if (bigloo-mangled? f)
 	  (bigloo-demangle f)
 	  f ))
+
+   (define (new-instance type::tclass args-type expr*)
+      (with-access::tclass type (wide-type its-super holder)
+	 (if (isa? wide-type wclass)
+	     (with-access::tclass its-super (id slots)
+		(let* ((len (length slots))
+		       (tmps (gensym 't))
+		       (tmpw (gensym 'w))
+		       (ns (instantiate::new
+			      (loc loc)
+			      (type its-super)
+			      (args-type (take args-type len))
+			      (expr* (take expr* len))
+			      (side-effect #t)
+			      (c-format "")))
+		       (nw (instantiate::new
+			      (loc loc)
+			      (type wide-type)
+			      (args-type (drop args-type len))
+			      (expr* (drop expr* len))
+			      (side-effect #t)
+			      (c-format "")))
+		       (nx `(let ((,tmps ,ns)
+				  (,tmpw ,nw))
+			       ((@ object-widening-set! __object) ,tmps ,tmpw)
+			       ((@ object-class-num-set! __object)
+				,tmps ((@ class-num __object)
+				       (@ ,(global-id holder) ,(global-module holder))))
+			       ,tmps)))
+		   (sexp->node nx stack loc site genv)))
+	     (instantiate::new
+		(loc loc)
+		(type type)
+		(args-type args-type)
+		(expr* expr*)
+		(side-effect #t)
+		(c-format "")))))
+   
    (match-case sexp
       ((?- getfield ?ftype ?otype ?field-name ?c-fmt ?obj)
        (let ((tid (symbol-append otype '-
@@ -114,46 +153,26 @@
 			(write (list tid))))
 	     (c-format c-fmt))))
       ((?- new ?type)
-       (instantiate::new
-	  (loc loc)
-	  (type (use-type! type loc))
-	  (side-effect #t)
-	  (c-format "")))
+       (let ((ty (find-type/expr type sexp)))
+	  (new-instance  ty '() '())))
       ((?- new/args ?type ?args)
-       (with-access::tclass (find-type/expr type sexp) (slots)
-	  (if (pair? slots)
-	      (instantiate::new
-		 (loc loc)
-		 (type (use-type! type loc))
-		 (side-effect #t)
-		 (c-format "")
-		 (args-type (filter-map (lambda (s)
-					   (unless (>=fx (slot-virtual-num s) 0)
-					      (slot-type s)))
-			       slots))
-		 (expr* (if (null? args)
-			    '()
-			    (sexp*->node args stack loc 'value genv)))
-		 (side-effect #t))
-	      (error/loc "new" "Class definition is missing" type loc))))
+       (let ((ty (find-type/expr type sexp)))
+	  (with-access::tclass ty (slots wide-type)
+	     (if (pair? slots)
+		 (let ((args-type (filter-map (lambda (s)
+						 (unless (>=fx (slot-virtual-num s) 0)
+						    (slot-type s)))
+				     slots)))
+		    (if (null? args)
+			(new-instance ty args-type '())
+			(new-instance ty args-type (sexp*->node args stack loc 'value genv))))
+		 (error/loc "new" "Class definition is missing" type loc)))))
       ((?- new ?type (quote ?args-type) . ?rest)
-       (if (null? rest)
-	   ;; not an external class
-	   (instantiate::new
-	      (loc loc)
-	      (type (use-type! type loc))
-	      (args-type (map (lambda (t) (use-type! t loc)) args-type))
-	      (side-effect #t)
-	      (c-format ""))
-	   (instantiate::new
-	      (loc loc)
-	      (type (use-type! type loc))
-	      (args-type (map (lambda (t) (use-type! t loc)) args-type))
-	      (expr* (if (null? rest)
-			 '()
-			 (sexp*->node rest stack loc 'value genv)))
-	      (side-effect #t)
-	      (c-format ""))))
+       (let* ((ty (find-type/expr type sexp))
+	      (args-type (map (lambda (t) (use-type! t loc)) args-type)))
+	  (if (null? rest)
+	      (new-instance ty args-type '())
+	      (new-instance ty args-type (sexp*->node rest stack loc 'value genv)))))
       ((?- cast ?type ?exp)
        (instantiate::cast
 	  (loc loc)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Cgen/cgen.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Cgen/cgen.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Sun Mar 29 09:05:06 2026 (serrano)                */
+;*    Last change :  Thu May 21 08:53:47 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -620,12 +620,25 @@
 			(type type)
 			(variable o)
 			(loc loc))
-		     (with-access::tclass type (holder)
-			(set-variable-name! holder)
-			(instantiate::varc
-			   (type (get-class-type))
-			   (variable holder)
-			   (loc loc)))))))
+		     (cond
+			((isa? type tclass)
+			 (with-access::tclass type (holder)
+			    (set-variable-name! holder)
+			    (instantiate::varc
+			       (type (get-class-type))
+			       (variable holder)
+			       (loc loc))))
+			((isa? type wclass)
+			 (with-access::wclass type (its-class)
+			    (with-access::tclass its-class (holder)
+			       (set-variable-name! holder)
+			       (instantiate::varc
+				  (type (get-class-type))
+				  (variable holder)
+				  (loc loc)))))
+			(else
+			 (error "node->code" "Type not a class"
+			    (shape type))))))))
       
       (with-access::new node (arg type loc type expr*)
 	 (node-args->cop type expr*
@@ -662,8 +675,14 @@
 							(slot-name s)))
 					     (args (list x))))
 				     new-args
-				     (filter (lambda (s) (<fx (slot-virtual-num s) 0))
-					(tclass-slots type)))
+				     (if (isa? type tclass)
+					 (filter (lambda (s)
+						    (<fx (slot-virtual-num s) 0))
+					    (tclass-slots type))
+					 (filter (lambda (s)
+						    (and (<fx (slot-virtual-num s) 0)
+							 (eq? (slot-class-owner s) (wclass-its-class type))))
+					    (tclass-slots (wclass-its-class type)))))
 				,(kont (instantiate::cpragma
 					  (type type)
 					  (loc loc)
