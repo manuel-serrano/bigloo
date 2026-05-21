@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Thu May 21 07:48:56 2026 (serrano)                */
+;*    Last change :  Thu May 21 09:57:03 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -154,7 +154,11 @@
 	     (c-format c-fmt))))
       ((?- new ?type)
        (let ((ty (find-type/expr type sexp)))
-	  (new-instance  ty '() '())))
+	  (instantiate::new
+	     (loc loc)
+	     (type ty)
+	     (side-effect #t)
+	     (c-format ""))))
       ((?- new/args ?type ?args)
        (let ((ty (find-type/expr type sexp)))
 	  (with-access::tclass ty (slots wide-type)
