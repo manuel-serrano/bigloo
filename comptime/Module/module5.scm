@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed May 20 13:52:38 2026 (serrano)                */
+;*    Last change :  Fri May 22 12:03:29 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -1186,7 +1186,11 @@
 ;*    module5-plugin-eval ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (module5-plugin-eval mod::Module expr::pair)
-   (for-each (lambda (c) (parse-eval c expr)) (cdr expr)))
+   (if (eq? (-> mod id) *module*)
+       (for-each (lambda (c) (parse-eval c expr)) (cdr expr))
+       (with-remembered-eval
+	  (lambda ()
+	     (for-each (lambda (c) (parse-eval c expr)) (cdr expr))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module4-plugin-eval ...                                          */

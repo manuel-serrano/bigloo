@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/BackEnd/backend.scm                 */
+;*    .../prgm/project/bigloo/5.0.x/comptime/BackEnd/backend.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Fri Feb 13 11:15:29 2026 (serrano)                */
+;*    Last change :  Fri May 22 07:33:22 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
@@ -49,7 +49,6 @@
 	      (bound-check::bool (default #t))
 	      (type-check::bool (default #t))
 	      (typed-funcall::bool (default #t))
-	      ;; strict-type-cast must changed for has-subtyping
 	      (strict-type-cast::bool (default #f))
 	      (force-register-gc-roots::bool (default #t))
 	      (string-literal-support::bool (default #t))
@@ -59,7 +58,8 @@
 	      (varargs::bool (default #t))
 	      (mangling::bool (default #t))
 	      (local-exit::bool (default #f))
-	      (dump-heap::obj (default #f))))
+	      (dump-heap::obj (default #f))
+	      (nary-new::bool (default #f))))
    
    (export (generic backend-initialize! ::backend)
 	   (generic backend-select! ::backend)

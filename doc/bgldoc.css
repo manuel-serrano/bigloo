@@ -56,7 +56,7 @@
     --codeBackground: #efefef;
     --codeBorder: #d2d2d2;
 
-    --result: #7d537d;
+    --result: #d3732a;
 
     --fontifierString: #f91a03;
     --fontifierSymbol: #f91a03;
@@ -473,6 +473,11 @@ code {
     font-size: 130%;
 }
 
+.result + * {
+    font-style: italic;
+    color: var(--result);
+}
+
 /*---------------------------------------------------------------------*/
 /*    fontification                                                    */
 /*---------------------------------------------------------------------*/
@@ -484,6 +489,11 @@ pre.bigloo {
     
 pre .fontifier-prog-reserved {
     font-weight: bold;
+}
+
+pre .fontifier-prog-type {
+    font-weight: bold;
+    color: var(--type);
 }
 
 pre .fontifier-prog-string {

@@ -89,6 +89,12 @@
    :expected -1)
 
 (define-test ->
+   (let ((o::Point3d (instantiate::Point3d (z 30))))
+      (set! (-> o z) 20)
+      (+fx (-> o x) (-> o z)))
+   :expected 20)
+
+(define-test ->
    (let ((p1::Point (instantiate::Point (x 1) (y 5)))
          (p2::Point (instantiate::Point (x 2) (y 3))))
       (set! (-> p1 x) (- (-> p1 x)))

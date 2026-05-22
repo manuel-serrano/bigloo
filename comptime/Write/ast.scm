@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:29:03 1994                          */
-;*    Last change :  Mon May 11 11:38:20 2026 (serrano)                */
+;*    Last change :  Fri May 22 08:07:52 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast pretty-printer                                           */
@@ -21,21 +21,26 @@
 	    type_pptype
 	    tools_shape
 	    tools_args)
-   (export  (write-ast ast)))
+   (export  (ast-filename)
+	    (write-ast ast)))
+
+;*---------------------------------------------------------------------*/
+;*    ast-filename ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (ast-filename)
+   (if (string? *dest*)
+       *dest*
+       (when (and (pair? *src-files*) (string? (car *src-files*)))
+	  (string-append (prefix (car *src-files*))
+	     "." (symbol->string *pass*)
+	     ".ast"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    write-ast ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (write-ast globals)
    (profile write
-      (let* ((output-name (if (string? *dest*)
-			      *dest*
-			      (if (and (pair? *src-files*)
-				       (string? (car *src-files*)))
-				  (string-append (prefix (car *src-files*))
-				     "." (symbol->string *pass*)
-				     ".ast")
-				  #f)))
+      (let* ((output-name (ast-filename))
 	     (port (if (string? output-name)
 		       (open-output-file output-name)
 		       (current-output-port))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Sun May 17 07:37:22 2026 (serrano)                */
+;*    Last change :  Fri May 22 08:55:36 2026 (serrano)                */
 ;*    Copyright   :  2012-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -99,11 +99,11 @@
 		      (jvm-as classfile port)
 		      (close-binary-port port)))))))
    
-   ;; the jvm prelude (hello message and *DEST* update)
    (pass-prelude "Jvm" start-jvm-emission!)
    (verbose 2 "      [module: " *module* " package: "
       (jvm-package-get *module*) "]"#\Newline)
    
+   ;; set classes name and check path correctness
    (jvm-qname-set! me (class-qualified-type-name-get *module*))
    
    ;; if we are going to link and we have not found a main yet, we
@@ -111,29 +111,29 @@
    (when (and (not *main*) *auto-link-main* (memq *pass* '(ld distrib)))
       (set! *main* (make-bigloo-main)))
    
-   ;; the jvm driver
    (jvm-check-package *module* *jvm-dir-name*)
    
-   (let ((l* (saw_jvm-compile me))
-	 (bname (cond
-		   ((eq? *pass* 'ld)
-		    (if (string? (jvm-qname me))
-			(addsuffix (prefix (basename (jvm-qname me))))
-			"a.class"))
-		   ((not (string? *dest*))
-		    (if (string? (jvm-qname me))
-			(addsuffix (prefix (basename (jvm-qname me))))
-			#f))
-		   (else
-		    (addsuffix (prefix (basename *dest*)))))))
-      
-      (emit (car l*) bname)
-      
-      (for-each (lambda (cf) (emit cf (jasname cf))) (cdr l*))
-      
-      (stop-on-pass 'cc (lambda () 'done))
-      (stop-on-pass 'jvmas (lambda () 'done))
-      (stop-on-pass 'jast (lambda () 'done))))
+   (let ((l* (saw_jvm-compile me)))
+      (unless (eq? *pass* 'sawmill)
+	 (let ((bname (cond
+			 ((eq? *pass* 'ld)
+			  (if (string? (jvm-qname me))
+			      (addsuffix (prefix (basename (jvm-qname me))))
+			      "a.class"))
+			 ((not (string? *dest*))
+			  (if (string? (jvm-qname me))
+			      (addsuffix (prefix (basename (jvm-qname me))))
+			      #f))
+			 (else
+			  (addsuffix (prefix (basename *dest*)))))))
+	    
+	    (emit (car l*) bname)
+	    
+	    (for-each (lambda (cf) (emit cf (jasname cf))) (cdr l*))
+	    
+	    (stop-on-pass 'cc (lambda () 'done))
+	    (stop-on-pass 'jvmas (lambda () 'done))
+	    (stop-on-pass 'jast (lambda () 'done))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    jvm-check-package ...                                            */
@@ -170,8 +170,9 @@
 	 (warning
 	    (format "Incompatible package name and class path for module \"~a\"."
 	       *module*)
+	    (format " fname: ~a\n" (jvm-filename base))
 	    (format " qtype: ~a\n" qtype)
-	    (format " class: ~a\n" base)
+	    (format " base : ~a\n" base)
 	    (format " dir  : ~a\n" dir)))))
 
 (define *jvm-dir-name* ".")

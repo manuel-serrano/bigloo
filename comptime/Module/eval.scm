@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Wed May 20 14:03:03 2026 (serrano)                */
+;*    Last change :  Fri May 22 11:57:59 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -36,6 +36,7 @@
 	    (eval-finalizer)
 	    (get-eval-libraries::pair-nil)
 	    (add-eval-library! ::symbol)
+	    (with-remembered-eval ::procedure)
 	    *all-eval?*
 	    *all-export-eval?*
 	    *all-module-eval?*
@@ -132,6 +133,16 @@
 ;*---------------------------------------------------------------------*/
 (define (remember-eval-exported! var::symbol module loc)
    (set! *eval-exported* (cons (list var module loc) *eval-exported*)))
+
+;*---------------------------------------------------------------------*/
+;*    with-remembered-eval ...                                         */
+;*---------------------------------------------------------------------*/
+(define (with-remembered-eval thunk)
+   (let ((olde *eval-exported*)
+	 (oldc *eval-classes*))
+      (thunk)
+      (set! *eval-classes* oldc)
+      (set! *eval-exported* olde)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *all-eval?* ...                                                  */

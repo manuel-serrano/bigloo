@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/SawWasm/code.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/SawWasm/gen.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Apr 27 10:15:10 2026 (serrano)                */
+;*    Last change :  Fri May 22 11:03:50 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -12,7 +12,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module saw_wasm_code
+(module saw_wasm_gen
    
    (include "Tools/trace.sch"
 	    "Tools/location.sch")
@@ -21,6 +21,7 @@
 	   ast_var
 	   ast_node
 	   ast_env
+	   write_ast
 	   module_module
 	   engine_param
 	   type_tools
@@ -67,7 +68,7 @@
 	   *extra-types*
 	   *extra-ref-funcs*)
    
-   (cond-expand ((not bigloo-class-generate) (include "SawWasm/code.sch")))
+   (cond-expand ((not bigloo-class-generate) (include "SawWasm/gen.sch")))
    
    (static (wide-class wasm_local::rtl_reg
 	      index
@@ -96,7 +97,17 @@
 ;*---------------------------------------------------------------------*/
 (define (wasm-gen b::wasm v::global)
    (let ((l (global->blocks b v)))
-      (gen-fun b v l)))
+      (unless (eq? *pass* 'sawmill)
+	 (gen-fun b v l))))
+
+;*---------------------------------------------------------------------*/
+;*    call-with-ast-port ...                                           */
+;*---------------------------------------------------------------------*/
+(define (call-with-ast-port proc)
+   (let ((f (ast-filename)))
+      (if (string? f)
+	  (call-with-append-file f proc)
+	  (proc (current-output-port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-fun ...                                                      */
@@ -1590,7 +1601,7 @@
 ;*    This function implements an over-approximaation of the           */
 ;*    recursive field detection.                                       */
 ;*    -------------------------------------------------------------    */
-;*    Becase of WASM strict typing, it is not possible to initialize   */
+;*    Because of WASM strict typing, it is not possible to initialize  */
 ;*    classes such as:                                                 */
 ;*                                                                     */
 ;*       (class a FIELDA::b)                                           */
@@ -1621,23 +1632,25 @@
 			   ;; widening
 			   (global.get $BUNSPEC)
 			   ;; class fields
-			   ,@(filter-map (lambda (s)
-					    (unless (>=fx (slot-virtual-num s) 0)
-					       (slot-default-value s)))
-				slots))))
-	    (when (pair? constr)
-	       (error "gen-expr" "Not supported." (shape constr)))
+			   ,@(if (pair? args)
+				 (map gen-reg args)
+				 (filter-map (lambda (s)
+						(unless (>=fx (slot-virtual-num s) 0)
+						   (slot-default-value s)))
+				    slots)))))
 	    (with-fun-loc fun alloc))))
 
    (define (gen-new-wclass fun args type constr)
       (with-access::wclass type (its-class)
 	 (with-access::tclass its-class (slots)
 	    (let ((alloc `(struct.new ,(wasm-sym (type-class-name type))
-			     ,@(filter-map (lambda (s)
-					      (when (eq? (slot-class-owner s) its-class)
-						 (unless (>=fx (slot-virtual-num s) 0)
-						    (slot-default-value s))))
-				  slots))))
+			   ,@(if (pair? args)
+				 (map gen-reg args)
+				 (filter-map (lambda (s)
+						(when (eq? (slot-class-owner s) its-class)
+						   (unless (>=fx (slot-virtual-num s) 0)
+						      (slot-default-value s))))
+				    slots)))))
 	       (with-fun-loc fun alloc)))))
    
    (with-access::rtl_new fun (type constr)
@@ -1650,7 +1663,8 @@
 	  (let ((alloc `(struct.new_default
 			   ,(wasm-sym (type-class-name type)))))
 	     (when (pair? constr)
-		(error "gen-expr" "Not supported." (shape constr)))
+		(error "gen-expr ::rtl_new" "not supported."
+		   (shape `(,fun ,@args))))
 	     (with-fun-loc fun alloc))))))
 
 ;*---------------------------------------------------------------------*/

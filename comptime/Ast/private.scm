@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Thu May 21 09:57:03 2026 (serrano)                */
+;*    Last change :  Fri May 22 11:28:30 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -80,42 +80,52 @@
 	  (bigloo-demangle f)
 	  f ))
 
-   (define (new-instance type::tclass args-type expr*)
-      (with-access::tclass type (wide-type its-super holder)
-	 (if (isa? wide-type wclass)
-	     (with-access::tclass its-super (id slots)
-		(let* ((len (length slots))
-		       (tmps (gensym 't))
-		       (tmpw (gensym 'w))
-		       (ns (instantiate::new
-			      (loc loc)
-			      (type its-super)
-			      (args-type (take args-type len))
-			      (expr* (take expr* len))
-			      (side-effect #t)
-			      (c-format "")))
-		       (nw (instantiate::new
-			      (loc loc)
-			      (type wide-type)
-			      (args-type (drop args-type len))
-			      (expr* (drop expr* len))
-			      (side-effect #t)
-			      (c-format "")))
-		       (nx `(let ((,tmps ,ns)
-				  (,tmpw ,nw))
-			       ((@ object-widening-set! __object) ,tmps ,tmpw)
-			       ((@ object-class-num-set! __object)
-				,tmps ((@ class-num __object)
-				       (@ ,(global-id holder) ,(global-module holder))))
-			       ,tmps)))
-		   (sexp->node nx stack loc site genv)))
-	     (instantiate::new
-		(loc loc)
-		(type type)
-		(args-type args-type)
-		(expr* expr*)
-		(side-effect #t)
-		(c-format "")))))
+   (define (new-instance type args-type expr*)
+      (cond
+	 ((isa? type tclass)
+	  (with-access::tclass type (wide-type its-super holder)
+	     (if (isa? wide-type wclass)
+		 (with-access::tclass its-super (id slots)
+		    (let* ((len (length slots))
+			   (tmps (gensym 't))
+			   (tmpw (gensym 'w))
+			   (ns (instantiate::new
+				  (loc loc)
+				  (type its-super)
+				  (args-type (take args-type len))
+				  (expr* (take expr* len))
+				  (side-effect #t)
+				  (c-format "")))
+			   (nw (instantiate::new
+				  (loc loc)
+				  (type wide-type)
+				  (args-type (drop args-type len))
+				  (expr* (drop expr* len))
+				  (side-effect #t)
+				  (c-format "")))
+			   (nx `(let ((,tmps ,ns)
+				      (,tmpw ,nw))
+				   ((@ object-widening-set! __object) ,tmps ,tmpw)
+				   ((@ object-class-num-set! __object)
+				    ,tmps ((@ class-num __object)
+					   (@ ,(global-id holder) ,(global-module holder))))
+				   ,tmps)))
+		       (sexp->node nx stack loc site genv)))
+		 (instantiate::new
+		    (loc loc)
+		    (type type)
+		    (args-type args-type)
+		    (expr* expr*)
+		    (side-effect #t)
+		    (c-format "")))))
+	 ((isa? type jclass)
+	  (instantiate::new
+		    (loc loc)
+		    (type type)
+		    (args-type args-type)
+		    (expr* expr*)
+		    (side-effect #t)
+		    (c-format "")))))
    
    (match-case sexp
       ((?- getfield ?ftype ?otype ?field-name ?c-fmt ?obj)

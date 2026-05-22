@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue May 19 09:48:26 2026 (serrano)                */
+;*    Last change :  Fri May 22 07:30:20 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1109,6 +1109,8 @@
        (set! *pass* 'isa))
       (("-init" (help "Stop after the initialization construction stage"))
        (set! *pass* 'init))
+      (("-sawmill" (help "Stop after the sawmil (saw intermediate code) stage"))
+       (set! *pass* 'sawmill))
       (("-classgen" (help "Produce an include file for class accessors"))
        (set! *pass* 'classgen))
       (("-egen" (help "Produce an include file for effects (requires -saw)"))

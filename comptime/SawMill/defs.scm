@@ -200,11 +200,11 @@
       ((pair? o)
        (for-each (lambda (o)
 		    (dump o p m)
-		    (newline p)
+		    ;;(newline p)
 		    (if (>fx m 0)
 			(dump-margin p m)
 			(newline p)))
-		 o))
+	  o))
       (else
        (write o p))))
 

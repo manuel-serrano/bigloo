@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Tue May 19 08:12:25 2026 (serrano)                */
+;*    Last change :  Fri May 22 09:04:40 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -54,7 +54,8 @@
 	    init_setrc
 	    read_reader
 	    ast_env
-	    ast_type-occur)
+	    ast_type-occur
+	    saw_woodcutter)
 
    (with    cgen_compile
 	    saw_c_compile)
@@ -97,13 +98,16 @@
 ;*    backend-compile ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-compile me::cvm)
-   (let ((c-prefix (profile cgen (c-walk me))))
-      (stop-on-pass 'cgen (lambda () 'done))
-      (stop-on-pass 'distrib (lambda () 'done))
-      (when (string? c-prefix)
-	 (when (or (eq? *pass* 'cindent) *c-debug*) (indent c-prefix))
-	 (stop-on-pass 'cindent (lambda () 'done)))
-      c-prefix))
+   (if (eq? *pass* 'sawmill)
+       (let ((globals (cvm-functions me)))
+	  (for-each (lambda (g) (global->blocks me g)) globals))
+       (let ((c-prefix (profile cgen (c-walk me))))
+	  (stop-on-pass 'cgen (lambda () 'done))
+	  (stop-on-pass 'distrib (lambda () 'done))
+	  (when (string? c-prefix)
+	     (when (or (eq? *pass* 'cindent) *c-debug*) (indent c-prefix))
+	     (stop-on-pass 'cindent (lambda () 'done)))
+	  c-prefix)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-link ...                                                 */

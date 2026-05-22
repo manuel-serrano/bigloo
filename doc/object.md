@@ -159,8 +159,8 @@ This function returns `#t` if `obj` is an instance
 of `class` or an instance of a sub-class of `class`, otherwise,
 it returns `#f`.
 
-### instantiate ###
-<!-- [:@NoDef] -->
+### (instantiate::class ...) ###
+<!-- [:instantiate@NoDef] -->
 
 This forms allocates object instance and fills the fields with
 values found in the list of parameters (note that field are explicitly
@@ -187,8 +187,8 @@ of each field is unspecified but correct with respect to the Bigloo
 type system. Each call to `class-nil` returns the same
 object (in the sense of `eq?}.
 
-### with-access ###
-<!-- [:@NoDef] -->
+### (with-access::class expr ...) ###
+<!-- [:with-access@NoDef] -->
 
 A reference to any of the variables defined in as a `binding` is
 replaced by the appropriate field access form. This is true for both
@@ -196,15 +196,15 @@ reference and assignment. A `binding` is either a symbol or a list
 of two symbols. In the first place, it denotes a field. In the second
 case, it denotes an aliases field.
 
-### -> ###
-<!-- [:@NoDef] -->
+### (-> expr field) ###
+<!-- [:->@NoDef] -->
 Class instances can be accesses using the `->1 special form. The 
 the first argument must be the identifier of a local typed variable, otherwise
 an error is raised. The form `->` can be used to get or set value of
 an instance field. For instance:
 
-### co-instantiate ###
-<!-- [:@NoDef] -->
+### (co-instantiate ...) ###
+<!-- [:co-instantiate@NoDef] -->
 This form is only available from compiled modules. In other words, it
 is not available from the interpreter. It permits the creation of
 recursive instances. It is specially useful for creating instances for
@@ -220,8 +220,8 @@ are @emph{partially} bound in the @var{values} expressions. In a
 value of a field of an instantiated class. It cannot be used in any
 calculus. Example:
 
-### duplicate ###
-<!-- [:@NoDef] --> 
+### (duplicate::class ...) ###
+<!-- [:duplicate@NoDef] --> 
 This form allocates an instance. The field values of the new object
 are picked up from the field values of the `old` object unless they
 are explicitly given in the parameter list.

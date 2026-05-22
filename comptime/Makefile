@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/comptime/Makefile               */
+#*    serrano/prgm/project/bigloo/5.0.x/comptime/Makefile              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed Mar 11 07:02:01 2026 (serrano)                */
+#*    Last change :  Fri May 22 07:51:29 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -258,17 +258,17 @@ SAW_BBV_FILE    = bbv bbv-types bbv-specialize bbv-cache bbv-utils \
 SAW_BBV_OBJ	= $(SAW_BBV_FILE:%=SawBbv/%.o)
 
 #*--- SawC ------------------------------------------------------------*/
-SAW_C_FILE      = compile code
+SAW_C_FILE      = compile gen
 
 SAW_C_OBJ	= $(SAW_C_FILE:%=SawC/%.o)
 
 #*--- SawWasm ---------------------------------------------------------*/
-SAW_WASM_FILE	= compile code relooper
+SAW_WASM_FILE	= compile relooper gen
 
 SAW_WASM_OBJ	= $(SAW_WASM_FILE:%=SawWasm/%.o)
 
 #*--- SawJvm ----------------------------------------------------------*/
-SAW_JVM_FILE	= compile type code inline funcall names out jld
+SAW_JVM_FILE	= compile type gen inline funcall names out jld
 
 SAW_JVM_OBJ	= $(SAW_JVM_FILE:%=SawJvm/%.o)
 

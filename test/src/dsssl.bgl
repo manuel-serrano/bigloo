@@ -14,8 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module dsssl
    (export test)
-   ;(eval (export dsssl2 dsssl4 dsssl6))
-   )
+   (eval (export dsssl2 dsssl4 dsssl6)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test machinery                                                   */
@@ -40,12 +39,12 @@
       (labels ((g (a b #!rest l) (list a b l)))
 	 (list x y z zz i: i j: j))))
 
-;* (define (test-dsssl-eval)                                           */
-;*    (eval '(define (dsssl x y #!optional z (zz 1) #!rest r #!key i (j 1)) */
-;* 	     (let ((f (lambda (z y #!key (i 8)) (list z y i))))     */
-;* 		(labels ((g (a b #!rest l) (list a b l)))           */
-;* 		   (list x y z zz i: i j: j)))))                    */
-;*    #t)                                                              */
+(define (test-dsssl-eval)
+   (eval '(define (dsssl x y #!optional z (zz 1) #!rest r #!key i (j 1))
+	     (let ((f (lambda (z y #!key (i 8)) (list z y i))))
+		(labels ((g (a b #!rest l) (list a b l)))
+		   (list x y z zz i: i j: j)))))
+   #t)
 
 (define (dsssl-lexical b c #!optional (=::procedure equal?))
    (= b c))
@@ -62,11 +61,11 @@
 	 (dsssl2 11 22)
 	 (dsssl2 11)))
 
-;* (define (dsssl2-test1-eval)                                         */
-;*    (eval '(list (dsssl2 11 22 33 44)                                */
-;* 		(dsssl2 11 22 33)                                      */
-;* 		(dsssl2 11 22)                                         */
-;* 		(dsssl2 11))))                                         */
+(define (dsssl2-test1-eval)
+   (eval '(list (dsssl2 11 22 33 44)
+		(dsssl2 11 22 33)
+		(dsssl2 11 22)
+		(dsssl2 11))))
 
 (define (dsssl2-test2 f)
    (list (f 11 22 33 44)
@@ -126,12 +125,12 @@
     (dsssl4 11 b: 22)
     (dsssl4 11)))
 
-;* (define (dsssl4-test1-eval)                                         */
-;*    (eval '(list                                                     */
-;* 	   (dsssl4 11 c: 33 b: 22 d: 44)                            */
-;* 	   (dsssl4 11 b: 22 c: 33)                                  */
-;* 	   (dsssl4 11 b: 22)                                        */
-;* 	   (dsssl4 11))))                                           */
+(define (dsssl4-test1-eval)
+   (eval '(list
+	   (dsssl4 11 c: 33 b: 22 d: 44)
+	   (dsssl4 11 b: 22 c: 33)
+	   (dsssl4 11 b: 22)
+	   (dsssl4 11))))
 
 (define c c:)
 (define b b:)
@@ -143,14 +142,14 @@
     (dsssl4 11 b 22)
     (dsssl4 11)))
 
-;* (define (dsssl4-test1b-eval)                                        */
-;*    (eval '(let ((c c:)                                              */
-;* 		(b b:))                                                */
-;* 	     (list                                                  */
-;* 	      (dsssl4 11 d: 44 b: 22 c 33)                          */
-;* 	      (dsssl4 11 c 33 b 22)                                 */
-;* 	      (dsssl4 11 b 22)                                      */
-;* 	      (dsssl4 11)))))                                       */
+(define (dsssl4-test1b-eval)
+   (eval '(let ((c c:)
+		(b b:))
+	     (list
+	      (dsssl4 11 d: 44 b: 22 c 33)
+	      (dsssl4 11 c 33 b 22)
+	      (dsssl4 11 b 22)
+	      (dsssl4 11)))))
 
 (define (dsssl4-test2 f)
    (list
@@ -194,10 +193,10 @@
 	 (dsssl6 11)
 	 (dsssl6)))
 
-;* (define (dsssl6-test1-eval)                                         */
-;*    (eval '(list (dsssl6 11 22)                                      */
-;* 		(dsssl6 11)                                            */
-;* 		(dsssl6))))                                            */
+(define (dsssl6-test1-eval)
+   (eval '(list (dsssl6 11 22)
+		(dsssl6 11)
+		(dsssl6))))
 
 (define (dsssl6-test2 f)
    (list (f 11 22)
@@ -331,10 +330,10 @@
     3 4 5 i: 6 i: 7)
    :expected '(3 4 5 i: 6 j: 1))
 
-;* (define-test eval.1 (test-dsssl-eval)                               */
-;*    :expected #t)                                                    */
-;* (define-test eval.2 (eval '(dsssl 1 2 3 4 i: 5))                    */
-;*    :expected '(1 2 3 4 i: 5 j: 1))                                  */
+(define-test eval.1 (test-dsssl-eval)
+   :expected #t)
+(define-test eval.2 (eval '(dsssl 1 2 3 4 i: 5))
+   :expected '(1 2 3 4 i: 5 j: 1))
 (define-test eval-eps.3
    (eval '(begin
            (define-macro (DSSSL-macro x)
@@ -381,11 +380,11 @@
                (11 22 33 d)
                (11 22 c d)
                (11 #f c d)))
-;* (define-test dsssl2-eval.1 (dsssl2-test1-eval)                      */
-;*    :expected '((11 22 33 44)                                        */
-;*                (11 22 33 d)                                         */
-;*                (11 22 c d)                                          */
-;*                (11 #f c d)))                                        */
+(define-test dsssl2-eval.1 (dsssl2-test1-eval)
+   :expected '((11 22 33 44)
+               (11 22 33 d)
+               (11 22 c d)
+               (11 #f c d)))
 (define-test dsssl2.2 (dsssl2-test2 dsssl2)
    :expected '((11 22 33 44)
                (11 22 33 d)
@@ -461,21 +460,21 @@
                (11 22 33 d)
                (11 22 c d)
                (11 #f c d)))
-;* (define-test dsssl4-eval.1 (dsssl4-test1-eval)                      */
-;*    :expected '((11 22 33 44)                                        */
-;*                (11 22 33 d)                                         */
-;*                (11 22 c d)                                          */
-;*                (11 #f c d)))                                        */
+(define-test dsssl4-eval.1 (dsssl4-test1-eval)
+   :expected '((11 22 33 44)
+               (11 22 33 d)
+               (11 22 c d)
+               (11 #f c d)))
 (define-test dsssl4.1b (dsssl4-test1b)
    :expected '((11 22 33 44)
                (11 22 33 d)
                (11 22 c d)
                (11 #f c d)))
-;* (define-test dsssl4-eval.1b (dsssl4-test1b-eval)                    */
-;*    :expected '((11 22 33 44)                                        */
-;*                (11 22 33 d)                                         */
-;*                (11 22 c d)                                          */
-;*                (11 #f c d)))                                        */
+(define-test dsssl4-eval.1b (dsssl4-test1b-eval)
+   :expected '((11 22 33 44)
+               (11 22 33 d)
+               (11 22 c d)
+               (11 #f c d)))
 (define-test dsssl4.2 (dsssl4-test2 dsssl4)
    :expected '((11 22 33 44)
                (11 22 33 d)
@@ -516,10 +515,10 @@
    :expected '((11 22)
                (11 #f)
                (a #f)))
-;* (define-test dsssl6-eval.1 (dsssl6-test1-eval)                      */
-;*    :expected '((11 22)                                              */
-;*                (11 #f)                                              */
-;*                (a #f)))                                             */
+(define-test dsssl6-eval.1 (dsssl6-test1-eval)
+   :expected '((11 22)
+               (11 #f)
+               (a #f)))
 (define-test dsssl6.2 (dsssl6-test2 dsssl6)
    :expected '((11 22)
                (11 #f)

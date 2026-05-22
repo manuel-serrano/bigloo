@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Mon May 18 11:38:39 2026 (serrano)                */
+;*    Last change :  Fri May 22 07:34:39 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -56,7 +56,7 @@
 	   ast_pragma
 	   cgen_cop
 	   saw_wasm_compile
-	   saw_wasm_code
+	   saw_wasm_gen
 	   saw_defs
 	   (emit-bdb-loc cgen_emit-cop)
 	   type_tools
@@ -74,6 +74,7 @@
 ;*---------------------------------------------------------------------*/
 (define (build-wasm-backend)
    (instantiate::wasm
+      (name "wasm")
       (language 'wasm)
       (heap-compatible 'c)
       (heap-suffix "wheap")
@@ -96,7 +97,8 @@
       (typed-closures #f)
       (varargs #f)
       (mangling #f)
-      (local-exit #f)))
+      (local-exit #f)
+      (nary-new #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-initialize! ::wasm ...                                   */
@@ -710,9 +712,6 @@ esac")
 ;*---------------------------------------------------------------------*/
 (define (wasm-walk me::wasm)
    
-   (pass-prelude "Wat"
-      (lambda () (start-emission! ".wat")))
-   
    (for-each-type! (lambda (t) (type-occurrence-set! t 0)))
    
    (for-each-global! (get-genv)
@@ -762,24 +761,28 @@ esac")
    (let ((compiled-funcs (backend-compile-functions me))
 	 (classes (filter class-used? (get-class-list))))
 
-      (with-output-to-port *wasm-port*
-	 (lambda ()
-	    (wasm-pp
-	       `(module ,(wasm-sym (symbol->string *module*))
-		   ,@(if *wasm-local-preinit*
-			 (list (emit-default-constants)) '())
-		   (comment "imports" ,@(emit-imports))
-		   (comment "memory" ,@(emit-memory))
-		   (comment "types and tags" ,@(emit-types-and-tags))
-		   (comment "Elements" ,@(emit-elements))
-		   (comment "Class types" ,@(emit-class-types classes))
-		   (comment "Extra types" ,@(reverse *extra-types*))
-		   (comment "Globals" ,@(emit-prototypes))
-		   (comment "Constants" ,@(emit-cnsts))
-		   (comment "String data" ,@(emit-strings))
-		   (comment "Functions" ,@compiled-funcs))))))
+      (unless (eq? *pass* 'sawmill)
+	 (pass-prelude "Wat"
+	    (lambda () (start-emission! ".wat")))
    
-   (stop-emission!))
+	 (with-output-to-port *wasm-port*
+	    (lambda ()
+	       (wasm-pp
+		  `(module ,(wasm-sym (symbol->string *module*))
+		      ,@(if *wasm-local-preinit*
+			    (list (emit-default-constants)) '())
+		      (comment "imports" ,@(emit-imports))
+		      (comment "memory" ,@(emit-memory))
+		      (comment "types and tags" ,@(emit-types-and-tags))
+		      (comment "Elements" ,@(emit-elements))
+		      (comment "Class types" ,@(emit-class-types classes))
+		      (comment "Extra types" ,@(reverse *extra-types*))
+		      (comment "Globals" ,@(emit-prototypes))
+		      (comment "Constants" ,@(emit-cnsts))
+		      (comment "String data" ,@(emit-strings))
+		      (comment "Functions" ,@compiled-funcs)))))
+   
+	 (stop-emission!))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-used? ...                                                  */

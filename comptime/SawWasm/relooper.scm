@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/comptime/SawWasm/relooper.scm       */
+;*    .../prgm/project/bigloo/5.0.x/comptime/SawWasm/relooper.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Fri Sep 13 14:15:02 2024                          */
-;*    Last change :  Mon Apr 27 10:15:16 2026 (serrano)                */
+;*    Last change :  Fri May 22 08:00:02 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Relooper implementation                                          */
@@ -40,7 +40,7 @@
 	   engine_param
 	   backend_backend
 	   backend_cvm
-	   saw_wasm_code
+	   saw_wasm_gen
 	   backend_wasm
 	   tools_shape)
    (export (relooper v::global blocks::pair-nil)))

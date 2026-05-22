@@ -320,6 +320,12 @@
 	  (if (<=fx line-begin 1) (set! incollect #t)))
        (ignore))
 
+      ((: #\# (+ (in ("azAZ"))))
+       (let ((str (the-string)))
+          (set! column (+fx column (the-length)))
+          (add! (<SPAN> str))
+          (ignore)))
+       
       ((+ #\#)
        ;; sharp signs
        (let ((str (the-string)))

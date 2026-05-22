@@ -32,7 +32,7 @@
 	    saw_jvm_names
 	    saw_jvm_out
 	    saw_jvm_funcall
-	    saw_jvm_code)
+	    saw_jvm_gen)
    (export  (saw_jvm-compile ::jvm)) )
 
 ;;

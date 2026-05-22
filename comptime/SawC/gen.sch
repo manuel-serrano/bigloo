@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
-;; (bigloo.new -classgen SawC/code.scm)
+;; Bigloo (4.7b)
+;; Inria -- Sophia Antipolis     Mon Mar 30 08:59:44 AM CEST 2026 
+;; (bigloo.new -classgen SawC/gen.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -11,12 +11,14 @@
 ;; SawCIreg
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-SawCIreg::SawCIreg type1159::type var1160::obj onexpr?1161::obj name1162::obj key1163::obj hardware1164::obj index1165::obj)
+    (inline make-SawCIreg::SawCIreg type1171::type var1172::obj onexpr?1173::obj name1174::obj key1175::obj debugname1176::obj hardware1177::obj index1178::obj)
     (inline SawCIreg?::bool ::obj)
     (SawCIreg-nil::SawCIreg)
     (inline SawCIreg-index::obj ::SawCIreg)
     (inline SawCIreg-index-set! ::SawCIreg ::obj)
     (inline SawCIreg-hardware::obj ::SawCIreg)
+    (inline SawCIreg-debugname::obj ::SawCIreg)
+    (inline SawCIreg-debugname-set! ::SawCIreg ::obj)
     (inline SawCIreg-key::obj ::SawCIreg)
     (inline SawCIreg-name::obj ::SawCIreg)
     (inline SawCIreg-onexpr?::obj ::SawCIreg)
@@ -29,13 +31,15 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; SawCIreg
-(define-inline (make-SawCIreg::SawCIreg type1159::type var1160::obj onexpr?1161::obj name1162::obj key1163::obj hardware1164::obj index1165::obj) (instantiate::SawCIreg (type type1159) (var var1160) (onexpr? onexpr?1161) (name name1162) (key key1163) (hardware hardware1164) (index index1165)))
-(define-inline (SawCIreg?::bool obj::obj) ((@ isa? __object) obj (@ SawCIreg saw_c_code)))
-(define (SawCIreg-nil::SawCIreg) (class-nil (@ SawCIreg saw_c_code)))
+(define-inline (make-SawCIreg::SawCIreg type1171::type var1172::obj onexpr?1173::obj name1174::obj key1175::obj debugname1176::obj hardware1177::obj index1178::obj) (instantiate::SawCIreg (type type1171) (var var1172) (onexpr? onexpr?1173) (name name1174) (key key1175) (debugname debugname1176) (hardware hardware1177) (index index1178)))
+(define-inline (SawCIreg?::bool obj::obj) ((@ isa? __object) obj (@ SawCIreg saw_c_gen)))
+(define (SawCIreg-nil::SawCIreg) (class-nil (@ SawCIreg saw_c_gen)))
 (define-inline (SawCIreg-index::obj o::SawCIreg) (-> |#!bigloo_wallow| o index))
 (define-inline (SawCIreg-index-set! o::SawCIreg v::obj) (set! (-> |#!bigloo_wallow| o index) v))
 (define-inline (SawCIreg-hardware::obj o::SawCIreg) (-> |#!bigloo_wallow| o hardware))
 (define-inline (SawCIreg-hardware-set! o::SawCIreg v::obj) (set! (-> |#!bigloo_wallow| o hardware) v))
+(define-inline (SawCIreg-debugname::obj o::SawCIreg) (-> |#!bigloo_wallow| o debugname))
+(define-inline (SawCIreg-debugname-set! o::SawCIreg v::obj) (set! (-> |#!bigloo_wallow| o debugname) v))
 (define-inline (SawCIreg-key::obj o::SawCIreg) (-> |#!bigloo_wallow| o key))
 (define-inline (SawCIreg-key-set! o::SawCIreg v::obj) (set! (-> |#!bigloo_wallow| o key) v))
 (define-inline (SawCIreg-name::obj o::SawCIreg) (-> |#!bigloo_wallow| o name))

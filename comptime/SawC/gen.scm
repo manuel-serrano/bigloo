@@ -1,4 +1,4 @@
-(module saw_c_code
+(module saw_c_gen
    (include "Tools/trace.sch"
 	    "Tools/location.sch")
    (import type_type		; type
@@ -26,7 +26,7 @@
    (export (saw-cheader)
 	   (saw-cgen b::cvm v::global)
 	   (saw-cepilogue))
-   (cond-expand ((not bigloo-class-generate) (include "SawC/code.sch")))
+   (cond-expand ((not bigloo-class-generate) (include "SawC/gen.sch")))
    (static (wide-class SawCIreg::rtl_reg index)) )
 
 (define *comment* #f)

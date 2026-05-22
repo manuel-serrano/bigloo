@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/SawWasm/compile.scm        */
+;*    .../prgm/project/bigloo/5.0.x/comptime/SawWasm/compile.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Mon Oct 20 09:04:25 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri May 22 07:50:58 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `C generation' pass.                                         */
 ;*=====================================================================*/
@@ -42,7 +42,7 @@
 	    object_class
 	    object_slots
 	    saw_defs
-	    saw_wasm_code))
+	    saw_wasm_gen))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-compile-functions ::wasm ...                             */

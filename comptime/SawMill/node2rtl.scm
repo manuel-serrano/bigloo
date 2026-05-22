@@ -23,7 +23,8 @@
    (static (class area entry::block exit::block)
 	   (wide-class reversed::block)
 	   (wide-class rlocal::local reg code)
-	   (wide-class retblock/to::retblock to::block dst::rtl_reg))
+	   (wide-class retblock/to::retblock to::block dst::rtl_reg)
+	   (wide-class new*::new))
    )
 
 (define *reverse-call-argument* #f)
@@ -407,51 +408,50 @@
 
 ;;
 (define-method (node->rtl::area e::new) ; ()
+
+   (define (class-slots::pair-nil t::type)
+      (let ((s (cond
+		  ((isa? t tclass)
+		   (tclass-slots t))
+		  ((isa? t wclass)
+		   (let ((c (wclass-its-class t)))
+		      (filter (lambda (s)
+				 (eq? (slot-class-owner s) c))
+			 (tclass-slots c))))
+		  ((isa? t jclass)
+		   (jclass-slots t))
+		  (else
+		   '()))))
+	 (if (eq? s #unspecified)
+	     '()
+	     s)))
    
-   (define (new4->rtl::area e)
+   (define (new-class-set-class-num e tmp)
       (with-access::new e (expr* args-type type loc)
-	 (call* e (instantiate::rtl_new
-		     (type (get-type e #f))
-		     (constr (take args-type (length expr*))))
-	    expr* )))
-   
-   (define (new5->rtl::area e)
+	 (instantiate::app
+	    (type *obj*)
+	    (fun (instantiate::ref
+		    (variable (find-global (get-genv)
+				 '$object-class-num-init!
+				 'foreign))
+		    (type *obj*)))
+	    (args (list
+		     (instantiate::ref
+			(loc loc)
+			(type type)
+			(variable tmp))
+		     (instantiate::ref
+			(loc loc)
+			(type (get-class-type))
+			(variable (tclass-holder type))))))))
+
+   (define (new-class-set-slots e tmp)
       (with-access::new e (expr* args-type type loc)
-	 (let* ((tmp (make-local-svar (gensym 'new) type))
-		(vref (instantiate::ref
-			 (loc loc)
-			 (type type)
-			 (variable tmp)))
-		(new4 (duplicate::new e
-			 (expr* '())))
-		(slots (cond
-			  ((isa? type tclass)
-			   (tclass-slots type))
-			  ((isa? type jclass)
-			   (jclass-slots type))
-			  (else
-			   (error "node->rtl ::new"
-			      "bad class" (typeof type)))))
-		(init (if (isa? type tclass)
-			  (list
-			     (instantiate::app
-				(type *obj*)
-				(fun (instantiate::ref
-					(variable (find-global (get-genv)
-						     '$object-class-num-init!
-						     'foreign))
-					(type *obj*)))
-				(args (list
-					 (instantiate::ref
-					    (loc loc)
-					    (type type)
-					    (variable tmp))
-					 (instantiate::ref
-					    (loc loc)
-					    (type (get-class-type))
-					    (variable (tclass-holder type)))))))
-			  '()))
-		(vsets (map (lambda (s e)
+	 (if (pair? expr*)
+	     (instantiate::sequence
+		(loc loc)
+		(type *obj*)
+		(nodes (map (lambda (s e)
 			       (let ((v (instantiate::ref
 					   (loc loc)
 					   (type type)
@@ -465,24 +465,62 @@
 				     (expr* (list v e))
 				     (c-format "not-used"))))
 			  (filter (lambda (s) (<fx (slot-virtual-num s) 0))
-			     slots)
+			     (class-slots type))
 			  expr*)))
-	    (node->rtl
-	       (instantiate::let-var
-		  (loc loc)
-		  (type type)
-		  (bindings (list (cons tmp new4)))
-		  (body (instantiate::sequence
-			   (loc loc)
-			   (type type)
-			   (nodes (append init vsets (list vref))))))))))
+	     (instantiate::literal
+		(loc loc)
+		(type *obj*)
+		(value #unspecified)))))
+   
+   (define (new-class e cnum::bool nary::bool)
+      (with-access::new e (expr* args-type type loc)
+	 (if (and (not cnum) nary)
+	     (widen!::new* e)
+	     (let* ((tmp (make-local-svar (gensym 'new) type))
+		    (vref (instantiate::ref
+			     (loc loc)
+			     (type type)
+			     (variable tmp)))
+		    (new (if nary
+			     (widen!::new* e)
+			     (widen!::new* (duplicate::new e (expr* '()))))))
+		(instantiate::let-var
+		   (loc loc)
+		   (type type)
+		   (bindings (list (cons tmp new)))
+		   (body (instantiate::sequence
+			    (loc loc)
+			    (type type)
+			    (nodes (cond
+				      ((and cnum (not nary))
+				       (list (new-class-set-class-num e tmp)
+					  (new-class-set-slots e tmp)
+					  vref))
+				      (cnum
+				       (list (new-class-set-class-num e tmp)
+					  vref))
+				      ((not nary)
+				       (list (new-class-set-slots e tmp)
+					  vref))
+				      (else
+				       (list vref)))))))))))
+   
+   (with-access::new e (type expr* loc)
+      (cond
+	 ((isa? type tclass)
+	  (node->rtl (new-class e #t (backend-nary-new (the-backend)))))
+	 ((isa? type wclass)
+	  (node->rtl (new-class e #f (backend-nary-new (the-backend)))))
+	 (else
+	  (node->rtl (widen!::new* e))))))
 
+;;   
+(define-method (node->rtl::area e::new*)
    (with-access::new e (expr* args-type type loc)
-      (if (and (pair? expr*) (isa? type tclass))
-	  ;; module5 syntax
-	  (new5->rtl e)
-	  ;; module4 syntax
-	  (new4->rtl e))))
+      (call* e (instantiate::rtl_new
+		  (type (get-type e #f))
+		  (constr (take args-type (length expr*))))
+	 expr*)))
 
 ;;
 (define-method (node->rtl::area e::valloc) ; ()

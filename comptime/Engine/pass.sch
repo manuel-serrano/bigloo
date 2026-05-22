@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Engine/pass.sch        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Engine/pass.sch       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:29:06 1994                          */
-;*    Last change :  Sat Sep 13 06:50:57 2025 (serrano)                */
-;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri May 22 08:46:37 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pass prelude                                                 */
 ;*=====================================================================*/
@@ -26,7 +26,7 @@
    `(begin
        (verbose 1 "   . " ,name #\newline)
        (set! *nb-error-on-pass* 0)
-       (set! *current-pass*  ,name)
+       (set! *current-pass* ,name)
        (let loop ((hooks ,(cons 'list hooks))
 		  (hnames ',hooks))
 	  (cond

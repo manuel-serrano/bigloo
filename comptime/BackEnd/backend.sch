@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.7a)
-;; Inria -- Sophia Antipolis     Sun Jun 29 12:08:26 PM CEST 2025 
+;; Bigloo (4.7b)
+;; Inria -- Sophia Antipolis     Mon Mar 30 08:59:44 AM CEST 2026 
 ;; (bigloo BackEnd/backend.scm -classgen)
 ;; ==========================================================
 
@@ -13,6 +13,10 @@
   (export
     (inline backend?::bool ::obj)
     (backend-nil::backend)
+    (inline backend-nary-new::bool ::backend)
+    (inline backend-nary-new-set! ::backend ::bool)
+    (inline backend-dump-heap::obj ::backend)
+    (inline backend-dump-heap-set! ::backend ::obj)
     (inline backend-local-exit::bool ::backend)
     (inline backend-local-exit-set! ::backend ::bool)
     (inline backend-mangling::bool ::backend)
@@ -95,6 +99,10 @@
 ;; backend
 (define-inline (backend?::bool obj::obj) ((@ isa? __object) obj (@ backend backend_backend)))
 (define (backend-nil::backend) (class-nil (@ backend backend_backend)))
+(define-inline (backend-nary-new::bool o::backend) (-> |#!bigloo_wallow| o nary-new))
+(define-inline (backend-nary-new-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o nary-new) v))
+(define-inline (backend-dump-heap::obj o::backend) (-> |#!bigloo_wallow| o dump-heap))
+(define-inline (backend-dump-heap-set! o::backend v::obj) (set! (-> |#!bigloo_wallow| o dump-heap) v))
 (define-inline (backend-local-exit::bool o::backend) (-> |#!bigloo_wallow| o local-exit))
 (define-inline (backend-local-exit-set! o::backend v::bool) (set! (-> |#!bigloo_wallow| o local-exit) v))
 (define-inline (backend-mangling::bool o::backend) (-> |#!bigloo_wallow| o mangling))

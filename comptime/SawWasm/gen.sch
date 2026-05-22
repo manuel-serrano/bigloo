@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.6a)
-;; Inria -- Sophia Antipolis     Fri Sep 27 06:51:53 AM CEST 2024 
-;; (bigloo -classgen SawWasm/code.scm)
+;; Bigloo (4.7b)
+;; Inria -- Sophia Antipolis     Mon Mar 30 08:59:44 AM CEST 2026 
+;; (bigloo -classgen SawWasm/gen.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -34,8 +34,8 @@
 (cond-expand (bigloo-class-sans
 ;; wasm_local
 (define-inline (make-wasm_local::wasm_local type1183::type var1184::obj onexpr?1185::obj name1186::obj key1187::obj debugname1188::obj hardware1189::obj index1190::obj nullable1191::bool) (instantiate::wasm_local (type type1183) (var var1184) (onexpr? onexpr?1185) (name name1186) (key key1187) (debugname debugname1188) (hardware hardware1189) (index index1190) (nullable nullable1191)))
-(define-inline (wasm_local?::bool obj::obj) ((@ isa? __object) obj (@ wasm_local saw_wasm_code)))
-(define (wasm_local-nil::wasm_local) (class-nil (@ wasm_local saw_wasm_code)))
+(define-inline (wasm_local?::bool obj::obj) ((@ isa? __object) obj (@ wasm_local saw_wasm_gen)))
+(define (wasm_local-nil::wasm_local) (class-nil (@ wasm_local saw_wasm_gen)))
 (define-inline (wasm_local-nullable::bool o::wasm_local) (-> |#!bigloo_wallow| o nullable))
 (define-inline (wasm_local-nullable-set! o::wasm_local v::bool) (set! (-> |#!bigloo_wallow| o nullable) v))
 (define-inline (wasm_local-index::obj o::wasm_local) (-> |#!bigloo_wallow| o index))

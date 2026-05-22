@@ -12,7 +12,7 @@
 	   backend_jvm_class
 	   saw_defs
 	   saw_jvm_out
-	   saw_jvm_code
+	   saw_jvm_gen
 	   ast_env)
    (export (check-jvm-inlines)
 	   (inline-call? me::jvm var::global)

@@ -1,4 +1,4 @@
-(module saw_jvm_code
+(module saw_jvm_gen
    (include "Tools/location.sch")
    (import type_type ast_var ast_node
 	   type_env
@@ -24,7 +24,7 @@
 	   )
    (export (module-code me::jvm params l)
 	   (gen-expr me::jvm ins))
-   (include "SawJvm/code.sch")
+   (include "SawJvm/gen.sch")
    (static (wide-class lreg::rtl_reg id)
 	   (wide-class liveblock::block in out)
 	   ))
