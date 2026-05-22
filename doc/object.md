@@ -470,13 +470,9 @@ And `*pamela*` and `*junior*` still are the same persons:
 Object and Class library
 ------------------------
 
-@subsection Classes handling
-No type denotes Bigloo's classes. These objects are handled
-by the following library functions:
+### find-class ###
 
-@deffn {bigloo procedure} find-class symbol
-Returns, if any, the class named @var{symbol}.
-@end deffn
+Returns, if any, the class `symbol`.
 
 @deffn {bigloo procedure} class? obj
 Returns @code{#t} if and only if @var{obj} is a class.

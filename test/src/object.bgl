@@ -182,3 +182,5 @@
 (define-test shrink (isa? (shrink! (widen!::Point3d (instantiate::Point))) Point3d)
    :expected #f)
 
+(define-test find-class (find-class 'Point3d)
+   :expected Point3d)

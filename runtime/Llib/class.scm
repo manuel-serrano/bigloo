@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Fri May 22 14:30:51 2026 (serrano)                */
+;*    Last change :  Fri May 22 16:09:52 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -588,7 +588,7 @@
 			   ((@ object-class-num-set! __object)
 			    ,d ((@ class-num __object) ,cid))
 			   ,@(if (class-info-ctor class-info)
-				 (list `(,(class-info-ctor class-info) ,o))
+				 (list `(,(class-info-ctor class-info) ,d))
 				 '())
 			   ,d)))
 		(e (localize x nx) e))))
