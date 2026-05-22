@@ -471,108 +471,63 @@ Object and Class library
 ------------------------
 
 ### find-class ###
+Returns, if any, the class `cname`. Otherwise, throws an error.
 
-Returns, if any, the class `symbol`.
+### class? ###
+Returns `#t` if and only if `obj` is a class. Returns `#f` otherwise.
 
-@deffn {bigloo procedure} class? obj
-Returns @code{#t} if and only if @var{obj} is a class.
-@end deffn
 
-@deffn {bigloo procedure} class-super class
-Returns the @emph{super-class} of @var{class}.
-@end deffn
+### class-super ###
+Returns the _super class_ of `class`, other `#f` if `class` is the root
+of the class hierarchy.
 
-@deffn {bigloo procedure} class-subclasses class
-Returns the @emph{subclasses} of @var{class}.
-@end deffn
+### class-subclasses ###
+Returns the list of the _sub classes_ of `class`.
 
-@deffn {bigloo procedure} class-name class
-Returns the name (a symbol) of @var{class}.
-@end deffn
+### class-name ###
+Returns the name of the class.
 
-@deffn {bigloo procedure} object-constructor class
-Returns @var{class}'s constructor.
-@end deffn
+### class-constructor ###
+Returns the `class` constructor.
 
-@deffn {bigloo procedure} object-class object
-Returns the class that @var{object} belongs to.
-@end deffn
+### object-class ###
+Returns the class that `object` belongs to.
 
-@subsection Object handling
-@deffn {bigloo procedure} wide-object? object
-Returns @code{#t} if @var{object} is a wide object otherwise it returns 
-@code{#f}.
-@end deffn
-
-@deffn {bigloo generic} object->struct object
-@deffnx {bigloo procedure} struct->object struct
-These functions converts objects into Scheme structures and vice-versa.
-@end deffn
-
-@deffn {bigloo generic} object-equal? object obj
-This generic function is invoked by @code{equal?} when the first argument
-is an instance of @code{object}.
-@end deffn
-
-@deffn {bigloo generic} object-hashnumber object
-This generic function returns an hash number of @var{object}.
-@end deffn
-
-@deffn {bigloo procedure} isa? obj class
-Returns @code{#t} if @var{obj} belongs to @var{class} otherwise it
-returns @code{#f}.
-@end deffn
-
-@c ------------------------------------------------------------------- @c
-@c    Object serialization                                             @c
-@c ------------------------------------------------------------------- @c
-@node Object serialization, Equality, Object library, Object System
-@comment  node-name,  next,  previous,  up
-@section Object serialization
-@cindex Object serialization
-
-Objects can be @emph{serialized} and @emph{un-serialized} using
-the regular @code{string->obj} and @code{obj->string}
-functions. Objects can be stored on disk and restored from disk
-by the use of the @code{output-obj} and @code{input-obj}
-functions.
-
-In addition to this standard serialization mechanism, custom object
-serializers and un-serializers can be specified by the means of the
-@code{register-class-serialization!} function (see Section
-@ref{Serialization}.
-
-@c ------------------------------------------------------------------- @c
-@c    Equality                                                         @c
-@c ------------------------------------------------------------------- @c
-@node Equality, Introspection, Object serialization, Object System
-@comment  node-name,  next,  previous,  up
-@section Equality
-@cindex Equality
-
+### object-equal? ###
 Two objects can be compared with the @code{equal?} function. Two object
 are equal if and only if they belong to a same class, all their field
 values are equal and all their super class's field values are equal.
 
-@c ------------------------------------------------------------------- @c
-@c    Introspection                                                    @c
-@c ------------------------------------------------------------------- @c
-@node Introspection,  , Equality, Object System
-@comment  node-name,  next,  previous,  up
-@section Introspection
-@cindex Introspection
+The generic function `object-equal?` is invoked by `equal?` when the
+first argument is an instance of `object`.
 
-Bigloo provides the programmer with some object introspection facilities.
-See section @pxref{Object library} for information on classes and
-objects handling. Introspection facilities are, by default, available
-for all classes. However, in order to shrink the code size generation,
-it may be useful to disable class introspection. This decision can be
+### object-hashnumber ###
+This generic function returns an hash number of `object`.
+
+Object Serialization
+--------------------
+
+Objects can be _serialized_ and _un-serialized_ using
+the regular `string->obj` and `obj->string`
+functions. Objects can be stored on disk and restored from disk
+by the use of the `output-obj` and `input-obj`
+functions.
+
+In addition to this standard serialization mechanism, custom object
+serializers and un-serializers can be specified by the means of the
+`register-class-serialization!` function.
+
+Introspection
+-------------
+
+Bigloo provides the programmer with some object introspection
+facilities.  Introspection facilities are, by default, available for
+all classes. However, in order to shrink the code size generation, it
+may be useful to disable class introspection. This decision can be
 taken on a per class basis (i.e., one class may be provided with
 introspection facilities while another one is not). The compiler
-option @code{-fno-reflection} 
-(see Chapter @ref{Compiler Description}) prevents the
-compiler to generate the code required for introspecting the classes
-defined in the compiled module.
+option `-fno-reflection` prevents the compiler to generate the code
+required for introspecting the classes defined in the compiled module.
 
 @deffn {bigloo procedure} class-fields class
 Returns the a description of the fields of @var{class}. This description

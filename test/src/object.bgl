@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/test/src/object.bgl                         */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/object.bgl            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Fri May 22 13:34:52 2026 (serrano)                */
+;*    Last change :  Fri May 22 16:19:07 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing Objects and Classes                                      */
@@ -184,3 +184,49 @@
 
 (define-test find-class (find-class 'Point3d)
    :expected Point3d)
+
+(define-test class? (class? Point3d)
+   :expected #t)
+
+(define-test class? (class? 'Point3d)
+   :expected #f)
+
+(define-test class-super (class-super Point3d)
+   :expected Point)
+
+(define-test class-super (class-super (find-class 'object))
+   :expected #f)
+
+(define-test class-subclasses (every class? (class-subclasses (find-class 'object)))
+   :expected #t)
+
+(define-test class-name (class-name Point)
+   :expected 'Point)
+
+(define-test class-constructor (procedure? (class-constructor Point))
+   :expected #t)
+
+(define-test class-constructor (procedure? (class-constructor object))
+   :expected #f)
+
+(define-test object-class (object-class (instantiate::Point))
+   :expected Point)
+
+(define-test object-equal?
+   (let ((o (instantiate::Point))
+         (p (instantiate::Point)))
+      (equal? o p))
+   :expected #t)
+
+(define-test object-equal?
+   (let ((o (instantiate::Point))
+         (p (instantiate::Point3d)))
+      (equal? o p))
+   :expected #f)
+
+(define-test object-hashnumber
+   (fixnum? (object-hashnumber (instantiate::Point)))
+   :expected #t)
+
+
+

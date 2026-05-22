@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed May 20 17:03:47 2026 (serrano)                */
+;*    Last change :  Fri May 22 16:16:21 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -328,7 +328,7 @@
 	    (inline object?::bool ::obj)
 	    (inline object-class-num::long ::object)
 	    (inline object-class-num-set! ::object ::long)
-	    (inline object-class::obj ::object)
+	    (inline object-class::class ::object)
 	    (find-class::class ::symbol)
 	    (find-class-by-hash::obj ::int)
 	    (class-exists ::symbol)
@@ -529,7 +529,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    find-class ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (find-class cname)
+(define (find-class::class cname::symbol)
    (or (class-exists cname) 
        (error "find-class" "Cannot find class" cname)))
 
@@ -553,7 +553,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-name ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (class-name class)
+(define (class-name::symbol class::class)
    ($class-name class))
 
 ;*---------------------------------------------------------------------*/
@@ -720,7 +720,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-super ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (class-super class)
+(define (class-super class::class)
    ($class-super class))
 		     
 ;*---------------------------------------------------------------------*/
@@ -750,7 +750,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-subclasses ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (class-subclasses class)
+(define (class-subclasses::pair-nil class::class)
    ($class-subclasses class))
 		     
 ;*---------------------------------------------------------------------*/
@@ -788,7 +788,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-constructor ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (class-constructor class)
+(define (class-constructor class::class)
    ($class-constructor class))
 
 ;*---------------------------------------------------------------------*/
@@ -958,7 +958,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    object-class ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (object-class object::object)
+(define-inline (object-class::class object::object)
    (vector-ref-ur ($as-vector *classes*)
       (-fx (object-class-num object) %object-type-number)))
 
@@ -1531,7 +1531,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    wide-object? ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (wide-object? object)
+(define-inline (wide-object?::bool object::object)
    (if (object-widening object) #t #f))
  
 ;*---------------------------------------------------------------------*/
