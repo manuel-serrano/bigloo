@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/doc/src/bgldoc.bgl             */
+;*    serrano/bigloo/5.0.x/doc/src/bgldoc.bgl                          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Wed May 20 17:24:45 2026 (serrano)                */
+;*    Last change :  Fri May 22 14:09:54 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -304,7 +304,7 @@
    (define (class-backend klass)
       (if (string? klass)
           (backends (string-split klass #\-))
-          (backends '("C" "java" "wasm"))))
+          (backends '("C" "jvm" "wasm"))))
 
    (call-with-input-file source
       (lambda (ip)

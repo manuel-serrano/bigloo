@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri May 22 12:03:29 2026 (serrano)                */
+;*    Last change :  Fri May 22 14:21:50 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -478,7 +478,7 @@
 				      (trace-item "scope=" scope)
 				      (declare-type! id name 'C))))))
 	       types)
-	    
+
 	    ;; declare all classes
 	    (let* ((iclasses (find-imported-classes
 				(map (lambda (v) (vector-ref v 0))

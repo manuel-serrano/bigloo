@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/doc/src/fontifier.bgl          */
+;*    serrano/bigloo/5.0.x/doc/src/fontifier.bgl                       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Wed May 20 16:57:56 2026 (serrano)                */
+;*    Last change :  Fri May 22 14:06:41 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -464,7 +464,7 @@
 	 '("lambda" "service" "let" "let*" "letrec" "letrec*"
            "if" "when" "unless"
 	   "begin" "cond" "case" "instantiate" "duplicate" "co-instantiate"
-           "set!" "else" "with-access"
+           "set!" "else" "with-access" "widen!" "shrink!" "call-next-method"
 	   "multiple-value-bind" "values" "match-case" "node-style-set!"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "important"))

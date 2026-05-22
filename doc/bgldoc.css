@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0.x/doc/bgldoc.css                 */
+/*    serrano/bigloo/5.0.x/doc/bgldoc.css                              */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Wed May 20 17:24:31 2026 (serrano)                */
+/*    Last change :  Fri May 22 14:10:08 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -86,7 +86,7 @@
     --blockquoteBorder: #ffd33a;
 
     --CBackend: #e6383c;
-    --javaBackend: #f6a70e;
+    --jvmBackend: #f6a70e;
     --wasmBackend: #4887ee;
 }
 
@@ -401,8 +401,8 @@ h3 span.icons.C {
     color: var(--CBackend);
 }
 
-h3 span.icons.java {
-    color: var(--javaBackend);
+h3 span.icons.jvm {
+    color: var(--jvmBackend);
 }
 
 h3 span.icons.wasm {

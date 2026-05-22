@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/test/src/object.bgl            */
+;*    serrano/bigloo/5.0.x/test/src/object.bgl                         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Wed May 20 18:38:09 2026 (serrano)                */
+;*    Last change :  Fri May 22 13:34:52 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing Objects and Classes                                      */
@@ -39,6 +39,15 @@
 (define (point-ctor x::Point)
    (set! point-cnt (+fx point-cnt 1))
    x)
+
+(define-generic (class-id o)
+   'obj)
+
+(define-method (class-id o::Point)
+   'Point)
+
+(define-method (class-id o::Point3d)
+   (symbol-append '|Point3d::| (call-next-method)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test ...                                                         */
@@ -138,3 +147,38 @@
 (define-test ctor
    (>fx point-cnt 5)
    :expected #t)
+
+(define-test generic (class-id 1)
+   :expected 'obj)
+
+(define-test method (class-id (instantiate::Point))
+   :expected 'Point)
+
+(define-test call-next-method (class-id (instantiate::Point3d))
+   :expected 'Point3d::Point)
+
+(define-test widen (isa? (widen!::Point3d (instantiate::Point)) Point3d)
+   :expected #t)
+
+(define-test widen
+   (let ((o::Point3d (widen!::Point3d (instantiate::Point (x 100)) (z 45))))
+      (+ (-> o x) (-> o z)))
+   :expected 145)
+
+(define-test widen (isa? (widen!::ColorPoint (instantiate::Point)) Point3d)
+   :expected #f)
+
+(define-test widen
+   (let ((o::ColorPoint (widen!::ColorPoint (instantiate::Point))))
+      (-> o color))
+   :expected 'black)
+
+(define-test widen
+   (let* ((o (instantiate::Point))
+          (p (widen!::Point3d o)))
+      (eq? o p))
+   :expected #t)
+
+(define-test shrink (isa? (shrink! (widen!::Point3d (instantiate::Point))) Point3d)
+   :expected #f)
+

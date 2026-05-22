@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Expand/object.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Expand/object.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Sat Mar 28 14:51:03 2026 (serrano)                */
+;*    Last change :  Fri May 22 14:12:59 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -185,6 +185,8 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-class-allocate x e)
    (match-case x
+      (($class-allocate wide ?clazz . ?args)
+       (e (make-private-sexp 'new/wide clazz args) e))
       (($class-allocate ?clazz)
        (e (make-private-sexp 'new clazz) e))
       (($class-allocate ?clazz . ?args)
@@ -567,11 +569,11 @@
 (define (expand-widen! x e)
    (match-case x
       ((?widen! ?obj . ?provided)
-       (let ((class (type-of-id widen! (find-location x))))
-	  (if (and (tclass? class) (tclass-widening class))
-	      (replace! x (e (expand-widening x class obj provided e) e))
+       (let ((clazz (type-of-id widen! (find-location x))))
+	  (if (and (tclass? clazz) (tclass-widening clazz))
+	      (replace! x (e (expand-widening x clazz obj provided e) e))
 	      (error widen!
-		 (format "Illegal class type \"~a\"" (type-id class))
+		 (format "Illegal class type \"~a\"" (type-id clazz))
 		 x))))
       (else
        (error "wident!" "Illegal form" x))))
@@ -579,18 +581,18 @@
 ;*---------------------------------------------------------------------*/
 ;*    expand-widening ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (expand-widening form class o provided e)
-   (let* ((super (tclass-its-super class))
-	  (tid (type-id class))
+(define (expand-widening form clazz o provided e)
+   (let* ((super (tclass-its-super clazz))
+	  (tid (type-id clazz))
 	  (sid (type-id super))
 	  (tmp (mark-symbol-non-user! (gensym 'tmp)))
 	  (ttmp (make-typed-ident tmp sid))
-	  (slots (filter (lambda (s) (eq? (slot-class-owner s) class))
-		    (tclass-slots class))))
+	  (slots (filter (lambda (s) (eq? (slot-class-owner s) clazz))
+		    (tclass-slots clazz))))
       `(let ((,ttmp ,o))
-	  ,(classgen-widen-expr class tmp)
+	  ,(classgen-widen-expr clazz tmp)
 	  ,(instantiate-fill (car form) (cddr form)
-	      class slots (make-private-sexp 'cast tid tmp) form e))))
+	      clazz slots (make-private-sexp 'cast tid tmp) form e))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-shrink! ...                                               */

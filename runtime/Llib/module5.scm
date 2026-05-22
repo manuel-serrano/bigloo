@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed May 20 09:46:16 2026 (serrano)                */
+;*    Last change :  Fri May 22 14:29:03 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -2719,7 +2719,11 @@
 	 #f (lambda () (duplicate-expander ci mod)))
       (install-module5-lazy-expander xenv
 	 (string->symbol (format "with-access::~a" (class-info-id ci)))
-	 #f (lambda () (with-access-expander ci mod)))))
+	 #f (lambda () (with-access-expander ci mod)))
+      (when (eq? (class-info-kind ci) 'define-wide-class)
+	 (install-module5-lazy-expander xenv
+	    (string->symbol (format "widen!::~a" (class-info-id ci)))
+	    #f (lambda () (widen-expander ci mod))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    include-expander ...                                             */

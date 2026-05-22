@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Fri May 22 11:28:30 2026 (serrano)                */
+;*    Last change :  Fri May 22 15:22:41 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -79,6 +79,18 @@
       (if (bigloo-mangled? f)
 	  (bigloo-demangle f)
 	  f ))
+
+   (define (new-wide-instance type args-type expr*)
+      (with-access::tclass type (wide-type its-super holder)
+	 (with-access::tclass its-super (id slots)
+	    (let ((len (length slots)))
+	       (instantiate::new
+		  (loc loc)
+		  (type wide-type)
+		  (args-type (drop args-type len))
+		  (expr* expr*)
+		  (side-effect #t)
+		  (c-format ""))))))
 
    (define (new-instance type args-type expr*)
       (cond
@@ -172,7 +184,7 @@
       ((?- new/args ?type ?args)
        (let ((ty (find-type/expr type sexp)))
 	  (with-access::tclass ty (slots wide-type)
-	     (if (pair? slots)
+	     (if (or (pair? slots) (null? slots))
 		 (let ((args-type (filter-map (lambda (s)
 						 (unless (>=fx (slot-virtual-num s) 0)
 						    (slot-type s)))
@@ -180,6 +192,18 @@
 		    (if (null? args)
 			(new-instance ty args-type '())
 			(new-instance ty args-type (sexp*->node args stack loc 'value genv))))
+		 (error/loc "new" "Class definition is missing" type loc)))))
+      ((?- new/wide ?type ?args)
+       (let ((ty (find-type/expr type sexp)))
+	  (with-access::tclass ty (slots wide-type)
+	     (if (or (pair? slots) (null? slots))
+		 (let ((args-type (filter-map (lambda (s)
+						 (unless (>=fx (slot-virtual-num s) 0)
+						    (slot-type s)))
+				     slots)))
+		    (if (null? args)
+			(new-wide-instance ty args-type '())
+			(new-wide-instance ty args-type (sexp*->node args stack loc 'value genv))))
 		 (error/loc "new" "Class definition is missing" type loc)))))
       ((?- new ?type (quote ?args-type) . ?rest)
        (let* ((ty (find-type/expr type sexp))

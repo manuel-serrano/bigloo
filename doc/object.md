@@ -13,8 +13,8 @@
 ,(implementation-path "../runtime/Llib/object.scm")
 ,(example-path "../test/src/object.bgl")
 
-Objects Programming
-===================
+Object Programming
+==================
 
 Bigloo's object system is designed to be as simple as possible and
 belongs to the [Clos][Bobrow88] family in that it uses _classes_,
@@ -23,7 +23,7 @@ influenced by C. Queinnec's [Meroon][Queinnec93]. It does not include
 any meta object protocol. It only supports single inheritance and
 single dispatch.
 
-Class declaration
+Class Declaration
 -----------------
 
 Classes are defined in a modules and their scope is the whole module,
@@ -144,7 +144,7 @@ the point class.
    (y::double (info '(range -1.0 1.0))))
 ```
 
-Creating and accessing objects
+Creating and Accessing Objects
 ------------------------------
 
 Objects and classes are created and manipulated via library functions
@@ -212,11 +212,11 @@ which class declarations contain cyclic type references (for instance
 a class @code{c1} for a which a field is declared of class @code{c2}
 and a class @code{c2} for which a class is declared of type
 @code{c1}). The syntax of a @code{co-instantiate} form is similar to a
-@code{let} form. However the only legal @var{values} are
+@code{let} form. However the only legal `values` are
 @code{instantiate} forms. The variables introduced in the binding of a
-@code{co-instantiate} form are bound in @var{body}. In addition, they
-are @emph{partially} bound in the @var{values} expressions. In a
-@var{value} position, a variable @var{var} can only be used to set the
+@code{co-instantiate} form are bound in `body`. In addition, they
+are @emph{partially} bound in the `values` expressions. In a
+`value` position, a variable `var` can only be used to set the
 value of a field of an instantiated class. It cannot be used in any
 calculus. Example:
 
@@ -230,7 +230,7 @@ The new instance can be a superclass of the original instance. It can
 also be a subclass of the original instance, provided that all the
 fields that are specific to the subclass are passed to `duplicate`.
 
-Generic functions
+Generic Functions
 -----------------
 
 A generic function is a bag of specific functions known as methods. When
@@ -240,251 +240,207 @@ function) and invokes the appropriate method. Generic functions implement
 single inheritance and each is defined using the @code{define-generic} 
 Bigloo syntax.
 
-@deffn {bigloo syntax} define-generic (name arg@dots{}) default-body
+### (define-generic (id o ...) ...) ###
+<!-- [:generic@NoDef] --> 
 
 A generic function can be defined with a default body which will
 be evaluated if no method can be found for the discriminating
 variable. The default default-body signals an error.
-@end deffn
 
-As an example, here is a possible definition of the @code{object-display} 
-generic function:
+Example:
 
-@smalllisp
-(define-generic (object-display obj::object . op)
-   (let ((port (if (pair? op) 
-                   (car op) 
-                   (current-output-port))))
-      (display "#\|" port)
-      (display (class-name (object-class obj)) port)
-      (display "\|" port)))
-@end smalllisp
+```bigloo
+(define-generic (class-id o)
+   'obj)
+```
+<span></span>
+
+### (define-method (id o ...) ...)
+<!-- [:method@NoDef] --> 
 
 Methods can be defined to specialize a generic function and such
-methods must have a
-compatible variable list. That is, the first argument of the
-method must be a sub-type (i.e. belong to a sub-class) of the
-first argument of the generic function. Other formal parameters
-must be of same types. Moreover, the result type of the method
-must be a sub-type of the result of the generic function.
+methods must have a compatible variable list. 
+That is, the first argument of the method must be a sub-type (i.e. belong 
+to a sub-class) of the first argument of the generic function. Other 
+formal parameters must be of same types. Moreover, the result type of 
+the method must be a sub-type of the result of the generic function.
 
-@deffn {bigloo syntax} define-method (name arg@dots{}) body
-@deffnx {bigloo syntax} call-next-method
-If there is no appropriate method, an error is signaled.
+```bigloo
+(define-method (class-id o::Point)
+   'Point)
+```
 
-Methods can use the form @code{(call-next-method)} to invoke the method
-that would have been called if not present. The @code{(call-next-method)}
+<span></span>
+
+### (call-next-method) ###
+<!-- [:call-next-method@NoDef] --> 
+
+Methods can use the form `(call-next-method)` to invoke the method
+that would have been called if not present. The `(call-next-method)`
 cannot be used out of method definition.
-example:
-@smalllisp
-(define-method (object-display p::person . op)
-   (let ((port (if (pair? op) 
-                   (car op) 
-                   (current-output-port))))
-      (fprint port "firstname : " (-> p fname))
-      (fprint port "name      : " (-> p name))
-      (fprint port "sex       : " (-> p sex))
-      p))
-@end smalllisp
 
-Widening and shrinking
+Example:
+
+```bigloo
+(define-method (class-id o::Point3d)
+   (symbol-append '|Point3d::| (call-next-method)))
+```
+<span></span>
+
+Widening and Shrinking
 ----------------------
 
-Bigloo introduces a new kind of inheritance: @emph{widening}. This allows an
-object to be temporarily @emph{widened} (that is transformed into an object
-of another class, a @emph{wide-class}) and then @emph{shrink-ed} (that is
+Bigloo introduces a new kind of inheritance: _widening_. This allows an
+object to be temporarily _widened_ (that is transformed into an object
+of another class, a _wide-class_) and then _shrink-ed_ (that is
 reshaped to its original class). This mechanism is very useful for
 implementing short-term data storage. For instance, Bigloo compilation
-passes are implemented using the @emph{widening/shrinking} mechanism. On
+passes are implemented using the _widening/shrinking_ mechanism. On
 entry to a pass, objects are widened with the specific pass fields and, on
 exit from a pass, objects are shrunk in order to forget the information
 related to this pass.
 
-Only instances of @emph{final classes} can be widened and objects can
-only be widened in order to become instances of @emph{wide classes}. 
-Widening is performed by the @code{widen!} syntax:
+Only instances of _final classes_ can be widened and objects can
+only be widened in order to become instances of _wide classes_. 
+Widening is performed by the `widen!` syntax:
 
-@deffn {bigloo syntax} widen!::@var{wide-class} obj (id value) @dots{}
-@pindex widen!
 
-The object @var{obj} is widened to be instance of the wide class
-@var{wide-class}. Fields values are either picked up from the
+### (widen!::class ...) ###
+<!-- [:widen@NoDef] --> 
+
+The object `obj` is widened to be instance of the wide class
+`wide-class`. Fields values are either picked up from the
 parameter list of the @code{widen!} form or
 from the default values in the declaration of the wide class.
 @end deffn
 
-Objects are shrunk using the @code{shrink!} syntax:
+### (shrink! obj) ###
+<!-- [:shrink@NoDef] -->
 
-@deffn {bigloo syntax} shrink! obj
-@end deffn
-
-Here is a first example:
-@smalllisp
-(module example
-   (static (final-class point 
-              (x (default 0))
-              (y (default 0)))
-           (wide-class named-point::point name)))
-
-(define *point* (instantiate::point))
-@end smalllisp
-
-Two classes have been declared and an instance @code{*point*} of
-@code{point} has been allocated. For now, @code{*point*} is an instance
-of @code{point} but not an instance of @code{named-point} and this can
-be checked by:
-@smalllisp
-(print (isa? *point* named))           @expansion{} #t
-(print (isa? *point* named-point))     @expansion{} #f
-@end smalllisp
-
-Now, we @emph{widen} @code{*point*}...
-@smalllisp
-(let ((n-point (widen!::named-point *point* 
-                  (name "orig"))))
-@end smalllisp
-
-And we check that now, @code{n-point} is an instance of
-@code{named-point}. Since @code{named-point} is a subclass of 
-@code{point}, @code{n-point} still is an instance of @code{point}.
-
-@smalllisp
-(print (isa? n-point named-point))  @expansion{} #t
-(print (isa? n-point named))        @expansion{} #t
-@end smalllisp
+Objects are shrunk using the `shrink!` operator.
 
 
-Widening affects the objects themselves. It does not operate any
-copy operation. Hence, @code{*point*} and @code{n-point} are @code{eq?}.
+Widening affects the objects themselves. This is illustrated by the following
+"wedding simulator". First let us define three classes, `person` (for 
+man and woman), `married-woman` and `married-man`:
 
-@smalllisp
-(print (eq? n-point *point*))   @expansion{} #t
-@end smalllisp
+```bigloo
+(define-final-class person 
+   name::string
+   fname::string
+   (birth::integer read-only))
+   
+(define-wide-class married-man::person
+   mate::person)
+   
+(define-wide-class married-woman::person
+   maiden-name::string
+   mate::person)
+```
 
-To end this example, we @emph{shrink} @code{n-point} and check 
-its class.
-@smalllisp
-(shrink! n-point)
-(print (isa? *point* named-point))) @expansion{} #f
-@end smalllisp
-
-Here is a more complex example:
-
-We illustrate widening and shrinking using our ``wedding simulator''. 
-First let us define three classes, @code{person} (for man and woman), 
-@code{married-woman} and @code{married-man}:
-@smalllisp
-(module wedding
-   (static (final-class person 
-               name::string
-               fname::string
-               (sex::symbol read-only))
-           (wide-class married-man::person
-               mate::person)
-           (wide-class married-woman::person
-               maiden-name::string
-               mate::person)))
-@end smalllisp
-As we can see people are allowed to change their name but not their sex.
+As we can see people are allowed to change their name but not their birthdate.
 
 The identity of a person can be printed as
-@smalllisp
-(define-method (object-display p::person . op)
-   (with-access::person p (name fname sex)
-      (print "firstname : " fname)
-      (print "name      : " name)
-      (print "sex       : " sex)
-      p))
-@end smalllisp
+
+```bigloo
+(define-method (display-object p::person #!optional (port (current-output-port)))
+  (fprint port "firstname : " (-> p fname))
+  (fprint port "name      : " (-> p name))
+  (fprint port "birth     : " (-> p birth))
+  p)
+```
 
 A married woman's identity is printed by (we suppose an equivalent method 
 definition for married-man)
-@smalllisp
-(define-method (object-display p::married-woman . op)
-   (with-access::married-woman p (name fname sex mate)
-      (call-next-method)
-      (print "married to: " mate) 
-      p))
-@end smalllisp
 
-We create a person with the @code{birth} function:
-@smalllisp
-(define (birth name::string fname::string sex)
+```bigloo
+(define-method (display-object p::married-woman #!optional (port (current-output-port)))
+  (call-next-method)
+  (print "married to: " (-> p mate))
+  p)
+```
+
+We create a person with the `birth` function:
+
+```bigloo
+(define (birth name::string fname::string birth)
    (instantiate::person 
       (name name)
       (fname fname)
-      (sex sex)))
-@end smalllisp
+      (birth birth)))
+```
 
-We celebrate a wedding using the @code{get-married!} function:
-@smalllisp
+We celebrate a wedding using the `get-married!` function:
+
+```bigloo
 (define (get-married! woman::person man::person)
-   (if (not (and (eq? (-> woman sex) 'female)
-                 (eq? (-> man sex) 'male)))
-       (error "get-married" 
-              "Illegal wedding" 
-              (cons woman man))
-       (let* ((mname (-> woman name))
-              (wife  (widen!::married-woman woman
-                      (maiden-name mname)
-                      (mate man))))
-          (person-name-set! wife (-> man name))
-          (widen!::married-man man
-             (mate woman)))))
-@end smalllisp
+   (let* ((mname (-> woman name))
+          (wife  (widen!::married-woman woman
+                    (maiden-name mname)
+                    (mate man))))
+      (person-name-set! wife (-> man name))
+      (widen!::married-man man
+         (mate woman)))))
+```
 
 We can check if two people are married by
-@smalllisp
+
+```bigloo
 (define (couple? woman::person man::person)
    (and (isa? woman married-woman)
         (isa? man married-man)
         (eq? (with-access::married-woman woman (mate) mate) man)
         (eq? (with-access::married-man man (mate) mate) woman)))
-@end smalllisp
+```
 
-Now let us study the life a @code{Junior} @code{Jones} and
-@code{Pamela} @code{Smith}. Once upon a time...
-@smalllisp
-(define *junior* (birth "Jones" "Junior" 'male))
-(define *pamela* (birth "Smith" "Pamela" 'female))
-@end smalllisp
+Now let us study the life a `Junior` `Jones` and
+`Pamela` `Smith`. Once upon a time...
+
+```bigloo
+(define *junior* (birth "Jones" "Junior" '2000))
+(define *pamela* (birth "Smith" "Pamela" '2001))
+```
 
 Later on, they met each other and ... they got married:
-@smalllisp
+
+```bigloo
 (define *old-boy-junior* *junior*)
 (define *old-girl-pamela* *pamela*)
 (get-married! *pamela* *junior*)
-@end smalllisp
+```
 
 This union can be checked:
-@smalllisp
-(couple? *pamela* *junior*)               
-   @result{} #t
-@end smalllisp
 
-We can look at the new identity of @code{*pamela*}
-@smalllisp
+```
+(couple? *pamela* *junior*)
+   &rarr; #t
+```
+
+We can look at the new identity of `*pamela*:
+
+```bigloo
 (print *pamela*)
-   @print{} name      : Jones
+   &map; name      : Jones
       firstname : Pamela
-      sex       : FEMALE
+      birth     : 2001
       married to: Junior Jones
-@end smalllisp
+```
 
-But @code{*pamela*} and @code{*junior*} still are the same persons:
-@smalllisp
-(print (eq? *old-boy-junior* *junior*))   @result{} #t
-(print (eq? *old-girl-pamela* *pamela*))  @result{} #t
-@end smalllisp
+But `*pamela*` and `*junior*` still are the same persons as before
+their wedding:
+
+```bigloo
+(print (eq? *old-boy-junior* *junior*))   &rarr; #t
+(print (eq? *old-girl-pamela* *pamela*))  &rarr; #t
+```
 
 Unfortunately all days are not happy days. After having been married
-@code{*pamela*} and @code{*junior*} have divorced:
-@smalllisp
+`*pamela*` and `*junior*` have divorced:
+
+```bigloo
 (define (divorce! woman::person man::person)
    (if (not (couple? woman man))
-       (error "divorce!"
-              "Illegal divorce"
-              (cons woman man))
+       (error "divorce!" "Illegal divorce" (cons woman man))
        (with-access::married-woman woman (maiden-name)
           (begin
              (shrink! woman)
@@ -492,21 +448,24 @@ Unfortunately all days are not happy days. After having been married
           (shrink! man))))
 
 (divorce! *pamela* *junior*)
-@end smalllisp
+```
 
-We can look at the new identity of @code{*pamela*}
-@smalllisp
+We can look at the new identity of `*pamela*`:
+
+```bigloo
 (print *pamela*)
-   @print{} name      : Smith
+   &map; name      : Smith
       firstname : Pamela
       sex       : FEMALE
-@end smalllisp
+```
 
-And @code{*pamela*} and @code{*junior*} still are the same persons:
-@smalllisp
-(print (eq? *old-boy-junior* *junior*))   @result{} #t
-(print (eq? *old-girl-pamela* *pamela*))  @result{} #t
-@end smalllisp
+And `*pamela*` and `*junior*` still are the same persons:
+
+```bigloo
+(print (eq? *old-boy-junior* *junior*))   &rarr; #t
+(print (eq? *old-girl-pamela* *pamela*))  &rarr; #t
+```
+<span></span>
 
 Object and Class library
 ------------------------

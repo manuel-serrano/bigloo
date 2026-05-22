@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Wed May 20 18:07:54 2026 (serrano)                */
+;*    Last change :  Fri May 22 14:30:51 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -68,6 +68,7 @@
 	   (registration-expand::pair ::struct ::Module)
 	   (instantiate-expander::procedure ::struct ::Module)
 	   (duplicate-expander::procedure ::struct ::Module)
+	   (widen-expander::procedure ::struct ::Module)
 	   (with-access-expander::procedure ::struct ::Module)
 	   (co-instantiate-expander::procedure ::Module)))
 
@@ -530,6 +531,69 @@
 		       ;; done
 		       ,o)))
 	    (e (localize x nx) e)))))
+
+;*---------------------------------------------------------------------*/
+;*    widen-expander ...                                               */
+;*    -------------------------------------------------------------    */
+;*    Create a widen expander suitable for the interpreter             */
+;*    and the compiler. Called during the expansion of a module 5.     */
+;*---------------------------------------------------------------------*/
+(define (widen-expander class-info mod::Module)
+   (lambda (x e)
+
+      (define (cast sym clazz)
+	 `(,(make-typed-ident 'cast clazz) ,sym))
+
+      (match-case x
+	 ((?- ?expr . ?args)
+	  (let* ((o (gensym 'o))
+		 (d (gensym 'd))
+		 (cid (class-info-id class-info))
+		 (mid (-> mod id)))
+	     ;; syntactic check
+	     (for-each (lambda (a)
+			  (unless (match-case a (((? symbol?) ?e) #t) (else #f))
+			     (error/loc (car x) "Illegal property" a (if (pair? a) a args)))
+			  (unless (find (lambda (p) (eq? (prop-info-id p) (car a)))
+				     (class-info-properties class-info))
+			     (error/loc (car x) "Illegal property" (car a) a)))
+		args)
+	     (let ((nx `(let* ((,d ,(cadr x))
+			       (,o ($class-allocate wide ,cid
+				      ,@(filter-map
+					   (lambda (p)
+					      (cond
+						 ((not (eq? (prop-info-class p) cid))
+						  #f)
+						 ((prop-info-virtual? p)
+						  #f)
+						 ((assq (prop-info-id p) args)
+						  =>
+						  cadr)
+						 ((prop-info-defv? p)
+						  (prop-info-value p))
+						 (else
+						  (error/loc (car x)
+						     "Property missing"
+						     (prop-info-id p)
+						     (cond
+							((epair? x)
+							 x)
+							((epair? (prop-info-expr p))
+							 (prop-info-expr p))
+							(else
+							 x))))))
+					   (class-info-properties class-info)))))
+			   ((@ object-widening-set! __object) ,d ,o)
+			   ((@ object-class-num-set! __object)
+			    ,d ((@ class-num __object) ,cid))
+			   ,@(if (class-info-ctor class-info)
+				 (list `(,(class-info-ctor class-info) ,o))
+				 '())
+			   ,d)))
+		(e (localize x nx) e))))
+	 (else
+	  (error/loc "widen!" "Illegal form" x x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-access-expander ...                                         */

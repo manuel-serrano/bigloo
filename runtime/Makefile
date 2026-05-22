@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon May 11 09:38:12 2026 (serrano)                */
+#*    Last change :  Fri May 22 15:52:34 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -623,7 +623,7 @@ libs-wasm:
 	@ $(MAKE) lib-wasm_s
 	@ $(MAKE) lib-wasm_u
 
-libs-wasm-sans-validation:
+libs-wasm-sans-validation: $(BOOTLIBDIR)/types.wat
 	@ $(MAKE) lib-wasm_s-sans-validation
 	@ $(MAKE) lib-wasm_u-sans-validation
 
