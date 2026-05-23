@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Module/class.scm                    */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Module/class.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */

@@ -182,14 +182,35 @@
 (define-test shrink! (isa? (shrink! (widen!::Point3d (instantiate::Point))) Point3d)
    :expected #f)
 
+(define-test wide-object? (wide-object? (instantiate::Point))
+   :expected #f)
+
+(define-test wide-object? (wide-object? (instantiate::Point3d))
+   :expected #t)
+
+(define-test wide-object? (wide-object? (shrink! (instantiate::Point3d)))
+   :expected #f)
+
 (define-test find-class (find-class 'Point3d)
    :expected Point3d)
+
+(define-test class-exists (class? (find-class 'Point3d))
+   :expected #t)
+
+(define-test class-exists (class-exists 'Point4d)
+   :expected #f)
 
 (define-test class? (class? Point3d)
    :expected #t)
 
 (define-test class? (class? 'Point3d)
    :expected #f)
+
+(define-test class-abstract? (class-abstract? Point3d)
+   :expected #f)
+
+(define-test class-wide? (class-wide? Point3d)
+   :expected #t)
 
 (define-test class-super (class-super Point3d)
    :expected Point)
@@ -277,4 +298,8 @@
 (define-test class-field-info
    (class-field-info (find-class-field Point3d 'z))
    :expected "the 3rd dimension")
+
+(define-test class-creator
+   (isa? ((class-creator Point) 1 2) Point)
+   :expected #t)
 

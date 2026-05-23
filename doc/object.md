@@ -467,15 +467,29 @@ And `*pamela*` and `*junior*` still are the same persons:
 ```
 <span></span>
 
+### wide-object? ###
+Returns `#t` if an only if `object` is an instance of a wide class. Returns
+`#f` otherwise.
+
 Object and Class library
 ------------------------
 
 ### find-class ###
 Returns, if any, the class `cname`. Otherwise, throws an error.
 
+### class-exists ###
+Returns the class if `cname` exists. Otherwise, returns `#f`.
+
 ### class? ###
 Returns `#t` if and only if `obj` is a class. Returns `#f` otherwise.
 
+### class-abstract? ###
+Returns `#t` if and only if `class` is an abstract class. Returns `#f` 
+otherwise.
+
+### class-wide? ###
+Returns `#t` if and only if `class` is a wide class. Returns `#f` 
+otherwise.
 
 ### class-super ###
 Returns the _super class_ of `class`, other `#f` if `class` is the root
@@ -571,15 +585,24 @@ error to apply `class-field-mutator` to an immutable field.
 Returns the information associated to `field` (this the class declaration
 `info` attribute).
 
+### class-creator ###
+Returns the creator for `class`. The creator is a function for which
+the arity depends on the number of slots the class provides .
+
+Examples
+--------
 
 For means of an example, here is a possible implementation of the
-@code{equal?} test for objects:
+`equal?` test for objects using introspection facilities:
 
-@smalllisp
-(define (object-equal? obj1 obj2)
+
+```bigloo
+(define (object-equal?::bool obj1::object obj2::object)
+
    (define (class-field-equal? fd)
       (let ((get-value (class-field-accessor fd)))
           (equal? (get-value obj1) (get-value obj2))))
+		  
    (let ((class1 (object-class obj1))
          (class2 (object-class obj2)))
       (cond
@@ -592,53 +615,13 @@ For means of an example, here is a possible implementation of the
                 ((null? fields)
                  (let ((super (class-super class)))
                     (if (class? super)
-                        (loop (class-fields super)
-                              super)
+                        (loop (class-fields super) super)
                         #t)))
                 ((class-field-equal? (car fields))
                  (loop (cdr fields) class))
                 (else
                  #f)))))))
-@end smalllisp
-
-@deffn {bigloo procedure} class-creator class
-Returns the creator for @var{class}. The creator is a function for which
-the arity depends on the number of slots the class provides 
-(see Section @pxref{Creating and accessing objects}).
-
-When an instance is allocated by the means of the @code{class-creator}, as
-for direct instantiation, the class constructor is 
-@emph{automatically} invoked.
-Example:
-@smalllisp
-(module foo
-   (main main)
-   (static (class c1 (c1-constructor))))
-
-(define c1-constructor
-   (let ((count 0))
-      (lambda (inst)
-	 (set! count (+ 1 count))
-	 (print "creating instance: " count)
-	 inst)))
-
-(define (main argv)
-   (let ((o1 (instantiate::c1))
-	 (o2 (instantiate::c1))
-	 (o3 ((class-creator c1))))
-      'done))
-   @print{} creating instance: 1
-      creating instance: 2
-      creating instance: 3
-@end smalllisp
-
-@end deffn
-
-@deffn {bigloo procedure} class-predicate class
-Returns the predicate for @var{class}. This predicate returns @code{#t}
-when applied to object of type @var{class}. It returns @code{#f} otherwise.
-@end deffn
-
+```
 
 References
 ----------

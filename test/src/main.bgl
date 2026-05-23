@@ -43,7 +43,7 @@
        (set! verbose #t))
       (else
        (set! tests (cons else tests))))
-   
+
    (let* ((res (list
                   (bool.test verbose tests)
                   (dsssl.test verbose tests)

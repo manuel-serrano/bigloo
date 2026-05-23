@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu May 14 09:42:19 2026 (serrano)                */
+/*    Last change :  Sat May 23 09:33:03 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -559,7 +559,7 @@ class BglNodeRuntime extends BglRuntime {
 	 executable_name: (addr) => self.storeString(argv[0], addr),
 	 
 	 get_arg: (idx, addr) => {
-	    let real_idx = idx + 2;
+	    let real_idx = idx;
 	    let arg = argv[real_idx];
 	    return self.storeString(arg, addr);
 	 },

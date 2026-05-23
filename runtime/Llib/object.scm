@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sat May 23 07:20:00 2026 (serrano)                */
+;*    Last change :  Sat May 23 08:51:57 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -518,7 +518,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-exists ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (class-exists::obj cname)
+(define (class-exists::obj cname::symbol)
    (let loop ((i 0))
       (unless (=fx i *nb-classes*)
 	 (let ((cla (vector-ref-ur *classes* i)))
@@ -738,14 +738,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-abstract? ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (class-abstract? class)
+(define (class-abstract?::bool class::class)
    (not (procedure? (class-allocator class))))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-wide? ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (class-wide? class)
-   (procedure? (class-shrink class)))
+(define (class-wide?::bool class::class)
+   (procedure? ($class-shrink class)))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-subclasses ...                                             */
@@ -805,7 +805,7 @@
       (if (class-wide? class)
 	  (let* ((super (class-super class))
 		 (o ((class-allocator super)))
-		 (wo ((class-allocator class) o)))
+		 (wo ((class-allocator class))))
 	     ($class-nil-set! class wo)
 	     (proc wo)
 	     wo)
@@ -1153,6 +1153,7 @@
       (unless (vector? plain)
 	 	(error "register-class!" "Fields not a vector" plain)
 		#f)
+
       (let ((k (class-exists name)))
 	 (let ((v (cond
 	    ((not (class? k))
@@ -1532,7 +1533,7 @@
 ;*    wide-object? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (wide-object?::bool object::object)
-   (if (object-widening object) #t #f))
+   (class-wide? (object-class object)))
  
 ;*---------------------------------------------------------------------*/
 ;*    object-print ...                                                 */

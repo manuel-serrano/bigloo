@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Sat May 23 07:36:42 2026 (serrano)                */
+;*    Last change :  Sat May 23 09:24:04 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -400,7 +400,8 @@
      ;; nil
      ,(nil-creator-expand ci mod)
      ;; shrink
-     #f
+     ,(when (eq? (class-info-kind ci) 'define-wide-class)
+	'(lambda (o) (shrink! o)))
      ;; plain
      ,(properties-expand ci #f)
      ;; virtual
