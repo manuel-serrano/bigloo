@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri May 22 14:29:03 2026 (serrano)                */
+;*    Last change :  Sat May 23 07:06:49 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -194,52 +194,6 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-default-version-set! version)
    (set! *module-version* version))
-
-;*---------------------------------------------------------------------*/
-;*    write-object ::Module ...                                        */
-;*---------------------------------------------------------------------*/
-(define-method (write-object m::Module #!optional (port::output-port (current-output-port)))
-   (fprintf port "#<Module id=~a path=~s resolved=~a>"
-      (-> m id) (-> m path) (-> m resolved)))
-
-;*---------------------------------------------------------------------*/
-;*    display-object ::Module ...                                      */
-;*---------------------------------------------------------------------*/
-(define-method (display-object m::Module #!optional (port::output-port (current-output-port)))
-   (fprintf port "#<Module id=~a path=~s resolved=~a>"
-      (-> m id) (-> m path) (-> m resolved)))
-
-;*---------------------------------------------------------------------*/
-;*    write-object ::Decl ...                                          */
-;*---------------------------------------------------------------------*/
-(define-method (write-object d::Decl #!optional (port::output-port (current-output-port)))
-   (let ((m::Module (-> d mod)))
-      (fprintf port "#<Decl ~a/~a mod=~a scope=~a ronly=~a def=~a>"
-	 (-> d id) (-> d alias) (-> m id) (-> d scope) (-> d ronly) (typeof (-> d def)))))
-
-;*---------------------------------------------------------------------*/
-;*    display-object ::Decl ...                                        */
-;*---------------------------------------------------------------------*/
-(define-method (display-object d::Decl #!optional (port::output-port (current-output-port)))
-   (let ((m::Module (-> d mod)))
-      (fprintf port "#<Decl ~a/~a mod=~a scope=~a ronly=~a def=~a>"
-	 (-> d id) (-> d alias) (-> m id) (-> d scope) (-> d ronly) (typeof (-> d def)))))
-
-;*---------------------------------------------------------------------*/
-;*    write-object ::Def ...                                           */
-;*---------------------------------------------------------------------*/
-(define-method (write-object d::Def #!optional (port::output-port (current-output-port)))
-   (fprintf port "#<~a ~a kind=~a ronly=~a>"
-      (class-name (object-class d))
-      (-> d id) (-> d kind) (-> d ronly)))
-
-;*---------------------------------------------------------------------*/
-;*    display-object ::Def ...                                         */
-;*---------------------------------------------------------------------*/
-(define-method (display-object d::Def #!optional (port::output-port (current-output-port)))
-   (fprintf port "#<~a ~a kind=~a ronly=~a>"
-      (class-name (object-class d))
-      (-> d id) (-> d kind) (-> d ronly)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-copy ::Decl ...                                           */
@@ -2328,7 +2282,8 @@
 					    (value . ,(prop-info-value p))
 					    (get . ,(prop-info-get p))
 					    (set . ,(prop-info-set p))
-					    (vindex . ,(prop-info-vindex p)))))
+					    (vindex . ,(prop-info-vindex p))
+					    (info . ,(prop-info-info p)))))
 			   (class-info-properties ci))))))
 
    (define talias (create-hashtable :size 64 :weak 'open-string))

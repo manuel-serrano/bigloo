@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:29:03 1996                          */
-;*    Last change :  Tue May 19 09:37:18 2026 (serrano)                */
+;*    Last change :  Sat May 23 06:56:14 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of a Module clause                               */
@@ -376,7 +376,7 @@
 		    (open-output-file out)
 		    (current-output-port))))
       (if (not (output-port? port))
-	  (error 'dump-module "Can't open output file" out)
+	  (error "dump-module" "Can't open output file" out)
 	  (unwind-protect
 	     (begin
 		(write module port)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Fri May 22 16:09:52 2026 (serrano)                */
+;*    Last change :  Sat May 23 07:36:42 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -199,6 +199,8 @@
 			      (set! vprops (cons pi vprops))
 			      (prop-info-vindex-set! pi vindex)
 			      (set! vindex (+fx vindex 1)))))))))
+	 ((info ?info)
+	  (prop-info-info-set! pi info))
 	 (else
 	  (error/loc (prop-info-id pi) "Illegal attribute" a x))))
       
@@ -209,7 +211,7 @@
 	     (parse-ident ident p)
 	     (let ((pi (prop-info id (or type 'obj) klass #f #f #f
 			  #unspecified #unspecified #unspecified
-			  p -1)))
+			  p -1 #f)))
 		(for-each (lambda (a)
 			     (parse-attribute a pi p))
 		   attrs)
@@ -219,7 +221,7 @@
 	     (parse-ident p x)
 	     (prop-info id (or type 'obj) klass #f #f #f
 		#unspecified #unspecified #unspecified
-		p -1)))
+		p -1 #f)))
 	 (else
 	  (error/loc klass "Illegal property" p props))))
    
@@ -365,7 +367,7 @@
 	      ;; virtual
 	      ,(prop-info-virtual? p)
 	      ;; info
-	      #f
+	      ,(prop-info-info p)
 	      ;; default
 	      (lambda () ,(prop-info-value p))
 	      ;; type

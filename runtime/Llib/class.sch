@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/class.sch          */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/class.sch         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 10 08:56:49 2015                          */
-;*    Last change :  Thu Feb 19 08:14:26 2026 (serrano)                */
+;*    Last change :  Sat May 23 07:36:19 2026 (serrano)                */
 ;*    Copyright   :  2015-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 class info                                               */
@@ -19,4 +19,4 @@
 ;*    prop-info ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define-struct prop-info
-   id type class defv? ronly? virtual? get set value expr vindex)
+   id type class defv? ronly? virtual? get set value expr vindex info)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri May 22 16:16:21 2026 (serrano)                */
+;*    Last change :  Sat May 23 07:20:00 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -609,19 +609,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-fields ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (class-fields class)
+(define (class-fields::vector class::class)
    ($class-direct-fields class))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-all-fields ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (class-all-fields class)
+(define-inline (class-all-fields::vector class::class)
    ($class-all-fields class))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-class-field ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (find-class-field class name::symbol)
+(define (find-class-field class::class name::symbol)
    (let ((fields (class-all-fields class)))
       (let loop ((i (-fx (vector-length fields) 1)))
 	 (if (=fx i -1)
@@ -653,7 +653,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    class-field-name ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (class-field-name::symbol field)
+(define (class-field-name::symbol field::class-field)
    (vector-ref-ur field 0))
 
 ;*---------------------------------------------------------------------*/

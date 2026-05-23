@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Wed May 20 06:45:59 2026 (serrano)                */
+;*    Last change :  Sat May 23 07:12:14 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -598,7 +598,7 @@
 	 ($write/display-llong (symbol-append '$ disp '-llong))
 	 ($write/display-bignum (symbol-append '$ disp '-bignum))
 	 (write/display-ucs2string (symbol-append disp '-ucs2string))
-	 (write/display-object (symbol-append 'object- disp))
+	 (write/display-object (symbol-append disp '-object))
 	 (write/display-date (symbol-append disp '-date))
 	 ($write/display-ucs2 (symbol-append '$ disp '-ucs2)))
       `(cond

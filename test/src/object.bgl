@@ -29,10 +29,10 @@
    (y (default 0)))
 
 (define-wide-class ColorPoint::Point
-   (color (default 'black)))
+   (color read-only (default 'black)))
 
 (define-wide-class Point3d::Point
-   (z (default 0)))
+   (z (default 0) (info "the 3rd dimension")))
 
 (define point-cnt 0)
 
@@ -160,26 +160,26 @@
 (define-test widen (isa? (widen!::Point3d (instantiate::Point)) Point3d)
    :expected #t)
 
-(define-test widen
+(define-test widen!
    (let ((o::Point3d (widen!::Point3d (instantiate::Point (x 100)) (z 45))))
       (+ (-> o x) (-> o z)))
    :expected 145)
 
-(define-test widen (isa? (widen!::ColorPoint (instantiate::Point)) Point3d)
+(define-test widen! (isa? (widen!::ColorPoint (instantiate::Point)) Point3d)
    :expected #f)
 
-(define-test widen
+(define-test widen!
    (let ((o::ColorPoint (widen!::ColorPoint (instantiate::Point))))
       (-> o color))
    :expected 'black)
 
-(define-test widen
+(define-test widen!
    (let* ((o (instantiate::Point))
           (p (widen!::Point3d o)))
       (eq? o p))
    :expected #t)
 
-(define-test shrink (isa? (shrink! (widen!::Point3d (instantiate::Point))) Point3d)
+(define-test shrink! (isa? (shrink! (widen!::Point3d (instantiate::Point))) Point3d)
    :expected #f)
 
 (define-test find-class (find-class 'Point3d)
@@ -228,5 +228,53 @@
    (fixnum? (object-hashnumber (instantiate::Point)))
    :expected #t)
 
+(define-test class-all-fields
+   (>fx (vector-length (class-all-fields Point3d)) (vector-length (class-all-fields Point)))
+   :expected #t)
 
+(define-test find-class-field
+   (class-field? (find-class-field Point 'x))
+   :expected #t)
+
+(define-test find-class-field
+   (class-field? (find-class-field Point 'does-not-exist))
+   :expected #f)
+
+(define-test class-field? (class-field? 1)
+   :expected #f)
+
+(define-test class-field? (class-field? (vector-ref (class-fields Point) 0))
+   :expected #t)
+
+(define-test class-fields
+   (every class-field? (vector->list (class-fields Point)))
+   :expected #t)
+
+(define-test class-field-name (class-field-name (find-class-field Point 'x))
+   :expected 'x)
+
+(define-test class-field-accessor
+   (let* ((o (instantiate::Point (x 34)))
+          (f (find-class-field Point 'x)))
+      ((class-field-accessor f) o))
+   :expected 34)
+
+(define-test class-field-mutable?
+   (class-field-mutable? (find-class-field Point 'x))
+   :expected #t)
+
+(define-test class-field-mutable?
+   (class-field-mutable? (find-class-field ColorPoint 'color))
+   :expected #f)
+
+(define-test class-field-mutator
+   (let* ((o (instantiate::Point (x 34)))
+          (f (find-class-field Point 'x)))
+      ((class-field-mutator f) o 55)
+      (with-access::Point o (x) x))
+   :expected 55)
+
+(define-test class-field-info
+   (class-field-info (find-class-field Point3d 'z))
+   :expected "the 3rd dimension")
 

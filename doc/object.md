@@ -306,7 +306,7 @@ Widening is performed by the `widen!` syntax:
 
 
 ### (widen!::class ...) ###
-<!-- [:widen@NoDef] --> 
+<!-- [:widen!@NoDef] --> 
 
 The object `obj` is widened to be instance of the wide class
 `wide-class`. Fields values are either picked up from the
@@ -315,7 +315,7 @@ from the default values in the declaration of the wide class.
 @end deffn
 
 ### (shrink! obj) ###
-<!-- [:shrink@NoDef] -->
+<!-- [:shrink!@NoDef] -->
 
 Objects are shrunk using the `shrink!` operator.
 
@@ -529,55 +529,47 @@ introspection facilities while another one is not). The compiler
 option `-fno-reflection` prevents the compiler to generate the code
 required for introspecting the classes defined in the compiled module.
 
-@deffn {bigloo procedure} class-fields class
-Returns the a description of the fields of @var{class}. This description
+### class-fields ###
+Returns the a description of the fields of `class`. This description
 is a list of field descriptions where each field description can be accessed by
 the means of the following library functions. The fields are those 
-@emph{directly} defined in @var{class}. That is @code{class-fields} does not
-return fields defined in super classes of @var{class}.
-@end deffn
+@emph{directly} defined in @var{class}. That is `class-fields` does not
+return fields defined in super classes of `class`.
 
+### class-all-fields ###
 @deffn {bigloo procedure} class-all-fields class
-Returns the a description of the fields of @var{class}. This description
+Returns the a description of the fields of `class`. This description
 is a list of field descriptions where each field description can be accessed by
 the means of the following library functions. By contrast with 
-@code{class-fields}, this function returns fields that are also defined in
-the super classes of @var{class}.
-in th
-@end deffn
+`class-fields`, this function returns fields that are also defined in
+the super classes of `class.
 
-@deffn {bigloo procedure} find-class-field class symbol
-Returns the field named @var{symbol} from class @var{class}. Returns 
-@code{#f} is such a field does not exist.
-@end deffn
+### find-class-field ###
+Returns the field named `symbol` from class `class`. Returns 
+`#f` is such a field does not exist.
 
-@deffn {bigloo procedure} class-field? obj
-Returns #t if @var{obj} is a class field descriptor. Otherwise returns #f.
-@end deffn
+### class-field? ###
+Returns `#t` if `obj` is a class field descriptor. Otherwise returns `#f`.
 
-@deffn {bigloo procedure} class-field-name field
-Returns the name of the @var{field}. The name is a symbol.
-@end deffn
+### class-field-name ###
+Returns the name of the `field`.
 
-@deffn {bigloo procedure} class-field-accessor field
+### class-field-accessor ###
 Returns a procedure of one argument. Applying this function to an object
-returns the value of the field described by @var{field}.
-@end deffn
+returns the value of the field described by `field`.
 
-@deffn {bigloo procedure} class-field-mutable? field
-Returns @code{#t} if the described field is mutable and @code{#f} otherwise.
-@end deffn
+### class-field-mutable? ###
+Returns `#t` if the described field is mutable and `#f` otherwise.
 
-@deffn {bigloo procedure} class-field-mutator field
+### class-field-mutator ###
 Returns a procedure of two arguments. Applying this function to an object
-changes the value of the field described by @var{field}. It is an
-error to apply @code{class-field-mutator} to an immutable field.
+changes the value of the field described by `field`. It is an
+error to apply `class-field-mutator` to an immutable field.
 @end deffn
 
-@deffn {bigloo procedure} class-field-info field
-Returns the information associated to @var{field} (this the class declaration
-@code{info} attribute).
-@end deffn
+### class-field-info ###
+Returns the information associated to `field` (this the class declaration
+`info` attribute).
 
 
 For means of an example, here is a possible implementation of the

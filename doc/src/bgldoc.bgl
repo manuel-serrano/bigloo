@@ -335,7 +335,8 @@
                                 e)
                                ((not def)
                                 (if (equal? klass "NoDef")
-                                    (let ((md (definition->markdown (call-with-input-string name read))))
+                                    (let* ((pseudodef (call-with-input-string name read))
+                                           (md (definition->markdown pseudodef)))
                                        (xml-element-children-set! e (cons (class-backend #f) md))
                                        (xml-element-attribute-set! e 'class (definition-class def))
                                        (if (pair? tests)
@@ -352,7 +353,7 @@
                                                   (loop (xml-element-next-sibling next) next))))
                                            (error "doc" "Cannot find test" name))
                                        (set! index
-                                          (cons (list name def (xml-element-attribute e 'id) target)
+                                          (cons (list id pseudodef (xml-element-attribute e 'id) target)
                                              index)))
                                     (error "doc" "Cannot find definition" name)))
                                (else
