@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Wed May 20 09:00:40 2026 (serrano)                */
+;*    Last change :  Sat May 23 10:15:05 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -220,6 +220,7 @@
 	    (generic thread-name::bstring ::thread)
 	    (generic thread-name-set!::obj ::thread ::bstring)
 	    (inline make-thread::thread ::procedure #!optional (name (gensym 'thread)))
+            (inline thread?::bool ::obj)
 	    (generic %user-current-thread ::thread)
 	    (generic %user-thread-yield! ::thread)
 	    (generic %user-thread-sleep! ::thread obj)
@@ -440,6 +441,12 @@
 ;*    thread-name-set! ::thread ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-generic (thread-name-set! th::thread v::bstring))
+
+;*---------------------------------------------------------------------*/
+;*    thread? ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (thread?::bool obj::obj)
+   (isa? obj thread))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-thread ...                                                  */
