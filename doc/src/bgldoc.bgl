@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/doc/src/bgldoc.bgl                          */
+;*    serrano/prgm/project/bigloo/5.0.x/doc/src/bgldoc.bgl             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Fri May 22 14:09:54 2026 (serrano)                */
+;*    Last change :  Sat May 23 09:56:29 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -58,6 +58,7 @@
      ("pairs and lists" . "pair.html")
      ("ports" . "port.html")
      ("strings" . "string.html")
+     ("threads" . "thread.html")
      ("vectors" . "vector.html")))
 
 ;*---------------------------------------------------------------------*/

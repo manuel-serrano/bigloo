@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Wed May 20 17:05:20 2026 (serrano)                */
+#*    Last change :  Sat May 23 09:57:57 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -39,7 +39,7 @@ BJFLAGS = -jvm
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
-TESTS = main bool dsssl hash io module object pair port string vector
+TESTS = main bool dsssl hash io module object pair port string thread vector
 MODULES4 = module4_ex12
 MODULES5 = module5_ex14 module5_ex1 module5_ex6 module5_ex0 module5_ex15 \
   module5_ex2 module5_ex7 module5_ex10 module5_ex16 module5_ex3 \
