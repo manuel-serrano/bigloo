@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun May 24 08:59:45 2026 (serrano)                */
+;*    Last change :  Sun May 24 19:31:02 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -935,7 +935,8 @@
 			       " imod=" (-> imod id)
 			       " (reexport-all)")
 			    (hashtable-put! (-> mod exports) key nd))))
-		   (set! (-> mod inits) (append! (-> mod inits) (list imod)))))))))
+		   (set! (-> mod inits)
+		      (append! (-> mod inits) (list imod)))))))))
    
    (define (parse-reexport4-all clause::pair expr::pair mod::Module expand stack)
       (let* ((path (cadr (cddr clause)))
@@ -965,7 +966,8 @@
 		(hashtable-for-each (-> imod exports)
 		   (lambda (key d::Decl)
 		      (hashtable-put! (-> mod exports) key d)))
-		(set! (-> mod inits) (append! (-> mod inits) (list imod))))))))
+		(set! (-> mod inits)
+		   (append! (-> mod inits) (list imod))))))))
    
    (define (parse-reexport-some clause::pair expr::pair mod::Module expand stack)
       (with-trace 'module5-parse "parse-reexport-some"
@@ -997,7 +999,8 @@
 					 (-> mod exports) alias d))
 				   d))
 		      bindings)
-		   (set! (-> mod inits) (append! (-> mod inits) (list imod)))))))))
+		   (set! (-> mod inits)
+		      (append! (-> mod inits) (list imod)))))))))
    
    (define (parse-import-init clause::pair expr::pair mod::Module expand stack)
       (let* ((path (cadr clause))
@@ -1045,7 +1048,8 @@
 			       " alias=" alias
 			       " imod=" (-> imod id) " (import-all)"))))
 		   (module-add-libraries! mod (-> imod libraries))
-		   (set! (-> mod inits) (append! (-> mod inits) (list imod)))))))))
+		   (set! (-> mod inits)
+		      (append! (-> mod inits) (list imod)))))))))
    
    (define (parse-import-some clause::pair expr::pair mod::Module expand stack)
       (with-trace 'module5-parse "parse-import-some"
@@ -1071,7 +1075,8 @@
 				(parse-import-binding b imod expr mod expand))
 		      bindings)
 		   (module-add-libraries! mod (-> imod libraries))
-		   (set! (-> mod inits) (append! (-> mod inits) (list imod)))))))))
+		   (set! (-> mod inits)
+		      (append! (-> mod inits) (list imod)))))))))
 
    (define (parse-import4-all clause::pair expr::pair mod::Module expand stack)
       (let* ((path (cadr (cddr clause)))
@@ -1096,7 +1101,8 @@
 				    (scope 'import))))
 			 (hashtable-put! (-> mod decls) key nd)
 			 (hashtable-put! (-> mod imports) key nd))))
-		(set! (-> mod inits) (append! (-> mod inits) (list imod))))))))
+		(set! (-> mod inits)
+		   (append! (-> mod inits) (list imod))))))))
 
    (define (parse-export clause expr::pair mod::Module expand)
       (for-each-expr (lambda (expr src)
@@ -1165,8 +1171,8 @@
 			 (hashtable-put! (-> mod decls) k nd)
 			 (hashtable-put! (-> mod imports) k nd))))
 		;; MS 14may2026, no need to import explicitly the lib module
-		(set! (-> mod inits)
-		   (append! (-> mod inits) (list lmod)))
+;* 		(set! (-> mod inits)                                   */
+;* 		   (append! (-> mod inits) (list lmod)))               */
 		(set! (-> mod libraries)
 		   (cons (cons lib rlib) (-> mod libraries))))
 	     (error/loc mod "Cannot find library" lib clause))))
@@ -1181,8 +1187,8 @@
 			     (parse-import-binding b lmod expr mod expand))
 		   bindings)
 		;; MS 14may2026, no need to import explicitly the lib module
-		(set! (-> mod inits)
-		   (append! (-> mod inits) (list lmod)))
+;* 		(set! (-> mod inits)                                   */
+;* 		   (append! (-> mod inits) (list lmod)))               */
 		(set! (-> mod libraries)
 		   (cons (cons lib rlib) (-> mod libraries))))
 	     (error/loc mod "Cannot find library" lib clause))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sun May 24 09:39:00 2026 (serrano)                */
+;*    Last change :  Sun May 24 18:19:41 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -219,7 +219,7 @@
 	    (generic thread-cleanup-set!::obj ::thread ::obj)
 	    (thread-name::bstring ::thread)
 	    (thread-name-set!::obj ::thread ::bstring)
-	    (inline make-thread::thread ::procedure #!optional (name (gensym 'thread)))
+	    (inline make-thread::thread ::procedure #!optional (name ""))
             (inline thread?::bool ::obj)
 	    (generic %user-current-thread ::thread)
 	    (generic %user-thread-yield! ::thread)
@@ -430,7 +430,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    thread-cleanup-set! ::thread ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-generic (thread-cleanup-set! th::thread v::obj))
+(define-generic (thread-cleanup-set! th::thread v))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-name ::thread ...                                         */
@@ -453,7 +453,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-thread ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-thread body #!optional (name (gensym 'thread)))
+(define-inline (make-thread body #!optional (name ""))
    (tb-make-thread (default-thread-backend) body name))
 
 ;*---------------------------------------------------------------------*/
@@ -520,7 +520,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    thread-parameter ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (thread-parameter id)
+(define (thread-parameter id::symbol)
    (let ((c (assq id ($thread-parameters))))
       (if (pair? c)
 	  (cdr c)
@@ -529,7 +529,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    thread-parameter-set! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (thread-parameter-set! id val)
+(define (thread-parameter-set! id::symbol val)
    (let ((c (assq id ($thread-parameters))))
       (if (pair? c)
 	  (set-cdr! c val)

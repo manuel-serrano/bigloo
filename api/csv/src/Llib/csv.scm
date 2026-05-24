@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/api/csv/src/Llib/csv.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/api/csv/src/Llib/csv.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Joseph Donaldson (donaldsonjw@yahoo.com)          */
 ;*    Creation    :  Fri Feb 24 07:12:29 2012                          */
-;*    Last change :  Tue Mar 10 15:15:03 2026 (serrano)                */
+;*    Last change :  Sun May 24 19:44:28 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Joseph Donaldson                          */
 ;*    -------------------------------------------------------------    */
 ;*    This file is part of bigloo-csv.                                 */
@@ -26,7 +26,6 @@
            (read-csv-records in #!optional (lexer +csv-lexer+))
            (csv-for-each proc in #!optional (lexer +csv-lexer+))
            (csv-map proc in #!optional (lexer +csv-lexer+))))
-
 
 ;*---------------------------------------------------------------------*/
 ;*    unique unspecified value for csv                                 */

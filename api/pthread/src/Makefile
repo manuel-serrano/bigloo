@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/api/pthread/src/Makefile        */
+#*    serrano/prgm/project/bigloo/5.0.x/api/pthread/src/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Mar 10 19:58:03 2026 (serrano)                */
+#*    Last change :  Sun May 24 19:51:12 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -35,12 +35,12 @@ JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
 DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options
-BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) 
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -fallow-type-redefinition
 BAPIUNSAFEFLAGS = -unsafe -safee
 CAPIFLAGS	= $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
-                  -heap-library $(API)
+                  -heap-library $(API) -fallow-type-redefinition
 
 # Additional pthread lib for C
 EXTRALIBS	+= $(PTHREADLIBS)

@@ -69,11 +69,44 @@ have to put them in a function in a module (see [modules](./module.html))
 and import one of the libraries using `library` module
 declaration.
 
-### current-thread ###
-Returns the current thread.
-
 ### thread? ###
 Returns `#t` if and only if `obj` is a thread object. Returns `#f` otherwise.
+
+### current-thread ###
+Returns the current thread, or `#f` is called from outside any thread.
+
+### make-thread ###
+Creates a new thread. Its implementation depends on the library used
+in the module. For instance, to create a posix thread the module has
+to use the `pthread` library as in:
+
+```bigloo
+(module ex
+   (library pthread))
+   
+(make-thread (lambda () (fib 40)))
+```
+
+> [!WARNING]
+> If no thread library is specified, the function `make-thread` will create
+> a _fake_ thread to do not executes its body. 
+
+### thread-start! ###
+Starts a thread.
+
+### thread-start-joinable! ###
+Starts a _joinable_ thread.
+
+### thread-join! ###
+Waits for `thread` to complete. It requires `thread` to be started
+with `thread-start-joinable!`. If `thread` was started with `thread-start!`,
+`thread-join!` returns immediately without waiting for `thread` to complete.
+
+### thread-kill! ###
+Sends `signum` to the thread.
+
+### thread-sleep! ###
+Waits to `timeout` milliseconds.
 
 ### thread-name ###
 Returns the name of a thread.
@@ -89,14 +122,27 @@ value has been set, returns `#unspecified`.
 Sets the specific of a thread.
 
 ### thread-parameter ###
-Returns value in the parameter field of the `thread`. If no
-value has been set, returns `#f`.
+<!-- [:@C-jvm] -->
+Returns value in the parameter field of the `thread` of the current
+thread. If no value has been set, returns `#f`.
 
 A thread parameter is implemented by a chunk of memory specific to
 each thread. All threads are created with an empty set of parameters.
 
 ### thread-parameter-set! ###
-Sets the parameter of a thread.
+<!-- [:@C-jvm] -->
+Sets the parameter of the current thread thread.
+
+### thread-cleanup ###
+Returns the cleanup function associated to the thread. The cleanup
+function is called with the thread itself. The cleanup function is
+executed in a context where `current-thread` is the thread owning the
+cleanup function.
+
+If no cleanup procedure is associated with the thread, returns `#unspecified`.
+
+### thread-cleanup-set! ###
+Associates a cleanup function to a thread.
 
 
 Posix Library

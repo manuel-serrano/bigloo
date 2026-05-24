@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Foreign/ctype.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Foreign/ctype.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:57:02 1994                          */
-;*    Last change :  Sun Mar  8 19:55:46 2026 (serrano)                */
+;*    Last change :  Sun May 24 19:50:05 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C type managment                                             */
@@ -109,7 +109,7 @@
 			  ((struct union) (isa? o cstruct))
 			  ((struct* union*) (isa? o cstruct*)))))
 	      o
-	      (warning "declare-c-type!" "Type redefinition -- " ct-id))))
+	      (warning "declare-c-type!" "Foreign type redefinition -- " ct-id))))
       ((symbol? ct-exp)
        (declare-c-alias! ct-id ct-exp ct-name))
       ((pair? ct-exp)

@@ -40,6 +40,12 @@
 (define-test thread? (thread? 'a-symbol)
    :expected #f)
 
+(define-test make-thread (thread? (make-thread (lambda () 'done)))
+   :expected #t)
+
+(define-test make-thread (thread-name (make-thread (lambda () 'done) "foo"))
+   :expected "foo")
+
 (define-test thread-name (thread-name (make-thread list "a thread"))
    :expected "a thread")
                             
@@ -72,4 +78,52 @@
       res)
    :cond-expand (library pthread)
    :expected '(1 . 2))
-                            
+
+(define-test thread-cleanup
+   (thread-cleanup (make-thread list))
+   :expected #f)
+
+(define-test thread-cleanup-set!
+   (let* ((res #f)
+          (t (make-thread list)))
+      (thread-cleanup-set! t
+         (lambda (v)
+            (set! res
+               (cons (thread? (current-thread))
+                  (procedure? (thread-cleanup (current-thread)))))))
+      (thread-join! (thread-start-joinable! t))
+      res)
+   :cond-expand (library pthread)
+   :expected (cons #t #t))
+
+
+(define-test thread-start!
+   (begin (thread-start! (make-thread list)) #t)
+   :cond-expand (library pthread)
+   :expected #t)
+
+(define-test thread-start-joinable!
+   (begin (thread-start-joinable! (make-thread list)) #t)
+   :cond-expand (library pthread)
+   :expected #t)
+
+(define-test thread-join!
+   (begin (thread-join! (thread-start-joinable! (make-thread list))) #t)
+   :cond-expand (library pthread)
+   :expected #t)
+
+(define-test thread-kill!
+   (let ((t (make-thread list)))
+      (thread-start-joinable! t)
+      (thread-kill! t 2)
+      (thread-join! t)
+      #t)
+   :cond-expand (library pthread)
+   :expected #t)
+
+(define-test thread-sleep!
+   (begin
+      (thread-start! (make-thread (lambda () (thread-sleep! 100))))
+      #t)
+   :cond-expand (library pthread)
+   :expected #t)
