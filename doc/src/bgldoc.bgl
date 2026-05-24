@@ -486,12 +486,12 @@
                                                  (lambda (op)
                                                    (pp (car t) op :width 100))))
                                      (xml-element 'span '((class . "result")) (list "   &rarr;"))
-                                     (fontify (format "~s" (cdr t)))
+                                     (xml-element 'span '((class . "result-value")) (fontify (format "~s" (cdr t))))
                                      "\n")
                                   (list
                                      (fontify s)
                                      (xml-element 'span '((class . "result")) (list "&rarr;"))
-                                     (fontify (format "~s" (cdr t)))
+                                     (xml-element 'span '((class . "result-value")) (fontify (format "~s" (cdr t))))
                                      "\n"))))
 	       ts)))))
 
@@ -545,9 +545,13 @@
 		
    (for-each (lambda (e)
 		(match-case e
+		   ((define-test ?id ?expr :cond-expand ?- :expected ?val)
+		    (hashtable-add! tests-table (symbol->string id) (cons expr val)))
 		   ((define-test ?id ?expr :expected ?val)
 		    (hashtable-add! tests-table (symbol->string id) (cons expr val)))
 		   ((define-test ?id ?expr)
+		    (hashtable-add! tests-table (symbol->string id) (cons expr #t)))
+		   ((define-test ?id ?expr :cond-expand ?-)
 		    (hashtable-add! tests-table (symbol->string id) (cons expr #t)))
 		   (else
 		    #f)))

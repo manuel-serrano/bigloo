@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Wed May 20 08:03:48 2026 (serrano)                */
+;*    Last change :  Sun May 24 09:39:55 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -232,28 +232,6 @@
 	     ($pthread-cleanup-set! $builtin p)
 	     p)
 	  (error "thread-cleanup-set!" "Illegal procedure arity" p))))
-
-;*---------------------------------------------------------------------*/
-;*    thread-name ::pthread ...                                        */
-;*---------------------------------------------------------------------*/
-(define-method (thread-name t::pthread)
-   (cond-expand
-      (bigloo-c
-       (with-access::pthread t ($builtin)
-	  ($pthread-name $builtin)))
-      (else
-       "bigloo")))
-
-;*---------------------------------------------------------------------*/
-;*    thread-name-set! ::pthread ...                                   */
-;*---------------------------------------------------------------------*/
-(define-method (thread-name-set! t::pthread v)
-   (cond-expand
-      (bigloo-c
-       (with-access::pthread t ($builtin)
-	  ($pthread-name-set! $builtin v)))
-      (else
-       #unspecified)))
 
 ;*---------------------------------------------------------------------*/
 ;*    $pthread-nil ...                                                 */

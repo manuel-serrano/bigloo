@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 23 09:57:34 2026                          */
-;*    Last change :  Sat May 23 09:57:46 2026 (serrano)                */
+;*    Last change :  Sun May 24 07:21:09 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing threads                                                  */
@@ -13,6 +13,7 @@
 ;*    thread                                                           */
 ;*---------------------------------------------------------------------*/
 (module thread
+   (cond-expand ((and (library pthread) (not wasm)) (library pthread)))
    (export test))
 
 ;*---------------------------------------------------------------------*/
@@ -31,10 +32,44 @@
 ;*    tests ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-test current-thread (thread? (current-thread))
-   :expected #t)
+   :expected #f)
 
-(define-test thread? (thread? (current-thread))
+(define-test thread? (thread? (make-thread list))
    :expected #t)
 
 (define-test thread? (thread? 'a-symbol)
    :expected #f)
+
+(define-test thread-name (thread-name (make-thread list "a thread"))
+   :expected "a thread")
+                            
+(define-test thread-name-set!
+   (let ((th (make-thread list)))
+      (thread-name-set! th "another thread")
+      (thread-name th))
+   :expected "another thread")
+                            
+(define-test thread-specific (thread-specific (make-thread list))
+   :expected #unspecified)
+                            
+(define-test thread-specific-set!
+   (let ((th (make-thread list)))
+      (thread-specific-set! th (cons 1 2))
+      (thread-specific th))
+   :expected '(1 . 2))
+                            
+(define-test thread-parameter (thread-parameter 'key)
+   :expected #f)
+                            
+(define-test thread-parameter-set!
+   (let* ((res #f)
+          (th (thread-join!
+                 (thread-start-joinable!
+                    (make-thread
+                       (lambda ()
+                          (thread-parameter-set! 'key (cons 1 2))
+                          (set! res (thread-parameter 'key))))))))
+      res)
+   :cond-expand (library pthread)
+   :expected '(1 . 2))
+                            

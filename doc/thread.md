@@ -72,9 +72,34 @@ declaration.
 ### current-thread ###
 Returns the current thread.
 
-### threads? ###
+### thread? ###
 Returns `#t` if and only if `obj` is a thread object. Returns `#f` otherwise.
+
+### thread-name ###
+Returns the name of a thread.
+
+### thread-name-set! ###
+Sets the name of a thread.
+
+### thread-specific ###
+Returns value in the specific field of the `thread`. If no
+value has been set, returns `#unspecified`.
+
+### thread-specific-set! ###
+Sets the specific of a thread.
+
+### thread-parameter ###
+Returns value in the parameter field of the `thread`. If no
+value has been set, returns `#f`.
+
+A thread parameter is implemented by a chunk of memory specific to
+each thread. All threads are created with an empty set of parameters.
+
+### thread-parameter-set! ###
+Sets the parameter of a thread.
+
 
 Posix Library
 -------------
 
+                            

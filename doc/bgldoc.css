@@ -473,7 +473,7 @@ code {
     font-size: 130%;
 }
 
-.result + * {
+.result-value {
     font-style: italic;
     color: var(--result);
 }

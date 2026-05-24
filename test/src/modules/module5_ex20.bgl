@@ -6,7 +6,7 @@
    (export read-csv hyphenize wdate))
 
 (define (read-csv text::bstring)
-   (call-with-input-string text csv.read-csv-record))
+   (call-with-input-string text read-csv-record))
 
 (define (hyphenize::pair word::bstring)
    (t.hyphenate word (t.load-hyphens 'fr)))

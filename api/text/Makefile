@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/api/text/Makefile               */
+#*    serrano/prgm/project/bigloo/5.0.x/api/text/Makefile              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Tue Jul 29 08:35:26 2025 (serrano)                */
-#*    Copyright   :  2001-25 Manuel Serrano                            */
+#*    Last change :  Sun May 24 08:42:33 2026 (serrano)                */
+#*    Copyright   :  2001-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -36,6 +36,7 @@ build:
 
 c: build-c
 jvm: build-jvm
+wasm: build-wasm
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \

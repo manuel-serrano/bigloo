@@ -22,6 +22,22 @@
 (define-expander define-test
    (lambda (x e)
       (match-case x
+         ((define-test ?id ?expr :cond-expand ?clause . ?rest)
+	  `(set! all-tests
+	      (cons (cons ',id
+		       (lambda ()
+			  (check-test ',id
+			     ,(cadr (cer x))
+			     ,(caddr (cer x))
+			     (cond-expand
+                                (,clause ,(e expr e))
+                                (else #t))
+			     ,@(map (lambda (x)
+                                       `(cond-expand
+                                           (,clause ,(e x e))
+                                           (else #t)))
+                                  rest))))
+		 all-tests)))
 	 ((define-test ?id ?expr . ?rest)
 	  `(set! all-tests
 	      (cons (cons ',id

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat May 23 07:06:49 2026 (serrano)                */
+;*    Last change :  Sun May 24 08:59:45 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1156,9 +1156,6 @@
 	     (let ((lmod::Module (module5-read-library rlib clause mod hsuffix)))
 		(hashtable-for-each (-> lmod exports)
 		   (lambda (k d::Decl)
-		      ;; MS 17ma26 id is current always a symbol but the test
-		      ;; is left here it is proven better to import all the
-		      ;; bindings of a library  with qualified names
 		      (let* ((alias (if id
 					(module5-qualified-name d id)
 					(-> d alias)))
@@ -1168,8 +1165,8 @@
 			 (hashtable-put! (-> mod decls) k nd)
 			 (hashtable-put! (-> mod imports) k nd))))
 		;; MS 14may2026, no need to import explicitly the lib module
-;* 		(set! (-> mod inits)                                   */
-;* 		   (append! (-> mod inits) (list lmod)))               */
+		(set! (-> mod inits)
+		   (append! (-> mod inits) (list lmod)))
 		(set! (-> mod libraries)
 		   (cons (cons lib rlib) (-> mod libraries))))
 	     (error/loc mod "Cannot find library" lib clause))))
@@ -1184,8 +1181,8 @@
 			     (parse-import-binding b lmod expr mod expand))
 		   bindings)
 		;; MS 14may2026, no need to import explicitly the lib module
-;* 		(set! (-> mod inits)                                   */
-;* 		   (append! (-> mod inits) (list lmod)))               */
+		(set! (-> mod inits)
+		   (append! (-> mod inits) (list lmod)))
 		(set! (-> mod libraries)
 		   (cons (cons lib rlib) (-> mod libraries))))
 	     (error/loc mod "Cannot find library" lib clause))))
@@ -1235,7 +1232,7 @@
 	 ((library (? symbol?) . (and (? symbol?) ?id))
 	  (parse-library-all id clause expr mod expand))
 	 ((library (and ?id (? symbol?)))
-	  (parse-library-all id clause expr mod expand))
+	  (parse-library-all #f clause expr mod expand))
 	 ((library (? symbol?) . (? list?))
 	  (parse-library-some clause expr mod expand))
 	 ((extern (and (? string?) ?name) . ?clauses)

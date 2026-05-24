@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 17:38:56 2026                          */
-;*    Last change :  Sat May 16 06:49:25 2026 (serrano)                */
+;*    Last change :  Sun May 24 10:10:39 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Markdown parser                                                  */
@@ -364,6 +364,28 @@
 	 (set! elements (cons e elements)))))
 
 ;*---------------------------------------------------------------------*/
+;*    *markdown-charset-grammar* ...                                    */
+;*---------------------------------------------------------------------*/
+(define *markdown-charset-grammar*
+   (regular-grammar (charset fontifier eval)
+      ;; utf-8 bom
+      ((bof (: #a239 #a187 #a191))
+       'UTF-8)
+
+      ;; utf-16 big endian
+      ((bof (: #a254 #a255))
+       ;; MS 23nov2011: CARE I don't know if ucs-2 is big or little endian
+       'UCS-2)
+
+      ;; utf-16 little endian
+      ((bof (: #a255 #a254))
+       ;; MS 23nov2011: CARE I don't know if ucs-2 is big or little endian
+       'UCS-2)
+
+      (else
+       (the-failure))))
+      
+;*---------------------------------------------------------------------*/
 ;*    *markdown-grammar* ...                                           */
 ;*---------------------------------------------------------------------*/
 (define *markdown-grammar*
@@ -381,71 +403,20 @@
 	  (lambda (ip)
 	     (markdown-parse-elements ip charset fontifier eval))))
       
-      ;; utf-8 bom
-      ((bof (: #a239 #a187 #a191))
-       (token 'CHARSET 'UTF-8 3))
-      
-      ;; utf-16 big endian
-      ((bof (: #a254 #a255))
-       ;; MS 23nov2011: CARE I don't know if ucs-2 is big or little endian
-       (token 'CHARSET 'UCS-2 2))
-      
-      ;; utf-16 little endian
-      ((bof (: #a255 #a254))
-       ;; MS 23nov2011: CARE I don't know if ucs-2 is big or little endian
-       (token 'CHARSET 'UCS-2 2))
-      
-      ;; comments
-      ((bol (or ";*" ";;"))
-       (let ((cset (read/rp *comment-grammar* (the-port))))
-	  (token 'CHARSET (or cset 'ascii) (the-length))))
       ;; HTML comments
-      ((: "<!--" (+ (or (out #\-) (: #\- (out #\-)) (: "--" (out #\>)))) "-->")
-       (let ((s (the-substring 4 -3)))
-	  (cond
-	     ((pregexp-match "[ ]*nodisplay[ ]*" s)
-	      (let loop ()
-		 (let ((line (read-line (the-port))))
-		    (if (pregexp-match "<!--[ ]*/nodisplay[ ]*-->" line)
-			(ignore)
-			(loop)))))
-	     ((pregexp-match "[ ]*github[ ]*" s)
-	      (let loop ()
-		 (let ((line (read-line (the-port))))
-		    (if (pregexp-match "<!--[ ]*/github[ ]*-->" line)
-			(ignore)
-			(loop)))))
-	     ((pregexp-match "[ ]*\\[:([^\\]@]+)\\][ ]*" s)
-	      =>
-	      (lambda (m)
-		 (token 'IDCLA (cons (cadr m) #f) (the-length))))
-	     ((pregexp-match "[ ]*\\[:@([^\\]@]+)\\][ ]*" s)
-	      =>
-	      (lambda (m)
-		 (token 'IDCLA (cons #f (cadr m)) (the-length))))
-	     ((pregexp-match "[ ]*\\[:([^\\]@]+)@([^\\]\n]+)\\][ ]*" s)
-	      =>
-	      (lambda (m)
-		 (token 'IDCLA (cons (cadr m) (caddr m)) (the-length))))
-	     (else
-	      (ignore)))))
+      ;;((: "<!--" (+ (or (out #\-) (: #\- (out #\-)) (: "--" (out #\>)))) "-->")
+      ((: "<!--")
+       (let ((tok (parse-html-comment (the-port))))
+	  (or tok (ignore))))
       
       ;; continuation lines
       ((: #\\ (? #\Return) #\Newline)
        (ignore))
       
       ;; ident/class
-      ((: "[:" (+ (out "]@")) "]")
-       (token 'IDCLA (cons (the-substring 2 -1) #f) (the-length)))
-      ;; class
-      ((: "[:@" (+ (out "]@")) "]")
-       (token 'IDCLA (cons #f (the-substring 3 -1)) (the-length)))
-      ((: "[:" (+ (out "]@\n")) "@" (+ (out "]\n@")) "]")
-       (let* ((str (the-substring 2 -1))
-	      (i (string-index str #\@))
-	      (ident (substring str 0 i))
-	      (clazz (substring str (+fx i 1) (string-length str))))
-	  (token 'IDCLA (cons ident clazz) (the-length))))
+      ("[:"
+       (parse-ident-class (the-port)))
+
       
       ;; url
       ((: "<" (+ (out "> \t\n")) "://" (+ (out "> \t\n")) ">")
@@ -539,17 +510,17 @@
 	     (char->integer (string-ref str (-fx (the-length) 1))))
 	  (token 'O** "**" 2)))
       
-      ("_" 
+      ("_"
        (token 'O_ (the-string) 1))
-      ("__" 
+      ("__"
        (token 'O__ (the-string) 2))
-      ("___" 
+      ("___"
        (token 'text "_" 1))
-      ("*" 
+      ("*"
        (token 'O* (the-string) 1))
-      ("**" 
+      ("**"
        (token 'O** (the-string) 2))
-      ("***" 
+      ("***"
        (token 'text "*" 1))
       
       ;; links
@@ -563,38 +534,16 @@
        (token 'CPAR (the-string) 1))
       
       ;; alert (github extension)
-      ((: "[!" (* (in ("AZ"))) "]")
+      ((: "[!" (+ (in ("AZ"))) "]")
        (token 'ALERT (the-substring 2 -1) 2))
       ;; image
       ("!["
        (token 'IMAGE (the-string) 2))
       
-      ;; embedded hop
+      ;; embedded scheme
       (",("
-       (let ((pos (input-port-position (the-port))))
-	  (rgc-buffer-unget-char (the-port) (char->integer #\())
-	  (with-handler
-	     (lambda (e)
-		(if (isa? e &error)
-		    (with-access::&error e (obj msg)
-		       (exception-notify e)
-		       (raise
-			  (instantiate::&io-read-error
-			     (fname (input-port-name (the-port)))
-			     (location pos)
-			     (proc "markdown-parser")
-			     (msg msg)
-			     (obj obj))))
-		    (raise e)))
-	     (let* ((e (read (the-port)))
-		    (s (eval e)))
-		(if (string? s)
-		    (begin
-		       (rgc-buffer-insert-substring! (the-port) s 0 (string-length s))
-		       (ignore))
-		    (error "markdown"
-		       (format "Expression \"~s\" does not evaluate to a string" e)
-		       s))))))
+       (scheme-parse-embedded (the-port) eval)
+       (ignore))
       ;; embedded html
       ((: "<" (+ letter+) (or " " ">" "/>"))
        (let ((s (the-string)))
@@ -878,7 +827,7 @@
       (if (not (string-index lang-id "["))
 	  (values lang-id #f #f)
 	  (cond
-	     ((pregexp-match "([^[]+)[ \t]*[[]:([^\\]]*)\\]" lang-id)
+	     ((pregexp-match "([^\\[]+)[ \t]*[\\[]:([^\\]]+)\\]" lang-id)
 	      =>
 	      (lambda (m)
 		 (let* ((lang (cadr m))
@@ -1327,6 +1276,105 @@
    (blocks))
 
 ;*---------------------------------------------------------------------*/
+;*    parse-ident-class ...                                            */
+;*---------------------------------------------------------------------*/
+(define (parse-ident-class ip::input-port)
+   (read/rp
+      (regular-grammar ()
+	 ((: (+ (out "]@")) "]")
+	  (token 'IDCLA (cons (the-substring 2 -1) #f) (the-length)))
+	 ;; class
+	 ((: "@" (+ (out "]@")) "]")
+	  (token 'IDCLA (cons #f (the-substring 3 -1)) (the-length)))
+	 ((: (+ (out "]@\n")) "@" (+ (out "]\n@")) "]")
+	  (let* ((str (the-substring 2 -1))
+		 (i (string-index str #\@))
+		 (ident (substring str 0 i))
+		 (clazz (substring str (+fx i 1) (string-length str))))
+	     (token 'IDCLA (cons ident clazz) (the-length))))
+	 (else
+	  (error "Illegal ident@class declaration" "[:" ip)))
+      ip))
+      
+;*---------------------------------------------------------------------*/
+;*    scheme-parse-embedded ...                                        */
+;*---------------------------------------------------------------------*/
+(define (scheme-parse-embedded ip::input-port eval)
+   (let ((pos (input-port-position ip)))
+      (rgc-buffer-unget-char ip (char->integer #\())
+      (with-handler
+	 (lambda (e)
+	    (if (isa? e &error)
+		(with-access::&error e (obj msg)
+		   (exception-notify e)
+		   (raise
+		      (instantiate::&io-read-error
+			 (fname (input-port-name ip))
+			 (location pos)
+			 (proc "markdown-parser")
+			 (msg msg)
+			 (obj obj))))
+		(raise e)))
+	 (let* ((e (read ip))
+		(s (eval e)))
+	    (if (string? s)
+		(rgc-buffer-insert-substring! ip s 0 (string-length s))
+		(error "markdown"
+		   (format "Expression \"~s\" does not evaluate to a string" e)
+		   s))))))
+
+;*---------------------------------------------------------------------*/
+;*    parse-html-comment ...                                           */
+;*---------------------------------------------------------------------*/
+(define (parse-html-comment ip::input-port)
+   (read/rp
+      (regular-grammar ()
+	 ((: (+ (or (out #\-) (: #\- (out #\-)) (: "--" (out #\>)))) "-->")
+	  (let ((s (the-substring 0 -3)))
+	     (cond
+		((pregexp-match "[ ]*nodisplay[ ]*" s)
+		 (let loop ()
+		    (let ((line (read-line (the-port))))
+		       (if (pregexp-match "<!--[ ]*/nodisplay[ ]*-->" line)
+			   #f
+			   (loop)))))
+		((pregexp-match "[ ]*github[ ]*" s)
+		 (let loop ()
+		    (let ((line (read-line (the-port))))
+		       (if (pregexp-match "<!--[ ]*/github[ ]*-->" line)
+			   #f
+			   (loop)))))
+		((pregexp-match "[ ]*\\[:([^\\]@]+)\\][ ]*" s)
+		 =>
+		 (lambda (m)
+		    (token 'IDCLA (cons (cadr m) #f) (the-length))))
+		((pregexp-match "[ ]*\\[:@([^\\]@]+)\\][ ]*" s)
+		 =>
+		 (lambda (m)
+		    (token 'IDCLA (cons #f (cadr m)) (the-length))))
+		((pregexp-match "[ ]*\\[:([^\\]@]+)@([^\\]\n]+)\\][ ]*" s)
+		 =>
+		 (lambda (m)
+		    (token 'IDCLA (cons (cadr m) (caddr m)) (the-length))))
+		(else
+		 #f))))
+	 (else
+	  (unread-string! "<!--" ip)
+	  #f))
+      ip))
+
+;*---------------------------------------------------------------------*/
+;*    markdown-parse-file ...                                          */
+;*---------------------------------------------------------------------*/
+(define (markdown-parse-file ip charset fontifier eval)
+   (let ((o (read/rp *markdown-charset-grammar* ip charset fontifier eval)))
+      (if (char? o)
+	  (begin
+	     (unread-char! o ip)
+	     (markdown-parse-elements ip charset fontifier eval))
+	  (markdown-parse-elements ip o fontifier eval))))
+
+;*---------------------------------------------------------------------*/
 ;*    markdown-parse ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (markdown-parse ip::input-port #!key charset fontifier eval)
@@ -1347,4 +1395,4 @@
 		  (else
 		   eval))))
       (xml-element 'html '()
-	 (markdown-parse-elements ip charset fontifier eval))))
+	 (markdown-parse-file ip charset fontifier eval))))

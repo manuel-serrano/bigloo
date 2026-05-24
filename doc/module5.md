@@ -212,9 +212,15 @@ Library
 -------
 
 Libraries are extensions of the Bigloo runtime system. They are
-designated by an identifier. They are globally installed and not
-dependend of each applications. The form `(library &lt;Ident&gt;
-. &lt;Ident&gt;)` also uses qualified names but the prefix is the
+designated by an identifier. They are globally installed and shared
+by all applications. 
+
+As considered as an extension of the standard library, they don't imposes
+to use a qualified or selected imported. That is, the form
+`(library &lt;Ident&gt;)` imports all the bindings the library exports
+without the new of qualified references. On the other hand, 
+the form `(library &lt;Ident&gt;
+. &lt;Ident&gt;)` uses qualified names with the prefix is the
 specified in the library rule. The last form imports only some variables of the library.
 
 [using libraries](../test/src/modules/module5_ex20.bgl)

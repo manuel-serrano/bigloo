@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/api/web/src/Llib/css_lexer.scm         */
+;*    .../prgm/project/bigloo/5.0.x/api/web/src/Llib/css_lexer.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
-;*    Last change :  Tue Aug 16 14:13:32 2022 (serrano)                */
+;*    Last change :  Sun May 24 09:57:54 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
@@ -132,42 +132,48 @@
       ((: "#" name)
        (return 'HASH (the-substring 1 (the-length))))
       
-      ("@import"
-       (return 'IMPORT_SYM))
-      ("@page"
-       (return 'PAGE_SYM))
-      ("@media"
-       (return 'MEDIA_SYM))
       ("@font-face"
        (return 'FONT_FACE_SYM))
-      ("@charset"
-       (return 'CHARSET_SYM))
       ((: "@" (? (: "-" (+ (out #\-)) "-")) "keyframes")
        (return 'KEYFRAMES_SYM (the-string)))
       ((: "@" ident)
-       (return 'ATKEYWORD))
+       (let ((s (the-string)))
+	  (cond
+	     ((string=? s "@import") (return 'IMPORT_SYM))
+	     ((string=? s "@page") (return 'PAGE_SYM))
+	     ((string=? s "@media") (return 'MEDIA_SYM))
+	     ((string=? s "@charset") (return 'CHARSET_SYM))
+	     (else (return 'ATKEYWORD)))))
       
       ((: #\! w "important")
        (return 'IMPORTANT_SYM))
       
-      ((: +/-num "em")
-       (return 'EMS))
-      ((: +/-num "ex")
-       (return 'EXS))
-      ((: +/-num "ch")
-       (return 'CHS))
-      ((: +/-num "rem")
-       (return 'REMS))
-      ((: +/-num (or "px" "cm" "mm" "in" "pt" "pc" "vw" "vh" "vmin" "vmax"))
-       (return 'LENGTH))
-      ((: +/-num (or "deg" "rad" "grad"))
-       (return 'ANGLE))
-      ((: +/-num (or "ms" "s"))
-       (return 'TIME))
-      ((: +/-num (or (uncase "Hz") (uncase "hkz")))
-       (return 'FREQ))
-      ((: +/-num ident)
-       (return 'DIMEN))
+      ((: +/-num (+ (in ("azAZ"))))
+       ;; minimize generated automaton for jvm method size limit
+       (let ((s (the-string)))
+	  (cond
+	     ((string-suffix? "em" s) (return 'EMS))
+	     ((string-suffix? "ex" s) (return 'EXS))
+	     ((string-suffix? "ch" s) (return 'CHS))
+	     ((string-suffix? "rem" s) (return 'REMS))
+	     ((string-suffix? "px" s) (return 'LENGTH))
+	     ((string-suffix? "cm" s) (return 'LENGTH))
+	     ((string-suffix? "mm" s) (return 'LENGTH))
+	     ((string-suffix? "in" s) (return 'LENGTH))
+	     ((string-suffix? "pt" s) (return 'LENGTH))
+	     ((string-suffix? "pc" s) (return 'LENGTH))
+	     ((string-suffix? "vw" s) (return 'LENGTH))
+	     ((string-suffix? "vh" s) (return 'LENGTH))
+	     ((string-suffix? "vmin" s) (return 'LENGTH))
+	     ((string-suffix? "vmax" s) (return 'LENGTH))
+	     ((string-suffix? "deg" s) (return 'ANGLE))
+	     ((string-suffix? "rad" s) (return 'ANGLE))
+	     ((string-suffix? "grad" s) (return 'ANGLE))
+	     ((string-suffix? "ms" s) (return 'TIME))
+	     ((string-suffix? "s" s) (return 'TIME))
+	     ((string-suffix-ci? "hz" s) (return 'FREQ))
+	     ((string-suffix-ci? "khz" s) (return 'FREQ))
+	     (else (return 'DIMEN)))))
       ((: +/-num "%")
        (return 'PERCENTAGE))
       (+/-num

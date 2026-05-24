@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/api/pthread/src/Posix/bglpthread.c     */
+/*    .../project/bigloo/5.0.x/api/pthread/src/Posix/bglpthread.c      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Mon Jul 15 11:34:03 2024 (serrano)                */
-/*    Copyright   :  2002-24 Manuel Serrano                            */
+/*    Last change :  Sun May 24 09:28:43 2026 (serrano)                */
+/*    Copyright   :  2002-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -352,17 +352,19 @@ bglpth_thread_kill(bglpthread_t t, int sig) {
 /*---------------------------------------------------------------------*/
 void
 bglpth_thread_setname(bglpthread_t t, obj_t name) {
+   if (t->pthread) {
 #if BGL_HAS_THREAD_SETNAME
-   if (STRING_LENGTH(name) >= 16) {
-      char *cname = (char *)GC_MALLOC_ATOMIC(16);
-      strncpy(cname, BSTRING_TO_STRING(name), 15);
-      cname[15] = 0;
+      if (STRING_LENGTH(name) >= 16) {
+	 char *cname = (char *)GC_MALLOC_ATOMIC(16);
+	 strncpy(cname, BSTRING_TO_STRING(name), 15);
+	 cname[15] = 0;
 	 
-      pthread_setname_np(t->pthread, cname);
-   } else {
-      pthread_setname_np(t->pthread, BSTRING_TO_STRING(name));
+	 pthread_setname_np(t->pthread, cname);
+      } else {
+	 pthread_setname_np(t->pthread, BSTRING_TO_STRING(name));
+      }
+#endif
    }
-#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -371,11 +373,17 @@ bglpth_thread_setname(bglpthread_t t, obj_t name) {
 /*---------------------------------------------------------------------*/
 obj_t
 bglpth_thread_getname(bglpthread_t t) {
+   if (!t->pthread) {
+      return string_to_bstring("zombie");
+   } else {
 #if BGL_HAS_THREAD_SETNAME
-   char buf[512];
-   pthread_getname_np(t->pthread, buf, sizeof(buf));
-   return string_to_bstring(buf);
+      char buf[512];
+      pthread_getname_np(t->pthread, buf, sizeof(buf));
+      return string_to_bstring(buf);
+#else
+      return string_to_bstring("");
 #endif   
+   }
 }
 
 /*---------------------------------------------------------------------*/
