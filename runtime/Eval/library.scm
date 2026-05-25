@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/library.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/library.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Thu Sep 25 13:10:04 2025 (serrano)                */
-;*    Copyright   :  2005-25 Manuel Serrano                            */
+;*    Last change :  Mon May 25 11:16:19 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
 ;*=====================================================================*/
@@ -519,7 +519,9 @@
 		     (bigloo-jvm ".jheap")
 		     (bigloo-wasm ".wheap")))
 	  (heap (string-append (symbol->string lib) suffix))
-	  (init (string-append (symbol->string lib) ".init")))
+	  (heap5 (string-append heap "5")))
+;* 	  (init (string-append (symbol->string lib) ".init")))         */
       (string? (or (find-file/path heap path)
-		   (find-file/path init path)))))
+		   (find-file/path heap5 path)))))
+;* 		   (find-file/path init path)))))                      */
 

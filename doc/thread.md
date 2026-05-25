@@ -105,9 +105,6 @@ with `thread-start-joinable!`. If `thread` was started with `thread-start!`,
 ### thread-kill! ###
 Sends `signum` to the thread.
 
-### thread-sleep! ###
-Waits to `timeout` milliseconds.
-
 ### thread-name ###
 Returns the name of a thread.
 

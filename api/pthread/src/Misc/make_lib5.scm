@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Feb  6 08:33:40 2026                          */
-;*    Last change :  Sun May 24 19:48:19 2026 (serrano)                */
+;*    Last change :  Mon May 25 08:21:41 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 heap file.                                               */
@@ -18,3 +18,8 @@
    (export :version 4 "../Llib/pmutex.scm")
    (export :version 4 "../Llib/psemaphore.scm")
    (export :version 4 "../Llib/pthread.scm"))
+
+;*---------------------------------------------------------------------*/
+;*    Initialization                                                   */
+;*---------------------------------------------------------------------*/
+(pthread-setup-backend!)

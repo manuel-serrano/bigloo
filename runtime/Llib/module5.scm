@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun May 24 19:31:02 2026 (serrano)                */
+;*    Last change :  Mon May 25 08:26:33 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1170,9 +1170,10 @@
 				    (scope 'import))))
 			 (hashtable-put! (-> mod decls) k nd)
 			 (hashtable-put! (-> mod imports) k nd))))
-		;; MS 14may2026, no need to import explicitly the lib module
-;* 		(set! (-> mod inits)                                   */
-;* 		   (append! (-> mod inits) (list lmod)))               */
+		;; MS 14may2026, not sure lib init modules must be
+		;; imported explicitly or not
+		(set! (-> mod inits)
+		   (append! (-> mod inits) (list lmod)))
 		(set! (-> mod libraries)
 		   (cons (cons lib rlib) (-> mod libraries))))
 	     (error/loc mod "Cannot find library" lib clause))))
@@ -1186,9 +1187,10 @@
 		(for-each (lambda (b)
 			     (parse-import-binding b lmod expr mod expand))
 		   bindings)
-		;; MS 14may2026, no need to import explicitly the lib module
-;* 		(set! (-> mod inits)                                   */
-;* 		   (append! (-> mod inits) (list lmod)))               */
+		;; MS 14may2026, not sure lib init modules must be
+		;; imported explicitly or not
+		(set! (-> mod inits)
+		   (append! (-> mod inits) (list lmod)))
 		(set! (-> mod libraries)
 		   (cons (cons lib rlib) (-> mod libraries))))
 	     (error/loc mod "Cannot find library" lib clause))))

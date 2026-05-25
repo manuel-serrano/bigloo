@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Sun May 24 09:28:43 2026 (serrano)                */
+/*    Last change :  Mon May 25 08:14:18 2026 (serrano)                */
 /*    Copyright   :  2002-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -131,7 +131,7 @@ bglpth_thread_cleanup(void *arg) {
 /*       bgl_remq_bang(self->env, gc_conservative_mark_envs);        */
 /*    pthread_mutex_unlock(&gc_conservative_mark_mutex);             */
 #endif
-   
+
    /* invoke user cleanup */
    if (PROCEDUREP(cleanup)) {
       BGL_PROCEDURE_CALL1(cleanup, self->bglthread);

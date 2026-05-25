@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sun May 24 18:19:41 2026 (serrano)                */
+;*    Last change :  Mon May 25 08:04:43 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -177,7 +177,7 @@
 	    (class nothread::thread
 	       (body::procedure read-only)
 	       (%specific::obj (default #unspecified))
-	       (%cleanup::obj (default #f))
+	       (%cleanup::obj (default #unspecified))
 	       (end-result::obj (default #unspecified))
 	       (end-exception::obj (default #unspecified))
 	       (%name::bstring (default "bigloo")))
@@ -222,11 +222,7 @@
 	    (inline make-thread::thread ::procedure #!optional (name ""))
             (inline thread?::bool ::obj)
 	    (generic %user-current-thread ::thread)
-	    (generic %user-thread-yield! ::thread)
-	    (generic %user-thread-sleep! ::thread obj)
 	    (current-thread::obj)
-	    (inline thread-yield!)
-	    (inline thread-sleep! ::obj)
 	    (thread-parameter ::symbol)
 	    (thread-parameter-set! ::symbol ::obj)
 	    
@@ -478,45 +474,6 @@
       (when (isa? th thread)
 	 (%user-current-thread th))))
 
-;*---------------------------------------------------------------------*/
-;*    %user-thread-sleep! ...                                          */
-;*---------------------------------------------------------------------*/
-(define-generic (%user-thread-sleep! o::thread d)
-   (cond
-      ((date? d)
-       (let* ((cdt (date->seconds (current-date)))
-	      (dt (date->seconds d))
-	      (a (* (-elong dt cdt) 1000000)))
-	  (when (>elong a #e0) (sleep (elong->fixnum a)))))
-      ((fixnum? d)
-       (sleep (* d 1000)))
-      ((elong? d)
-       (sleep (* (elong->fixnum d) 1000)))
-      ((llong? d)
-       (sleep (* (llong->fixnum d) 1000)))
-      ((real? d)
-       (sleep (flonum->fixnum (* d 1000000.0))))
-      (else
-       (bigloo-type-error 'thread-sleep! "date, real, or integer" d))))
-
-;*---------------------------------------------------------------------*/
-;*    thread-sleep! ...                                                */
-;*---------------------------------------------------------------------*/
-(define-inline (thread-sleep! obj)
-   (%user-thread-sleep! (current-thread) obj))
-
-;*---------------------------------------------------------------------*/
-;*    %user-thread-yield! ...                                          */
-;*---------------------------------------------------------------------*/
-(define-generic (%user-thread-yield! o::thread)
-   #unspecified)
-  
-;*---------------------------------------------------------------------*/
-;*    thread-yield! ...                                                */
-;*---------------------------------------------------------------------*/
-(define-inline (thread-yield!)
-   (%user-thread-yield! (current-thread)))
-   
 ;*---------------------------------------------------------------------*/
 ;*    thread-parameter ...                                             */
 ;*---------------------------------------------------------------------*/

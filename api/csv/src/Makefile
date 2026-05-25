@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun May 24 09:46:14 2026 (serrano)                */
+#*    Last change :  Mon May 25 10:43:56 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -78,7 +78,7 @@ BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class)
 JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
 
-WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat)
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) $(_BGL5_OBJECTS:%=objs/%.wat)
 WEOBJECTS	= $(EOBJECTS:%.o=%.wat)
 
 _WIN32_SRC	= 

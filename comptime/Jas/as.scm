@@ -10,7 +10,7 @@
 ;; set to #t to enable large function warning
 ;;
 (define *jas-warning* #f)
-(define *jas-warning-size-limit* 16000)
+(define *jas-warning-size-limit* 65535)
 
 ;;
 ;; Generate char info for the debugger (in addition to line info)

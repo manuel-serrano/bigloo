@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Sun May 24 09:39:55 2026 (serrano)                */
+;*    Last change :  Mon May 25 08:19:56 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -39,6 +39,8 @@
 	   
 	   (class terminated-thread-exception::&exception)
 	   
+	   (pthread-setup-backend!)
+
 	   ($pthread-nil::$pthread))
    
    (pragma ($pthread-nil side-effect-free)))
@@ -57,12 +59,13 @@
 ;*    pthread-setup-backend! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (pthread-setup-backend!)
-   (cond-expand
-      (bigloo-jvm
-       ($pthread-setup)))
-   (set! *pthread-backend* (instantiate::pthread-backend (name "pthread")))
-   (default-thread-backend-set! *pthread-backend*)
-   (current-thread-backend-set! (get-pthread-backend)))
+   (when (eq? *pthread-backend* #unspecified)
+      (cond-expand
+	 (bigloo-jvm
+	  ($pthread-setup)))
+      (set! *pthread-backend* (instantiate::pthread-backend (name "pthread")))
+      (default-thread-backend-set! *pthread-backend*)
+      (current-thread-backend-set! (get-pthread-backend))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-pthread-backend ...                                          */
@@ -102,12 +105,6 @@
 (define-method (display-object o::uncaught-exception #!optional (port::output-port (current-output-port)))
    (with-access::uncaught-exception o (reason)
       (display reason port)))
-
-;*---------------------------------------------------------------------*/
-;*    %user-thread-yield! ...                                          */
-;*---------------------------------------------------------------------*/
-(define-method (%user-thread-yield! o::pthread)
-   ($pthread-sched-yield))
 
 ;*---------------------------------------------------------------------*/
 ;*    thread-initialize! ::pthread ...                                 */
@@ -243,4 +240,3 @@
 ;*    Initialization                                                   */
 ;*---------------------------------------------------------------------*/
 (pthread-setup-backend!)
-

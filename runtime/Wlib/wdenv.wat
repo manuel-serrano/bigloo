@@ -484,7 +484,7 @@
       (export "BGL_ENV_PARAMETERS")
       (param $env (ref $dynamic-env))
       (result (ref eq))
-      (struct.get $dynamic-env $thread-backend (local.get $env)))
+      (struct.get $dynamic-env $parameters (local.get $env)))
    
    (func $BGL_ENV_PARAMETERS_SET
       (export "BGL_ENV_PARAMETERS_SET")
@@ -492,7 +492,7 @@
       (param $pa (ref eq))
       (result (ref eq))
       
-      (struct.set $dynamic-env $thread-backend (local.get $env)  (local.get $pa))
+      (struct.set $dynamic-env $parameters (local.get $env)  (local.get $pa))
       (return (global.get $BUNSPEC)))
    
    (func $BGL_PARAMETERS

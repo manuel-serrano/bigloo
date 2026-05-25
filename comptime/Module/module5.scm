@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sat May 23 06:59:08 2026 (serrano)                */
+;*    Last change :  Mon May 25 10:39:07 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -578,7 +578,11 @@
 	    (if (=fx version 5)
 		(module5-checksum! imod)
 		(set! checksum (module-checksum expr '())))
-	    (module5-declare-init! env (module-initialization-id id) id)
+	    (let ((g (module5-declare-init! env (module-initialization-id id) id)))
+	       (with-access::Module imod (heap)
+		  (when (string? heap)
+		     (let ((lib (string->symbol (prefix (basename heap)))))
+			(global-library-set! g lib)))))
 	    `((@ module-initialization ,id) ,checksum ,path))))
 
    (with-access::Module mod (inits path)
