@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Mon May 25 11:16:19 2026 (serrano)                */
+;*    Last change :  Mon May 25 18:47:20 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -514,10 +514,18 @@
 		       (if (not venv)
 			   (bigloo-library-path)
 			   (cons "." (unix-path->list venv))))))
-	  (suffix (cond-expand
-		     (bigloo-c ".heap")
-		     (bigloo-jvm ".jheap")
-		     (bigloo-wasm ".wheap")))
+	  (suffix (cond
+		     ((or (eval-srfi? 'bigloo-c) (compile-srfi? 'bigloo-c))
+		      ".heap")
+		     ((or (eval-srfi? 'bigloo-jvm) (compile-srfi? 'bigloo-jvm))
+		      ".jheap")
+		     ((or (eval-srfi? 'bigloo-wasm) (compile-srfi? 'bigloo-wasm))
+		      ".wheap")
+		     (else
+		      (cond-expand
+			 (bigloo-c ".heap")
+			 (bigloo-jvm ".jheap")
+			 (bigloo-wasm ".wheap")))))
 	  (heap (string-append (symbol->string lib) suffix))
 	  (heap5 (string-append heap "5")))
 ;* 	  (init (string-append (symbol->string lib) ".init")))         */

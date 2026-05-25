@@ -96,9 +96,6 @@
    :cond-expand (library pthread)
    :expected (cons #t #t))
 
-(cond-expand
-   ((library pthread) (tprint "YES")))
-
 (define-test thread-start!
    (begin (thread-start! (make-thread list)) #t)
    :cond-expand (library pthread)

@@ -33,9 +33,11 @@
                                 (,clause ,(e expr e))
                                 (else #t))
 			     ,@(map (lambda (x)
-                                       `(cond-expand
-                                           (,clause ,(e x e))
-                                           (else #t)))
+                                       (if (keyword? x)
+                                           x
+                                           `(cond-expand
+                                               (,clause ,(e x e))
+                                               (else #t))))
                                   rest))))
 		 all-tests)))
 	 ((define-test ?id ?expr . ?rest)

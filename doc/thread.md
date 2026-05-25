@@ -22,7 +22,7 @@ Posix multithreaded programming. It easily to take benefit of the
 actual parallelism that is now available on stock hardware.
 
 > [!WARNING]
-> As of May 2026, hardware parallelism is not supported by the Wasm backend.
+> As of May 2026, multi-threading is not supported by the Wasm backend.
 
 The multithreading support is organized in:
 
