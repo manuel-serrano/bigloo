@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Ieee/char.scm                 */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Ieee/char.scm          */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 21 10:09:50 1992                          */
-;*    Last change :  Mon Sep 23 16:01:02 2024 (serrano)                */
+;*    Last change :  Thu May 28 19:24:54 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.6 Characters (page 24, r4)                                     */
 ;*=====================================================================*/
@@ -139,73 +139,73 @@
 ;*---------------------------------------------------------------------*/
 ;*    char? ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (char? obj)
+(define-inline (char?::bool obj)
    (c-char? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    char=? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (char=? char1 char2)
+(define-inline (char=?::bool char1::uchar char2::uchar)
    (c-char=? char1 char2))
 
 ;*---------------------------------------------------------------------*/
 ;*    char<? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (char<? char1 char2)
+(define-inline (char<?::bool char1::uchar char2::uchar)
    (c-char<? char1 char2))
 
 ;*---------------------------------------------------------------------*/
 ;*    char>? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline  (char>? char1 char2)
+(define-inline  (char>?::bool char1::uchar char2::uchar)
    (c-char>? char1 char2))
 
 ;*---------------------------------------------------------------------*/
 ;*    char<=? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (char<=? char1 char2)
+(define-inline (char<=?::bool char1::uchar char2::uchar)
    (c-char<=? char1 char2))
 
 ;*---------------------------------------------------------------------*/
 ;*    char>=? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (char>=? char1 char2)
+(define-inline (char>=?::bool char1::uchar char2::uchar)
    (c-char>=? char1 char2))
 
 ;*---------------------------------------------------------------------*/
 ;*    char-ci=? ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-inline (char-ci=? char1 char2)
+(define-inline (char-ci=?::bool char1::uchar char2::uchar)
    (char=? (char-upcase char1) (char-upcase char2)))
 
 ;*---------------------------------------------------------------------*/
 ;*    char-ci<? ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-inline (char-ci<? char1 char2)
+(define-inline (char-ci<?::bool char1::uchar char2::uchar)
    (c-char<? (char-upcase char1) (char-upcase char2))) 
 
 ;*---------------------------------------------------------------------*/
 ;*    char-ci>? ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-inline  (char-ci>? char1 char2)
+(define-inline  (char-ci>?::bool char1::uchar char2::uchar)
    (c-char>? (char-upcase char1) (char-upcase char2)))
 
 ;*---------------------------------------------------------------------*/
 ;*    char-ci<=? ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (char-ci<=? char1 char2)
+(define-inline (char-ci<=?::bool char1::uchar char2::uchar)
    (c-char<=? (char-upcase char1) (char-upcase char2)))
 
 ;*---------------------------------------------------------------------*/
 ;*    char-ci>=? ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (char-ci>=? char1 char2)
+(define-inline (char-ci>=?::bool char1::uchar char2::uchar)
    (c-char>=? (char-upcase char1) (char-upcase char2)))
 
 ;*---------------------------------------------------------------------*/
 ;*    char-alphabetic? ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (char-alphabetic? char)
+(define-inline (char-alphabetic?::bool char::uchar)
    (cond-expand
       (bigloo-c (c-char-alphabetic? char))
       (else (or (and (char>=? char #\A)
@@ -216,7 +216,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    char-numeric? ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (char-numeric? char)
+(define-inline (char-numeric?::bool char::uchar)
    (cond-expand
       (bigloo-c (c-char-numeric? char))
       (else (if (char>=? char #\0)
@@ -226,7 +226,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    char-withespace? ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (char-whitespace? char)
+(define-inline (char-whitespace?::bool char::uchar)
    (cond-expand
       (bigloo-c (c-char-whitespace? char))
       (else (or (char=? char #\space)
@@ -237,7 +237,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    char-upper-case? ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (char-upper-case? char)
+(define-inline (char-upper-case?::bool char::uchar)
    (cond-expand
       (bigloo-c (c-char-upper-case? char))
       (else (if (char>=? char #\A)
@@ -247,7 +247,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    char-lower-case? ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (char-lower-case? char)
+(define-inline (char-lower-case?::bool char::uchar)
    (cond-expand
       (bigloo-c (c-char-lower-case? char))
       (else (if (char>=? char #\a)
@@ -257,13 +257,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    char->integer ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (char->integer char)
+(define-inline (char->integer::long char::uchar)
    (c-char->integer char))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer->char ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (integer->char int)
+(define (integer->char::uchar int::long)
    (if (and (>=fx int 0) (<=fx int 255))
        (c-integer->char int)
        (error "integer->char" "integer out of range" int)))
@@ -277,13 +277,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    char-upcase ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline  (char-upcase char)
+(define-inline  (char-upcase::uchar char::uchar)
    (c-char-upcase char))
 
 ;*---------------------------------------------------------------------*/
 ;*    char-downcase ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline  (char-downcase char)
+(define-inline  (char-downcase::uchar char::uchar)
    (c-char-downcase char))
 		     
 ;*---------------------------------------------------------------------*/

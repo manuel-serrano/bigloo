@@ -10,7 +10,9 @@
 <!--==================================================================-->
 
 ,(implementation-path "../runtime/Ieee/string.scm")
+,(implementation-path "../runtime/Ieee/char.scm")
 ,(example-path "../test/src/string.bgl")
+,(example-path "../test/src/char.bgl")
 
 Strings
 =======
@@ -70,8 +72,8 @@ Summary:
 | `::string` to `::bstring`  | copy          |  _   |   _  |
 
 
-Constructors
-------------
+String Constructors
+-------------------
 
 ### make-string ###
 
@@ -102,8 +104,8 @@ strings.
 
 Creates a fresh copy of `string`.
 
-Predicates
-----------
+String Predicates
+-----------------
 
 ### string? ###
 
@@ -199,8 +201,8 @@ the comparison to the indicated substrings of `s1` and `s2`.
 
 As `string-suffix` but case-insenstive.
 
-Getters and setters
--------------------
+String Getters and Setters
+--------------------------
 
 ### string-length ###
 
@@ -221,8 +223,8 @@ Sets the character at position `k` of `string`. If the argument
 triggered.
 
 
-Library functions
------------------
+String Library Functions
+------------------------
 
 All the functions that uses case-insenstive comparison implement 
 the tests with the operation:
@@ -472,4 +474,98 @@ As `string-trim-both` but only trims characters at the left of `s`.
 ### string-trim-right ###
 
 As `string-trim-both` but only trims characters at the right of `s`.
+
+Characters
+==========
+
+Bigloo knows named characters `#\alarm`, `#\backspace`,
+`#\delete`, `#\escape`, `#\tab`, `#\return`, and
+`#\null` in addition to the `#\space and `#\newline1
+of Scheme [R5RS](https://r5rs.html).
+
+A new alternate syntax exists for characters:
+  `#a<ascii-code>`
+  
+where `&lt;ascii-code&gt;` is the three digit decimal ASCII number
+of the character to be read. Thus, for instance, the character 
+`#\space`
+can be written `#a032`. Bigloo also supports the [R7Rs](https://r7rs.html)
+syntax `#\x<hex-code>`.
+
+Character Predicates
+--------------------
+
+### char? ###
+Returns `#t` if and only if `obj` is a character. Returns `#f` otherwise.
+
+### char=? ###
+Returns `#t` if and only if `char1` and `char2` are the same character.
+Returns `#f` otherwise.
+
+### char<? ###
+Returns `#t` if and only if `char1` is smaller than `char2` in the
+lexicographique order. Returns `#f` otherwise.
+
+### char>? ###
+Returns `#t` if and only if `char1` is greater than `char2` in the
+lexicographique order. Returns `#f` otherwise.
+
+### char<=? ###
+Returns `#t` if and only if `char1` is smaller than or equal to `char2` in the
+lexicographique order. Returns `#f` otherwise.
+
+### char>=? ###
+Returns `#t` if and only if `char1` is greater than or equal to `char2` in the
+lexicographique order. Returns `#f` otherwise.
+
+### char-ci=? ###
+As `char?` but case-insensitive.
+
+### char-ci<? ###
+As `char<?` but case-insensitive.
+
+### char-ci>? ###
+As `char>?` but case-insensitive.
+
+### char-ci<=? ###
+As `char<=?` but case-insensitive.
+
+### char-ci>=? ###
+As `char>-?` but case-insensitive.
+
+### char-alphabetic? ###
+Returns `#t` if and only if `char` is a letter is the roman alphabet. 
+Returns `#f` otherwise.
+
+### char-numeric? ###
+Returns `#t` if and only if `char` is a letter is the arabic digit.
+Returns `#f` otherwise.
+
+### char-whitespace? ###
+Returns `#t` if and only if `char` is a word separator.
+Returns `#f` otherwise.
+
+### char-upper-case? ###
+Returns `#t` if and only if `char` is a roman upper case letter.
+Return `#f` otherwise.
+
+### char-lower-case? ###
+Returns `#t` if and only if `char` is a roman lower case letter.
+Return `#f` otherwise.
+
+Character Library Functions
+---------------------------
+
+### char-upcase ###
+Returns the corresponding upper case letter in the roman alphabet. 
+
+### char-downcase ###
+Returns the corresponding lower case letter in the roman alphabet. 
+
+### char->integer ###
+Returns the 8-bit integer interpretation of the character.
+
+### integer->char ###
+Returns the character associated to the 8-bit integer representation.
+
 

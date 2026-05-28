@@ -1,0 +1,134 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/char.bgl              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Thu May 28 19:21:00 2026                          */
+;*    Last change :  Thu May 28 19:49:12 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing characters                                               */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    chars                                                            */
+;*---------------------------------------------------------------------*/
+(module chars
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "character" tests))
+      (test-all verbose "character")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test char? (char? #\A)
+   :expected #t)
+(define-test char? (char? (string-ref "abcd" 2))
+   :expected #t)
+(define-test char? (char? 65)
+   :expected #f)
+
+(define-test char=? (char=? #a065 #\A)
+   :expected #t)
+(define-test char=? (char=? (string-ref "A" 0) #\A)
+   :expected #t)
+(define-test char=? (char=? #\a #\A)
+   :expected #f)
+
+(define-test char<? (char<? #\a #\z)
+   :expected #t)
+(define-test char<? (char<? #\a #\a)
+   :expected #f)
+   
+(define-test char>? (char>? #\a #\z)
+   :expected #f)
+(define-test char>? (char>? #\a #\a)
+   :expected #f)
+   
+(define-test char<=? (char<=? #\a #\z)
+   :expected #t)
+(define-test char<=? (char<=? #\a #\a)
+   :expected #t)
+   
+(define-test char>=? (char>=? #\a #\z)
+   :expected #f)
+(define-test char>=? (char>=? #\a #\a)
+   :expected #t)
+   
+(define-test char-ci=? (char-ci=? #a065 #\A)
+   :expected #t)
+(define-test char-ci=? (char-ci=? (string-ref "A" 0) #\A)
+   :expected #t)
+(define-test char-ci=? (char-ci=? #\a #\A)
+   :expected #t)
+
+(define-test char-ci<? (char-ci<? #\a #\z)
+   :expected #t)
+(define-test char-ci<? (char-ci<? #\a #\a)
+   :expected #f)
+   
+(define-test char-ci>? (char-ci>? #\a #\z)
+   :expected #f)
+(define-test char-ci>? (char-ci>? #\a #\a)
+   :expected #f)
+   
+(define-test char-ci<=? (char-ci<=? #\a #\z)
+   :expected #t)
+(define-test char-ci<=? (char-ci<=? #\a #\a)
+   :expected #t)
+   
+(define-test char-ci>=? (char-ci>=? #\a #\z)
+   :expected #f)
+(define-test char-ci>=? (char-ci>=? #\a #\a)
+   :expected #t)
+   
+(define-test char-alphabetic? (char-alphabetic? #\A)
+   :expected #t)
+(define-test char-alphabetic? (char-alphabetic? #\z)
+   :expected #t)
+(define-test char-alphabetic? (char-alphabetic? #\?)
+   :expected #f)
+
+(define-test char-numeric? (char-numeric? #\1)
+   :expected #t)
+(define-test char-numeric? (char-numeric? #\v)
+   :expected #f)
+
+(define-test char-whitespace? (char-whitespace? #\space)
+   :expected #t)
+(define-test char-whitespace? (char-whitespace? #\newline)
+   :expected #t)
+(define-test char-whitespace? (char-whitespace? #\tab)
+   :expected #t)
+(define-test char-whitespace? (char-whitespace? #\.)
+   :expected #f)
+
+(define-test char-upper-case? (char-upper-case? #\A)
+   :expected #t)
+(define-test char-lower-case? (char-lower-case? #\a)
+   :expected #t)
+
+(define-test char-upcase (char-upcase #\a)
+   :expected #\A)
+(define-test char-upcase (char-upcase #\A)
+   :expected #\A)
+
+(define-test char-downcase (char-downcase #\a)
+   :expected #\a)
+(define-test char-downcase (char-downcase #\A)
+   :expected #\a)
+
+(define-test char->integer (char->integer #\A)
+   :expected 65)
+
+(define-test integer->char (integer->char (char->integer #\A))
+   :expected #\A)
