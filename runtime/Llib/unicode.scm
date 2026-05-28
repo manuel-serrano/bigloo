@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/unicode.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/unicode.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Jul 11 09:49:02 2025 (serrano)                */
+;*    Last change :  Thu May 28 19:56:36 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -681,13 +681,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    ascii-string? ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (ascii-string? str)
+(define (ascii-string?::bool str::bstring)
    (eq? (string-minimal-charset str) 'ascii))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string? ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string? str #!optional strict::bool)
+(define (utf8-string?::bool str::bstring #!optional strict::bool)
    
    (define (in-range? c minc maxc)
       (let ((n (char->integer c)))

@@ -11,8 +11,10 @@
 
 ,(implementation-path "../runtime/Ieee/string.scm")
 ,(implementation-path "../runtime/Ieee/char.scm")
+,(implementation-path "../runtime/Llib/unicode.scm")
 ,(example-path "../test/src/string.bgl")
 ,(example-path "../test/src/char.bgl")
+,(example-path "../test/src/unicode.bgl")
 
 Strings
 =======
@@ -474,6 +476,27 @@ As `string-trim-both` but only trims characters at the left of `s`.
 ### string-trim-right ###
 
 As `string-trim-both` but only trims characters at the right of `s`.
+
+Unicode Strings
+===============
+UTF-i string literal can be read by the standard Bigloo reader using the 
+the syntax: `#u"([^]|\")*"`.
+
+Unicode String Predicates
+-------------------------
+
+### ascii-string? ###
+Returns `#t` if and only if the argument `string` is only composed
+of ascii characters. Otherwise returns `#f`.
+
+### utf8-string? ###
+Returns `#t` if and only if the argument `string` is a well formed
+UTF-8 string. Otherwise returns `#f`.
+
+If the optional argument `strict` is `#t`, half utf16-surrogates are
+rejected otherwise they are accepted. The optional argument `strict`
+defaults to `#f`.
+
 
 Characters
 ==========
