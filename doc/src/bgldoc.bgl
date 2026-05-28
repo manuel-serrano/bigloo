@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sat May 23 09:56:29 2026 (serrano)                */
+;*    Last change :  Thu May 28 08:21:06 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -335,7 +335,13 @@
                                ((=fx (hashtable-size definitions-table) 0)
                                 e)
                                ((not def)
-                                (if (equal? klass "NoDef")
+                                (if (or (equal? klass "NoDef")
+                                        (equal? klass "NoDef-C")
+                                        (equal? klass "NoDef-jvm")
+                                        (equal? klass "NoDef-wasm")
+                                        (equal? klass "NoDef-C-jvm")
+                                        (equal? klass "NoDef-C-wasm")
+                                        (equal? klass "NoDef-jvm-wasm"))
                                     (let* ((pseudodef (call-with-input-string name read))
                                            (md (definition->markdown pseudodef)))
                                        (xml-element-children-set! e (cons (class-backend #f) md))
@@ -361,7 +367,8 @@
                                 (let ((md (definition->markdown def)))
                                    (xml-element-children-set! e (cons (class-backend klass) md))
                                    (xml-element-attribute-set! e 'class (definition-class def))
-                                   (if (pair? tests)
+                                   (cond
+                                      ((pair? tests)
                                        (let loop ((next (xml-element-next-sibling e))
                                                   (prev e))
                                           (cond
@@ -372,8 +379,17 @@
                                                            (xml-element-append-child! prev el))
                                                  (test->markdown (reverse tests))))
                                              (else
-                                              (loop (xml-element-next-sibling next) next))))
-                                       (error "doc" "Cannot find test" name))
+                                              (loop (xml-element-next-sibling next) next)))))
+                                      ((or (equal? klass "NoTest")
+                                           (equal? klass "NoTest-C")
+                                           (equal? klass "NoTest-jvm")
+                                           (equal? klass "NoTest-wasm")
+                                           (equal? klass "NoTest-C-jvm")
+                                           (equal? klass "NoTest-C-wasm")
+                                           (equal? klass "NoTest-jvm-wasm"))
+                                       e)
+                                      (else
+                                       (error "doc" "Cannot find test" name)))
                                    (set! index
                                       (cons (list name def (xml-element-attribute e 'id) target)
                                          index)))))))

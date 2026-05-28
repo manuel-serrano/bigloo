@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/pthread/src/Llib/psemaphore.scm      */
+;*    .../project/bigloo/5.0.x/api/pthread/src/Llib/psemaphore.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 20 09:27:10 2017                          */
-;*    Last change :  Wed May 17 09:26:12 2017 (serrano)                */
-;*    Copyright   :  2017 Manuel Serrano                               */
+;*    Last change :  Mon May 25 20:43:01 2026 (serrano)                */
+;*    Copyright   :  2017-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Semaphore                                                        */
 ;*=====================================================================*/
@@ -23,8 +23,7 @@
 	       (value 1))
 	    
 	    (close-semaphore ::semaphore)
-	    (delete-semaphore ::bstring)
-;* 	    (semaphore-wait ::semaphore #!optional (timeout::long 0))  */
+	    (delete-semaphore ::semaphore)
 	    (semaphore-wait ::semaphore)
 	    (semaphore-trywait ::semaphore)
 	    (semaphore-value::long ::semaphore)
@@ -33,7 +32,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-semaphore ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (open-semaphore name::bstring
+(define (open-semaphore::semaphore name::bstring
 	   #!key (create #t) (excl #f)
 	   (mode '(S_IRUSR S_IWUSR S_IXUSR S_IRGRP S_IWGRP S_IROTH S_IWOTH))
 	   (value 1))
@@ -81,7 +80,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    delete-semaphore ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (delete-semaphore n::bstring)
+(define (delete-semaphore n::semaphore)
    (=fx ($psemaphore-delete n) 0))
 
 ;*---------------------------------------------------------------------*/
@@ -89,11 +88,6 @@
 ;*---------------------------------------------------------------------*/
 (define (semaphore-wait s::semaphore)
    (=fx ($psemaphore-wait s) 0))
-
-;* (define (semaphore-wait s::semaphore #!optional (timeout::long 0))  */
-;*    (if (=fx timeout 0)                                              */
-;*        (=fx ($psemaphore-wait s) 0)                                 */
-;*        (=fx ($psemaphore-timed-wait s timeout) 0)))                 */
 
 ;*---------------------------------------------------------------------*/
 ;*    semaphore-trywait ...                                            */

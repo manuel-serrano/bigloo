@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 23 09:57:34 2026                          */
-;*    Last change :  Mon May 25 08:10:44 2026 (serrano)                */
+;*    Last change :  Wed May 27 08:48:19 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing threads                                                  */
@@ -115,3 +115,150 @@
    (procedure? thread-kill!)
    :cond-expand (library pthread)
    :expected #t)
+
+(define-test mutex? (mutex? (make-mutex))
+   :expected #t)
+
+(define-test mutex? (mutex? (make-thread list))
+   :expected #f)
+
+(define-test make-mutex (mutex? (make-mutex))
+   :expected #t)
+
+(define-test make-spinlock (mutex? (make-spinlock))
+   :expected #t)
+
+(define-test mutex-name (mutex-name (make-mutex "a-mutex"))
+   :expected "a-mutex")
+
+(define-test mutex-state (mutex-state (make-mutex))
+   :cond-expand (library pthread)
+   :expected 'unlocked)
+
+(define-test mutex-lock! (begin (mutex-lock! (make-mutex)) #t)
+   :expected #t)
+
+(define-test mutex-unlock!
+   (let ((m (make-mutex)))
+      (mutex-lock! m)
+      (unwind-protect
+         #t
+         (mutex-unlock! m)))
+   :expected #t)
+
+(define-test synchronize (synchronize (make-mutex) #t)
+   :expected #t)
+
+(define-test condition-variable? (condition-variable? (make-condition-variable))
+   :expected #t)
+
+(define-test condition-variable? (condition-variable? (make-mutex))
+   :expected #f)
+
+(define-test make-condition-variable (condition-variable? (make-condition-variable))
+   :expected #t)
+
+(define-test condition-variable-name (condition-variable-name (make-condition-variable "a condv"))
+   :expected "a condv")
+
+(define-test condition-variable-wait!
+   (let* ((res 0)
+          (mu (make-mutex))
+          (cv (make-condition-variable))
+          (th1 (make-thread (lambda ()
+                               (synchronize mu
+                                  (when (=fx res 0)
+                                     (condition-variable-wait! cv mu))
+                                  (set! res (+fx res 1))
+                                  (condition-variable-signal! cv)))))
+          (th2 (make-thread (lambda ()
+                               (synchronize mu
+                                  (condition-variable-signal! cv)
+                                  (set! res (+fx res 1))
+                                  (condition-variable-wait! cv mu))))))
+      (thread-start! th1)
+      (thread-join! (thread-start-joinable! th2))
+      res)
+   :cond-expand (library pthread)
+   :expected 2)
+
+(define-test condition-variable-signal!
+   (let ((cv (make-condition-variable)))
+      (condition-variable-signal! cv)
+      #t)
+   :cond-expand (library pthread)
+   :expected #t)
+   
+(define-test condition-variable-broadcast!
+   (let ((cv (make-condition-variable)))
+      (condition-variable-broadcast! cv)
+      #t)
+   :cond-expand (library pthread)
+   :expected #t)
+
+(define-test pthread
+    (thread? (instantiate::pthread (body list)))
+    :cond-expand (library pthread)
+    :expected #t)
+
+(define-test open-semaphore
+   (semaphore? (open-semaphore "semaphore1"))
+   :cond-expand (and C (library pthread))
+   :expected #t)
+
+(define-test semaphore?
+   (semaphore? (open-semaphore "semaphore1"))
+   :cond-expand (and C (library pthread))
+   :expected #t)
+
+(define-test semaphore?
+   (semaphore? (make-mutex))
+   :cond-expand (and C (library pthread))
+   :expected #f)
+
+(define-test close-semaphore
+   (close-semaphore (open-semaphore "semaphore2"))
+   :cond-expand (and C (library pthread))
+   :expected #t)
+
+(define-test delete-semaphore
+   (delete-semaphore (open-semaphore "semaphore2"))
+   :cond-expand (and C (library pthread))
+   :expected #t)
+
+(define-test semaphore-post
+   (let* ((res 0)
+          (sem (open-semaphore "sync"))
+          (th1 (make-thread (lambda ()
+                               (semaphore-wait sem)
+                               (set! res (+fx res 1)))))
+          (th2 (make-thread (lambda ()
+                               (set! res (+fx res 1))
+                               (semaphore-post sem)))))
+      (thread-start! th1)
+      (thread-join! (thread-start-joinable! th2))
+      res)
+   :cond-expand (and C (library pthread))
+   :expected 2)
+
+(define-test semaphore-trywait
+   (let* ((res 0)
+          (sem (open-semaphore "sync"))
+          (th1 (make-thread (lambda ()
+                               (semaphore-trywait sem)
+                               (set! res (+fx res 1)))))
+          (th2 (make-thread (lambda ()
+                               (set! res (+fx res 1))
+                               (semaphore-post sem)))))
+      (thread-start! th1)
+      (thread-join! (thread-start-joinable! th2))
+      (+ res (semaphore-value sem)))
+   :cond-expand (and C (library pthread))
+   :expected 3)
+
+(define-test semaphore-value
+   (semaphore-value (open-semaphore "semaphore4" :value 20))
+   :cond-expand (and C (library pthread))
+   :expected 20)
+
+

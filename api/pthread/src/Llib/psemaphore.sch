@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/pthread/src/Llib/psemaphore.sch      */
+;*    .../project/bigloo/5.0.x/api/pthread/src/Llib/psemaphore.sch     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar  5 14:48:55 2005                          */
-;*    Last change :  Wed May 17 09:26:48 2017 (serrano)                */
-;*    Copyright   :  2005-17 Manuel Serrano                            */
+;*    Last change :  Thu May 28 08:13:27 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The native interfaces for semaphores                             */
 ;*=====================================================================*/
@@ -19,7 +19,7 @@
 	    ($psemaphore-open::semaphore (::bstring ::bool ::bool ::long ::long)
 	       "bgl_open_semaphore")
 	    (macro $psemaphore-close::int (::semaphore) "BGL_SEMAPHORE_CLOSE")
-	    (macro $psemaphore-delete::int (::string) "BGL_SEMAPHORE_DELETE")
+	    (macro $psemaphore-delete::int (::semaphore) "BGL_SEMAPHORE_DELETE")
 	    (macro $psemaphore-wait::int (::semaphore) "BGL_SEMAPHORE_WAIT")
 	    ($psemaphore-timed-wait::int (::semaphore ::long) "bgl_semaphore_timed_wait")
 	    (macro $psemaphore-trywait::int (::semaphore) "BGL_SEMAPHORE_TRYWAIT")
@@ -43,7 +43,7 @@
 		  "bgl_open_semaphore")
 	       (method static close::obj (::semaphore)
 		  "bgl_close_semaphore")
-	       (method static delete::obj (::string)
+	       (method static delete::obj (::semaphore)
 		  "bgl_delete_semaphore")
 	       (method static wait::obj (::semaphore)
 		  "bgl_wait_semaphore")

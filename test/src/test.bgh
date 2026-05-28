@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/test/test.bgh                   */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/test.bgh              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:22:05 2026                          */
-;*    Last change :  Tue Apr 14 09:26:56 2026 (serrano)                */
+;*    Last change :  Thu May 28 18:15:11 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing macros                                                   */
@@ -29,15 +29,17 @@
 			  (check-test ',id
 			     ,(cadr (cer x))
 			     ,(caddr (cer x))
-			     (cond-expand
-                                (,clause ,(e expr e))
-                                (else #t))
+			     ,(e `(cond-expand
+                                     (,clause ,expr)
+                                     (else #t))
+                                 e)
 			     ,@(map (lambda (x)
                                        (if (keyword? x)
                                            x
-                                           `(cond-expand
-                                               (,clause ,(e x e))
-                                               (else #t))))
+                                           (e `(cond-expand
+                                                  (,clause ,x)
+                                                  (else #t))
+                                              e)))
                                   rest))))
 		 all-tests)))
 	 ((define-test ?id ?expr . ?rest)
