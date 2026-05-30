@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sat May 30 06:35:04 2026 (serrano)                */
+;*    Last change :  Sat May 30 08:18:06 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -496,7 +496,7 @@
 	 (xml-element 'pre '((class . "test"))
 	    (append-map (lambda (t)
                            (let ((s (format "~s" (car t))))
-                              (if (>fx (string-length s) 80)
+                              (if (>fx (string-length s) 100)
                                   (list
                                      (fontify (call-with-output-string
                                                  (lambda (op)

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/doc/bgldoc.css                              */
+/*    serrano/prgm/project/bigloo/5.0.x/doc/bgldoc.css                 */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Fri May 22 14:10:08 2026 (serrano)                */
+/*    Last change :  Sat May 30 08:01:59 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -16,6 +16,7 @@
     --bodyColor: #444;
     --background: #fafafa;
     --textShadow: #ccc;
+    --titleShadow: #ddd;
 
     --menuColor: #9d9d9d;
     --menuBackgroundColor: #22222f;
@@ -37,7 +38,7 @@
 
     --example: #333333;
     
-    --functionBackground: #dfdfdf;
+    --functionBackground: #f0f0f0;
     --functionTag: #1467e6;
     --defaultTag: #777;
 
@@ -332,6 +333,7 @@ div.home .main {
 }
 
 h1 {
+    text-shadow: var(--titleShadow) 1px 1px 1px;
     margin-top: 2em;
     margin-bottom: 1em;
     padding-bottom: 4px;

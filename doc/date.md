@@ -27,55 +27,64 @@ by `make-date`, `current-date`, `seconds->date`, or
 Creates a `date` object from the integer values passed as argument.
 The argument `timezone`, if provided, is expressed in minute.
 
-Example:
-@smalllisp
-(write (make-date :sec 0 :min 22 :hour 17 :day 5 :month 2 :year 2003 :dst 0))
-  @print{} #<date:Wed Feb  5 17:22:00 2003>
-@end smalllisp
-
 The argument `dst` is either `-1` when the information is not
 available, `0` when daylight saving is disabled, `1` when daylight
 saving is enabled.
 
-@deffn {bigloo procedure} date-copy date #!key sec min hour day month year timezone isdst
-@deffnx {bigloo procedure} date-update! date #!key sec min hour day month year
-Creates a new date or update an existing from the argument `date}. 
+### date-copy ###
+Copies a `date` with optional modifications.
 
-Example:
-@smalllisp
-(date-copy (current-date) :sec 32 :min 24 :day 5)
-@end smalllisp
+### date-update! ###
+Updates an existing date.
 
-@end deffn
-
-@deffn {bigloo procedure} date->gmtdate! date
-Update the date to switch to an UTC representation. Returns the modified
+### date->gmtdate! ###
+<!-- [:@C] -->
+Updates the date to switch to an UTC representation. Returns the modified
 date object.
-@end deffn
 
+### current-date ###
+Returns a `date` object representing the current date.
 
-@deffn {bigloo procedure} current-date
-Returns a `date} object representing the current date.
-@end deffn
-
-@deffn {bigloo procedure} current-seconds
-@deffnx {bigloo procedure} current-microseconds
-@deffnx {bigloo procedure} current-milliseconds
-@deffnx {bigloo procedure} current-nanoseconds
-Returns an `elong} integer representing the current epoch (i.e., the
+### current-seconds ###
+Returns an `elong` integer representing the current epoch (i.e., the
 date since 0:00:00 UTC on the morning of 1 January 1970, expressed
 in seconds (resp. in micro seconds).
-@end deffn
 
-@deffn {bigloo procedure} date->seconds
-@deffnx {bigloo procedure} date->nanoseconds
-@deffnx {bigloo procedure} date->milliseconds
-@deffnx {bigloo procedure} seconds->date
-@deffnx {bigloo procedure - 4.3h} seconds->gmtdate
-@deffnx {bigloo procedure - 4.3i} milliseconds->gmtdate
+### current-microseconds ###
+Returns the number of microseconds since epoch.
+
+### current-milliseconds ###
+Returns the number of milliseconds since epoch.
+
+### current-nanoseconds ###
+Returns the number of nanoseconds since epoch.
+
+### date->seconds ###
+Converts from `date` into a number of seconds since epoch.
+
+### date->nanoseconds ###
+Converts from `date` into a number of nanoseconds since epoch.
+
+### date->milliseconds ###
+Converts from `date` into a number of milliseconds since epoch.
+
+### seconds->date ###
+Converts a number of seconds since eopch into a `date` object.
+
+### milliseconds->date ###
+Converts a number of milliseconds since eopch into a `date` object.
+
+### nanoseconds->date ###
+Converts a number of nanoseconds since eopch into a `date` object.
+
+### seconds->gmtdate ###
+Converts a number of seconds since eopch into a gmt `date` object.
+
+### milliseconds->gmtdate ###
+Converts a number of milliseconds since eopch into a gmt `date` object.
+
 @deffnx {bigloo procedure} nanoeconds->date
 @deffnx {bigloo procedure} milliseconds->date
-Convert from `date} and `elong}.
 @end deffn
 
 @deffn {bigloo procedure} date->string date

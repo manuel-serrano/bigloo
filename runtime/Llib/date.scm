@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/date.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/date.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Thu Sep 25 12:10:17 2025 (serrano)                */
-;*    Copyright   :  2003-25 Manuel Serrano                            */
+;*    Last change :  Sat May 30 07:47:42 2026 (serrano)                */
+;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
 ;*    -------------------------------------------------------------    */
@@ -141,12 +141,12 @@
 	       (method static $date-month-aname::bstring (::int) "bgl_month_aname")))
    
    (export  (inline date?::bool ::obj)
-	    (make-date #!key
-		       (nsec #l0) (sec 0) (min 0) (hour 0)
-		       (day 1) (month 1) (year 1970)
-		       timezone (dst -1))
-	    (date-copy date::date #!key nsec sec min hour day month year timezone isdst)
-	    (date-update! date::date #!key nsec sec min hour day month year)
+	    (make-date::date #!key
+               (nsec::llong #l0) (sec::long 0) (min::long 0)
+               (hour::long 0) (day::long 1) (month::long 1)
+               (year::long 1970) timezone (dst::long -1))
+	    (date-copy::date date::date #!key nsec sec min hour day month year timezone isdst)
+	    (date-update!::date date::date #!key nsec sec min hour day month year)
 	    (inline date->gmtdate!::date ::date)
 	    (date-update-millisecond! ::date ::long)
 	    (date-update-second! ::date ::long)
@@ -222,17 +222,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    date? ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (date? obj)
+(define-inline (date?::bool obj)
    (c-date? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-date ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (make-date #!key
-	   (nsec #l0)
-	   (sec 0) (min 0) (hour 0)
-	   (day 1) (month 1) (year 1970)
-	   timezone (dst -1))
+(define (make-date::date #!key
+	   (nsec::llong #l0)
+	   (sec::long 0) (min::long 0) (hour::long 0)
+	   (day::long 1) (month::long 1) (year::long 1970)
+	   timezone (dst::long -1))
    (if (fixnum? timezone)
        ($date-new nsec sec min hour day month year timezone #t dst)
        ($date-new nsec sec min hour day month year 0 #f dst)))
@@ -240,7 +240,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    date-copy ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (date-copy date #!key nsec sec min hour day month year timezone isdst)
+(define (date-copy::date date::date #!key nsec sec min hour day month year timezone isdst)
    ($date-new
       (or nsec (date-nanosecond date))
       (or sec (date-second date))
@@ -256,7 +256,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    date-update! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (date-update! date #!key nsec sec min hour day month year)
+(define (date-update!::date date::date #!key nsec sec min hour day month year)
    ($date-update date
       (or nsec (date-nanosecond date))
       (or sec (date-second date))
@@ -272,10 +272,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    date->gmtdate! ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (date->gmtdate! date)
+(define-inline (date->gmtdate!::date d::date)
    (cond-expand
       (bigloo-c
-       (let ((gmtdate ($date->gmtdate! date)))
+       (let ((gmtdate ($date->gmtdate! d)))
 	  gmtdate))
       (else
        (error "date->gmtdate!" "not supported by this backend" date))))
@@ -424,80 +424,80 @@
 ;*---------------------------------------------------------------------*/
 ;*    current-seconds ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (current-seconds)
+(define-inline (current-seconds::elong)
    ($date-current-seconds))
 
 ;*---------------------------------------------------------------------*/
 ;*    current-milliseconds ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (current-milliseconds)
+(define-inline (current-milliseconds::llong)
    ($date-current-milliseconds))
 
 ;*---------------------------------------------------------------------*/
 ;*    current-microseconds ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (current-microseconds)
+(define-inline (current-microseconds::llong)
    ($date-current-microseconds))
 
 ;*---------------------------------------------------------------------*/
 ;*    current-nanoseconds ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (current-nanoseconds)
+(define-inline (current-nanoseconds::llong)
    ($date-current-nanoseconds))
 
 ;*---------------------------------------------------------------------*/
 ;*    current-date ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (current-date)
+(define-inline (current-date::date)
    ($date-from-nanoseconds ($date-current-nanoseconds)))
 
 ;*---------------------------------------------------------------------*/
 ;*    seconds->date ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (seconds->date elong)
-   ($date-from-seconds elong))
+(define-inline (seconds->date::date sec::elong)
+   ($date-from-seconds sec))
 
 ;*---------------------------------------------------------------------*/
 ;*    seconds->gmtdate ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (seconds->gmtdate elong)
-   ($date-from-seconds-gmt elong))
+(define-inline (seconds->gmtdate::date sec::elong)
+   ($date-from-seconds-gmt sec))
 
 ;*---------------------------------------------------------------------*/
 ;*    milliseconds->gmtdate ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (milliseconds->gmtdate llong)
-   ($date-from-milliseconds-gmt llong))
+(define-inline (milliseconds->gmtdate::date ms::llong)
+   ($date-from-milliseconds-gmt ms))
 
 ;*---------------------------------------------------------------------*/
 ;*    nanoseconds->date ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (nanoseconds->date llong)
-   ($date-from-nanoseconds llong))
+(define-inline (nanoseconds->date::date ns::llong)
+   ($date-from-nanoseconds ns))
 
 ;*---------------------------------------------------------------------*/
 ;*    milliseconds->date ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (milliseconds->date llong)
-   ($date-from-milliseconds llong))
+(define-inline (milliseconds->date::date ms::llong)
+   ($date-from-milliseconds ms))
 
 ;*---------------------------------------------------------------------*/
 ;*    date->seconds ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (date->seconds date)
-   ($date-to-seconds date))
+(define-inline (date->seconds::elong d::date)
+   ($date-to-seconds d))
 
 ;*---------------------------------------------------------------------*/
 ;*    date->nanoseconds ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (date->nanoseconds date)
-   ($date-to-nanoseconds date))
+(define-inline (date->nanoseconds::llong d::date)
+   ($date-to-nanoseconds d))
 
 ;*---------------------------------------------------------------------*/
 ;*    date->milliseconds ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (date->milliseconds date)
-   ($date-to-milliseconds date))
+(define-inline (date->milliseconds::llong d::date)
+   ($date-to-milliseconds d))
 
 ;*---------------------------------------------------------------------*/
 ;*    date->string ...                                                 */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri May 29 08:18:29 2026 (serrano)                */
+;*    Last change :  Sat May 30 07:42:17 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -187,7 +187,7 @@
 	    (string-index->utf8-string-index::long ::bstring ::long)
 	    (utf8-string-append::bstring ::bstring ::bstring)
 	    (utf8-string-append*::bstring . strings)
-	    (utf8-string-append-fill!::long ::bstring ::long ::bstring #!optional (offset 0))
+	    (utf8-string-append-fill!::long ::bstring ::long ::bstring #!optional (offset::long 0))
 	    (utf8-substring::bstring str::bstring ::long #!optional (end::long (utf8-string-length str)))
 	    (inline utf8-string-left-replacement?::bool ::bstring ::long ::long)
 	    (inline utf8-string-right-replacement?::bool ::bstring ::long ::long)
@@ -1327,7 +1327,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-ref ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string-ref str i)
+(define (utf8-string-ref::bstring str::bstring i::long)
    (let ((len (string-length str)))
       (let loop ((r 0) (i i))
 	 (let* ((c (string-ref str r))
@@ -1443,7 +1443,8 @@
 ;*    INDEX. This function handles cases where the last char of the    */
 ;*    concatanated char is a UNICODE remplacement char.                */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string-append-fill!::long buffer::bstring index::long str::bstring #!optional (offset 0))
+(define (utf8-string-append-fill!::long buffer::bstring index::long str::bstring
+           #!optional (offset::long 0))
    (let ((len (string-length str)))
       (cond
 	 ((and (>=fx index 4)
@@ -1635,26 +1636,26 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8->iso-latin-15 ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (utf8->iso-latin-15 str)
+(define (utf8->iso-latin-15::bstring str::bstring)
    (utf8->8bits str 8bits-inv-latin-15))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8->iso-latin-15! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (utf8->iso-latin-15! str)
+(define (utf8->iso-latin-15!::bstring str::bstring)
    (utf8->8bits! str 8bits-inv-latin-15))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8->cp1252 ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (utf8->cp1252 str)
+(define (utf8->cp1252::bstring str::bstring)
    (unless cp1252-inv (set! cp1252-inv (inverse-utf8-table cp1252)))
    (utf8->8bits str cp1252-inv))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8->cp1252! ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (utf8->cp1252! str)
+(define (utf8->cp1252!::bstring str::bstring)
    (unless cp1252-inv (set! cp1252-inv (inverse-utf8-table cp1252)))
    (utf8->8bits! str cp1252-inv))
 

@@ -518,7 +518,7 @@ replaced with the Unicode Replacement Character `EF BF BD`. The result
 is a well formed UTF-8 string.
 
 ### utf8-string-ref ###
-Returns the character (represented as an UTF-8 string) at the position
+Returns the character (represented as a UTF-8 string) at the position
 `i` in `string`.
 
 ### utf8-string-index->string-index ###
