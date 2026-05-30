@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Thu May 28 08:21:06 2026 (serrano)                */
+;*    Last change :  Sat May 30 06:35:04 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -51,7 +51,7 @@
 ;*---------------------------------------------------------------------*/
 (define libs-chapters
    '(("booleans" . "bool.html")
-     ("characters" . "character.html")
+     ("dates" . "date.html")
      ("hash" . "hash.html")
      ("i/o" . "io.html")
      ("numbers" . "number.html")

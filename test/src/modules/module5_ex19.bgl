@@ -6,7 +6,7 @@
    (import "./module5_ex2.bgl" (EX2A EX2a))
    (import "./module5_ex3.bgl" ex3a ex3b)
    (import "./module5_ex4.bgl" . ex4)
-   (import "./module5_ex7.bgl")
+   (import "./module5_ex7.bgl" ())
    (import "./module5_ex8.bgl" ex8m ex8f)
    (import "./module5_ex9.bgl" ex9ma (EX9MB ex9mb) ex9f)
    (import "./module5_ex10.bgl" ex10i)

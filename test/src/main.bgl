@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Thu May 28 19:54:42 2026 (serrano)                */
+;*    Last change :  Fri May 29 08:20:05 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -15,6 +15,7 @@
 (module main
    (import "./bool.bgl" . bool)
    (import "./char.bgl" . char)
+   (import "./date.bgl" . date)
    (import "./dsssl.bgl" . dsssl)
    (import "./hash.bgl" . hash)
    (import "./io.bgl" . io)
@@ -50,6 +51,7 @@
    (let* ((res (list
                   (bool.test verbose tests)
                   (char.test verbose tests)
+                  (date.test verbose tests)
                   (dsssl.test verbose tests)
 		  (hash.test verbose tests)
 		  (io.test verbose tests)
@@ -59,6 +61,7 @@
 		  (port.test verbose tests)
 		  (string.test verbose tests)
                   (thread.test verbose tests)
+                  (unicode.test verbose tests)
 		  (vector.test verbose tests)))
 	  (success (apply + (map car (filter (lambda (x) x) res))))
 	  (failures (apply + (map cdr (filter (lambda (x) x) res))))

@@ -3,14 +3,14 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Thu May 28 19:55:52 2026 (serrano)                */
+;*    Last change :  Fri May 29 08:13:43 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    Testing unicode functions                                         */
+;*    Testing unicode functions                                        */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
-;*    unicodes                                                          */
+;*    unicodes                                                         */
 ;*---------------------------------------------------------------------*/
 (module unicodes
    (export test))
@@ -30,15 +30,138 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
-(define-test utf8-string? (utf8-string? "abc012!~")
-   :expected #t)
+(define-test string-minimal-charset (string-minimal-charset "foobar")
+   :expected 'ascii)
 
-(define-test utf8-string? (utf8-string? "abc012!\xf0")
-   :expected #f)
+(define-test utf8-string-minimal-charset (string-minimal-charset "foobar")
+   :expected 'ascii)
+
+(define-test utf8-string-minimal-charset (string-minimal-charset "\xc3\xa9t\xc3\xa9")
+   :expected 'latin1)
 
 (define-test ascii-string? (utf8-string? "abc012!~")
    :expected #t)
 
 (define-test ascii-string? (utf8-string? "abc012!\xf0")
    :expected #f)
+
+(define-test utf8-string? (utf8-string? "abc012!~")
+   :expected #t)
+
+(define-test utf8-string? (utf8-string? "abc012!\xf0")
+   :expected #f)
+
+(define-test utf8-string? (utf8-string? "\xc3\xa9t\xc3\xa9")
+   :expected #t)
+
+(define-test utf8-char-size (utf8-char-size #\A)
+   :expected 1)
+
+(define-test utf8-char-size (utf8-char-size #\x81)
+   :expected 2)
+
+(define-test utf8-char-size (utf8-char-size #\xfe)
+   :expected 4)
+
+(define-test utf8-string-length (utf8-string-length "ete")
+   :expected 3)
+
+(define-test utf8-string-length (utf8-string-length "\xc3\xa9t\xc3\xa9")
+   :expected 3)
+
+(define-test utf8-string-encode (utf8-string-encode "\xc3\xa9t\xc3\xa9")
+   :expected "\xc3\xa9t\xc3\xa9")
+
+(define-test utf8-string-ref (utf8-string-ref "\xc3\xa9t\xc3\xa9" 1)
+   :expected "t")
+
+(define-test utf8-string-ref (utf8-string-ref "\xc3\xa9t\xc3\xa9" 2)
+   :expected "\xc3\xa9")
+
+(define-test utf8-substring (utf8-substring "\xc3\xa9t\xc3\xa9" 1 3)
+   :expected "t\xc3\xa9")
+
+(define-test utf8-string-append (utf8-string-append "\xc3\xa9" "t\xc3\xa9")
+   :expected "\xc3\xa9t\xc3\xa9")
+
+(define-test utf8-string-append* (utf8-string-append* "\xc3\xa9" "t" "\xc3\xa9")
+   :expected "\xc3\xa9t\xc3\xa9")
+
+(define-test utf8-string-append-fill!
+   (let ((buf (make-string 10 #\-)))
+      (utf8-string-append-fill! buf 1 "\xc3\xa9t\xc3\xa9")
+      (utf8-substring buf 0 4))
+   :expected "-\xc3\xa9t\xc3\xa9")
+
+(define-test utf8-string-append-fill!
+   (let ((buf (make-string 10 #\-)))
+      (utf8-string-append-fill! buf 1 "\xc3\xa9t\xc3\xa9"
+         (utf8-string-index->string-index "\xc3\xa9t\xc3\xa9" 1))
+      (utf8-substring buf 0 4))
+   :expected "-t\xc3\xa9-")
+
+(define-test utf8-string-index->string-index
+   (utf8-string-index->string-index "\xc3\xa9t\xc3\xa9" 2)
+   :expected 3)
+
+(define-test utf8->iso-latin
+   (utf8->iso-latin "\xc3\xa9t\xc3\xa9")
+   :expected "\xe9t\xe9")
+   
+(define-test utf8->iso-latin!
+   (utf8->iso-latin! "\xc3\xa9t\xc3\xa9")
+   :expected "\xe9t\xe9")
+   
+(define-test utf8->iso-latin!
+   (let* ((s "ete")
+          (c (utf8->iso-latin! s)))
+      (eq? s c))
+   :expected #t)
+   
+(define-test utf8->iso-latin-15
+   (utf8->iso-latin-15 "\xc3\xa9t\xc3\xa9")
+   :expected "\xe9t\xe9")
+   
+(define-test utf8->iso-latin-15!
+   (utf8->iso-latin-15! "\xc3\xa9t\xc3\xa9")
+   :expected "\xe9t\xe9")
+   
+(define-test utf8->iso-latin-15!
+   (let* ((s "ete")
+          (c (utf8->iso-latin-15! s)))
+      (eq? s c))
+   :expected #t)
+   
+(define-test utf8->cp1252
+   (utf8->cp1252 "\xc3\xa9t\xc3\xa9")
+   :expected "\xe9t\xe9")
+   
+(define-test utf8->cp1252!
+   (utf8->cp1252!  "\xc3\xa9t\xc3\xa9")
+   :expected "\xe9t\xe9")
+   
+(define-test iso-latin->utf8
+   (iso-latin->utf8 "\xe9t\xe9")
+   :expected "\xc3\xa9t\xc3\xa9")
+   
+(define-test iso-latin->utf8!
+   (iso-latin->utf8! "\xe9t\xe9")
+   :expected "\xc3\xa9t\xc3\xa9")
+   
+(define-test iso-latin-15->utf8
+   (iso-latin-15->utf8 "\xe9t\xe9")
+   :expected "\xc3\xa9t\xc3\xa9")
+   
+(define-test iso-latin-15->utf8!
+   (iso-latin-15->utf8! "\xe9t\xe9")
+   :expected "\xc3\xa9t\xc3\xa9")
+
+(define-test cp1252->utf8
+   (cp1252->utf8 "\xe9t\xe9")
+   :expected "\xc3\xa9t\xc3\xa9")
+   
+(define-test cp1252->utf8!
+   (cp1252->utf8! "\xe9t\xe9")
+   :expected "\xc3\xa9t\xc3\xa9")
+   
 

@@ -61,7 +61,7 @@ Syntax
 
 
 <MImport> --> <MImportInit> | <MImportAll> | <MImportSome>
-<MImportInit> --> ( import <FilePath> )
+<MImportInit> --> ( import <FilePath> ())
 <MImportAll> ( import <FilePath> . <Ident> )
   | ( import :version 5 <FilePath> . <Ident> )
   | ( import :version 4 <FilePath> )

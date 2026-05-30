@@ -479,8 +479,6 @@ As `string-trim-both` but only trims characters at the right of `s`.
 
 Unicode Strings
 ===============
-UTF-i string literal can be read by the standard Bigloo reader using the 
-the syntax: `#u"([^]|\")*"`.
 
 Unicode String Predicates
 -------------------------
@@ -496,6 +494,103 @@ UTF-8 string. Otherwise returns `#f`.
 If the optional argument `strict` is `#t`, half utf16-surrogates are
 rejected otherwise they are accepted. The optional argument `strict`
 defaults to `#f`.
+
+Unicode String Standard Library
+-------------------------------
+
+### string-minimal-charset ###
+Computes the minimal charset capable of representing that string.
+
+### utf8-string-minimal-charset ###
+Computes the minimal charset capable of representing that utf-8 string.
+
+### utf8-char-size ###
+Returns the utf8 encoding size of a 8-bit character.
+
+### utf8-string-length ###
+Returns the number of characters of an UTF-8 string. It raises an error
+if the string is not a well formed UTF-8 string (i.e., it does satisfies
+the `utf8-string?` predicate.
+
+### utf8-string-encode ###
+Returns a copy of `string` where all the illegal UTF-8 prefix are
+replaced with the Unicode Replacement Character `EF BF BD`. The result
+is a well formed UTF-8 string.
+
+### utf8-string-ref ###
+Returns the character (represented as an UTF-8 string) at the position
+`i` in `string`.
+
+### utf8-string-index->string-index ###
+Return the index of the `i`-character of the UTF-8 string `str`.
+
+### utf8-substring ###
+The function `utf8-substring` returns a newly allocated string formed from the
+characters of `string` beginning with index `start` (inclusive) 
+and ending with index `end` (exclusive).
+
+If the argument `string` is not a well formed UTF-8 string an error
+is raised. Otherwise, the result is also a well formed UTF-8 string.
+
+The arguments `start` and `end` must satisfy 
+0 &le; `start` &le; `end` &le; `(utf8-string-length string)`.
+
+### utf8-string-append ###
+Appends two UTF-8 strings.
+
+### utf8-string-append* ###
+Appends many UTF-8 strings.
+
+### utf8-string-append-fill! ###
+Append the left `string` into the `buffer` at position
+`index`. This function handles cases where the last char of the
+concatanated char is a UNICODE remplacement char. The optional argument
+`offset` is the byte offset into `string`.
+
+### utf8->iso-latin ###
+Converts the UTF-8 string `str` into a corresponding 8-bit ones, 
+with the ISO-LATIN-1 encoding.
+
+### utf8->iso-latin! ###
+Converts the UTF-8 string `str` into a corresponding 8-bit ones, 
+with the ISO-LATIN-1 encoding. If `str` requires no conversion, it returns it.
+
+### utf8->iso-latin-15 ###
+Converts the UTF-8 string `str` into a corresponding 8-bit ones, 
+with the ISO-LATIN-15 encoding.
+
+### utf8->iso-latin-15! ###
+Converts the UTF-8 string `str` into a corresponding 8-bit ones, 
+with the ISO-LATIN-15 encoding. If `str` requires no conversion, it returns it.
+
+### utf8->cp1252 ###
+Converts the UTF-8 string `str` into a corresponding 8-bit ones, 
+with the CP1252 encoding.
+
+### utf8->cp1252! ###
+Converts the UTF-8 string `str` into a corresponding 8-bit ones, 
+with the CP1215 encoding. If `str` requires no conversion, it returns it.
+
+### iso-latin->utf8 ###
+Converts the ISO-LATIN-1 8-bit string encoded into UTF-8 string.
+
+### iso-latin->utf8! ###
+Converts the ISO-LATIN-1 8-bit string encoded into UTF-8 string. If
+`str` requires no conversion, it returns it.
+
+### iso-latin-15->utf8 ###
+Converts the ISO-LATIN-15 8-bit string encoded into UTF-8 string.
+
+### iso-latin->utf8! ###
+Converts the ISO-LATIN-15 8-bit string encoded into UTF-8 string.
+If `str` requires no conversion, it returns it.
+
+### cp1252->utf8 ###
+Converts the CP1252 8-bit string encoded into UTF-8 string.
+
+### cp1252->utf8! ###
+Converts the CP1252 8-bit string encoded into UTF-8 string.
+If `str` requires no conversion, it returns it.
 
 
 Characters

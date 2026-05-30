@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/recette/module5.scm             */
+;*    serrano/prgm/project/bigloo/5.0.x/recette/module5.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 17 10:40:09 2025                          */
-;*    Last change :  Sat Mar 14 07:20:04 2026 (serrano)                */
+;*    Last change :  Fri May 29 13:48:48 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 tests                                                    */
@@ -20,7 +20,7 @@
    (import "module5_ex2.scm" (EX2A EX2a))
    (import "module5_ex3.scm" ex3a ex3b)
    (import "module5_ex4.scm" . ex4)
-   (import "module5_ex7.scm")
+   (import "module5_ex7.scm" ())
    (import "module5_ex8.scm" ex8m ex8f)
    (import "module5_ex9.scm" ex9ma (EX9MB ex9mb) ex9f)
    (import "module5_ex10.scm" ex10i)

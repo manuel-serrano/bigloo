@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu May 28 19:56:36 2026 (serrano)                */
+;*    Last change :  Fri May 29 08:18:29 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -203,6 +203,8 @@
 	    (8bits->utf8!::bstring ::bstring ::obj)
 	    (iso-latin->utf8::bstring ::bstring)
 	    (iso-latin->utf8!::bstring ::bstring)
+	    (iso-latin-15->utf8::bstring ::bstring)
+	    (iso-latin-15->utf8!::bstring ::bstring)
 	    (cp1252->utf8::bstring ::bstring)
 	    (cp1252->utf8!::bstring ::bstring)
 
@@ -516,28 +518,65 @@
 ;*---------------------------------------------------------------------*/
 (define 8bits-inv
    '((#xe2
-      (#x80 (#x90 . #\-)
-	    (#x91 . #\-)
-	    (#x92 . #\-)
-	    (#x93 . #\-)
-	    (#x94 . #\-)
-	    (#x95 . #\-)
-	    (#x98 . #\`)
-	    (#x99 . #\')
-	    (#x9a . #\,)
-	    (#x9b . #\`)
-	    (#xa4 . #\.)
-	    (#xa7 . #\.)
-	    (#xb2 . #\')
-	    (#xb3 . #\")
-	    (#xb5 . #\`)
-	    (#xbb . #\")
-	    (#xb8 . #\^)
-	    (#xb9 . #\<)
-	    (#xba . #\>))
-      (#x81 (#x83 . #\*))
-      (#x82 (#x8d . #\()
-	    (#x8e . #\))))))
+        (#x80 (#x90 . #\-)
+           (#x91 . #\-)
+           (#x92 . #\-)
+           (#x93 . #\-)
+           (#x94 . #\-)
+           (#x95 . #\-)
+           (#x98 . #\`)
+           (#x99 . #\')
+           (#x9a . #\,)
+           (#x9b . #\`)
+           (#xa4 . #\.)
+           (#xa7 . #\.)
+           (#xb2 . #\')
+           (#xb3 . #\")
+           (#xb5 . #\`)
+           (#xbb . #\")
+           (#xb8 . #\^)
+           (#xb9 . #\<)
+           (#xba . #\>))
+        (#x81 (#x83 . #\*))
+        (#x82 (#x8d . #\()
+           (#x8e . #\))))))
+
+;*---------------------------------------------------------------------*/
+;*    8bits-latin-15 ...                                               */
+;*---------------------------------------------------------------------*/
+(define 8bits-latin-15
+   '#("\xe2\x82\xac" ;; 0x80
+      ""             ;; 0x81
+      "\xe2\x80\x9a" ;; 0x82
+      "\xc6\x92"     ;; 0x83
+      "\xe2\x80\x9e" ;; 0x84
+      "\xe2\x80\xa6" ;; 0x85
+      "\xe2\x80\xa0" ;; 0x86
+      "\xe2\x80\xa1" ;; 0x87
+      "\xcb\x86"     ;; 0x88
+      "\xe2\x80\xb0" ;; 0x89
+      "\xc5\xa0"     ;; 0x8a
+      "\xe2\x80\xb9" ;; 0x8b
+      "\xc5\x92"     ;; 0x8c
+      ""             ;; 0x8d
+      "\xc5\xbd"     ;; 0x8e
+      ""             ;; 0x8f
+      ""             ;; 0x90
+      "\xe2\x80\x98" ;; 0x91
+      "\xe2\x80\x99" ;; 0x92
+      "\xe2\x80\x9c" ;; 0x93
+      "\xe2\x80\x9d" ;; 0x94
+      "\xe2\x80\xa2" ;; 0x95
+      "\xe2\x80\x93" ;; 0x96
+      "\xe2\x80\x94" ;; 0x97
+      "\xcb\x9c"     ;; 0x98
+      "\xe2\x84\xa2" ;; 0x99
+      "\xc5\xa1"     ;; 0x9a
+      "\xe2\x80\xba" ;; 0x9b
+      "\xc5\x93"     ;; 0x9c
+      ""             ;; 0x9d
+      "\xc5\xbe"     ;; 0x9e
+      "\xc5\xb8"))
 
 (define 8bits-inv-latin-15
    '((#xe2
@@ -574,7 +613,7 @@
 	(#xbe . #a184) ;xb8 z with caron
 	(#xbd . #a180) ;xb4 Z with caron
 	)))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    cp1252 ...                                                       */
 ;*---------------------------------------------------------------------*/
@@ -1207,7 +1246,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8-char-size ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (utf8-char-size c)
+(define-inline (utf8-char-size::long c::char)
    (vector-ref-ur '#(1 1 1 1 1 1 1 1 2 2 2 2 2 2 3 4)
       (bit-rsh (char->integer c) 4)))
 
@@ -1277,7 +1316,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Return the number of characters of an UTF8 string.               */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string-length str)
+(define (utf8-string-length::long str::bstring)
    (let ((len (string-length str)))
       (let loop ((r 0)
 		 (l 0))
@@ -1300,7 +1339,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-index->string-index ...                              */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string-index->string-index str i)
+(define (utf8-string-index->string-index::long str::bstring i::long)
    (cond
       ((<fx i 0)
        -1)
@@ -1319,7 +1358,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-index->utf8-string-index ...                              */
 ;*---------------------------------------------------------------------*/
-(define (string-index->utf8-string-index str i)
+(define (string-index->utf8-string-index::long str::bstring i::long)
    (cond
       ((<fx i 0)
        -1)
@@ -1400,11 +1439,11 @@
 ;*    -------------------------------------------------------------    */
 ;*    This function must be used only in left to right string append.  */
 ;*    -------------------------------------------------------------    */
-;*    Append the LEFT and RIGHT strings into the BUFFER at position    */
+;*    Append the LEFT string into the BUFFER at position               */
 ;*    INDEX. This function handles cases where the last char of the    */
 ;*    concatanated char is a UNICODE remplacement char.                */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string-append-fill! buffer index str #!optional (offset 0))
+(define (utf8-string-append-fill!::long buffer::bstring index::long str::bstring #!optional (offset 0))
    (let ((len (string-length str)))
       (cond
 	 ((and (>=fx index 4)
@@ -1426,7 +1465,7 @@
 ;*    This function handles cases where the last char of the           */
 ;*    concatanated char is a UNICODE remplacement char.                */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string-append left right)
+(define (utf8-string-append::bstring left::bstring right::bstring)
    (let* ((llen (string-length left))
 	  (rlen (string-length right))
 	  (buffer ($make-string/wo-fill (+fx llen rlen))))
@@ -1439,7 +1478,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Append N UTF8 strings.                                           */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string-append* . strings)
+(define (utf8-string-append*::bstring . strings)
    (let ((len 0))
       (for-each (lambda (str)
 		   (set! len (+fx len (string-length str))))
@@ -1584,13 +1623,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8->iso-latin ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (utf8->iso-latin str)
+(define (utf8->iso-latin::bstring str::bstring)
    (utf8->8bits str 8bits-inv))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8->iso-latin! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (utf8->iso-latin! str)
+(define (utf8->iso-latin!::bstring str::bstring)
    (utf8->8bits! str 8bits-inv))
 
 ;*---------------------------------------------------------------------*/
@@ -1698,25 +1737,37 @@
 ;*---------------------------------------------------------------------*/
 ;*    iso-latin->utf8 ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (iso-latin->utf8 str)
+(define (iso-latin->utf8::bstring str::bstring)
    (8bits->utf8 str #f))
    
 ;*---------------------------------------------------------------------*/
 ;*    iso-latin->utf8! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (iso-latin->utf8! str)
+(define (iso-latin->utf8!::bstring str::bstring)
    (8bits->utf8! str #f))
+
+;*---------------------------------------------------------------------*/
+;*    iso-latin-15->utf8 ...                                           */
+;*---------------------------------------------------------------------*/
+(define (iso-latin-15->utf8::bstring str::bstring)
+   (8bits->utf8 str 8bits-latin-15))
+   
+;*---------------------------------------------------------------------*/
+;*    iso-latin-15->utf8! ...                                          */
+;*---------------------------------------------------------------------*/
+(define (iso-latin-15->utf8!::bstring str::bstring)
+   (8bits->utf8! str 8bits-latin-15))
 
 ;*---------------------------------------------------------------------*/
 ;*    cp1252->utf8 ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (cp1252->utf8 str)
+(define (cp1252->utf8::bstring str::bstring)
    (8bits->utf8 str cp1252))
    
 ;*---------------------------------------------------------------------*/
 ;*    cp1252->utf8! ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (cp1252->utf8! str)
+(define (cp1252->utf8!::bstring str::bstring)
    (8bits->utf8! str cp1252))
 
 ;*---------------------------------------------------------------------*/
@@ -1725,7 +1776,7 @@
 ;*    Computes the minimal charset for that string                     */
 ;*    return value: ascii, latin1                                      */
 ;*---------------------------------------------------------------------*/
-(define (string-minimal-charset str)
+(define (string-minimal-charset::symbol str::bstring)
    (let loop ((i (-fx (string-length str) 1)))
       (cond
 	 ((=fx i -1) 'ascii)
@@ -1738,7 +1789,7 @@
 ;*    Computes the minimal charset for that utf8- string               */
 ;*    return value: ascii, latin1, utf8                                */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string-minimal-charset str)
+(define (utf8-string-minimal-charset::symbol str::bstring)
    ;; skip the last char as it can only be 7bits wide
    (let ((len (-fx (string-length str) 1)))
       (let loop ((i 0)

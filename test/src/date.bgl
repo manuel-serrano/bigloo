@@ -1,0 +1,349 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/date.bgl              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Sat May 30 06:36:23 2026                          */
+;*    Last change :  Sat May 30 07:00:21 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing date functions                                           */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    dates                                                            */
+;*---------------------------------------------------------------------*/
+(module dates
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "date" tests))
+      (test-all verbose "date")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test date? (date? (pwd))
+   :expected #f)
+(define-test date? (date? (current-date))
+   :expected #t)
+(define-test date? (date? (seconds->date (current-seconds)))
+   :expected #t)
+
+(define-test seconds->date
+   (let* ((s1 (current-seconds))
+	  (d1 (seconds->date s1)))
+      (= (date->seconds d1) s1))
+   :expected #t)
+(define-test seconds->date
+   (let* ((d1 (current-date))
+	  (s1 (date->seconds d1)))
+      (equal? (seconds->date s1) d1)))
+
+(define-test date->seconds (> (date->seconds (current-date)) 0)
+   :expected #t)
+(define-test date->string (string? (date->string (current-date)))
+   :expected #t)
+(define-test date-day
+   (date-day (make-date :sec 1 :min 1 :hour 1
+                :day 19 :month 2 :year 2000))
+   :expected 19)
+(define-test date-day
+   (date-day (make-date :sec 1 :min 1 :hour 1
+                :day 31 :month 5 :year 1999))
+   :expected 31)
+(define-test date-day
+   (date-day
+      (seconds->date
+         (date->seconds (make-date :sec 1 :min 1 :hour 1
+                           :day 30 :month 5 :year 1998))))
+   :expected 30)
+(define-test date-day
+   (date-month
+      (seconds->date
+         (date->seconds (make-date :sec 1 :min 1 :hour 1
+                           :day 30 :month 5 :year 1998))))
+   :expected 5)
+(define-test date-day
+   (date-day
+      (seconds->date
+         (date->seconds (make-date :sec 1 :min 1 :hour 1
+                           :day 31 :month 5 :year 1971))))
+   :expected 31)
+(define-test date-week-day
+   (date-week-day (make-date :sec 1 :min 1 :hour 1
+                     :day 2 :month 2 :year 2003))
+   :expected 1)
+(define-test date-week-day
+   (date-week-day (make-date :sec 1 :min 1 :hour 1
+                     :day 3 :month 2 :year 2003))
+   :expected 2)
+(define-test date-week-day
+   (date-week-day (make-date :sec 1 :min 1 :hour 1
+                     :day 4 :month 2 :year 2003))
+   :expected 3)
+(define-test date-week-day
+   (date-week-day (make-date :sec 1 :min 1 :hour 1
+                     :day 5 :month  2 :year 2003))
+   :expected 4)
+(define-test date-week-day
+   (date-week-day (make-date :sec 1 :min 1 :hour 1
+                     :day 6 :month  2 :year 2003))
+   :expected 5)
+(define-test date-week-day
+   (date-week-day (make-date :sec 1 :min 1 :hour 1
+                     :day 7 :month  2 :year 2003))
+   :expected 6)
+(define-test date-week-day
+   (date-week-day (make-date :sec 1 :min 1 :hour 1
+                     :day 8 :month  2 :year 2003))
+   :expected 7)
+(define-test date-month
+   (date-month (make-date :sec 1 :min 1 :hour 1
+                  :day 17 :month  5 :year 1980))
+   :expected 5)
+(define-test date-year
+   (date-year (make-date :sec 1 :min 1 :hour 1
+                 :day 17 :month  5 :year 1981))
+   :expected 1981)
+(define-test leap-year? (leap-year? 1966)
+   :expected #f)
+(define-test leap-year? (leap-year? 1968)
+   :expected #t)
+(define-test leap-year? (leap-year? 2000)
+   :expected #t)
+(define-test leap-year? (leap-year? 2100)
+   :expected #f)
+(define-test date-hour
+   (date-hour (make-date :sec 0 :min 0 :hour 14
+                 :day 6 :month 1 :year 2003))
+   :expected 14)
+(define-test date-hour
+   (date-hour (make-date :sec 0 :min 0 :hour 14
+                 :day 6 :month 7 :year 2003))
+   :expected 14)
+(define-test date-hour
+   (date-hour (make-date :sec 0 :min 0 :hour 14
+                 :day 6 :month 7 :year 2003))
+   :expected 14)
+(define-test date-hour
+   (date-hour (make-date :sec 0 :min 0 :hour 23
+                 :day 6 :month 7 :year 2003))
+   :expected 23)
+(define-test date-day
+   (date-day (make-date :sec 0 :min 30 :hour 23
+                :day 6 :month 7 :year 2003))
+   :expected 6)
+
+(define-test date->seconds
+   (let ((d1 (date->seconds (make-date :sec 0 :min 30 :hour 23
+                               :day 6 :month 7 :year 2003))))
+      (= (date->seconds (seconds->date d1)) d1))
+   :expected #t)
+(define-test data->seconds
+   (let ((d1 (date->seconds (make-date :sec 0 :min 30 :hour 23
+                               :day 6 :month 1 :year 2003))))
+      (= (date->seconds (seconds->date d1)) d1))
+   :expected #t)
+
+(define-test date-day
+   (date-day
+      (seconds->date
+         (+elong
+            (date->seconds (make-date :sec 1 :min 1 :hour 1
+                              :day 16 :month  5 :year 1996))
+            (day-seconds))))
+   :expected 17)
+(define-test date-month
+   (date-month
+      (seconds->date
+         (+elong
+            (date->seconds (make-date :sec 1 :min 1 :hour 1
+                              :day 31 :month  5 :year 1996))
+            (day-seconds))))
+   :expected 6)
+(define-test date-day
+   (date-day
+      (seconds->date
+         (+elong
+            (date->seconds (make-date :sec 1 :min 1 :hour 1
+                              :day 31 :month  5 :year 1996))
+            (day-seconds))))
+   :expected 1)
+(define-test date-day
+   (date-day
+      (seconds->date
+         (+elong
+            (date->seconds (make-date :sec 1 :min 1 :hour 1
+                              :day 17 :month  5 :year 1996))
+            (*elong #e31 (day-seconds)))))
+   :expected 17)
+(define-test date-month
+   (date-month
+      (seconds->date
+         (+elong
+            (date->seconds (make-date :sec 1 :min 1 :hour 1
+                              :day 17 :month  5 :year 1996))
+            (*elong #e31 (day-seconds)))))
+   :expected 6)
+(define-test date-day
+   (date-day
+      (seconds->date
+         (+elong
+            (date->seconds (make-date :sec 1 :min 1 :hour 1
+                              :day 31 :month  5 :year 1996))
+            #e0)))
+   :expected 31)
+(define-test date-day
+   (date-day
+      (seconds->date
+         (-elong
+            (date->seconds
+               (make-date :sec 1 :min 1 :hour 1
+                  :day 18 :month  5 :year 1996))
+            (day-seconds))))
+   :expected 17)
+(define-test date->seconds
+   (=elong (date->seconds
+              (make-date :sec 1 :min 1 :hour 1
+                 :day 20 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 20 :month 6 :year 1996)))
+   :expected #t)
+(define-test date->seconds
+   (=elong (date->seconds
+              (make-date :sec 1 :min 1 :hour 1
+                 :day 20 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 19 :month 6 :year 1996)))
+   :expected #f)
+(define-test date->seconds
+   (<elong (date->seconds
+              (make-date :sec 1 :min 1 :hour 1
+                 :day 18 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 19 :month 6 :year 1996)))
+   :expected #t)
+(define-test date->seconds
+   (<elong (date->seconds
+              (make-date :sec 1 :min 1 :hour 1
+                 :day 20 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 19 :month 6 :year 1996)))
+   :expected #f)
+(define-test dae->seconds
+   (<=elong (date->seconds
+               (make-date :sec 1 :min 1 :hour 1
+                  :day 18 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 19 :month 6 :year 1996)))
+   :expected #t)
+(define-test date->seconds
+   (<=elong (date->seconds
+               (make-date :sec 1 :min 1 :hour 1
+                  :day 18 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 18 :month 6 :year 1996)))
+   :expected #t)
+(define-test date->seconds
+   (<elong (date->seconds
+              (make-date :sec 1 :min 1 :hour 1
+                 :day 20 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 19 :month 6 :year 1996)))
+   :expected #f)
+(define-test date->seconds
+   (>elong (date->seconds
+              (make-date :sec 1 :min 1 :hour 1
+                 :day 18 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 19 :month 6 :year 1996)))
+   :expected #f)
+(define-test date->seconds
+   (>elong (date->seconds
+              (make-date :sec 1 :min 1 :hour 1
+                 :day 20 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 19 :month 6 :year 1996)))
+   :expected #t)
+(define-test date->seconds
+   (>=elong (date->seconds
+               (make-date :sec 1 :min 1 :hour 1
+                  :day 18 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 19 :month 6 :year 1996)))
+   :expected #f)
+(define-test date->seconds
+   (>=elong (date->seconds
+               (make-date :sec 1 :min 1 :hour 1
+                  :day 18 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 18 :month 6 :year 1996)))
+   :expected #t)
+(define-test date->seconds
+   (>elong (date->seconds
+              (make-date :sec 1 :min 1 :hour 1
+                 :day 20 :month 6 :year 1996))
+      (date->seconds
+         (make-date :sec 1 :min 1 :hour 1
+            :day 19 :month 6 :year 1996)))
+   :expected #t)
+
+(define-test date->utc-string (string? (date->utc-string (current-date)))
+   :expected #t)
+
+(define-test rfc2822-date->date
+   (rfc2822-date->date "Wed, 22 Oct 2008 17:04:22 +0200")
+   :expected
+   (make-date :year 2008 :month 10 :day 22
+      :hour 17 :min 04 :sec 22 :timezone 7200))
+
+(define-test nanoseconds
+      (let* ((nsec (current-nanoseconds))
+	     (usec (/llong nsec #l1000))
+	     (sec (/llong usec #l1000000)))
+	 (=llong sec (/llong nsec (*llong #l1000000 #l1000))))
+      :expected #t)
+(define-test nanoseconds
+   (let* ((sec (current-seconds))
+          (d (nanoseconds->date
+                (+llong (*llong (elong->llong sec) #l1000000000) #l1))))
+      (=llong (date-nanosecond d) #l1))
+   :expected #t)
+(define-test nanoseconds
+      (let* ((d (make-date :year 2000 :sec 14 :nsec #l23)))
+	 (and (=llong (date-nanosecond d) #l23)
+	      (=fx (date-second d) 14)))
+      :expected #t)
+(define-test nanoseconds (date? (nanoseconds->date (current-nanoseconds)))
+   :expected #t)
+(define-test nanoseconds
+   (let* ((s1 (current-nanoseconds))
+	  (d1 (nanoseconds->date s1)))
+      (= (date->nanoseconds d1) s1)
+      :expected #t))
+
+(define-test nanoseconds
+   (let* ((d1 (current-date))
+	  (s1 (date->nanoseconds d1)))
+      (equal? (nanoseconds->date s1) d1))
+   :expected #t)
+

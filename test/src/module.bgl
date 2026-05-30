@@ -1,9 +1,9 @@
-;*=====================================================================*/
+ ;*=====================================================================*/
 ;*    serrano/prgm/project/bigloo/5.0.x/test/src/module.bgl            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 17 10:40:09 2025                          */
-;*    Last change :  Sat May 16 08:49:58 2026 (serrano)                */
+;*    Last change :  Fri May 29 12:42:32 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 tests                                                    */
@@ -19,7 +19,7 @@
    (import "modules/module5_ex2.bgl" (EX2A EX2a) ex2c)
    (import "modules/module5_ex3.bgl" ex3a ex3b)
    (import "modules/module5_ex4.bgl" . ex4)
-   (import "modules/module5_ex7.bgl")
+   (import "modules/module5_ex7.bgl" ())
    (import "modules/module5_ex8.bgl" ex8m ex8f)
    (import "modules/module5_ex9.bgl" ex9ma (EX9MB ex9mb) ex9f)
    (import "modules/module5_ex10.bgl" ex10i)
@@ -31,7 +31,7 @@
    (import "modules/module5_ex16.bgl" (ex16a ex5a))
    (import "modules/module5_ex17.bgl" . ex17)
    (import "modules/module5_ex18.bgl" ex18 ex18-shadow)
-   (import "modules/module5_ex19.bgl")
+   (import "modules/module5_ex19.bgl" ())
    (import "modules/module5_ex20.bgl" . libs)
    (export test))
 
