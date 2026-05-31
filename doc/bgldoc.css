@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Sat May 30 08:01:59 2026 (serrano)                */
+/*    Last change :  Sun May 31 09:19:11 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -235,19 +235,6 @@ ul.menu > li > a {
     display: inline-block;
 }
 
-ul.menu > li.navbutton > a.submenu:after {
-    content: "\25be";
-    font-weight: bold;
-    margin-left: 5px;
-}
-
-ul.menu > li.navbutton[open="true"] > a.submenu:after {
-    content: "\25b4";
-    font-weight: bold;
-    margin-left: 5px;
-    color: var(--hoverColor);
-}
-
 div.nav-menu {
     position: fixed;
     top: calc(var(--navHeight) - 0ex);
@@ -265,7 +252,20 @@ div.nav-menu {
     visibility: hidden;
 }
 
-li[open="true"] > div.nav-menu {
+ul.menu > li.navbutton > a.submenu:after {
+    content: "\25be";
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+body[open="lang"] ul.menu > li.navbutton.lang > a.submenu:after,
+body[open="libs"] ul.menu > li.navbutton.libs > a.submenu:after {
+    content: "\25b4";
+    color: var(--hoverColor);
+}
+
+body[open="lang"] li.lang > div.nav-menu,
+body[open="libs"] li.libs > div.nav-menu {
     visibility: visible;
     z-index: 2;
 }

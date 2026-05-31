@@ -43,7 +43,7 @@ Updates the date to switch to an UTC representation. Returns the modified
 date object.
 
 ### current-date ###
-Returns a `date` object representing the current date.
+Returns the current date as a `date` object.
 
 ### current-seconds ###
 Returns an `elong` integer representing the current epoch (i.e., the
@@ -78,120 +78,112 @@ Converts a number of milliseconds since eopch into a `date` object.
 Converts a number of nanoseconds since eopch into a `date` object.
 
 ### seconds->gmtdate ###
+<!-- [:@C] -->
 Converts a number of seconds since eopch into a gmt `date` object.
 
 ### milliseconds->gmtdate ###
+<!-- [:@C] -->
 Converts a number of milliseconds since eopch into a gmt `date` object.
 
-@deffnx {bigloo procedure} nanoeconds->date
-@deffnx {bigloo procedure} milliseconds->date
-@end deffn
+### date-second ###
+Returns the number of seconds of a date, in the range `0`...`59`.
 
-@deffn {bigloo procedure} date->string date
-@deffnx {bigloo procedure} date->utc-string date
-@deffnx {bigloo procedure} seconds->string elong
-@deffnx {bigloo procedure} seconds->utc-string elong
-Construct a textual representation of the date passed in argument
-@end deffn
+### date-millisecond ###
+Returns the number of milliseconds of a date.
 
-@deffn {bigloo procedure} date-second date
-Returns the number of seconds of a date, in the range `0...59}.
-@end deffn
+### date-nanosecond ###
+Returns the number of nanoseconds of a date.
 
-@deffn {bigloo procedure} date-nanosecond date
-@deffnx {bigloo procedure} date-millisecond date
-Returns the number of nano/milli seconds of a date (to be added to 
-`date-second}).
-@end deffn
+### date-minute ###
+Returns the minute of a date, in the range `0...59`.
 
-@deffn {bigloo procedure} date-minute date
-Returns the minute of a date, in the range `0...59}.
-@end deffn
+### date-hour ###
+Returns the hour of a date, in the range `0...23`.
 
-@deffn {bigloo procedure} date-hour date
-Returns the hour of a date, in the range `0...23}.
-@end deffn
+### date-day ###
+Returns the day of a date, in the range `1...31`.
 
-@deffn {bigloo procedure} date-day date
-Returns the day of a date, in the range `1...31}.
-@end deffn
+### date-week-day ###
+Returns the week day of a date, in the range `1...71.
 
-@deffn {bigloo procedure} date-wday date
-@deffnx {bigloo procedure} date-week-day date
-Returns the week day of a date, in the range `1...7}.
-@end deffn
+### date-year-day ###
+Returns the year day of a date, in the range `1...366`.
 
-@deffn {bigloo procedure} date-yday date
-@deffnx {bigloo procedure} date-year-day date
-Returns the year day of a date, in the range `1...366}.
-@end deffn
+### date-month ###
+Returns the month of a date, in the range `1...12`.
 
-@deffn {bigloo procedure} date-month date
-Returns the month of a date, in the range `1...12}.
-@end deffn
-
-@deffn {bigloo procedure} date-year date
+### date-year ###
 Returns the year of a date.
-@end deffn
 
-@deffn {bigloo procedure} date-timezone date
+### date-timezone ###
 Returns the timezone (in seconds) of a date.
-@end deffn
 
-@deffn {bigloo procedure} date-is-dst date
-Returns `-1} if the information is not available, `0} is the
-date does not contain daylight saving adjustment, `1} if it
+### date-is-dst ###
+Returns `-1` if the information is not available, `0` is the
+date does not contain daylight saving adjustment, `1` if it
 contains a daylight saving adjustment.
-@end deffn
 
-@deffn {bigloo procedure} integer->second
+### integer->second ###
 Converts a Bigloo fixnum integer into a second number.
-@end deffn
 
-@deffn {bigloo procedure} day-seconds
+### day-seconds ###
 Returns the number of seconds contained in one day.
-@end deffn
 
-@deffn {bigloo procedure} day-name int
-@deffnx {bigloo procedure} day-aname int
-Return the name and the abbreviated name of a week day.
-@end deffn
+### day-name ###
+Return the name of a week day.
 
-@deffn {bigloo procedure} month-name int
-@deffnx {bigloo procedure} month-aname int
-Return the name and the abbreviated name of a month.
-@end deffn
+### day-aname ###
+Return the abbreviated name of a week day.
 
-@deffn {bigloo procedure} date-month-length date
-Return the length of the month of `date}.
-@end deffn
+### month-name ###
+Return the name of a month.
 
-@deffn {bigloo procedure} leap-year? int
-Returns `#t} if and only if the year `int} is a leap year. 
-Returns `#f} otherwise.
-@end deffn
+### month-aname ###
+Return the abbreviated name of a month.
 
-@deffn {bigloo procedure} rfc2822-date->date string
-@deffnx {bigloo procedure} rfc2822-parse-date input-port
-Parses RFC2822 string representing a date. These functions produce
-a Bigloo date object.
-@end deffn
+### date-month-length ###
+Return the length of the month of `date`.
 
-@deffn {bigloo procedure} date->rfc2822-date date
+### leap-year? ###
+Returns `#t` if and only if the year is a leap year. 
+Returns `#f` otherwise.
+
+String Conversions
+------------------
+
+### date ###
+Returns the current date as a string.
+
+### date->string ###
+Returns a string readable interpreration of the date.
+
+### date->utc-string ###
+Returns a string readable interpreration of the date.
+
+### seconds->string ###
+Constructs a textual representation of the date expressed in seconds.
+
+### seconds->utc-string ###
+Constructs a textual representation of the date passed in utc seconds.
+
+### rfc2822-parse-date ###
+Parses the input-port to produce a date object from a RFC2822 
+textual representation.
+
+### rfc2822-date->date ###
+Converts the RFC2822 string representing a date.
+
+### date->rfc2822-date ###
 Converts a Bigloo date into a string representation compliant with the RFC2822
 format.
-@end deffn
 
-@deffn {bigloo procedure} iso8601-date->date string
-@deffnx {bigloo procedure} iso8601-parse-date input-port
-Parses ISO8601 string representing a date. These functions produce
-a Bigloo date object.
-@end deffn
+### iso8601-date->date ###
+Converts the ISO8601 string representing a date. 
 
-@deffn {bigloo procedure} date->iso8601-date date
+### iso8601-parse-date ###
+Parses the input-port to produce a date object from an ISO8601 textual
+representation.
+
+### date->iso8601-date ###
 Converts a Bigloo date into a string representation compliant with the iso8601
 format.
-@end deffn
-
-
-

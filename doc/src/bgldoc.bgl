@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sat May 30 08:18:06 2026 (serrano)                */
+;*    Last change :  Sun May 31 09:14:58 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -36,7 +36,7 @@
 ;*---------------------------------------------------------------------*/
 (define (navbutton-attrs clazz::bstring)
    `((class . ,(string-append "navbutton " clazz))
-     (onclick . "this.setAttribute('open', this.getAttribute('open') === 'true' ? 'false' : 'true')")))
+     (onclick . ,(format "body.setAttribute('open', body.getAttribute('open') === '~a' ? 'none' : '~a')" clazz clazz))))
 
 ;*---------------------------------------------------------------------*/
 ;*    all-menus ...                                                    */
@@ -44,7 +44,10 @@
 (define all-menus
    '(("home" . "index.html")
      ("lang" . "module5.html")
-     ("libs" . "bool.html")))
+     ("libs" . "bool.html")
+     ("backends" . "backend.html")
+     ("dev" . "dev.html")
+     ("index" . "index.html")))
 
 ;*---------------------------------------------------------------------*/
 ;*    libs-chapters ...                                                */
@@ -54,9 +57,10 @@
      ("dates" . "date.html")
      ("hash" . "hash.html")
      ("i/o" . "io.html")
-     ("numbers" . "number.html")
+     ("integers" . "int.html")
      ("pairs and lists" . "pair.html")
      ("ports" . "port.html")
+     ("reals" . "real.html")
      ("strings" . "string.html")
      ("threads" . "thread.html")
      ("vectors" . "vector.html")))
@@ -113,13 +117,13 @@
    (define main-title (xml-element 'span '((class . "main")) '("bigloo")))
 
    (define (menubar title::pair-nil
-              #!key (home "") (lang "") (libs "") objects)
+              #!key (home "") (lang "") (libs "") backend dev)
       (xml-element 'nav '((class . "menu"))
          (list (xml-element 'div '((class . "menu"))
                   (list
                      (xml-element 'div '((class . "title"))
                         (cons main-title title))
-                     (xml-element 'ul `((class . "menu")
+                     (xml-element 'ul `((class . ,(format "menu ~a" active-navbutton))
                                         (data-active . ,active-navbutton))
                         (list
                            (xml-element 'li (navbutton-attrs "home")
@@ -128,19 +132,22 @@
                                                    (href . ,(find-menu-href "home")))
                                     (list (xml-element 'span '() '("Home"))))
                                  home))
-                           (xml-element 'li (navbutton-attrs "Lang")
+                           (xml-element 'li (navbutton-attrs "lang")
                               (list
                                  (xml-element 'a '((class . "lang submenu"))
                                     (list (xml-element 'span '() '("Lang"))))
                                  lang))
-                           (xml-element 'li (navbutton-attrs "Libs")
+                           (xml-element 'li (navbutton-attrs "libs")
                               (list
                                  (xml-element 'a '((class . "libs submenu"))
                                     (list (xml-element 'span '() '("Libs"))))
                                  libs))
-                           (xml-element 'li (navbutton-attrs "Objects")
+                           (xml-element 'li (navbutton-attrs "backends")
                               (list (xml-element 'a '((class . "objects submenu"))
-                                       (list (xml-element 'span '() '("Objects"))))))))
+                                       (list (xml-element 'span '() '("Backends"))))))
+                           (xml-element 'li (navbutton-attrs "dev")
+                              (list (xml-element 'a '((class . "objects submenu"))
+                                       (list (xml-element 'span '() '("Dev"))))))))
                      (xml-element 'span '((class . "version"))
                         (list
                            (xml-element 'text '()
@@ -167,7 +174,7 @@
                                       (xml-element 'span '((class . "sep"))
                                          '("/"))
                                       (find-chapter-title source))
-                             :libs (xml-chapter-toc 'stdlib libs-chapters)
+                             :libs (xml-chapter-toc 'libs libs-chapters)
                              :lang (xml-chapter-toc 'modules lang-chapters))
 			  (xml-element 'div '((class . "chapter"))
 			     (list
@@ -182,7 +189,7 @@
                     (list
                        (call-with-input-file "head.html" html-parse)
                        (menubar '()
-                          :libs (xml-chapter-toc 'stdlib libs-chapters)
+                          :libs (xml-chapter-toc 'libs libs-chapters)
                           :lang (xml-chapter-toc 'modules lang-chapters))
                        (xml-element 'div '((class . "home"))
                           (list

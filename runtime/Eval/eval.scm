@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/eval.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/eval.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sat Mar 28 14:55:40 2026 (serrano)                */
+;*    Last change :  Sun May 31 09:12:26 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -35,7 +35,8 @@
 	    __tvector
 	    __bexit
 	    __bignum
-	    __os
+	    __date
+            __os
 	    __param
 	    __thread
 	    __bit

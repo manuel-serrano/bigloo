@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Mon May 18 10:09:25 2026 (serrano)                */
+;*    Last change :  Sun May 31 08:04:47 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -67,7 +67,6 @@
 	    ($getenv-all::pair () "bgl_getenv_all")
 	    (c-setenv::int (::string ::string) "bgl_setenv")
 	    (macro c-system::int  (::string) "system")
-	    (c-date::string () "c_date")
 	    (macro c-chdir::bool (::string) "chdir")
 	    (macro $getcwd::string (::string ::int) "(char *)(long)getcwd")
 	    (macro $chdir::int (::string) "chdir")
@@ -189,8 +188,6 @@
 		  "bgl_setenv")
 	       (method static c-system::int  (::string)
 		  "system")
-	       (method static c-date::string ()
-		  "c_date")
 	       (method static c-chdir::bool (::string)
 		  "chdir")
 	       (method static $getcwd::string (::string ::int)
@@ -251,7 +248,6 @@
 	    
 	    (getenv #!optional name)
 	    (putenv ::string ::string)
-	    (date::string)
 	    (inline chdir::bool string::string)
 	    (system . strings)
 	    (system->string . strings)
@@ -438,16 +434,6 @@
       (unwind-protect
 	 (read-string p)
 	 (close-input-port p))))
-
-;*---------------------------------------------------------------------*/
-;*    date ...                                                         */
-;*---------------------------------------------------------------------*/
-(define (date)
-   (let* ((dt (c-date))
-	  (len (string-length dt)))
-      (if (char=? (string-ref dt (-fx len 1)) #\Newline)
-	  (substring dt 0 (-fx len 1))
-	  dt)))
 
 ;*---------------------------------------------------------------------*/
 ;*    chdir ...                                                        */

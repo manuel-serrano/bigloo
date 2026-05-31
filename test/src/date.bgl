@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 30 06:36:23 2026                          */
-;*    Last change :  Sat May 30 07:45:59 2026 (serrano)                */
+;*    Last change :  Sun May 31 06:39:52 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing date functions                                           */
@@ -69,6 +69,10 @@
 (define-test current-date (>= (date-year (current-date)) 1970)
    :expected #t)
 
+(define-test date
+   (> (string-length (date)) 0)
+   :expected #t)
+
 (define-test current-seconds (>=elong (current-seconds) #e0)
    :expected #t)
 
@@ -104,12 +108,16 @@
 (define-test seconds->gmtdate
    (let* ((d1 (date->gmtdate! (current-date)))
 	  (s1 (date->seconds d1)))
-      (equal? (seconds->gmtdate s1) d1)))
+      (equal? (seconds->gmtdate s1) d1))
+   :cond-expand bigloo-c
+   :expected #t)
 
 (define-test milliseconds->gmtdate
    (let* ((d1 (date->gmtdate! (current-date)))
 	  (s1 (date->milliseconds d1)))
-      (equal? (milliseconds->gmtdate s1) d1)))
+      (equal? (milliseconds->gmtdate s1) d1))
+   :cond-expand bigloo-c
+   :expected #t)
 
 (define-test date->seconds (>elong (date->seconds (current-date)) #e0)
    :expected #t)
@@ -402,4 +410,127 @@
 	  (s1 (date->nanoseconds d1)))
       (equal? (nanoseconds->date s1) d1))
    :expected #t)
+
+(define-test seconds->string
+   (seconds->string #e0)
+   :expected "Thu Jan  1 01:00:00 1970")
+
+(define-test seconds->utc-string
+   (seconds->string #e1)
+   :expected "Thu Jan  1 01:00:01 1970")
+
+(define-test date-second
+   (date-second (make-date))
+   :expected 0)
+
+(define-test date-second
+   (date-second (make-date :sec 10 :hour 2 :min 3))
+   :expected 10)
+
+(define-test date-minute
+   (date-second (make-date))
+   :expected 0)
+
+(define-test date-minute
+   (date-minute (make-date :sec 10 :hour 2 :min 3))
+   :expected 3)
+
+(define-test date-millisecond
+   (date-millisecond (make-date))
+   :expected 0)
+
+(define-test date-millisecond
+   (date-millisecond (make-date :nsec #l100000000 :hour 2 :min 3))
+   :expected 100)
+
+(define-test date-nanosecond
+   (date-nanosecond (make-date))
+   :expected 0)
+
+(define-test date-nanosecond
+   (date-nanosecond (make-date :nsec #l10 :hour 2 :min 3))
+   :expected #l10)
+
+(define-test date-year-day
+   (date-year-day (make-date))
+   :expected 1)
+
+(define-test date-year-day
+   (date-year-day (make-date :sec 10 :hour 2 :day 1 :month 2))
+   :expected 32)
+
+(define-test date-timezone
+   (date-timezone (make-date :timezone 0))
+   :expected 0)
+
+(define-test date-timezone
+   (date-timezone (make-date :sec 10 :hour 2 :day 1 :month 2 :timezone 3600))
+   :expected 3600)
+
+(define-test date-is-dst
+   (date-is-dst (make-date :sec 10 :hour 2 :day 1 :month 8 :year 2020))
+   :expected 1)
+
+(define-test date-is-dst
+   (date-is-dst (make-date :sec 10 :hour 2 :day 1 :month 2 :year 2020))
+   :expected 0)
+
+(define-test integer->second
+   (typeof (integer->second 39483))
+   :expected "elong")
+
+(define-test day-seconds
+   (day-seconds)
+   :expected (* 24 60 60))
+
+(define-test day-name
+   (day-name 1)
+   :expected "Sunday")
+
+(define-test day-aname
+   (day-aname 3)
+   :expected "Tue")
+
+(define-test month-name
+   (month-name 1)
+   :expected "January")
+
+(define-test month-aname
+   (month-aname 3)
+   :expected "Mar")
+
+(define-test date-month-length
+   (date-month-length (make-date :year 2001 :month 2))
+   :expected 28)
+
+(define-test date-month-length
+   (date-month-length (make-date :year 2004 :month 2))
+   :expected 29)
+
+(define-test date->rfc2822-date
+   (date->rfc2822-date (make-date :month 3 :day 5 :year 2020 :timezone 0))
+   :expected "Thu, 5 Mar 2020 00:00:00 GMT")
+
+(define-test rfc2822-parse-date
+   (let ((d (current-date)))
+      (call-with-input-string (date->rfc2822-date d)
+         (lambda (ip)
+            (equal? d (rfc2822-parse-date ip)))))
+   :expected #t)
+
+(define-test iso8601-date->date
+   (iso8601-date->date "1981-03-01T10:00:00Z")
+   :expected (make-date :hour 10 :timezone 0 :year 1981 :month 3))
+
+(define-test date->iso8601-date
+   (date->iso8601-date (make-date :month 3 :day 5 :year 2015 :timezone 0))
+   :expected "2015-03-05T00:00:00Z")
+
+(define-test iso8601-parse-date
+   (let ((d (current-date)))
+      (call-with-input-string (date->iso8601-date d)
+         (lambda (ip) (equal? d (iso8601-parse-date ip)))))
+   :expected #t)
+
+
 

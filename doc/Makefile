@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Sat May 30 06:35:18 2026 (serrano)                */
+#*    Last change :  Sun May 31 09:24:12 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -36,7 +36,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = bool date hash io pair port string thread vector \
+MD = bool date hash int io pair port real string thread vector \
  module5 module4 object
 
 #*---------------------------------------------------------------------*/
@@ -98,13 +98,16 @@ objs_c/%.o: src/%.bgl
 	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
 
 %.html: %.md bin/bgldoc
-	bin/bgldoc -t stdlib $< > $@ || rm -f $@
+	bin/bgldoc -t libs $< > $@ || rm -f $@
 
 module5.html: module5.md bin/bgldoc
-	bin/bgldoc -t modules $< > $@ || rm -f $@
+	bin/bgldoc -t lang $< > $@ || rm -f $@
 
 module4.html: module4.md bin/bgldoc
-	bin/bgldoc -t modules $< > $@ || rm -f $@
+	bin/bgldoc -t lang $< > $@ || rm -f $@
+
+object.html: object.md bin/bgldoc
+	bin/bgldoc -t lang $< > $@ || rm -f $@
 
 index.html: index.md bin/bgldoc
 	bin/bgldoc -t home $< > $@ || rm -f $@
@@ -121,6 +124,9 @@ bin:
 #*---------------------------------------------------------------------*/
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
+clean_html:
+	rm -rf $(MD:%=%.html)
+
 clean:
 	rm -rf objs_c bin
 	rm -rf $(MD:%=%.html)
