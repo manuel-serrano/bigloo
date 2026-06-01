@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Thu May 14 09:42:38 2026 (serrano)                */
+/*    Last change :  Sun May 31 11:20:27 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -46,6 +46,16 @@ function randFixnum() {
       return Number(S);
    }
 }
+
+/*---------------------------------------------------------------------*/
+/*    Constants                                                        */
+/*---------------------------------------------------------------------*/
+export const Days = [
+   "Sunday", "Monday", "Tuesday", "Wednesday",
+   "Tursday", "Friday", "Saturday",  ];
+export const Months = [
+   "January", "February", "March", "April", "May", "June",
+   "July", "August", "September", "October", "November", "December" ];
 
 /*---------------------------------------------------------------------*/
 /*    IO                                                               */
@@ -277,8 +287,8 @@ export class BglRuntime {
 	 bignum_and: (x, y) => x & y,
 	 bignum_or: (x, y) => x | y,
 	 bignum_not: (x, y) => ~x,
-	 bignum_lsh: (x, y) => x << y,
-	 bignum_rsh: (x, y) => x >> y,
+	 bignum_lsh: (x, y) => x << BigInt(y),
+	 bignum_rsh: (x, y) => x >> BigInt(y),
 	 bignum_mask: (x, y) => x & BigInt((1 << y) - 1),
 	 bignum_cmp: (x, y) => x < y ? -1 : (x > y ? 1 : 0),
 	 bignum_to_flonum: x => Number(x)
@@ -313,59 +323,68 @@ export class BglRuntime {
 	 instance: undefined,
 	 epoch: new Date(1970),
 	 current_milliseconds: () => Date.now(),
-	 mkDate: (ms) => new Date(ms),
-	 mktime: (year, month, day, hour, minute, second, millisecond, gmt) => {
+	 mkDate: (ms) => { return { date: new Date(ms), gmt: 0, timezone: 0 }; },
+	 mktime: (year, month, day, hour, minute, second, millisecond, gmt, timezone) => {
+            console.log("H=", hour);
 	    if (gmt) {
-	       return new Date(Date.UTC(year, month - 1, day, hour, minute, second, millisecond));
+               const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second, millisecond));
+
+               if (timezone !== 0) {
+                  const tzdate = new Date(date.getTime() + (-timezone * 1000));
+                  return { date: tzdate, gmt, timezone };
+               } else {
+	          return { date, gmt, timezone };
+               }
 	    } else {
-	       return new Date(year, month - 1, day, hour, minute, second, millisecond);
+               const date = new Date(year, month - 1, day, hour, minute, second, millisecond);
+	       return { date, gmt, timezone: date.getTimezoneOffset() * -60 };
 	    }
 	 },
 
-	 getMilliseconds: (dt) => dt.getMilliseconds(),
-	 setMilliseconds: (dt, ms) => dt.setMilliseconds(ms),
-	 getSeconds: (dt) => dt.getSeconds(),
-	 setSeconds: (dt, sec) => dt.setSeconds(sec),
-	 getMinutes: (dt) => dt.getMinutes(),
-	 setMinutes: (dt, min) => dt.setMinutes(min),
-	 getHours: (dt) => dt.getHours(),
-	 setHours: (dt, h) => dt.setHours(h),
-	 getDay: (dt) => dt.getDate(),
-	 setDay: (dt,) => dt.setDate(d),
-	 getWday: (dt) => dt.getDay() + 1,
+	 getMilliseconds: (dt) => dt.date.getMilliseconds(),
+	 setMilliseconds: (dt, ms) => dt.date.setMilliseconds(ms),
+	 getSeconds: (dt) => dt.date.getSeconds(),
+	 setSeconds: (dt, sec) => dt.date.setSeconds(sec),
+	 getMinutes: (dt) => dt.date.getMinutes(),
+	 setMinutes: (dt, min) => dt.date.setMinutes(min),
+	 getHours: (dt) => dt.date.getHours(),
+	 setHours: (dt, h) => dt.date.setHours(h),
+	 getDay: (dt) => dt.date.getDate(),
+	 setDay: (dt,d) => dt.date.setDate(d),
+	 getWday: (dt) => dt.date.getDay() + 1,
 	 getYday: (dt) => {
-	    const y = dt.getFullYear();
-	    const m = dt.getMonth();
-	    const d = dt.getDate();
+	    const y = dt.date.getFullYear();
+	    const m = dt.date.getMonth();
+	    const d = dt.date.getDate();
 	    const d1 = new Date(y, m, d);
 	    const d0 = new Date(y, 0, 1);
-	    return Math.trunc((d1.valueOf() - d0.valueOf()) / (24 * 60 * 60 * 60 * 1000));
+	    return Math.trunc((d1.valueOf() - d0.valueOf()) / (24 * 60 * 60 * 60 * 1000)) + 1;
 	 },
-	 getMonth: (dt) => dt.getMonth() + 1,
-	 setMonth: (dt, m) => dt.setMonth(m),
-	 getYear: (dt) => dt.getFullYear(),
-	 setYear: (dt, y) => dt.setFullYear(y),
-	 getTimezone: (dt) => dt.getTimezoneOffset() * 60,
+	 getMonth: (dt) => dt.date.getMonth() + 1,
+	 setMonth: (dt, m) => dt.date.setMonth(m - 1),
+	 getYear: (dt) => dt.date.getFullYear(),
+	 setYear: (dt, y) => dt.date.setFullYear(y),
+	 getTimezone: (dt) => dt.timezone,
 
-	 isDst: (dt) => new Date(dt.valueOf()) !== dt.valueOf(),
-	 getTime: (dt) => dt.valueOf(),
+	 isDst: (dt) => new Date(dt.date.valueOf()) !== dt.date.valueOf(),
+	 isGmt: (dt) => dt.gmt,
+	 getTime: (dt) => dt.date.valueOf(),
 	 secondsToString: (sec, addr) => {
-	    const buf = new Date(sec * 1000).toString();
+	    const buf = new Date(Number(sec) * 1000).toString();
 
 	    self.storeString(buf, addr);
 	    return buf.length;
 	 },
 	 secondsToUTCString: (sec, addr) => {
-	    const buf = new Date(sec * 1000).toUTCString();
+	    const buf = new Date(Number(sec) * 1000).toUTCString();
 
 	    self.storeString(buf, addr);
 	    return buf.length;
 	 },
 	 
-
 	 day_name: (day, longFormat, addr) =>
 	    self.storeString(
-	       new Date(Date.UTC(2021, 1, day + 1))
+	       new Date(Date.UTC(2021, 1, day))
 		  .toLocaleDateString(
 		     self.locale, {
 			weekday: (longFormat ? "long" : "short")

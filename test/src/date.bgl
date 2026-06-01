@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 30 06:36:23 2026                          */
-;*    Last change :  Sun May 31 06:39:52 2026 (serrano)                */
+;*    Last change :  Sun May 31 11:25:47 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing date functions                                           */
@@ -141,7 +141,7 @@
       (seconds->date
          (date->seconds (make-date :sec 1 :min 1 :hour 1 :day 28))))
    :expected 28)
-(define-test date-day
+(define-test date-month
    (date-month
       (seconds->date
          (date->seconds (make-date :sec 1 :min 1 :hour 1

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/TBR/toto/runtime/Llib/bit.scm                   */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/bit.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 11:06:41 1995                          */
-;*    Last change :  Wed Jul  3 14:09:03 2024 (serrano)                */
+;*    Last change :  Sun May 31 09:57:12 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bit management                                                   */
 ;*=====================================================================*/
@@ -423,7 +423,7 @@
 	    (inline bit-rshs8::int8 ::int8 ::long)
 	    (inline bit-rshu8::uint8 ::uint8 ::long)
 	    (inline bit-rshs16::int16 ::int16 ::long)
-	    (inline bit-rshu16::int16 ::int16 ::long)
+	    (inline bit-rshu16::uint16 ::uint16 ::long)
 	    (inline bit-rshs32::int32 ::int32 ::long)
 	    (inline bit-rshu32::uint32 ::uint32 ::long)
 	    (inline bit-rshs64::int64 ::int64 ::long)
@@ -624,63 +624,63 @@
 ;*---------------------------------------------------------------------*/
 ;*    bit-or ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (bit-or x y) ($bitor x y))
-(define-inline (bit-orelong x y) ($bitorelong x y))
-(define-inline (bit-orllong x y) ($bitorllong x y))
-(define-inline (bit-ors8 x y) ($bitors8 x y))
-(define-inline (bit-oru8 x y) ($bitoru8 x y))
-(define-inline (bit-ors16 x y) ($bitors16 x y))
-(define-inline (bit-oru16 x y) ($bitoru16 x y))
-(define-inline (bit-ors32 x y) ($bitors32 x y))
-(define-inline (bit-oru32 x y) ($bitoru32 x y))
-(define-inline (bit-ors64 x y) ($bitors64 x y))
-(define-inline (bit-oru64 x y) ($bitoru64 x y))
-(define-inline (bit-orbx x y) ($bitorbx x y))
+(define-inline (bit-or::long x::long y::long) ($bitor x y))
+(define-inline (bit-orelong::elong x::elong y::elong) ($bitorelong x y))
+(define-inline (bit-orllong::llong x::llong y::llong) ($bitorllong x y))
+(define-inline (bit-ors8::int8 x::int8 y::int8) ($bitors8 x y))
+(define-inline (bit-oru8::uint8 x::uint8 y::uint8) ($bitoru8 x y))
+(define-inline (bit-ors16::int16 x::int16 y::int16) ($bitors16 x y))
+(define-inline (bit-oru16::uint16 x::uint16 y::uint16) ($bitoru16 x y))
+(define-inline (bit-ors32::int32 x::int32 y::int32) ($bitors32 x y))
+(define-inline (bit-oru32::uint32 x::uint32 y::uint32) ($bitoru32 x y))
+(define-inline (bit-ors64::int64 x::int64 y::int64) ($bitors64 x y))
+(define-inline (bit-oru64::uint64 x::uint64 y::uint64) ($bitoru64 x y))
+(define-inline (bit-orbx::bignum x::bignum y::bignum) ($bitorbx x y))
 
 ;*---------------------------------------------------------------------*/
 ;*    bit-and ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (bit-and x y) ($bitand x y))
-(define-inline (bit-andelong x y) ($bitandelong x y))
-(define-inline (bit-andllong x y) ($bitandllong x y))
-(define-inline (bit-ands8 x y) ($bitands8 x y))
-(define-inline (bit-andu8 x y) ($bitandu8 x y))
-(define-inline (bit-ands16 x y) ($bitands16 x y))
-(define-inline (bit-andu16 x y) ($bitandu16 x y))
-(define-inline (bit-ands32 x y) ($bitands32 x y))
-(define-inline (bit-andu32 x y) ($bitandu32 x y))
-(define-inline (bit-ands64 x y) ($bitands64 x y))
-(define-inline (bit-andu64 x y) ($bitandu64 x y))
-(define-inline (bit-andbx x y) ($bitandbx x y))
+(define-inline (bit-and::long x::long y::long) ($bitand x y))
+(define-inline (bit-andelong::elong x::elong y::elong) ($bitandelong x y))
+(define-inline (bit-andllong::llong x::llong y::llong) ($bitandllong x y))
+(define-inline (bit-ands8::int8 x::int8 y::int8) ($bitands8 x y))
+(define-inline (bit-andu8::uint8 x::uint8 y::uint8) ($bitandu8 x y))
+(define-inline (bit-ands16::int16 x::int16 y::int16) ($bitands16 x y))
+(define-inline (bit-andu16::uint16 x::uint16 y::uint16) ($bitandu16 x y))
+(define-inline (bit-ands32::int32 x::int32 y::int32) ($bitands32 x y))
+(define-inline (bit-andu32::uint32 x::uint32 y::uint32) ($bitandu32 x y))
+(define-inline (bit-ands64::int64 x::int64 y::int64) ($bitands64 x y))
+(define-inline (bit-andu64::uint64 x::uint64 y::uint64) ($bitandu64 x y))
+(define-inline (bit-andbx::bignum x::bignum y::bignum) ($bitandbx x y))
 
-(define-inline (bit-maskbx x n) ($bitmaskbx x n))
+(define-inline (bit-maskbx::bignum x::bignum n::long) ($bitmaskbx x n))
 
 ;*---------------------------------------------------------------------*/
 ;*    bit-xor ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (bit-xor x y) ($bitxor x y))
-(define-inline (bit-xorelong x y) ($bitxorelong x y))
-(define-inline (bit-xorllong x y) ($bitxorllong x y))
-(define-inline (bit-xors8 x y) ($bitxors8 x y))
-(define-inline (bit-xoru8 x y) ($bitxoru8 x y))
-(define-inline (bit-xors16 x y) ($bitxors16 x y))
-(define-inline (bit-xoru16 x y) ($bitxoru16 x y))
-(define-inline (bit-xors32 x y) ($bitxors32 x y))
-(define-inline (bit-xoru32 x y) ($bitxoru32 x y))
-(define-inline (bit-xors64 x y) ($bitxors64 x y))
-(define-inline (bit-xoru64 x y) ($bitxoru64 x y))
-(define-inline (bit-xorbx x y) ($bitxorbx x y))
+(define-inline (bit-xor::long x::long y::long) ($bitxor x y))
+(define-inline (bit-xorelong::elong x::elong y::elong) ($bitxorelong x y))
+(define-inline (bit-xorllong::llong x::llong y::llong) ($bitxorllong x y))
+(define-inline (bit-xors8::int8 x::int8 y::int8) ($bitxors8 x y))
+(define-inline (bit-xoru8::uint8 x::uint8 y::uint8) ($bitxoru8 x y))
+(define-inline (bit-xors16::int16 x::int16 y::int16) ($bitxors16 x y))
+(define-inline (bit-xoru16::uint16 x::uint16 y::uint16) ($bitxoru16 x y))
+(define-inline (bit-xors32::int32 x::int32 y::int32) ($bitxors32 x y))
+(define-inline (bit-xoru32::uint32 x::uint32 y::uint32) ($bitxoru32 x y))
+(define-inline (bit-xors64::int64 x::int64 y::int64) ($bitxors64 x y))
+(define-inline (bit-xoru64::uint64 x::uint64 y::uint64) ($bitxoru64 x y))
+(define-inline (bit-xorbx::bignum x::bignum y::bignum) ($bitxorbx x y))
 
 ;*---------------------------------------------------------------------*/
 ;*    bit-not ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (bit-not x) ($bitnot x))
-(define-inline (bit-notelong x) ($bitnotelong x))
-(define-inline (bit-notllong x) ($bitnotllong x))
-(define-inline (bit-nots8 x) ($bitnots8 x))
-(define-inline (bit-notu8 x) ($bitnotu8 x))
-(define-inline (bit-nots16 x) ($bitnots16 x))
-(define-inline (bit-notu16 x) ($bitnotu16 x))
+(define-inline (bit-not::long x::long) ($bitnot x))
+(define-inline (bit-notelong::elong x::elong) ($bitnotelong x))
+(define-inline (bit-notllong::llong x::llong) ($bitnotllong x))
+(define-inline (bit-nots8::int8 x::int8) ::int8($bitnots8 x))
+(define-inline (bit-notu8::uint8 x::uint8) ::uint8($bitnotu8 x))
+(define-inline (bit-nots16::int16 x::int16) ($bitnots16 x))
+(define-inline (bit-notu16::uint16 x) ($bitnotu16 x))
 (define-inline (bit-nots32 x) ($bitnots32 x))
 (define-inline (bit-notu32 x) ($bitnotu32 x))
 (define-inline (bit-nots64 x) ($bitnots64 x))
@@ -690,49 +690,46 @@
 ;*---------------------------------------------------------------------*/
 ;*    bit-rsh ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (bit-rsh x y) ($bitrsh x y))
-(define-inline (bit-rshelong x y) ($bitrshelong x y))
-(define-inline (bit-rshllong x y) ($bitrshllong x y))
-(define-inline (bit-rshs8 x y) ($bitrshs8 x y))
-(define-inline (bit-rshu8 x y) ($bitrshu8 x y))
-(define-inline (bit-rshs16 x y) ($bitrshs16 x y))
-(define-inline (bit-rshu16 x y) ($bitrshu16 x y))
-(define-inline (bit-rshs32 x y) ($bitrshs32 x y))
-(define-inline (bit-rshu32 x y) ($bitrshu32 x y))
-(define-inline (bit-rshs64 x y) ($bitrshs64 x y))
-(define-inline (bit-rshu64 x y) ($bitrshu64 x y))
-(define-inline (bit-rshbx x y) ($bitrshbx x y))
+(define-inline (bit-rsh::long x::long y::long) ($bitrsh x y))
+(define-inline (bit-rshelong::elong x::elong y::long) ($bitrshelong x y))
+(define-inline (bit-rshllong::llong x::llong y::long) ($bitrshllong x y))
+(define-inline (bit-rshs8::int8 x::int8 y::long) ($bitrshs8 x y))
+(define-inline (bit-rshu8::uint8 x::uint8 y::long) ($bitrshu8 x y))
+(define-inline (bit-rshs16::int16 x::int16 y::long) ($bitrshs16 x y))
+(define-inline (bit-rshu16::uint16 x::uint16 y::long) ($bitrshu16 x y))
+(define-inline (bit-rshs32::int32 x::int32 y::long) ($bitrshs32 x y))
+(define-inline (bit-rshu32::uint32 x::uint32 y::long) ($bitrshu32 x y))
+(define-inline (bit-rshs64::int64 x::int64 y::long) ($bitrshs64 x y))
+(define-inline (bit-rshu64::uint64 x::uint64 y::long) ($bitrshu64 x y))
+(define-inline (bit-rshbx::bignum x::bignum y::long) ($bitrshbx x y))
 
 ;*---------------------------------------------------------------------*/
 ;*    bit-ursh ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (bit-ursh x y) ($bitursh x y))
-(define-inline (bit-urshelong x y) ($biturshelong x y))
-(define-inline (bit-urshllong x y) ($biturshllong x y))
-(define-inline (bit-urshu8 x y) ($biturshu8 x y))
-(define-inline (bit-urshs8 x y) ($biturshs8 x y))
-(define-inline (bit-urshs16 x y) ($biturshs16 x y))
-(define-inline (bit-urshu16 x y) ($biturshu16 x y))
-(define-inline (bit-urshs32 x y) ($biturshs32 x y))
-(define-inline (bit-urshu32 x y) ($biturshu32 x y))
-(define-inline (bit-urshs64 x y) ($biturshs64 x y))
-(define-inline (bit-urshu64 x y) ($biturshu64 x y))
+(define-inline (bit-ursh::ulong x::ulong y::long) ($bitursh x y))
+(define-inline (bit-urshelong::uelong x::uelong y::long) ($biturshelong x y))
+(define-inline (bit-urshllong::ullong x::ullong y::long) ($biturshllong x y))
+(define-inline (bit-urshs8::int8 x::int8 y::long) ($biturshs8 x y))
+(define-inline (bit-urshu8::uint8 x::uint8 y::long) ($biturshu8 x y))
+(define-inline (bit-urshs16::int16 x::int16 y::long) ($biturshs16 x y))
+(define-inline (bit-urshu16::uint16 x y::long) ($biturshu16 x y))
+(define-inline (bit-urshs32::int32 x::int32 y::long) ($biturshs32 x y))
+(define-inline (bit-urshu32::uint32 x::uint32 y::long) ($biturshu32 x y))
+(define-inline (bit-urshs64::int64 x::int64 y::long) ($biturshs64 x y))
+(define-inline (bit-urshu64::uint64 x::uint64 y::long) ($biturshu64 x y))
        
 ;*---------------------------------------------------------------------*/
 ;*    bit-lsh ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (bit-lsh x y) ($bitlsh x y))
-(define-inline (bit-lshelong x y) ($bitlshelong x y))
-(define-inline (bit-lshllong x y) ($bitlshllong x y))
-(define-inline (bit-lshs8 x y) ($bitlshs8 x y))
-(define-inline (bit-lshu8 x y) ($bitlshu8 x y))
-(define-inline (bit-lshs16 x y) ($bitlshs16 x y))
-(define-inline (bit-lshu16 x y) ($bitlshu16 x y))
-(define-inline (bit-lshs32 x y) ($bitlshs32 x y))
-(define-inline (bit-lshu32 x y) ($bitlshu32 x y))
-(define-inline (bit-lshs64 x y) ($bitlshs64 x y))
-(define-inline (bit-lshu64 x y) ($bitlshu64 x y))
-(define-inline (bit-lshbx x y) ($bitlshbx x y))
-
-
-
+(define-inline (bit-lsh::long x::long y::long) ($bitlsh x y))
+(define-inline (bit-lshelong::elong x::elong y::long) ($bitlshelong x y))
+(define-inline (bit-lshllong::llong x::llong y::long) ($bitlshllong x y))
+(define-inline (bit-lshs8::int8 x::int8 y::long) ($bitlshs8 x y))
+(define-inline (bit-lshu8::uint8 x::uint8 y::long) ($bitlshu8 x y))
+(define-inline (bit-lshs16::int16 x::int16 y::long) ($bitlshs16 x y))
+(define-inline (bit-lshu16::uint16 x y::long) ($bitlshu16 x y))
+(define-inline (bit-lshs32::int32 x::int32 y::long) ($bitlshs32 x y))
+(define-inline (bit-lshu32::uint32 x::uint32 y::long) ($bitlshu32 x y))
+(define-inline (bit-lshs64::int64 x::int64 y::long) ($bitlshs64 x y))
+(define-inline (bit-lshu64::uint64 x::uint64 y::long) ($bitlshu64 x y))
+(define-inline (bit-lshbx::bignum x::bignum y::long) ($bitlshbx x y))

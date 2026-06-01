@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sat May 23 09:33:03 2026 (serrano)                */
+/*    Last change :  Sun May 31 11:27:40 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -19,7 +19,7 @@ import { format } from "node:util";
 import { execSync, spawnSync, spawn } from "node:child_process";
 import { createServer, createConnection, Socket } from "node:net";
 
-import { BglRuntime, bglParseArgs } from "./bigloo-common.mjs";
+import { BglRuntime, bglParseArgs, Days, Months } from "./bigloo-common.mjs";
 
 /*---------------------------------------------------------------------*/
 /*    Text decoders                                                    */
@@ -599,7 +599,7 @@ class BglNodeRuntime extends BglRuntime {
 	 },
 
 	 date: (addr) => {
-	    const d = Date();
+	    const d = new Date();
 	    const a = Days[d.getDay()];
 	    const m = Months[d.getMonth()];
 	    const b = `${a} ${m} ${d.getDay()} ${d.getHours()}:${d.getMinutes()}:${d.getSeconds()} ${d.getYear()}`

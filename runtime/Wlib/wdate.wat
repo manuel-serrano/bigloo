@@ -18,7 +18,7 @@
    (import "__js_date" "epoch" (global $epoch externref))
    (import "__js_date" "current_milliseconds" (func $js_current_milliseconds (result f64)))
    (import "__js_date" "mkDate" (func $js_mkdate (param f64) (result externref)))
-   (import "__js_date" "mktime" (func $js_mktime (param i32 i32 i32 i32 i32 i32 f64 i32) (result externref)))
+   (import "__js_date" "mktime" (func $js_mktime (param i32 i32 i32 i32 i32 i32 f64 i32 i32) (result externref)))
    (import "__js_date" "getMilliseconds" (func $js_date_milliseconds (param externref) (result f64)))
    (import "__js_date" "setMilliseconds" (func $js_date_set_milliseconds (param externref) (param f64)))
    (import "__js_date" "getSeconds" (func $js_date_seconds (param externref) (result i32)))
@@ -37,6 +37,7 @@
    (import "__js_date" "setYear" (func $js_date_set_year (param externref) (param i32)))
    (import "__js_date" "getTimezone" (func $js_date_timezone (param externref) (result f64)))
    (import "__js_date" "isDst" (func $js_date_isdst (param externref) (result i32)))
+   (import "__js_date" "isGmt" (func $js_date_isgmt (param externref) (result i32)))
    (import "__js_date" "getTime" (func $js_date_time (param externref) (result f64)))
    (import "__js_date" "secondsToString" (func $js_seconds_to_string (param i64) (param i32) (result i32)))
    (import "__js_date" "secondsToUTCString" (func $js_seconds_to_utc_string (param i64) (param i32) (result i32)))
@@ -134,7 +135,8 @@
 	    (local.get $min)
 	    (local.get $sec)
 	    (f64.convert_i64_s (i64.div_s (local.get $nsec) (i64.const 1000000)))
-	    (local.get $isgmt))
+	    (local.get $isgmt)
+            (i32.wrap_i64 (local.get $timezone)))
 	 (i64.rem_s (local.get $nsec) (i64.const 1000000000))))
 
    (func $bgl_update_date (export "bgl_update_date")
@@ -246,7 +248,8 @@
    (func $BGL_DATE_ISGMT (export "BGL_DATE_ISGMT")
       (param $dt (ref $date))
       (result i32)
-      (return (i64.eqz (call $BGL_DATE_TIMEZONE (local.get $dt)))))
+      (return_call $js_date_isgmt
+	 (struct.get $date $dt (local.get $dt))))
 
    (func $BGL_DATE_TIME (export "BGL_DATE_TIME")
       (param $dt (ref $date))
