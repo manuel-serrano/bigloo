@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/test/src/main.bgl              */
+;*    serrano/bigloo/5.0.x/test/src/main.bgl                           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Sun May 31 09:51:35 2026 (serrano)                */
+;*    Last change :  Mon Jun  1 09:43:16 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -20,6 +20,7 @@
    (import "./date.bgl" . date)
    (import "./dsssl.bgl" . dsssl)
    (import "./hash.bgl" . hash)
+   (import "./int.bgl" . int)
    (import "./io.bgl" . io)
    (import "./module.bgl" . module)
    (import "./object.bgl" . object)
@@ -58,6 +59,7 @@
                   (date.test verbose tests)
                   (dsssl.test verbose tests)
 		  (hash.test verbose tests)
+		  (int.test verbose tests)
 		  (io.test verbose tests)
                   (module.test verbose tests)
                   (object.test verbose tests)

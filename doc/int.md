@@ -11,6 +11,7 @@
 
 ,(implementation-path "../runtime/Ieee/fixnum.scm")
 ,(implementation-path "../runtime/Llib/bit.scm")
+,(example-path "../test/src/int.bgl")
 ,(example-path "../test/src/bit.bgl")
 ,(example-path "../test/src/bignum.bgl")
 
@@ -48,7 +49,47 @@ own types:
 Each backends provides its own implementation of the following types:
 `short`, `int`, `long`, `ulong`, `elong`, `uelong, `llong`, and `ullong`.
 
-  
+Predicates
+----------
+
+### integer? ###
+Returns `#t` if and only if `obj` is an integer. It returns `#t` if `obj`'s
+type is one of the integer types, or if it is a [real](./real.md) representing
+an integer number.
+
+### fixnum? ###
+Return `#t` if and only if `obj` is a `bint` value.
+
+### elong? ###
+Return `#t` if and only if `obj` is an `elong` value.
+
+### llong? ###
+Return `#t` if and only if `obj` is an `llong` value.
+
+### int8? ###
+Return `#t` if and only if `obj` is an `int8` value.
+
+### uint8? ###
+Return `#t` if and only if `obj` is an `nint8` value.
+
+### int16? ###
+Return `#t` if and only if `obj` is an `int16` value.
+
+### uint16? ###
+Return `#t` if and only if `obj` is an `nint16` value.
+
+### int32? ###
+Return `#t` if and only if `obj` is an `int32` value.
+
+### uint32? ###
+Return `#t` if and only if `obj` is an `nint32` value.
+
+### int64? ###
+Return `#t` if and only if `obj` is an `int64` value.
+
+### uint64? ###
+Return `#t` if and only if `obj` is an `nint64` value.
+
 Bit Manipulations
 -----------------
 

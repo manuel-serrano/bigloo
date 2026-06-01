@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/fixnum.scm         */
+;*    serrano/bigloo/5.0.x/runtime/Ieee/fixnum.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Jul 17 14:52:42 2025 (serrano)                */
+;*    Last change :  Mon Jun  1 09:39:44 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -249,7 +249,7 @@
 	    (macro $gefx::bint (::bint ::bint) "GEFX")
 	    (macro $egfx::bint (::bint ::bint) "EGFX"))
    
-   (wasm    ($minvalelong "(i64.const -9223372036854775808)")
+   (wasm   ($minvalelong "(i64.const -9223372036854775808)")
 	   ($maxvalelong "(i64.const 9223372036854775807)")
 	   ($minvalllong "(i64.const -9223372036854775808)")
 	   ($maxvalllong "(i64.const 9223372036854775807)")
@@ -1515,7 +1515,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    integer? ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (integer? obj)
+(define (integer?::bool obj)
    (or ($fixnum? obj)
        ($elong? obj)
        ($llong? obj)
@@ -1533,22 +1533,22 @@
 ;*---------------------------------------------------------------------*/
 ;*    predicates ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (fixnum? obj) ($fixnum? obj))
+(define-inline (fixnum?::bool obj) ($fixnum? obj))
 
-(define-inline (elong? obj) ($elong? obj))
-(define-inline (llong? obj) ($llong? obj))
+(define-inline (elong?::bool obj) ($elong? obj))
+(define-inline (llong?::bool obj) ($llong? obj))
 
-(define-inline (int8? obj) ($int8? obj))
-(define-inline (uint8? obj) ($uint8? obj))
+(define-inline (int8?::bool obj) ($int8? obj))
+(define-inline (uint8?::bool obj) ($uint8? obj))
 
-(define-inline (int16? obj) ($int16? obj))
-(define-inline (uint16? obj) ($uint16? obj))
+(define-inline (int16?::bool obj) ($int16? obj))
+(define-inline (uint16?::bool obj) ($uint16? obj))
 
-(define-inline (int32? obj) ($int32? obj))
-(define-inline (uint32? obj) ($uint32? obj))
+(define-inline (int32?::bool obj) ($int32? obj))
+(define-inline (uint32?::bool obj) ($uint32? obj))
 
-(define-inline (int64? obj) ($int64? obj))
-(define-inline (uint64? obj) ($uint64? obj))
+(define-inline (int64?::bool obj) ($int64? obj))
+(define-inline (uint64?::bool obj) ($uint64? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    constructors and casts                                           */

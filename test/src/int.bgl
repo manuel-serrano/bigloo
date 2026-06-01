@@ -1,0 +1,115 @@
+;*=====================================================================*/
+;*    serrano/bigloo/5.0.x/test/src/int.bgl                            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Mon Jun  1 10:01:19 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing bit functions                                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    int                                                              */
+;*---------------------------------------------------------------------*/
+(module int
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "bit" tests))
+      (test-all verbose "bit")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test integer? (integer? 1))
+(define-test integer? (integer? 1.0))
+(define-test integer? (integer? #z1353659392368234))
+(define-test integer? (integer? 1.1)
+   :expected #f)
+
+(define-test fixnum? (fixnum? 1))
+(define-test fixnum? (fixnum? #e1)
+   :expected #f)
+(define-test fixnum? (fixnum? #l1)
+   :expected #f)
+(define-test fixnum? (fixnum? 1.0)
+   :expected #f)
+
+(define-test elong? (elong? 1)
+   :expected #f)
+(define-test elong? (elong? #e1)
+   :expected #t)
+(define-test elong? (elong? 1.0)
+   :expected #f)
+
+(define-test llong? (llong? 1)
+   :expected #f)
+(define-test llong? (llong? #l1)
+   :expected #t)
+(define-test llong? (llong? #e1)
+   :expected #f)
+
+(define-test int8? (int8? 1)
+   :expected #f)
+(define-test int8? (int8? #s8:1)
+   :expected #t)
+(define-test int8? (int8? #u8:1)
+   :expected #f)
+
+(define-test uint8? (uint8? 1)
+   :expected #f)
+(define-test uint8? (uint8? #u8:1)
+   :expected #t)
+(define-test uint8? (uint8? #s8:1)
+   :expected #f)
+
+(define-test int16? (int16? 1)
+   :expected #f)
+(define-test int16? (int16? #s16:1)
+   :expected #t)
+(define-test int16? (int16? #u16:1)
+   :expected #f)
+
+(define-test uint16? (uint16? 1)
+   :expected #f)
+(define-test uint16? (uint16? #u16:1)
+   :expected #t)
+(define-test uint16? (uint16? #s16:1)
+   :expected #f)
+
+(define-test int32? (int32? 1)
+   :expected #f)
+(define-test int32? (int32? #s32:1)
+   :expected #t)
+(define-test int32? (int32? #u32:1)
+   :expected #f)
+
+(define-test uint32? (uint32? 1)
+   :expected #f)
+(define-test uint32? (uint32? #u32:1)
+   :expected #t)
+(define-test uint32? (uint32? #s32:1)
+   :expected #f)
+
+(define-test int64? (int64? 1)
+   :expected #f)
+(define-test int64? (int64? #s64:1)
+   :expected #t)
+(define-test int64? (int64? #u64:1)
+   :expected #f)
+
+(define-test uint64? (uint64? 1)
+   :expected #f)
+(define-test uint64? (uint64? #u64:1)
+   :expected #t)
+(define-test uint64? (uint64? #s64:1)
+   :expected #f)

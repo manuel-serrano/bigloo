@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Sun May 31 11:20:27 2026 (serrano)                */
+/*    Last change :  Mon Jun  1 08:20:06 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -323,9 +323,10 @@ export class BglRuntime {
 	 instance: undefined,
 	 epoch: new Date(1970),
 	 current_milliseconds: () => Date.now(),
-	 mkDate: (ms) => { return { date: new Date(ms), gmt: 0, timezone: 0 }; },
+	 mkDate: (ms) => {
+            return { date: new Date(ms), gmt: 1, timezone: 0 };
+         },
 	 mktime: (year, month, day, hour, minute, second, millisecond, gmt, timezone) => {
-            console.log("H=", hour);
 	    if (gmt) {
                const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second, millisecond));
 
@@ -347,7 +348,15 @@ export class BglRuntime {
 	 setSeconds: (dt, sec) => dt.date.setSeconds(sec),
 	 getMinutes: (dt) => dt.date.getMinutes(),
 	 setMinutes: (dt, min) => dt.date.setMinutes(min),
-	 getHours: (dt) => dt.date.getHours(),
+	 getHours: (dt) => {
+            const h = dt.date.getHours();
+            if (dt.gmt) {
+               const tz = dt.date.getTimezoneOffset() * 60;
+               return h + (tz / 3600);
+            } else {
+               return h;
+            }
+         },
 	 setHours: (dt, h) => dt.date.setHours(h),
 	 getDay: (dt) => dt.date.getDate(),
 	 setDay: (dt,d) => dt.date.setDate(d),
@@ -358,15 +367,26 @@ export class BglRuntime {
 	    const d = dt.date.getDate();
 	    const d1 = new Date(y, m, d);
 	    const d0 = new Date(y, 0, 1);
-	    return Math.trunc((d1.valueOf() - d0.valueOf()) / (24 * 60 * 60 * 60 * 1000)) + 1;
+	    return Math.trunc((d1.valueOf() - d0.valueOf()) / (24 * 60 * 60 * 1000)) + 1;
 	 },
 	 getMonth: (dt) => dt.date.getMonth() + 1,
 	 setMonth: (dt, m) => dt.date.setMonth(m - 1),
 	 getYear: (dt) => dt.date.getFullYear(),
 	 setYear: (dt, y) => dt.date.setFullYear(y),
 	 getTimezone: (dt) => dt.timezone,
+	 isDst: (dt) => {
+            const year = dt.date.getFullYear();
+            const month = dt.date.getMonth();
+            const jan = new Date(year, 0, 1);
+            const jul = new Date(year, month, 1);
 
-	 isDst: (dt) => new Date(dt.date.valueOf()) !== dt.date.valueOf(),
+            const standardOffset = Math.max(
+               jan.getTimezoneOffset(),
+               jul.getTimezoneOffset()
+            );
+
+            return dt.date.getTimezoneOffset() < standardOffset;
+         },
 	 isGmt: (dt) => dt.gmt,
 	 getTime: (dt) => dt.date.valueOf(),
 	 secondsToString: (sec, addr) => {

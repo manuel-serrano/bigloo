@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0a/runtime/Jlib/foreign.java       */
+/*    serrano/bigloo/5.0.x/runtime/Jlib/foreign.java                   */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Fri May  1 15:15:33 2026 (serrano)                */
+/*    Last change :  Mon Jun  1 10:18:45 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -23,7 +23,6 @@ import java.net.*;
 import java.util.regex.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
 
 /*---------------------------------------------------------------------*/
 /*    foreign ...                                                      */
@@ -2952,11 +2951,11 @@ public final class foreign {
    }
 
    public static date bgl_nanoseconds_to_date(long nsec) {
-      return new bigloo.date(nsec, true);
+      return new bigloo.date(nsec, false);
    }
 
-   public static date bgl_milliseconds_to_date(long nsec) {
-      return new bigloo.date(nsec, false);
+   public static date bgl_milliseconds_to_date(long msec) {
+      return new bigloo.date(msec, true);
    }
 
    public static date bgl_seconds_to_utc_date(long sec) {
@@ -2982,15 +2981,15 @@ public final class foreign {
    }
 
    public static long bgl_date_to_seconds(date d) {
-      return (d.calendar.getTime().getTime() / 1000);
+      return ((d.calendar.getTime().getTime()) / 1000) - d.timezone;
    }
 
    public static long bgl_date_to_nanoseconds(date d) {
-      return (d.calendar.getTime().getTime() * 1000000);
+      return (d.calendar.getTime().getTime() * 1000000) - (d.timezone * 1000);
    }
 
    public static long bgl_date_to_milliseconds(date d) {
-      return (d.calendar.getTime().getTime() * 1000);
+      return (d.calendar.getTime().getTime());
    }
 
    public static byte[] bgl_seconds_to_string(long sec) {
@@ -3013,8 +3012,8 @@ public final class foreign {
       return d.nsec;
    }
 
-   public static long BGL_DATEMILLISECOND(date d) {
-      return d.nsec / 1000000;
+   public static int BGL_DATE_MILLISECOND(date d) {
+      return (int)(d.nsec / 1000000);
    }
 
    public static int BGL_DATE_MINUTE(date d) {
@@ -3050,7 +3049,8 @@ public final class foreign {
    }
 
    public static int BGL_DATE_ISDST(date d) {
-      return (d.calendar.get(Calendar.DST_OFFSET) > 0) ? 1 : -1;
+      int off = d.calendar.get(Calendar.DST_OFFSET);
+      return (off > 0) ? 1 : ((off < 0) ? 1 : 0);
    }
 
    public static boolean BGL_DATE_ISGMT(date d) {

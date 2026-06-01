@@ -449,6 +449,21 @@
 ;; Constants
 ;;
 (define (push-num me::jvm n type);
+
+   (define (ld-fixnum n)
+      (case n
+	 ((-1) '(iconst_m1))
+	 ((0)  '(iconst_0))
+	 ((1)  '(iconst_1))
+	 ((2)  '(iconst_2))
+	 ((3)  '(iconst_3))
+	 ((4)  '(iconst_4))
+	 ((5)  '(iconst_5))
+	 (else
+	  (cond ((and (> n -129) (< n 128)) `(bipush ,n))
+		((and (> n -32769) (< n 32768)) `(sipush ,n))
+		(else `(ldc ,n)) ))))
+   
    (if (bignum? n)
        (begin
 	  (code! me `(ldc ,(bignum->string n 10)))
@@ -468,19 +483,13 @@
 		  (cond ((= n 0) '(lconst_0))
 			((= n 1) '(lconst_1))
 			(else `(ldc2_w ,n)) ))
+		 ((short)
+		  (cond
+		     ((int16? n) (ld-fixnum (int16->fixnum n)))
+		     ((uint16? n) (ld-fixnum (uint16->fixnum n)))
+		     (else (ld-fixnum n))))
 		 (else ;(boolean byte char short int)
-		  (case n
-		     ((-1) '(iconst_m1))
-		     ((0)  '(iconst_0))
-		     ((1)  '(iconst_1))
-		     ((2)  '(iconst_2))
-		     ((3)  '(iconst_3))
-		     ((4)  '(iconst_4))
-		     ((5)  '(iconst_5))
-		     (else
-		      (cond ((and (> n -129) (< n 128)) `(bipush ,n))
-			    ((and (> n -32769) (< n 32768)) `(sipush ,n))
-			    (else `(ldc ,n)) ))))))))
+		  (ld-fixnum n))))))
 
 (define (push-int me::jvm n);
    (push-num me n 'int) )
