@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/5.0.x/runtime/Wlib/bigloo-common.mjs     */
+/*    serrano/bigloo/5.0.x/runtime/Wlib/bigloo-common.mjs              */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Mon Jun  1 08:20:06 2026 (serrano)                */
+/*    Last change :  Tue Jun  2 07:58:17 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -324,24 +324,20 @@ export class BglRuntime {
 	 epoch: new Date(1970),
 	 current_milliseconds: () => Date.now(),
 	 mkDate: (ms) => {
-            return { date: new Date(ms), gmt: 1, timezone: 0 };
+	    const date = new Date(ms);
+            return { date, timezone: date.getTimezoneOffset() * -60 };
          },
-	 mktime: (year, month, day, hour, minute, second, millisecond, gmt, timezone) => {
-	    if (gmt) {
-               const date = new Date(Date.UTC(year, month - 1, day, hour, minute, second, millisecond));
-
-               if (timezone !== 0) {
-                  const tzdate = new Date(date.getTime() + (-timezone * 1000));
-                  return { date: tzdate, gmt, timezone };
-               } else {
-	          return { date, gmt, timezone };
-               }
+	 mktime: (year, month, day, hour, minute, second, millisecond, timezone, istz) => {
+	    if (!istz) {
+	       // build a locale date
+	       const date = new Date(year, month - 1, day, hour, minute, second, millisecond);
+	       return { date, timezone: date.getTimezoneOffset() * -60 };
 	    } else {
-               const date = new Date(year, month - 1, day, hour, minute, second, millisecond);
-	       return { date, gmt, timezone: date.getTimezoneOffset() * -60 };
+	       // build an utc+timezone date
+	       const ms = Date.UTC(year, month - 1, day, hour, minute, second, millisecond) + (timezone * -1000);
+	       return { date: new Date(ms), timezone };
 	    }
 	 },
-
 	 getMilliseconds: (dt) => dt.date.getMilliseconds(),
 	 setMilliseconds: (dt, ms) => dt.date.setMilliseconds(ms),
 	 getSeconds: (dt) => dt.date.getSeconds(),
@@ -349,13 +345,15 @@ export class BglRuntime {
 	 getMinutes: (dt) => dt.date.getMinutes(),
 	 setMinutes: (dt, min) => dt.date.setMinutes(min),
 	 getHours: (dt) => {
-            const h = dt.date.getHours();
-            if (dt.gmt) {
-               const tz = dt.date.getTimezoneOffset() * 60;
-               return h + (tz / 3600);
-            } else {
-               return h;
-            }
+	    const h = dt.date.getHours();
+	    const hz = h + (((dt.timezone - ((dt.date.getTimezoneOffset() * -60))) / 3600) | 0);
+	    if (hz < 0) {
+	       return 24 + hz;
+	    } else if (hz > 23) {
+	       return 24 - hz;
+	    } else {
+	       return hz;
+	    }
          },
 	 setHours: (dt, h) => dt.date.setHours(h),
 	 getDay: (dt) => dt.date.getDate(),
@@ -378,16 +376,16 @@ export class BglRuntime {
             const year = dt.date.getFullYear();
             const month = dt.date.getMonth();
             const jan = new Date(year, 0, 1);
-            const jul = new Date(year, month, 1);
+            const now = new Date(year, month, 1);
 
             const standardOffset = Math.max(
                jan.getTimezoneOffset(),
-               jul.getTimezoneOffset()
+               now.getTimezoneOffset()
             );
 
             return dt.date.getTimezoneOffset() < standardOffset;
          },
-	 isGmt: (dt) => dt.gmt,
+	 isGmt: (dt) => dt.timezone === 0,
 	 getTime: (dt) => dt.date.valueOf(),
 	 secondsToString: (sec, addr) => {
 	    const buf = new Date(Number(sec) * 1000).toString();

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Sat May 30 08:59:50 2026 (serrano)                */
+;*    Last change :  Tue Jun  2 07:27:11 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -176,6 +176,8 @@
 	    (inline current-microseconds::llong)
 	    (inline current-nanoseconds::llong)
 	    (inline current-date::date)
+            (inline current-timezone::long)
+
 	    (inline seconds->date::date ::elong)
 	    (inline seconds->gmtdate::date ::elong)
 	    (inline milliseconds->gmtdate::date ::llong)
@@ -455,6 +457,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (current-date::date)
    ($date-from-nanoseconds ($date-current-nanoseconds)))
+
+;*---------------------------------------------------------------------*/
+;*    current-timezone ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (current-timezone::long)
+   (date-timezone (current-date)))
 
 ;*---------------------------------------------------------------------*/
 ;*    seconds->date ...                                                */

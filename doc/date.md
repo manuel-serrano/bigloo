@@ -15,6 +15,16 @@
 Dates
 =====
 
+Date objects are representation of dates. Two dates are `equal?` is
+they represent the same epoch time (i.e., the same number of seconds
+since January 1, 1970). For instance:
+
+```bigloo
+(let ((d1 (make-date :hour 8 :day 15 :month 1 :year 2015 :timezone 0))
+      (d2 (make-date :hour 10 :day 15 :month 1 :year 2015 :timezone 7200)))
+   (equal? d1 d2) &rarr; #t
+```
+
 Predicates
 ----------
 
@@ -45,6 +55,9 @@ date object.
 ### current-date ###
 Returns the current date as a `date` object.
 
+### current-timezone ###
+Returns the current timezone of the host.
+
 ### current-seconds ###
 Returns an `elong` integer representing the current epoch (i.e., the
 date since 0:00:00 UTC on the morning of 1 January 1970, expressed
@@ -69,13 +82,16 @@ Converts from `date` into a number of nanoseconds since epoch.
 Converts from `date` into a number of milliseconds since epoch.
 
 ### seconds->date ###
-Converts a number of seconds since eopch into a `date` object.
+Converts a number of seconds since eopch into a `date` object in
+the current timezone.
 
 ### milliseconds->date ###
-Converts a number of milliseconds since eopch into a `date` object.
+Converts a number of milliseconds since eopch into a `date` object in
+the current timezone.
 
 ### nanoseconds->date ###
-Converts a number of nanoseconds since eopch into a `date` object.
+Converts a number of nanoseconds since eopch into a `date` object
+in the current timezone.
 
 ### seconds->gmtdate ###
 <!-- [:@C] -->

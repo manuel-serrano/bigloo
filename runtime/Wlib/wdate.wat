@@ -123,7 +123,7 @@
       (param $month i32)
       (param $year i32)
       (param $timezone i64)
-      (param $isgmt i32)
+      (param $istz i32)
       (param $dst i32)
       (result (ref $date))
       (struct.new $date
@@ -135,8 +135,8 @@
 	    (local.get $min)
 	    (local.get $sec)
 	    (f64.convert_i64_s (i64.div_s (local.get $nsec) (i64.const 1000000)))
-	    (local.get $isgmt)
-            (i32.wrap_i64 (local.get $timezone)))
+            (i32.wrap_i64 (local.get $timezone))
+	    (local.get $istz))
 	 (i64.rem_s (local.get $nsec) (i64.const 1000000000))))
 
    (func $bgl_update_date (export "bgl_update_date")

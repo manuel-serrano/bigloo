@@ -306,13 +306,16 @@
    (define (backends bs)
       (xml-element 'span '((class . "backends"))
          (map (lambda (b)
-                 (xml-element 'span `((class . ,(format "icons ~a" b)) (title . ,b)) '("&#xe041;")))
+                 (xml-element 'span `((class . ,(format "backend ~a" (car b))) (title . ,(car b))) (cdr b)))
             bs)))
 
    (define (class-backend klass)
       (if (string? klass)
-          (backends (string-split klass #\-))
-          (backends '("C" "jvm" "wasm"))))
+          (let ((s (string-split klass #\-)))
+             (backends
+                (map (lambda (c) (list c (if (member c s) "&#x25cf;" "&#x25cb;")))
+                   '("C" "jvm" "wasm"))))
+          (backends '(("C" "&#x25cf;") ("jvm" "&#x25cf;") ("wasm" "&#x25cf;")))))
 
    (call-with-input-file source
       (lambda (ip)

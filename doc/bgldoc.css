@@ -46,7 +46,8 @@
     
     --programBackground: #ffffff;
     --programBorder: #eeeeee;
-    --programBorderColor: #f91a03;
+    --programBorderColorx: #b42fa9;
+    --programBorderColor: #777;
     --shellBorderColor: #a09103;
 
     --type: #05ca04;
@@ -387,28 +388,29 @@ h3.function span.generic {
 
 h3.variable span.backends,
 h3.function span.backends {
-    font-size: 65%;
-    margin-left: 0.5em;
-    margin-right: 0.8em;
+    margin-left: 0.2em;
+    margin-right: 0.2em;
 }
 
-h3.variable span.icons,
-h3.function span.icons {
+h3.variable span.backend,
+h3.function span.backend {
     color: var(--functionTag);
-    font-family: icons;
+    font-family: backend;
     margin-left: 0.4em;
 }
 
-h3 span.icons.C {
+h3 span.backend.C {
     color: var(--CBackend);
 }
 
-h3 span.icons.jvm {
+h3 span.backend.jvm {
     color: var(--jvmBackend);
+    margin-left: 0.1em;
 }
 
-h3 span.icons.wasm {
+h3 span.backend.wasm {
     color: var(--wasmBackend);
+    margin-left: 0.1em;
 }
 
 h3 .definition {
