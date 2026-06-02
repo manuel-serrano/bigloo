@@ -49,6 +49,27 @@ own types:
 Each backends provides its own implementation of the following types:
 `short`, `int`, `long`, `ulong`, `elong`, `uelong, `llong`, and `ullong`.
 
+Ranges
+------
+
+### minvalfx ###
+Mininum fixnum value.
+
+### maxvalfx ###
+Maxium fixnum value.
+
+### minvalelong ###
+Mininum elong value.
+
+### maxvalelong ###
+Maximum elong value.
+
+### minvalllong ###
+Maximum elong value.
+
+### maxvalllong ###
+Maximum llong value.
+
 Predicates
 ----------
 
@@ -58,37 +79,220 @@ type is one of the integer types, or if it is a [real](./real.md) representing
 an integer number.
 
 ### fixnum? ###
-Return `#t` if and only if `obj` is a `bint` value.
+Returns `#t` if and only if `obj` is a `bint` value.
 
 ### elong? ###
-Return `#t` if and only if `obj` is an `elong` value.
+Returns `#t` if and only if `obj` is an `elong` value.
 
 ### llong? ###
-Return `#t` if and only if `obj` is an `llong` value.
+Returns `#t` if and only if `obj` is an `llong` value.
 
 ### int8? ###
-Return `#t` if and only if `obj` is an `int8` value.
+Returns `#t` if and only if `obj` is an `int8` value.
 
 ### uint8? ###
-Return `#t` if and only if `obj` is an `nint8` value.
+Returns `#t` if and only if `obj` is an `nint8` value.
 
 ### int16? ###
-Return `#t` if and only if `obj` is an `int16` value.
+Returns `#t` if and only if `obj` is an `int16` value.
 
 ### uint16? ###
-Return `#t` if and only if `obj` is an `nint16` value.
+Returns `#t` if and only if `obj` is an `nint16` value.
 
 ### int32? ###
-Return `#t` if and only if `obj` is an `int32` value.
+Returns `#t` if and only if `obj` is an `int32` value.
 
 ### uint32? ###
-Return `#t` if and only if `obj` is an `nint32` value.
+Returns `#t` if and only if `obj` is an `nint32` value.
 
 ### int64? ###
-Return `#t` if and only if `obj` is an `int64` value.
+Returns `#t` if and only if `obj` is an `int64` value.
 
 ### uint64? ###
-Return `#t` if and only if `obj` is an `nint64` value.
+Returns `#t` if and only if `obj` is an `nint64` value.
+
+### zerofx? ###
+Returns `#t` if and only if `n` is 0.
+
+### zeroelong? ###
+Returns `#t` if and only if `n` is 0.
+
+### zerollong? ###
+Returns `#t` if and only if `n` is 0.
+
+### zeros8? ###
+Returns `#t` if and only if `n` is 0.
+
+### zerou8? ###
+Returns `#t` if and only if `n` is 0.
+
+### zeros16? ###
+Returns `#t` if and only if `n` is 0.
+
+### zerou16? ###
+Returns `#t` if and only if `n` is 0.
+
+### zeros32? ###
+Returns `#t` if and only if `n` is 0.
+
+### zerou32? ###
+Returns `#t` if and only if `n` is 0.
+
+### zeros64? ###
+Returns `#t` if and only if `n` is 0.
+
+### zerou64? ###
+Returns `#t` if and only if `n` is 0.
+
+### odd? ###
+Returns `#t` if and only if `n` is an odd integer.
+
+### oddfx? ###
+Returns `#t` if and only if `n` is an odd number.
+
+### oddelong? ###
+Returns `#t` if and only if `n` is an odd number.
+
+### oddllong? ###
+Returns `#t` if and only if `n` is an odd number.
+
+### odds8? ###
+Returns `#t` if and only if `n` is an odd number.
+
+### oddu8? ###
+Returns `#t` if and only if `n` is an odd number.
+
+### odds16? ###
+Returns `#t` if and only if `n` is an odd number.
+
+### oddu16? ###
+Returns `#t` if and only if `n` is an odd number.
+
+### odds32? ###
+Returns `#t` if and only if `n` is an odd number.
+
+### oddu32? ###
+Returns `#t` if and only if `n` is an odd number.
+
+### odds64? ###
+Returns `#t` if and only if `n` is an odd number.
+
+### oddu64? ###
+Returns `#t` if and only if `n` is an odd number.
+
+### even? ###
+Returns `#t` if and only if `n` is an even integer.
+
+### evenfx? ###
+Returns `#t` if and only if `n` is an even number.
+
+### evenelong? ###
+Returns `#t` if and only if `n` is an even number.
+
+### evenllong? ###
+Returns `#t` if and only if `n` is an even number.
+
+### evens8? ###
+Returns `#t` if and only if `n` is an even number.
+
+### evenu8? ###
+Returns `#t` if and only if `n` is an even number.
+
+### evens16? ###
+Returns `#t` if and only if `n` is an even number.
+
+### evenu16? ###
+Returns `#t` if and only if `n` is an even number.
+
+### evens32? ###
+Returns `#t` if and only if `n` is an even number.
+
+### evenu32? ###
+Returns `#t` if and only if `n` is an even number.
+
+### evens64? ###
+Returns `#t` if and only if `n` is an even number.
+
+### evenu64? ###
+Returns `#t` if and only if `n` is an even number.
+
+Conversions and Casts
+---------------------
+
+### fixnum->int8 ###
+### fixnum->uint8 ###
+
+### fixnum->int16 ###
+### fixnum->uint16 ###
+
+### fixnum->int32 ###
+### fixnum->uint32 ###
+
+### fixnum->int64 ###
+### fixnum->uint64 ###
+
+Comparison Operators
+--------------------
+
+### =fx ###
+### =elong ###
+### =llong ###
+### =s8 ###
+### =u8 ###
+### =s16 ###
+### =u16 ###
+### =s32 ###
+### =u32 ###
+### =s64 ###
+### =u64 ###
+
+### <fx ###
+### <elong ###
+### <llong ###
+### <s8 ###
+### <u8 ###
+### <s16 ###
+### <u16 ###
+### <s32 ###
+### <u32 ###
+### <s64 ###
+### <u64 ###
+
+### <=fx ###
+### <=elong ###
+### <=llong ###
+### <=s8 ###
+### <=u8 ###
+### <=s16 ###
+### <=u16 ###
+### <=s32 ###
+### <=u32 ###
+### <=s64 ###
+### <=u64 ###
+
+### >fx ###
+### >elong ###
+### >llong ###
+### >s8 ###
+### >u8 ###
+### >s16 ###
+### >u16 ###
+### >s32 ###
+### >u32 ###
+### >s64 ###
+### >u64 ###
+
+### >=fx ###
+### >=elong ###
+### >=llong ###
+### >=s8 ###
+### >=u8 ###
+### >=s16 ###
+### >=u16 ###
+### >=s32 ###
+### >=u32 ###
+### >=s64 ###
+### >=u64 ###
 
 Bit Manipulations
 -----------------

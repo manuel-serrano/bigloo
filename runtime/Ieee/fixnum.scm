@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Mon Jun  1 09:39:44 2026 (serrano)                */
+;*    Last change :  Tue Jun  2 10:54:23 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -535,7 +535,7 @@
 	       (method static $<s8::bool (::int8 ::int8)
 		  "LT_INT8")
 	       (method static $<u8::bool (::uint8 ::uint8)
-		  "LT_INT8")
+		  "LT_UINT8")
 	       (method static $<s16::bool (::int16 ::int16)
 		  "LT_INT16")
 	       (method static $<u16::bool (::uint16 ::uint16)
@@ -557,7 +557,7 @@
 	       (method static $<=s8::bool (::int8 ::int8)
 		  "LE_INT8")
 	       (method static $<=u8::bool (::uint8 ::uint8)
-		  "LE_INT8")
+		  "LE_UINT8")
 	       (method static $<=s16::bool (::int16 ::int16)
 		  "LE_INT16")
 	       (method static $<=u16::bool (::uint16 ::uint16)
@@ -579,7 +579,7 @@
 	       (method static $>s8::bool (::int8 ::int8)
 		  "GT_INT8")
 	       (method static $>u8::bool (::uint8 ::uint8)
-		  "GT_INT8")
+		  "GT_UINT8")
 	       (method static $>s16::bool (::int16 ::int16)
 		  "GT_INT16")
 	       (method static $>u16::bool (::uint16 ::uint16)
@@ -601,7 +601,7 @@
 	       (method static $>=s8::bool (::int8 ::int8)
 		  "GE_INT8")
 	       (method static $>=u8::bool (::uint8 ::uint8)
-		  "GE_INT8")
+		  "GE_UINT8")
 	       (method static $>=s16::bool (::int16 ::int16)
 		  "GE_INT16")
 	       (method static $>=u16::bool (::uint16 ::uint16)
@@ -627,7 +627,7 @@
 	       (method static $+s8::int8 (::int8 ::int8)
 		  "PLUS_S8")
 	       (method static $+u8::uint8 (::uint8 ::uint8)
-		  "PLUS_S8")
+		  "PLUS_U8")
 	       (method static $+s16::int16 (::int16 ::int16)
 		  "PLUS_S16")
 	       (method static $+u16::uint16 (::uint16 ::uint16)
@@ -649,7 +649,7 @@
 	       (method static $-s8::int8 (::int8 ::int8)
 		  "MINUS_S8")
 	       (method static $-u8::uint8 (::uint8 ::uint8)
-		  "MINUS_S8")
+		  "MINUS_U8")
 	       (method static $-s16::int16 (::int16 ::int16)
 		  "MINUS_S16")
 	       (method static $-u16::uint16 (::uint16 ::uint16)
@@ -671,7 +671,7 @@
 	       (method static $*s8::int8 (::int8 ::int8)
 		  "MUL_S8")
 	       (method static $*u8::uint8 (::uint8 ::uint8)
-		  "MUL_S8")
+		  "MUL_U8")
 	       (method static $*s16::int16 (::int16 ::int16)
 		  "MUL_S16")
 	       (method static $*u16::uint16 (::uint16 ::uint16)
@@ -693,7 +693,7 @@
 	       (method static $/s8::int8 (::int8 ::int8)
 		  "DIV_S8")
 	       (method static $/u8::uint8 (::uint8 ::uint8)
-		  "DIV_S8")
+		  "DIV_U8")
 	       (method static $/s16::int16 (::int16 ::int16)
 		  "DIV_S16")
 	       (method static $/u16::uint16 (::uint16 ::uint16)
@@ -1596,25 +1596,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    fixnum->stding ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (fixnum->int8 x) ($long->int8 x))
-(define-inline (fixnum->uint8 x) ($long->uint8 x))
-(define-inline (int8->fixnum x) (elong->fixnum ($int8->elong x)))
-(define-inline (uint8->fixnum x) (elong->fixnum ($uint8->elong x)))
+(define-inline (fixnum->int8::int8 x::long) ($long->int8 x))
+(define-inline (fixnum->uint8::uint8 x::long) ($long->uint8 x))
+(define-inline (int8->fixnum::long x::int8) (elong->fixnum ($int8->elong x)))
+(define-inline (uint8->fixnum::long x::uint8) (elong->fixnum ($uint8->elong x)))
 
-(define-inline (fixnum->int16 x) ($long->int16 x))
-(define-inline (fixnum->uint16 x) ($long->uint16 x))
-(define-inline (int16->fixnum x) (elong->fixnum ($int16->elong x)))
-(define-inline (uint16->fixnum x) (elong->fixnum ($uint16->elong x)))
+(define-inline (fixnum->int16::int16 x::long) ($long->int16 x))
+(define-inline (fixnum->uint16::uint16 x::long) ($long->uint16 x))
+(define-inline (int16->fixnum::long x::int16) (elong->fixnum ($int16->elong x)))
+(define-inline (uint16->fixnum::long x::uint16) (elong->fixnum ($uint16->elong x)))
 
-(define-inline (fixnum->int32 x) ($long->int32 x))
-(define-inline (fixnum->uint32 x) ($long->uint32 x))
-(define-inline (int32->fixnum x) (elong->fixnum ($int32->elong x)))
-(define-inline (uint32->fixnum x) ($uint32->long x))
+(define-inline (fixnum->int32::int32 x::long) ($long->int32 x))
+(define-inline (fixnum->uint32::uint32 x::long) ($long->uint32 x))
+(define-inline (int32->fixnum::long x::int32) (elong->fixnum ($int32->elong x)))
+(define-inline (uint32->fixnum::long x::uint32) ($uint32->long x))
 
-(define-inline (fixnum->int64 x) ($long->int64 x))
-(define-inline (fixnum->uint64 x) ($long->uint64 x))
-(define-inline (int64->fixnum x) (elong->fixnum ($int64->elong x)))
-(define-inline (uint64->fixnum x) (elong->fixnum ($uint64->elong x)))
+(define-inline (fixnum->int64::int64 x::long) ($long->int64 x))
+(define-inline (fixnum->uint64::uint64 x::long) ($long->uint64 x))
+(define-inline (int64->fixnum::long x::int64) (elong->fixnum ($int64->elong x)))
+(define-inline (uint64->fixnum::long x::uint64) (elong->fixnum ($uint64->elong x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    fixnum casts                                                     */
@@ -1633,178 +1633,178 @@
 ;*---------------------------------------------------------------------*/
 ;*    {min,max}val{fx,elong,llong} ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (minvalfx) $minvalfx)
-(define-inline (minvalelong) $minvalelong)
-(define-inline (minvalllong) $minvalllong)
+(define-inline (minvalfx::long) $minvalfx)
+(define-inline (minvalelong::elong) $minvalelong)
+(define-inline (minvalllong::llong) $minvalllong)
 
-(define-inline (maxvalfx) $maxvalfx)
-(define-inline (maxvalelong) $maxvalelong)
-(define-inline (maxvalllong) $maxvalllong)
+(define-inline (maxvalfx::long) $maxvalfx)
+(define-inline (maxvalelong::elong) $maxvalelong)
+(define-inline (maxvalllong::llong) $maxvalllong)
 
 ;*---------------------------------------------------------------------*/
 ;*    =                                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (=fx n1 n2) ($=fx n1 n2))
+(define-inline (=fx::bool n1::long n2::long) ($=fx n1 n2))
 
-(define-inline (=elong n1 n2) ($=elong n1 n2))
-(define-inline (=llong n1 n2) ($=llong n1 n2))
+(define-inline (=elong::bool n1::elong n2::elong) ($=elong n1 n2))
+(define-inline (=llong::bool n1::llong n2::llong) ($=llong n1 n2))
 
-(define-inline (=s8 n1 n2) ($=s8 n1 n2))
-(define-inline (=u8 n1 n2) ($=u8 n1 n2))
+(define-inline (=s8::bool n1::int8 n2::int8) ($=s8 n1 n2))
+(define-inline (=u8::bool n1::uint8 n2::uint8) ($=u8 n1 n2))
 
-(define-inline (=s16 n1 n2) ($=s16 n1 n2))
-(define-inline (=u16 n1 n2) ($=u16 n1 n2))
+(define-inline (=s16::bool n1::int16 n2::int16) ($=s16 n1 n2))
+(define-inline (=u16::bool n1::uint16 n2::uint16) ($=u16 n1 n2))
 
-(define-inline (=s32 n1 n2) ($=s32 n1 n2))
-(define-inline (=u32 n1 n2) ($=u32 n1 n2))
+(define-inline (=s32::bool n1::int32 n2::int32) ($=s32 n1 n2))
+(define-inline (=u32::bool n1::uint32 n2::uint32) ($=u32 n1 n2))
 
-(define-inline (=s64 n1 n2) ($=s64 n1 n2))
-(define-inline (=u64 n1 n2) ($=u64 n1 n2))
+(define-inline (=s64::bool n1::int64 n2::int64) ($=s64 n1 n2))
+(define-inline (=u64::bool n1::uint64 n2::uint64) ($=u64 n1 n2))
 
 ;*---------------------------------------------------------------------*/
 ;*    < ...                                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (<fx n1 n2) ($<fx n1 n2))
+(define-inline (<fx::bool n1::long n2::long) ($<fx n1 n2))
 
-(define-inline (<elong n1 n2) ($<elong n1 n2))
-(define-inline (<llong n1 n2) ($<llong n1 n2))
+(define-inline (<elong::bool n1::elong n2::elong) ($<elong n1 n2))
+(define-inline (<llong::bool n1::llong n2::llong) ($<llong n1 n2))
 
-(define-inline (<s8 n1 n2) ($<s8 n1 n2))
-(define-inline (<u8 n1 n2) ($<u8 n1 n2))
+(define-inline (<s8::bool n1::int8 n2::int8) ($<s8 n1 n2))
+(define-inline (<u8::bool n1::uint8 n2::uint8) ($<u8 n1 n2))
 
-(define-inline (<s16 n1 n2) ($<s16 n1 n2))
-(define-inline (<u16 n1 n2) ($<u16 n1 n2))
+(define-inline (<s16::bool n1::int16 n2::int16) ($<s16 n1 n2))
+(define-inline (<u16::bool n1::uint16 n2::uint16) ($<u16 n1 n2))
 
-(define-inline (<s32 n1 n2) ($<s32 n1 n2))
-(define-inline (<u32 n1 n2) ($<u32 n1 n2))
+(define-inline (<s32::bool n1::int32 n2::int32) ($<s32 n1 n2))
+(define-inline (<u32::bool n1::uint32 n2::uint32) ($<u32 n1 n2))
 
-(define-inline (<s64 n1 n2) ($<s64 n1 n2))
-(define-inline (<u64 n1 n2) ($<u64 n1 n2))
+(define-inline (<s64::bool n1::int64 n2::int64) ($<s64 n1 n2))
+(define-inline (<u64::bool n1::uint64 n2::uint64) ($<u64 n1 n2))
 
 ;*---------------------------------------------------------------------*/
 ;*    > ...                                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (>fx n1 n2) ($>fx n1 n2))
+(define-inline (>fx::bool n1::long n2::long) ($>fx n1 n2))
 
-(define-inline (>elong n1 n2) ($>elong n1 n2))
-(define-inline (>llong n1 n2) ($>llong n1 n2))
+(define-inline (>elong::bool n1::elong n2::elong) ($>elong n1 n2))
+(define-inline (>llong::bool n1::llong n2::llong) ($>llong n1 n2))
 
-(define-inline (>s8 n1 n2) ($>s8 n1 n2))
-(define-inline (>u8 n1 n2) ($>u8 n1 n2))
+(define-inline (>s8::bool n1::int8 n2::int8) ($>s8 n1 n2))
+(define-inline (>u8::bool n1::uint8 n2::uint8) ($>u8 n1 n2))
 
-(define-inline (>s16 n1 n2) ($>s16 n1 n2))
-(define-inline (>u16 n1 n2) ($>u16 n1 n2))
+(define-inline (>s16::bool n1::int16 n2::int16) ($>s16 n1 n2))
+(define-inline (>u16::bool n1::uint16 n2::uint16) ($>u16 n1 n2))
 
-(define-inline (>s32 n1 n2) ($>s32 n1 n2))
-(define-inline (>u32 n1 n2) ($>u32 n1 n2))
+(define-inline (>s32::bool n1::int32 n2::int32) ($>s32 n1 n2))
+(define-inline (>u32::bool n1::uint32 n2::uint32) ($>u32 n1 n2))
 
-(define-inline (>s64 n1 n2) ($>s64 n1 n2))
-(define-inline (>u64 n1 n2) ($>u64 n1 n2))
+(define-inline (>s64::bool n1::int64 n2::int64) ($>s64 n1 n2))
+(define-inline (>u64::bool n1::uint64 n2::uint64) ($>u64 n1 n2))
 
 ;*---------------------------------------------------------------------*/
 ;*    <= ...                                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (<=fx n1 n2) ($<=fx n1 n2))
+(define-inline (<=fx::bool n1::long n2::long) ($<=fx n1 n2))
 
-(define-inline (<=elong n1 n2) ($<=elong n1 n2))
-(define-inline (<=llong n1 n2) ($<=llong n1 n2))
+(define-inline (<=elong::bool n1::elong n2::elong) ($<=elong n1 n2))
+(define-inline (<=llong::bool n1::llong n2::llong) ($<=llong n1 n2))
 
-(define-inline (<=s8 n1 n2) ($<=s8 n1 n2))
-(define-inline (<=u8 n1 n2) ($<=u8 n1 n2))
+(define-inline (<=s8::bool n1::int8 n2::int8) ($<=s8 n1 n2))
+(define-inline (<=u8::bool n1::uint8 n2::uint8) ($<=u8 n1 n2))
 
-(define-inline (<=s16 n1 n2) ($<=s16 n1 n2))
-(define-inline (<=u16 n1 n2) ($<=u16 n1 n2))
+(define-inline (<=s16::bool n1::int16 n2::int16) ($<=s16 n1 n2))
+(define-inline (<=u16::bool n1::uint16 n2::uint16) ($<=u16 n1 n2))
 
-(define-inline (<=s32 n1 n2) ($<=s32 n1 n2))
-(define-inline (<=u32 n1 n2) ($<=u32 n1 n2))
+(define-inline (<=s32::bool n1::int32 n2::int32) ($<=s32 n1 n2))
+(define-inline (<=u32::bool n1::uint32 n2::uint32) ($<=u32 n1 n2))
 
-(define-inline (<=s64 n1 n2) ($<=s64 n1 n2))
-(define-inline (<=u64 n1 n2) ($<=u64 n1 n2))
+(define-inline (<=s64::bool n1::int64 n2::int64) ($<=s64 n1 n2))
+(define-inline (<=u64::bool n1::uint64 n2::uint64) ($<=u64 n1 n2))
 
 ;*---------------------------------------------------------------------*/
 ;*    >= ...                                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (>=fx n1 n2) ($>=fx n1 n2))
+(define-inline (>=fx::bool n1::long n2::long) ($>=fx n1 n2))
 
-(define-inline (>=elong n1 n2) ($>=elong n1 n2))
-(define-inline (>=llong n1 n2) ($>=llong n1 n2))
+(define-inline (>=elong::bool n1::elong n2::elong) ($>=elong n1 n2))
+(define-inline (>=llong::bool n1::llong n2::llong) ($>=llong n1 n2))
 
-(define-inline (>=s8 n1 n2) ($>=s8 n1 n2))
-(define-inline (>=u8 n1 n2) ($>=u8 n1 n2))
+(define-inline (>=s8::bool n1::int8 n2::int8) ($>=s8 n1 n2))
+(define-inline (>=u8::bool n1::uint8 n2::uint8) ($>=u8 n1 n2))
 
-(define-inline (>=s16 n1 n2) ($>=s16 n1 n2))
-(define-inline (>=u16 n1 n2) ($>=u16 n1 n2))
+(define-inline (>=s16::bool n1::int16 n2::int16) ($>=s16 n1 n2))
+(define-inline (>=u16::bool n1::uint16 n2::uint16) ($>=u16 n1 n2))
 
-(define-inline (>=s32 n1 n2) ($>=s32 n1 n2))
-(define-inline (>=u32 n1 n2) ($>=u32 n1 n2))
+(define-inline (>=s32::bool n1::int32 n2::int32) ($>=s32 n1 n2))
+(define-inline (>=u32::bool n1::uint32 n2::uint32) ($>=u32 n1 n2))
 
-(define-inline (>=s64 n1 n2) ($>=s64 n1 n2))
-(define-inline (>=u64 n1 n2) ($>=u64 n1 n2))
+(define-inline (>=s64::bool n1::int64 n2::int64) ($>=s64 n1 n2))
+(define-inline (>=u64::bool n1::uint64 n2::uint64) ($>=u64 n1 n2))
 
 ;*---------------------------------------------------------------------*/
 ;*    zero? ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (zerofx? n) (=fx n 0))
+(define-inline (zerofx?::bool n::long) (=fx n 0))
 
-(define-inline (zeroelong? n) (=elong n #e0))
-(define-inline (zerollong? n) (=llong n #l0))
+(define-inline (zeroelong?::bool n::elong) (=elong n #e0))
+(define-inline (zerollong?::bool n::llong) (=llong n #l0))
 
-(define-inline (zeros8? n1) (=s8 n1 (fixnum->int8 0)))
-(define-inline (zerou8? n1) (=u8 n1 (fixnum->uint8 0)))
+(define-inline (zeros8?::bool n1::int8) (=s8 n1 (fixnum->int8 0)))
+(define-inline (zerou8?::bool n1::uint8) (=u8 n1 (fixnum->uint8 0)))
 
-(define-inline (zeros16? n1) (=s16 n1 (fixnum->int16 0)))
-(define-inline (zerou16? n1) (=u16 n1 (fixnum->uint16 0)))
+(define-inline (zeros16?::bool n1::int16) (=s16 n1 (fixnum->int16 0)))
+(define-inline (zerou16?::bool n1::uint16) (=u16 n1 (fixnum->uint16 0)))
 
-(define-inline (zeros32? n1) (=s32 n1 (fixnum->int32 0)))
-(define-inline (zerou32? n1) (=u32 n1 (fixnum->uint32 0)))
+(define-inline (zeros32?::bool n1::int32) (=s32 n1 (fixnum->int32 0)))
+(define-inline (zerou32?::bool n1::uint32) (=u32 n1 (fixnum->uint32 0)))
 
-(define-inline (zeros64? n1) (=s64 n1 (fixnum->int64 0)))
-(define-inline (zerou64? n1) (=u64 n1 (fixnum->uint64 0)))
+(define-inline (zeros64?::bool n1::int64) (=s64 n1 (fixnum->int64 0)))
+(define-inline (zerou64?::bool n1::uint64) (=u64 n1 (fixnum->int64 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    positive? ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-inline (positivefx? n) (>fx n 0))
+(define-inline (positivefx?::bool n) (>fx n 0))
 
-(define-inline (positiveelong? n) (>elong n #e0))
-(define-inline (positivellong? n) (>llong n #l0))
+(define-inline (positiveelong?::bool n) (>elong n #e0))
+(define-inline (positivellong?::bool n) (>llong n #l0))
 
-(define-inline (positives8? n1) (>s8 n1 (fixnum->int8 0)))
-(define-inline (positiveu8? n1) (>u8 n1 (fixnum->uint8 0)))
+(define-inline (positives8?::bool n1) (>s8 n1 (fixnum->int8 0)))
+(define-inline (positiveu8?::bool n1) (>u8 n1 (fixnum->uint8 0)))
 
-(define-inline (positives16? n1) (>s16 n1 (fixnum->int16 0)))
-(define-inline (positiveu16? n1) (>u16 n1 (fixnum->uint16 0)))
+(define-inline (positives16?::bool n1) (>s16 n1 (fixnum->int16 0)))
+(define-inline (positiveu16?::bool n1) (>u16 n1 (fixnum->uint16 0)))
 
-(define-inline (positives32? n1) (>s32 n1 (fixnum->int32 0)))
-(define-inline (positiveu32? n1) (>u32 n1 (fixnum->uint32 0)))
+(define-inline (positives32?::bool n1) (>s32 n1 (fixnum->int32 0)))
+(define-inline (positiveu32?::bool n1) (>u32 n1 (fixnum->uint32 0)))
 
-(define-inline (positives64? n1) (>s64 n1 (fixnum->int64 0)))
-(define-inline (positiveu64? n1) (>u64 n1 (fixnum->uint64 0)))
+(define-inline (positives64?::bool n1) (>s64 n1 (fixnum->int64 0)))
+(define-inline (positiveu64?::bool n1) (>u64 n1 (fixnum->uint64 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    negative? ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-inline (negativefx? n) (<fx n 0))
+(define-inline (negativefx?::bool n) (<fx n 0))
 
-(define-inline (negativeelong? n) (<elong n #e0))
-(define-inline (negativellong? n) (<llong n #l0))
+(define-inline (negativeelong?::bool n) (<elong n #e0))
+(define-inline (negativellong?::bool n) (<llong n #l0))
 
-(define-inline (negatives8? n1) (<s8 n1 (fixnum->int8 0)))
-(define-inline (negativeu8? n1) (<u8 n1 (fixnum->uint8 0)))
+(define-inline (negatives8?::bool n1) (<s8 n1 (fixnum->int8 0)))
+(define-inline (negativeu8?::bool n1) (<u8 n1 (fixnum->uint8 0)))
 
-(define-inline (negatives16? n1) (<s16 n1 (fixnum->int16 0)))
-(define-inline (negativeu16? n1) (<u16 n1 (fixnum->uint16 0)))
+(define-inline (negatives16?::bool n1) (<s16 n1 (fixnum->int16 0)))
+(define-inline (negativeu16?::bool n1) (<u16 n1 (fixnum->uint16 0)))
 
-(define-inline (negatives32? n1) (<s32 n1 (fixnum->int32 0)))
-(define-inline (negativeu32? n1) (<u32 n1 (fixnum->uint32 0)))
+(define-inline (negatives32?::bool n1) (<s32 n1 (fixnum->int32 0)))
+(define-inline (negativeu32?::bool n1) (<u32 n1 (fixnum->uint32 0)))
 
-(define-inline (negatives64? n1) (<s64 n1 (fixnum->int64 0)))
-(define-inline (negativeu64? n1) (<u64 n1 (fixnum->uint64 0)))
+(define-inline (negatives64?::bool n1) (<s64 n1 (fixnum->int64 0)))
+(define-inline (negativeu64?::bool n1) (<u64 n1 (fixnum->uint64 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    odd? ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (odd? x)
+(define (odd?::bool x)
   (cond
      ((fixnum? x) (oddfx? x))
      ((elong? x) (oddelong? x))
@@ -1812,37 +1812,37 @@
      ((bignum? x) (oddbx? x))
      (else (error "odd?" "Illegal integer" x))))
 
-(define-inline (oddfx? x) ($oddfx? x))
+(define-inline (oddfx?::bool x::long) ($oddfx? x))
 
-(define-inline (oddelong? x)
+(define-inline (oddelong?::bool x::elong)
    (if (evenelong? x) #f #t))
-(define-inline (oddllong? x)
+(define-inline (oddllong?::bool x::llong)
    (if (evenllong? x) #f #t))
 
-(define-inline (odds8? n)
+(define-inline (odds8?::bool n::int8)
    (=s8 (remainders8 n (fixnum->int8 2)) (fixnum->int8 1)))
-(define-inline (oddu8? n)
+(define-inline (oddu8?::bool n::uint8)
    (=u8 (remainderu8 n (fixnum->uint8 2)) (fixnum->uint8 1)))
 
-(define-inline (odds16? n)
+(define-inline (odds16?::bool n::int16)
    (=s16 (remainders16 n (fixnum->int16 2)) (fixnum->int16 1)))
-(define-inline (oddu16? n)
+(define-inline (oddu16?::bool n::uint16)
    (=u16 (remainderu16 n (fixnum->uint16 2)) (fixnum->uint16 1)))
 
-(define-inline (odds32? n)
+(define-inline (odds32?::bool n::int32)
    (=s32 (remainders32 n (fixnum->int32 2)) (fixnum->int32 1)))
-(define-inline (oddu32? n)
+(define-inline (oddu32?::bool n::uint32)
    (=u32 (remainderu32 n (fixnum->uint32 2)) (fixnum->uint32 1)))
 
-(define-inline (odds64? n)
+(define-inline (odds64?::bool n::int64)
    (=s64 (remainders64 n (fixnum->int64 2)) (fixnum->int64 1)))
-(define-inline (oddu64? n)
+(define-inline (oddu64?::bool n::uint64)
    (=u64 (remainderu64 n (fixnum->uint64 2)) (fixnum->uint64 1)))
 
 ;*---------------------------------------------------------------------*/
 ;*    even? ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (even? x)
+(define (even?::bool x)
   (cond
      ((fixnum? x) (evenfx? x))
      ((elong? x) (evenelong? x))
@@ -1850,23 +1850,23 @@
      ((bignum? x) (evenbx? x))
      (else (error "even?" "Illegal integer" x))))
 
-(define-inline (evenfx? x)
+(define-inline (evenfx?::bool x::long)
    ($evenfx? x))
 
-(define-inline (evenelong? x) (zeroelong? (remainderelong x #e2)))
-(define-inline (evenllong? x) (zerollong? (remainderllong x #l2)))
+(define-inline (evenelong?::bool x::elong) (zeroelong? (remainderelong x #e2)))
+(define-inline (evenllong?::bool x::llong) (zerollong? (remainderllong x #l2)))
 
-(define-inline (evens8? n1) (not (odds8? n1)))
-(define-inline (evenu8? n1) (not (oddu8? n1)))
+(define-inline (evens8?::bool n1::int8) (not (odds8? n1)))
+(define-inline (evenu8?::bool n1::uint8) (not (oddu8? n1)))
 
-(define-inline (evens16? n1) (not (odds16? n1)))
-(define-inline (evenu16? n1) (not (oddu16? n1)))
+(define-inline (evens16?::bool n1::int16) (not (odds16? n1)))
+(define-inline (evenu16?::bool n1::uint16) (not (oddu16? n1)))
 
-(define-inline (evens32? n1) (not (odds32? n1)))
-(define-inline (evenu32? n1) (not (oddu32? n1)))
+(define-inline (evens32?::bool n1::int32) (not (odds32? n1)))
+(define-inline (evenu32?::bool n1::uint32) (not (oddu32? n1)))
 
-(define-inline (evens64? n1) (not (odds64? n1)))
-(define-inline (evenu64? n1) (not (oddu64? n1)))
+(define-inline (evens64?::bool n1::int64) (not (odds64? n1)))
+(define-inline (evenu64?::bool n1::uint64) (not (oddu64? n1)))
 
 ;*---------------------------------------------------------------------*/
 ;*    min/max ...                                                      */

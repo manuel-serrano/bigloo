@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Tue Jun  2 07:40:05 2026 (serrano)                */
+/*    Last change :  Tue Jun  2 12:20:08 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -865,6 +865,10 @@ public final class foreign {
       return (n1 < n2);
    }
 
+   public static boolean LT_UINT8(byte n1, byte n2) {
+      return (n1 & 0xff) < (n2 & 0xff);
+   }
+
    public static boolean LT_INT16(short n1, short n2) {
       return (n1 < n2);
    }
@@ -895,6 +899,10 @@ public final class foreign {
 
    public static boolean LE_INT8(byte n1, byte n2) {
       return (n1 <= n2);
+   }
+
+   public static boolean LE_UINT8(byte n1, byte n2) {
+      return ((n1 & 0xff) <= (n2 & 0xff));
    }
 
    public static boolean LE_INT16(short n1, short n2) {
@@ -929,6 +937,10 @@ public final class foreign {
       return (n1 > n2);
    }
 
+   public static boolean GT_UINT8(byte n1, byte n2) {
+      return ((n1 & 0xff) > (n2 & 0xff));
+   }
+
    public static boolean GT_INT16(short n1, short n2) {
       return (n1 > n2);
    }
@@ -959,6 +971,10 @@ public final class foreign {
 
    public static boolean GE_INT8(byte n1, byte n2) {
       return (n1 >= n2);
+   }
+
+   public static boolean GE_UINT8(byte n1, byte n2) {
+      return ((n1 & 0xff) >= (n2 & 0xff));
    }
 
    public static boolean GE_INT16(short n1, short n2) {
@@ -1029,6 +1045,10 @@ public final class foreign {
       return (byte)(n1 + n2);
    }
 
+   public static byte PLUS_U8(byte n1, byte n2) {
+      return (byte)((n1 & 0xff) + (n2 & 0xff));
+   }
+
    public static short PLUS_S16(short n1, short n2) {
       return (short)(n1 + n2);
    }
@@ -1086,6 +1106,10 @@ public final class foreign {
 
    public static byte MINUS_S8(byte n1, byte n2) {
       return (byte)(n1 - n2);
+   }
+
+   public static byte MINUS_U8(byte n1, byte n2) {
+      return (byte)((n1 & 0xff) - (n2 & 0xff));
    }
 
    public static short MINUS_S16(short n1, short n2) {
@@ -1148,6 +1172,10 @@ public final class foreign {
 
    public static byte MUL_S8(byte n1, byte n2) {
       return (byte)(n1 * n2);
+   }
+
+   public static byte MUL_U8(byte n1, byte n2) {
+      return (byte)((n1 & 0xff) * (n2 & 0xff));
    }
 
    public static short MUL_S16(short n1, short n2) {
@@ -1218,6 +1246,10 @@ public final class foreign {
 
    public static byte DIV_S8(byte n1, byte n2) {
       return (byte)(n1 / n2);
+   }
+
+   public static byte DIV_U8(byte n1, byte n2) {
+      return (byte)((n1 & 0xff) / (n2 & 0xff));
    }
 
    public static short DIV_S16(short n1, short n2) {
