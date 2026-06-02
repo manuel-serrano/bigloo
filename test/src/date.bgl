@@ -232,7 +232,23 @@
       (seconds->date
          (+elong
             (date->seconds (make-date :sec 1 :min 1 :hour 1
-                              :day 16 :month  5 :year 1996))
+                              :day 16 :month 5 :year 1996))
+            (day-seconds))))
+   :expected 17)
+(define-test date-day
+   (date-day
+      (seconds->date
+         (+elong
+            (date->seconds (make-date :sec 1 :min 1 :hour 8
+                              :day 16 :month 5 :year 1996))
+            (day-seconds))))
+   :expected 17)
+(define-test date-day
+   (date-day
+      (seconds->date
+         (+elong
+            (date->seconds (make-date :sec 1 :min 1 :hour 1
+                              :day 16 :month 7 :year 1996))
             (day-seconds))))
    :expected 17)
 (define-test date-month
@@ -240,7 +256,7 @@
       (seconds->date
          (+elong
             (date->seconds (make-date :sec 1 :min 1 :hour 1
-                              :day 31 :month  5 :year 1996))
+                              :day 31 :month 5 :year 1996))
             (day-seconds))))
    :expected 6)
 (define-test date-day
@@ -248,7 +264,7 @@
       (seconds->date
          (+elong
             (date->seconds (make-date :sec 1 :min 1 :hour 1
-                              :day 31 :month  5 :year 1996))
+                              :day 31 :month 5 :year 1996))
             (day-seconds))))
    :expected 1)
 (define-test date-day
@@ -256,7 +272,7 @@
       (seconds->date
          (+elong
             (date->seconds (make-date :sec 1 :min 1 :hour 1
-                              :day 17 :month  5 :year 1996))
+                              :day 17 :month 5 :year 1996))
             (*elong #e31 (day-seconds)))))
    :expected 17)
 (define-test date-month
@@ -264,7 +280,7 @@
       (seconds->date
          (+elong
             (date->seconds (make-date :sec 1 :min 1 :hour 1
-                              :day 17 :month  5 :year 1996))
+                              :day 17 :month 5 :year 1996))
             (*elong #e31 (day-seconds)))))
    :expected 6)
 (define-test date-day

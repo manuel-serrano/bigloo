@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/runtime/Jlib/date.java                      */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/date.java         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Jun  1 10:20:45 2026                          */
-/*    Last change :                                                    */
+/*    Last change :  Tue Jun  2 05:20:59 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java Dates implementation                                        */
@@ -53,13 +53,21 @@ public class date extends obj {
    }
 
    public date(final long seconds) {
-      final TimeZone tmz = new SimpleTimeZone(0, "UTC");
-      calendar = new GregorianCalendar(tmz);
+      calendar = new GregorianCalendar();
       final Date d = new Date();
-      final long milliseconds = seconds * 1000;
+      final long milliseconds = seconds * 1000;	 
       d.setTime(milliseconds);
       calendar.setTime(d);
-      timezone = 0;
+      final TimeZone tmz = calendar.getTimeZone();   
+      timezone = tmz.getOffset(milliseconds) / 1000;
+/*       final TimeZone tmz = new SimpleTimeZone(0, "UTC");            */
+/*       calendar = new GregorianCalendar(tmz);                        */
+/*       final Date d = new Date();                                    */
+/*       final long milliseconds = seconds * 1000;                     */
+/*       d.setTime(milliseconds);                                      */
+/*       calendar.setTime(d);                                          */
+/*       System.out.println("ICI s=" + seconds + " " + calendar.get(Calendar.DAY_OF_MONTH)); */
+/*       timezone = 0;                                                 */
    }
    
    public date(final long n, boolean b) {
@@ -86,5 +94,17 @@ public class date extends obj {
       c2.setTime(d);
       timezone = tmz.getOffset(milliseconds) / 1000;
       nsec = b ? n : (n % 1000000);
+   }
+
+   public int getYday() {
+      int y = calendar.get(Calendar.YEAR);
+      int m = calendar.get(Calendar.MONTH);
+      int d = calendar.get(Calendar.DAY_OF_MONTH);
+
+      final TimeZone tmz = new SimpleTimeZone(0, "UTC");
+      Calendar c = new GregorianCalendar(tmz);
+      calendar.set(y, m, d, 3, 1, 1);
+      calendar.add(Calendar.MILLISECOND, timezone * 1000);
+      return c.get(Calendar.YEAR);
    }
 }

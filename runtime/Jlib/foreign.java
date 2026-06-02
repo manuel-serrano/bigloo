@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/runtime/Jlib/foreign.java                   */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/foreign.java      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Mon Jun  1 10:18:45 2026 (serrano)                */
+/*    Last change :  Tue Jun  2 05:25:37 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -3033,7 +3033,8 @@ public final class foreign {
    }
 
    public static int BGL_DATE_YDAY(date d) {
-      return d.calendar.get(Calendar.DAY_OF_YEAR);
+      return d.getYday();
+      //return d.calendar.get(Calendar.DAY_OF_YEAR);
    }
 
    public static int BGL_DATE_MONTH(date d) {
