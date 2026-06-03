@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Ieee/fixnum.scm                     */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Ieee/fixnum.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Tue Jun  2 10:54:23 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 08:53:16 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -146,7 +146,6 @@
 	   (infix macro $>=u64::bool (::uint64 ::uint64) ">=")
 	   (macro $evenfx?::bool (::long) "EVENP_FX")
 	   (macro $oddfx?::bool (::long) "ODDP_FX")
-	   ;; warning, the second argument of $*fx/ov and $*fx/ov-ov is ::long
 	   (macro $+fx/ov::bool (::bint ::bint ::bint) "BGL_ADDFX_OV")
 	   (macro $+fx/w-ov::bint (::bint ::bint) "BGL_ADDFX_SANS_OV")
 	   (macro $-fx/ov::bool (::bint ::bint ::bint) "BGL_SUBFX_OV")
@@ -1143,7 +1142,7 @@
 	    (exptu32::uint32 ::uint32 ::uint32)
 	    (expts64::int64 ::int64 ::int64)
 	    (exptu64::uint64 ::uint64 ::uint64)
-	    (integer->string::bstring ::long #!optional (radix::long 10))
+	    (integer->string::bstring ::obj #!optional (radix::long 10))
 	    (fixnum->string::bstring ::long #!optional (radix::long 10))
 	    (integer->string/padding::bstring ::long ::long #!optional (radix::long 10))
 	    (unsigned->string::bstring ::obj #!optional (radix::long 16))
@@ -1151,9 +1150,9 @@
 	    (inline strtoeul::elong ::bstring radix start)
 	    (inline strtoull::llong ::bstring radix start)
 	    (string->integer::long ::bstring #!optional (radix::long 10) (start::long 0))
-	    (elong->string::bstring ::elong . pair)
+	    (elong->string::bstring ::elong #!optional (radix::long 10))
 	    (string->elong::elong ::bstring #!optional (radix::long 10))
-	    (llong->string::bstring ::llong . pair)
+	    (llong->string::bstring ::llong #!optional (radix::long 10))
 	    (string->llong::llong ::bstring #!optional (radix::long 10))
 	    (string->integer-obj::obj ::bstring ::long)
  	    (inline random::long ::long)
@@ -1880,65 +1879,65 @@
 	     (loop (car xs) (cdr xs))
 	     (loop y (cdr xs))))))
 
-(define (minfx n1 . nn) (min/max <fx n1 . nn))
+(define (minfx::long n1::long . nn) (min/max <fx n1 . nn))
 
-(define (minelong n1 . nn) (min/max <elong n1 . nn))
-(define (minllong n1 . nn) (min/max <llong n1 . nn))
+(define (minelong::elong n1::elong . nn) (min/max <elong n1 . nn))
+(define (minllong::llong n1::llong . nn) (min/max <llong n1 . nn))
 
-(define (mins8 n1 . nn) (min/max <s8 n1 . nn))
-(define (minu8 n1 . nn) (min/max <u8 n1 . nn))
+(define (mins8::int8 n1::int8 . nn) (min/max <s8 n1 . nn))
+(define (minu8::uint8 n1::uint8 . nn) (min/max <u8 n1 . nn))
    
-(define (mins16 n1 . nn) (min/max <s16 n1 . nn))
-(define (minu16 n1 . nn) (min/max <u16 n1 . nn))
+(define (mins16::int16 n1::int16 . nn) (min/max <s16 n1 . nn))
+(define (minu16::uint16 n1::uint16 . nn) (min/max <u16 n1 . nn))
    
-(define (mins32 n1 . nn) (min/max <s32 n1 . nn))
-(define (minu32 n1 . nn) (min/max <u32 n1 . nn))
+(define (mins32::int32 n1::int32 . nn) (min/max <s32 n1 . nn))
+(define (minu32::uint32 n1::uint32 . nn) (min/max <u32 n1 . nn))
    
-(define (mins64 n1 . nn) (min/max <s64 n1 . nn))
-(define (minu64 n1 . nn) (min/max <u64 n1 . nn))
+(define (mins64::int64 n1::int64 . nn) (min/max <s64 n1 . nn))
+(define (minu64::uint64 n1::uint64 . nn) (min/max <u64 n1 . nn))
    
 ;*---------------------------------------------------------------------*/
 ;*    maxfx ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (maxfx n1 . nn)
+(define (maxfx::long n1::long . nn)
    (min/max >fx n1 . nn))
 
-(define (maxelong n1 . nn) (min/max >elong n1 . nn))
-(define (maxllong n1 . nn) (min/max >llong n1 . nn))
+(define (maxelong::elong n1::elong . nn) (min/max >elong n1 . nn))
+(define (maxllong::llong n1::llong . nn) (min/max >llong n1 . nn))
 
-(define (maxs8 n1 . nn) (min/max >s8 n1 . nn))
-(define (maxu8 n1 . nn) (min/max >u8 n1 . nn))
+(define (maxs8::int8 n1::int8 . nn) (min/max >s8 n1 . nn))
+(define (maxu8::uint8 n1::uint8 . nn) (min/max >u8 n1 . nn))
    
-(define (maxs16 n1 . nn) (min/max >s16 n1 . nn))
-(define (maxu16 n1 . nn) (min/max >u16 n1 . nn))
+(define (maxs16::int16 n1::int16 . nn) (min/max >s16 n1 . nn))
+(define (maxu16::uint16 n1::uint16 . nn) (min/max >u16 n1 . nn))
    
-(define (maxs32 n1 . nn) (min/max >s32 n1 . nn))
-(define (maxu32 n1 . nn) (min/max >u32 n1 . nn))
+(define (maxs32::int32 n1::int32 . nn) (min/max >s32 n1 . nn))
+(define (maxu32::uint32 n1::uint32 . nn) (min/max >u32 n1 . nn))
    
-(define (maxs64 n1 . nn) (min/max >s64 n1 . nn))
-(define (maxu64 n1 . nn) (min/max >u64 n1 . nn))
+(define (maxs64::int64 n1::int64 . nn) (min/max >s64 n1 . nn))
+(define (maxu64::uint64 n1::uint64 . nn) (min/max >u64 n1 . nn))
    
 ;*---------------------------------------------------------------------*/
 ;*    + ...                                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (+fx z1 z2) ($+fx z1 z2))
+(define-inline (+fx::long z1::long z2::long) ($+fx z1 z2))
 
-(define-inline (+elong z1 z2) ($+elong z1 z2))
-(define-inline (+llong z1 z2) ($+llong z1 z2))
+(define-inline (+elong::elong z1::elong z2::elong) ($+elong z1 z2))
+(define-inline (+llong::llong z1::llong z2::llong) ($+llong z1 z2))
 
-(define-inline (+s8 z1 z2) ($+s8 z1 z2))
-(define-inline (+u8 z1 z2) ($+u8 z1 z2))
+(define-inline (+s8::int8 z1::int8 z2::int8) ($+s8 z1 z2))
+(define-inline (+u8::uint8 z1::uint8 z2::uint8) ($+u8 z1 z2))
 
-(define-inline (+s16 z1 z2) ($+s16 z1 z2))
-(define-inline (+u16 z1 z2) ($+u16 z1 z2))
+(define-inline (+s16::int16 z1::int16 z2::int16) ($+s16 z1 z2))
+(define-inline (+u16::uint16 z1::uint16 z2::uint16) ($+u16 z1 z2))
 
-(define-inline (+s32 z1 z2) ($+s32 z1 z2))
-(define-inline (+u32 z1 z2) ($+u32 z1 z2))
+(define-inline (+s32::int32 z1::int32 z2::int32) ($+s32 z1 z2))
+(define-inline (+u32::uint32 z1::uint32 z2::uint32) ($+u32 z1 z2))
 
-(define-inline (+s64 z1 z2) ($+s64 z1 z2))
-(define-inline (+u64 z1 z2) ($+u64 z1 z2))
+(define-inline (+s64::int64 z1::int64 z2::int64) ($+s64 z1 z2))
+(define-inline (+u64::uint64 z1::uint64 z2::uint64) ($+u64 z1 z2))
 
-(define-inline (+fx/ov z1 z2)
+(define-inline (+fx/ov::obj z1::bint z2::bint)
    (cond-expand
       (bigloo-c
        ($let ((tmp::bint 0))
@@ -1951,24 +1950,24 @@
 ;*---------------------------------------------------------------------*/
 ;*    - ...                                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (-fx z1 z2) ($-fx z1 z2))
+(define-inline (-fx::long z1::long z2::long) ($-fx z1 z2))
 
-(define-inline (-elong z1 z2) ($-elong z1 z2))
-(define-inline (-llong z1 z2) ($-llong z1 z2))
+(define-inline (-elong::elong z1::elong z2::elong) ($-elong z1 z2))
+(define-inline (-llong::llong z1::llong z2::llong) ($-llong z1 z2))
 
-(define-inline (-s8 z1 z2) ($-s8 z1 z2))
-(define-inline (-u8 z1 z2) ($-u8 z1 z2))
+(define-inline (-s8::int8 z1::int8 z2::int8) ($-s8 z1 z2))
+(define-inline (-u8::uint8 z1::uint8 z2::uint8) ($-u8 z1 z2))
 
-(define-inline (-s16 z1 z2) ($-s16 z1 z2))
-(define-inline (-u16 z1 z2) ($-u16 z1 z2))
+(define-inline (-s16::int16 z1::int16 z2::int16) ($-s16 z1 z2))
+(define-inline (-u16::uint16 z1::uint16 z2::uint16) ($-u16 z1 z2))
 
-(define-inline (-s32 z1 z2) ($-s32 z1 z2))
-(define-inline (-u32 z1 z2) ($-u32 z1 z2))
+(define-inline (-s32::int32 z1::int32 z2::int32) ($-s32 z1 z2))
+(define-inline (-u32::uint32 z1::uint32 z2::uint32) ($-u32 z1 z2))
 
-(define-inline (-s64 z1 z2) ($-s64 z1 z2))
-(define-inline (-u64 z1 z2) ($-u64 z1 z2))
+(define-inline (-s64::int64 z1::int64 z2::int64) ($-s64 z1 z2))
+(define-inline (-u64::uint64 z1::uint64 z2::uint64) ($-u64 z1 z2))
 
-(define-inline (-fx/ov z1 z2)
+(define-inline (-fx/ov::obj z1::bint z2::bint)
    (cond-expand
       (bigloo-c
        ($let ((tmp::bint 0))
@@ -1981,24 +1980,24 @@
 ;*---------------------------------------------------------------------*/
 ;*    * ...                                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (*fx z1 z2) ($*fx z1 z2))
+(define-inline (*fx::long z1::long z2::long) ($*fx z1 z2))
 
-(define-inline (*elong z1 z2) ($*elong z1 z2))
-(define-inline (*llong z1 z2) ($*llong z1 z2))
+(define-inline (*elong::elong z1::elong z2::elong) ($*elong z1 z2))
+(define-inline (*llong::llong z1::llong z2::llong) ($*llong z1 z2))
 
-(define-inline (*s8 z1 z2) ($*s8 z1 z2))
-(define-inline (*u8 z1 z2) ($*u8 z1 z2))
+(define-inline (*s8::int8 z1::int8 z2::int8) ($*s8 z1 z2))
+(define-inline (*u8::uint8 z1::uint8 z2::uint8) ($*u8 z1 z2))
 
-(define-inline (*s16 z1 z2) ($*s16 z1 z2))
-(define-inline (*u16 z1 z2) ($*u16 z1 z2))
+(define-inline (*s16::int16 z1::int16 z2::int16) ($*s16 z1 z2))
+(define-inline (*u16::uint16 z1::uint16 z2::uint16) ($*u16 z1 z2))
 
-(define-inline (*s32 z1 z2) ($*s32 z1 z2))
-(define-inline (*u32 z1 z2) ($*u32 z1 z2))
+(define-inline (*s32::int32 z1::int32 z2::int32) ($*s32 z1 z2))
+(define-inline (*u32::uint32 z1::uint32 z2::uint32) ($*u32 z1 z2))
 
-(define-inline (*s64 z1 z2) ($*s64 z1 z2))
-(define-inline (*u64 z1 z2) ($*u64 z1 z2))
+(define-inline (*s64::int64 z1::int64 z2::int64) ($*s64 z1 z2))
+(define-inline (*u64::uint64 z1::uint64 z2::uint64) ($*u64 z1 z2))
 
-(define-inline (*fx/ov z1 z2)
+(define-inline (*fx/ov::obj z1::bint z2::bint)
    (cond-expand
       (bigloo-c
        ($let ((tmp::bint 0))
@@ -2011,22 +2010,22 @@
 ;*---------------------------------------------------------------------*/
 ;*    / ...                                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (/fx z1 z2) ($/fx z1 z2))
+(define-inline (/fx::long z1::long z2::long) ($/fx z1 z2))
 
-(define-inline (/elong z1 z2) ($/elong z1 z2))
-(define-inline (/llong z1 z2) ($/llong z1 z2))
+(define-inline (/elong::elong z1::elong z2::elong) ($/elong z1 z2))
+(define-inline (/llong::llong z1::llong z2::llong) ($/llong z1 z2))
 
-(define-inline (/s8 z1 z2) ($/s8 z1 z2))
-(define-inline (/u8 z1 z2) ($/u8 z1 z2))
+(define-inline (/s8::int8 z1::int8 z2::int8) ($/s8 z1 z2))
+(define-inline (/u8::uint8 z1::uint8 z2::uint8) ($/u8 z1 z2))
 
-(define-inline (/s16 z1 z2) ($/s16 z1 z2))
-(define-inline (/u16 z1 z2) ($/u16 z1 z2))
+(define-inline (/s16::int16 z1::int16 z2::int16) ($/s16 z1 z2))
+(define-inline (/u16::uint16 z1::uint16 z2::uint16) ($/u16 z1 z2))
 
-(define-inline (/s32 z1 z2) ($/s32 z1 z2))
-(define-inline (/u32 z1 z2) ($/u32 z1 z2))
+(define-inline (/s32::int32 z1::int32 z2::int32) ($/s32 z1 z2))
+(define-inline (/u32::uint32 z1::uint32 z2::uint32) ($/u32 z1 z2))
 
-(define-inline (/s64 z1 z2) ($/s64 z1 z2))
-(define-inline (/u64 z1 z2) ($/u64 z1 z2))
+(define-inline (/s64::int64 z1::int64 z2::int64) ($/s64 z1 z2))
+(define-inline (/u64::uint64 z1::uint64 z2::uint64) ($/u64 z1 z2))
 
 (define-inline (/fx/ov z1 z2)
    (if (=fx z2 0)
@@ -2039,42 +2038,42 @@
 ;*---------------------------------------------------------------------*/
 ;*    neg ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (negfx n1) ($negfx n1))
+(define-inline (negfx::long n1::long) ($negfx n1))
 
-(define-inline (negelong n1) ($negelong n1))
-(define-inline (negllong n1) ($negllong n1))
+(define-inline (negelong::elong n1::elong) ($negelong n1))
+(define-inline (negllong::llong n1::llong) ($negllong n1))
 
-(define-inline (negs8 z) (-s8 (fixnum->int8 0) z))
-(define-inline (negu8 z) (-u8 (fixnum->uint8 0) z))
+(define-inline (negs8::int8 z) (-s8 (fixnum->int8 0) z))
+(define-inline (negu8::uint8 z) (-u8 (fixnum->uint8 0) z))
 
-(define-inline (negs16 z) (-s16 (fixnum->int16 0) z))
-(define-inline (negu16 z) (-u16 (fixnum->uint16 0) z))
+(define-inline (negs16::int16 z) (-s16 (fixnum->int16 0) z))
+(define-inline (negu16::uint16 z) (-u16 (fixnum->uint16 0) z))
 
-(define-inline (negs32 z) (-s32 (fixnum->int32 0) z))
-(define-inline (negu32 z) (-u32 (fixnum->uint32 0) z))
+(define-inline (negs32::int32 z) (-s32 (fixnum->int32 0) z))
+(define-inline (negu32::uint32 z) (-u32 (fixnum->uint32 0) z))
 
-(define-inline (negs64 z) (-s64 (fixnum->int64 0) z))
-(define-inline (negu64 z) (-u64 (fixnum->uint64 0) z))
+(define-inline (negs64::int64 z) (-s64 (fixnum->int64 0) z))
+(define-inline (negu64::uint64 z) (-u64 (fixnum->uint64 0) z))
 
 ;*---------------------------------------------------------------------*/
 ;*    abs ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (absfx n) (if (<fx n 0) (negfx n) n))
+(define-inline (absfx::long n::long) (if (<fx n 0) (negfx n) n))
 
-(define-inline (abselong n) (if (<elong n #e0) (negelong n) n))
-(define-inline (absllong n) (if (<llong n #l0) (negllong n) n))
+(define-inline (abselong::elong n::elong) (if (<elong n #e0) (negelong n) n))
+(define-inline (absllong::llong n::llong) (if (<llong n #l0) (negllong n) n))
 
-(define-inline (abss8 z) (if (<s8 z (fixnum->int8 0)) (negs8 z) z))
-(define-inline (absu8 z) z)
+(define-inline (abss8::int8 z) (if (<s8 z (fixnum->int8 0)) (negs8 z) z))
+(define-inline (absu8::uint8 z) z)
 
-(define-inline (abss16 z) (if (<s16 z (fixnum->int16 0)) (negs16 z) z))
-(define-inline (absu16 z) z)
+(define-inline (abss16::int16 z) (if (<s16 z (fixnum->int16 0)) (negs16 z) z))
+(define-inline (absu16::uint16 z) z)
 
-(define-inline (abss32 z) (if (<s32 z (fixnum->int32 0)) (negs32 z) z))
-(define-inline (absu32 z) z)
+(define-inline (abss32::int32 z) (if (<s32 z (fixnum->int32 0)) (negs32 z) z))
+(define-inline (absu32::uint32 z) z)
 
-(define-inline (abss64 z) (if (<s64 z (fixnum->int64 0)) (negs64 z) z))
-(define-inline (absu64 z) z)
+(define-inline (abss64::int64 z) (if (<s64 z (fixnum->int64 0)) (negs64 z) z))
+(define-inline (absu64::uint64 z) z)
 
 ;*---------------------------------------------------------------------*/
 ;*    int2op ...                                                       */
@@ -2141,29 +2140,29 @@
 ;*---------------------------------------------------------------------*/
 (define (quotient n1 n2) (int2op quotient n1 n2 'safe))
 
-(define-inline (quotientfx n1 n2) ($quotientfx n1 n2))
+(define-inline (quotientfx::long n1::long n2::long) ($quotientfx n1 n2))
 
-(define-inline (quotientelong n1 n2) ($quotientelong n1 n2))
-(define-inline (quotientllong n1 n2) ($quotientllong n1 n2))
+(define-inline (quotientelong::elong n1::elong n2::elong) ($quotientelong n1 n2))
+(define-inline (quotientllong::llong n1::llong n2::llong) ($quotientllong n1 n2))
 
-(define-inline (quotients8 n1 n2) ($quotients8 n1 n2))
-(define-inline (quotientu8 n1 n2) ($quotientu8 n1 n2))
+(define-inline (quotients8::int8 n1::int8 n2::int8) ($quotients8 n1 n2))
+(define-inline (quotientu8::uint8 n1::uint8 n2::uint8) ($quotientu8 n1 n2))
 
-(define-inline (quotients16 n1 n2) ($quotients16 n1 n2))
-(define-inline (quotientu16 n1 n2) ($quotientu16 n1 n2))
+(define-inline (quotients16::int16 n1::int16 n2::int16) ($quotients16 n1 n2))
+(define-inline (quotientu16::uint16 n1::uint16 n2::uint16) ($quotientu16 n1 n2))
 
-(define-inline (quotients32 n1 n2) ($quotients32 n1 n2))
-(define-inline (quotientu32 n1 n2) ($quotientu32 n1 n2))
+(define-inline (quotients32::int32 n1::int32 n2::int32) ($quotients32 n1 n2))
+(define-inline (quotientu32::uint32 n1::uint32 n2::uint32) ($quotientu32 n1 n2))
 
-(define-inline (quotients64 n1 n2) ($quotients64 n1 n2))
-(define-inline (quotientu64 n1 n2) ($quotientu64 n1 n2))
+(define-inline (quotients64::int64 n1::int64 n2::int64) ($quotients64 n1 n2))
+(define-inline (quotientu64::uint64 n1::uint64 n2::uint64) ($quotientu64 n1 n2))
 
 ;*---------------------------------------------------------------------*/
 ;*    remainder ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (remainder n1 n2) (int2op remainder n1 n2))
 
-(define-inline (remainderfx n1 n2)
+(define-inline (remainderfx::long n1::long n2::long)
    ;; on a 64bit machines, if the two arguments are 32bit integer, use
    ;; a 32 bit division which is significantly faster than a 64bit operation
    (cond-expand
@@ -2179,20 +2178,20 @@
       (else
        ($remainderfx n1 n2))))
 
-(define-inline (remainderelong n1 n2) ($remainderelong n1 n2))
-(define-inline (remainderllong n1 n2) ($remainderllong n1 n2))
+(define-inline (remainderelong::elong n1::elong n2::elong) ($remainderelong n1 n2))
+(define-inline (remainderllong::llong n1::llong n2::llong) ($remainderllong n1 n2))
 
-(define-inline (remainders8 n1 n2) ($remainders8 n1 n2))
-(define-inline (remainderu8 n1 n2) ($remainderu8 n1 n2))
+(define-inline (remainders8::int8 n1::int8 n2::int8) ($remainders8 n1 n2))
+(define-inline (remainderu8::uint8 n1::uint8 n2::uint8) ($remainderu8 n1 n2))
 
-(define-inline (remainders16 n1 n2) ($remainders16 n1 n2))
-(define-inline (remainderu16 n1 n2) ($remainderu16 n1 n2))
+(define-inline (remainders16::int16 n1::int16 n2::int16) ($remainders16 n1 n2))
+(define-inline (remainderu16::uint16 n1::uint16 n2::uint16) ($remainderu16 n1 n2))
 
-(define-inline (remainders32 n1 n2) ($remainders32 n1 n2))
-(define-inline (remainderu32 n1 n2) ($remainderu32 n1 n2))
+(define-inline (remainders32::int32 n1::int32 n2::int32) ($remainders32 n1 n2))
+(define-inline (remainderu32::uint32 n1::uint32 n2::uint32) ($remainderu32 n1 n2))
 
-(define-inline (remainders64 n1 n2) ($remainders64 n1 n2))
-(define-inline (remainderu64 n1 n2) ($remainderu64 n1 n2))
+(define-inline (remainders64::int64 n1::int64 n2::int64) ($remainders64 n1 n2))
+(define-inline (remainderu64::uint64 n1::uint64 n2::uint64) ($remainderu64 n1 n2))
 
 ;*---------------------------------------------------------------------*/
 ;*    modulo ...                                                       */
@@ -2200,7 +2199,7 @@
 (define (modulo n1 n2)
   (int2op modulo n1 n2))
 
-(define (modulofx x y)
+(define (modulofx::long x::long y::long)
   (let ((r (remainderfx x y)))
     (if (zerofx? r)
 	r
@@ -2208,7 +2207,7 @@
 	    (if (positivefx? r) r (+fx y r))
 	    (if (negativefx? r) r (+fx y r))))))
 
-(define (moduloelong x y)
+(define (moduloelong::elong x::elong y::elong)
   (let ((r (remainderelong x y)))
     (if (zeroelong? r)
 	r
@@ -2216,7 +2215,7 @@
 	    (if (positiveelong? r) r (+elong y r))
 	    (if (negativeelong? r) r (+elong y r))))))
 
-(define (modulollong x y)
+(define (modulollong::llong x::llong y::llong)
   (let ((r (remainderllong x y)))
     (if (zerollong? r)
 	r
@@ -2224,14 +2223,14 @@
 	    (if (positivellong? r) r (+llong y r))
 	    (if (negativellong? r) r (+llong y r))))))
 
-(define (modulos8 x y)
+(define (modulos8::int8 x::int8 y::int8)
   (let ((r (remainders8 x y)))
     (if (zeros8? r)
 	r
 	(if (positives8? y)
 	    (if (positives8? r) r (+s8 y r))
 	    (if (negatives8? r) r (+s8 y r))))))
-(define (modulou8 x y)
+(define (modulou8::uint8 x::uint8 y::uint8)
   (let ((r (remainderu8 x y)))
     (if (zerou8? r)
 	r
@@ -2239,14 +2238,14 @@
 	    (if (positiveu8? r) r (+u8 y r))
 	    (if (negativeu8? r) r (+u8 y r))))))
 
-(define (modulos16 x y)
+(define (modulos16::int16 x::int16 y::int16)
   (let ((r (remainders16 x y)))
     (if (zeros16? r)
 	r
 	(if (positives16? y)
 	    (if (positives16? r) r (+s16 y r))
 	    (if (negatives16? r) r (+s16 y r))))))
-(define (modulou16 x y)
+(define (modulou16::uint16 x::uint16 y::uint16)
   (let ((r (remainderu16 x y)))
     (if (zerou16? r)
 	r
@@ -2254,14 +2253,14 @@
 	    (if (positiveu16? r) r (+u16 y r))
 	    (if (negativeu16? r) r (+u16 y r))))))
 
-(define (modulos32 x y)
+(define (modulos32::int32 x::int32 y::int32)
   (let ((r (remainders32 x y)))
     (if (zeros32? r)
 	r
 	(if (positives32? y)
 	    (if (positives32? r) r (+s32 y r))
 	    (if (negatives32? r) r (+s32 y r))))))
-(define (modulou32 x y)
+(define (modulou32::uint32 x::uint32 y::uint32)
   (let ((r (remainderu32 x y)))
     (if (zerou32? r)
 	r
@@ -2269,14 +2268,14 @@
 	    (if (positiveu32? r) r (+u32 y r))
 	    (if (negativeu32? r) r (+u32 y r))))))
 
-(define (modulos64 x y)
+(define (modulos64::int64 x::int64 y::int64)
   (let ((r (remainders64 x y)))
     (if (zeros64? r)
 	r
 	(if (positives64? y)
 	    (if (positives64? r) r (+s64 y r))
 	    (if (negatives64? r) r (+s64 y r))))))
-(define (modulou64 x y)
+(define (modulou64::uint64 x::uint64 y::uint64)
   (let ((r (remainderu64 x y)))
     (if (zerou64? r)
 	r
@@ -2310,22 +2309,22 @@
 
 (define (gcd . x) (gcdop || x 0))
 
-(define (gcdfx . x) (gcdop fx x 0))
+(define (gcdfx::long . x) (gcdop fx x 0))
 
-(define (gcdelong . x) (gcdop elong x #e0))
-(define (gcdllong . x) (gcdop llong x #l0))
+(define (gcdelong::elong . x) (gcdop elong x #e0))
+(define (gcdllong::llong . x) (gcdop llong x #l0))
 
-(define (gcds8 . x) (gcdop s8 x (fixnum->int8 0)))
-(define (gcdu8 . x) (gcdop u8 x (fixnum->uint8 0)))
+(define (gcds8::int8 . x) (gcdop s8 x (fixnum->int8 0)))
+(define (gcdu8::uint8 . x) (gcdop u8 x (fixnum->uint8 0)))
 
-(define (gcds16 . x) (gcdop s16 x (fixnum->int16 0)))
-(define (gcdu16 . x) (gcdop u16 x (fixnum->uint16 0)))
+(define (gcds16::int16 . x) (gcdop s16 x (fixnum->int16 0)))
+(define (gcdu16::uint16 . x) (gcdop u16 x (fixnum->uint16 0)))
 
-(define (gcds32 . x) (gcdop s32 x (fixnum->int32 0)))
-(define (gcdu32 . x) (gcdop u32 x (fixnum->uint32 0)))
+(define (gcds32::int32 . x) (gcdop s32 x (fixnum->int32 0)))
+(define (gcdu32::uint32 . x) (gcdop u32 x (fixnum->uint32 0)))
 
-(define (gcds64 . x) (gcdop s64 x (fixnum->int64 0)))
-(define (gcdu64 . x) (gcdop u64 x (fixnum->uint64 0)))
+(define (gcds64::int64 . x) (gcdop s64 x (fixnum->int64 0)))
+(define (gcdu64::uint64 . x) (gcdop u64 x (fixnum->uint64 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    lcmop ...                                                        */
@@ -2354,23 +2353,23 @@
 
 (define (lcm . x) (lcmop || x 0 1))
 
-(define (lcmfx . x) (lcmop fx x 0 1))
+(define (lcmfx::long . x) (lcmop fx x 0 1))
 
-(define (lcmelong . x) (lcmop elong x #e0 #e1))
+(define (lcmelong::elong . x) (lcmop elong x #e0 #e1))
 
-(define (lcmllong . x) (lcmop llong x #l0 #l1))
+(define (lcmllong::llong . x) (lcmop llong x #l0 #l1))
 
-(define (lcms8 . x) (lcmop s8 x (fixnum->int8 0) (fixnum->int8 1)))
-(define (lcmu8 . x) (lcmop u8 x (fixnum->uint8 0) (fixnum->uint8 1)))
+(define (lcms8::int8 . x) (lcmop s8 x (fixnum->int8 0) (fixnum->int8 1)))
+(define (lcmu8::uint8 . x) (lcmop u8 x (fixnum->uint8 0) (fixnum->uint8 1)))
 
-(define (lcms16 . x) (lcmop s16 x (fixnum->int16 0) (fixnum->int16 1)))
-(define (lcmu16 . x) (lcmop u16 x (fixnum->uint16 0) (fixnum->uint16 1)))
+(define (lcms16::int16 . x) (lcmop s16 x (fixnum->int16 0) (fixnum->int16 1)))
+(define (lcmu16::uint16 . x) (lcmop u16 x (fixnum->uint16 0) (fixnum->uint16 1)))
 
-(define (lcms32 . x) (lcmop s32 x (fixnum->int32 0) (fixnum->int32 1)))
-(define (lcmu32 . x) (lcmop u32 x (fixnum->uint32 0) (fixnum->uint32 1)))
+(define (lcms32::int32 . x) (lcmop s32 x (fixnum->int32 0) (fixnum->int32 1)))
+(define (lcmu32::uint32 . x) (lcmop u32 x (fixnum->uint32 0) (fixnum->uint32 1)))
 
-(define (lcms64 . x) (lcmop s64 x (fixnum->int64 0) (fixnum->int64 1)))
-(define (lcmu64 . x) (lcmop u64 x (fixnum->uint64 0) (fixnum->uint64 1)))
+(define (lcms64::int64 . x) (lcmop s64 x (fixnum->int64 0) (fixnum->int64 1)))
+(define (lcmu64::uint64 . x) (lcmop u64 x (fixnum->uint64 0) (fixnum->uint64 1)))
 
 ;*---------------------------------------------------------------------*/
 ;*    exptfx ...                                                       */
@@ -2447,13 +2446,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    fixnum->string ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (fixnum->string x #!optional (radix::long 10))
+(define (fixnum->string::bstring x::long #!optional (radix::long 10))
    (integer->string-op fixnum x radix))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer->string ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (integer->string x #!optional (radix::long 10))
+(define (integer->string::bstring x #!optional (radix::long 10))
    (cond
       ((fixnum? x)
        (fixnum->string x radix))
@@ -2464,12 +2463,12 @@
       ((bignum? x)
        (bignum->string x radix))
       (else
-       (error "->string" "Illegal integer" x))))
+       (error "integer->string" "Illegal integer" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer->string/padding ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (integer->string/padding x padding #!optional (radix::long 10))
+(define (integer->string/padding::bstring x::long padding::long #!optional (radix::long 10))
    (case radix
       ((2 8 10 16)
        ($integer->string/padding x padding radix))
@@ -2479,7 +2478,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    unsigned->string ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (unsigned->string x #!optional (radix::long 16))
+(define (unsigned->string::bstring x #!optional (radix::long 16))
    (case radix
       ((2 8 16)
        (cond
@@ -2497,14 +2496,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    elong->string ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (elong->string x . radix)
-  (integer->string-op elong x (if (null? radix) 10 (car radix))))
+(define (elong->string::bstring x::elong #!optional (radix::long 10))
+   (integer->string-op elong x radix))
 
 ;*---------------------------------------------------------------------*/
 ;*    llong->string ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (llong->string x . radix)
-  (integer->string-op llong x (if (null? radix) 10 (car radix))))
+(define (llong->string::bstring x::llong #!optional (radix::long 10))
+   (integer->string-op llong x radix))
 
 ;*---------------------------------------------------------------------*/
 ;*    strtol ...                                                       */

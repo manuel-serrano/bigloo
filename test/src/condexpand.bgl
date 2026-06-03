@@ -1,0 +1,112 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/condexpand.bgl        */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Jun  3 09:40:48 2026                          */
+;*    Last change :  Wed Jun  3 10:24:41 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing cond-expand                                              */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    condexpand                                                       */
+;*---------------------------------------------------------------------*/
+(module condexpand
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "cond-expand" tests))
+      (test-all verbose "cond-expand")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test cond-expand
+   (cond-expand
+      (bigloo #t)
+      (else #f)))
+
+(define-test cond-expand
+   (cond-expand
+      ((and bigloo (or C jvm wasm)) #t)
+      (else #f)))
+
+(define-test cond-expand
+   (cond-expand
+      (rust #t)
+      (else #f))
+   :expected #f)
+
+(define-test cond-expand
+   (cond-expand
+      ((and C (or (config int-size 30) (config int-size 61))) #t)
+      (else #t))
+   :expected #t)
+
+(define-test register-srfi!
+   (unwind-protect
+      (begin
+         (register-srfi! 'foobar)
+         (compile-srfi? 'foobar))
+      (unregister-srfi! 'foobar)))
+
+(define-test register-eval-srfi!
+   (unwind-protect
+      (begin
+         (register-eval-srfi! 'foobar)
+         (eval-srfi? 'foobar))
+      (unregister-srfi! 'foobar)))
+
+(define-test register-compile-srfi!
+   (unwind-protect
+      (begin
+         (register-compile-srfi! 'foobar)
+         (compile-srfi? 'foobar))
+      (unregister-srfi! 'foobar)))
+
+(define-test unregister-srfi!
+   (begin
+      (register-srfi! 'foobar)
+      (unregister-srfi! 'foobar)
+      (compile-srfi? 'foobar))
+   :expected #f)
+
+(define-test unregister-eval-srfi!
+   (begin
+      (register-eval-srfi! 'foobar)
+      (unregister-eval-srfi! 'foobar)
+      (eval-srfi? 'foobar))
+   :expected #f)
+
+(define-test unregister-compile-srfi!
+   (begin
+      (register-compile-srfi! 'foobar)
+      (unregister-compile-srfi! 'foobar)
+      (compile-srfi? 'foobar))
+   :expected #f)
+
+(define-test eval-srfi? (eval-srfi? 'bigloo-eval))
+
+(define-macro (compile-time-eval x)
+   (if x #t #f))
+
+(define-test compile-srfi?
+   (compile-time-eval (compile-srfi? 'bigloo-compile)))
+
+(define-test srfi-eval-list (pair? (memq 'bigloo-eval (srfi-eval-list))))
+
+(define-test srfi-compile-list
+   (compile-time-eval (pair? (memq 'bigloo-compile (srfi-compile-list)))))
+
+
+
+   

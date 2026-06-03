@@ -9,16 +9,16 @@
 <!--    Main page                                                     -->
 <!--==================================================================-->
 
-Bigloo (aka bgl), is an optionally typed dynamic language. It supports:
+Bigloo (aka bgl), is a typed dynamic language. It supports:
 
   * 3 backends: native, jvm, and wasm;
   * AoT compilation via an optimizing compiler;
   * modules for separate compilation;
   * preemptive multi-threading with shared memory;
-  * an object system based on generic function;
-  * exception handling;
+  * an object system based on generic functions;
+  * exceptions;
   * rich set of builtin libraries;
-  * safe and unsafe modes;
+  * safe and unsafe execution modes;
   
 Bigloo's design found its inspiration in several other programming languages:
 

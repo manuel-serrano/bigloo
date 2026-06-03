@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Sun May 31 09:24:12 2026 (serrano)                */
+#*    Last change :  Wed Jun  3 09:25:05 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -37,7 +37,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
 MD = bool date hash int io pair port real string thread vector \
- module5 module4 object
+ condexpand module5 module4 object
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
@@ -99,6 +99,9 @@ objs_c/%.o: src/%.bgl
 
 %.html: %.md bin/bgldoc
 	bin/bgldoc -t libs $< > $@ || rm -f $@
+
+condexpand.html: condexpand.md bin/bgldoc
+	bin/bgldoc -t lang $< > $@ || rm -f $@
 
 module5.html: module5.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@

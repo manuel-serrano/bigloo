@@ -15,6 +15,11 @@
 Pairs and Lists
 ===============
 
+Inheriting from Lisp languages, a list, is a sequence of pairs whose
+last `cdr` is the empty list. A `pair`, i.e., an value with a `car` and
+a `cdr` is denoted by the `::pair` type. The empty list is denoted
+by the `::nil` type. The type `::pair-nil` denotes a `pair` or `nil`.
+
 The form `'()` is _illegal_.
 
 Constructors

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sun May 31 09:14:58 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 09:25:37 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -43,6 +43,7 @@
 ;*---------------------------------------------------------------------*/
 (define all-menus
    '(("home" . "index.html")
+     ("lang" . "condexpand.html")
      ("lang" . "module5.html")
      ("libs" . "bool.html")
      ("backends" . "backend.html")
@@ -69,7 +70,8 @@
 ;*    lang-chapters ...                                                */
 ;*---------------------------------------------------------------------*/
 (define lang-chapters
-   '(("module 5" . "module5.html")
+   '(("cond-expand" . "condexpand.html")
+     ("module 5" . "module5.html")
      ("module 4" . "module4.html")
      ("objects" . "object.html")))
 

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/expdsrfi0.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/expdsrfi0.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Thu Oct  9 07:48:48 2025 (serrano)                */
-;*    Copyright   :  2001-25 Manuel Serrano                            */
+;*    Last change :  Wed Jun  3 10:26:00 2026 (serrano)                */
+;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
 ;*=====================================================================*/
@@ -168,7 +168,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    srfi-compile-list ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (srfi-compile-list)
+(define (srfi-compile-list::pair-nil)
    (unless *srfi-compile-list*
       (set! *srfi-compile-list* (srfi-common-list)))
    *srfi-compile-list*)
@@ -176,7 +176,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    srfi-eval-list ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (srfi-eval-list)
+(define (srfi-eval-list::pair-nil)
    (unless *srfi-eval-list*
       (set! *srfi-eval-list* (cons 'bigloo-eval (srfi-common-list))))
    *srfi-eval-list*)
@@ -238,14 +238,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    compile-srfi? ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (compile-srfi? srfi)
+(define (compile-srfi?::bool srfi::symbol)
    (synchronize *srfi-mutex*
       (memq srfi (srfi-compile-list))))
    
 ;*---------------------------------------------------------------------*/
 ;*    eval-srfi? ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (eval-srfi? srfi)
+(define (eval-srfi?::bool srfi::symbol)
    (synchronize *srfi-mutex*
       (memq srfi (srfi-eval-list))))
 

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/runtime/Unsafe/bignumber.scm        */
+;*    .../prgm/project/bigloo/5.0.x/runtime/Unsafe/bignumber.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Mon Jun 23 18:38:49 2025 (serrano)                */
-;*    Copyright   :  2006-25 Marc Feeley                               */
+;*    Last change :  Wed Jun  3 10:41:34 2026 (serrano)                */
+;*    Copyright   :  2006-26 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
 ;*=====================================================================*/
@@ -405,7 +405,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bignum->string ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (bignum->string x #!optional (radix::long 10))
+(define (bignum->string::bstring x::bignum #!optional (radix::long 10))
    (cond
       ((and (>=fx radix 2) (<=fx radix 36))
        ($bignum->string x radix))

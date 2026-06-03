@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Wed Jun  3 07:06:15 2026 (serrano)                */
+/*    Last change :  Wed Jun  3 11:32:03 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -253,8 +253,8 @@ export class BglRuntime {
 	 seed_rand: seedRandom,
 	 rand_bignum: randBignum,
 	 rand_fixnum: randFixnum,
-	 bignum_to_string: (value, addr) => {
-	    return self.storeString(value.toString(), addr);
+	 bignum_to_string: (value, addr, radix) => {
+	    return self.storeString(value.toString(radix), addr);
 	 },
 	 string_to_bignum: (offset, len, radix) => {
 	    const str = self.loadString(offset, len);

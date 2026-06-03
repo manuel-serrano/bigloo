@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wbignum.wat        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/wbignum.wat       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Tue Sep  9 09:28:03 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Wed Jun  3 11:32:31 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
 ;*=====================================================================*/
@@ -21,7 +21,8 @@
    ;; -----------------------------------------------------------------
    ;; Imports 
    ;; -----------------------------------------------------------------
-   
+   (import "__js" "trace" (func $js_trace (param i32)))
+			  
    (import "__js_bignum" "zerobx" (global $zerobx externref))
    (import "__js_bignum" "zerobxp" (func $zerobxp (param externref) (result i32)))
    (import "__js_bignum" "bxpositivep" (func $bxpositivep (param externref) (result i32)))
@@ -54,7 +55,7 @@
    (import "__js_bignum" "bignum_quotient" (func $bignum_quotient (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_remainder" (func $bignum_remainder (param externref externref) (result externref)))
    (import "__js_bignum" "bignum_cmp" (func $bignum_cmp (param externref externref) (result i32)))
-   (import "__js_bignum" "bignum_to_string" (func $bignum_to_string (param externref i32) (result i32)))
+   (import "__js_bignum" "bignum_to_string" (func $bignum_to_string (param externref i32 i32) (result i32)))
 
    (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
    (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
@@ -208,7 +209,8 @@
 	 (i32.const 128)
 	 (call $bignum_to_string
 	    (struct.get $bignum $bx (local.get $n))
-	    (i32.const 128))))
+	    (i32.const 128)
+            (local.get $r))))
 
    ;; bgl_bignum_abs
    (func $bgl_bignum_abs (export "bgl_bignum_abs")
@@ -461,7 +463,21 @@
 		  (then (i32.const 0))
 		  (else (i32.const -1)))))))
    
-   ;; BGL_SAFE_PLUS_FX
+   (func $INTEGER_OVERFLOW
+      (param $sign i32)
+      (param $val i64)
+      (result i32)
+      (return
+	 (if (result i32)
+	     (i32.eq (local.get $sign) (call $INTEGER_SIGN (local.get $val)))
+	     (then
+		(if (result i32)
+		    (i64.ge_s (local.get $val) (global.get $BGL_LONG_MAX))
+		    (then (i32.const 1))
+		    (else (i64.le_s (local.get $val) (global.get $BGL_LONG_MIN)))))
+	     (else (i32.const 1)))))
+   
+    ;; BGL_SAFE_PLUS_FX
    (func $BGL_SAFE_PLUS_FX (export "BGL_SAFE_PLUS_FX")
       (param $x i64)
       (param $y i64)
@@ -477,13 +493,13 @@
       
       (if (i32.eq (local.get $sx) (local.get $sy))
 	  (then
-	     (if (i32.eq (local.get $sx) (call $INTEGER_SIGN (local.get $t)))
+	     (if (call $INTEGER_OVERFLOW (local.get $sx) (local.get $t))
 		 (then
-		    (return_call $BINT (local.get $t)))
-		 (else
 		    (return_call $bgl_bignum_add
 		       (call $bgl_long_to_bignum (local.get $x))
-		       (call $bgl_long_to_bignum (local.get $y))))))
+		       (call $bgl_long_to_bignum (local.get $y))))
+		 (else
+		  (return_call $BINT (local.get $t)))))
 	  (else (return_call $BINT (local.get $t))))
       (unreachable))
 
@@ -510,7 +526,14 @@
 	  (else
 	   (local.set $t (i64.mul (local.get $x) (local.get $y)))
 	   (if (i64.eq (i64.div_s (local.get $t) (local.get $y)) (local.get $x))
-	       (then (return_call $BINT (local.get $t)))
+	       (then
+		  (if (call $INTEGER_OVERFLOW (call $INTEGER_SIGN (local.get $t)) (local.get $t))
+		      (then
+			 (return_call $bgl_bignum_mul
+			    (call $bgl_long_to_bignum (local.get $x))
+			    (call $bgl_long_to_bignum (local.get $y))))
+		      (else
+			 (return_call $BINT (local.get $t)))))
 	       (else
 		(return_call $bgl_bignum_mul
 		   (call $bgl_long_to_bignum (local.get $x))

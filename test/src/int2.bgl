@@ -1,0 +1,202 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/int2.bgl              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Wed Jun  3 11:03:23 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing bit functions                                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    int                                                              */
+;*---------------------------------------------------------------------*/
+(module int2
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "int" tests))
+      (test-all verbose "int-2")))
+
+;*---------------------------------------------------------------------*/
+;*    Basic operators                                                  */
+;*---------------------------------------------------------------------*/
+(define-test +fx (+fx 43 28) :expected 71)
+(define-test +fx/ov (+fx/ov 43 28) :expected 71)
+(define-test +fx/ov (bignum? (+fx/ov 43 28)) :expected #f)
+(define-test +fx/ov (bignum? (+fx/ov (maxvalfx) 28)) :expected #t)
+
+(define-test +elong (+elong #e43 #e28) :expected #e71)
+(define-test +llong (+llong #l43 #l28) :expected #l71)
+(define-test +s8 (+s8 #s8:43 #s8:28) :expected #s8:71)
+(define-test +u8 (+u8 #u8:43 #u8:28) :expected #u8:71)
+(define-test +s16 (+s16 #s16:43 #s16:28) :expected #s16:71)
+(define-test +u16 (+u16 #u16:43 #u16:28) :expected #u16:71)
+(define-test +s32 (+s32 #s32:43 #s32:28) :expected #s32:71)
+(define-test +u32 (+u32 #u32:43 #u32:28) :expected #u32:71)
+(define-test +s64 (+s64 #s64:43 #s64:28) :expected #s64:71)
+(define-test +u64 (+u64 #u64:43 #u64:28) :expected #u64:71)
+
+(define-test -fx (-fx 43 28) :expected 15)
+(define-test -fx/ov (-fx/ov 43 28) :expected 15)
+(define-test -fx/ov (bignum? (-fx/ov 43 28)) :expected #f)
+(define-test -fx/ov (bignum? (-fx/ov (maxvalfx) -28)) :expected #t)
+(define-test -elong (-elong #e43 #e28) :expected #e15)
+(define-test -llong (-llong #l43 #l28) :expected #l15)
+(define-test -s8 (-s8 #s8:43 #s8:28) :expected #s8:15)
+(define-test -u8 (-u8 #u8:43 #u8:28) :expected #u8:15)
+(define-test -s16 (-s16 #s16:43 #s16:28) :expected #s16:15)
+(define-test -u16 (-u16 #u16:43 #u16:28) :expected #u16:15)
+(define-test -s32 (-s32 #s32:43 #s32:28) :expected #s32:15)
+(define-test -u32 (-u32 #u32:43 #u32:28) :expected #u32:15)
+(define-test -s64 (-s64 #s64:43 #s64:28) :expected #s64:15)
+(define-test -u64 (-u64 #u64:43 #u64:28) :expected #u64:15)
+
+(define-test *fx (*fx 3 28) :expected 84)
+(define-test *fx/ov (*fx/ov 3 28) :expected 84)
+(define-test *fx/ov (bignum? (*fx/ov 3 28)) :expected #f)
+(define-test *fx/ov (bignum? (*fx/ov (maxvalfx) 28)) :expected #t)
+(define-test *elong (*elong #e3 #e28) :expected #e84)
+(define-test *llong (*llong #l3 #l28) :expected #l84)
+(define-test *s8 (*s8 #s8:3 #s8:28) :expected #s8:84)
+(define-test *u8 (*u8 #u8:3 #u8:28) :expected #u8:84)
+(define-test *s16 (*s16 #s16:3 #s16:28) :expected #s16:84)
+(define-test *u16 (*u16 #u16:3 #u16:28) :expected #u16:84)
+(define-test *s32 (*s32 #s32:3 #s32:28) :expected #s32:84)
+(define-test *u32 (*u32 #u32:3 #u32:28) :expected #u32:84)
+(define-test *s64 (*s64 #s64:3 #s64:28) :expected #s64:84)
+(define-test *u64 (*u64 #u64:3 #u64:28) :expected #u64:84)
+
+(define-test /fx (/fx 57 28) :expected 2)
+(define-test /elong (/elong #e57 #e28) :expected #e2)
+(define-test /llong (/llong #l57 #l28) :expected #l2)
+(define-test /s8 (/s8 #s8:57 #s8:28) :expected #s8:2)
+(define-test /u8 (/u8 #u8:57 #u8:28) :expected #u8:2)
+(define-test /s16 (/s16 #s16:57 #s16:28) :expected #s16:2)
+(define-test /u16 (/u16 #u16:57 #u16:28) :expected #u16:2)
+(define-test /s32 (/s32 #s32:57 #s32:28) :expected #s32:2)
+(define-test /u32 (/u32 #u32:57 #u32:28) :expected #u32:2)
+(define-test /s64 (/s64 #s64:57 #s64:28) :expected #s64:2)
+(define-test /u64 (/u64 #u64:57 #u64:28) :expected #u64:2)
+
+;*---------------------------------------------------------------------*/
+;*    Operators                                                        */
+;*---------------------------------------------------------------------*/
+(define-test absfx (absfx -43) :expected 43)
+(define-test abselong (abselong #e-43) :expected #e43)
+(define-test absllong (absllong #l-43) :expected #l43)
+(define-test abss8 (abss8 #s8:-43) :expected #s8:43)
+(define-test absu8 (absu8 #u8:43) :expected #u8:43)
+(define-test abss16 (abss16 #s16:-43) :expected #s16:43)
+(define-test absu16 (absu16 #u16:43) :expected #u16:43)
+(define-test abss32 (abss32 #s32:-43) :expected #s32:43)
+(define-test absu32 (absu32 #u32:43) :expected #u32:43)
+(define-test abss64 (abss64 #s64:-43) :expected #s64:43)
+(define-test absu64 (absu64 #u64:43) :expected #u64:43)
+
+(define-test maxfx (maxfx 43 28) :expected 43)
+(define-test maxelong (maxelong #e43 #e28) :expected #e43)
+(define-test maxllong (maxllong #l43 #l28) :expected #l43)
+(define-test maxs8 (maxs8 #s8:43 #s8:28) :expected #s8:43)
+(define-test maxu8 (maxu8 #u8:43 #u8:28) :expected #u8:43)
+(define-test maxs16 (maxs16 #s16:43 #s16:28) :expected #s16:43)
+(define-test maxu16 (maxu16 #u16:43 #u16:28) :expected #u16:43)
+(define-test maxs32 (maxs32 #s32:43 #s32:28) :expected #s32:43)
+(define-test maxu32 (maxu32 #u32:43 #u32:28) :expected #u32:43)
+(define-test maxs64 (maxs64 #s64:43 #s64:28) :expected #s64:43)
+(define-test maxu64 (maxu64 #u64:43 #u64:28) :expected #u64:43)
+
+(define-test minfx (minfx 43 28) :expected 28)
+(define-test minelong (minelong #e43 #e28) :expected #e28)
+(define-test minllong (minllong #l43 #l28) :expected #l28)
+(define-test mins8 (mins8 #s8:43 #s8:28) :expected #s8:28)
+(define-test minu8 (minu8 #u8:43 #u8:28) :expected #u8:28)
+(define-test mins16 (mins16 #s16:43 #s16:28) :expected #s16:28)
+(define-test minu16 (minu16 #u16:43 #u16:28) :expected #u16:28)
+(define-test mins32 (mins32 #s32:43 #s32:28) :expected #s32:28)
+(define-test minu32 (minu32 #u32:43 #u32:28) :expected #u32:28)
+(define-test mins64 (mins64 #s64:43 #s64:28) :expected #s64:28)
+(define-test minu64 (minu64 #u64:43 #u64:28) :expected #u64:28)
+
+;*---------------------------------------------------------------------*/
+;*    Divisions                                                        */
+;*---------------------------------------------------------------------*/
+(define-test remainder (remainder 57 37) :expected 20)
+(define-test remainder (remainder 57 -37) :expected 20)
+(define-test remainderfx (remainderfx 57 37) :expected 20)
+(define-test remainderelong (remainderelong #e57 #e-37) :expected #e20)
+(define-test remainderllong (remainderllong #l57 #l37) :expected #l20)
+(define-test remainders8 (remainders8 #s8:57 #s8:-37) :expected #s8:20)
+(define-test remainderu8 (remainders8 #u8:57 #u8:37) :expected #u8:20)
+(define-test remainders16 (remainders16 #s16:57 #s16:-37) :expected #s16:20)
+(define-test remainderu16 (remainderu16 #u16:57 #u16:37) :expected #u16:20)
+(define-test remainders32 (remainders32 #s32:57 #s32:-37) :expected #s32:20)
+(define-test remainderu32 (remainderu32 #u32:57 #u32:37) :expected #u32:20)
+(define-test remainders64 (remainders64 #s64:57 #s64:-37) :expected #s64:20)
+(define-test remainderu64 (remainderu64 #u64:57 #u64:37) :expected #u64:20)
+
+(define-test quotient (quotient 57 37) :expected 1)
+(define-test quotientfx (quotientfx 57 37) :expected 1)
+(define-test quotientelong (quotientelong #e57 #e37) :expected #e1)
+(define-test quotientllong (quotientllong #l57 #l37) :expected #l1)
+(define-test quotients8 (quotients8 #s8:57 #s8:37) :expected #s8:1)
+(define-test quotientu8 (quotientu8 #u8:57 #u8:37) :expected #u8:1)
+(define-test quotients16 (quotients16 #s16:57 #s16:37) :expected #s16:1)
+(define-test quotientu16 (quotientu16 #u16:57 #u16:37) :expected #u16:1)
+(define-test quotients32 (quotients32 #s32:57 #s32:37) :expected #s32:1)
+(define-test quotientu32 (quotientu32 #u32:57 #u32:37) :expected #u32:1)
+(define-test quotients64 (quotients64 #s64:57 #s64:37) :expected #s64:1)
+(define-test quotientu64 (quotientu64 #u64:57 #u64:37) :expected #u64:1)
+
+(define-test modulo (modulo 57 37) :expected 20)
+(define-test modulo (modulo 57 -37) :expected -17)
+(define-test modulofx (modulofx 57 -37) :expected -17)
+(define-test moduloelong (moduloelong #e57 #e-37) :expected #e-17)
+(define-test modulollong (modulollong #l57 #l37) :expected #l20)
+(define-test modulos8 (modulos8 #s8:57 #s8:-37) :expected #s8:-17)
+(define-test modulou8 (modulos8 #u8:57 #u8:37) :expected #u8:20)
+(define-test modulos16 (modulos16 #s16:57 #s16:-37) :expected #s16:-17)
+(define-test modulou16 (modulou16 #u16:57 #u16:37) :expected #u16:20)
+(define-test modulos32 (modulos32 #s32:57 #s32:-37) :expected #s32:-17)
+(define-test modulou32 (modulou32 #u32:57 #u32:37) :expected #u32:20)
+(define-test modulos64 (modulos64 #s64:57 #s64:-37) :expected #s64:-17)
+(define-test modulou64 (modulou64 #u64:57 #u64:37) :expected #u64:20)
+
+;*---------------------------------------------------------------------*/
+;*    gcd, lcm                                                         */
+;*---------------------------------------------------------------------*/
+(define-test gcd (gcd 55 15) :expected 5)
+(define-test gcdfx (gcd 55 15) :expected 5)
+(define-test gcdelong (gcdelong #e55 #e15) :expected #e5)
+(define-test gcdllong (gcdllong #l55 #l15) :expected #l5)
+(define-test gcds8 (gcds8 #s8:55 #s8:15) :expected #s8:5)
+(define-test gcdu8 (gcdu8 #u8:55 #u8:15) :expected #u8:5)
+(define-test gcds16 (gcds16 #s16:55 #s16:15) :expected #s16:5)
+(define-test gcdu16 (gcdu16 #u16:55 #u16:15) :expected #u16:5)
+(define-test gcds32 (gcds32 #s32:55 #s32:15) :expected #s32:5)
+(define-test gcdu32 (gcdu32 #u32:55 #u32:15) :expected #u32:5)
+(define-test gcds64 (gcds64 #s64:55 #s64:15) :expected #s64:5)
+(define-test gcdu64 (gcdu64 #u64:55 #u64:15) :expected #u64:5)
+
+(define-test lcm (lcm 55 15) :expected 165)
+(define-test lcmfx (lcm 55 15) :expected 165)
+(define-test lcmelong (lcmelong #e55 #e15) :expected #e165)
+(define-test lcmllong (lcmllong #l55 #l15) :expected #l165)
+(define-test lcms8 (lcms8 #s8:55 #s8:15) :expected #s8:165)
+(define-test lcmu8 (lcmu8 #u8:55 #u8:15) :expected #u8:165)
+(define-test lcms16 (lcms16 #s16:55 #s16:15) :expected #s16:165)
+(define-test lcmu16 (lcmu16 #u16:55 #u16:15) :expected #u16:165)
+(define-test lcms32 (lcms32 #s32:55 #s32:15) :expected #s32:165)
+(define-test lcmu32 (lcmu32 #u32:55 #u32:15) :expected #u32:165)
+(define-test lcms64 (lcms64 #s64:55 #s64:15) :expected #s64:165)
+(define-test lcmu64 (lcmu64 #u64:55 #u64:15) :expected #u64:165)
+

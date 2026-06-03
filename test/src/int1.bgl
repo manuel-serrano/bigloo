@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/test/src/int.bgl               */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/int1.bgl              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Wed Jun  3 08:08:33 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 11:10:36 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing bit functions                                            */
@@ -12,7 +12,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    int                                                              */
 ;*---------------------------------------------------------------------*/
-(module int
+(module int1
    (export test))
 
 ;*---------------------------------------------------------------------*/
@@ -24,8 +24,8 @@
 ;*    test ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (test verbose tests::pair-nil)
-   (when (or (null? tests) (member "bit" tests))
-      (test-all verbose "bit")))
+   (when (or (null? tests) (member "int" tests))
+      (test-all verbose "int-1")))
 
 ;*---------------------------------------------------------------------*/
 ;*    Predicates                                                       */
@@ -261,20 +261,30 @@
 (define-test int64->fixnum (int64->fixnum #s64:-7) :expected -7)
 (define-test uint64->fixnum (uint64->fixnum #u64:200) :expected 200)
 
-;*---------------------------------------------------------------------*/
-;*    Basic operators                                                  */
-;*---------------------------------------------------------------------*/
-(define-test +fx (+fx 43 28) :expected 71)
-(define-test +elong (+elong #e43 #e28) :expected #e71)
-(define-test +llong (+llong #l43 #l28) :expected #l71)
-(define-test +s8 (+s8 #s8:43 #s8:28) :expected #s8:71)
-(define-test +u8 (+u8 #u8:43 #u8:28) :expected #u8:71)
-(define-test +s16 (+s16 #s16:43 #s16:28) :expected #s16:71)
-(define-test +u16 (+u16 #u16:43 #u16:28) :expected #u16:71)
-(define-test +s32 (+s32 #s32:43 #s32:28) :expected #s32:71)
-(define-test +u32 (+u32 #u32:43 #u32:28) :expected #u32:71)
-(define-test +s64 (+s64 #s64:43 #s64:28) :expected #s64:71)
-(define-test +u64 (+u64 #u64:43 #u64:28) :expected #u64:71)
+(define-test integer->string (integer->string 1234) :expected "1234")
+(define-test integer->string (integer->string 1234 2) :expected "10011010010")
+(define-test integer->string (integer->string 1234 8) :expected "2322")
+(define-test integer->string (integer->string 1234 16) :expected "4d2")
+
+(define-test integer->string/padding (integer->string/padding 34 4)
+   :expected "0034")
+
+(define-test fixnum->string (fixnum->string 56) :expected "56")
+(define-test elong->string (elong->string #e56 16) :expected "38")
+(define-test llong->string (llong->string #l56 16) :expected "38")
+(define-test bignum->string (bignum->string #z56 16) :expected "38")
+(define-test bignum->string (bignum->string #z39984323456) :expected "39984323456")
+
+(define-test unsigned->string (unsigned->string 56 2) :expected "111000")
+(define-test unsigned->string (unsigned->string -56 2)
+   cond-expand: (and C (config int-size 61))
+   :expected "1111111111111111111111111111111111111111111111111111111111001000")
+(define-test unsigned->string (unsigned->string -56 2)
+   cond-expand: (and C (config int-size 30))
+   :expected "11111111111111111111111111001000")
+(define-test unsigned->string (unsigned->string -56 2)
+   cond-expand: (and jvm (config int-size 32))
+   :expected "1111111111111111111111111111001000")
 
 ;*---------------------------------------------------------------------*/
 ;*    Comparisons                                                      */
@@ -443,4 +453,5 @@
 
 (define-test >=u64 (>=u64 #u64:23 (+u64 #u64:19 #u64:4322)) :expected #f)
 (define-test >=u64 (>=u64 #u64:23928798 (+u64 #u64:19 #u64:9879803)) :expected #t)
+
 

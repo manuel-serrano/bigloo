@@ -1,11 +1,11 @@
 ;; -*- eval: (bee-mode) -*-
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/runtime/Wlib/wfixnum31.wat.in       */
+;*    .../prgm/project/bigloo/5.0.x/runtime/Wlib/wfixnum31.wat.in      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 08:37:32 2024                          */
-;*    Last change :  Thu Jul 24 14:26:57 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Wed Jun  3 11:50:05 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM unboxed 31bit fixnum implementation                         */
 ;*=====================================================================*/
@@ -46,7 +46,7 @@
    ;; -----------------------------------------------------------------
    ;; Fixnum macros 
    ;; -----------------------------------------------------------------
-   
+
    (func $INTEGERP (export "INTEGERP")
       (param $o (ref eq))
       (result i32)
@@ -60,7 +60,7 @@
 	 (if (result i32) (ref.test (ref i31) (local.get $x))
 	     (then (ref.test (ref i31) (local.get $y)))
 	     (else (i32.const 0)))))
-  
+
    (func $ELONGP (export "ELONGP")
       (param $o (ref eq))
       (result i32)

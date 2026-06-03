@@ -11,7 +11,9 @@
 
 ,(implementation-path "../runtime/Ieee/fixnum.scm")
 ,(implementation-path "../runtime/Llib/bit.scm")
-,(example-path "../test/src/int.bgl")
+,(implementation-path "../runtime/Unsafe/bignumber.scm")
+,(example-path "../test/src/int1.bgl")
+,(example-path "../test/src/int2.bgl")
 ,(example-path "../test/src/bit.bgl")
 ,(example-path "../test/src/bignum.bgl")
 
@@ -216,72 +218,6 @@ Returns `#t` if and only if `n` is an even number.
 ### evenu64? ###
 Returns `#t` if and only if `n` is an even number.
 
-Conversions and Casts
----------------------
-
-### fixnum->int8 ###
-### fixnum->uint8 ###
-
-### fixnum->int16 ###
-### fixnum->uint16 ###
-
-### fixnum->int32 ###
-### fixnum->uint32 ###
-
-### fixnum->int64 ###
-### fixnum->uint64 ###
-
-Basic Operators
----------------
-
-### +fx ###
-### +elong ###
-### +llong ###
-### +s8 ###
-### +u8 ###
-### +s16 ###
-### +u16 ###
-### +s32 ###
-### +u32 ###
-### +s64 ###
-### +u64 ###
-
-### -fx ###
-### -elong ###
-### -llong ###
-### -s8 ###
-### -u8 ###
-### -s16 ###
-### -u16 ###
-### -s32 ###
-### -u32 ###
-### -s64 ###
-### -u64 ###
-
-### *fx ###
-### *elong ###
-### *llong ###
-### *s8 ###
-### *u8 ###
-### *s16 ###
-### *u16 ###
-### *s32 ###
-### *u32 ###
-### *s64 ###
-### *u64 ###
-
-### /fx ###
-### /elong ###
-### /llong ###
-### /s8 ###
-### /u8 ###
-### /s16 ###
-### /u16 ###
-### /s32 ###
-### /u32 ###
-### /s64 ###
-### /u64 ###
-
 Comparison Operators
 --------------------
 
@@ -344,6 +280,228 @@ Comparison Operators
 ### >=u32 ###
 ### >=s64 ###
 ### >=u64 ###
+
+Conversions
+-----------
+
+### fixnum->int8 ###
+### fixnum->uint8 ###
+
+### fixnum->int16 ###
+### fixnum->uint16 ###
+
+### fixnum->int32 ###
+### fixnum->uint32 ###
+
+### fixnum->int64 ###
+### fixnum->uint64 ###
+
+### integer->string ###
+Converts an integer into a string representation.
+
+### integer->string/padding ###
+The function `integer->string/padding` converts its arguments into
+a string with a left padding filled of characters `0`.
+
+### fixnum->string ###
+Converts an fixnum integer into a string representation.
+
+### elong->string ###
+Converts an elong integer into a string representation.
+
+### llong->string ###
+Converts an llong integer into a string representation.
+
+### bignum->string ###
+Converts an exact integer into a string representation.
+
+### unsigned->string ###
+The function `unsigned->string` only accepts the following radixes:
+`2`, `8`, and `16`. It converts its argument into an
+_unsigned_ representation. The size of the generated string depends on
+the size of integers on the hostplaform. On 64-bit platforms, they
+will contain 64 characters, on 32-bit platforms only 32 characters.
+
+Basic Operators
+---------------
+
+### +fx/ov ###
+Sums two longs, if an operation overflows, returns a `bignum`, otherwise,
+returns a `long`.
+
+### +fx ###
+### +elong ###
+### +llong ###
+### +s8 ###
+### +u8 ###
+### +s16 ###
+### +u16 ###
+### +s32 ###
+### +u32 ###
+### +s64 ###
+### +u64 ###
+
+### -fx/ov ###
+Substracts two longs, if an operation overflows, returns a `bignum`, otherwise,
+returns a `long`.
+
+### -fx ###
+### -elong ###
+### -llong ###
+### -s8 ###
+### -u8 ###
+### -s16 ###
+### -u16 ###
+### -s32 ###
+### -u32 ###
+### -s64 ###
+### -u64 ###
+
+### *fx/ov ###
+Multiplies two longs, if an operation overflows, returns a `bignum`, otherwise,
+returns a `long`.
+
+### *fx ###
+### *elong ###
+### *llong ###
+### *s8 ###
+### *u8 ###
+### *s16 ###
+### *u16 ###
+### *s32 ###
+### *u32 ###
+### *s64 ###
+### *u64 ###
+
+### /fx ###
+### /elong ###
+### /llong ###
+### /s8 ###
+### /u8 ###
+### /s16 ###
+### /u16 ###
+### /s32 ###
+### /u32 ###
+### /s64 ###
+### /u64 ###
+
+Operators
+---------
+
+### maxfx ###
+### maxelong ###
+### maxllong ###
+### maxs8 ###
+### maxu8 ###
+### maxs16 ###
+### maxu16 ###
+### maxs32 ###
+### maxu32 ###
+### maxs64 ###
+### maxu64 ###
+
+### minfx ###
+### minelong ###
+### minllong ###
+### mins8 ###
+### minu8 ###
+### mins16 ###
+### minu16 ###
+### mins32 ###
+### minu32 ###
+### mins64 ###
+### minu64 ###
+
+### absfx ###
+### abselong ###
+### absllong ###
+### abss8 ###
+### absu8 ###
+### abss16 ###
+### absu16 ###
+### abss32 ###
+### absu32 ###
+### abss64 ###
+### absu64 ###
+
+Division Operators
+------------------
+
+### remainder ###
+Computes the remainder of the integer division.
+The remainder is what one get from truncated division:
+`n1=n2.b + remainder`.
+
+### remainderfx ###
+### remainderelong ###
+### remainderllong ###
+### remainders8 ###
+### remainderu8 ###
+### remainders16 ###
+### remainderu16 ###
+### remainders32 ###
+### remainderu32 ###
+### remainders64 ###
+### remainderu64 ###
+
+### quotient ###
+Computes the quotient of the integer division. 
+
+### quotientfx ###
+### quotientelong ###
+### quotientllong ###
+### quotients8 ###
+### quotientu8 ###
+### quotients16 ###
+### quotientu16 ###
+### quotients32 ###
+### quotientu32 ###
+### quotients64 ###
+### quotientu64 ###
+
+### modulo ###
+The modulo retains the type of the divisor `n2`.
+
+### modulofx ###
+### moduloelong ###
+### modulollong ###
+### modulos8 ###
+### modulou8 ###
+### modulos16 ###
+### modulou16 ###
+### modulos32 ###
+### modulou32 ###
+### modulos64 ###
+### modulou64 ###
+
+Gcd, Lcm
+--------
+
+### gcd ###
+### gcdfx ###
+### gcdelong ###
+### gcdllong ###
+### gcds8 ###
+### gcdu8 ###
+### gcds16 ###
+### gcdu16 ###
+### gcds32 ###
+### gcdu32 ###
+### gcds64 ###
+### gcdu64 ###
+
+### lcm ###
+### lcmfx ###
+### lcmelong ###
+### lcmllong ###
+### lcms8 ###
+### lcmu8 ###
+### lcms16 ###
+### lcmu16 ###
+### lcms32 ###
+### lcmu32 ###
+### lcms64 ###
+### lcmu64 ###
 
 Bit Manipulations
 -----------------
