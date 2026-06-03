@@ -56,7 +56,7 @@ If `keys` is not `string`, the other arguments can be used:
      argument is the searched key. By default,
      hash tables rely on `hashtable-equal?`, which is defined as:
 
-```
+```bigloo
 (define (hashtable-equal? obj1 obj2)
    (or (eq? obj1 obj2)
        (and (string? obj1)

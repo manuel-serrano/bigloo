@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Wed Jun  3 09:25:37 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 16:50:10 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -190,7 +190,10 @@
       (let ((doc (xml-element 'html '((class . "bgldoc home"))
                     (list
                        (call-with-input-file "head.html" html-parse)
-                       (menubar '()
+                       (menubar (list
+                                   (xml-element 'span '((class . "sep"))
+                                      '("/"))
+                                   "home")
                           :libs (xml-chapter-toc 'libs libs-chapters)
                           :lang (xml-chapter-toc 'modules lang-chapters))
                        (xml-element 'div '((class . "home"))
@@ -530,7 +533,6 @@
    (lambda (x)
       (match-case x
 	 ((include (and ?file (? string?)))
-	  ;;(call-with-input-file (make-file-name dir file) read-string)
 	  (call-with-input-file file read-string))
 	 ((implementation-path (and ?file (? string?)))
 	  (let* ((src (call-with-input-file (make-file-name dir file) port->sexp-list)))

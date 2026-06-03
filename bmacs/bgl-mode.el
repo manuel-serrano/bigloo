@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Wed May 20 17:11:57 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 15:59:06 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1377,14 +1377,14 @@ if that value is non-nil."
   (make-local-variable 'font-lock-defaults)
   (if (< bmacs-emacs-version 22)
       (setq font-lock-defaults '(bgl-font-lock-keywords))
-    (setq font-lock-defaults '((bgl-font-lock-keywords)
-			       nil t (("+-*/.<>=!?$%_&~^:" . "w") (?#. "w 14"))
-			       beginning-of-defun
-			       (font-lock-mark-block-function . mark-defun)
-			       (font-lock-syntactic-face-function
-				. bgl-font-lock-syntactic-face-function)
-			       (parse-sexp-lookup-properties . t)
-			       (font-lock-extra-managed-props syntax-table)))))
+    (setq font-lock-defaults
+	  '((bgl-font-lock-keywords)
+	    nil t (("+-*/.<>=!?$%_&~^:" . "w") (?#. "w 14"))
+	    beginning-of-defun
+	    (font-lock-mark-block-function . mark-defun)
+	    (font-lock-syntactic-face-function . bgl-font-lock-syntactic-face-function)
+	    (parse-sexp-lookup-properties . t)
+	    (font-lock-extra-managed-props syntax-table)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-font-lock-syntactic-face-function ...                        */
@@ -1619,35 +1619,36 @@ if that value is non-nil."
 (defun bgl-proto-at-point ()
   "Show the prototype of the symbol at point."
   (interactive)
-  (let* ((sym (thing-at-point 'symbol t))
-	 (d (bgl-decl-entry-at-point sym))
-	 (e (or d (bgl-doc-entry-at-point sym))))
-    (if e
-	(let* ((s (replace-regexp-in-string "\\x23" "#" (format "%s" (car e))))
-	       (s2 (replace-regexp-in-string "\\x3f" "?" (format "%s" s)))
-	       (cs (replace-regexp-in-string
-		    "::[^ )]+"
-		    '(lambda (match) (propertize match 'face 'bgl-font-lock-face-4))
-		    s2))
-	       (ls (if (and (> (length s) 60) (string-match " " s))
-		       (replace-match "\n  " t t cs)
-		       cs)))
-	  (posframe-show
-	   bgl-popup-buffer
-	   :string ls
-	   :background-color (if d "#ccffcc" "#ffffcc")
-	   :foreground-color "black"
-	   :border-width 1
-	   :border-color "#cccccc"
-	   :internal-border-width 4
-	   :position (point)
-	   :poshandler #'posframe-poshandler-point-bottom-left-corner)
-	  (run-at-time bgl-tooltip-visibility-duration
-		       nil #'(lambda () (posframe-hide bgl-popup-buffer)))
-	  (progn
-	    (message (format "%s" cs))
-	    t))
-	(posframe-hide bgl-popup-buffer))))
+  (when (eq major-mode 'bgl-mode)
+    (let* ((sym (thing-at-point 'symbol t))
+	   (d (bgl-decl-entry-at-point sym))
+	   (e (or d (bgl-doc-entry-at-point sym))))
+      (if e
+	  (let* ((s (replace-regexp-in-string "\\x23" "#" (format "%s" (car e))))
+		 (s2 (replace-regexp-in-string "\\x3f" "?" (format "%s" s)))
+		 (cs (replace-regexp-in-string
+		      "::[^ )]+"
+		      '(lambda (match) (propertize match 'face 'bgl-font-lock-face-4))
+		      s2))
+		 (ls (if (and (> (length s) 60) (string-match " " s))
+			 (replace-match "\n  " t t cs)
+			 cs)))
+	    (posframe-show
+	     bgl-popup-buffer
+	     :string ls
+	     :background-color (if d "#ccffcc" "#ffffcc")
+	     :foreground-color "black"
+	     :border-width 1
+	     :border-color "#cccccc"
+	     :internal-border-width 4
+	     :position (point)
+	     :poshandler #'posframe-poshandler-point-bottom-left-corner)
+	    (run-at-time bgl-tooltip-visibility-duration
+			 nil #'(lambda () (posframe-hide bgl-popup-buffer)))
+	    (progn
+	      (message (format "%s" cs))
+	      t))
+	  (posframe-hide bgl-popup-buffer)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-browse-doc-at-point ...                                      */

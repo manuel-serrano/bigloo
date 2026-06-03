@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 17:38:56 2026                          */
-;*    Last change :  Sun May 24 10:10:39 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 16:57:12 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Markdown parser                                                  */
@@ -310,17 +310,7 @@
 (define *quote-code-block-grammar*
    (regular-grammar ((line (+ (out "`\n,$")))
 		     (crlf (or "\n" "\r\n"))
-		     lines conv eof)
-      
-      (define (include-string str::bstring lines)
-         ;;; include a new sequence of characters
-	 (call-with-input-string str
-	    (lambda (ip)
-	       (let loop ((lines '()))
-		  (let ((line (read-line-newline ip)))
-		     (if (eof-object? line)
-			 lines
-			 (loop (cons line lines))))))))
+		     lines conv eof eval)
       
       ;; newline
       ((+ crlf)
@@ -344,10 +334,8 @@
 	   '()))
       ((bol ",(")
        (let ((pos (input-port-position (the-port))))
-	  (rgc-buffer-unget-char (the-port) (char->integer #\())
-	  (set! lines
-	     (cons (xml-element 'expr '() (read (the-port)) pos) lines)))
-       (ignore))
+          (scheme-parse-embedded (the-port) eval)
+          (ignore)))
       (else
        (if (eof-object? (the-failure))
 	   (if eof
@@ -364,7 +352,7 @@
 	 (set! elements (cons e elements)))))
 
 ;*---------------------------------------------------------------------*/
-;*    *markdown-charset-grammar* ...                                    */
+;*    *markdown-charset-grammar* ...                                   */
 ;*---------------------------------------------------------------------*/
 (define *markdown-charset-grammar*
    (regular-grammar (charset fontifier eval)
@@ -844,7 +832,7 @@
    (define (prog state::MDState lang-id)
       (multiple-value-bind (lang id class)
 	 (parse-prog-lang lang-id)
-	 (let* ((lines (read/rp *quote-code-block-grammar* ip '() conv #f))
+	 (let* ((lines (read/rp *quote-code-block-grammar* ip '() conv #f eval))
 		(body (cond
 			 ((string-null? lang)
 			  lines)

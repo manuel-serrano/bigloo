@@ -1,0 +1,13 @@
+(module fib
+   (extern "wasm"
+      ($print::void ::bstring "$print"))
+   (main))
+
+(define (main argv::pair-nil)
+   (let ((arg (if (pair? (cdr argv)) (cadr argv) "30")))
+      ($print (format "fib(~s)=~a\n" arg (fib (string->integer arg))))))
+
+(define (fib::long x::long)
+   (if (<fx x 2)
+       1
+       (+fx (fib (-fx x 1)) (fib (-fx x 2)))))

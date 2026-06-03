@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Sun May 31 09:19:11 2026 (serrano)                */
+/*    Last change :  Wed Jun  3 17:46:18 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -20,7 +20,7 @@
 
     --menuColor: #9d9d9d;
     --menuBackgroundColor: #22222f;
-    --menuButtonActiveBackground: #555555;
+    --menuButtonActiveBackground: #444444;
     --menuButtonActive: #fff;
 
     --versionColor: #fff;
@@ -107,7 +107,7 @@
 body {
     background: var(--background);
     font-family: "Helvetica Neue", "Hevetica", Arial, sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     color: var(--bodyColor);
 }
 
@@ -122,7 +122,7 @@ nav.menu {
     height: var(--navHeight);
     color: var(--menuColor);
     background: var(--menuBackgroundColor);
-    font-size: 120%;
+    font-size: 110%;
     padding-top: 0;
     z-index: 2;
 }
@@ -218,12 +218,14 @@ ul.menu > li.navbutton {
 }
 
 .menu[data-active="libs"] a.libs,
-.menu[data-active="lang"] a.lang {
+.menu[data-active="lang"] a.lang,
+.menu[data-active="home"] a.home {
     color: var(--menuButtonActive);
 }
 
 ul.menu[data-active="libs"] > li.navbutton.libs,
-ul.menu[data-active="lang"] > li.navbutton.lang {
+ul.menu[data-active="lang"] > li.navbutton.lang,
+ul.menu[data-active="home"] > li.navbutton.home {
     border-bottom-color: var(--navActiveColor);
     background-color: var(--menuButtonActiveBackground);
 }
@@ -300,16 +302,13 @@ html.home .body {
     padding-left: 3em;
     padding-right: 3em;
     padding-top: 2ex;
-}
-
-html.home nav.menu div.title {
-    visibility: hidden;
+    font-size: 16px;
 }
 
 div.home {
     background: var(--homeBackgroundColor);
     width: 100%;
-    padding: 2ex 3em 2ex 3em;
+    padding: 2ex 3em 2ex 22em;
     margin-top: var(--navHeight);
     color: var(--background);
     z-index: 0;
@@ -317,8 +316,8 @@ div.home {
 }
 
 div.home .logo {
-    width: 12em;
-    height: 12em;
+    width: 10em;
+    height: 10em;
     vertical-align: middle;
 }
 
@@ -330,6 +329,36 @@ div.home .main {
     position: relative;
     top: 0.5ex;
     color: var(--navActiveColor);
+}
+
+.home h2:before {
+    content: none;
+}
+
+.home h3 {
+    content: none;
+    text-shadow: var(--titleShadow) 1px 1px 1px;
+    font-weight: normal;
+    font-size: 130%;
+}
+
+.home h3.C:before,
+.home h3.jvm:before,
+.home h3.wasm:before {
+    content: "\25CF";
+    margin-right: 0.3em;
+}
+
+.home h3.C:before {
+    color: var(--CBackend);
+}
+
+.home h3.jvm:before {
+    color: var(--jvmBackend);
+}
+
+.home h3.wasm:before {
+    color: var(--wasmBackend);
 }
 
 /*---------------------------------------------------------------------*/
@@ -377,7 +406,8 @@ h4.section:after {
 /*---------------------------------------------------------------------*/
 /*    functions ...                                                    */
 /*---------------------------------------------------------------------*/
-h3 {
+h3.function,
+h3.variable {
     background-color: var(--functionBackground);
     font-family: monospace;
     font-size: 105%;

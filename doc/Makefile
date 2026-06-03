@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Wed Jun  3 09:25:05 2026 (serrano)                */
+#*    Last change :  Wed Jun  3 17:05:16 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -39,6 +39,8 @@ C_OBJECTS = $(COMMON:%=%.o)
 MD = bool date hash int io pair port real string thread vector \
  condexpand module5 module4 object
 
+EX = c/fib java/fib wasm/fib
+
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
 #*---------------------------------------------------------------------*/
@@ -57,7 +59,7 @@ bin/bgldoc: $(C_OBJECTS:%=objs_c/%)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 	@ echo "\e[1;34m$@\e[0m done."
 
-index.html: $(MD:%=%.html)
+index.html: $(MD:%=%.html) $(EX:%=objs_c/%.ast.coerce)
 
 distrib: clean
 
@@ -97,6 +99,15 @@ uninstall:
 objs_c/%.o: src/%.bgl
 	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
 
+objs_c/c/fib.ast.coerce: examples/c/fib.bgl objs_c/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
+objs_c/java/fib.ast.coerce: examples/java/fib.bgl objs_c/java
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -jvm -coerce
+
+objs_c/wasm/fib.ast.coerce: examples/wasm/fib.bgl objs_c/wasm
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -wasm -coerce
+
 %.html: %.md bin/bgldoc
 	bin/bgldoc -t libs $< > $@ || rm -f $@
 
@@ -119,6 +130,15 @@ index.html: index.md bin/bgldoc
 #*    sub-directories                                                  */
 #*---------------------------------------------------------------------*/
 objs_c:
+	@ mkdir -p $@
+
+objs_c/c:
+	@ mkdir -p $@
+
+objs_c/java:
+	@ mkdir -p $@
+
+objs_c/wasm:
 	@ mkdir -p $@
 
 bin:

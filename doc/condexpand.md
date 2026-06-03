@@ -20,7 +20,8 @@ Conditional Execution
 <!-- [:cond-expand@NoDef] -->
 
 The `cond-expand` form (see
-[srfi-0](https://srfi.schemers.org/srfi-0)), tests for the existence
+[SRFI-0 (Feature-based conditional expansion construct)](https://srfi.schemers.org/srfi-0)), 
+tests for the existence
 of features at macro-expansion time. It either expands into the body
 of one of its clauses or signals and error during syntactic
 processing. The `cond-expand` form expands into the body of the first

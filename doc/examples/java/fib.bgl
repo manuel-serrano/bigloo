@@ -1,0 +1,16 @@
+(module fib
+   (extern "java"
+      (class java.io.PrintStream
+         (public println::void ::String))
+      (class java.lang.System
+         (field static public out::java.io.PrintStream)))
+   (main))
+
+(define (main argv::pair-nil)
+   (let ((arg (if (pair? (cdr argv)) (cadr argv) "30")))
+      ((-> System.out println) (format "fib(~s)=~a\n" arg (fib (string->integer arg))))))
+
+(define (fib::long x::long)
+   (if (<fx x 2)
+       1
+       (+fx (fib (-fx x 1)) (fib (-fx x 2)))))

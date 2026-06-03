@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Mon May 25 10:39:07 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 18:01:17 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -549,7 +549,10 @@
 			      (error id "Main must be a function of one argument" main))
 			     ((or (eq? (car args) *_*) (eq? (car args) *obj*))
 			      (set! args (list *pair-nil*)))
-			     ((eq? (local-type (car args)) *pair-nil*)
+			     ((eq? (car args) *pair-nil*)
+			      #unspecified)
+			     ((and (local? (car args))
+				   (eq? (local-type (car args)) *pair-nil*))
 			      #unspecified)
 			     (else
 			      (error id "Main first argument must be ::pair-nil" main)))
