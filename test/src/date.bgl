@@ -76,8 +76,15 @@
 
 (define-test date->gmtdate!
    (date? (date->gmtdate! (make-date :hour 1 :year 2001)))
-   :cond-expand bigloo-c
    :expected #t)
+   
+(define-test date->gmtdate!
+   (date-year (date->gmtdate! (make-date :day 1 :month 1 :year 2001 :timezone 0)))
+   :expected 2001)
+   
+(define-test date->gmtdate!
+   (date-year (date->gmtdate! (make-date :day 1 :month 1 :year 2001 :timezone 7200)))
+   :expected 2000)
    
 (define-test current-date (>= (date-year (current-date)) 1970)
    :expected #t)
@@ -131,23 +138,24 @@
    (let* ((d1 (date->gmtdate! (current-date)))
 	  (s1 (date->seconds d1)))
       (equal? (seconds->gmtdate s1) d1))
-   :cond-expand bigloo-c
    :expected #t)
 
 (define-test milliseconds->gmtdate
    (let* ((d1 (date->gmtdate! (current-date)))
 	  (s1 (date->milliseconds d1)))
       (equal? (milliseconds->gmtdate s1) d1))
-   :cond-expand bigloo-c
    :expected #t)
 
 (define-test date->seconds (>elong (date->seconds (current-date)) #e0)
    :expected #t)
+(define-test date->seconds (date->seconds (make-date :min 40 :hour 3 :timezone 0))
+   :expected #e13200)
 (define-test date->nanoseconds (>llong (date->nanoseconds (current-date)) #l0)
    :expected #t)
 (define-test date->milliseconds (>llong (date->milliseconds (current-date)) #l0)
    :expected #t)
-
+(define-test date->milliseconds (date->milliseconds (make-date :sec 28 :min 1 :hour 4 :year 1983 :timezone 0))
+   :expected #e410241688000)
 (define-test date->string (string? (date->string (current-date)))
    :expected #t)
 (define-test date-day

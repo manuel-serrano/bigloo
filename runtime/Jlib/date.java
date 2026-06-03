@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/runtime/Jlib/date.java                      */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/date.java         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Jun  1 10:20:45 2026                          */
-/*    Last change :  Tue Jun  2 07:42:18 2026 (serrano)                */
+/*    Last change :  Wed Jun  3 07:39:20 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java Dates implementation                                        */
@@ -22,10 +22,14 @@ import java.util.*;
 public class date extends obj {
    public Calendar calendar; // an UTC calendar
    public int timezone;      // the timezone offset
-   public long nsec;
+   public long nsec = 0;
 
    static TimeZone tmzUTC = new SimpleTimeZone(0, "UTC");
-   
+
+   public date() {
+      calendar = new GregorianCalendar(tmzUTC);
+   }
+      
    public date(final long ns,
 	       final int s,
 	       final int min,
@@ -41,17 +45,20 @@ public class date extends obj {
 	 // build a temporary locale time to get its epoch relative value
 	 Calendar c = new GregorianCalendar();
 	 c.set(y, mon, d, h, min, s);
+	 c.set(Calendar.MILLISECOND, 0); 
 	 final Date dt = c.getTime();
 	 final TimeZone tmz = c.getTimeZone();   
 
 	 // build the real epoch-base time
 	 calendar = new GregorianCalendar(tmzUTC);
 	 calendar.setTime(dt);
+	 c.set(Calendar.MILLISECOND, 0); 
 	 timezone = tmz.getOffset(c.getTimeInMillis()) / 1000;
       } else {
 	 // build an utc+timezone date
 	 calendar = new GregorianCalendar(tmzUTC);
 	 calendar.set(y, mon, d, h, min, s);
+	 calendar.set(Calendar.MILLISECOND, 0); 
 	 calendar.add(Calendar.MILLISECOND, (int)tz * -1000);
 	 timezone = (int)tz;
       }
@@ -80,6 +87,12 @@ public class date extends obj {
       timezone = tmz.getOffset(c.getTimeInMillis()) / 1000;
    }
 
+   public static date bgl_milliseconds_to_gmtdate(long ms) {
+      date dt = new date();
+      dt.calendar.setTimeInMillis(ms);
+      return dt;
+   }
+   
    public Calendar tzCalendar() {
       if (timezone == 0) {
 	 return calendar;

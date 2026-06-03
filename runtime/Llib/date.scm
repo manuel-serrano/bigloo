@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Llib/date.scm                       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/date.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Tue Jun  2 07:27:11 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 06:57:15 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -98,17 +98,17 @@
 	    ($date-seconds-to-string::bstring (::elong) "bgl_seconds_to_string")
 	    ($date-seconds-to-utc-string::bstring (::elong) "bgl_seconds_to_utc_string"))
 
-   (wasm    ($date->gmtdate! "(throw $unimplemented)")
-	    ($date-integer->second "~0"))
+   (wasm    ($date-integer->second "~0"))
    
    (java    (class foreign
 	       (method static $date::string () "c_date")
 	       (method static c-date?::bool (::obj) "DATEP")
 	       (method static $date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
 	       (method static $date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
+	       (method static $date->gmtdate!::date (::date) "bgl_date_to_gmtdate")
 	       (method static $date-from-seconds::date (::elong) "bgl_seconds_to_date")
 	       (method static $date-from-seconds-gmt::date (::elong) "bgl_seconds_to_gmtdate")
-	       (method static $date-from-milliseconds-gmt::date (::llong) "bgl_miliseconds_to_gmtdate")
+	       (method static $date-from-milliseconds-gmt::date (::llong) "bgl_milliseconds_to_gmtdate")
 	       (method static $date-from-nanoseconds::date (::llong) "bgl_nanoseconds_to_date")
 	       (method static $date-from-milliseconds::date (::llong) "bgl_milliseconds_to_date")
 	       (method static $date-current-seconds::elong () "bgl_current_seconds")
@@ -286,12 +286,7 @@
 ;*    date->gmtdate! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (date->gmtdate!::date d::date)
-   (cond-expand
-      (bigloo-c
-       (let ((gmtdate ($date->gmtdate! d)))
-	  gmtdate))
-      (else
-       (error "date->gmtdate!" "not supported by this backend" d))))
+   ($date->gmtdate! d))
 
 ;*---------------------------------------------------------------------*/
 ;*    date-update-millisecond! ...                                     */

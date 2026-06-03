@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/runtime/Jlib/foreign.java                   */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/foreign.java      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Tue Jun  2 12:20:08 2026 (serrano)                */
+/*    Last change :  Wed Jun  3 06:58:12 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -2973,13 +2973,14 @@ public final class foreign {
       return date;
    }
    
-
+   public static date bgl_date_to_gmtdate(date dt) {
+      dt.calendar.add(Calendar.MILLISECOND, (int)dt.timezone * -1000);
+      dt.timezone = 0;
+      return dt;
+   }
+   
    public static date bgl_seconds_to_date(long sec) {
       return new bigloo.date(sec);
-   }
-
-   public static date bgl_seconds_to_gmtdate(long sec) {
-      return bgl_seconds_to_date(sec);
    }
 
    public static date bgl_nanoseconds_to_date(long nsec) {
@@ -2988,6 +2989,18 @@ public final class foreign {
 
    public static date bgl_milliseconds_to_date(long msec) {
       return new bigloo.date(msec, 1);
+   }
+
+   public static date bgl_seconds_to_gmtdate(long sec) {
+      return date.bgl_milliseconds_to_gmtdate(sec * 1000);
+   }
+
+   public static date bgl_milliseconds_to_gmtdate(long ms) {
+      return date.bgl_milliseconds_to_gmtdate(ms);
+   }
+
+   public static date bgl_nanoseconds_to_gmtdate(long nsec) {
+      return date.bgl_milliseconds_to_gmtdate(nsec * 1000000);
    }
 
    public static date bgl_seconds_to_utc_date(long sec) {

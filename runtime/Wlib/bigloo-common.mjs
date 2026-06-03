@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/runtime/Wlib/bigloo-common.mjs              */
+/*    .../prgm/project/bigloo/5.0.x/runtime/Wlib/bigloo-common.mjs     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Tue Jun  2 07:58:17 2026 (serrano)                */
+/*    Last change :  Wed Jun  3 07:06:15 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -337,6 +337,11 @@ export class BglRuntime {
 	       const ms = Date.UTC(year, month - 1, day, hour, minute, second, millisecond) + (timezone * -1000);
 	       return { date: new Date(ms), timezone };
 	    }
+	 },
+	 dateToGmtdate: (dt) => {
+	    dt.date = new Date(dt.date.getTime());
+	    dt.timezone = 0;
+	    return dt;
 	 },
 	 getMilliseconds: (dt) => dt.date.getMilliseconds(),
 	 setMilliseconds: (dt, ms) => dt.date.setMilliseconds(ms),

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/test/src/int.bgl                            */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/int.bgl               */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Tue Jun  2 10:58:56 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 08:08:33 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing bit functions                                            */
@@ -260,6 +260,21 @@
 
 (define-test int64->fixnum (int64->fixnum #s64:-7) :expected -7)
 (define-test uint64->fixnum (uint64->fixnum #u64:200) :expected 200)
+
+;*---------------------------------------------------------------------*/
+;*    Basic operators                                                  */
+;*---------------------------------------------------------------------*/
+(define-test +fx (+fx 43 28) :expected 71)
+(define-test +elong (+elong #e43 #e28) :expected #e71)
+(define-test +llong (+llong #l43 #l28) :expected #l71)
+(define-test +s8 (+s8 #s8:43 #s8:28) :expected #s8:71)
+(define-test +u8 (+u8 #u8:43 #u8:28) :expected #u8:71)
+(define-test +s16 (+s16 #s16:43 #s16:28) :expected #s16:71)
+(define-test +u16 (+u16 #u16:43 #u16:28) :expected #u16:71)
+(define-test +s32 (+s32 #s32:43 #s32:28) :expected #s32:71)
+(define-test +u32 (+u32 #u32:43 #u32:28) :expected #u32:71)
+(define-test +s64 (+s64 #s64:43 #s64:28) :expected #s64:71)
+(define-test +u64 (+u64 #u64:43 #u64:28) :expected #u64:71)
 
 ;*---------------------------------------------------------------------*/
 ;*    Comparisons                                                      */

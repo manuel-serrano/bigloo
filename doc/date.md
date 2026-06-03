@@ -48,7 +48,6 @@ Copies a `date` with optional modifications.
 Updates an existing date.
 
 ### date->gmtdate! ###
-<!-- [:@C] -->
 Updates the date to switch to an UTC representation. Returns the modified
 date object.
 
@@ -94,11 +93,9 @@ Converts a number of nanoseconds since eopch into a `date` object
 in the current timezone.
 
 ### seconds->gmtdate ###
-<!-- [:@C] -->
 Converts a number of seconds since eopch into a gmt `date` object.
 
 ### milliseconds->gmtdate ###
-<!-- [:@C] -->
 Converts a number of milliseconds since eopch into a gmt `date` object.
 
 ### date-second ###

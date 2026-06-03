@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/runtime/Include/bigloo.h        */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Include/bigloo.h       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Sep 25 14:02:48 2025 (serrano)                */
+/*    Last change :  Wed Jun  3 07:16:29 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2194,6 +2194,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #endif
    
 #define BGL_DATE_ISGMT(f) (BGL_HEADER_SIZE(CREF(f)->header) > 0)
+#define BGL_DATE_SETGMT(f) (CREF(f)->header = BGL_MAKE_HEADER(DATE_TYPE, 1))
 
 #define BGL_DATE_ISDST(f) (BGL_DATE(f).tm.tm_isdst)
 #define BGL_DATE_SECOND(f) (BGL_DATE(f).tm.tm_sec)

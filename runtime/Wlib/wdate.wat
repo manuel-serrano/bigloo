@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wdate.wat          */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/wdate.wat         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Oct 21 17:43:39 2024                          */
-;*    Last change :  Wed Feb  5 07:54:59 2025 (serrano)                */
-;*    Copyright   :  2024-25 manuel serrano                            */
+;*    Last change :  Wed Jun  3 07:04:31 2026 (serrano)                */
+;*    Copyright   :  2024-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dates                                                       */
 ;*=====================================================================*/
@@ -19,6 +19,7 @@
    (import "__js_date" "current_milliseconds" (func $js_current_milliseconds (result f64)))
    (import "__js_date" "mkDate" (func $js_mkdate (param f64) (result externref)))
    (import "__js_date" "mktime" (func $js_mktime (param i32 i32 i32 i32 i32 i32 f64 i32 i32) (result externref)))
+   (import "__js_date" "dateToGmtdate" (func $js_date_to_gmtdate (param externref) (result externref)))
    (import "__js_date" "getMilliseconds" (func $js_date_milliseconds (param externref) (result f64)))
    (import "__js_date" "setMilliseconds" (func $js_date_set_milliseconds (param externref) (param f64)))
    (import "__js_date" "getSeconds" (func $js_date_seconds (param externref) (result i32)))
@@ -166,6 +167,12 @@
 	 (local.get $mon))
       (call $js_date_set_year (struct.get $date $dt (local.get $dt))
 	 (local.get $year))
+      (return (local.get $dt)))
+
+   (func $bgl_date_to_gmtdate (export "bgl_date_to_gmtdate")
+      (param $dt (ref $date))
+      (result (ref $date))
+      (call $js_date_to_gmtdate (struct.get $date $dt (local.get $dt)))
       (return (local.get $dt)))
 
    ;; -----------------------------------------------------------------
