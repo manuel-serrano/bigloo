@@ -24,7 +24,7 @@ The language supports:
 
   * modules for separate compilation;
   * preemptive multi-threading with shared memory;
-  * an object system based on generic functions;
+  * an object system based on classes and generic functions;
   * exceptions;
   * rich set of builtin libraries (threads, multimedia, databases, ...).
   
@@ -59,7 +59,8 @@ $ file ./fib
 ### Bigloo and Java
 <!-- [:@jvm] -->
 
-The same could be compiled and run on a Jvm. It simply requires the "C" ad-hoc clause with
+A similar example could be implemented for the Jvm using the java
+`System.out.println` method. It simply requires the "C" ad-hoc clause with
 one suitable for Java:
 
 ```bigloo
@@ -80,7 +81,8 @@ $ file ./fib.class
 ### Bigloo and Wasm
 <!-- [:@wasm] -->
 
-The same could also be compiled and run on any WebAssembly 3.0 implementation.
+A similar example could also be built for WebAssembly. It could run on 
+any WebAssembly 3.0 implementation.
 
 ```bigloo
 ,(include "./examples/wasm/fib.bgl")

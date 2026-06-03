@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Read/reader.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Read/reader.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Sat May  2 07:09:01 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 18:38:26 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -890,7 +890,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    port->list ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (port->list reader ip)
+(define (port->list::pair-nil reader::procedure ip::input-port)
    (let loop ((exp '()))
       (let ((e (reader ip)))
 	 (if (eof-object? e)
@@ -900,7 +900,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    port->sexp-list ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (port->sexp-list ip #!optional location)
+(define (port->sexp-list::pair-nil ip::input-port #!optional location)
    (port->list (lambda (ip) (read ip location)) ip))
 
 ;*---------------------------------------------------------------------*/

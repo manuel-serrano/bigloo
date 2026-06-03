@@ -275,8 +275,7 @@ Pretty prints `obj` on `output-port`.
 
 ### define-reader-ctor ###
 
-The present SRFI-10
-(@url{http://srfi.schemers.org/srfi-10/srfi-10.html}) proposes an
+The present [SRFI-10](http://srfi.schemers.org/srfi-10/srfi-10.html) proposes an
 extensible external representation of Scheme values, a notational
 convention for future SRFIs. This SRFI adds `#\x2c(` as a new token and
 extends production rules of the grammar for a Scheme reader. The `#\x2c()`

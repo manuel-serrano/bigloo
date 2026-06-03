@@ -307,8 +307,7 @@ html.home .body {
 
 div.home {
     background: var(--homeBackgroundColor);
-    width: 100%;
-    padding: 2ex 3em 2ex 22em;
+    padding: 2ex 3em 2ex 2em;
     margin-top: var(--navHeight);
     color: var(--background);
     z-index: 0;

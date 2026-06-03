@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Mon May 18 08:51:17 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 18:36:01 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -355,7 +355,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-chars! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (read-chars! buf l #!optional (ip::input-port (current-input-port)))
+(define (read-chars! buf::bstring l #!optional (ip::input-port (current-input-port)))
    (let ((len (cond
 		 ((fixnum? l) l)
 		 ((elong? l) (elong->fixnum l))
@@ -375,7 +375,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-fill-string! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (read-fill-string! s o len::long #!optional (ip::input-port (current-input-port)))
+(define-inline (read-fill-string! s::bstring o::long len::long #!optional (ip::input-port (current-input-port)))
    (cond-expand
       (bigloo-unsafe-range
        ;;; disable range all array bound checking
@@ -438,7 +438,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    port->string-list ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (port->string-list ip)
+(define (port->string-list::pair-nil ip::input-port)
    (let loop ((res '()))
       (let ((exp (read-of-strings ip)))
 	 (if (eof-object? exp)
@@ -493,7 +493,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    file->string ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (file->string path)
+(define (file->string::bstring path::bstring)
    (cond-expand
       (bigloo-c
        (let ((i (string-index path #\:)))
@@ -642,5 +642,5 @@
 ;*---------------------------------------------------------------------*/
 ;*    password ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (password #!optional (prompt::bstring ""))
+(define-inline (password::bstring #!optional (prompt::bstring ""))
    ($password prompt))
