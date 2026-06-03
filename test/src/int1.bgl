@@ -25,7 +25,7 @@
 ;*---------------------------------------------------------------------*/
 (define (test verbose tests::pair-nil)
    (when (or (null? tests) (member "int" tests))
-      (test-all verbose "int-1")))
+      (test-all verbose "int")))
 
 ;*---------------------------------------------------------------------*/
 ;*    Predicates                                                       */

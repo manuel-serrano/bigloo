@@ -1,0 +1,128 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/real.bgl              */
+;*    ------------------------------------------------------------     */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Wed Jun  3 20:12:16 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing bit functions                                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    real                                                             */
+;*---------------------------------------------------------------------*/
+(module real1
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "real" tests))
+      (test-all verbose "real")))
+
+;*---------------------------------------------------------------------*/
+;*    fact ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (fact x)
+   (if (< x 2)
+       1
+       (* (fact (- x 1)) x)))
+
+;*---------------------------------------------------------------------*/
+;*    sqrt-test ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (sqrt-test x::double)
+   (sqrt x))
+
+;*---------------------------------------------------------------------*/
+;*    check-inexact? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (check-inexact? z)
+   (=fl z (exact->inexact (inexact->exact z))))
+
+(define-test flonum 3.141592 :expected 3.141592)
+(define-test flonum -3.141592 :expected -3.141592)
+(define-test flonum 3.141592 :expected 3.141592)
+(define-test flonum -3.141592 :expected -3.141592)
+(define-test flonum (/ (inexact->exact (cos 0)) 2) :expected 0.5)
+(define-test flonum (/ 1 2) :expected 0.5)
+(define-test flonum 23.56 :expected (+fl 23.0 0.56))
+(define-test read (let ((p (open-input-string "3.14"))) (read p))
+   :expected 3.14)
+(define-test read (let ((p (open-input-string "-3.14"))) (read p))
+   :expected -3.14)
+(define-test read (let ((p (open-input-string "1e2"))) (read p))
+   :expected 1e2)
+(define-test read (let ((p (open-input-string "1e-2"))) (read p))
+   :expected 1e-2)
+(define-test read (let ((p (open-input-string "-1e2"))) (read p))
+   :expected -1e2)
+(define-test read (let ((p (open-input-string "-1e-2"))) (read p))
+   :expected -1e-2)
+(define-test flonum (check-inexact? (-fl (fixnum->flonum (minvalfx)) 1.0))
+   :expected #t)
+(define-test flonum (check-inexact? (fixnum->flonum (minvalfx)))
+   :expected #t)
+(when (=fx (-fx (flonum->fixnum (+fl (fixnum->flonum (minvalfx)) 1.0)) 1)
+         (minvalfx))
+   (define-test flonum.16 (check-inexact? (+fl (fixnum->flonum (maxvalfx)) 1.0))
+      :expected #t)
+   (define-test flonum.17 (check-inexact? (fixnum->flonum (maxvalfx)))
+      :expected #t))
+(define-test flonum (check-inexact? 5.0) :expected #t)
+(define-test flonum8 (check-inexact? -5.0) :expected #t)
+(define-test >=fl (if (>=fl 0.0 3.0) 1 2) :expected 2)
+(define-test cos (sin 0) :expected 0.0)
+(define-test cos (acos (cos 2.0)) :expected 2.0)
+(define-test round (round 4.3) :expected 4.0)
+(define-test exact (exact? 5) :expected #t)
+(define-test exact (exact? 5.0) :expected #f)
+(define-test inexact (inexact? 5) :expected #f)
+(define-test inexact (inexact? 5.0) :expected #t)
+(define-test exact (inexact->exact 4.3) :expected 4)
+(define-test fact (fact 5) :expected 120)
+(define-test fact (fact 5.0) :expected 120.0)
+(define-test floor (floor -4.3) :expected -5.0)
+(define-test ceiling (ceiling -4.3) :expected -4.0)
+(define-test truncate (truncate -4.3) :expected -4.0)
+(define-test round (round -4.3) :expected -4.0)
+(define-test floor (floor 3.5) :expected 3.0)
+(define-test ceiling (ceiling 3.5) :expected 4.0)
+(define-test truncate (truncate 3.5) :expected 3.0)
+(define-test round (round 3.5) :expected 4.0)
+(define-test sqrt (sqrt-test 4.0) :expected 2.0)
+(define-test atan (let ((r (atan 1.0 1.0))) (> r 0)) :expected #t)
+(define-test prec (let ((num (+ 1e-6 1e-12)))
+                     (=fl (string->number (number->string num)) num))
+   :expected #t)
+(define-test nan (=fl +nan.0 +nan.0) :expected #f)
+(define-test inf (<fl -inf.0 +inf.0) :expected #t)
+(define-test inf (<fl +inf.0 -inf.0) :expected #f)
+(define-test inf (<fl +inf.0 -inf.0) :expected #f)
+(define-test inf (>fl +inf.0 -inf.0) :expected #t)
+(define-test inf +inf.0 :expected (/ 1 .0))
+
+(define-test llong-bits
+   (llong-bits->double (double->llong-bits 3.1415))
+   :expected 3.1415)
+(define-test llong-bits (double->llong-bits 1.0)
+   :expected #lx3ff0000000000000)
+(define-test llong-bits (double->llong-bits +inf.0)
+   :expected #lx7ff0000000000000)
+(define-test int-bits (float->int-bits 5.6904566139035e-28)
+   :expected #x12345678)
+(define-test int-bits (int-bits->float (float->int-bits 3.1415))
+   :expected 3.1415)
+(define-test int-bits (float->int-bits 1.0)
+   :expected (bit-lsh #x3f80 16))
+(define-test int-bits (float->int-bits +inf.0)
+   :expected (bit-lsh #x7f80 16))
+(define-test randomfl (let ((n (randomfl))) (and (>=fl n 0.) (<=fl n 1.)))
+   :expected #t)
