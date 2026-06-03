@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Jun  3 10:41:34 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 14:57:19 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
@@ -277,42 +277,42 @@
 ;*---------------------------------------------------------------------*/
 ;*    bignum? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (bignum? obj) ($bignum? obj))
+(define-inline (bignum?::bool obj) ($bignum? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    casts ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (fixnum->bignum x) ($fixnum->bignum x))
-(define-inline (bignum->fixnum x) ($bignum->fixnum x))
+(define-inline (fixnum->bignum::bignum x::long) ($fixnum->bignum x))
+(define-inline (bignum->fixnum::long x::bignum) ($bignum->fixnum x))
 
-(define-inline (bignum->elong x) ($bignum->elong x))
-(define-inline (bignum->llong x) ($bignum->llong x))
+(define-inline (bignum->elong::elong x::bignum) ($bignum->elong x))
+(define-inline (bignum->llong::llong x::bignum) ($bignum->llong x))
 
-(define-inline (elong->bignum x) ($elong->bignum x))
-(define-inline (llong->bignum x) ($llong->bignum x))
+(define-inline (elong->bignum::bignum x::elong) ($elong->bignum x))
+(define-inline (llong->bignum::bignum x::llong) ($llong->bignum x))
 
 
 ;*---------------------------------------------------------------------*/
 ;*    binary comparisons                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (=bx n1 n2) (=fx ($bignum-cmp n1 n2) 0))
-(define-inline (<bx n1 n2) (<fx ($bignum-cmp n1 n2) 0))
-(define-inline (>bx n1 n2) (>fx ($bignum-cmp n1 n2) 0))
-(define-inline (<=bx n1 n2) (<=fx ($bignum-cmp n1 n2) 0))
-(define-inline (>=bx n1 n2) (>=fx ($bignum-cmp n1 n2) 0))
+(define-inline (=bx::bool n1::bignum n2::bignum) (=fx ($bignum-cmp n1 n2) 0))
+(define-inline (<bx::bool n1::bignum n2::bignum) (<fx ($bignum-cmp n1 n2) 0))
+(define-inline (>bx::bool n1::bignum n2::bignum) (>fx ($bignum-cmp n1 n2) 0))
+(define-inline (<=bx::bool n1::bignum n2::bignum) (<=fx ($bignum-cmp n1 n2) 0))
+(define-inline (>=bx::bool n1::bignum n2::bignum) (>=fx ($bignum-cmp n1 n2) 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    zero comparisons                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (zerobx? n) ($zerobx? n))
-(define-inline (positivebx? n) ($positivebx? n))
-(define-inline (negativebx? n) ($negativebx? n))
+(define-inline (zerobx?::bool n::bignum) ($zerobx? n))
+(define-inline (positivebx?::bool n::bignum) ($positivebx? n))
+(define-inline (negativebx?::bool n::bignum) ($negativebx? n))
 
 ;*---------------------------------------------------------------------*/
 ;*    odd/even                                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (oddbx? x) ($oddbx? x))
-(define-inline (evenbx? x) ($evenbx? x))
+(define-inline (oddbx?::bool x::bignum) ($oddbx? x))
+(define-inline (evenbx?::bool x::bignum) ($evenbx? x))
 
 ;*---------------------------------------------------------------------*/
 ;*    min/max ...                                                      */
@@ -326,30 +326,30 @@
 	     (loop (car xs) (cdr xs))
 	     (loop y (cdr xs))))))
 
-(define (minbx n1 . nn) (min/max <bx n1 . nn))
-(define (maxbx n1 . nn) (min/max >bx n1 . nn))
+(define (minbx::bignum n1::bignum . nn) (min/max <bx n1 . nn))
+(define (maxbx::bignum n1::bignum . nn) (min/max >bx n1 . nn))
 
 ;*---------------------------------------------------------------------*/
 ;*    unary ops                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (negbx n1) ($negbx n1))
-(define-inline (absbx n) ($absbx n))
+(define-inline (negbx::bignum n1::bignum) ($negbx n1))
+(define-inline (absbx::bignum n::bignum) ($absbx n))
 
 ;*---------------------------------------------------------------------*/
 ;*    binary ops                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (+bx z1 z2) ($+bx z1 z2))
-(define-inline (-bx z1 z2) ($-bx z1 z2))
-(define-inline (*bx z1 z2) ($*bx z1 z2))
-(define-inline (/bx z1 z2) ($quotientbx z1 z2))
+(define-inline (+bx::bignum z1::bignum z2::bignum) ($+bx z1 z2))
+(define-inline (-bx::bignum z1::bignum z2::bignum) ($-bx z1 z2))
+(define-inline (*bx::bignum z1::bignum z2::bignum) ($*bx z1 z2))
+(define-inline (/bx::bignum z1::bignum z2::bignum) ($quotientbx z1 z2))
 
-(define-inline (quotientbx n1 n2) ($quotientbx n1 n2))
-(define-inline (remainderbx n1 n2) ($remainderbx n1 n2))
+(define-inline (quotientbx::bignum n1::bignum n2::bignum) ($quotientbx n1 n2))
+(define-inline (remainderbx::bignum n1::bignum n2::bignum) ($remainderbx n1 n2))
 
 ;*---------------------------------------------------------------------*/
 ;*    modulobx ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (modulobx x y)
+(define (modulobx::bignum x::bignum y::bignum)
    (let ((r (remainderbx x y)))
       (if (zerobx? r)
 	  r
@@ -360,7 +360,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    gcdbx ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (gcdbx . x)
+(define (gcdbx::bignum . x)
   (cond ((null? x) (fixnum->bignum 0))
 	((null? (cdr x)) (absbx (car x)))
 	(else
@@ -373,7 +373,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    lcm ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define (lcmbx . x)
+(define (lcmbx::bignum . x)
   (cond ((null? x) (fixnum->bignum 1))
 	((null? (cdr x)) (absbx (car x)))
 	(else
@@ -386,7 +386,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    exptbx ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (exptbx x y)
+(define-inline (exptbx::bignum x::bignum y::bignum)
    (cond-expand
       (bigloo-c
        ($exptbx x y))
@@ -399,7 +399,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    randombx ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (randombx max::bignum)
+(define-inline (randombx::bignum max::bignum)
    (if (=fx (bignum->fixnum max) 0) #z0 ($randbx max)))
 
 ;*---------------------------------------------------------------------*/

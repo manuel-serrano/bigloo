@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Sun May 31 11:11:59 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 14:56:32 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing bignums                                                  */
@@ -191,6 +191,9 @@
 (define-test *bx
    (*bx #z10000000000000000000000000000000000 #z0)
    :expected #z0)
+(define-test /bx
+   (/bx #z1234500000000000000000000000000000000 #z1000000000000000000000000000)
+   :expected #z1234500000)
 
 (define-test quotientbx
    (=bx (string->bignum "-58823")
@@ -259,3 +262,32 @@
    :expected #z5)
 (define-test bit-urshbx (bit-rshbx #z200 3)
    :expected #z25)
+
+(define-test =bx (=bx #z35 (+bx #z10 #z25)))
+(define-test <bx (<bx #z43 (+bx #z1330 #z25)))
+(define-test <=bx (<=bx #z43 (+bx #z9810 #z-25)))
+(define-test >bx (>bx #z343 (+bx #z10 #z25)))
+(define-test >=bx (>=bx #z143 (+bx #z10 #z25)))
+
+(define-test fixnum->bignum (fixnum->bignum 124) :expected #z124)
+(define-test fixnum->bignum (fixnum->bignum -124) :expected #z-124)
+
+(define-test elong->bignum (elong->bignum #e124) :expected #z124)
+(define-test elong->bignum (elong->bignum #e-124) :expected #z-124)
+
+(define-test llong->bignum (llong->bignum #l124) :expected #z124)
+(define-test llong->bignum (llong->bignum #l-124) :expected #z-124)
+
+(define-test absbx (absbx #z123) :expected #z123)
+(define-test absbx (absbx #z-123) :expected #z123)
+
+(define-test exptbx (exptbx #z2 #z32) :expected #z4294967296)
+
+(define-test remainderbx (remainderbx #z5 #z2) :expected #z1)
+(define-test quotientbx (quotientbx #z5 #z2) :expected #z2)
+(define-test quotientbx (modulobx #z5 #z2) :expected #z1)
+
+(define-test gcdbx (gcdbx #z55 #z15) :expected #z5)
+(define-test lcmbx (lcmbx #z55 #z15) :expected #z165)
+
+(define-test randombx (let ((n (randombx #z10))) (and (>=bx n #z0) (<bx n #z10))))

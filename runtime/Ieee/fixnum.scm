@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Jun  3 08:53:16 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 14:08:26 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -2374,7 +2374,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    exptfx ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (exptfx x y)
+(define (exptfx::long x::long y::long)
    (cond
       ((zerofx? y) 1)
       ((evenfx? y) (exptfx (*fx x x) (quotientfx y 2)))
@@ -2540,7 +2540,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Not inlined because it is overriden by a macro.                  */
 ;*---------------------------------------------------------------------*/
-(define (string->integer string #!optional (radix::long 10) (start::long 0))
+(define (string->integer::long string::bstring #!optional (radix::long 10) (start::long 0))
    (if (and (>=fx radix 2) (<=fx radix 36))
        ;; strtol cannot be renamed as it is used by the compiler
        ;; to optmize the call
@@ -2550,7 +2550,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string->elong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (string->elong string #!optional (radix::long 10))
+(define (string->elong::elong string::bstring #!optional (radix::long 10))
    (if (and (>=fx radix 2) (<=fx radix 36))
        (cond-expand
 	  ((and (not bigloo-c) (not bigloo-jvm))
@@ -2562,7 +2562,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string->llong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (string->llong string #!optional (radix::long 10))
+(define (string->llong::llong string::bstring #!optional (radix::long 10))
    (if (and (>=fx radix 2) (<=fx radix 36))
        (cond-expand
 	  ((and (not bigloo-c) (not bigloo-jvm))
@@ -2580,12 +2580,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    random ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (random max::long)
+(define-inline (random::long max::long)
    (if (=fx max 0) 0 (modulofx ($rand) max)))
 
 ;*---------------------------------------------------------------------*/
 ;*    seed-random! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (seed-random! seed)
+(define (seed-random! seed::int)
    ($seed-rand seed)
    seed)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Wed Jun  3 11:03:23 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 14:09:14 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing bit functions                                            */
@@ -127,6 +127,14 @@
 (define-test mins64 (mins64 #s64:43 #s64:28) :expected #s64:28)
 (define-test minu64 (minu64 #u64:43 #u64:28) :expected #u64:28)
 
+(define-test exptfx (exptfx 2 4) :expected 16)
+(define-test exptfx/ov (exptfx 2 4) :expected 16)
+(define-test exptfx/ov (exptfx/ov 2 70) :expected #z1180591620717411303424)
+(define-test expts32 (expts32 #s32:2 4) :expected #s32:16)
+(define-test exptu32 (exptu32 #u32:2 4) :expected #u32:16)
+(define-test expts64 (expts64 #s64:2 4) :expected #s64:16)
+(define-test exptu64 (exptu64 #u64:2 4) :expected #u64:16)
+
 ;*---------------------------------------------------------------------*/
 ;*    Divisions                                                        */
 ;*---------------------------------------------------------------------*/
@@ -200,3 +208,7 @@
 (define-test lcms64 (lcms64 #s64:55 #s64:15) :expected #s64:165)
 (define-test lcmu64 (lcmu64 #u64:55 #u64:15) :expected #u64:165)
 
+;*---------------------------------------------------------------------*/
+;*    Misc                                                             */
+;*---------------------------------------------------------------------*/
+(define-test random (let ((n (random 10))) (and (>=fx n 0) (< n 10))))

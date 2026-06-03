@@ -295,6 +295,13 @@ html.home body {
     margin: 0;
 }
 
+html.home .body {
+    width: 70%;
+    padding-left: 3em;
+    padding-right: 3em;
+    padding-top: 2ex;
+}
+
 html.home nav.menu div.title {
     visibility: hidden;
 }

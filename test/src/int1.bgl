@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Wed Jun  3 11:10:36 2026 (serrano)                */
+;*    Last change :  Wed Jun  3 14:17:21 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing bit functions                                            */
@@ -285,6 +285,13 @@
 (define-test unsigned->string (unsigned->string -56 2)
    cond-expand: (and jvm (config int-size 32))
    :expected "1111111111111111111111111111001000")
+
+(define-test string->integer (string->integer "123") :expected 123)
+(define-test string->integer (string->integer "10" 16) :expected 16)
+(define-test string->integer (string->integer "fz" 16) :expected 15)
+
+(define-test string->elong (string->elong "123") :expected #e123)
+(define-test string->llong (string->llong "123") :expected #l123)
 
 ;*---------------------------------------------------------------------*/
 ;*    Comparisons                                                      */

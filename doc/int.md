@@ -29,8 +29,6 @@ own types:
      Examples: `#e1`, `#e-5`, `#e2345`.
   * `bllong`: A bigloo _exact long long_. 
      Examples. `#l1`, `#l-5`, `#l2435`.
-  * `bignum`: Infinit precicision integers.
-     Examples. `#z1`, `#z-5`, `#z2435`.
   * `int8`: An 8-bit integer.
      Examples. `#s8:1`, `#s8:-5`.
   * `uint8`: An 8-bit integer.
@@ -47,6 +45,8 @@ own types:
      Examples. `#s64:1`, `#s64:-5`, `#s64:300`.
   * `uint64`: An 64-bit integer.
      Examples. `#u64:1`, `#u64:65535`, `#u64:300`.
+  * `bignum`: Infinit precicision integers.
+     Examples. `#z1`, `#z-5`, `#z2435`.
   
 Each backends provides its own implementation of the following types:
 `short`, `int`, `long`, `ulong`, `elong`, `uelong, `llong`, and `ullong`.
@@ -232,6 +232,7 @@ Comparison Operators
 ### =u32 ###
 ### =s64 ###
 ### =u64 ###
+### =bx ###
 
 ### <fx ###
 ### <elong ###
@@ -244,6 +245,7 @@ Comparison Operators
 ### <u32 ###
 ### <s64 ###
 ### <u64 ###
+### <bx ###
 
 ### <=fx ###
 ### <=elong ###
@@ -256,6 +258,7 @@ Comparison Operators
 ### <=u32 ###
 ### <=s64 ###
 ### <=u64 ###
+### <=bx ###
 
 ### >fx ###
 ### >elong ###
@@ -280,6 +283,7 @@ Comparison Operators
 ### >=u32 ###
 ### >=s64 ###
 ### >=u64 ###
+### >=bx ###
 
 Conversions
 -----------
@@ -295,6 +299,10 @@ Conversions
 
 ### fixnum->int64 ###
 ### fixnum->uint64 ###
+
+### fixnum->bignum ###
+### elong->bignum ###
+### llong->bignum ###
 
 ### integer->string ###
 Converts an integer into a string representation.
@@ -322,6 +330,18 @@ _unsigned_ representation. The size of the generated string depends on
 the size of integers on the hostplaform. On 64-bit platforms, they
 will contain 64 characters, on 32-bit platforms only 32 characters.
 
+### string->integer ###
+Converts a string into a `long` value. Stops at the first character
+that does not belong to the radix representation of numbers.
+
+### string->elong ###
+Converts a string into an `elong` value. Stops at the first character
+that does not belong to the radix representation of numbers.
+
+### string->llong ###
+Converts a string into an `llong` value. Stops at the first character
+that does not belong to the radix representation of numbers.
+
 Basic Operators
 ---------------
 
@@ -340,6 +360,7 @@ returns a `long`.
 ### +u32 ###
 ### +s64 ###
 ### +u64 ###
+### +bx ###
 
 ### -fx/ov ###
 Substracts two longs, if an operation overflows, returns a `bignum`, otherwise,
@@ -356,6 +377,7 @@ returns a `long`.
 ### -u32 ###
 ### -s64 ###
 ### -u64 ###
+### -bx ###
 
 ### *fx/ov ###
 Multiplies two longs, if an operation overflows, returns a `bignum`, otherwise,
@@ -372,6 +394,7 @@ returns a `long`.
 ### *u32 ###
 ### *s64 ###
 ### *u64 ###
+### *bx ###
 
 ### /fx ###
 ### /elong ###
@@ -384,6 +407,7 @@ returns a `long`.
 ### /u32 ###
 ### /s64 ###
 ### /u64 ###
+### /bx ###
 
 Operators
 ---------
@@ -399,6 +423,7 @@ Operators
 ### maxu32 ###
 ### maxs64 ###
 ### maxu64 ###
+### maxbx ###
 
 ### minfx ###
 ### minelong ###
@@ -411,6 +436,7 @@ Operators
 ### minu32 ###
 ### mins64 ###
 ### minu64 ###
+### minbx ###
 
 ### absfx ###
 ### abselong ###
@@ -423,6 +449,15 @@ Operators
 ### absu32 ###
 ### abss64 ###
 ### absu64 ###
+### absbx ###
+
+### exptfx ###
+### exptfx/ov ###
+### expts32 ###
+### exptu32 ###
+### expts64 ###
+### exptu64 ###
+### exptbx ###
 
 Division Operators
 ------------------
@@ -443,6 +478,7 @@ The remainder is what one get from truncated division:
 ### remainderu32 ###
 ### remainders64 ###
 ### remainderu64 ###
+### remainderbx ###
 
 ### quotient ###
 Computes the quotient of the integer division. 
@@ -458,6 +494,7 @@ Computes the quotient of the integer division.
 ### quotientu32 ###
 ### quotients64 ###
 ### quotientu64 ###
+### quotientbx ###
 
 ### modulo ###
 The modulo retains the type of the divisor `n2`.
@@ -473,6 +510,7 @@ The modulo retains the type of the divisor `n2`.
 ### modulou32 ###
 ### modulos64 ###
 ### modulou64 ###
+### modulobx ###
 
 Gcd, Lcm
 --------
@@ -489,6 +527,7 @@ Gcd, Lcm
 ### gcdu32 ###
 ### gcds64 ###
 ### gcdu64 ###
+### gcdbx ###
 
 ### lcm ###
 ### lcmfx ###
@@ -502,6 +541,7 @@ Gcd, Lcm
 ### lcmu32 ###
 ### lcms64 ###
 ### lcmu64 ###
+### lcmbx ###
 
 Bit Manipulations
 -----------------
@@ -760,3 +800,16 @@ The _unsigned_ bit right shift of a `elong` integer.
 
 ### bit-urshllong ###
 The _unsigned_ bit right shift of a `llong` integer.
+
+
+Miscellaneous
+-------------
+
+### random ###
+Generates a random number 0 &le; `n` &lt; `max`.
+
+### randombx ###
+Generates a random number 0 &le; `n` &lt; `max`.
+
+### seed-random! ###
+<!-- [:seed-random!@NoTest-C-jvm] -->

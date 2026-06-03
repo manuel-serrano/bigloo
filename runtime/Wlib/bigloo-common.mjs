@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Wed Jun  3 11:32:03 2026 (serrano)                */
+/*    Last change :  Wed Jun  3 15:19:53 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -25,17 +25,19 @@ const A = 1103515245n;
 const C = 12345n;
    
 function seedRandom(seed) {
+   console.log("SD", S);
    S = BigInt(seed) % M;
    return S;
 }
 
 function randBignum(bx) {
    if (!S) {
-      return bx ^ BigInt(Math.random() * 5379239846);
+      return (bx ^ BigInt(Math.round(Math.random() * 5379239338))) % bx;
    } else {
       S = (S * A + C);
       return S % bx;
    }
+   return bx;
 }
 
 function randFixnum() {
@@ -247,7 +249,7 @@ export class BglRuntime {
 	       return 0;
 	    }
 	 },
-	 bignum_to_long: bx => BigInt.asIntN(64, bx),
+	 bignum_to_long: bx => Number(BigInt.asIntN(64, bx)),
 	 bignum_remainder: (bx, by) => bx % by,
 	 bignum_quotient: (bx, by) => bx / by,
 	 seed_rand: seedRandom,
@@ -275,8 +277,6 @@ export class BglRuntime {
 	    }
 	 },
 	 bignum_abs: (x) => x < 0 ? -x : x,
-	 bignum_gcd: (x, y) => !y ? x : self.gcd(x % y),
-	 bignum_lcm: (x, y) => (x, y) => x * y / self.gcd(x, y),
 	 bignum_neg: (x) => -x,
 	 bignum_add: (x, y) => x + y,
 	 bignum_sub: (x, y) => x - y,
@@ -291,7 +291,24 @@ export class BglRuntime {
 	 bignum_rsh: (x, y) => x >> BigInt(y),
 	 bignum_mask: (x, y) => x & BigInt((1 << y) - 1),
 	 bignum_cmp: (x, y) => x < y ? -1 : (x > y ? 1 : 0),
-	 bignum_to_flonum: x => Number(x)
+	 bignum_to_flonum: x => Number(x),
+         bignum_gcd: (a, b) => {
+            a = a < 0n ? -a : a;
+            b = b < 0n ? -b : b;
+
+            while (b !== 0n) {
+               [a, b] = [b, a % b];
+            }
+            
+            return a;
+         },
+         bignum_lcm: (a, b) => {
+            if (a === 0n || b === 0n) {
+               return 0n;
+            } else {
+               return (a / self.__js_bignum.bignum_gcd(a, b)) * (b < 0n ? -b : b);
+            }
+         }
       };
    }
 

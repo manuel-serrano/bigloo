@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/runtime/Ieee/fixnum-generic.sch     */
+;*    .../project/bigloo/5.0.x/runtime/Ieee/fixnum-generic.sch         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 12:33:04 2024                          */
-;*    Last change :  Sun Jun 22 08:47:41 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Wed Jun  3 14:33:21 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable fixnum implementation                                   */
 ;*=====================================================================*/
@@ -116,12 +116,37 @@
 (define ($$strtol string start radix)
 
    (define l (string-length string))
+
+   (define (char->num n::long)
+      (cond
+         ((<=fx n (char->integer #\9))
+          (-fx n (char->integer #\0)))
+         ((<=fx n (char->integer #\F))
+          (+fx 10 (-fx n (char->integer #\A))))
+         (else
+          (+fx 10 (-fx n (char->integer #\a))))))
    
    (define (loop acc i)
       (if (<fx i l)
 	  (let* ((c (string-ref-ur string i))
-		 (n (char->num c)))
-	     (loop (+fx (*fx acc radix) n) (+fx i 1)))
+                 (n (-fx (char->integer c) (char->integer #\0))))
+             (cond
+                ((<fx n 0)
+                 acc)
+                ((and (<=fx n 9) (<fx n radix))
+                 (loop (+fx (*fx acc radix) n) (+fx i 1)))
+                ((<fx radix 16)
+                 acc)
+                ((char<=? c #\F)
+                 (loop (+fx (*fx acc radix)
+                          (+fx 10 (-fx (char->integer c) (char->integer #\A))))
+                    (+fx i 1)))
+                ((char<=? c #\f)
+                 (loop (+fx (*fx acc radix)
+                          (+fx 10 (-fx (char->integer c) (char->integer #\a))))
+                    (+fx i 1)))
+                (else
+                 acc)))
 	  acc))
    
    (cond
@@ -160,15 +185,3 @@
    (if (<fx num 10)
        (integer->char (+fx num (char->integer #\0)))
        (integer->char (+fx num (-fx (char->integer #\a) 10)))))
-   
-;*---------------------------------------------------------------------*/
-;*    char->num ...                                                    */
-;*---------------------------------------------------------------------*/
-(define (char->num char)
-   (cond
-      ((char<=? char #\9)
-       (-fx (char->integer char) (char->integer #\0)))
-      ((char<=? char #\F)
-       (+fx 10 (-fx (char->integer char) (char->integer #\A))))
-      (else
-       (+fx 10 (-fx (char->integer char) (char->integer #\a))))))
