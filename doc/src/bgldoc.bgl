@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Wed Jun  3 16:50:10 2026 (serrano)                */
+;*    Last change :  Thu Jun  4 07:49:04 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -26,8 +26,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    definitions-table ...                                            */
 ;*---------------------------------------------------------------------*/
-(define definitions-table (create-hashtable :size 128 :weak 'open-string))
-(define tests-table (create-hashtable :size 128 :weak 'open-string))
+(define definitions-table (make-hashtable :size 128 :keys 'string))
+(define tests-table (make-hashtable :size 128 :keys 'string))
 
 (define max-tests 5)
 
@@ -576,6 +576,8 @@
    (for-each (lambda (e)
 		(match-case e
 		   ((define-test ?id ?expr :cond-expand ?- :expected ?val)
+		    (hashtable-add! tests-table (symbol->string id) (cons expr val)))
+		   ((define-test ?id ?expr :eq ?- :expected ?val)
 		    (hashtable-add! tests-table (symbol->string id) (cons expr val)))
 		   ((define-test ?id ?expr :expected ?val)
 		    (hashtable-add! tests-table (symbol->string id) (cons expr val)))

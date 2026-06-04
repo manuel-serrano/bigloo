@@ -1,0 +1,16 @@
+<!--==================================================================-->
+<!--    serrano/prgm/project/bigloo/5.0a/doc/real.md                  -->
+<!--    ----------------------------------------------------------    -->
+<!--    Author      :  manuel serrano                                 -->
+<!--    Creation    :  Mon Apr 13 10:38:02 2026                       -->
+<!--    Last change :                                                 -->
+<!--    Copyright   :  2026 manuel serrano                            -->
+<!--    -----------------------------------------------------------   -->
+<!--    Numbers                                                       -->
+<!--==================================================================-->
+
+,(implementation-path "../runtime/Ieee/number.scm")
+,(example-path "../test/src/number.bgl")
+
+Numbers
+=======

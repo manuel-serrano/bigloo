@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Expand/garith.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Expand/garith.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:36 1994                          */
-;*    Last change :  Tue Jul  1 09:35:10 2025 (serrano)                */
-;*    Copyright   :  1994-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jun  4 10:32:41 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (generiques)                        */
 ;*=====================================================================*/
@@ -154,7 +154,7 @@
        (cond
 	  ((fixnum? x)
 	   (negfx x))
-	  ((real? x)
+	  ((flonum? x)
 	   (negfl x))
 	  (else
 	   `(- ,(e x e)))))

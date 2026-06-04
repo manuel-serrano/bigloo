@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Unsafe/intext.scm       */
+;*    serrano/bigloo/5.0.x/runtime/Unsafe/intext.scm                   */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Thu Jun  5 08:35:27 2025 (serrano)                */
+;*    Last change :  Thu Jun  4 10:25:14 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -1111,7 +1111,7 @@
 	  (print-fixnum (cnst->integer item)))
 	 ((fixnum? item)
 	  (print-fixnum item))
-	 ((real? item)
+         ((flonum? item)
 	  (!print-markup #\f)
 	  (let ((s (real->string item)))
 	     (!print-chars s (string-length s))))

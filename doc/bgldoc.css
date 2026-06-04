@@ -307,6 +307,7 @@ html.home .body {
 
 div.home {
     background: var(--homeBackgroundColor);
+    opacity: 0.95;
     padding: 2ex 3em 2ex 2em;
     margin-top: var(--navHeight);
     color: var(--background);

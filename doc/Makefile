@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Wed Jun  3 17:05:16 2026 (serrano)                */
+#*    Last change :  Thu Jun  4 11:02:17 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -36,7 +36,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = bool date hash int io pair port real string thread vector \
+MD = bool date hash int io number pair port real string thread vector \
  condexpand module5 module4 object
 
 EX = c/fib java/fib wasm/fib

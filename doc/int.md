@@ -806,10 +806,10 @@ Miscellaneous
 -------------
 
 ### random ###
-Generates a random number 0 &le; `n` &lt; `max`.
+Generates a random number statisfying 0 &le; `n` &lt; `max`.
 
 ### randombx ###
-Generates a random number 0 &le; `n` &lt; `max`.
+Generates a random number statisfying 0 &le; `n` &lt; `max`.
 
 ### seed-random! ###
 <!-- [:seed-random!@NoTest-C-jvm] -->

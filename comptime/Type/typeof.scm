@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Type/typeof.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Type/typeof.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Wed Sep 24 10:48:12 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jun  4 10:20:30 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
 ;*=====================================================================*/
@@ -38,7 +38,7 @@
       ((null? atom) *bnil*)
       ((fixnum? atom) *long*)
       ((bignum? atom) *bignum*)
-      ((real? atom) *real*)
+      ((flonum? atom) *real*)
       ((boolean? atom) *bool*)
       ((char? atom) *char*)
       ((string? atom) *bstring*)

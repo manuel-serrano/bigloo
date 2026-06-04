@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:22:05 2026                          */
-;*    Last change :  Thu May 28 18:15:11 2026 (serrano)                */
+;*    Last change :  Thu Jun  4 07:58:05 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing macros                                                   */
@@ -61,8 +61,18 @@
 (define (check-test id fname loc provided #!key (expected #t) (eq equal?))
    (if (not (eq provided expected))
        (error/location id "test failed"
-	  (format "expected: ~a, provided: ~a" expected provided)
+	  (format "expected: ~s, provided: ~s" expected provided)
 	  fname loc)))
+
+;*---------------------------------------------------------------------*/
+;*    ~equal? ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (~equal? x y)
+   (define epsilon 0.00001)
+   (if (and (flonum? x) (flonum? y))
+       (or (<fl (absfl (-fl x y)) epsilon)
+           (and (nanfl? x) (nanfl? y)))
+       (equal? x y)))
 
 ;*---------------------------------------------------------------------*/
 ;*    color ...                                                        */

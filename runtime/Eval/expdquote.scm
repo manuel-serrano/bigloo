@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expdquote.scm        */
+;*    serrano/bigloo/5.0.x/runtime/Eval/expdquote.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:53:05 1994                          */
-;*    Last change :  Thu Dec 12 18:01:18 2024 (serrano)                */
+;*    Last change :  Thu Jun  4 10:24:14 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    L'expansion des formes `',@                                      */
 ;*=====================================================================*/
@@ -57,7 +57,7 @@
        x)
       ((?- ?value)
        (cond
-	  ((real? value)
+	  ((flonum? value)
 	   value)
 	  ((fixnum? value)
 	   value)

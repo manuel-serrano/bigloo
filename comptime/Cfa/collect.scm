@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Cfa/collect.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Cfa/collect.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Mon Oct 20 14:20:06 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jun  4 10:19:38 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Collect all types and allocs approximations                      */
 ;*=====================================================================*/
@@ -77,7 +77,7 @@
 	    ((char? value) 'char)
 	    ((boolean? value) 'boolean)
 	    ((string? value) 'string)
-	    ((real? value) 'real)
+	    ((flonum? value) 'real)
 	    (else #f)))
       (let ((len (vector-length vector)))
 	 (if (=fx len 0)

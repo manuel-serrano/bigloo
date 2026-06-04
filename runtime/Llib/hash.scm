@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/hash.scm           */
+;*    serrano/bigloo/5.0.x/runtime/Llib/hash.scm                       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Mon Apr 27 13:32:05 2026 (serrano)                */
+;*    Last change :  Thu Jun  4 10:24:55 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -1235,7 +1235,7 @@
        (absfx (object-hashnumber key)))
       ((foreign? key)
        (absfx (foreign-hash-number key)))
-      ((real? key)
+      ((flonum? key)
        (get-hashnumber (flonum->fixnum key)))
       (else
        (absfx (obj-hash-number key)))))
@@ -1301,7 +1301,7 @@
 	  (hash (bit-xor 39434 (ucs2->integer key))))
 	 ((date? key)
 	  (hash (bit-xor 908 (obj-hash (date->seconds key)))))
-	 ((real? key)
+	 ((flonum? key)
 	  (obj-hash
 	     (int64->fixnum
 		(bit-ands64 (flonum->int64 (*fl key 1000.))

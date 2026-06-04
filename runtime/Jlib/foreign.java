@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/foreign.java      */
+/*    serrano/bigloo/5.0.x/runtime/Jlib/foreign.java                   */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Wed Jun  3 06:58:12 2026 (serrano)                */
+/*    Last change :  Thu Jun  4 09:33:48 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -1782,6 +1782,14 @@ public final class foreign {
       return Math.log(n);
    }
 
+   public static double log2(double n) {
+      return Math.log(n)/ Math.log(2.);
+   }
+
+   public static double log10(double n) {
+      return Math.log10(n);
+   }
+
    public static double sin(double n) {
       return Math.sin(n);
    }
@@ -1831,7 +1839,7 @@ public final class foreign {
    }
 
    public static int BGL_SIGNBIT(double n) {
-      return (int) (Double.doubleToLongBits(n) >> 63);
+      return (int) (Double.doubleToLongBits(n) >>> 63);
    }
 
    public static double round(double n) {
@@ -6623,10 +6631,32 @@ public final class foreign {
       return res;
    }
 
+   public static byte[] bgl_float_to_ieee_string(float v) throws IOException {
+      final ByteArrayOutputStream bout = new ByteArrayOutputStream();
+      final DataOutputStream out = new DataOutputStream(bout);
+
+      out.writeFloat(v);
+
+      final byte[] res = bout.toByteArray();
+
+      bout.close();
+      return res;
+   }
+
    public static double bgl_ieee_string_to_double(byte[] s) throws IOException {
       final ByteArrayInputStream bint = new ByteArrayInputStream(s);
       final DataInputStream in = new DataInputStream(bint);
       final double res = in.readDouble();
+
+      bint.close();
+
+      return res;
+   }
+
+   public static float bgl_ieee_string_to_float(byte[] s) throws IOException {
+      final ByteArrayInputStream bint = new ByteArrayInputStream(s);
+      final DataInputStream in = new DataInputStream(bint);
+      final float res = in.readFloat();
 
       bint.close();
 

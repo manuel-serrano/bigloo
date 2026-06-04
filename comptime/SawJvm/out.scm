@@ -471,12 +471,12 @@
        (code! me
 	      (case type
 		 ((float)
-		  (cond ((= n 0.0) '(fconst_0))
+		  (cond ((and (= n 0.0) (=fx (signbitfl n) 0)) '(fconst_0))
 			((= n 1.0) '(fconst_1))
 			((= n 2.0) '(fconst_2))
 			(else `(ldc ,n)) ))
 		 ((double)
-		  (cond ((= n 0.0) '(dconst_0))
+		  (cond ((and (= n 0.0) (=fx (signbitfl n) 0)) '(dconst_0))
 			((= n 1.0) '(dconst_1))
 			(else `(ldc2_w ,n)) ))
 		 ((long elong llong uelong ullong int64 uint64)

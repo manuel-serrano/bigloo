@@ -3,16 +3,16 @@
 ;*    ------------------------------------------------------------     */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Wed Jun  3 20:12:16 2026 (serrano)                */
+;*    Last change :  Thu Jun  4 07:57:09 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    Testing bit functions                                            */
+;*    Testing reals                                                    */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    real                                                             */
 ;*---------------------------------------------------------------------*/
-(module real1
+(module real
    (export test))
 
 ;*---------------------------------------------------------------------*/
@@ -47,13 +47,122 @@
 (define (check-inexact? z)
    (=fl z (exact->inexact (inexact->exact z))))
 
+(define-test real? (real? 3.14) :expected #t)
+(define-test real? (real? 314) :expected #t)
+(define-test real? (real? #z314) :expected #t)
+(define-test real? (real? 13e43) :expected #t)
+(define-test real? (real? "3.14") :expected #f)
+
+(define-test flonum? (flonum? 3.14) :expected #t)
+(define-test flonum? (flonum? 314) :expected #f)
+(define-test flonum? (flonum? #z314) :expected #f)
+(define-test flonum? (flonum? 13e43) :expected #t)
+(define-test flonum? (flonum? "3.14") :expected #f)
+
+(define-test integerfl? (integerfl? 3.14) :expected #f)
+(define-test integerfl? (integerfl? 314.) :expected #t)
+
+(define-test zerofl? (zerofl? 0.000) :expected #t)
+
+(define-test finitefl? (finitefl? 1.33) :expected #t)
+(define-test finitefl? (finitefl? +inf.0) :expected #f)
+(define-test finitefl? (finitefl? +nan.0) :expected #f)
+
+(define-test infinitefl? (infinitefl? 1.33) :expected #f)
+(define-test infinitefl? (infinitefl? +inf.0) :expected #t)
+(define-test infinitefl? (infinitefl? +nan.0) :expected #f)
+
+(define-test nanfl? (nanfl? +nan.0) :expected #t)
+(define-test nanfl? (nanfl? +inf.0) :expected #f)
+(define-test nanfl? (nanfl? -4.5) :expected #f)
+
+(define-test oddfl? (oddfl? 3.000) :expected #t)
+(define-test oddfl? (oddfl? 2.000) :expected #f)
+
+(define-test evenfl? (evenfl? 3.000) :expected #f)
+(define-test evenfl? (evenfl? 2.000) :expected #t)
+
+(define-test =fl (=fl 3.4 (+ 2 1.4)) :expected #t)
+(define-test =fl (=fl 3.4 (+ 20 1.4)) :expected #f)
+
+(define-test <fl (<fl 3.4 (+ 2 1.4)) :expected #f)
+(define-test <fl (<fl 3.4 (+ 20 1.4)) :expected #t)
+
+(define-test <=fl (<=fl 3.4 (+ 2 1.4)) :expected #t)
+(define-test <=fl (<=fl 3.4 (+ 20 1.4)) :expected #t)
+
+(define-test >=fl (>=fl 3.4 (+ 2 1.4)) :expected #t)
+(define-test >=fl (>=fl 3.4 (+ 20 1.4)) :expected #f)
+
+(define-test >fl (>fl 3.8 (+ 2 1.4)) :expected #t)
+(define-test >fl (>fl 3.4 (+ 20 1.4)) :expected #f)
+
+(define-test string->real (string->real "3.14") :eq ~equal? :expected 3.14)
+(define-test string->real (string->real "2.3e-4") :eq ~equal? :expected 2.3e-4)
+(define-test string->real (string->real "3.14f") :eq ~equal? :expected 3.14)
+
+(define-test ieee-string->real
+   (ieee-string->real
+      (apply string 
+         (map integer->char
+            '(64 8 40 245 194 143 92 41))))
+   :eq ~equal?
+   :expected 3.02)
+(define-test ieee-string->double
+   (ieee-string->double
+      (apply string 
+         (map integer->char
+            '(64 8 40 245 194 143 92 41))))
+   :eq ~equal?
+   :expected 3.02)
+(define-test ieee-string->float
+   (ieee-string->float
+      (apply string 
+         (map integer->char
+            '(64 65 71 174))))
+   :eq ~equal?
+   :expected 3.02)
+(define-test real->ieee-string (real->ieee-string 3.02)
+   :expected (apply string 
+                (map integer->char
+                   '(64 8 40 245 194 143 92 41))))
+(define-test double->ieee-string (double->ieee-string 3.02)
+   :expected (apply string 
+                (map integer->char
+                   '(64 8 40 245 194 143 92 41))))
+(define-test float->ieee-string (float->ieee-string 3.02)
+   :expected (apply string 
+                (map integer->char
+                   '(64 65 71 174))))
+
+(define-test double->llong-bits
+   (double->llong-bits 3.02)
+   :expected #l4613982854237346857)
+(define-test llong-bits->double
+   (llong-bits->double #l4613982854237346857)
+   :eq ~equal?
+   :expected 3.02)
+
+(define-test float->int-bits
+   (float->int-bits 3.02)
+   :expected 1078020014)
+(define-test int-bits->float
+   (int-bits->float 1078020014)
+   :eq ~equal?
+   :expected 3.02)
+
 (define-test flonum 3.141592 :expected 3.141592)
 (define-test flonum -3.141592 :expected -3.141592)
 (define-test flonum 3.141592 :expected 3.141592)
 (define-test flonum -3.141592 :expected -3.141592)
 (define-test flonum (/ (inexact->exact (cos 0)) 2) :expected 0.5)
 (define-test flonum (/ 1 2) :expected 0.5)
-(define-test flonum 23.56 :expected (+fl 23.0 0.56))
+
+(define-test +fl (+fl 23.0 0.56) :eq ~equal? :expected 23.56)
+(define-test -fl (-fl 23.0 0.56) :eq ~equal? :expected 22.44)
+(define-test *fl (*fl 23.0 0.56) :eq ~equal? :expected 12.88)
+(define-test /fl (/fl 23.0 0.56) :eq ~equal? :expected 41.07142857142857)
+
 (define-test read (let ((p (open-input-string "3.14"))) (read p))
    :expected 3.14)
 (define-test read (let ((p (open-input-string "-3.14"))) (read p))
@@ -66,43 +175,54 @@
    :expected -1e2)
 (define-test read (let ((p (open-input-string "-1e-2"))) (read p))
    :expected -1e-2)
-(define-test flonum (check-inexact? (-fl (fixnum->flonum (minvalfx)) 1.0))
+
+(define-test exactness (check-inexact? (-fl (fixnum->flonum (minvalfx)) 1.0))
    :expected #t)
-(define-test flonum (check-inexact? (fixnum->flonum (minvalfx)))
+(define-test exactness (check-inexact? (fixnum->flonum (minvalfx)))
    :expected #t)
 (when (=fx (-fx (flonum->fixnum (+fl (fixnum->flonum (minvalfx)) 1.0)) 1)
          (minvalfx))
-   (define-test flonum.16 (check-inexact? (+fl (fixnum->flonum (maxvalfx)) 1.0))
+   (define-test exactness (check-inexact? (+fl (fixnum->flonum (maxvalfx)) 1.0))
       :expected #t)
-   (define-test flonum.17 (check-inexact? (fixnum->flonum (maxvalfx)))
+   (define-test exactness (check-inexact? (fixnum->flonum (maxvalfx)))
       :expected #t))
-(define-test flonum (check-inexact? 5.0) :expected #t)
-(define-test flonum8 (check-inexact? -5.0) :expected #t)
+(define-test exactness (check-inexact? 5.0) :expected #t)
+(define-test exactness (check-inexact? -5.0) :expected #t)
+
 (define-test >=fl (if (>=fl 0.0 3.0) 1 2) :expected 2)
+
 (define-test cos (sin 0) :expected 0.0)
 (define-test cos (acos (cos 2.0)) :expected 2.0)
+
 (define-test round (round 4.3) :expected 4.0)
-(define-test exact (exact? 5) :expected #t)
-(define-test exact (exact? 5.0) :expected #f)
-(define-test inexact (inexact? 5) :expected #f)
-(define-test inexact (inexact? 5.0) :expected #t)
+
+(define-test exact? (exact? 5) :expected #t)
+(define-test exact? (exact? 5.0) :expected #f)
+
+(define-test inexact? (inexact? 5) :expected #f)
+(define-test inexact? (inexact? 5.0) :expected #t)
+
 (define-test exact (inexact->exact 4.3) :expected 4)
+
 (define-test fact (fact 5) :expected 120)
 (define-test fact (fact 5.0) :expected 120.0)
+
 (define-test floor (floor -4.3) :expected -5.0)
-(define-test ceiling (ceiling -4.3) :expected -4.0)
-(define-test truncate (truncate -4.3) :expected -4.0)
-(define-test round (round -4.3) :expected -4.0)
 (define-test floor (floor 3.5) :expected 3.0)
+(define-test ceiling (ceiling -4.3) :expected -4.0)
 (define-test ceiling (ceiling 3.5) :expected 4.0)
+(define-test truncate (truncate -4.3) :expected -4.0)
 (define-test truncate (truncate 3.5) :expected 3.0)
+(define-test round (round -4.3) :expected -4.0)
 (define-test round (round 3.5) :expected 4.0)
 (define-test sqrt (sqrt-test 4.0) :expected 2.0)
 (define-test atan (let ((r (atan 1.0 1.0))) (> r 0)) :expected #t)
 (define-test prec (let ((num (+ 1e-6 1e-12)))
                      (=fl (string->number (number->string num)) num))
    :expected #t)
+
 (define-test nan (=fl +nan.0 +nan.0) :expected #f)
+
 (define-test inf (<fl -inf.0 +inf.0) :expected #t)
 (define-test inf (<fl +inf.0 -inf.0) :expected #f)
 (define-test inf (<fl +inf.0 -inf.0) :expected #f)
@@ -119,10 +239,77 @@
 (define-test int-bits (float->int-bits 5.6904566139035e-28)
    :expected #x12345678)
 (define-test int-bits (int-bits->float (float->int-bits 3.1415))
+   :eq ~equal?
    :expected 3.1415)
 (define-test int-bits (float->int-bits 1.0)
    :expected (bit-lsh #x3f80 16))
 (define-test int-bits (float->int-bits +inf.0)
    :expected (bit-lsh #x7f80 16))
 (define-test randomfl (let ((n (randomfl))) (and (>=fl n 0.) (<=fl n 1.)))
+   :expected #t)
+
+(define-test negfl (negfl -4.5) :eq ~equal? :expected 4.5)
+
+(define-test absfl (absfl -4.5) :eq ~equal? :expected 4.5)
+(define-test absfl (absfl 4.5) :eq ~equal? :expected 4.5)
+
+(define-test floorfl (floorfl -4.1) :eq ~equal? :expected -5.0)
+(define-test floorfl (floorfl 4.1) :eq ~equal? :expected 4.)
+(define-test floorfl (floorfl 4.9) :eq ~equal? :expected 4.)
+
+(define-test ceilingfl (ceilingfl -4.1) :eq ~equal? :expected -4.0)
+(define-test ceilingfl (ceilingfl 4.1) :eq ~equal? :expected 5.)
+(define-test ceilingfl (ceilingfl 4.9) :eq ~equal? :expected 5.)
+
+(define-test truncatefl (truncatefl -4.1) :eq ~equal? :expected -4.0)
+(define-test truncatefl (truncatefl 4.1) :eq ~equal? :expected 4.)
+(define-test truncatefl (truncatefl 4.9) :eq ~equal? :expected 4.)
+
+(define-test roundfl (roundfl -4.1) :eq ~equal? :expected -4.0)
+(define-test roundfl (roundfl 4.1) :eq ~equal? :expected 4.)
+(define-test roundfl (roundfl 4.9) :eq ~equal? :expected 5.)
+
+(define-test remainderfl (remainderfl 33.4 2.1)
+   :eq ~equal? :expected 1.8999999999999972)
+
+(define-test expfl (expfl 2.)
+   :eq ~equal? :expected 7.38905609893065)
+
+(define-test logfl (logfl 2.)
+   :eq ~equal? :expected 0.6931471805599453)
+(define-test log2fl (log2fl 2.)
+   :eq ~equal? :expected 1.)
+(define-test log10fl (log10fl 2.)
+   :eq ~equal? :expected 0.3010299956639812)
+(define-test sinfl (sinfl 3.)
+   :eq ~equal? :expected 0.1411200080598672)
+(define-test cosfl (cosfl 0.)
+   :eq ~equal? :expected 1.)
+(define-test tanfl (tanfl 3.)
+   :eq ~equal? :expected -0.1425465430742778)
+(define-test asinfl (asinfl 3.)
+   :eq ~equal? :expected +nan.0)
+(define-test asinfl (asinfl 0.4)
+   :eq ~equal? :expected 0.41151684606748806)
+(define-test acosfl (acosfl 0.)
+   :eq ~equal? :expected 1.5707963267948966)
+(define-test atanfl (atanfl 0.2)
+   :eq ~equal? :expected 0.19739555984988078)
+(define-test atan-1fl (atan-1fl 0.2)
+   :eq ~equal? :expected 0.19739555984988078)
+(define-test sqrtfl (sqrtfl 4.0)
+   :eq ~equal? :expected 2.0)
+(define-test exptfl (exptfl 2. 4.0)
+   :eq ~equal? :expected 16.0)
+
+(define-test signbitfl (signbitfl 1.) :expected 0)
+(define-test signbitfl (signbitfl 0.) :expected 0)
+(define-test signbitfl (signbitfl -0.) :expected 1)
+(define-test signbitfl (signbitfl -1.) :expected 1)
+(define-test signbitfl (signbitfl +inf.0) :expected 0)
+(define-test signbitfl (signbitfl -inf.0) :expected 1)
+
+(define-test randomfl
+   (let ((n (randomfl)))
+      (and (>=fl n 0.0) (<fl n 1.)))
    :expected #t)

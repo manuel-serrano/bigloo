@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/os.scm            */
+;*    serrano/bigloo/5.0.x/runtime/Llib/os.scm                         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Sun May 31 08:04:47 2026 (serrano)                */
+;*    Last change :  Thu Jun  4 10:25:04 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -1246,7 +1246,7 @@
 	  obj)
 	 ((fixnum? obj)
 	  (fixnum->elong obj))
-	 ((real? obj)
+	 ((flonum? obj)
 	  (flonum->elong obj))
 	 ((string? obj)
 	  (let ((cell (assoc obj ioctl-requests-table)))
@@ -1269,7 +1269,7 @@
 	 ((fixnum? n) (fixnum->elong n))
 	 ((bignum? n) (bignum->elong n))
 	 ((string? n) (string->elong n))
-	 ((real? n) (->elong (flonum->fixnum n)))
+	 ((flonum? n) (->elong (flonum->fixnum n)))
 	 (else (bigloo-type-error "ioctl" "elong pair" n))))
    
    (cond-expand

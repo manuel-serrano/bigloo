@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/5.0.x/runtime/Wlib/bigloo-common.mjs     */
+/*    serrano/bigloo/5.0.x/runtime/Wlib/bigloo-common.mjs              */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Wed Jun  3 15:19:53 2026 (serrano)                */
+/*    Last change :  Thu Jun  4 10:30:50 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -154,9 +154,9 @@ export class BglRuntime {
       return { addr: addr + 2 + len, str: this.stringDecode(buffer) };
    }
    
-   storeString(string, addr) {
+   storeString(str, addr) {
       const memory = new Uint8Array(this.memory.buffer, addr);
-      const bytes = this.stringEncode(string);
+      const bytes = this.stringEncode(str);
       memory.set(bytes);
       return bytes.length;
    }
@@ -331,7 +331,51 @@ export class BglRuntime {
 	 randomf: Math.random,
 	 strtod: (addr, len) => {
 	    return Number.parseFloat(self.loadString(addr, len));
-	 }
+	 },
+         ieee_string_to_double: (addr, len) => {
+            const str = new Uint8Array(this.memory.buffer, addr, len);
+            const buffer = new ArrayBuffer(8);
+            const bytes = new Uint8Array(buffer);
+            
+            for (let i = 0; i < 8; i++) {
+               bytes[i] = str[i];
+            }
+            
+            return new DataView(bytes.buffer).getFloat64(0, false);
+         },
+         ieee_string_to_float: (addr, len) => {
+            const str = new Uint8Array(this.memory.buffer, addr, len);
+            const buffer = new ArrayBuffer(8);
+            const bytes = new Uint8Array(buffer);
+            
+            for (let i = 0; i < 8; i++) {
+               bytes[i] = str[i];
+            }
+            
+            return new DataView(bytes.buffer).getFloat32(0, false);
+         },
+         double_to_ieee_string: (num, addr) => {
+            const memory = new Uint8Array(this.memory.buffer, addr);
+            const buffer = new ArrayBuffer(8);
+            const view = new DataView(buffer);
+
+            view.setFloat64(0, num, false);
+
+            const bytes = new Uint8Array(buffer);
+            memory.set(bytes);
+            return bytes.length;
+         },
+         float_to_ieee_string: (num, addr) => {
+            const memory = new Uint8Array(this.memory.buffer, addr);
+            const buffer = new ArrayBuffer(4);
+            const view = new DataView(buffer);
+
+            view.setFloat32(0, num, false);
+
+            const bytes = new Uint8Array(buffer);
+            memory.set(bytes);
+            return bytes.length;
+         }
       };
    }
 

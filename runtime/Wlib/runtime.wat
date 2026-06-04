@@ -1,10 +1,10 @@
 ;; -*- eval: (bee-mode) -*-
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Wlib/runtime.wat        */
+;*    serrano/bigloo/5.0.x/runtime/Wlib/runtime.wat                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Mon Apr 27 10:26:42 2026 (serrano)                */
+;*    Last change :  Thu Jun  4 10:07:02 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -475,22 +475,6 @@
    (export "atan2" (func $atan2))
    (export "pow" (func $pow))
    (export "RANDOMFL" (func $RANDOMFL))
-   
-   ;; flonums
-   (export "bgl_double_to_ieee_string" (func $bgl_double_to_ieee_string))
-   (export "bgl_float_to_ieee_string" (func $bgl_float_to_ieee_string))
-   
-   (func $bgl_double_to_ieee_string
-      (param $x f64)
-      (result (ref $bstring))
-      ;; CARE MS 16sep2024: TODO
-      (global.get $bstring-default-value))
-   
-   (func $bgl_float_to_ieee_string
-      (param $x f32)
-      (result (ref $bstring))
-      ;; CARE MS 16sep2024: TODO
-      (global.get $bstring-default-value))
    
    ;; --------------------------------------------------------
    ;; OS

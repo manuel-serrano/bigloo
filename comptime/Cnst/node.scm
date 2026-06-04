@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cnst/node.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Cnst/node.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Mon Sep 23 09:25:09 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jun  4 10:17:27 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
 ;*    `make-??-procedure' calls).                                      */
@@ -84,7 +84,7 @@
 	 ((or (char? value)
 	      (fixnum? value)
 	      (boolean? value)
-	      (real? value)
+	      (flonum? value)
 	      (cnst? value)
 	      (elong? value)
 	      (llong? value)
@@ -338,7 +338,7 @@
 			(cnst-alloc-l-procedure node loc)
 			node)))
 		((eq? fun *double->real*)
-		 (if (real? actual-value)
+		 (if (flonum? actual-value)
 		     (cnst-alloc-real actual-value loc)
 		     node))
 		((and (eq? fun *long->bint*)

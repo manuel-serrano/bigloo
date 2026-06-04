@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/flonum.scm         */
+;*    serrano/bigloo/5.0.x/runtime/Ieee/flonum.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Thu Jul 17 13:39:32 2025 (serrano)                */
+;*    Last change :  Thu Jun  4 08:06:33 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -74,18 +74,14 @@
 	    (macro $isfinite::bool (::double) "BGL_IS_FINITE")
 	    (macro $isinf::bool (::double) "BGL_IS_INF")
 	    (macro $isnan::bool (::double) "BGL_IS_NAN")
-	    (%ieee-string->double::double (::bstring)
-					  "bgl_ieee_string_to_double")
-	    (%double->ieee-string::bstring (::double)
-					   "bgl_double_to_ieee_string")
-	    (%ieee-string->float::float (::bstring)
-					  "bgl_ieee_string_to_float")
-	    (%float->ieee-string::bstring (::float)
-					   "bgl_float_to_ieee_string")
-	    (macro %double->llong-bits::llong (::double) "DOUBLE_TO_LLONG_BITS")
-	    (macro %llong-bits->double::double (::llong) "LLONG_BITS_TO_DOUBLE")
-	    (macro %float->int-bits::int (::float) "FLOAT_TO_INT_BITS")
-	    (macro %int-bits->float::float (::int) "INT_BITS_TO_FLOAT")
+	    ($ieee-string->double::double (::bstring) "bgl_ieee_string_to_double")
+	    ($double->ieee-string::bstring (::double) "bgl_double_to_ieee_string")
+	    ($ieee-string->float::float (::bstring) "bgl_ieee_string_to_float")
+	    ($float->ieee-string::bstring (::float) "bgl_float_to_ieee_string")
+	    (macro $double->llong-bits::llong (::double) "DOUBLE_TO_LLONG_BITS")
+	    (macro $llong-bits->double::double (::llong) "LLONG_BITS_TO_DOUBLE")
+	    (macro $float->int-bits::int (::float) "FLOAT_TO_INT_BITS")
+	    (macro $int-bits->float::float (::int) "INT_BITS_TO_FLOAT")
 	    (macro $randomfl::double () "RANDOMFL"))
 
    (wasm    ($fast-real->double "(struct.get $real $v (ref.cast (ref $real) ~0))")
@@ -107,16 +103,11 @@
 	    ($ceiling "(f64.ceil ~0)")
 	    ($roundfl "(f64.nearest ~0)")
 
-	    (%double->llong-bits "(i64.reinterpret_f64 ~0)")
-	    (%llong-bits->double "(f64.reinterpret_i64 ~0)")
-	    (%float->int-bits "(i32.reinterpret_f32 ~0)")
-	    (%int-bits->float "(f32.reinterpret_i32 ~0)")
-	    ($randomfl "(f64.const 0)")
-
-	    (%ieee-string->double "(f64.const nan)")
-	    (%double->ieee-string "(call $bgl_double_to_ieee_string ~0)")
-	    (%ieee-string->float "(f32.const nan)")
-	    (%float->ieee-string "(call $bgl_float_to_ieee_string ~0)")) ; TODO: implement this function
+	    ($double->llong-bits "(i64.reinterpret_f64 ~0)")
+	    ($llong-bits->double "(f64.reinterpret_i64 ~0)")
+	    ($float->int-bits "(i32.reinterpret_f32 ~0)")
+	    ($int-bits->float "(f32.reinterpret_i32 ~0)")
+	    ($randomfl "(f64.const 0)"))
    
    (java    (class foreign
 	       (method static $flonum?::bool (::obj)
@@ -201,21 +192,21 @@
 		  "isinf")
 	       (method static $isnan::bool (::double)
 		  "isnan")
-	       (method static %ieee-string->double::double (::bstring)
+	       (method static $ieee-string->double::double (::bstring)
 		  "bgl_ieee_string_to_double")
-	       (method static %double->ieee-string::bstring (::double)
+	       (method static $double->ieee-string::bstring (::double)
 		  "bgl_double_to_ieee_string")
-	       (method static %ieee-string->float::float (::bstring)
+	       (method static $ieee-string->float::float (::bstring)
 		  "bgl_ieee_string_to_float")
-	       (method static %float->ieee-string::bstring (::float)
+	       (method static $float->ieee-string::bstring (::float)
 		  "bgl_float_to_ieee_string")
-	       (method static %double->llong-bits::llong (::double)
+	       (method static $double->llong-bits::llong (::double)
 		  "DOUBLE_TO_LLONG_BITS")
-	       (method static %llong-bits->double::double (::llong)
+	       (method static $llong-bits->double::double (::llong)
 		  "LLONG_BITS_TO_DOUBLE")
-	       (method static %float->int-bits::int (::float)
+	       (method static $float->int-bits::int (::float)
 		  "FLOAT_TO_INT_BITS")
-	       (method static %int-bits->float::float (::int)
+	       (method static $int-bits->float::float (::int)
 		  "INT_BITS_TO_FLOAT")
 	       (method static $randomfl::double ()
 		  "RANDOMFL")))
@@ -349,59 +340,59 @@
 	    (llong-bits->double side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (float->int-bits side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (int-bits->float side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (%double->llong-bits side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (%llong-bits->double side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (%float->int-bits side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (%int-bits->float side-effect-free no-cfa-top nesting args-safe fail-safe)))
+	    ($double->llong-bits side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($llong-bits->double side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($float->int-bits side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($int-bits->float side-effect-free no-cfa-top nesting args-safe fail-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    real? ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (real? obj)
-   (if ($fixnum? obj)
+(define-inline (real?::bool obj)
+   (if (integer? obj)
        #t
        ($flonum? obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    flonum? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum? obj)
+(define-inline (flonum?::bool obj)
    ($flonum? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    =fl ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (=fl r1 r2)
+(define-inline (=fl::bool r1::double r2::double)
    ($=fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    <fl ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (<fl r1 r2)
+(define-inline (<fl::bool r1::double r2::double)
    ($<fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    >fl ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (>fl r1 r2)
+(define-inline (>fl::bool r1::double r2::double)
    ($>fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    <=fl ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (<=fl r1 r2)
+(define-inline (<=fl::bool r1::double r2::double)
    ($<=fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    >=fl ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (>=fl r1 r2)
+(define-inline (>=fl::bool r1::double r2::double)
    ($>=fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    zerofl? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (zerofl? r)
+(define-inline (zerofl?::bool r::double)
    (=fl r 0.0))
 
 ;*---------------------------------------------------------------------*/
@@ -419,25 +410,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    opfl ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (+fl r1 r2)
+(define-inline (+fl::double r1::double r2::double)
    ($+fl r1 r2))
-(define-inline (-fl r1 r2)
+(define-inline (-fl::double r1::double r2::double)
    ($-fl r1 r2))
-(define-inline (*fl r1 r2)
+(define-inline (*fl::double r1::double r2::double)
    ($*fl r1 r2))
-(define-inline (/fl r1 r2)
+(define-inline (/fl::double r1::double r2::double)
    ($/fl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    negfl ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (negfl r1)
+(define-inline (negfl::double r1::double)
    ($negfl r1))
     
 ;*---------------------------------------------------------------------*/
 ;*    maxfl ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (maxfl r1 . rn)
+(define (maxfl::double r1::double . rn)
    (let loop ((max r1)
 	      (rn  rn))
       (if (null? rn)
@@ -447,19 +438,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    max-2fl ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (max-2fl r1 r2)
+(define-inline (max-2fl::double r1::double r2::double)
    ($maxfl r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    min-2fl ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (min-2fl r1 r2)
+(define-inline (min-2fl::double r1::double r2::double)
    ($minfl r1 r2))
    
 ;*---------------------------------------------------------------------*/
 ;*    minfl ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (minfl r1 . rn)
+(define (minfl::double r1::double . rn)
    (let loop ((min r1)
 	      (rn  rn))
       (if (null? rn)
@@ -469,25 +460,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    absfl ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (absfl r)
+(define-inline (absfl::double r::double)
    ($absfl r))
 
 ;*---------------------------------------------------------------------*/
 ;*    floorfl ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (floorfl r)
+(define-inline (floorfl::double r::double)
    ($floor r))
 
 ;*---------------------------------------------------------------------*/
 ;*    ceilingfl ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-inline (ceilingfl r)
+(define-inline (ceilingfl::double r::double)
    ($ceiling r))
 
 ;*---------------------------------------------------------------------*/
 ;*    truncatefl ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (truncatefl r)
+(define-inline (truncatefl::double r::double)
    (if (negativefl? r)
        (ceilingfl r)
        (floorfl r)))
@@ -495,73 +486,73 @@
 ;*---------------------------------------------------------------------*/
 ;*    roundfl ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (roundfl r)
+(define (roundfl::double r::double)
    ($roundfl r))
 
 ;*---------------------------------------------------------------------*/
 ;*    remainderfl ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (remainderfl n1 n2)
+(define-inline (remainderfl::double n1::double n2::double)
    ($fmod n1 n2))
 
 ;*---------------------------------------------------------------------*/
 ;*    expfl ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (expfl x)
+(define-inline (expfl::double x::double)
    ($exp x))
 
 ;*---------------------------------------------------------------------*/
 ;*    logfl ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (logfl x)
+(define-inline (logfl::double x::double)
    ($log x))
  
 ;*---------------------------------------------------------------------*/
 ;*    log2fl ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (log2fl x)
+(define-inline (log2fl::double x::double)
    ($log2 x))
  
 ;*---------------------------------------------------------------------*/
 ;*    log10fl ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (log10fl x)
+(define-inline (log10fl::double x::double)
    ($log10 x))
  
 ;*---------------------------------------------------------------------*/
 ;*    sinfl ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (sinfl x)
+(define-inline (sinfl::double x::double)
    ($sin x))
 
 ;*---------------------------------------------------------------------*/
 ;*    cosfl ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (cosfl x)
+(define-inline (cosfl::double x::double)
    ($cos x))
 
 ;*---------------------------------------------------------------------*/
 ;*    tanfl ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (tanfl x)
+(define-inline (tanfl::double x::double)
    ($tan x))
 
 ;*---------------------------------------------------------------------*/
 ;*    asinfl ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (asinfl x)
+(define-inline (asinfl::double x::double)
    ($asin x))
 
 ;*---------------------------------------------------------------------*/
 ;*    acosfl ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (acosfl x)
+(define-inline (acosfl::double x::double)
    ($acos x))
 
 ;*---------------------------------------------------------------------*/
 ;*    atanfl ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (atanfl x . y)
+(define (atanfl::double x::double . y)
    (if (null? y)
        ($atan x)
        (let ((y (car y)))
@@ -570,13 +561,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    atan-1fl ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (atan-1fl x)
+(define-inline (atan-1fl::double x::double)
    ($atan x))
 
 ;*---------------------------------------------------------------------*/
 ;*    atan-2fl ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (atan-2fl x y)
+(define-inline (atan-2fl::double x::double y::double)
    (let ((t (if (=fl x 0.0)
 		(=fl y 0.0)
 		#f)))
@@ -594,13 +585,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    atan-2fl-ur ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (atan-2fl-ur x y)
+(define-inline (atan-2fl-ur::double x::double y::double)
    ($atan2 x y))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqrtfl ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (sqrtfl r)
+(define-inline (sqrtfl::double r::double)
    (if (<fl r 0.0)
        (let ((proc::obj ($string->bstring "sqrtfl"))
 	     (msg::obj ($string->bstring "Domain error"))
@@ -613,62 +604,62 @@
 ;*---------------------------------------------------------------------*/
 ;*    sqrtfl-ur ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-inline (sqrtfl-ur r)
+(define-inline (sqrtfl-ur::double r::double)
    ($sqrt r))
 
 ;*---------------------------------------------------------------------*/
 ;*    exptfl ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (exptfl r1 r2)
+(define-inline (exptfl::double r1::double r2::double)
    ($pow r1 r2))
 
 ;*---------------------------------------------------------------------*/
 ;*    signbitfl ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-inline (signbitfl r)
+(define-inline (signbitfl::long r::double)
    ($signbit r))
 
 ;*---------------------------------------------------------------------*/
 ;*    integerfl? ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (integerfl? r)
+(define-inline (integerfl?::bool r::double)
    (and (finitefl? r) (=fl r (floorfl r))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evenfl? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (evenfl? r)
+(define-inline (evenfl?::bool r::double)
    (integerfl? (/fl r 2.0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    oddfl? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (oddfl? r)
+(define-inline (oddfl?::bool r::double)
    (and (integerfl? r)
 	(not (evenfl? r))))
 
 ;*---------------------------------------------------------------------*/
 ;*    finitefl? ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-inline (finitefl? r)
+(define-inline (finitefl?::bool r::double)
    ($isfinite r))
 
 ;*---------------------------------------------------------------------*/
 ;*    infinitefl? ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (infinitefl? r)
+(define-inline (infinitefl?::bool r::double)
    ($isinf r))
 
 ;*---------------------------------------------------------------------*/
 ;*    nanfl? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (nanfl? r)
+(define-inline (nanfl?::bool r::double)
    ($isnan r))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->real ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (string->real string)
+(define-inline (string->real::double string::bstring)
    (cond
       ((string=? string "+nan.0")
        +nan.0)
@@ -682,62 +673,62 @@
 ;*---------------------------------------------------------------------*/
 ;*    ieee-string->real ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (ieee-string->real string)
-   (%ieee-string->double string))
+(define-inline (ieee-string->real::real string::bstring)
+   ($ieee-string->double string))
 
 ;*---------------------------------------------------------------------*/
 ;*    real->ieee-string ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (real->ieee-string real)
-   (%double->ieee-string real))
+(define-inline (real->ieee-string::bstring real::real)
+   ($double->ieee-string real))
 
 ;*---------------------------------------------------------------------*/
 ;*    ieee-string->double ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (ieee-string->double string)
-   (%ieee-string->double string))
+(define-inline (ieee-string->double::double string::bstring)
+   ($ieee-string->double string))
 
 ;*---------------------------------------------------------------------*/
 ;*    double->ieee-string ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (double->ieee-string double)
-   (%double->ieee-string double))
+(define-inline (double->ieee-string::bstring double::double)
+   ($double->ieee-string double))
 
 ;*---------------------------------------------------------------------*/
 ;*    ieee-string->float ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (ieee-string->float string)
-   (%ieee-string->float string))
+(define-inline (ieee-string->float::float string::bstring)
+   ($ieee-string->float string))
 
 ;*---------------------------------------------------------------------*/
 ;*    float->ieee-string ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (float->ieee-string float)
-   (%float->ieee-string float))
+(define-inline (float->ieee-string::bstring float::float)
+   ($float->ieee-string float))
 
 ;*---------------------------------------------------------------------*/
 ;*    double->llong-bits ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (double->llong-bits::llong n::double)
-   (%double->llong-bits n))
+   ($double->llong-bits n))
 
 ;*---------------------------------------------------------------------*/
 ;*    llong-bits->double ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (llong-bits->double::double n::llong)
-   (%llong-bits->double n))
+   ($llong-bits->double n))
 
 ;*---------------------------------------------------------------------*/
 ;*    float->int-bits ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (float->int-bits::int n::float)
-   (%float->int-bits n))
+   ($float->int-bits n))
 
 ;*---------------------------------------------------------------------*/
 ;*    int-bits->float ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (int-bits->float::float n::int)
-   (%int-bits->float n))
+   ($int-bits->float n))
 
 ;*---------------------------------------------------------------------*/
 ;*    randomfl ...                                                     */
