@@ -28,23 +28,64 @@ public class client_socket extends socket {
    
    public client_socket( final byte[] hostname,
 			 final int port,
+			 final int timeoutUs,
 			 final byte[] inbuf,
-			 final byte[] outbuf ) {
+			 final byte[] outbuf,
+			 final Object family ) {
       super();
 
       try {
-	 String name = new String( hostname + ":" + port );
-	 socket = new Socket( new String( hostname ), port );
+	 String host = new String( hostname );
+	 InetAddress addr = resolveAddress( host, family );
+	 int timeoutMs = timeoutUs / 1000;
+
+	 if (timeoutMs > 0) {
+	    socket = new Socket();
+	    socket.connect( new InetSocketAddress( addr, port ), timeoutMs );
+	 } else {
+	    socket = new Socket( addr, port );
+	 }
+
+	 String name = host + ":" + port;
 	 set_socket_io_ports( socket, inbuf, outbuf, name.getBytes() );
       } catch (final UnknownHostException e) {
-	 socket_error( "make-client-socket",
-		       "unknown or misspelled host name",
-		       hostname );
+	 bigloo.runtime.Llib.error.bgl_system_failure(
+	    foreign.BGL_IO_UNKNOWN_HOST_ERROR,
+	    "make-client-socket".getBytes(),
+	    "unknown or misspelled host name".getBytes(),
+	    hostname );
+      } catch (final SocketTimeoutException e) {
+	 bigloo.runtime.Llib.error.bgl_system_failure(
+	    foreign.BGL_IO_TIMEOUT_ERROR,
+	    "make-client-socket".getBytes(),
+	    "connection timed out".getBytes(),
+	    hostname );
       } catch (final IOException e) {
-	 socket_error( "make-client-socket",
-		       "cannot create socket",
-		       hostname );
+	 bigloo.runtime.Llib.error.bgl_system_failure(
+	    foreign.BGL_IO_ERROR,
+	    "make-client-socket".getBytes(),
+	    (e.getMessage() != null ? e.getMessage() : "cannot create socket").getBytes(),
+	    hostname );
       }
+   }
+
+   protected static InetAddress resolveAddress( String hostname,
+					      Object family )
+      throws UnknownHostException {
+      String dom = family.toString();
+      if (dom.equals( "unspec" )) {
+	 return InetAddress.getByName( hostname );
+      }
+      InetAddress[] addrs = InetAddress.getAllByName( hostname );
+      for (InetAddress addr : addrs) {
+	 if (dom.equals( "inet6" ) && addr instanceof Inet6Address) {
+	    return addr;
+	 }
+	 if (dom.equals( "inet" ) && addr instanceof Inet4Address) {
+	    return addr;
+	 }
+      }
+      return addrs[0];
    }
 
    public client_socket( final Socket socket,

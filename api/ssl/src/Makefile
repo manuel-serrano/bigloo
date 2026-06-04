@@ -48,9 +48,9 @@ CEFLAGS		= $(CAPIFLAGS)
 
 # Additional SSL lib for C
 EXTRALIBS	+= $(OPENSSLLIBS)
-# Additional SSL lib for java
-SSL_ZIP		= commons-ssl.zip
-JVMAPIBOOTPATH  := $(JVMAPIBOOTPATH):$(BOOTLIBDIR)/$(SSL_ZIP)
+
+# Minimum Java version for SSL JVM backend
+MIN_JAVA_VERSION = 8
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
@@ -58,7 +58,7 @@ JVMAPIBOOTPATH  := $(JVMAPIBOOTPATH):$(BOOTLIBDIR)/$(SSL_ZIP)
 _BGL_OBJECTS	= ssl
 
 _C_OBJECTS	= bglssl
-_JAVA_CLASSES	= certificate private_key ctx
+_JAVA_CLASSES	= certificate private_key ctx pem_utils ssl_utils hash_ctx hmac_ctx sign_ctx verify_ctx cipher_ctx dh_ctx
 _JAVA_ECLASSES	= ssl_client_socket ssl_server_socket 
 
 _OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
@@ -88,82 +88,22 @@ INCLUDES	= $(C_SRC_DIR)/bglssl.h $(C_SRC_DIR)/root_certs.h \
                   $(C_SRC_DIR)/ssl_debug.h
 
 #*---------------------------------------------------------------------*/
-#*    Java objects                                                     */
-#*---------------------------------------------------------------------*/
-ifeq ($(JAVA_VERSION), 20)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 19)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 18)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 17)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 16)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 15)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 14)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 13)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 12)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 11)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 10)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 1.9)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else 
-ifeq ($(JAVA_VERSION), 1.8)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 1.7)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 1.6)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-else
-ifeq ($(JAVA_VERSION), 1.5)
-  JAVA_CLASSES_SRC+=$(CLASS_DIR)/certificate.java $(CLASS_DIR)/private_key.java
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-
-#*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
 POPULATION	= $(SOURCES) $(C_SRC_DIR)/bglssl.h.in $(_WIN32_SOURCES) \
-                  $(JAVA_SRC_DIR)/ssl_client_socket13.java \
-                  $(JAVA_SRC_DIR)/ssl_client_socket15.java \
-                  $(JAVA_SRC_DIR)/ssl_server_socket13.java \
-                  $(JAVA_SRC_DIR)/ssl_server_socket15.java \
+                  $(JAVA_SRC_DIR)/ssl_client_socket.java \
+                  $(JAVA_SRC_DIR)/ssl_server_socket.java \
                   $(JAVA_SRC_DIR)/certificate.java \
                   $(JAVA_SRC_DIR)/private_key.java \
+                  $(JAVA_SRC_DIR)/ctx.java \
+                  $(JAVA_SRC_DIR)/pem_utils.java \
+                  $(JAVA_SRC_DIR)/ssl_utils.java \
+                  $(JAVA_SRC_DIR)/hash_ctx.java \
+                  $(JAVA_SRC_DIR)/hmac_ctx.java \
+                  $(JAVA_SRC_DIR)/sign_ctx.java \
+                  $(JAVA_SRC_DIR)/verify_ctx.java \
+                  $(JAVA_SRC_DIR)/cipher_ctx.java \
+                  $(JAVA_SRC_DIR)/dh_ctx.java \
 		  $(MISC_SRC_DIR)/make_lib.scm \
                   $(MISC_SRC_DIR)/$(API).init.in \
 	          $(C_SRC_DIR)/root_certs.h \
@@ -194,51 +134,24 @@ $(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
 	@ echo "You need to re-configure \"(cd ..; ./configure --bootconfig)\""
 	@ exit 1
 
-.PHONY: lib-jvm
+.PHONY: lib-jvm check-java-version
 
-lib-jvm: $(JAVA_SRC_DIR)/ssl_client_socket.java \
-         $(JAVA_SRC_DIR)/ssl_server_socket.java \
-         $(BOOTLIBDIR)/$(SSL_ZIP)
+check-java-version:
+	@ java_ver=$(JAVA_VERSION); \
+	  min_ver=$(MIN_JAVA_VERSION); \
+	  java_major=`echo $$java_ver | sed -e 's/^1\.//' -e 's/\..*//'`; \
+	  if [ "$$java_major" -lt "$$min_ver" ] 2>/dev/null; then \
+	    echo "*** ERROR: SSL JVM backend requires Java >= $(MIN_JAVA_VERSION), found $(JAVA_VERSION)"; \
+	    exit 1; \
+	  fi
+
+lib-jvm: check-java-version
 	@ $(MAKE) api-jvm
 	@ $(MAKE) jvm-extra
 
-$(BOOTLIBDIR)/$(SSL_ZIP): ../lib/$(SSL_ZIP)
-	@ echo Copying $(SSL_ZIP)
-	@ cp $< $@
-
-../lib/$(SSL_ZIP): $(JAVA_SRC_DIR)/ssl_client_socket.java \
-                   $(JAVA_SRC_DIR)/ssl_server_socket.java
-
-jvm-extra: $(JAVA_CLASSES_SRC) $(BOOTLIBDIR)/$(SSL_ZIP)
+jvm-extra: $(JAVA_CLASSES_SRC)
 	(cd objs/class_s && \
           $(JAVAC) $(CYGWINJVMPATH) -classpath $(JVMAPIBOOTPATH) $(JAVA_CLASSES_SRC:objs/class_s/%=%))
-
-#*---------------------------------------------------------------------*/
-#*    Java auconfiguration                                             */
-#*---------------------------------------------------------------------*/
-ifeq ($(JAVA_VERSION), 1.7)
-  JDK=15
-else
- ifeq ($(JAVA_VERSION), 1.6)
-   JDK=15
- else
-  ifeq ($(JAVA_VERSION), 1.5)
-    JDK=15
-  else
-    JDK=13
-  endif
- endif
-endif
-
-$(JAVA_SRC_DIR)/ssl_client_socket.java: \
-    $(JAVA_SRC_DIR)/ssl_client_socket$(JDK).java
-	echo "// Generated file, don't edit" > $@
-	cat $< >> $@
-
-$(JAVA_SRC_DIR)/ssl_server_socket.java: \
-    $(JAVA_SRC_DIR)/ssl_server_socket$(JDK).java
-	echo "// Generated file, don't edit" > $@
-	cat $< >> $@
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
@@ -258,12 +171,9 @@ $(C_SRC_DIR)/ssl.h: Llib/ssl.scm
 #*    extra-clean                                                      */
 #*---------------------------------------------------------------------*/
 clean: api-clean
-	$(RM) -f $(JAVA_SRC_DIR)/ssl_client_socket.java
-	$(RM) -f $(JAVA_SRC_DIR)/ssl_server_socket.java
 	$(RM) -f $(C_SRC_DIR)/ssl.h
 
 cleanall: api-cleanall
-	$(RM) $(BOOTLIBDIR)/$(SSL_ZIP)
 
 distclean: cleanall
 

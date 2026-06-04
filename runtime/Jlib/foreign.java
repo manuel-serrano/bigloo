@@ -6051,7 +6051,7 @@ public final class foreign
 						byte[] outbuf,
                                                 symbol family)
       {
-	 return new client_socket(hostname, port, inbuf, outbuf );
+	 return new client_socket(hostname, port, timeo, inbuf, outbuf, family);
       }
 
    public static socket bgl_make_server_socket(Object name,
