@@ -45,11 +45,11 @@ own types:
      Examples. `#s64:1`, `#s64:-5`, `#s64:300`.
   * `uint64`: An 64-bit integer.
      Examples. `#u64:1`, `#u64:65535`, `#u64:300`.
-  * `bignum`: Infinit precicision integers.
+  * `bignum`: Infinite precicision integers.
      Examples. `#z1`, `#z-5`, `#z2435`.
   
 Each backends provides its own implementation of the following types:
-`short`, `int`, `long`, `ulong`, `elong`, `uelong, `llong`, and `ullong`.
+`short`, `int`, `long`, `ulong`, `elong`, `uelong`, `llong`, and `ullong`.
 
 Ranges
 ------
@@ -122,6 +122,9 @@ Returns `#t` if and only if `n` is 0.
 ### zerollong? ###
 Returns `#t` if and only if `n` is 0.
 
+### zerobx? ###
+Returns `#t` if and only if `n` is 0.
+
 ### zeros8? ###
 Returns `#t` if and only if `n` is 0.
 
@@ -158,6 +161,9 @@ Returns `#t` if and only if `n` is an odd number.
 ### oddllong? ###
 Returns `#t` if and only if `n` is an odd number.
 
+### oddbx? ###
+Returns `#t` if and only if `n` is an odd number.
+
 ### odds8? ###
 Returns `#t` if and only if `n` is an odd number.
 
@@ -192,6 +198,9 @@ Returns `#t` if and only if `n` is an even number.
 Returns `#t` if and only if `n` is an even number.
 
 ### evenllong? ###
+Returns `#t` if and only if `n` is an even number.
+
+### evenbx? ###
 Returns `#t` if and only if `n` is an even number.
 
 ### evens8? ###
