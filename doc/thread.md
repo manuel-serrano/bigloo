@@ -23,14 +23,15 @@ When the backend supports native multithreading, Bigloo supports
 Posix multithreaded programming. It easily to take benefit of the
 actual parallelism that is now available on stock hardware.
 
-> [!WARNING]
-> As of May 2026, multi-threading is not supported by the Wasm backend.
-
 The multithreading support is organized in:
 
   * a base front-end API;
   * libraries that implements the common API and that extend it.
-  
+
+> [!WARNING]
+> As of May 2026, multi-threading is not supported by the Wasm backend.
+
+
 Base API
 --------
 

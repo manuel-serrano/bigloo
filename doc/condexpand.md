@@ -149,7 +149,7 @@ register. For instance:
 ```
 
 > [!WARNING] This should not be confused with the formula syntax 
-> (library &lt;ident&gt;) that checks the existence of a library.
+> `(library &lt;ident&gt;)` that checks the existence of a library.
 
 
 A property representing actual integers bit size is defined:

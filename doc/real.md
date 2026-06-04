@@ -46,8 +46,8 @@ Returns `#t` if and only if `obj` is a `real`.
 ### real? ###
 Returns `#t` if an only if `obj` is a real number. 
 
-> [!NOTE] Integers are also real so `flonum?` and `real?` will not
-> always returns the same result.
+> [!NOTE] Integers are also reals so `flonum?` and `real?` will not
+> always return the same result.
 
 ### integerfl? ###
 Returns `#t` if and only if the real is an integer.

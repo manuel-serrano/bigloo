@@ -85,6 +85,8 @@
 
     --blockquoteBackground: #efefef;
     --blockquoteBorder: #ffd33a;
+    --blockquoteBorderWarning: #ebae1e;
+    --blockquoteBorderNote: #007cd1;
 
     --CBackend: #e6383c;
     --jvmBackend: #f6a70e;
@@ -172,12 +174,28 @@ div.menu {
     content: "\e021";
 }
 
+.menu a.download > span:before {
+    content: "\e197";
+}
+
 .menu a.lang span:before {
     content: "\e218";
 }
 
 .menu a.libs span:before {
     content: "\e043";
+}
+
+.menu a.backends > span:before {
+    content: "\e019";
+}
+
+.menu a.Dev > span:before {
+    content: "\e136";
+}
+
+.menu a.Index > span:before {
+    content: "\e056";
 }
 
 .menu img.logo {
@@ -217,14 +235,22 @@ ul.menu > li.navbutton {
     height: calc(100% - 3px);
 }
 
+.menu[data-active="index"] a.index,
+.menu[data-active="dev"] a.dev,
+.menu[data-active="backends"] a.backends,
 .menu[data-active="libs"] a.libs,
 .menu[data-active="lang"] a.lang,
+.menu[data-active="download"] a.download,
 .menu[data-active="home"] a.home {
     color: var(--menuButtonActive);
 }
 
+ul.menu[data-active="index"] > li.navbutton.index,
+ul.menu[data-active="dev"] > li.navbutton.dev,
+ul.menu[data-active="backends"] > li.navbutton.backends,
 ul.menu[data-active="libs"] > li.navbutton.libs,
 ul.menu[data-active="lang"] > li.navbutton.lang,
+ul.menu[data-active="download"] > li.navbutton.download,
 ul.menu[data-active="home"] > li.navbutton.home {
     border-bottom-color: var(--navActiveColor);
     background-color: var(--menuButtonActiveBackground);
@@ -260,14 +286,22 @@ ul.menu > li.navbutton > a.submenu:after {
     margin-left: 5px;
 }
 
+body[open="index"] ul.menu > li.navbutton.index > a.submenu:after,
+body[open="dev"] ul.menu > li.navbutton.dev > a.submenu:after,
+body[open="backends"] ul.menu > li.navbutton.backends > a.submenu:after,
 body[open="lang"] ul.menu > li.navbutton.lang > a.submenu:after,
-body[open="libs"] ul.menu > li.navbutton.libs > a.submenu:after {
+body[open="libs"] ul.menu > li.navbutton.libs > a.submenu:after,
+body[open="download"] ul.menu > li.navbutton.download > a.submenu:after {
     content: "\25b4";
     color: var(--hoverColor);
 }
 
+body[open="index"] li.index > div.nav-menu,
+body[open="dev"] li.dev > div.nav-menu,
+body[open="backends"] li.backends > div.nav-menu,
 body[open="lang"] li.lang > div.nav-menu,
-body[open="libs"] li.libs > div.nav-menu {
+body[open="libs"] li.libs > div.nav-menu,
+body[open="download"] li.libs > div.nav-menu {
     visibility: visible;
     z-index: 2;
 }
@@ -684,10 +718,35 @@ pre.bnf .ebnf-arrow {
 /*    Blockquote                                                       */
 /*---------------------------------------------------------------------*/
 blockquote {
-    border-left: 2px solid var(--blockquoteBorder);
+    border-left: 4px solid var(--blockquoteBorder);
     margin-left: 0;
     margin-right: 0;
     padding: 0.4em 0.2em 0.4em 1em;
-    font-style: italic;
-    background-color: var(--blockquoteBackground);
 }
+
+blockquote .title {
+    margin-bottom: 1ex;
+}
+
+blockquote .title:before {
+    font-size: 105%;
+}
+
+blockquote.warning {
+    border-color: var(--blockquoteBorderWarning);
+}
+
+blockquote.warning .title:before {
+    content: "\26A0  Warning";
+    color: var(--blockquoteBorderWarning);
+}
+
+blockquote.note {
+    border-color: var(--blockquoteBorderNote);
+}
+
+blockquote.note .title:before {
+    content: "\1f6c8  Note";
+    color: var(--blockquoteBorderNote);
+}
+

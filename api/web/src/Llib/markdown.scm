@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 17:38:56 2026                          */
-;*    Last change :  Wed Jun  3 16:57:12 2026 (serrano)                */
+;*    Last change :  Thu Jun  4 11:33:04 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Markdown parser                                                  */
@@ -1136,7 +1136,11 @@
       (let ((nstate::MDState (instantiate::MDState
 				(tag 'blockquote)
 				(value level)
+				(attributes `((class . ,klass)))
 				(parent state))))
+	 (when klass
+	    (state-add! nstate
+	       (xml-element 'div '((class . "title")) (list "&nbsp;"))))
 	 (block nstate #f)))
 
    (define (blockquote-string str)

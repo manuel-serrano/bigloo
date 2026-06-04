@@ -44,7 +44,6 @@
 (define all-menus
    '(("home" . "index.html")
      ("lang" . "condexpand.html")
-     ("lang" . "module5.html")
      ("libs" . "bool.html")
      ("backends" . "backend.html")
      ("dev" . "dev.html")
@@ -120,7 +119,7 @@
    (define main-title (xml-element 'span '((class . "main")) '("bigloo")))
 
    (define (menubar title::pair-nil
-              #!key (home "") (lang "") (libs "") backend dev)
+              #!key (home "") (download "") (lang "") (libs "") backend dev index)
       (xml-element 'nav '((class . "menu"))
          (list (xml-element 'div '((class . "menu"))
                   (list
@@ -135,6 +134,11 @@
                                                    (href . ,(find-menu-href "home")))
                                     (list (xml-element 'span '() '("Home"))))
                                  home))
+                           (xml-element 'li (navbutton-attrs "download")
+                              (list
+                                 (xml-element 'a `((class . "download"))
+                                    (list (xml-element 'span '() '("Download"))))
+                                 download))
                            (xml-element 'li (navbutton-attrs "lang")
                               (list
                                  (xml-element 'a '((class . "lang submenu"))
@@ -146,11 +150,14 @@
                                     (list (xml-element 'span '() '("Libs"))))
                                  libs))
                            (xml-element 'li (navbutton-attrs "backends")
-                              (list (xml-element 'a '((class . "objects submenu"))
+                              (list (xml-element 'a '((class . "backends submenu"))
                                        (list (xml-element 'span '() '("Backends"))))))
                            (xml-element 'li (navbutton-attrs "dev")
-                              (list (xml-element 'a '((class . "objects submenu"))
-                                       (list (xml-element 'span '() '("Dev"))))))))
+                              (list (xml-element 'a '((class . "dev submenu"))
+                                       (list (xml-element 'span '() '("Dev"))))))
+                           (xml-element 'li (navbutton-attrs "index")
+                              (list (xml-element 'a '((class . "index submenu"))
+                                       (list (xml-element 'span '() '("Index"))))))))
                      (xml-element 'span '((class . "version"))
                         (list
                            (xml-element 'text '()

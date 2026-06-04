@@ -1,5 +1,5 @@
 <!--==================================================================-->
-<!--    serrano/prgm/project/bigloo/5.0a/doc/string.md                -->
+<!--    serrano/prgm/project/bigloo/5.0a/doc/index.md                 -->
 <!--    ----------------------------------------------------------    -->
 <!--    Author      :  manuel serrano                                 -->
 <!--    Creation    :  Mon Apr 13 10:38:02 2026                       -->
