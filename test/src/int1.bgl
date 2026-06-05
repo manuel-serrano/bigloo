@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Wed Jun  3 14:17:21 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 05:48:57 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing bit functions                                            */
@@ -25,7 +25,7 @@
 ;*---------------------------------------------------------------------*/
 (define (test verbose tests::pair-nil)
    (when (or (null? tests) (member "int" tests))
-      (test-all verbose "int")))
+      (test-all verbose "int1")))
 
 ;*---------------------------------------------------------------------*/
 ;*    Predicates                                                       */
