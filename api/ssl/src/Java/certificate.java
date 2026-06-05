@@ -1,93 +1,71 @@
 package bigloo.ssl;
 
-import bigloo.*;
+import bigloo.foreign;
+import bigloo.nil;
+import bigloo.obj;
+import bigloo.pair;
 
-import java.util.*;
-import java.security.cert.*;
-import javax.naming.ldap.*;
-import javax.naming.*;
+import java.io.FileInputStream;
+import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 
-import org.apache.commons.ssl.*;
+public class certificate extends obj {
 
-public class certificate extends obj{
+   public X509Certificate x509;
+   public String fname;
 
-  public X509Certificate x509;
-  // used only for building KeyMaterial (grrr)
-  public String fname;
-  
-  private certificate(byte[] file){
-    try{
-      String fname = new String(file);
-      TrustMaterial cert = new TrustMaterial(fname);
-      if(cert.getSize() != 1)
-        foreign.fail("certificate-load",
-                     "wrong number of certificates in PEM file (!= 1)",
-                     file);
-      SortedSet set = cert.getCertificates();
-      this.x509 = (X509Certificate)set.first();
+   private certificate(X509Certificate cert, String fname) {
+      this.x509 = cert;
       this.fname = fname;
-    }catch(Exception x ){
-      foreign.fail("certificate-load",
-                   "Could not load certificate",
-                   x);
-    }
-  }
+   }
 
-  private certificate(X509Certificate cert){
-    this.x509 = cert;
-  }
-
-  public static Object load(byte[] file){
-    return ssl.make_certificate(new certificate(file));
-  }
-
-  public static Object load_pem(byte[] file){
-    try{
-      String fname = new String(file);
-      TrustMaterial cert = new TrustMaterial(fname);
-      SortedSet set = cert.getCertificates();
-      Iterator it = set.iterator();
-      obj ret = nil.nil;
-      
-      while(it.hasNext()){
-        certificate c = new certificate((X509Certificate)it.next());
-        ret = new pair(ssl.make_certificate(c), ret);
+   private static List<X509Certificate> loadCerts(String fname) {
+      try {
+         CertificateFactory cf = CertificateFactory.getInstance("X.509");
+         try (FileInputStream fis = new FileInputStream(fname)) {
+            Collection<? extends java.security.cert.Certificate> certs =
+               cf.generateCertificates(fis);
+            List<X509Certificate> result = new ArrayList<X509Certificate>();
+            for (java.security.cert.Certificate c : certs) {
+               result.add((X509Certificate) c);
+            }
+            return result;
+         }
+      } catch (Exception x) {
+         foreign.fail("certificate-load", "Could not load certificate", x);
+         return null;
       }
-      
-      return ret;
-    }catch(Exception x ){
-      foreign.fail("certificate-load",
-                   "Could not load certificates",
-                   x);
-      return nil.nil;
-    }
-  }
+   }
 
-/*   public static byte[] subject(Object cert){                        */
-/*     String RFC2253Name =                                            */
-/*       ((certificate)cert).x509.getSubjectX500Principal().getName(); */
-/*     byte[] ret = getRFC2253Value(RFC2253Name, "CN");                */
-/*     return ret != null ? ret : RFC2253Name.getBytes();              */
-/*   }                                                                 */
-/*                                                                     */
-/*   public static byte[] issuer(Object cert){                         */
-/*     String RFC2253Name =                                            */
-/*       ((certificate)cert).x509.getIssuerX500Principal().getName();  */
-/*     byte[] ret = getRFC2253Value(RFC2253Name, "CN");                */
-/*     return ret != null ? ret : RFC2253Name.getBytes();              */
-/*   }                                                                 */
-/*                                                                     */
-/*   private static byte[] getRFC2253Value(String RFC2253Name, String prefix){ */
-/*     try{                                                            */
-/*       LdapName name = new LdapName(RFC2253Name);                    */
-/*       for(int i=0;i<name.size();i++){                               */
-/*         Rdn part = new Rdn(name.get(i));                            */
-/*         if(prefix.equals(part.getType()))                           */
-/*           return part.getValue().toString().getBytes();             */
-/*       }                                                             */
-/*     }catch(InvalidNameException x){                                 */
-/*       x.printStackTrace();                                          */
-/*     }                                                               */
-/*     return null;                                                    */
-/*   }                                                                 */
+   public static Object load(byte[] file) {
+      String fname = new String(file);
+      List<X509Certificate> certs = loadCerts(fname);
+      if (certs == null || certs.isEmpty()) {
+         foreign.fail("certificate-load", "No certificate found", file);
+      }
+      return ssl.make_certificate(new certificate(certs.get(0), fname));
+   }
+
+   public static Object load_pem(byte[] file) {
+      String fname = new String(file);
+      List<X509Certificate> certs = loadCerts(fname);
+      obj ret = nil.nil;
+      for (X509Certificate c : certs) {
+         ret = new pair(ssl.make_certificate(new certificate(c, fname)), ret);
+      }
+      return ret;
+   }
+
+   public static byte[] subject(Object cert) {
+      certificate c = (certificate) ssl.certificate_native(cert);
+      return c.x509.getSubjectX500Principal().getName().getBytes();
+   }
+
+   public static byte[] issuer(Object cert) {
+      certificate c = (certificate) ssl.certificate_native(cert);
+      return c.x509.getIssuerX500Principal().getName().getBytes();
+   }
 }

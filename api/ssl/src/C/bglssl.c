@@ -2176,7 +2176,7 @@ bgl_load_pkcs12(secure_context sc, obj_t pfx, obj_t pass) {
 	 X509_free(cert);
 	 sk_X509_free(extraCerts);
 
-	 ret = 0;
+	 ret = 1;
       }
 
       PKCS12_free(p12);
@@ -2468,7 +2468,22 @@ bgl_ssl_ctx_init(secure_context sc) {
 #else      
       CSC(sc)->BgL_z42nativez42 = SSL_CTX_new(TLS_client_method());
 #endif      
-   } else {
+   } else if (!strcmp(sslmethod, "TLSv1_1_method")
+	      || !strcmp(sslmethod, "TLSv1_1_server_method")
+	      || !strcmp(sslmethod, "TLSv1_1_client_method")) {
+      CSC(sc)->BgL_z42nativez42 = SSL_CTX_new(TLS_method());
+   } else if (!strcmp(sslmethod, "TLSv1_2_method")
+	      || !strcmp(sslmethod, "TLSv1_2_server_method")
+	      || !strcmp(sslmethod, "TLSv1_2_client_method")) {
+      CSC(sc)->BgL_z42nativez42 = SSL_CTX_new(TLS_method());
+   } else if (!strcmp(sslmethod, "TLSv1_3_method")
+	      || !strcmp(sslmethod, "TLSv1_3_server_method")
+	      || !strcmp(sslmethod, "TLSv1_3_client_method")) {
+      CSC(sc)->BgL_z42nativez42 = SSL_CTX_new(TLS_method());
+   } else if (!strcmp(sslmethod, "TLS_method")
+	      || !strcmp(sslmethod, "TLS_server_method")
+	      || !strcmp(sslmethod, "TLS_client_method")) {
+      CSC(sc)->BgL_z42nativez42 = SSL_CTX_new(TLS_method());   } else {
       goto unsupported;
    }
 

@@ -201,5 +201,121 @@
    (test "match-string" (match-string '("a" c)) 2)
    (test "match-string" (match-string '("a" d)) 3)
    (test "match-string" (match-string '("a")) 3)
-   (test "match-string" (match-string '("a" c c)) 3))
+   (test "match-string" (match-string '("a" c c)) 3)
+   (test-match-isa))
  
+;*---------------------------------------------------------------------*/
+;*    Class pattern matching tests (isa)                               */
+;*---------------------------------------------------------------------*/
+(define-class mpoint
+   (x (default 0))
+   (y (default 0)))
+
+(define-class mpoint3d::mpoint
+   (z (default 0)))
+
+(define-class msegment
+   (start (default #unspecified))
+   (end (default #unspecified)))
+
+(define-class mrect
+   (width (default 0))
+   (height (default 0)))
+
+(define mp1 (instantiate::mpoint (x 3) (y 4)))
+(define mp3 (instantiate::mpoint3d (x 1) (y 2) (z 3)))
+
+(define (isa-basic p)
+   (match-case p
+      ((isa mpoint (x ?x) (y ?y)) (list x y))
+      (else 'fail)))
+
+(define (isa-partial p)
+   (match-case p
+      ((isa mpoint (x ?x)) x)
+      (else 'fail)))
+
+(define (isa-type-only p)
+   (match-case p
+      ((isa mpoint) 'yes)
+      (else 'no)))
+
+(define (isa-literal p)
+   (match-case p
+      ((isa mpoint (x 3) (y ?y)) y)
+      (else 'fail)))
+
+(define (isa-subclass p)
+   (match-case p
+      ((isa mpoint (x ?x) (y ?y)) (list x y))
+      (else 'fail)))
+
+(define (isa-or p)
+   (match-case p
+      ((or (isa mpoint3d (z ?v)) (isa mpoint (x ?v))) v)
+      (else 'fail)))
+
+(define (isa-and p)
+   (match-case p
+      ((and ?whole (isa mpoint (x ?x))) (list whole x))
+      (else 'fail)))
+
+(define (isa-nested seg)
+   (match-case seg
+      ((isa msegment (start (isa mpoint (x ?x1) (y ?y1)))
+                     (end (isa mpoint (x ?x2) (y ?y2))))
+       (list x1 y1 x2 y2))
+      (else 'fail)))
+
+(define (isa-repeated r)
+   (match-case r
+      ((isa mrect (width ?s) (height ?s)) s)
+      (else 'fail)))
+
+(define (isa-not p)
+   (match-case p
+      ((not (isa mpoint)) 'not-point)
+      (else 'is-point)))
+
+(define (test-match-isa)
+   ;; Segment variable tests
+   (test "segment.1" (match-case '(a b c)
+                        ((??x) x)
+                        (else 'fail))
+      '(a b c))
+   (test "segment.2" (match-case '(a b c d)
+                        ((a ??x d) x)
+                        (else 'fail))
+      '(b c))
+   (test "segment.3" (match-case '(a b c b c)
+                        ((a ??x ??x) x)
+                        (else 'fail))
+      '(b c))
+   (test "segment.4" (match-case '(a b c d)
+                        ((a ??x c d) x)
+                        (else 'fail))
+      '(b))
+   (test "segment.5" (match-case '(a b)
+                        ((a ??x b ??x) x)
+                        (else 'fail))
+      '())
+   ;; Class pattern tests
+   (test "isa-basic" (isa-basic mp1) '(3 4))
+   (test "isa-partial" (isa-partial mp1) 3)
+   (test "isa-type-only" (isa-type-only mp1) 'yes)
+   (test "isa-type-only.2" (isa-type-only 42) 'no)
+   (test "isa-literal.1" (isa-literal mp1) 4)
+   (test "isa-literal.2" (isa-literal (instantiate::mpoint (x 0) (y 9))) 'fail)
+   (test "isa-subclass" (isa-subclass mp3) '(1 2))
+   (test "isa-or.1" (isa-or mp3) 3)
+   (test "isa-or.2" (isa-or (instantiate::mpoint (x 99) (y 0))) 99)
+   (test "isa-and" (isa-and mp1) (list mp1 3))
+   (test "isa-nested"
+      (isa-nested (instantiate::msegment
+                     (start (instantiate::mpoint (x 10) (y 20)))
+                     (end (instantiate::mpoint (x 30) (y 40)))))
+      '(10 20 30 40))
+   (test "isa-repeated.1" (isa-repeated (instantiate::mrect (width 5) (height 5))) 5)
+   (test "isa-repeated.2" (isa-repeated (instantiate::mrect (width 3) (height 7))) 'fail)
+   (test "isa-not.1" (isa-not mp1) 'is-point)
+   (test "isa-not.2" (isa-not 42) 'not-point))

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Feb 13 15:19:48 2026 (serrano)                */
+#*    Last change :  Fri Jun  5 08:43:43 2026 (serrano)                */
 #*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3613,7 +3613,21 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
 
     java_version=`$javac -version 2>&1 | head -n 1` || exit 1
-    if $echo "$java_version" | grep "20." > /dev/null
+    if $echo "$java_version" | grep "30." > /dev/null
+      then java_version=30
+    elif $echo "$java_version" | grep "29." > /dev/null
+      then java_version=29
+    elif $echo "$java_version" | grep "28." > /dev/null
+      then java_version=28
+    elif $echo "$java_version" | grep "27." > /dev/null
+      then java_version=27
+    elif $echo "$java_version" | grep "26." > /dev/null
+      then java_version=26
+    elif $echo "$java_version" | grep "25." > /dev/null
+      then java_version=25
+    elif $echo "$java_version" | grep "21." > /dev/null
+      then java_version=21
+    elif $echo "$java_version" | grep "20." > /dev/null
       then java_version=20
     elif $echo "$java_version" | grep "19." > /dev/null
       then java_version=19

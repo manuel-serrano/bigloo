@@ -110,7 +110,7 @@ libbacktrace_get_state(obj_t env) {
 /*---------------------------------------------------------------------*/
 #if !BGL_HAVE_BACKTRACE   
 static void
-backtrace_full(obj_t env, int start, int (*cb)(), void (*ce)(), void *data) {
+backtrace_full(obj_t env, int start, int (*cb)(void *state, int, void *cb, int, void *data)), void (*ce)(), void *data) {
    struct bgl_dframe *runner = BGL_ENV_GET_TOP_OF_FRAME(env);
 							   
    while (start-- > 0) {

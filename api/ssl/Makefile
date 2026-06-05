@@ -18,13 +18,11 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 API = ssl
 
-SSLZIP = lib/commons-ssl.zip
-
 #*---------------------------------------------------------------------*/
 #*    Directories where to find the files composing a revision         */
 #*---------------------------------------------------------------------*/
 POPDIR = src
-POPULATION = Makefile README $(SSLZIP)
+POPULATION = Makefile README
 
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
@@ -99,15 +97,10 @@ install-c:
         fi
 
 install-jvm: api-install-jvm
-	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/commons-ssl.zip $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
-	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/commons-ssl.zip; \
-        fi
 
 uninstall: api-uninstall-init \
            api-uninstall-c \
            api-uninstall-jvm
-	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/commons-ssl.zip
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
