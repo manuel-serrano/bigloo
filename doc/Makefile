@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0.x/doc/Makefile                   */
+#*    serrano/bigloo/5.0.x/doc/Makefile                                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Thu Jun  4 11:02:17 2026 (serrano)                */
+#*    Last change :  Fri Jun  5 15:32:25 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -37,7 +37,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
 MD = bool date hash int io number pair port real string thread vector \
- condexpand module5 module4 object
+ condexpand match module5 module4 object
 
 EX = c/fib java/fib wasm/fib
 
@@ -112,6 +112,9 @@ objs_c/wasm/fib.ast.coerce: examples/wasm/fib.bgl objs_c/wasm
 	bin/bgldoc -t libs $< > $@ || rm -f $@
 
 condexpand.html: condexpand.md bin/bgldoc
+	bin/bgldoc -t lang $< > $@ || rm -f $@
+
+match.html: match.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
 module5.html: module5.md bin/bgldoc

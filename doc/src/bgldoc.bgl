@@ -70,7 +70,8 @@
 ;*    lang-chapters ...                                                */
 ;*---------------------------------------------------------------------*/
 (define lang-chapters
-   '(("cond-expand" . "condexpand.html")
+   '(("conditional execution" . "condexpand.html")
+     ("pattern matching" . "match.html")
      ("module 5" . "module5.html")
      ("module 4" . "module4.html")
      ("objects" . "object.html")))

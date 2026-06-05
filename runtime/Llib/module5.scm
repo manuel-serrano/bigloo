@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri May 29 12:31:14 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 14:01:45 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -2090,7 +2090,9 @@
 	  =>
 	  (lambda (decl::Decl)
 	     (let ((mod::Module (-> decl mod)))
-		(set-car! src (localize `(@ ,(-> decl id) ,(-> mod id)) src))
+		(unless (eq? (-> decl scope) 'extern)
+		   (set-car! src
+		      (localize `(@ ,(-> decl id) ,(-> mod id)) src)))
 		(cons decl globals))))
 	 ((find-def expr mod)
 	  =>
@@ -2215,6 +2217,8 @@
 	  (error (-> mod id)
 	     "inner define is illegal in inline functions"
 	     expr))
+	 (((or (kwote or) (kwote and)) . ?args)
+	  (free-vars*! args env globals))
 	 (else
 	  (free-vars*! expr env globals))))
    

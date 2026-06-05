@@ -1,34 +1,42 @@
-;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/wasm/recette/match.scm               */
-;*                                                                     */
+;*=====================================================================*/
+;*    serrano/bigloo/5.0.x/test/src/match.bgl                          */
+;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
-;*    Creation    :  Wed Jun 10 16:37:46 1992                          */
-;*    Last change :  Thu Oct  9 15:08:32 2025 (serrano)                */
-;*                                                                     */
-;*    Un essai de match-case                                           */
-;*---------------------------------------------------------------------*/
+;*    Creation    :  Wed Jun  3 09:40:48 2026                          */
+;*    Last change :  Fri Jun  5 16:24:22 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing pattern matching                                         */
+;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
-;*    Le module                                                        */
+;*    match                                                            */
 ;*---------------------------------------------------------------------*/
 (module match
-   (import (utils "utils.scm"))
-   (include "test.sch")
-   (export (test-match)
-	   (uncompilable x)))
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "match" tests))
+      (test-all verbose "pattern matching")))
 
 ;*---------------------------------------------------------------------*/
 ;*    match-test ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (match-test)
    (let ((l '(let ((x 6))
-		(+ x 5))))
+              (+ x 5))))
       (match-case l
-	 ((let ?bindings . ?body)
-	  'ok)
-	 (else
-	  (print 'error)))))
- 
+	 ((let ?bindings . ?body) 'ok)
+	 (else 4))))
+
 ;*---------------------------------------------------------------------*/
 ;*    match-test-2 ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -85,7 +93,7 @@
 (define-struct s x) 
 
 ;*---------------------------------------------------------------------*/
-;*    Des tests sur le filtrage des structures                         */
+;*    Structures                                                       */
 ;*---------------------------------------------------------------------*/
 (define-struct int-point x y)
 (define-struct real-point x y)
@@ -109,12 +117,8 @@
 (real-point-x-set! p-real 4.4)
 (real-point-y-set! p-real -4.4)
 
-;; fonction non compilable avec bigloo1.6
 (define (uncompilable exp)
    exp)
-;*    (match-case exp                                                  */
-;*       ((toto ??- ti ti . ?-)                                        */
-;*        1)))                                                         */
 
 ;*---------------------------------------------------------------------*/
 ;*    match-eq ...                                                     */
@@ -162,47 +166,89 @@
 ;*---------------------------------------------------------------------*/
 ;*    test-match ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (test-match)
-   (test-module "match" "match.scm")
-   (test "let" (match-test) 'ok)
-   (test "expand-define" (match-test-2 '(define (foo x) x)) 'do-define-lambda)
-   (test "expand-define" (match-test-2 '(define foo (lambda (x) x)))
-	 'do-define-lambda)
-   (test "expand-define" (match-test-2 '(define foo 3))
-	 'do-define-value)
-   (test "expand-define" (match-test-2 '(define foo))
-	 'else)
-   (test "expand" (match-test-3 8) #t)
-   (test "match-test-4" (match-test-4 '((labels ((gee (x) x)) gee) 1)) 'app)
-   (test "atom.1" (match-test-5 '(1 2 3)) 'else)
-   (test "atom.2" (match-test-5 '#(1 2 3)) 'atom)
-   (test "atom.3" (match-test-5 (make-s)) 'atom)
-   (test "structure.1" (is-in-circle? 10 p-int) #t)
-   (test "structure.2" (is-in-circle? 10 p-real) #t)
-   (test "structure.3" (begin (match-lambda (#{int-point} 'toto)) #t) #t)
-   (test "??- vs trigraph" (pair? (expand '(match-case x ((??- . ?x) 1)))) #t)
-   (test "match-eq.1" (match-eq (list 'toto "toto")) 'toto)
-   (test "match-eq.2" (match-eq (list 'toto "tutu")) 'else)
-   (test "match-eq.3" (match-eq (list 'toto 'toto)) 'toto-bis)
-   (test "match-eq.4" (match-eq (list 'toto 'tata)) 'else)
-   (test "match-eq.5" (match-eq (list 'toto 4)) 4)
-   (test "match-eq.6" (match-eq (list 'toto 3)) 'else)
-   (test "match-eq.7" (match-eq (list 'toto 3.3)) 33)
-   (test "match-eq.8" (match-eq (list 'toto 3.2)) 'else)
-   (test "match-non-linear.1" (match-non-linear '((* a) (* b))) 3)
-   (test "match-non-linear.2" (match-non-linear '((* a) (* a))) 2)
-   (test "match-non-linear.3" (match-non-linear '(1 2)) 3)
-   (test "match-non-linear.4" (match-non-linear '(1 1)) 1)
-   (test "match-not.1" (match-not '(foo)) 1)
-   (test "match-not.2" (match-not '((foo))) 2)
-   (test "match-not.3" (match-not '(())) 3)
-   (test "match-not.4" (match-not 'foo) 4)
-   (test "match-string.1" (match-string '("a" b)) 1)
-   (test "match-string.2" (match-string '("a" c)) 2)
-   (test "match-string.3" (match-string '("a" d)) 3)
-   (test "match-string.4" (match-string '("a")) 3)
-   (test "match-string" (match-string '("a" c c)) 3)
-   (test-match-isa))
+(define-test match-case
+   (match-case '(foo bar 3 ("gee") bar)
+      ((?x ?y (and ?n (? number?)) ?- ?y) (cons x n))
+      (else #f))
+   :expected (cons 'foo 3))
+
+(define-test let (match-test)
+   :expected 'ok)
+(define-test expand-define (match-test-2 '(define (foo x) x))
+   :expected 'do-define-lambda)
+(define-test expand-define (match-test-2 '(define foo (lambda (x) x)))
+   :expected 'do-define-lambda)
+(define-test expand-define (match-test-2 '(define foo 3))
+   :expected 'do-define-value)
+(define-test expand-define (match-test-2 '(define foo))
+   :expected 'else)
+(define-test expand (match-test-3 8)
+   :expected #t)
+(define-test match-test-4 (match-test-4 '((labels ((gee (x) x)) gee) 1))
+   :expected 'app)
+
+(define-test atom (match-test-5 '(1 2 3))
+   :expected 'else)
+(define-test atom (match-test-5 '#(1 2 3))
+   :expected 'atom)
+(define-test atom (match-test-5 (make-s))
+   :expected 'atom)
+
+(define-test structure (is-in-circle? 10 p-int)
+   :expected #t)
+(define-test structure (is-in-circle? 10 p-real)
+   :expected #t)
+(define-test structure (begin (match-lambda (#{int-point} 'toto)) #t)
+   :expected #t)
+
+(define-test match-eq (match-eq (list 'toto "toto"))
+   :expected 'toto)
+(define-test match-eq (match-eq (list 'toto "tutu"))
+   :expected 'else)
+(define-test match-eq (match-eq (list 'toto 'toto))
+   :expected 'toto-bis)
+(define-test match-eq (match-eq (list 'toto 'tata))
+   :expected 'else)
+(define-test match-eq (match-eq (list 'toto 4))
+   :expected 4)
+(define-test match-eq (match-eq (list 'toto 3))
+   :expected 'else)
+(define-test match-eq (match-eq (list 'toto 3.3))
+   :expected 33)
+(define-test match-eq (match-eq (list 'toto 3.2))
+   :expected 'else)
+
+(define-test match-non-linear (match-non-linear '((* a) (* b)))
+   :expected 3)
+(define-test match-non-linear (match-non-linear '((* a) (* a)))
+   :expected 2)
+(define-test match-non-linear (match-non-linear '(1 2))
+   :expected 3)
+(define-test match-non-linear (match-non-linear '(1 1))
+   :expected 1)
+
+(define-test match-not (match-not '(foo))
+   :expected 1)
+(define-test match-not (match-not '((foo)))
+   :expected 2)
+(define-test match-not (match-not '(()))
+   :expected 3)
+(define-test match-not (match-not 'foo)
+   :expected 4)
+
+(define-test match-string (match-string '("a" b))
+   :expected 1)
+(define-test match-string (match-string '("a" c))
+   :expected 2)
+(define-test match-string (match-string '("a" d))
+   :expected 3)
+(define-test match-string (match-string '("a"))
+   :expected 3)
+(define-test match-string (match-string '("a" c c))
+   :expected 3)
+
+(define-test repetiion
+   (pair? (expand '(match-case x ((??- . ?x) 1)))))
  
 ;*---------------------------------------------------------------------*/
 ;*    Class pattern matching tests (isa)                               */
@@ -277,45 +323,43 @@
       ((not (isa mpoint)) 'not-point)
       (else 'is-point)))
 
-(define (test-match-isa)
-   ;; Segment variable tests
-   (test "segment.1" (match-case '(a b c)
-                        ((??x) x)
-                        (else 'fail))
-      '(a b c))
-   (test "segment.2" (match-case '(a b c d)
-                        ((a ??x d) x)
-                        (else 'fail))
-      '(b c))
-   (test "segment.3" (match-case '(a b c b c)
-                        ((a ??x ??x) x)
-                        (else 'fail))
-      '(b c))
-   (test "segment.4" (match-case '(a b c d)
-                        ((a ??x c d) x)
-                        (else 'fail))
-      '(b))
-   (test "segment.5" (match-case '(a b)
-                        ((a ??x b ??x) x)
-                        (else 'fail))
-      '())
-   ;; Class pattern tests
-   (test "isa-basic" (isa-basic mp1) '(3 4))
-   (test "isa-partial" (isa-partial mp1) 3)
-   (test "isa-type-only" (isa-type-only mp1) 'yes)
-   (test "isa-type-only.2" (isa-type-only 42) 'no)
-   (test "isa-literal.1" (isa-literal mp1) 4)
-   (test "isa-literal.2" (isa-literal (instantiate::mpoint (x 0) (y 9))) 'fail)
-   (test "isa-subclass" (isa-subclass mp3) '(1 2))
-   (test "isa-or.1" (isa-or mp3) 3)
-   (test "isa-or.2" (isa-or (instantiate::mpoint (x 99) (y 0))) 99)
-   (test "isa-and" (isa-and mp1) (list mp1 3))
-   (test "isa-nested"
-      (isa-nested (instantiate::msegment
-                     (start (instantiate::mpoint (x 10) (y 20)))
-                     (end (instantiate::mpoint (x 30) (y 40)))))
-      '(10 20 30 40))
-   (test "isa-repeated.1" (isa-repeated (instantiate::mrect (width 5) (height 5))) 5)
-   (test "isa-repeated.2" (isa-repeated (instantiate::mrect (width 3) (height 7))) 'fail)
-   (test "isa-not.1" (isa-not mp1) 'is-point)
-   (test "isa-not.2" (isa-not 42) 'not-point))
+(define-test segment.1 (match-case '(a b c)
+                     ((??x) x)
+                     (else 'fail)) :expected
+   '(a b c))
+(define-test segment.2 (match-case '(a b c d)
+                     ((a ??x d) x)
+                     (else 'fail)) :expected
+   '(b c))
+(define-test segment.3 (match-case '(a b c b c)
+                     ((a ??x ??x) x)
+                     (else 'fail)) :expected
+   '(b c))
+(define-test segment.4 (match-case '(a b c d)
+                     ((a ??x c d) x)
+                     (else 'fail)) :expected
+   '(b))
+(define-test segment.5 (match-case '(a b)
+                     ((a ??x b ??x) x)
+                     (else 'fail)) :expected
+   '())
+;define-; Class pattern tests
+(define-test isa-basic (isa-basic mp1) :expected '(3 4))
+(define-test isa-partial (isa-partial mp1) :expected 3)
+(define-test isa-type-only (isa-type-only mp1) :expected 'yes)
+(define-test isa-type-only.2 (isa-type-only 42) :expected 'no)
+(define-test isa-literal.1 (isa-literal mp1) :expected 4)
+(define-test isa-literal.2 (isa-literal (instantiate::mpoint (x 0) (y 9))) :expected 'fail)
+(define-test isa-subclass (isa-subclass mp3) :expected '(1 2))
+(define-test isa-or.1 (isa-or mp3) :expected 3)
+(define-test isa-or.2 (isa-or (instantiate::mpoint (x 99) (y 0))) :expected 99)
+(define-test isa-and (isa-and mp1) :expected (list mp1 3))
+(define-test isa-nested
+   (isa-nested (instantiate::msegment
+                  (start (instantiate::mpoint (x 10) (y 20)))
+                  (end (instantiate::mpoint (x 30) (y 40))))) :expected
+   '(10 20 30 40))
+(define-test isa-repeated.1 (isa-repeated (instantiate::mrect (width 5) (height 5))) :expected 5)
+(define-test isa-repeated.2 (isa-repeated (instantiate::mrect (width 3) (height 7))) :expected 'fail)
+(define-test isa-not.1 (isa-not mp1) :expected 'is-point)
+(define-test isa-not.2 (isa-not 42) :expected 'not-point)

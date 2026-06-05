@@ -87,6 +87,9 @@
 	  ((tree)     (compile-tree
 		       (cadr f) (caddr f) (cadddr f) e r m k z d))
 	  ((hole)     (compile-hole (cadr f) e r m k z d))
+	  ((ssetq-append) (compile-ssetq-append
+			   (cadr f) (caddr f) (cadddr f) e r m k z d))
+	  ((end-ssetq) (compile-end-ssetq (cadr f) e r m k z d))
 	  ;; Extension to vectors...
 	  ((vector-begin) (compile-vector-begin (cadr f) (caddr f)
 						e r m k z d))
@@ -97,6 +100,9 @@
 	  ((vector-times) (compile-vector-times (cadr f) (caddr f) (cadddr f)
 						e r m k z d))
 	  ((struct-pat) (compile-struct-pat f e r m k z d))
+	  ((class-pat) (compile-class-pat f e r m k z d))
+	  ((eval-append) (compile-eval-append
+			  (cadr f) (caddr f) e r m k z d))
 	  (else       (wrong "Unrecognized pattern" f))))
       (#t (z d) ) ))
    
@@ -321,6 +327,103 @@
 (define (compile-hole n e r m k z d)
    `(,((m n) r m k z d) ,e) )
 
+;*---------------------------------------------------------------------*/
+;*    compile-eval-append                                              */
+;*    Handles the case where a segment variable ??var is used a        */
+;*    second time: verify that the list at the current position        */
+;*    starts with the already-bound value of var, then continue        */
+;*    matching the tail pattern against the remainder.                 */
+;*---------------------------------------------------------------------*/
+(define (compile-eval-append name pattern e r m k z d)
+   (let ((rest-var (jim-gensym "REST-")))
+      `(let ((,rest-var
+              (let eval-append-loop ((expected ,name) (actual ,e))
+                 (cond
+                    ((null? expected) actual)
+                    ((not (pair? actual)) #f)
+                    ((equal? (car expected) (car actual))
+                     (eval-append-loop (cdr expected) (cdr actual)))
+                    (else #f)))))
+          ,(build-if rest-var
+              (compile pattern rest-var r m k z d)
+              (z d)))))
+
+;*---------------------------------------------------------------------*/
+;*    compile-ssetq-append                                             */
+;*    (ssetq-append name tree-pattern tail-pattern)                    */
+;*    First occurrence of a segment variable ??name.                   */
+;*    Strategy: compute the list length, determine the split point     */
+;*    from the tail pattern length, split once, verify tail. O(n).     */
+;*---------------------------------------------------------------------*/
+(define (compile-ssetq-append name tree-pat tail-pat e r m k z d)
+   (let ((tail-len (count-fixed-tail-length tail-pat)))
+      (cond
+         ;; No tail: segment matches everything. O(n)
+         ((equal? tail-pat '(quote ()))
+          `(let ((,name (let acc-loop ((lst ,e) (acc (quote ())))
+                           (if (pair? lst)
+                               (acc-loop (cdr lst) (cons (car lst) acc))
+                               (reverse acc)))))
+              ,(k (extend-alist r name name) z d)))
+         ;; Fixed-length tail: compute split point directly. O(n)
+         (tail-len
+          (let ((len-var (jim-gensym "LEN-"))
+                (rest-var (jim-gensym "REST-")))
+             `(let ((,len-var (length ,e)))
+                 (if (>= ,len-var ,tail-len)
+                     (let ((,name (take ,e (- ,len-var ,tail-len)))
+                           (,rest-var (drop ,e (- ,len-var ,tail-len))))
+                        ,(compile tail-pat rest-var
+                            (extend-alist r name name)
+                            m k z d))
+                     ,(z d)))))
+         ;; Repeated segment (??x ??x): split at midpoint. O(n)
+         ((eval-append-of-self? name tail-pat)
+          (let ((len-var (jim-gensym "LEN-"))
+                (half-var (jim-gensym "HALF-"))
+                (rest-var (jim-gensym "REST-")))
+             `(let ((,len-var (length ,e)))
+                 (if (even? ,len-var)
+                     (let ((,half-var (quotient ,len-var 2)))
+                        (let ((,name (take ,e ,half-var))
+                              (,rest-var (drop ,e ,half-var)))
+                           ,(compile tail-pat rest-var
+                               (extend-alist r name name)
+                               m k z d)))
+                     ,(z d)))))
+         ;; General case: try each split point. O(n*m)
+         (else
+          (let ((acc (jim-gensym "ACC-"))
+                (pos (jim-gensym "POS-")))
+             `(let ((,acc (quote ())))
+                 (let ssetq-loop ((,pos ,e))
+                    (let ((,name (reverse ,acc)))
+                       ,(compile tail-pat pos
+                           (extend-alist r name name)
+                           m
+                           k
+                           (lambda (d2)
+                              `(if (pair? ,pos)
+                                   (begin
+                                      (set! ,acc (cons (car ,pos) ,acc))
+                                      (ssetq-loop (cdr ,pos)))
+                                   ,(z d)))
+                           d)))))))))
+
+(define (eval-append-of-self? name pat)
+   (and (pair? pat) (eq? (car pat) 'eval-append) (eq? (cadr pat) name)))
+
+(define (count-fixed-tail-length pat)
+   (cond
+      ((equal? pat '(quote ())) 0)
+      ((and (pair? pat) (eq? (car pat) 'cons))
+       (let ((rest-len (count-fixed-tail-length (caddr pat))))
+          (and rest-len (+ 1 rest-len))))
+      (else #f)))
+
+(define (compile-end-ssetq name e r m k z d)
+   (k r z d))
+
 (define (compile-tree n f1 f2 e r m k0 z0 d0)
    (wrong "Tree not yet allowed"))
 
@@ -410,6 +513,51 @@
 		   (compile* (cdr p*) (cdr i*) e rr m k z '(any)))
 		z
 		'(any))))
+
+;*---------------------------------------------------------------------*/
+;*    compile-class-pat                                                */
+;*    (class-pat ClassName (field-name . pattern) ...)                 */
+;*    Generates (isa? ...) check then with-access:: for field access.  */
+;*---------------------------------------------------------------------*/
+(define (compile-class-pat f e r m k z d)
+   (let* ((klass-name (cadr f))
+          (field-pats (cddr f))
+          (*vars* (pattern-variables f))
+          (success-form (k (extend* r *vars*) z d))
+          (failure-form (z d))
+          (isa-check `(isa? ,e ,klass-name)))
+      (if (null? field-pats)
+          ;; No fields to match, just type check
+          (build-if isa-check
+             success-form
+             failure-form)
+          ;; Type check + field matching via with-access
+          ;; Use gensymed temps to avoid shadowing in nested patterns
+          (let* ((field-names (map car field-pats))
+                 (tmp-names (map (lambda (fn)
+                                    (jim-gensym
+                                       (string-append (symbol->string fn) "-")))
+                               field-names))
+                 (access-sym (symbol-append 'with-access:: klass-name))
+                 (bindings (map (lambda (tmp fn) (list tmp fn)) tmp-names field-names)))
+             (build-if isa-check
+                `(,access-sym ,e ,bindings
+                    ,(compile-class-fields field-pats tmp-names e r m
+                        (lambda (r z d) success-form)
+                        (lambda (d) failure-form)
+                        '(any)))
+                failure-form)))))
+
+(define (compile-class-fields fps tmp-names e r m k z d)
+   (if (null? fps)
+       (k r z d)
+       (let ((tmp (car tmp-names))
+             (pattern (cdar fps)))
+          (compile pattern tmp r m
+             (lambda (rr zz dd)
+                (compile-class-fields (cdr fps) (cdr tmp-names) e rr m k z '(any)))
+             z
+             '(any)))))
 
 ;*---------------------------------------------------------------------*/
 (define (look-for-descr d D-env)

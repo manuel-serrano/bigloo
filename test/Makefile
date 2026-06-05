@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0.x/test/Makefile                  */
+#*    serrano/bigloo/5.0.x/test/Makefile                               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Jun  5 08:47:37 2026 (serrano)                */
+#*    Last change :  Fri Jun  5 15:33:53 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -39,7 +39,8 @@ BJFLAGS = -jvm
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
 TESTS = main bignum bit bool char condexpand date dsssl hash int1 int2 \
-  io module number object pair port real string thread unicode vector
+  io match module number object pair port real string thread unicode \
+  vector
 
 MODULES4 = module4_ex12
 

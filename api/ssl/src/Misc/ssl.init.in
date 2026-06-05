@@ -28,8 +28,7 @@
    (bigloo-compile
     ;; openssl C compilation options
     (set! *cc-options* (cons "@OPENSSLCFLAGS@" *cc-options*))
-    (set! *ld-post-options* (cons "@OPENSSLLIBS@" *ld-post-options*))
-    (set! *additional-bigloo-zips* (cons "commons-ssl.zip" *additional-bigloo-zips*)))
+    (set! *ld-post-options* (cons "@OPENSSLLIBS@" *ld-post-options*)))
    (bigloo-eval
     #unspecified))
 

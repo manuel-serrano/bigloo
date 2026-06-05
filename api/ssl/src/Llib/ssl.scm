@@ -151,14 +151,14 @@
 	   ($bgl-ssl-connection-get-negotiated-protocol::obj (::ssl-connection)
 	      "bgl_ssl_connection_get_negotiated_protocol")
 	   
-	   (macro $ssl-client-sslv2::int "BGLSSL_SSLV2")
-	   (macro $ssl-client-sslv3::int "BGLSSL_SSLV3")
-	   (macro $ssl-client-sslv23::int "BGLSSL_SSLV23")
-	   (macro $ssl-client-tlsv1::int "BGLSSL_TLSV1")
-	   (macro $ssl-client-tlsv1_1::int "BGLSSL_TLSV1_1")
-	   (macro $ssl-client-tlsv1_2::int "BGLSSL_TLSV1_2")
-	   (macro $ssl-client-tlsv1_3::int "BGLSSL_TLSV1_3")
-	   (macro $ssl-client-dtlsv1::int "BGLSSL_DTLSV1")
+	   (macro $ssl-utils-sslv2::int "BGLSSL_SSLV2")
+	   (macro $ssl-utils-sslv3::int "BGLSSL_SSLV3")
+	   (macro $ssl-utils-sslv23::int "BGLSSL_SSLV23")
+	   (macro $ssl-utils-tlsv1::int "BGLSSL_TLSV1")
+	   (macro $ssl-utils-tlsv1_1::int "BGLSSL_TLSV1_1")
+	   (macro $ssl-utils-tlsv1_2::int "BGLSSL_TLSV1_2")
+	   (macro $ssl-utils-tlsv1_3::int "BGLSSL_TLSV1_3")
+	   (macro $ssl-utils-dtlsv1::int "BGLSSL_DTLSV1")
 
 	   (macro $DH-GENERATOR-2::int "DH_GENERATOR_2")
 
@@ -252,7 +252,8 @@
 	   (macro $ssl-op-cipher-server-preference::int
 	      "SSL_OP_CIPHER_SERVER_PREFERENCE"))
    
-   (java (export %make-certificate "make_certificate")
+   (java
+      (export %make-certificate "make_certificate")
       (export %make-private-key "make_private_key")
       (export %certificate-$native "certificate_native")
       (export %private-key-$native "private_key_native")
@@ -269,6 +270,18 @@
 	 "bigloo.ssl.certificate")
 
       (class $ssl-ctx
+	 (constructor create ())
+	 (method init::void (::$ssl-ctx ::bstring) "init")
+	 (method close::void (::$ssl-ctx) "close")
+	 (method addRootCerts::bool (::$ssl-ctx) "addRootCerts")
+	 (method addCaCert::bool (::$ssl-ctx ::bstring ::long ::long) "addCaCert")
+	 (method addCrl::bool (::$ssl-ctx ::bstring ::long ::long) "addCrl")
+	 (method setKey::bool (::$ssl-ctx ::bstring ::long ::long ::obj) "setKey")
+	 (method setCert::bool (::$ssl-ctx ::bstring ::long ::long) "setCert")
+	 (method setSessionIdContext::bool (::$ssl-ctx ::bstring ::long ::long) "setSessionIdContext")
+	 (method loadPkcs12::bool (::$ssl-ctx ::bstring ::bstring) "loadPkcs12")
+	 (method setCiphers::bool (::$ssl-ctx ::bstring) "setCiphers")
+	 (method setOptions::bool (::$ssl-ctx ::int) "setOptions")
 	 "bigloo.ssl.ctx")
       
       (class $ssl-client
@@ -279,6 +292,53 @@
 	    "bgl_client_socket_use_ssl")
 	 (method static socket?::bool (::obj)
 	    "bgl_ssl_client_socketp")
+	 "bigloo.ssl.ssl_client_socket")
+      
+      (class $ssl-server
+	 (constructor make-socket (::obj ::int ::int ::obj ::obj
+				     ::pair-nil ::obj ::int ::symbol))
+	 (method static socket?::bool (::obj)
+	    "bgl_ssl_server_socketp")
+	 "bigloo.ssl.ssl_server_socket")
+
+      (class $hash-ctx
+	 (constructor create ())
+	 (method init::bool (::$hash-ctx ::bstring) "init")
+	 (method update::bool (::$hash-ctx ::bstring ::long ::long) "update")
+	 (method digest::bstring (::$hash-ctx) "digest")
+	 "bigloo.ssl.hash_ctx")
+
+      (class $hmac-ctx
+	 (constructor create ())
+	 (method init::bool (::$hmac-ctx ::bstring ::bstring) "init")
+	 (method update::bool (::$hmac-ctx ::bstring ::long ::long) "update")
+	 (method digest::bstring (::$hmac-ctx) "digest")
+	 "bigloo.ssl.hmac_ctx")
+
+      (class $sign-ctx
+	 (constructor create ())
+	 (method init::bool (::$sign-ctx ::bstring) "init")
+	 (method update::bool (::$sign-ctx ::bstring ::long ::long) "update")
+	 (method sign::bstring (::$sign-ctx ::bstring ::long ::long) "sign")
+	 "bigloo.ssl.sign_ctx")
+
+      (class $verify-ctx
+	 (constructor create ())
+	 (method init::bool (::$verify-ctx ::bstring) "init")
+	 (method update::bool (::$verify-ctx ::bstring ::long ::long) "update")
+	 (method verify::bool (::$verify-ctx ::bstring ::long ::long ::bstring ::long ::long) "verify")
+	 "bigloo.ssl.verify_ctx")
+
+      (class $cipher-ctx
+	 (constructor create ())
+	 (method init::bool (::$cipher-ctx ::bstring ::bstring ::long ::long ::bool) "init")
+	 (method initiv::bool (::$cipher-ctx ::bstring ::bstring ::long ::long ::bstring ::long ::long ::bool) "initiv")
+	 (method update::bstring (::$cipher-ctx ::bstring ::long ::long) "update")
+	 (method setAutoPadding::bool (::$cipher-ctx ::bool) "setAutoPadding")
+	 (method doFinal::bstring (::$cipher-ctx) "doFinal")
+	 "bigloo.ssl.cipher_ctx")
+
+      (class $ssl-utils
 	 (field static sslv2::int "BGLSSL_SSLV2")
 	 (field static sslv3::int "BGLSSL_SSLV3")
 	 (field static sslv23::int "BGLSSL_SSLV23")
@@ -287,14 +347,33 @@
 	 (field static tlsv1_1::int "BGLSSL_TLSV1_1")
 	 (field static tlsv1_2::int "BGLSSL_TLSV1_2")
 	 (field static tlsv1_3::int "BGLSSL_TLSV1_3")
-	 "bigloo.ssl.ssl_client_socket")
-      
-      (class $ssl-server
-	 (constructor make-socket (::obj ::int ::int ::obj ::obj
-				     ::pair-nil ::obj ::int ::symbol))
-	 (method static socket?::bool (::obj)
-	    "bgl_ssl_server_socketp")
-	 "bigloo.ssl.ssl_server_socket"))
+	 (method static pkcs5-pbkdf2-hmac-sha1::bstring (::bstring ::bstring ::int ::int)
+	    "pkcs5Pbkdf2HmacSha1")
+	 (method static rand-bytes::bstring (::int) "randBytes")
+	 (method static ssl-version::bstring () "sslVersion")
+	 (method static get-ssl-ciphers::vector () "getSslCiphers")
+	 (method static get-evp-ciphers::pair-nil () "getEvpCiphers")
+	 (method static get-evp-hashes::pair-nil () "getEvpHashes")
+	 "bigloo.ssl.ssl_utils")
+
+      (class $dh-ctx
+	 (constructor create ())
+	 (method size::int (::$dh-ctx) "size")
+	 (method generateParameters::bool (::$dh-ctx ::int ::int) "generateParameters")
+	 (method generateKey::bool (::$dh-ctx) "generateKey")
+	 (method computeKey::bstring (::$dh-ctx ::obj) "computeKey")
+	 (method check::obj (::$dh-ctx) "check")
+	 (method checkPubKey::obj (::$dh-ctx ::obj) "checkPubKey")
+	 (field p::obj "p")
+	 (field g::obj "g")
+	 (field publicKey::obj "publicKey")
+	 (field privateKey::obj "privateKey")
+	 (method static binToBn::obj (::bstring ::int) "binToBn")
+	 (method static bnToBin::bstring (::obj) "bnToBin")
+	 (method static bnNumBytes::int (::obj) "bnNumBytes")
+	 (method static bnNew::obj () "bnNew")
+	 (method static bnFromWord::obj (::int) "bnFromWord")
+	 "bigloo.ssl.dh_ctx"))
    
    (export (class certificate
 	      ($native::$certificate read-only))
@@ -382,15 +461,15 @@
 	   (generic dh-generate-parameters-ex ::dh ::int ::symbol)
 	   (generic dh-generate-key::bool ::dh)
 	   (generic dh-check ::dh)
-	   (generic dh-check-pub-key ::dh ::foreign)
-	   (generic dh-compute-key ::dh ::foreign)
+	   (generic dh-check-pub-key ::dh ::obj)
+	   (generic dh-compute-key ::dh ::obj)
 
 	   (bn-bin2bn::obj ::bstring)
-	   (bn-bn2bin::bstring ::foreign)
-	   (bn-num-bytes::int ::foreign)
-	   (bn-free::obj ::foreign)
+	   (bn-bn2bin::bstring ::obj)
+	   (bn-num-bytes::int ::obj)
+	   (bn-free::obj ::obj)
 	   (bn-new::obj)
-	   (bn-set-word::bool ::foreign ::int)
+	   (bn-set-word::bool ::obj ::int)
 	   
 	   (ssl-get-ciphers::vector)
 	   (evp-get-ciphers::pair-nil)
@@ -548,6 +627,8 @@
       (else
        (export
 	  (class secure-context
+	     (secure-context-init)
+	     ($native::$ssl-ctx (default ($ssl-ctx-create)))
 	     (method::bstring read-only (default "SSLv23_method")))
 
 	  (class ssl-connection
@@ -557,12 +638,84 @@
 	     (info-callback (default #f))
 	     (newsession-callback::procedure read-only))
 
-	  (class dh)
-	  (class ssl-hash)
-	  (class ssl-hmac)
-	  (class ssl-sign)
-	  (class ssl-verify)
-	  (class ssl-cipher)
+	  (class dh
+	     (dh-init)
+	     ($native::$dh-ctx (default ($dh-ctx-create)))
+	     (p
+		(get (lambda (o::dh)
+			(with-access::dh o ($native)
+			   ($dh-ctx-p $native))))
+		(set (lambda (o::dh v)
+			(with-access::dh o ($native)
+			   ($dh-ctx-p-set! $native v)
+			   v))))
+	     (g
+		(get (lambda (o::dh)
+			(with-access::dh o ($native)
+			   ($dh-ctx-g $native))))
+		(set (lambda (o::dh v)
+			(with-access::dh o ($native)
+			   ($dh-ctx-g-set! $native v)
+			   v))))
+	     (public-key
+		(get (lambda (o::dh)
+			(with-access::dh o ($native)
+			   ($dh-ctx-publicKey $native))))
+		(set (lambda (o::dh v)
+			(with-access::dh o ($native)
+			   ($dh-ctx-publicKey-set! $native v)
+			   v))))
+	     (private-key
+		(get (lambda (o::dh)
+			(with-access::dh o ($native)
+			   ($dh-ctx-privateKey $native))))
+		(set (lambda (o::dh v)
+			(with-access::dh o ($native)
+			   ($dh-ctx-privateKey-set! $native v)
+			   v)))))
+	  (class ssl-hash
+	     (ssl-hash-init)
+	     ($native::$hash-ctx (default ($hash-ctx-create)))
+	     (type::bstring read-only))
+
+	  (generic ssl-hash-init ::ssl-hash)
+	  (generic ssl-hash-update! ::ssl-hash ::bstring ::long ::long)
+	  (generic ssl-hash-digest ::ssl-hash)
+
+	  (class ssl-hmac
+	     ($native::$hmac-ctx (default ($hmac-ctx-create))))
+
+	  (generic ssl-hmac-init ::ssl-hmac ::bstring ::bstring)
+	  (generic ssl-hmac-update! ::ssl-hmac ::bstring ::long ::long)
+	  (generic ssl-hmac-digest ::ssl-hmac)
+
+	  (class ssl-sign
+	     ($native::$sign-ctx (default ($sign-ctx-create))))
+
+	  (generic ssl-sign-init ::ssl-sign ::bstring)
+	  (generic ssl-sign-update! ::ssl-sign ::bstring ::long ::long)
+	  (generic ssl-sign-sign ::ssl-sign ::bstring ::long ::long)
+
+	  (class ssl-verify
+	     ($native::$verify-ctx (default ($verify-ctx-create))))
+
+	  (generic ssl-verify-init ::ssl-verify ::bstring)
+	  (generic ssl-verify-update! ::ssl-verify ::bstring ::long ::long)
+	  (generic ssl-verify-final::bool ::ssl-verify ::bstring ::long ::long ::bstring ::long ::long)
+
+	  (class ssl-cipher
+	     ($native::$cipher-ctx (default ($cipher-ctx-create))))
+
+	  (generic ssl-cipher-init ::ssl-cipher ::bstring
+	     ::bstring ::long ::long
+	     ::bool)
+	  (generic ssl-cipher-initiv ::ssl-cipher ::bstring
+	     ::bstring ::long ::long
+	     ::bstring ::long ::long
+	     ::bool)
+	  (generic ssl-cipher-update!::bstring ::ssl-cipher ::bstring ::long ::long)
+	  (generic ssl-cipher-set-auto-padding::bool ::ssl-cipher ::bool)
+	  (generic ssl-cipher-final::bstring ::ssl-cipher)
 	  ))))
 
 ;*---------------------------------------------------------------------*/
@@ -571,7 +724,7 @@
 (define (ssl-version)
    (cond-expand
       (bigloo-c ($ssl-version))
-      (else "-1")))
+      (else ($ssl-utils-ssl-version))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-clear-error ...                                              */
@@ -674,14 +827,14 @@
 ;*---------------------------------------------------------------------*/
 (define (ssl-protocols->integer protocol)
    (case (string->symbol (string-downcase (symbol->string! protocol)))
-      ((sslv2) $ssl-client-sslv2)
-      ((sslv3) $ssl-client-sslv3)
-      ((ssl sslv23) $ssl-client-sslv23)
-      ((tls tlsv1) $ssl-client-tlsv1)
-      ((tlsv1_1) $ssl-client-tlsv1_1)
-      ((tlsv1_2) $ssl-client-tlsv1_2)
-      ((tlsv1_3) $ssl-client-tlsv1_3)
-      ((dtls dtlsv1) $ssl-client-dtlsv1)
+      ((sslv2) $ssl-utils-sslv2)
+      ((sslv3) $ssl-utils-sslv3)
+      ((ssl sslv23) $ssl-utils-sslv23)
+      ((tls tlsv1) $ssl-utils-tlsv1)
+      ((tlsv1_1) $ssl-utils-tlsv1_1)
+      ((tlsv1_2) $ssl-utils-tlsv1_2)
+      ((tlsv1_3) $ssl-utils-tlsv1_3)
+      ((dtls dtlsv1) $ssl-utils-dtlsv1)
       (else (error "ssl" "Unknown protocols" protocol))))
 
 ;*---------------------------------------------------------------------*/
@@ -722,35 +875,25 @@
 ;*    ssl-rand-bytes ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (ssl-rand-bytes sz::int)
-   (let ((str (make-string sz)))
-      (cond-expand
-	 (bigloo-c
+   (cond-expand
+      (bigloo-c
+       (let ((str (make-string sz)))
 	  ($ssl-rand-bytes str sz)
-	  str)
-	 (else
-	  (let loop ((i 0))
-	     (if (=fx i sz)
-		 str
-		 (begin
-		    (string-set! str i (integer->char (random 255)))
-		    (loop (+fx i 1)))))))))
+	  str))
+      (else
+       ($ssl-utils-rand-bytes sz))))
    
 ;*---------------------------------------------------------------------*/
 ;*    ssl-rand-pseudo-bytes ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (ssl-rand-pseudo-bytes sz::int)
-   (let ((str (make-string sz)))
-      (cond-expand
-	 (bigloo-c
+   (cond-expand
+      (bigloo-c
+       (let ((str (make-string sz)))
 	  ($ssl-rand-pseudo-bytes str sz)
-	  str)
-	 (else
-	  (let loop ((i 0))
-	     (if (=fx i sz)
-		 str
-		 (begin
-		    (string-set! str i (integer->char (random 255)))
-		    (loop (+fx i 1)))))))))
+	  str))
+      (else
+       ($ssl-utils-rand-bytes sz))))
    
 ;*---------------------------------------------------------------------*/
 ;*    certificate-subject ...                                          */
@@ -800,6 +943,8 @@
       (bigloo-c
        ($bgl-secure-context-init! sc))
       (else
+       (with-access::secure-context sc ($native method)
+	  ($ssl-ctx-init $native method))
        sc)))
 
 ;*---------------------------------------------------------------------*/
@@ -810,6 +955,8 @@
       (bigloo-c
        ($bgl-secure-context-close! sc))
       (else
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-close $native))
        sc)))
 
 ;*---------------------------------------------------------------------*/
@@ -820,7 +967,8 @@
       (bigloo-c
        ($bgl-secure-context-add-root-certs! sc))
       (else
-       #f)))
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-addRootCerts $native)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    secure-context-add-ca-cert! ::secure-context ...                 */
@@ -830,7 +978,8 @@
       (bigloo-c
        ($bgl-secure-context-add-ca-cert! sc cert offset len))
       (else
-       #f)))
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-addCaCert $native cert offset len)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    secure-context-add-crl! ::secure-context ...                     */
@@ -840,7 +989,8 @@
       (bigloo-c
        ($bgl-secure-context-add-crl! sc cert offset len))
       (else
-       #f)))
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-addCrl $native cert offset len)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    secure-context-set-key! ::secure-context ...                     */
@@ -850,7 +1000,8 @@
       (bigloo-c
        ($bgl-secure-context-set-key! sc cert offset len passphrase))
       (else
-       #f)))
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-setKey $native cert offset len passphrase)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    secure-context-set-cert! ::secure-context ...                    */
@@ -860,7 +1011,8 @@
       (bigloo-c
        ($bgl-secure-context-set-cert! sc cert offset len))
       (else
-       #f)))
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-setCert $native cert offset len)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    secure-context-set-session-id! ::secure-context ...              */
@@ -870,7 +1022,8 @@
       (bigloo-c
        ($bgl-secure-context-set-session-id-context! sc sic offset len))
       (else
-       #f)))
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-setSessionIdContext $native sic offset len)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    secure-context-set-session-id! ::secure-context ...              */
@@ -880,7 +1033,8 @@
       (bigloo-c
        ($bgl-secure-context-load-pkcs12 sc pfx pass))
       (else
-       #f)))
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-loadPkcs12 $native pfx pass)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    secure-context-set-ciphers! ::secure-context ...                 */
@@ -892,7 +1046,8 @@
 	  ($ssl-ctx-set-cipher-list $native ciphers))
        #t)
       (else
-       #f)))
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-setCiphers $native ciphers)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    secure-context-set-options! ::secure-context ...                 */
@@ -904,7 +1059,9 @@
 	  ($ssl-ctx-set-options $native options))
        #t)
       (else
-       #f)))
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-setOptions $native options))
+       #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-connection-init ::ssl-connection ...                         */
@@ -1106,7 +1263,7 @@
        (with-access::dh dh ($native)
 	  (set! $native ($dh-new))))
       (else
-       #f)))
+       dh)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dh-size ::dh ...                                                 */
@@ -1114,7 +1271,9 @@
 (define-generic (dh-size::int dh::dh)
    (cond-expand
       (bigloo-c (with-access::dh dh ($native) ($dh-size $native)))
-      (else 0)))
+      (else
+       (with-access::dh dh ($native)
+	  ($dh-ctx-size $native)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    dh-generate-parameters-ex ::dh ...                               */
@@ -1135,7 +1294,15 @@
 		    (format "size: ~a, generator: ~a" len generator))
 		 #t))))
       (else
-       #f)))
+       (with-access::dh dh ($native)
+	  (let ((gen (case generator
+			((DH-GENERATOR-2) 2)
+			(else (error "dh-generate-parameters-ex" "Illegal generator"
+				 generator)))))
+	     (unless ($dh-ctx-generateParameters $native len gen)
+		(error "dh-generate-parameters-ex" "cannot generate parameters"
+		   (format "size: ~a, generator: ~a" len generator)))
+	     #t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dh-check ::dh ...                                                */
@@ -1146,23 +1313,25 @@
        (with-access::dh dh ($native)
 	  ($bgl-dh-check $native)))
       (else
-       #f)))
+       (with-access::dh dh ($native)
+	  ($dh-ctx-check $native)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dh-check-pub-key ::dh ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-generic (dh-check-pub-key dh::dh key::foreign)
+(define-generic (dh-check-pub-key dh::dh key::obj)
    (cond-expand
       (bigloo-c
        (with-access::dh dh ($native)
 	  ($bgl-dh-check-pub-key $native ($obj->bignum key))))
       (else
-       #f)))
+       (with-access::dh dh ($native)
+	  ($dh-ctx-checkPubKey $native key)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dh-compute-key ::dh ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-generic (dh-compute-key dh::dh key::foreign)
+(define-generic (dh-compute-key dh::dh key::obj)
    (cond-expand
       (bigloo-c
        (with-access::dh dh ($native)
@@ -1183,7 +1352,8 @@
 			     (loop ni))))
 		    str))))))
       (else
-       #f)))
+       (with-access::dh dh ($native)
+	  ($dh-ctx-computeKey $native key)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dh-generate-key ::dh ...                                         */
@@ -1194,7 +1364,8 @@
        (with-access::dh dh ($native)
 	  (not (=fx ($dh-generate-key $native) 0))))
       (else
-       #f)))
+       (with-access::dh dh ($native)
+	  ($dh-ctx-generateKey $native)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    ssl-hash-init ::ssl-hash ...                                     */
@@ -1206,7 +1377,10 @@
 	  (error "ssl-hash" "Digest method not supported" ssl-hash))
        ssl-hash)
       (else
-       #f)))
+       (with-access::ssl-hash ssl-hash ($native type)
+	  (unless ($hash-ctx-init $native type)
+	     (error "ssl-hash" "Digest method not supported" type)))
+       ssl-hash)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-hash-update! ...                                             */
@@ -1218,7 +1392,10 @@
 	  (error "ssl-hash-update!" "cannot update" ssl-hash))
        ssl-hash)
       (else
-       #f)))
+       (with-access::ssl-hash ssl-hash ($native)
+	  (unless ($hash-ctx-update $native data offset len)
+	     (error "ssl-hash-update!" "cannot update" ssl-hash)))
+       ssl-hash)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-hash-digest ...                                              */
@@ -1229,7 +1406,9 @@
        (let ((r ($bgl-ssl-hash-digest ssl-hash)))
 	  (or r (error "ssl-hash-digest" "cannot digest" ssl-hash))))
       (else
-       #f)))
+       (with-access::ssl-hash ssl-hash ($native)
+	  (let ((r ($hash-ctx-digest $native)))
+	     (or r (error "ssl-hash-digest" "cannot digest" ssl-hash)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-hmac-init ::ssl-hmac ...                                     */
@@ -1241,7 +1420,10 @@
 	  (error "ssl-hmac" "Digest method not supported" ssl-hmac)
 	  ssl-hmac))
       (else
-       #f)))
+       (with-access::ssl-hmac ssl-hmac ($native)
+	  (unless ($hmac-ctx-init $native hmac key)
+	     (error "ssl-hmac" "Digest method not supported" ssl-hmac)))
+       ssl-hmac)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-hmac-update! ...                                             */
@@ -1253,7 +1435,10 @@
 	  (error "ssl-hmac-update!" "cannot update" ssl-hmac))
        ssl-hmac)
       (else
-       #f)))
+       (with-access::ssl-hmac ssl-hmac ($native)
+	  (unless ($hmac-ctx-update $native data offset len)
+	     (error "ssl-hmac-update!" "cannot update" ssl-hmac)))
+       ssl-hmac)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-hmac-digest ...                                              */
@@ -1264,7 +1449,9 @@
        (let ((r ($bgl-ssl-hmac-digest ssl-hmac)))
 	  (or r (error "ssl-hmac-digest" "cannot digest" ssl-hmac))))
       (else
-       #f)))
+       (with-access::ssl-hmac ssl-hmac ($native)
+	  (let ((r ($hmac-ctx-digest $native)))
+	     (or r (error "ssl-hmac-digest" "cannot digest" ssl-hmac)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-sign-init ::ssl-sign ...                                     */
@@ -1276,7 +1463,10 @@
 	  (error "ssl-sign" "Sign method not supported" ssl-sign))
        ssl-sign)
       (else
-       #f)))
+       (with-access::ssl-sign ssl-sign ($native)
+	  (unless ($sign-ctx-init $native sign)
+	     (error "ssl-sign" "Sign method not supported" sign)))
+       ssl-sign)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-sign-update! ...                                             */
@@ -1288,7 +1478,10 @@
 	  (error "ssl-sign-update!" "cannot update" ssl-sign))
        ssl-sign)
       (else
-       #f)))
+       (with-access::ssl-sign ssl-sign ($native)
+	  (unless ($sign-ctx-update $native data offset len)
+	     (error "ssl-sign-update!" "cannot update" ssl-sign)))
+       ssl-sign)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-sign-sign ...                                                */
@@ -1299,7 +1492,9 @@
        (let ((r ($bgl-ssl-sign-sign ssl-sign key offset len)))
 	  (or r (error "ssl-sign-sign" "cannot sign" ssl-sign))))
       (else
-       #f)))
+       (with-access::ssl-sign ssl-sign ($native)
+	  (let ((r ($sign-ctx-sign $native key offset len)))
+	     (or r (error "ssl-sign-sign" "cannot sign" ssl-sign)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-verify-init ::ssl-verify ...                                 */
@@ -1311,7 +1506,10 @@
 	  (error "ssl-verify" "Verify method not supported" ssl-verify))
        ssl-verify)
       (else
-       #f)))
+       (with-access::ssl-verify ssl-verify ($native)
+	  (unless ($verify-ctx-init $native verify)
+	     (error "ssl-verify" "Verify method not supported" verify)))
+       ssl-verify)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-verify-update! ...                                           */
@@ -1323,7 +1521,10 @@
 	  (error "ssl-verify-update!" "cannot update" ssl-verify))
        ssl-verify)
       (else
-       #f)))
+       (with-access::ssl-verify ssl-verify ($native)
+	  (unless ($verify-ctx-update $native data offset len)
+	     (error "ssl-verify-update!" "cannot update" ssl-verify)))
+       ssl-verify)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-verify-final ...                                             */
@@ -1337,7 +1538,8 @@
 	  key koffset klen
 	  sig soffset slen))
       (else
-       #f)))
+       (with-access::ssl-verify ssl-verify ($native)
+	  ($verify-ctx-verify $native key koffset klen sig soffset slen)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-cipher-init ::ssl-cipher ...                                 */
@@ -1351,7 +1553,10 @@
 	  (error "ssl-cipher-init" ($ssl-error-string) cipher))
        ssl-cipher)
       (else
-       #f)))
+       (with-access::ssl-cipher ssl-cipher ($native)
+	  (unless ($cipher-ctx-init $native cipher key offset len enc)
+	     (error "ssl-cipher-init" "cannot initialize cipher" cipher)))
+       ssl-cipher)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-cipher-initiv ::ssl-cipher ...                               */
@@ -1368,7 +1573,12 @@
 		  enc)
 	  (error "ssl-cipher-initiv" ($ssl-error-string) ssl-cipher)))
       (else
-       #f)))
+       (with-access::ssl-cipher ssl-cipher ($native)
+	  (unless ($cipher-ctx-initiv $native cipher
+		     key offset len
+		     iv ivoffset ivlen
+		     enc)
+	     (error "ssl-cipher-initiv" "cannot initialize cipher" cipher))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-cipher-update! ...                                           */
@@ -1379,7 +1589,9 @@
        (or ($bgl-ssl-cipher-update! ssl-cipher data offset len)
 	   (error "ssl-cipher-update!" "cannot update" ssl-cipher)))
       (else
-       (error "ssl-cipher-update!" "not support" ssl-cipher))))
+       (with-access::ssl-cipher ssl-cipher ($native)
+	  (or ($cipher-ctx-update $native data offset len)
+	      (error "ssl-cipher-update!" "cannot update" ssl-cipher))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-cipher-set-auto-padding ...                                  */
@@ -1389,7 +1601,8 @@
       (bigloo-c
        ($bgl-ssl-cipher-set-auto-padding ssl-cipher auto-padding))
       (else
-       #f)))
+       (with-access::ssl-cipher ssl-cipher ($native)
+	  ($cipher-ctx-setAutoPadding $native auto-padding)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-cipher-final ...                                             */
@@ -1399,7 +1612,8 @@
       (bigloo-c
        ($bgl-ssl-cipher-final ssl-cipher))
       (else
-       (error "ssl-cipher-final" "not supported" ssl-cipher))))
+       (with-access::ssl-cipher ssl-cipher ($native)
+	  ($cipher-ctx-doFinal $native)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bn-bin2bn ...                                                    */
@@ -1407,19 +1621,19 @@
 (define (bn-bin2bn::obj string)
    (cond-expand
       (bigloo-c ($bignum->obj ($bgl-bn-bin2bn string (string-length string))))
-      (else #f)))
+      (else ($dh-ctx-binToBn string (string-length string)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bn-bn2bin ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (bn-bn2bin bn::foreign)
+(define (bn-bn2bin bn::obj)
    (cond-expand
       (bigloo-c
        (let* ((sz (bn-num-bytes bn))
 	      (st (make-string sz)))
 	  ($bn-bn2bin ($obj->bignum bn) st)
 	  st))
-      (else "")))
+      (else ($dh-ctx-bnToBin bn))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bn-num-bytes ...                                                 */
@@ -1427,7 +1641,7 @@
 (define (bn-num-bytes bn)
    (cond-expand
       (bigloo-c ($bn-num-bytes ($obj->bignum bn)))
-      (else 0)))
+      (else ($dh-ctx-bnNumBytes bn))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bn-free ...                                                      */
@@ -1443,7 +1657,7 @@
 (define (bn-new)
    (cond-expand
       (bigloo-c ($bignum->obj ($bn-new)))
-      (else #f)))
+      (else ($dh-ctx-bnNew))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bn-set-word ...                                                  */
@@ -1451,7 +1665,7 @@
 (define (bn-set-word bn w)
    (cond-expand
       (bigloo-c ($bn-set-word ($obj->bignum bn) w))
-      (else #f)))
+      (else ($dh-ctx-bnFromWord w))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-get-ciphers ...                                              */
@@ -1459,7 +1673,7 @@
 (define (ssl-get-ciphers)
    (cond-expand
       (bigloo-c ($bgl-ssl-get-ciphers))
-      (else '#())))
+      (else ($ssl-utils-get-ssl-ciphers))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evp-get-ciphers ...                                              */
@@ -1467,7 +1681,7 @@
 (define (evp-get-ciphers)
    (cond-expand
       (bigloo-c ($bgl-evp-get-ciphers))
-      (else '())))
+      (else ($ssl-utils-get-evp-ciphers))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evp-get-hashes ...                                               */
@@ -1475,7 +1689,7 @@
 (define (evp-get-hashes)
    (cond-expand
       (bigloo-c ($bgl-evp-get-hashes))
-      (else '())))
+      (else ($ssl-utils-get-evp-hashes))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pkcs5-pbkdf2-hmac-sha1 ...                                       */
@@ -1485,12 +1699,12 @@
       (bigloo-c
        ($bgl-pkcs5-pbkdf2-hmac-sha1 pass salt iter keylen))
       (else
-       (error "pkcs5-pbkdf2-hmac-sha1" "not supporter" pass))))
+       ($ssl-utils-pkcs5-pbkdf2-hmac-sha1 pass salt iter keylen))))
 		 
 ;*---------------------------------------------------------------------*/
 ;*    constants ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (ssl-op-cipher-server-preference)
-   (cond-expand (bigloo-c $ssl-op-cipher-server-preference) (else 0)))
+   (cond-expand (bigloo-c $ssl-op-cipher-server-preference) (else 1)))
 
 
