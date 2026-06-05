@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 23 09:57:34 2026                          */
-;*    Last change :  Wed May 27 08:48:19 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 08:50:37 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing threads                                                  */
@@ -13,7 +13,7 @@
 ;*    thread                                                           */
 ;*---------------------------------------------------------------------*/
 (module thread
-   (cond-expand ((and (library pthread) (not wasm)) (library pthread)))
+   (cond-expand ((library pthread) (library pthread)))
    (export test))
 
 ;*---------------------------------------------------------------------*/

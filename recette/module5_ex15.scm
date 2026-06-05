@@ -1,5 +1,5 @@
 (module ex15
-   (library browser get-element-by-id)
+   (library browser)
    (export ex15f))
 
 (define (ex15f)

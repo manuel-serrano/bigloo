@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Type/tenv.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Type/tenv.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Mon Apr 27 10:15:31 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 09:20:25 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -317,7 +317,8 @@
 	     (if (and (not *allow-type-redefinition*)
 		      (not *lib-mode*)
 		      (type-init? type))
-		 (user-error "bind-type!" "Type redefinition" (shape type))
+		 (user-error/location loc "bind-type!"
+		    "Type redefinition" (shape type))
 		 (begin
 		    (when (and (type? type)
 			       (not *lib-mode*)

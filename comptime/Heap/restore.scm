@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Mon May 18 07:49:27 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 09:49:17 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -138,22 +138,24 @@
 ;*    restore-heap ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (restore-heap)
-   (when (string? *heap-name*)
-      (pass-prelude "Heap")
-      (let ((fname (find-file/path *heap-name* *lib-dir*)))
-	 (if (string? fname)
-	     (multiple-value-bind (genv tenv)
-		(read-cache-heap fname)
-		(let ((ge (create-hashtable))
-		      (te (create-hashtable)))
-		   (hashtable-for-each genv
-		      (lambda (k e) (hashtable-put! ge k e)))
-		   (hashtable-for-each tenv
-		      (lambda (k e) (hashtable-put! te k e)))
-		   (values ge te)))
-	     (let ((m (format "Cannot open heap file ~s" *heap-name*)))
-		(error "restore-heap" m *lib-dir*)
-		(compiler-exit 5))))))
+   (with-trace 'heap "restore-heap"
+      (trace-item "heap-name=" *heap-name*)
+      (when (string? *heap-name*)
+	 (pass-prelude "Heap")
+	 (let ((fname (find-file/path *heap-name* *lib-dir*)))
+	    (if (string? fname)
+		(multiple-value-bind (genv tenv)
+		   (read-cache-heap fname)
+		   (let ((ge (create-hashtable))
+			 (te (create-hashtable)))
+		      (hashtable-for-each genv
+			 (lambda (k e) (hashtable-put! ge k e)))
+		      (hashtable-for-each tenv
+			 (lambda (k e) (hashtable-put! te k e)))
+		      (values ge te)))
+		(let ((m (format "Cannot open heap file ~s" *heap-name*)))
+		   (error "restore-heap" m *lib-dir*)
+		   (compiler-exit 5)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unbind-call/cc! ...                                              */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Tue May 12 11:12:26 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 10:10:31 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -159,7 +159,7 @@
 			       includes)))
 	     (loop (append directives rest) libraries)))
 	 (((cond-expand . ?-) . ?rest)
-	  (loop (list (comptime-expand/error (car clauses)))
+	  (loop (list (comptime-expand-cond-expand-only (car clauses)))
 	     (loop rest libraries)))
 	 (else
 	  (loop (cdr clauses) libraries)))))
@@ -188,7 +188,7 @@
 			       includes)))
 	     (loop (append directives rest) libraries)))
 	 (((cond-expand . ?-) . ?rest)
-	  (loop (list (comptime-expand/error (car clauses)))
+	  (loop (list (comptime-expand-cond-expand-only (car clauses)))
 	     (loop rest libraries)))
 	 (else
 	  (loop (cdr clauses) libraries)))))
@@ -221,7 +221,7 @@
 		 includes)
 	      (loop rest)))
 	 (((cond-expand . ?-) . ?rest)
-	  (or (find-main5 (list (comptime-expand/error (car clauses))))
+	  (or (find-main5 (list (comptime-expand-cond-expand-only (car clauses))))
 	      (loop rest)))
 	 (else
 	  (loop (cdr clauses))))))
@@ -242,7 +242,7 @@
 		 includes)
 	      (loop rest)))
 	 (((cond-expand . ?-) . ?rest)
-	  (or (find-main4 (list (comptime-expand/error (car clauses))))
+	  (or (find-main4 (list (comptime-expand-cond-expand-only (car clauses))))
 	      (loop rest)))
 	 (else
 	  (loop (cdr clauses))))))

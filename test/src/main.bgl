@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Thu Jun  4 11:00:27 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 08:52:11 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -34,6 +34,9 @@
    (import "./thread.bgl" . thread)
    (import "./unicode.bgl" . unicode)
    (import "./vector.bgl" . vector)
+   
+   (cond-expand ((library ssl) (import "./ssl0.bgl" . ssl0)))
+   
    (main))
 
 ;*---------------------------------------------------------------------*/
@@ -55,28 +58,33 @@
       (else
        (set! tests (cons else tests))))
 
-   (let* ((res (list
-                  (bool.test verbose tests)
-                  (bignum.test verbose tests)
-                  (bit.test verbose tests)
-                  (char.test verbose tests)
-                  (condexpand.test verbose tests)
-                  (date.test verbose tests)
-                  (dsssl.test verbose tests)
-		  (hash.test verbose tests)
-		  (int1.test verbose tests)
-		  (int2.test verbose tests)
-		  (io.test verbose tests)
-                  (module.test verbose tests)
-                  (number.test verbose tests)
-                  (object.test verbose tests)
-		  (pair.test verbose tests)
-		  (port.test verbose tests)
-		  (real.test verbose tests)
-		  (string.test verbose tests)
-                  (thread.test verbose tests)
-                  (unicode.test verbose tests)
-		  (vector.test verbose tests)))
+   (let* ((res-core (list
+                         (bool.test verbose tests)
+                         (bignum.test verbose tests)
+                         (bit.test verbose tests)
+                         (char.test verbose tests)
+                         (condexpand.test verbose tests)
+                         (date.test verbose tests)
+                         (dsssl.test verbose tests)
+                         (hash.test verbose tests)
+                         (int1.test verbose tests)
+                         (int2.test verbose tests)
+                         (io.test verbose tests)
+                         (module.test verbose tests)
+                         (number.test verbose tests)
+                         (object.test verbose tests)
+                         (pair.test verbose tests)
+                         (port.test verbose tests)
+                         (real.test verbose tests)
+                         (string.test verbose tests)
+                         (thread.test verbose tests)
+                         (unicode.test verbose tests)
+                         (vector.test verbose tests)))
+          (res-libs (list
+                       (cond-expand
+                          ((library ssl) (ssl0.test verbose tests))
+                          (else (cons 0 0)))))
+          (res (append res-core res-libs))
 	  (success (apply + (map car (filter (lambda (x) x) res))))
 	  (failures (apply + (map cdr (filter (lambda (x) x) res))))
 	  (backend (cond-expand

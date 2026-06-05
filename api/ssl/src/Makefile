@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/api/ssl/src/Makefile            */
+#*    serrano/prgm/project/bigloo/5.0.x/api/ssl/src/Makefile           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Mar 10 08:16:58 2026 (serrano)                */
+#*    Last change :  Fri Jun  5 09:24:09 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -180,13 +180,15 @@ POPULATION	= $(SOURCES) $(C_SRC_DIR)/bglssl.h.in $(_WIN32_SOURCES) \
 all: 
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
              $(MAKE) build-c; \
+             $(MAKE) heap5-c; \
 	  fi
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
+             $(MAKE) heap5-jvm; \
 	  fi
 
 c: build-c
-build-c: api-c
+build-c: api-c heap5-c
 
 jvm: build-jvm
 build-jvm: lib-jvm

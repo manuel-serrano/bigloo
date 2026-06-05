@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Fri May 22 09:04:40 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 10:03:53 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -363,7 +363,8 @@
 				       (string-append *dest* "-")
 				       #\. #\_))
 				 'main-module-)))
-		     (make-tmp-main tmp main (gensym mid) (reverse! clauses) libraries)
+		     (make-tmp-main tmp main (gensym mid)
+			(reverse! clauses) libraries)
 		     (set! *src-files* (list tmp))
 		     ;; we have to remove extra mco files before compiler
 		     ;; otherwise the compiler will warn about that files.
@@ -400,6 +401,12 @@
 			(close-input-port port)
 			(match-case exp
 			   ((module ?name . ?-)
+			    (let ((suf (suffix (caar sources))))
+			       (cond
+				  ((string=? suf "bgl")
+				   (module5-default-version-set! 5))
+				  ((string=? suf "scm")
+				   (module5-default-version-set! 4))))
 			    (let* ((libs (find-libraries (cddr exp)))
 				   (nmain (find-main (cddr exp))))
 			       (loop (cdr sources)

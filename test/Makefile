@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Thu Jun  4 11:01:47 2026 (serrano)                */
+#*    Last change :  Fri Jun  5 08:47:37 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -27,8 +27,7 @@ SHELL = /bin/sh
 #*  The recette can't be compiled in `-unsafe' mode (due to try forms) */
 #*---------------------------------------------------------------------*/
 EFLAGS = 
-BFLAGS = -cg -g -O3 -q -Wall -init-lib -gself \
-  -lib-dir $(BOOTLIBDIR) -no-auto-link-main
+BFLAGS = -cg -O3 -q -Wall -g -lib-dir $(BOOTLIBDIR) -no-auto-link-main
 BM$FLAGS = -module4
 
 BLFLAGS = -I src -I src/modules
@@ -41,7 +40,9 @@ BJFLAGS = -jvm
 #*---------------------------------------------------------------------*/
 TESTS = main bignum bit bool char condexpand date dsssl hash int1 int2 \
   io module number object pair port real string thread unicode vector
+
 MODULES4 = module4_ex12
+
 MODULES5 = module5_ex14 module5_ex1 module5_ex6 module5_ex0 module5_ex15 \
   module5_ex2 module5_ex7 module5_ex10 module5_ex16 module5_ex3 \
   module5_ex8 module5_ex11 module5_ex17 module5_ex4 module5_ex9 \
@@ -49,9 +50,16 @@ MODULES5 = module5_ex14 module5_ex1 module5_ex6 module5_ex0 module5_ex15 \
 
 COMMON=$(TESTS:%=%) $(MODULES4:%=modules/%) $(MODULES5:%=modules/%)
 
-C_OBJECTS = $(COMMON:%=%.o) $(C_SPECIFIC:%=%.o)
-J_OBJECTS = $(COMMON:%=%.class)
-W_OBJECTS = $(COMMON:%=%.wat) $(W_SPECIFIC:%=%.wat)
+BACKEND_C = ssl0
+
+BACKEND_J = ssl0
+
+BACKEND_W = 
+
+
+C_OBJECTS = $(COMMON:%=%.o) $(BACKEND_C:%=%.o)
+J_OBJECTS = $(COMMON:%=%.class) $(BACKEND_J:%=%.class)
+W_OBJECTS = $(COMMON:%=%.wat) $(BACKEND_W:%=%.wat)
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed May 20 14:10:39 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 09:13:55 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -225,7 +225,6 @@
       
       ;; build the program ast
       (let ((ast (src->ast src (get-genv))))
-	 
 	 (stop-on-pass 'ast (lambda () (write-ast ast)))
 	 (check-sharing "ast" ast)
 	 (check-type "ast" ast #f #f)

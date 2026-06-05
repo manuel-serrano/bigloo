@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Jun  3 18:01:17 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 09:47:40 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -635,16 +635,23 @@
 ;*---------------------------------------------------------------------*/
 ;*    module5-env ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (module5-env mod)
-   (let ((e (assq mod *module5-envs*)))
-      (if (pair? e)
-	  (values (cadr e) (cddr e))
-	  (multiple-value-bind (env tenv)
-	     (restore-heap)
-	     (module5-ast! mod env 'import-inline)
-	     (set! *module5-envs*
-		(cons (cons mod (cons env tenv)) *module5-envs*))
-	     (values env tenv)))))
+(define (module5-env mod::Module)
+   (with-trace 'module5 "module5-env"
+      (trace-item (-> mod id))
+      (let ((e (assq mod *module5-envs*)))
+	 (if (pair? e)
+	     (values (cadr e) (cddr e))
+	     (multiple-value-bind (env tenv)
+		(restore-heap)
+		(let ((allow *allow-type-redefinition*))
+		   (set! *allow-type-redefinition* #t)
+		   (unwind-protect
+		      (begin
+			 (module5-ast! mod env 'import-inline)
+			 (set! *module5-envs*
+			    (cons (cons mod (cons env tenv)) *module5-envs*))
+			 (values env tenv))
+		      (set! *allow-type-redefinition* allow))))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    module5-imported-inline ...                                      */
@@ -665,6 +672,7 @@
 		     (when (and (isa? def Def) (or (not g) (or #t (not (eq? id alias)))))
 			(with-access::Def def (id kind expr decl)
 			   (when (eq? kind 'inline)
+			      (trace-item "inline def=" id)
 			      (with-access::Decl decl ((imod mod))
 				 (with-access::Module imod ((mid id))
 				    (multiple-value-bind (genv tenv)
