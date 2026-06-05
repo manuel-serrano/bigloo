@@ -10,6 +10,7 @@
 <!--==================================================================-->
 
 ,(implementation-path "../runtime/Ieee/fixnum.scm")
+,(implementation-path "../runtime/Ieee/number.scm")
 ,(implementation-path "../runtime/Llib/bit.scm")
 ,(implementation-path "../runtime/Unsafe/bignumber.scm")
 ,(example-path "../test/src/int1.bgl")
@@ -299,19 +300,21 @@ Conversions
 
 ### fixnum->int8 ###
 ### fixnum->uint8 ###
-
 ### fixnum->int16 ###
 ### fixnum->uint16 ###
-
 ### fixnum->int32 ###
 ### fixnum->uint32 ###
-
 ### fixnum->int64 ###
 ### fixnum->uint64 ###
-
 ### fixnum->bignum ###
+
 ### elong->bignum ###
 ### llong->bignum ###
+### int64->bignum ###
+### uint64->bignum ###
+
+### bignum->int64 ###
+### bignum->uint64 ###
 
 ### integer->string ###
 Converts an integer into a string representation.

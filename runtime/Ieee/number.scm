@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/number.scm         */
+;*    serrano/bigloo/5.0.x/runtime/Ieee/number.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Tue Jul 15 09:22:31 2025 (serrano)                */
+;*    Last change :  Fri Jun  5 08:04:06 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -42,7 +42,7 @@
 	    (macro $flonum->fixnum::long (::double) "(long)")
 	    
 	    (macro $elong->flonum::double (::elong)  "(double)")
-	    (macro $flonum->elong::long (::double) "(long)")
+	    (macro $flonum->elong::elong (::double) "(long)")
 	    
 	    (macro $llong->flonum::double (::llong)  "(double)")
 	    (macro $flonum->llong::llong (::double) "(BGL_LONGLONG_T)")
@@ -261,7 +261,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    number? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (number? obj)
+(define (number?::bool obj)
    (or (fixnum? obj)
        (flonum? obj)
        (elong? obj)
@@ -279,7 +279,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    exact? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (exact? z)
+(define-inline (exact?::bool z)
    (or (fixnum? z)
        (elong? z)
        (llong? z)
@@ -296,25 +296,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    inexact? ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (inexact? z)
+(define-inline (inexact?::bool z)
    (flonum? z))
 
 ;*---------------------------------------------------------------------*/
 ;*    complex? ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (complex? x)
+(define (complex?::bool x)
    (number? x))
 
 ;*---------------------------------------------------------------------*/
 ;*    rational? ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (rational? x)
+(define (rational?::bool x)
    (real? x))
 
 ;*---------------------------------------------------------------------*/
 ;*    number->flonum ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (number->flonum x)
+(define (number->flonum::double x)
    (cond
       ((fixnum? x) (fixnum->flonum x))
       ((bignum? x) (bignum->flonum x))
@@ -326,53 +326,53 @@
 ;*---------------------------------------------------------------------*/
 ;*    flonum->fixnum ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->fixnum x) ($flonum->fixnum x))
-(define-inline (fixnum->flonum x) ($fixnum->flonum x))
+(define-inline (flonum->fixnum::long x::double) ($flonum->fixnum x))
+(define-inline (fixnum->flonum::double x::long) ($fixnum->flonum x))
 		       
 ;*---------------------------------------------------------------------*/
 ;*    flonum->elong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->elong x) ($flonum->elong x))
-(define-inline (elong->flonum x) ($elong->flonum x))
+(define-inline (flonum->elong::elong x::double) ($flonum->elong x))
+(define-inline (elong->flonum::double x::elong) ($elong->flonum x))
 		       
 ;*---------------------------------------------------------------------*/
 ;*    flonum->llong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->llong x) ($flonum->llong x))
-(define-inline (llong->flonum x) ($llong->flonum x))
+(define-inline (flonum->llong::llong x::double) ($flonum->llong x))
+(define-inline (llong->flonum::double x::llong) ($llong->flonum x))
 		       
 ;*---------------------------------------------------------------------*/
 ;*    flonum->bignum ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->bignum x) ($flonum->bignum x))
-(define-inline (bignum->flonum x) ($bignum->flonum x))
+(define-inline (flonum->bignum::bignum x::double) ($flonum->bignum x))
+(define-inline (bignum->flonum::double x::bignum) ($bignum->flonum x))
 
 ;*---------------------------------------------------------------------*/
 ;*    int64->bignum ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (int64->bignum x) ($int64->bignum x))
-(define-inline (bignum->int64 x) ($bignum->int64 x))
+(define-inline (int64->bignum::bignum x::int64) ($int64->bignum x))
+(define-inline (bignum->int64::int64 x::bignum) ($bignum->int64 x))
 
-(define-inline (uint64->bignum x) ($uint64->bignum x))
-(define-inline (bignum->uint64 x) ($bignum->uint64 x))
+(define-inline (uint64->bignum::bignum x::uint64) ($uint64->bignum x))
+(define-inline (bignum->uint64::uint64 x::bignum) ($bignum->uint64 x))
 
 ;*---------------------------------------------------------------------*/
 ;*    flonum->int32 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->int32 x) ($flonum->int32 x))
-(define-inline (int32->flonum x) ($int32->flonum x))
+(define-inline (flonum->int32::int32 x::double) ($flonum->int32 x))
+(define-inline (int32->flonum::double x::int32) ($int32->flonum x))
 
-(define-inline (flonum->uint32 x) ($flonum->uint32 x))
-(define-inline (uint32->flonum x) ($uint32->flonum x))
+(define-inline (flonum->uint32::uint32 x::double) ($flonum->uint32 x))
+(define-inline (uint32->flonum::double x::uint32) ($uint32->flonum x))
 
 ;*---------------------------------------------------------------------*/
 ;*    flonum->int64 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->int64 x) ($flonum->int64 x))
-(define-inline (int64->flonum x) ($int64->flonum x))
+(define-inline (flonum->int64::int64 x::double) ($flonum->int64 x))
+(define-inline (int64->flonum::double x::int64) ($int64->flonum x))
 
-(define-inline (flonum->uint64 x) ($flonum->uint64 x))
-(define-inline (uint64->flonum x) ($uint64->flonum x))
+(define-inline (flonum->uint64::uint64 x::double) ($flonum->uint64 x))
+(define-inline (uint64->flonum::double x::uint64) ($uint64->flonum x))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer unboxing                                                 */
@@ -549,7 +549,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    = ...                                                            */
 ;*---------------------------------------------------------------------*/
-(define (= x y . z)
+(define (=::bool x y . z)
    (define (=-list x z)
       (cond
 	 ((null? z) #t)
@@ -566,7 +566,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    < ...                                                            */
 ;*---------------------------------------------------------------------*/
-(define (< x y . z)
+(define (<::bool x y . z)
    (define (<-list x z)
       (cond
 	 ((null? z) #t)
@@ -583,7 +583,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    > ...                                                            */
 ;*---------------------------------------------------------------------*/
-(define (> x y . z)
+(define (>::bool x y . z)
    (define (>-list x z)
       (cond
 	 ((null? z) #t)
@@ -600,7 +600,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    <= ...                                                           */
 ;*---------------------------------------------------------------------*/
-(define (<= x y . z)
+(define (<=::bool x y . z)
    (define (<=-list x z)
       (cond
 	 ((null? z) #t)
@@ -617,7 +617,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    >= ...                                                           */
 ;*---------------------------------------------------------------------*/
-(define (>= x y . z)
+(define (>=::bool x y . z)
    (define (>=-list x z)
       (cond
 	 ((null? z) #t)
@@ -628,7 +628,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    zero? ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (zero? x)
+(define (zero?::bool x)
    (cond
       ((fixnum? x) (zerofx? x))
       ((flonum? x) (zerofl? x))
@@ -998,7 +998,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    exp ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define (exp x)
+(define (exp::double x)
    (cond
       ((flonum? x) (expfl x))
       ((fixnum? x) (expfl ($fixnum->flonum x)))
@@ -1010,7 +1010,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    log ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define (log x)
+(define (log::double x)
    (cond
       ((flonum? x) (logfl x))
       ((fixnum? x) (logfl ($fixnum->flonum x)))
@@ -1022,7 +1022,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    log2 ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (log2 x)
+(define (log2::double x)
    (cond
       ((flonum? x) (log2fl x))
       ((fixnum? x) (log2fl ($fixnum->flonum x)))
@@ -1034,7 +1034,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    log10 ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (log10 x)
+(define (log10::double x)
    (cond
       ((flonum? x) (log10fl x))
       ((fixnum? x) (log10fl ($fixnum->flonum x)))
@@ -1046,7 +1046,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sin ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define (sin x)
+(define (sin::double x)
    (cond
       ((flonum? x) (sinfl x))
       ((fixnum? x) (sinfl ($fixnum->flonum x)))
@@ -1058,7 +1058,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    cos ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define (cos x)
+(define (cos::double x)
    (cond
       ((flonum? x) (cosfl x))
       ((fixnum? x) (cosfl ($fixnum->flonum x)))
@@ -1070,7 +1070,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    tan ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define (tan x)
+(define (tan::double x)
    (cond
       ((flonum? x) (tanfl x))
       ((fixnum? x) (tanfl ($fixnum->flonum x)))
@@ -1082,7 +1082,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    asin ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (asin x)
+(define (asin::double x)
    (cond
       ((flonum? x) (asinfl x))
       ((fixnum? x) (asinfl ($fixnum->flonum x)))
@@ -1094,7 +1094,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    acos ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (acos x)
+(define (acos::double x)
    (cond
       ((flonum? x) (acosfl x))
       ((fixnum? x) (acosfl ($fixnum->flonum x)))
@@ -1106,7 +1106,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    atan ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (atan x . y)
+(define (atan::double x . y)
    (let ((y (if (pair? y)
 		(let ((y (car y)))
 		   (cond
@@ -1129,7 +1129,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sqrt ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (sqrt x)
+(define (sqrt::double x)
    (cond
       ((fixnum? x) (sqrtfl ($fixnum->flonum x)))
       ((flonum? x) (sqrtfl x))
@@ -1178,7 +1178,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    exact->inexact ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (exact->inexact z)
+(define (exact->inexact::double z)
    (cond
       ((fixnum? z) ($fixnum->flonum z))
       ((flonum? z) z)
@@ -1206,7 +1206,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    number->string ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (number->string x #!optional (radix 10))
+(define (number->string::bstring x #!optional (radix 10))
    (cond
       ((not (integer? radix)) (error "number->string" "Illegal radix" radix))
       ((fixnum? x) (integer->string x radix))
@@ -1227,7 +1227,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string->number@ ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (string->number x #!optional (radix 10))
+(define (string->number x::bstring #!optional (radix 10))
    
    (define (integer-string? x r)
       (let ((len (string-length x)))

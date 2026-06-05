@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/runtime/Wlib/bigloo-common.mjs              */
+/*    .../prgm/project/bigloo/5.0.x/runtime/Wlib/bigloo-common.mjs     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Thu Jun  4 10:30:50 2026 (serrano)                */
+/*    Last change :  Fri Jun  5 08:37:51 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -25,7 +25,6 @@ const A = 1103515245n;
 const C = 12345n;
    
 function seedRandom(seed) {
-   console.log("SD", S);
    S = BigInt(seed) % M;
    return S;
 }

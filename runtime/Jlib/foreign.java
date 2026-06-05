@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Thu Jun  4 09:33:48 2026 (serrano)                */
+/*    Last change :  Fri Jun  5 08:35:36 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -1693,6 +1693,22 @@ public final class foreign {
       return (long) n;
    }
 
+   public static int BGL_FLONUM_TO_INT32(double n) {
+      return (int)n;
+   }
+
+   public static double BGL_INT32_TO_FLONUM(int n) {
+      return (double)n;
+   }
+         
+   public static long BGL_FLONUM_TO_INT64(double n) {
+      return (long)n;
+   }
+         
+   public static double BGL_INT64_TO_FLONUM(long n) {
+      return (double)n;
+   }
+         
    public static long BGL_DOUBLE_TO_INT64(double n) {
       return (long) n;
    }

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/test/src/int1.bgl              */
+;*    serrano/bigloo/5.0.x/test/src/int1.bgl                           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Fri Jun  5 05:48:57 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 07:45:47 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing bit functions                                            */
@@ -260,6 +260,12 @@
 
 (define-test int64->fixnum (int64->fixnum #s64:-7) :expected -7)
 (define-test uint64->fixnum (uint64->fixnum #u64:200) :expected 200)
+
+(define-test int64->bignum (int64->bignum #s64:-7) :expected #z-7)
+(define-test uint64->bignum (int64->bignum #u64:7) :expected #z7)
+
+(define-test bignum->int64 (bignum->int64 #z-7) :expected #s64:-7)
+(define-test bignum->uint64 (bignum->uint64 #z7) :expected #u64:7)
 
 (define-test integer->string (integer->string 1234) :expected "1234")
 (define-test integer->string (integer->string 1234 2) :expected "10011010010")

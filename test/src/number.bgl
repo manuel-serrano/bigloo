@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/test/src/number.bgl            */
+;*    serrano/bigloo/5.0.x/test/src/number.bgl                         */
 ;*    ------------------------------------------------------------     */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Fri Jun  5 05:52:40 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 07:48:00 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing numbers                                                  */
@@ -40,6 +40,47 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
+(define-test number? (number? 3))
+(define-test number? (number? 3.))
+(define-test number? (number? #z3))
+(define-test number? (number? #s32:3))
+(define-test number? (number? #u64:3))
+
+(define-test exact? (exact? 123))
+(define-test exact? (exact? #s8:1))
+(define-test exact? (exact? 3.0) :expected #f)
+
+(define-test inexact? (inexact? 123) :expected #f)
+(define-test inexact? (inexact? #s8:1) :expected #f)
+(define-test inexact? (inexact? 3.0) :expected #t)
+
+(define-test complex? (complex? 1) :expected #t)
+(define-test rational? (rational? 1) :expected #t)
+
+(define-test number->flonum (number->flonum 1.0) :eq ~equal? :expected 1.0)
+(define-test number->flonum (number->flonum 1) :eq ~equal? :expected 1.)
+(define-test number->flonum (number->flonum #z1) :eq ~equal? :expected 1.)
+
+(define-test fixnum->flonum (fixnum->flonum 1233) :eq ~equal? :expected 1233.)
+(define-test bignum->flonum (bignum->flonum #z133) :eq ~equal? :expected 133.)
+
+(define-test flonum->bignum (flonum->bignum 133.) :expected #z133)
+
+(define-test flonum->int32 (flonum->int32 -133.) :expected #s32:-133)
+(define-test int32->flonum (int32->flonum #s32:-133) :eq ~equal? :expected -133.)
+
+(define-test flonum->int64 (flonum->int64 -133.) :expected #s64:-133)
+(define-test int64->flonum (int64->flonum #s64:-133) :eq ~equal? :expected -133.)
+
+(define-test flonum->uint32 (flonum->uint32 133.) :expected #u32:133)
+(define-test uint32->flonum (uint32->flonum #u32:133) :eq ~equal? :expected 133.)
+
+(define-test flonum->uint64 (flonum->uint64 133.) :expected #u64:133)
+(define-test uint64->flonum (uint64->flonum #u64:133) :eq ~equal? :expected 133.)
+
+(define-test exact->inexact (exact->inexact 4) :eq ~equal? :expected 4.)
+(define-test inexact->exact (inexact->exact 4.) :expected 4)
+
 (define-test = (= 1 1) :expected #t)
 (define-test = (= 1 1 1) :expected #t)
 (define-test = (= 1 2 1) :expected #f)
@@ -260,19 +301,20 @@
 (define-test flofix.< (let ((x -0.2) (y 0)) (< x y)) :expected #t)
 
 (define-test string->number (string->number "0") :expected 0)
-(define-test string->number (string->number "e") :expected #f)
-(define-test string->number (string->number "0" 2) :expected 0)
-(define-test string->number (string->number "0" 8) :expected 0)
-(define-test string->number (string->number "0" 16) :expected 0)
-(define-test string->number (string->number "") :expected #f)
-(define-test string->number (string->number "7F" 16) :expected 127)
 (define-test string->number (string->number "314t") :expected #f)
+(define-test string->number (string->number "0" 16) :expected 0)
+(define-test string->number (string->number "7F" 16) :expected 127)
+(define-test string->number (string->number "-00000000000000000123") :expected -123)
 (define-test string->number (string->number #"5") :expected 5)
 (define-test string->number (string->number #"-5") :expected -5)
+(define-test string->number (string->number "") :expected #f)
 (define-test string->number (string->number #"+5") :expected 5)
 (define-test string->number (string->number #"5\n") :expected #f)
+(define-test string->number (string->number "0" 2) :expected 0)
+(define-test string->number (string->number "0" 8) :expected 0)
 (define-test string->number (string->number #"-5\n") :expected #f)
 (define-test string->number (string->number #"+5\n") :expected #f)
+(define-test string->number (string->number "e") :expected #f)
 (define-test string->number (string->number "-") :expected #f)
 (define-test string->number (string->number "-1") :expected -1)
 (define-test string->number (string->number "+") :expected #f)
@@ -374,6 +416,10 @@
 (define-test negllong (negllong #l123456) :expected #l-123456)
 (define-test negllong (negllong #l214748364) :expected #l-214748364)
 (define-test negllong (negllong #l2147483648) :expected #l-2147483648)
+(define-test exp (exp 4.2) :eq ~equal? :expected 66.68633104092515)
+(define-test log (log 4.2) :eq ~equal? :expected 1.4350845252893227)
+(define-test log2 (log2 4.2) :eq ~equal? :expected 2.070389327891398)
+(define-test log10 (log10 4.2) :eq ~equal? :expected 0.6232492903979004)
 (define-test expt (expt 2 -1) :expected 0.5)
 (define-test expt (expt 2 -1.0) :expected 0.5)
 (define-test expt (expt -1 256) :expected 1)
@@ -583,5 +629,23 @@
       (define-test random (and (>=fx v4 0) (<fx v4 100)))
       (define-test random (cons v1 v2) :expected (cons v3 v4))))
 	 
-   
+(define-test cos (cos 0.5) :eq ~equal? :expected 0.8775825618903728)
+(define-test cos (cos -0.3) :eq ~equal? :expected 0.955336489125606)
 
+(define-test sin (sin 0.5) :eq ~equal? :expected 0.479425538604203)
+(define-test sin (sin -0.3) :eq ~equal? :expected -0.29552020666133955)
+
+(define-test tan (tan 0.5) :eq ~equal? :expected 0.5463024898437905)
+(define-test tan (tan -0.3) :eq ~equal? :expected -0.30933624960962325)
+
+(define-test acos (acos 0.5) :eq ~equal? :expected 1.0471975511965979)
+(define-test acos (acos -0.3) :eq ~equal? :expected 1.8754889808102941)
+
+(define-test asin (asin 0.5) :eq ~equal? :expected 0.5235987755982989)
+(define-test asin (asin -0.3) :eq ~equal? :expected -0.3046926540153975)
+
+(define-test atan (atan 0.5) :eq ~equal? :expected 0.4636476090008061)
+(define-test atan (atan -0.3) :eq ~equal? :expected -0.2914567944778671)
+
+(define-test sqrt (sqrt 4.) :eq ~equal? :expected 2.)
+(define-test sqrt (sqrt 9) :eq ~equal? :expected 3.)
