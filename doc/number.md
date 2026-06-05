@@ -14,3 +14,37 @@
 
 Numbers
 =======
+
+Bigloo supports a limited numerical tower. It supports 
+[integers, bignum, int8, ...](./int.md) and [reals](./real.md). In
+addition to the specific operators available for each particular
+type of numbers, it also provides the standard Scheme number library.
+
+Predicates
+----------
+
+### number? ###
+
+### exact? ###
+
+### inexact? ###
+
+### complex? ###
+
+### rational? ###
+
+Comparison Operators
+--------------------
+
+### = ###
+### > ###
+### >= ###
+### <= ###
+### < ###
+
+
+Conversions
+-----------
+
+### number->flonum ###
+### fixnum->flonum ###
