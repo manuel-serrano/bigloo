@@ -3,7 +3,7 @@
 ;*    ------------------------------------------------------------     */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Fri Jun  5 05:33:25 2026 (serrano)                */
+;*    Last change :  Fri Jun  5 05:52:40 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing numbers                                                  */
@@ -231,7 +231,7 @@
 (define-test lcm (lcmllong #l840 #l168 #l420 #l-588 #l924 #l8400 #l2520) :expected #l1940400)
 (define-test lcm (lcm 840 #l168 420 #e-588 924 #l8400 #e2520) :expected #l1940400)
 (define-test flonum->fixnum (flonum->fixnum (cosfl 0.0)) :eq ~equal? :expected 1)
-(define-test atan (tan (atan 1)) :expected (fixnum->flonum 1))
+(define-test atan (tan (atan 1)) :eq ~equal? :expected (fixnum->flonum 1))
 (define-test flofix.< (< 3.0 3) :expected #f)
 (define-test flofix.< (< 3 3) :expected #f)
 (define-test flofix.< (< 3 4) :expected #t)
@@ -387,7 +387,7 @@
 (define-test max (max 2 3 0) :expected 3)
 (define-test max (max 2 3 4) :expected 4)
 (define-test max (max 3 4) :expected 4)
-(define-test max (max 3.9 4) :expected 4)
+(define-test max (max 3.9 4) :expected 4.)
 (define-test max (max 3.9 4.) :expected 4.)
 (define-test min (min 1) :expected 1)
 (define-test min (min 1 2) :expected 1)
