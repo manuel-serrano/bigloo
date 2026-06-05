@@ -40,7 +40,7 @@ datum is a list of zero or more @code{a}s followed by zero or more
 @code{b}s.
 
 @item Pattern matching on lists as well as on vectors and structures, 
-and record types.
+record types, and classes.
 
 @end itemize
 
@@ -128,6 +128,7 @@ The syntax for <pattern> is:
                             @r{of @code{<pat>} in a list.}
 | #(<pat> ... <patn>)       @r{a vector of @var{n} elements.}
 | #@{<struct> <pat> ... @}    @r{a structure.}
+| (@code{isa} <class> (<id> <pat>) ...) @r{a class instance.}
 | @code{?}<id>                     @r{anything, and binds @code{id} as a variable.}
 | @code{?-}                        @r{anything.}
 | @code{??-}                       @r{any (possibly empty) repetition of anything}
@@ -181,3 +182,92 @@ inside a vector, where you should use @code{???-}: For example,
 @code{#(a ??- b)} or @code{#(a...)} are invalid patterns, whereas 
 @code{#(a ???-)} is valid and matches any vector whose first element 
 is the atom @code{a}.
+
+@subsection Class Patterns
+@cindex class patterns
+@cindex isa pattern
+
+The @code{isa} pattern matches instances of Bigloo classes. The syntax is:
+
+@smallexample
+(isa <class-name> (<field-name> <pattern>) ...)
+@end smallexample
+
+Each @code{(<field-name> <pattern>)} pair matches the named field against
+the given pattern. Fields not mentioned are ignored, allowing partial
+matching. If no fields are specified, only the type is checked.
+
+The type check uses @code{isa?}, so a pattern @code{(isa point ...)} will
+match instances of @code{point} and any subclass of @code{point}.
+
+@smalllisp
+(define-class point (x (default 0)) (y (default 0)))
+(define-class point3d::point (z (default 0)))
+
+;; Basic field binding
+(match-case (instantiate::point (x 3) (y 4))
+   ((isa point (x ?x) (y ?y)) (list x y)))
+   @result{} (3 4)
+
+;; Partial matching (only check some fields)
+(match-case (instantiate::point3d (x 1) (y 2) (z 3))
+   ((isa point3d (z ?z)) z))
+   @result{} 3
+
+;; Type-only check (no fields)
+(match-case (instantiate::point (x 1) (y 2))
+   ((isa point) 'yes)
+   (else 'no))
+   @result{} yes
+
+;; Literal values in fields
+(match-case (instantiate::point (x 0) (y 5))
+   ((isa point (x 0) (y ?y)) y)
+   (else 'fail))
+   @result{} 5
+
+;; Subclass matching via inheritance
+(match-case (instantiate::point3d (x 1) (y 2) (z 3))
+   ((isa point (x ?x) (y ?y)) (list x y)))
+   @result{} (1 2)
+@end smalllisp
+
+Class patterns compose freely with other pattern combinators:
+
+@smalllisp
+;; or: match multiple class types
+(match-case obj
+   ((or (isa point3d (z ?v)) (isa point (x ?v))) v))
+
+;; and: bind the whole object and destructure
+(match-case obj
+   ((and ?whole (isa point (x ?x) (y ?y)))
+    (list whole x y)))
+
+;; not: match non-instances
+(match-case obj
+   ((not (isa point)) 'not-a-point)
+   (else 'is-a-point))
+
+;; Predicates inside fields
+(match-case obj
+   ((isa point (x (and ?x (? positive?)))) x))
+
+;; Nested class patterns
+(define-class segment
+   (start (default #unspecified))
+   (end (default #unspecified)))
+
+(match-case seg
+   ((isa segment (start (isa point (x ?x1) (y ?y1)))
+                 (end (isa point (x ?x2) (y ?y2))))
+    (list x1 y1 x2 y2)))
+
+;; Repeated variables (equality constraint across fields)
+(define-class rect (width (default 0)) (height (default 0)))
+
+(match-case (instantiate::rect (width 5) (height 5))
+   ((isa rect (width ?s) (height ?s)) s)
+   (else 'not-square))
+   @result{} 5
+@end smalllisp
