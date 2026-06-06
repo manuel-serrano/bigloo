@@ -1,0 +1,104 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/ssl0.bgl              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Fri Jun  5 08:49:59 2026                          */
+;*    Last change :  Fri Jun  5 10:49:58 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing the ssl library.                                         */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    ssl0                                                             */
+;*---------------------------------------------------------------------*/
+(module ssl0
+   (library ssl)
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "ssl" tests))
+      (test-all verbose "ssl")))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-version                                                      */
+;*---------------------------------------------------------------------*/
+(define-test ssl-version
+   (let ((v (ssl-version)))
+      (and (string? v) (>fx (string-length v) 0)))
+   :expected #t)
+
+;*---------------------------------------------------------------------*/
+;*    random                                                           */
+;*---------------------------------------------------------------------*/
+(define-test ssl-rand-bytes
+   (let ((r (ssl-rand-bytes 32)))
+      (and (string? r) (=fx (string-length r) 32)))
+   :expected #t)
+
+(define-test ssl-rand-pseudo-bytes
+   (let ((r (ssl-rand-pseudo-bytes 16)))
+      (and (string? r) (=fx (string-length r) 16)))
+   :expected #t)
+
+(define-test ssl-rand-status
+   (ssl-rand-status)
+   :expected #t)
+
+(define-test ssl-rand-poll
+   (ssl-rand-poll)
+   :expected #t)
+
+(define-test ssl-clear-error
+   (ssl-clear-error)
+   :expected #t)
+
+;*---------------------------------------------------------------------*/
+;*    hash                                                             */
+;*---------------------------------------------------------------------*/
+;* (define-test hash-sha256                                            */
+;*    (let ((h (instantiate::ssl-hash (type "sha256"))))               */
+;*       (ssl-hash-update! h "hello" 0 5)                              */
+;*       (string-length (ssl-hash-digest h)))                          */
+;*    :expected 32)                                                    */
+;*                                                                     */
+;* (define-test hash-sha1                                              */
+;*    (let ((h (instantiate::ssl-hash (type "sha1"))))                 */
+;*       (ssl-hash-update! h "test" 0 4)                               */
+;*       (string-length (ssl-hash-digest h)))                          */
+;*    :expected 20)                                                    */
+;*                                                                     */
+;* (define-test hash-sha384                                            */
+;*    (let ((h (instantiate::ssl-hash (type "sha384"))))               */
+;*       (ssl-hash-update! h "test" 0 4)                               */
+;*       (string-length (ssl-hash-digest h)))                          */
+;*    :expected 48)                                                    */
+;*                                                                     */
+;* (define-test hash-sha512                                            */
+;*    (let ((h (instantiate::ssl-hash (type "sha512"))))               */
+;*       (ssl-hash-update! h "test" 0 4)                               */
+;*       (string-length (ssl-hash-digest h)))                          */
+;*    :expected 64)                                                    */
+;*                                                                     */
+;* (define-test hash-md5                                               */
+;*    (let ((h (instantiate::ssl-hash (type "md5"))))                  */
+;*       (ssl-hash-update! h "test" 0 4)                               */
+;*       (string-length (ssl-hash-digest h)))                          */
+;*    :expected 16)                                                    */
+;*                                                                     */
+;* (define-test hash-sha3-256                                          */
+;*    (with-handler                                                    */
+;*       (lambda (e) 32) ;; SHA-3 may not be available on older OpenSSL */
+;*       (let ((h (instantiate::ssl-hash (type "sha3-256"))))          */
+;* 	 (ssl-hash-update! h "test" 0 4)                            */
+;* 	 (string-length (ssl-hash-digest h))))                      */
+;*    :expected 32)                                                    */
+
