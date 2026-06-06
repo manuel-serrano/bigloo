@@ -9,6 +9,7 @@
 <!--    Modules                                                       -->
 <!--==================================================================-->
 
+,(implementation-path "../runtime/Match/mexpand.scm")
 ,(example-path "../test/src/match.bgl")
 
 
@@ -37,130 +38,142 @@ patterns, including:
 The Pattern Language
 --------------------
 
-The syntax for <pattern> is:
+The syntax for &lt;pattern&gt; is:
 
 ```bnf
-<pattern> -->                          ;; Matches:
-    <atom>                             ;; the <atom>
-  | ( kwote <atom> )                   :: any expression `eq?` to <atom>.
-  | ( and <pat1> ... <patn> )          ;; if all of <pati> match.`
-  | ( or <pat1> ... ...<patn> )        ;; if any of <pat1> through <patn> matches.
-  | ( not <pat> )                      ;; if <pat> doesn't match.
-  | (`?` <predicate> )                 ;; if <predicate> is true.`
-  | ( <pat1> ... <patn> )              ;; a list of n elements. Here, `...` is a
-                                       ;; meta-character denoting a finite 
-                                       ;; repetition of patterns.
-  | <pat> ...                          ;; a (possibly empty) repetition
-                                       ;; of <pat> in a list.`
-  | #( <pat> ... <patn> )              ;; a vector of `n` elements.`
-  | #{ <struct> <pat> ... }            ;; a structure.
-  | ( isa <class> ( <id> <pat> ) ... ) ;; a class instance.
-  | `?`<id>                            ;; anything, and binds <id> as a variable.
-  | `?-`                               ;; anything.
-  | `??-`                              ;; any (possibly empty) repetition of anything
-                                       ;; in a list.
-  | `???-`                             ;; any end of list.
+<pattern> --> 
+  <atom>                                   ;; the <atom>
+  | ( kwote <atom> )                       ;; any expression eq? to <atom>
+  | ( and <pattern>+ )                     ;; matches if all <pattern> match
+  | ( or <pattern>+ )                      ;; matches if one <pattern> matches
+  | ( not <pattern> )                      ;; negation
+  | (? <predicate> )                       ;; matches if <predicate> is true
+  | ( <pattern>* )                         ;; a list of patterns
+  | <pattern> ...                          ;; a possibliy empty repetition
+  | #( <pattern>* )                        ;; a vector
+  | #{ <struct> <pattern+> }               ;; a structure
+  | ( isa <ident> ( <ident> <pattern> )+ ) ;; a class instance
+  | ?<ident>                               ;; anything, and binds <ident> 
+  | ?-                                     ;; anything, without binding
+  | ??-                                    ;; a possibly empty repeition of anything in a list
+  | ???-                                   ;; any end of list
 ```
 
-@noindent
-@emph{Remark: ` `and, or, not, check` and `kwote` must be
-quoted in order to be treated as literals. This is the only justification
-for having the `kwote` pattern since, by convention, any atom which is
-not a keyword is quoted.
+> [!NOTE]
+> `and`, `or`, `not`, and `kwote` must be quoted in order to be treated 
+> as literals. The `kwote` pattern is required since, by convention, 
+> any atom which is not a keyword is quoted.
 
-@itemize @bullet
-@item `?-` matches any s-expr
+Here are some pattern examples:
 
-@item `a` matches the atom `'a`.
+  * `?-` matches any expression.
+  * `a` matches the symbol `'a`.
+  * `?a` matches any expression, and binds the variable `a` to this expression.
+  * `(? integer?)` matches any integer.
+  * `(a (a b))` matches the only list `'(a (a b))`.
+  * `???-` can only appear at the end of a list, and always succeeds
+     For instance, `(a ???-)` is equivalent to `(a . ?-)`.
+  *  when occurring in a list, `??-` matches any sequence of anything.
+     `(a ??- b)` matches any list whose `car` is `a` and last
+     `car` is `b`. 
+  * `(a ...)` matches any list of `a`'s, possibly empty.
+  * `(?x ?x)` matches any list of length 2 whose `car` is 
+    `eq?` to its `cadr`.
+  * `((and (not a) ?x) ?x)` matches any list of length 2 whose 
+    `car` is not `eq?` to `'a` but is `eq?` to its `cadr`
+  * `#(?- ?- ???-)` matches any vector whose length is at least 2.
+  * `#{foo (?- . ?-) (? integer?)}` matches any structure or
+     record `foo` whose first and second fields are respectively a pair and an
+     integer. You can provide only the fields you want to test. The order is not
+     relevant.
+  * `(isa Point (x 10))` matches a instance of the `Point` class whose `x`
+     field is 10.
 
-@item `?a` matches any expression, and binds the variable `a` to
-this expression.
+> [!NOTE] `??-` and `...` patterns can not appear
+> inside a vector, where you should use `???-`: For example, 
+> `#(a ??- b)` or `#(a...)` are invalid patterns, whereas 
+> `#(a ???-)` is valid and matches any vector whose first element 
+> is the atom `a`.
 
-@item `(? integer?)` matches any integer
 
-@item `(a (a b))` matches the only list `'(a (a b))`.
+Matching Expressions
+--------------------
 
-@item `???-` can only appear at the end of a list, and always succeeds.
-For instance, `(a ???-)` is equivalent to `(a . ?-)`.
+### (match-case key clauses ...) ###
+<!-- [:match-case@NoDef] -->
 
-@item when occurring in a list, `??-` matches any sequence of anything:
-`(a ??- b)` matches any list whose `car` is `a` and last
-`car` is `b`. 
+The argument `key` may be any expression and each `clause` has the form:
+(&lt;pattern&gt; &lt;expression&gt; ...)
 
-@item `(a ...)` matches any list of `a`'s, possibly empty.
+** Semantics: ** A `match-case` expression is evaluated as
+follows. `key` is evaluated and the result is compared with each
+successive pattern. If the pattern in some `clause` yields a match, then
+the expressions in that `clause` are evaluated from left to right in an
+environment where the pattern variables are bound to the corresponding
+subparts of the datum, and the result of the last expression in that
+`clause` is returned as the result of the `match-case` expression.
+If no `pattern` in any `clause` matches the datum, then, if there is an
+`else` clause, its expressions are evaluated and the result of the last
+is the result of the whole `match-case` expression; otherwise the result
+of the `match-case` expression is unspecified.
 
-@item `(?x ?x)` matches any list of length 2 whose `car` is 
- @emph{eq` to its `cadr`
+The equality predicate used is `eq?`.
 
-@item `((and (not a) ?x) ?x)` matches any list of length 2 whose 
-`car` is not @emph{eq` to `'a` but is @emph{eq` to its `cadr`
+### (match-lambda clauses ...) ###
+<!-- [:match-lambda@NoDef] -->
 
-@item `#(?- ?- ???-)` matches any vector whose length is at least 2.
+It expands into a lambda-expression expecting an argument which, once
+applied to an expression, behaves exactly like a `match-case`
+expression.
 
-@item `#@{foo (?- . ?-) (? integer?)@`` matches any structure or
-record `foo` whose first and second fields are respectively a pair and an
-integer. You can provide only the fields you want to test. The order is not
-relevant.
-@end itemize
+Matching Class instances
+------------------------
 
-@emph{Remark: ` `??-` and `...` patterns can not appear
-inside a vector, where you should use `???-`: For example, 
-`#(a ??- b)` or `#(a...)` are invalid patterns, whereas 
-`#(a ???-)` is valid and matches any vector whose first element 
-is the atom `a`.
-
-@subsection Class Patterns
-@cindex class patterns
-@cindex isa pattern
-
-The `isa` pattern matches instances of Bigloo classes. The syntax is:
-
-@smallexample
-(isa <class-name> (<field-name> <pattern>) ...)
-@end smallexample
-
-Each `(<field-name> <pattern>)` pair matches the named field against
-the given pattern. Fields not mentioned are ignored, allowing partial
+The `isa` pattern matches instances of Bigloo classes. Each `(&lt;ident&gt;
+&lt;pattern&gt;)` pair matches the named field against the given
+pattern. Fields not mentioned are ignored, allowing partial
 matching. If no fields are specified, only the type is checked.
 
 The type check uses `isa?`, so a pattern `(isa point ...)` will
 match instances of `point` and any subclass of `point`.
 
-@smalllisp
+Example:
+
+```bigloo
 (define-class point (x (default 0)) (y (default 0)))
 (define-class point3d::point (z (default 0)))
 
 ;; Basic field binding
 (match-case (instantiate::point (x 3) (y 4))
    ((isa point (x ?x) (y ?y)) (list x y)))
-   @result{` (3 4)
+   &rarr; (3 4)
 
 ;; Partial matching (only check some fields)
 (match-case (instantiate::point3d (x 1) (y 2) (z 3))
    ((isa point3d (z ?z)) z))
-   @result{` 3
+   &rarr; 3
 
 ;; Type-only check (no fields)
 (match-case (instantiate::point (x 1) (y 2))
    ((isa point) 'yes)
    (else 'no))
-   @result{` yes
+   &rarr; yes
 
 ;; Literal values in fields
 (match-case (instantiate::point (x 0) (y 5))
    ((isa point (x 0) (y ?y)) y)
    (else 'fail))
-   @result{` 5
+   &rarr; 5
 
 ;; Subclass matching via inheritance
 (match-case (instantiate::point3d (x 1) (y 2) (z 3))
    ((isa point (x ?x) (y ?y)) (list x y)))
-   @result{` (1 2)
-@end smalllisp
+   &rarr; (1 2)
+```
 
 Class patterns compose freely with other pattern combinators:
 
-@smalllisp
+```bigloo
 ;; or: match multiple class types
 (match-case obj
    ((or (isa point3d (z ?v)) (isa point (x ?v))) v))
@@ -195,51 +208,5 @@ Class patterns compose freely with other pattern combinators:
 (match-case (instantiate::rect (width 5) (height 5))
    ((isa rect (width ?s) (height ?s)) s)
    (else 'not-square))
-   @result{` 5
-@end smalllisp
-
-Forms
------
-### (match-case key clauses ...) ###
-<!-- [:cond-expand@NoDef] -->
-
-The argument `key` may be any expression and each `clause` has the form:
-(&lt;pattern&gt; &lt;expression&gt; ...)
-
-** Semantics: ** A `match-case` expression is evaluated as
-follows. `key` is evaluated and the result is compared with each
-successive pattern. If the pattern in some `clause` yields a match, then
-the expressions in that `clause` are evaluated from left to right in an
-environment where the pattern variables are bound to the corresponding
-subparts of the datum, and the result of the last expression in that
-`clause` is returned as the result of the `match-case` expression.
-If no `pattern` in any `clause` matches the datum, then, if there is an
-`else` clause, its expressions are evaluated and the result of the last
-is the result of the whole `match-case` expression; otherwise the result
-of the `match-case` expression is unspecified.
-
-The equality predicate used is `eq?`.
-
-```bigloo
-(match-case '(a b a)
-   ((?x ?x) 'foo)
-   ((?x ?- ?x) 'bar))
-   &rarr; bar
+   &rarr; 5
 ```
-The following syntax is also available:
-
-### (match-lambda clauses ...) ###
-<!-- [:cond-expand@NoDef] -->
-
-It expands into a lambda-expression expecting an argument which, once
-applied to an expression, behaves exactly like a `match-case`
-expression.
-
-```bigloo
-((match-lambda
-   ((?x ?x) 'foo)
-   ((?x ?- ?x) 'bar))
- '(a b a))
-   &rarr; bar
-```
-

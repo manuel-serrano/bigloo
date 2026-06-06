@@ -167,10 +167,26 @@
 ;*    test-match ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-test match-case
-   (match-case '(foo bar 3 ("gee") bar)
-      ((?x ?y (and ?n (? number?)) ?- ?y) (cons x n))
-      (else #f))
+   (let ((l '(foo bar 3 ("gee") bar)))
+      (match-case l
+         ((?x ?x) 'foo)
+         ((?x ?y (and ?n (? number?)) ?- ?y) (cons x n))
+         (else #f)))
    :expected (cons 'foo 3))
+
+(define-test match-lambda
+   ((match-lambda
+       ((?head ??-) head)
+       (else #f))
+    (list 'head 'middle 'tail))
+   :expected 'head)
+
+(define-test match-lambda
+   ((match-lambda
+       ((?x ?x) 'foo)
+       ((?x ?- ?x) 'bar))
+    '(a b a))
+   :expected 'bar)
 
 (define-test let (match-test)
    :expected 'ok)

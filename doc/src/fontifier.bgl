@@ -443,9 +443,9 @@
       '() 0))
 
 ;*---------------------------------------------------------------------*/
-;*    *hop-keywords* ...                                               */
+;*    *bigloo-keywords* ...                                            */
 ;*---------------------------------------------------------------------*/
-(define *hop-keywords*
+(define *bigloo-keywords*
    (let ((t (make-hashtable)))
       (for-each (lambda (k)
                    (hashtable-put! t k "compilation"))
@@ -457,19 +457,18 @@
            "define-macro" "define-expander"
            "define-generic" "define-method" "define-inline"
            "define-class" "define-abstract-class" "define-final-class"
-           "define-wide-class"
-           "define-service" "define-tag"))
+           "define-wide-class"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "reserved"))
 	 '("lambda" "service" "let" "let*" "letrec" "letrec*"
            "if" "when" "unless"
 	   "begin" "cond" "case" "instantiate" "duplicate" "co-instantiate"
            "set!" "else" "with-access" "widen!" "shrink!" "call-next-method"
-	   "multiple-value-bind" "values" "match-case" "node-style-set!"))
+	   "multiple-value-bind" "values" "match-case" "match-lambda"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "important"))
 	 '("try" "with-handler" "unwind-protect"
-	   "with-hop" "with-url" "error" "bind-exit" "call/cc"))
+	   "error" "bind-exit" "call/cc"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "thread"))
 	 '("thread-start!" "thread-start-joinable!" "make-thread"
@@ -477,9 +476,6 @@
 	   "make-mutex" "with-lock" "mutex-lock!" "mutex-unlock!"
 	   "make-condition-variable" "condition-variable-signal!"
 	   "condition-variable-wait!"))
-      (for-each (lambda (k)
-		   (hashtable-put! t k "server"))
-	 '("hop-event-signal!" "hop-event-broadcast!"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "class"))
 	 '("generic" "class" "final-class" "wide-class" "abstract-class"))
@@ -500,7 +496,7 @@
 	    ((and (char=? (string-ref x 0) #\<)
 		  (char=? (string-ref x (-fx l 1)) #\>))
 	     (<SPAN> :class "fontifier-prog-tag" s))
-	    ((hashtable-get *hop-keywords* s)
+	    ((hashtable-get *bigloo-keywords* s)
 	     =>
 	     (lambda (k)
 		(<SPAN> :class (string-append "fontifier-prog-" k) s)))
@@ -517,7 +513,7 @@
 ;*---------------------------------------------------------------------*/
 (define (lisp ip::input-port #!key line-begin line-end keyword)
    
-   (define (hop-keyword x op)
+   (define (lisp-keyword x op)
       (let ((s (xml-string-encode x))
 	    (l (string-length x)))
 	 (cond
@@ -527,14 +523,10 @@
 	    ((and (char=? (string-ref x 0) #\<)
 		  (char=? (string-ref x (-fx l 1)) #\>))
 	     (<SPAN> :class "fontifier-prog-tag" s))
-	    ((hashtable-get *hop-keywords* s)
-	     =>
-	     (lambda (k)
-		(<SPAN> :class (string-append "fontifier-prog-" k) s)))
 	    (else
 	     (<SPAN> s)))))
 
-   (read/rp *lisp-grammar* ip hop-keyword
+   (read/rp *lisp-grammar* ip lisp-keyword
       line-begin line-end
       (or (not (integer? line-begin)) (=fx line-begin 1))
       '() 0))
@@ -613,8 +605,7 @@
 	    ((and (char=? (string-ref x 0) #\<)
 		  (char=? (string-ref x (-fx l 1)) #\>))
 	     (<SPAN> :class "fontifier-prog-tag" s))
-	    ((or (hashtable-get *hop-keywords* s)
-		 (hashtable-get *hss-keywords* s))
+	    ((hashtable-get *hss-keywords* s)
 	     =>
 	     (lambda (k)
 		(<SPAN> :class (string-append "fontifier-prog-" k) s)))
@@ -796,12 +787,21 @@
 	  (let ((el (<SPAN> :class "ebnf-keyword" (the-string))))
 	     (add! el)
 	     (ignore)))
+         ((: (+ (out "<> \t\n-#")) (out #\#))
+          (let ((el (<SPAN> :class "ebnf-keyword" (the-string))))
+	     (add! el)
+	     (ignore)))
 	 (#\Tab
 	  ;; replace the tab character with a series an n whitespaces
 	  (add! (vector-ref whitespaces (-fx 8 (modulofx column 8))))
 	  (set! column 0)
 	  (ignore))
-      
+
+         ((: ";;" (* (out #\Newline)))
+          (let ((el (<SPAN> :class "ebnf-comment" (the-substring 2 0))))
+             (add! el)
+             (ignore)))
+         
 	 (#\Newline
 	  ;; newline
 	  (set! column 0)

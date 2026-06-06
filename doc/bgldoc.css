@@ -72,6 +72,7 @@
     --fontifierBnfTag: #555;
     --fontifierBnfDefine: #111;
     --fontifierBnfArrow: #555;
+    --fontifierBnfComment: #faa404;;
 
     --fontifierShellPrompt: #fa1a03;
     
@@ -650,6 +651,11 @@ pre.bnf .ebnf-pipe {
 
 pre.bnf .ebnf-arrow {
     color: var(--fontifierBnfArrow);
+}
+
+pre.bnf .ebnf-comment {
+    color: var(--fontifierBnfComment);
+    font-style: italic;
 }
 
 /*---------------------------------------------------------------------*/
