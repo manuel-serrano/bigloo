@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Fri May 22 11:03:50 2026 (serrano)                */
+;*    Last change :  Sat Jun  6 08:46:17 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -474,12 +474,19 @@
       (else
        (cond
 	  ((isa? ty tclass)
-	   (with-access::tclass ty (name holder)
-	      (global-occurrence-set! holder
-		 (+fx 1 (global-occurrence holder)))
-	      `(ref.cast (ref ,(wasm-sym name))
-		  (call $BGL_CLASS_INSTANCE_DEFAULT_VALUE
-		     (global.get ,(wasm-sym (global-name holder)))))))
+	   (with-access::tclass ty (name holder slots widening its-super)
+	      (let ((s (if widening (tclass-slots its-super) slots)))
+		 (global-occurrence-set! holder
+		    (+fx 1 (global-occurrence holder)))
+		 `(struct.new ,(wasm-sym name)
+		     ;; header
+		     (i64.const 0)
+		     ;; widening
+		     (global.get $BUNSPEC)
+		     ,@(filter-map (lambda (s)
+				      (unless (>=fx (slot-virtual-num s) 0)
+					 (wasm-default-value (slot-type s))))
+			  s)))))
 	  ((wclass? ty)
 	   (with-access::wclass ty (its-class)
 	      (with-access::tclass its-class (name slots its-super)

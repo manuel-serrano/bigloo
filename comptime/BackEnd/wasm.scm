@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri May 22 07:34:39 2026 (serrano)                */
+;*    Last change :  Sat Jun  6 07:57:47 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1305,7 +1305,8 @@ esac")
 	  ,@(if (eq? (global-import variable) 'export)
 		`((export ,(global-name variable)))
 		'())
-	  (mut ,(wasm-type type)) ,(wasm-default-value type))))
+	  (mut ,(wasm-type type))
+	  ,(wasm-default-value type))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cnsts ...                                                   */

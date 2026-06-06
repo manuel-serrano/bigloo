@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wobject.wat        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/wobject.wat       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Oct  2 10:02:42 2024                          */
-;*    Last change :  Mon Jul 21 14:20:24 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Sat Jun  6 07:24:12 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM objects and classes                                         */
 ;*=====================================================================*/
@@ -130,8 +130,6 @@
       (local.set $ctor (struct.get $class $nil_fun (local.get $clazz)))
       (ref.cast (ref $BgL_objectz00_bglt)
 	 (call $class-nil@__object (local.get $clazz))))
-;*       (ref.cast (ref $BgL_objectz00_bglt)                           */
-;* 	 (call $BGl_classzd2nilzd2zz__objectz00 (local.get $clazz))))  */
    
    ;; --------------------------------------------------------
    ;; Library functions
