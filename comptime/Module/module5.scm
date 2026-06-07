@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Jun  5 09:47:40 2026 (serrano)                */
+;*    Last change :  Sun Jun  7 06:33:44 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -660,7 +660,7 @@
 ;*    but build the inline body in the imported module environment.    */
 ;*---------------------------------------------------------------------*/
 (define (module5-imported-inline mod::Module env)
-   (with-trace 'module5 "module5-imported-inline"
+   (with-trace 'module5-inline "module5-imported-inline"
       (with-access::Module mod (imports)
 	 (hashtable-for-each imports
 	    (lambda (k decl)
@@ -678,8 +678,13 @@
 				    (multiple-value-bind (genv tenv)
 				       (module5-env imod)
 				       (trace-item "inline id=" id "@" mid)
+				       (trace-item "module=" (-> imod id)
+					  " resolved=" (-> imod resolved))
+				       (trace-item "body=" (-> imod body))
 				       (trace-item "expr=" expr)
-				       (let* ((gi (car (toplevel->ast expr '() mid env)))
+				       (trace-item "expr=" (compile-expand (comptime-expand expr)))
+				       (let* ((eexpr (compile-expand (comptime-expand expr)))
+					      (gi (car (toplevel->ast eexpr '() mid env)))
 					      (gl (find-global/module env alias mid))
 					      (fi (global-value gi))
 					      (loc (find-location expr))

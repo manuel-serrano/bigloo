@@ -64,41 +64,41 @@
 ;*---------------------------------------------------------------------*/
 ;*    hash                                                             */
 ;*---------------------------------------------------------------------*/
-;* (define-test hash-sha256                                            */
-;*    (let ((h (instantiate::ssl-hash (type "sha256"))))               */
-;*       (ssl-hash-update! h "hello" 0 5)                              */
-;*       (string-length (ssl-hash-digest h)))                          */
-;*    :expected 32)                                                    */
-;*                                                                     */
-;* (define-test hash-sha1                                              */
-;*    (let ((h (instantiate::ssl-hash (type "sha1"))))                 */
-;*       (ssl-hash-update! h "test" 0 4)                               */
-;*       (string-length (ssl-hash-digest h)))                          */
-;*    :expected 20)                                                    */
-;*                                                                     */
-;* (define-test hash-sha384                                            */
-;*    (let ((h (instantiate::ssl-hash (type "sha384"))))               */
-;*       (ssl-hash-update! h "test" 0 4)                               */
-;*       (string-length (ssl-hash-digest h)))                          */
-;*    :expected 48)                                                    */
-;*                                                                     */
-;* (define-test hash-sha512                                            */
-;*    (let ((h (instantiate::ssl-hash (type "sha512"))))               */
-;*       (ssl-hash-update! h "test" 0 4)                               */
-;*       (string-length (ssl-hash-digest h)))                          */
-;*    :expected 64)                                                    */
-;*                                                                     */
-;* (define-test hash-md5                                               */
-;*    (let ((h (instantiate::ssl-hash (type "md5"))))                  */
-;*       (ssl-hash-update! h "test" 0 4)                               */
-;*       (string-length (ssl-hash-digest h)))                          */
-;*    :expected 16)                                                    */
-;*                                                                     */
-;* (define-test hash-sha3-256                                          */
-;*    (with-handler                                                    */
-;*       (lambda (e) 32) ;; SHA-3 may not be available on older OpenSSL */
-;*       (let ((h (instantiate::ssl-hash (type "sha3-256"))))          */
-;* 	 (ssl-hash-update! h "test" 0 4)                            */
-;* 	 (string-length (ssl-hash-digest h))))                      */
-;*    :expected 32)                                                    */
+(define-test hash-sha256
+   (let ((h (instantiate::ssl-hash (type "sha256"))))
+      (ssl-hash-update! h "hello" 0 5)
+      (string-length (ssl-hash-digest h)))
+   :expected 32)
+
+(define-test hash-sha1
+   (let ((h (instantiate::ssl-hash (type "sha1"))))
+      (ssl-hash-update! h "test" 0 4)
+      (string-length (ssl-hash-digest h)))
+   :expected 20)
+
+(define-test hash-sha384
+   (let ((h (instantiate::ssl-hash (type "sha384"))))
+      (ssl-hash-update! h "test" 0 4)
+      (string-length (ssl-hash-digest h)))
+   :expected 48)
+
+(define-test hash-sha512
+   (let ((h (instantiate::ssl-hash (type "sha512"))))
+      (ssl-hash-update! h "test" 0 4)
+      (string-length (ssl-hash-digest h)))
+   :expected 64)
+
+(define-test hash-md5
+   (let ((h (instantiate::ssl-hash (type "md5"))))
+      (ssl-hash-update! h "test" 0 4)
+      (string-length (ssl-hash-digest h)))
+   :expected 16)
+
+(define-test hash-sha3-256
+   (with-handler
+      (lambda (e) 32) ;; SHA-3 may not be available on older OpenSSL
+      (let ((h (instantiate::ssl-hash (type "sha3-256"))))
+	 (ssl-hash-update! h "test" 0 4)
+	 (string-length (ssl-hash-digest h))))
+   :expected 32)
 

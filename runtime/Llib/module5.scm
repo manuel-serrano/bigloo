@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Jun  5 14:01:45 2026 (serrano)                */
+;*    Last change :  Sun Jun  7 06:46:35 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -90,7 +90,7 @@
 	      (inits::pair-nil (default '()))
 	      ;; the list of libraries used by this module
 	      (libraries::pair-nil (default '()))
-	      ;; the module expressions
+	      ;; the module body expressions
 	      (body::obj (default '()))
 	      ;; a mark to remember that the module has been expanded
 	      ;; and resolved
@@ -2238,30 +2238,31 @@
    (hashtable-for-each (-> mod exports)
       (lambda (k decl::Decl)
 	 (when (isa? (-> decl def) Def)
-	    (let* ((def::Def (-> decl def))
-		   (ds::pair-nil (inline-free-vars! def)))
-	       (for-each (lambda (d)
-			    (cond
-			       ((isa? d Decl)
-				(unless (eq? (-> (cast::Decl d) scope) 'export)
-				   (export-hidden! d mod)))
-			       ((isa? d Def)
-				;; d was a static global variable, must
-				;; declare a fresh declaration
-				(let* ((d::Def d)
-				       (id (-> d id))
-				       (decl (instantiate::Decl
-						(id id)
-						(alias id)
-						(mod mod)
-						(scope 'export)
-						(def d)
-						(expr (-> def expr)))))
-				   (set! (-> d decl) decl)
-				   (hashtable-symbol-put! (-> mod decls)
-				      (-> def id) decl)
-				   (export-hidden! decl mod)))))
-		  ds))))))
+	    (let ((def::Def (-> decl def)))
+	       (when (eq? (-> def kind) 'inline)
+		  (let ((ds::pair-nil (inline-free-vars! def)))
+		     (for-each (lambda (d)
+				  (cond
+				     ((isa? d Decl)
+				      (unless (eq? (-> (cast::Decl d) scope) 'export)
+					 (export-hidden! d mod)))
+				     ((isa? d Def)
+				      ;; d was a static global variable, must
+				      ;; declare a fresh declaration
+				      (let* ((d::Def d)
+					     (id (-> d id))
+					     (decl (instantiate::Decl
+						      (id id)
+						      (alias id)
+						      (mod mod)
+						      (scope 'export)
+						      (def d)
+						      (expr (-> def expr)))))
+					 (set! (-> d decl) decl)
+					 (hashtable-symbol-put! (-> mod decls)
+					    (-> def id) decl)
+					 (export-hidden! decl mod)))))
+			ds))))))))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    collect-classes! ...                                             */
