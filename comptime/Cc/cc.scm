@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Cc/cc.scm            */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Cc/cc.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr 29 09:51:32 1995                          */
-;*    Last change :  Wed Oct 13 08:27:59 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Jun  8 08:55:27 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C compilation                                                */
 ;*=====================================================================*/
@@ -85,6 +85,7 @@
 		     " "
 		     obj
 		     " -I. "
+		     (format "-I~a " (dirname (car *src-files*)))
 		     (let loop ((path *lib-dir*))
 			(cond
 			   ((null? path)

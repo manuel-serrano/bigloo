@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Fri Jun  5 09:20:25 2026 (serrano)                */
+;*    Last change :  Mon Jun  8 09:43:47 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -118,8 +118,9 @@
    ;; library of bigloo2.7 provides classes with slots (e.g. &exception).
    ;; the add-tenv! function takes care of defining the accessors of
    ;; the classes that are defined in a heap.
-   (initialize-tenv!)
-   (add-tenv! Tenv))
+   (with-trace 'tenv "set-tenv!"
+      (initialize-tenv!)
+      (add-tenv! Tenv)))
 
 ;*---------------------------------------------------------------------*/
 ;*    add-tenv! ...                                                    */
@@ -176,94 +177,97 @@
 		(or old t)))
 	  t))
    
-   ;; in a first stage, we bind all new types
-   ;; (not rebinding already binded types)
-   (let ((remember-list '())
-	 (tvector-list '()))
-      ;; the remember list is used to store class type. We have to make
-      ;; three traversals over classes. A first one for defining them,
-      ;; a second one, when all classes are correctly set up, to
-      ;; fix the its-super class fields. Without the fix, new installed
-      ;; classes would have a its-super field that points to the old
-      ;; hash table (the one restored, not the current compiler's one).
-      ;; The last traversal used to construct the class accessors
-      ;; The same thing apply to tvectors
-      (hashtable-for-each Tenv
+   (with-trace 'tenv "add-tenv!"
+      ;; in a first stage, we bind all new types
+      ;; (not rebinding already binded types)
+      (let ((remember-list '())
+	    (tvector-list '()))
+	 ;; the remember list is used to store class type. We have to make
+	 ;; three traversals over classes. A first one for defining them,
+	 ;; a second one, when all classes are correctly set up, to
+	 ;; fix the its-super class fields. Without the fix, new installed
+	 ;; classes would have a its-super field that points to the old
+	 ;; hash table (the one restored, not the current compiler's one).
+	 ;; The last traversal used to construct the class accessors
+	 ;; The same thing apply to tvectors
+	 (hashtable-for-each Tenv
+	    (lambda (k new)
+	       (let* ((id  (type-id new))
+		      (old (hashtable-get *Tenv* id)))
+		  (cond
+		     ((not (type? old))
+		      (trace-item "bind-type: " id)
+		      (hashtable-put! *Tenv* id new)
+		      (when (tclass? new)
+			 (heap-add-class! new)
+			 (set! remember-list
+			    (cons new remember-list)))
+		      (when (jclass? new)
+			 (heap-add-jclass! new))
+		      (when (tvec? new)
+			 (set! tvector-list
+			    (cons new tvector-list))))
+		     ((not (type-init? old))
+		      (error "add-Tenv!"
+			 "Illegal type heap redefinition"
+			 id)
+		      (compiler-exit 55))
+		     (else
+		      ;; we have to store the new coercers 
+		      ;; for the old type
+		      (add-type-coercers! old new))))))
+	 (hashtable-for-each Tenv
+	    (lambda (k new)
+	       (let* ((id  (type-id new))
+		      (old (hashtable-get *Tenv* id)))
+		  (when (ctype? old)
+		     (let ((l (type-location old)))
+			(foreign-accesses-add!
+			   (make-ctype-accesses! old old l *module*)))))))
+	 ;; we have to walk thru the remember list in order to
+	 ;; setup the correct super class fields
+	 (for-each (lambda (new)
+		      (when (tclass? new)
+			 ;; super class
+			 (let ((super (tclass-its-super new)))
+			    (when (tclass? super)
+			       (let* ((super-id (tclass-id super))
+				      (old-s (find-type super-id)))
+				  (if (not (tclass? old-s))
+				      (error "add-Tenv"
+					 "Can't find super class of"
+					 (tclass-name new))
+				      (tclass-its-super-set! new old-s)))))))
+	    remember-list)
+	 ;; the tvector traversal
+	 (for-each (lambda (new)
+		      (delay-tvector! new 'heap #f))
+	    tvector-list)
+	 ;; the last walk to construct the class accessors
+	 ;; When we load an additional heap that contains classes
+	 ;; definition, the accessors are build when compiling the module
+	 ;; that uses the library. These accessors have to be added to
+	 ;; the other classes accessors.
+	 (for-each (lambda (n)
+		      (if (tclass? n)
+			  (delay-class-accessors!
+			     n
+			     (delay
+				;; The test cannot be lifter out of the delay
+				;; scope otherwise it gets evaluated before the
+				;; modules options are evaluated.
+				'()))))
+	    remember-list))
+      
+      ;; in a second stage, we have to reset the all coercer for _all_ types.
+      ;; This is mandatory because some types have not been rebound and
+      ;; then we need to adjust the coercer fields of freshly bound types.
+      ;; we have to walk thru all types, not only the freshly defined ones
+      ;; because old types may have coercion to new types (for instance, for
+      ;; fresh classes).
+      (hashtable-for-each *Tenv*
 	 (lambda (k new)
-	    (let* ((id  (type-id new))
-		   (old (hashtable-get *Tenv* id)))
-	       (cond
-		  ((not (type? old))
-		   (hashtable-put! *Tenv* id new)
-		   (when (tclass? new)
-		      (heap-add-class! new)
-		      (set! remember-list
-			 (cons new remember-list)))
-		   (when (jclass? new)
-		      (heap-add-jclass! new))
-		   (when (tvec? new)
-		      (set! tvector-list
-			 (cons new tvector-list))))
-		  ((not (type-init? old))
-		   (error "add-Tenv!"
-		      "Illegal type heap redefinition"
-		      id)
-		   (compiler-exit 55))
-		  (else
-		   ;; we have to store the new coercers 
-		   ;; for the old type
-		   (add-type-coercers! old new))))))
-      (hashtable-for-each Tenv
-	 (lambda (k new)
-	    (let* ((id  (type-id new))
-		   (old (hashtable-get *Tenv* id)))
-	       (when (ctype? old)
-		  (let ((l (type-location old)))
-		     (foreign-accesses-add!
-			(make-ctype-accesses! old old l *module*)))))))
-      ;; we have to walk thru the remember list in order to
-      ;; setup the correct super class fields
-      (for-each (lambda (new)
-		   (when (tclass? new)
-		      ;; super class
-		      (let ((super (tclass-its-super new)))
-			 (when (tclass? super)
-			    (let* ((super-id (tclass-id super))
-				   (old-s (find-type super-id)))
-			       (if (not (tclass? old-s))
-				   (error "add-Tenv"
-				      "Can't find super class of"
-				      (tclass-name new))
-				   (tclass-its-super-set! new old-s)))))))
-	 remember-list)
-      ;; the tvector traversal
-      (for-each (lambda (new)
-		   (delay-tvector! new 'heap #f))
-	 tvector-list)
-      ;; the last walk to construct the class accessors
-      ;; When we load an additional heap that contains classes
-      ;; definition, the accessors are build when compiling the module
-      ;; that uses the library. These accessors have to be added to
-      ;; the other classes accessors.
-      (for-each (lambda (n)
-		   (if (tclass? n)
-		       (delay-class-accessors!
-			  n
-			  (delay
-			     ;; The test cannot be lifter out of the delay
-			     ;; scope otherwise it gets evaluated before the
-			     ;; modules options are evaluated.
-			     '()))))
-	 remember-list))
-   ;; in a second stage, we have to reset the all coercer for _all_ types.
-   ;; This is mandatory because some types have not been rebound and
-   ;; then we need to adjust the coercer fields of freshly bound types.
-   ;; we have to walk thru all types, not only the freshly defined ones
-   ;; because old types may have coercion to new types (for instance, for
-   ;; fresh classes).
-   (hashtable-for-each *Tenv*
-      (lambda (k new)
-	 (adjust-type-coercers! new))))
+	    (adjust-type-coercers! new)))))
 		 
 ;*---------------------------------------------------------------------*/
 ;*    find-type ...                                                    */
@@ -310,7 +314,7 @@
 ;*    bind-type! ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (bind-type!::type id::symbol init?::bool loc)
-   (with-trace 'type "bind-type!"
+   (with-trace 'tenv "bind-type!"
       (trace-item "id=" id)
       (let ((type (hashtable-get *Tenv* id)))
 	 (if (type? type)
@@ -343,13 +347,15 @@
 ;*    rebind-type! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (rebind-type!::type id::symbol old::type)
-   (hashtable-put! *Tenv* id old))
+   (with-trace 'tenv "rebind-type!"
+      (trace-item "id=" id)
+      (hashtable-put! *Tenv* id old)))
 
 ;*---------------------------------------------------------------------*/
 ;*    use-type! ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (use-type!::type id::symbol loc)
-   (with-trace 'type "use-type"
+   (with-trace 'tenv "use-type"
       (trace-item "id=" id)
       (let ((type (hashtable-get *Tenv* id)))
 	 (cond
@@ -368,7 +374,7 @@
 ;*    use-type/import-loc! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (use-type/import-loc!::type id::symbol loc loci)
-   (with-trace 'type "use-type/import-loc!"
+   (with-trace 'tenv "use-type/import-loc!"
       (trace-item "id=" id)
       (let ((type (hashtable-get *Tenv* id)))
 	 (cond
@@ -392,7 +398,7 @@
 ;*    two syntaxes. This function implement the compatibility.         */
 ;*---------------------------------------------------------------------*/
 (define (use-foreign-type!::type id::symbol loc)
-   (with-trace 'type "use-foreigh-type"
+   (with-trace 'tenv "use-foreigh-type"
       (trace-item "id=" id)
       (let ((tid (parse-id id loc)))
 	 ;; parse-id calls  use-type! so, here we have to call use-type!
@@ -415,7 +421,7 @@
 ;*    two syntaxes. This function implement the compatibility.         */
 ;*---------------------------------------------------------------------*/
 (define (use-foreign-type/import-loc!::type id::symbol loc loci)
-   (with-trace 'type "use-foreigh-type/import-loc!"
+   (with-trace 'tenv "use-foreigh-type/import-loc!"
       (trace-item "id=" id)
       (let ((tid (parse-id id loc)))
 	 ;; parse-id calls  use-type! so, here we have to call use-type!
@@ -432,7 +438,7 @@
 ;*    declare-type! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (declare-type!::type id::symbol name::bstring class::symbol)
-   (with-trace 'type "declare-type!"
+   (with-trace 'tenv "declare-type!"
       (trace-item "id=" id)
       (trace-item "name=" name)
       (trace-item "class=" class)
@@ -452,7 +458,7 @@
 ;*    Subtype inherit from coercion of their parents.                  */
 ;*---------------------------------------------------------------------*/
 (define (declare-subtype!::type id::symbol name::bstring parents class::symbol)
-   (with-trace 'type "declare-subtype!"
+   (with-trace 'tenv "declare-subtype!"
       (trace-item "id=" id)
       (trace-item "name=" name)
       (trace-item "class=" class)
@@ -470,7 +476,7 @@
 ;*    declare-aliastype! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (declare-aliastype! id name class::symbol alias::type)
-   (with-trace 'type "declare-aliastype!"
+   (with-trace 'tenv "declare-aliastype!"
       (trace-item "id=" id)
       (trace-item "name=" name)
       (trace-item "class=" class)

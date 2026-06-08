@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Jun  5 15:33:53 2026 (serrano)                */
+#*    Last change :  Mon Jun  8 08:42:53 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -51,11 +51,11 @@ MODULES5 = module5_ex14 module5_ex1 module5_ex6 module5_ex0 module5_ex15 \
 
 COMMON=$(TESTS:%=%) $(MODULES4:%=modules/%) $(MODULES5:%=modules/%)
 
-BACKEND_C = ssl0
+BACKEND_C = ssl0 extern_c c
 
-BACKEND_J = ssl0
+BACKEND_J = ssl0 extern_jvm Intf Point
 
-BACKEND_W = 
+BACKEND_W = extern_wasm
 
 
 C_OBJECTS = $(COMMON:%=%.o) $(BACKEND_C:%=%.o)
@@ -124,11 +124,17 @@ distrib: clean
 objs_c/%.o: src/%.bgl src/test.bgh
 	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
 
+objs_c/%.o: src/%.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
 objs_wasm/%.wat: src/%.bgl src/test.bgh
 	$(BIGLOO) -c $(BFLAGS) $(BWFLAGS) $(EFLAGS) $< -o $@
 
 objs_jvm/%.class: src/%.bgl src/test.bgh
 	$(BIGLOO) -c $(BFLAGS) $(BJFLAGS) $(EFLAGS) $< -o $@
+
+objs_jvm/%.class: src/%.java
+	$(JAVA) $< -d objs_jvm
 
 objs_c/%.o: src/%.scm src/test.bgh
 	$(BIGLOO) -c $(BFLAGS) $(BM$FLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@

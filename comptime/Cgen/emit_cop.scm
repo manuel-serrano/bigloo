@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Cgen/emit_cop.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Cgen/emit_cop.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Mon Oct 20 09:01:30 2025 (serrano)                */
-;*    Copyright   :  1996-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Jun  8 09:15:56 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
 ;*=====================================================================*/
@@ -529,6 +529,7 @@
 	    ((null? (cddr actuals))
 	     (emit-cop (car actuals))
 	     (emit-cop (capp-fun cop))
+	     (display " " *c-port*)
 	     (emit-cop (cadr actuals)))
 	    (else
 	     (error "emit-cop" "Illegal infix macro"

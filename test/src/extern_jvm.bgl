@@ -1,0 +1,47 @@
+;*=====================================================================*/
+;*    serrano/bigloo/5.0.x/test/src/extern_jvm.bgl                     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Jun  8 08:45:19 2026                          */
+;*    Last change :  Mon Jun  8 18:11:35 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing the JVM extern interface                                 */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    extern_jvm                                                       */
+;*---------------------------------------------------------------------*/
+(module extern_jvm
+
+   (extern "java"
+      (abstract-class intf
+         (method abstract_met::int ::intf)
+         "Intf")
+      (class point::intf
+         (constructor new)
+         (field x::int)
+         (method abstract_met::int ::point)
+         (method show::void ::point)
+         (method static statistics::int)
+         "Point")
+      (class point::intf
+         (field y::int "y")
+         (field static point_num::int)
+         (constructor new2 (::int ::int))))
+    
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "ssl" tests))
+      (test-all verbose "ssl")))
+
+   

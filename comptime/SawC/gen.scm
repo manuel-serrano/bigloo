@@ -373,7 +373,7 @@
 	     (let loop ( (args (cdr args)) )
 		(when (pair? args)
 		   (gen-reg (car args))
-		   (display name)
+		   (display* " " name " ")
 		   (loop (cdr args)) ))
 	     (display ")") )))
    

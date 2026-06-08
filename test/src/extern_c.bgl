@@ -1,0 +1,61 @@
+;*=====================================================================*/
+;*    serrano/bigloo/5.0.x/test/src/extern_c.bgl                       */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Jun  8 08:45:19 2026                          */
+;*    Last change :  Mon Jun  8 17:54:52 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing the C extern interface                                   */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    extern_c                                                         */
+;*---------------------------------------------------------------------*/
+(module extern_c
+   
+   (extern "C"
+      (include "extern_c.h")
+
+      ;; macros and functions
+      (macro PLUS::long ::long ::long)
+      (macro CNST::long)
+      (infix macro PLUS_OP::long ::long ::long)
+      (macro $0L::void* "0L")
+      (macro strtod::double ::string ::void*)
+
+      ;; types
+      (type any "void *")
+      (macro $any->obj::obj ::any "(obj_t)")
+      (macro $obj->any::any ::obj "(void *)")
+
+      ;; variables
+      count::long)
+      
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "ssl" tests))
+      (test-all verbose "ssl")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test binary-macro (PLUS 1 3) :expected 4)   
+(define-test cnst-macro CNST :expected 1234)
+(define-test infix-macro (PLUS_OP 142 328) :expected 470)
+
+(define-test function (strtod "3.14" $0L) :eq ~equal? :expected 3.14)
+
+(define-test type ($any->obj ($obj->any (cons 1 2))) :expected '(1 . 2))
+
+(define-test variable count :expected 10)
+(define-test variable (begin (set! count 20) count) :expected 20)

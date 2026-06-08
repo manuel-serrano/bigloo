@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:57:02 1994                          */
-;*    Last change :  Sun May 24 19:50:05 2026 (serrano)                */
+;*    Last change :  Mon Jun  8 09:42:44 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C type managment                                             */
@@ -95,45 +95,50 @@
 ;*    declare-c-type! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (declare-c-type! ct-def ct-id ct-exp ct-name)
-   (cond
-      ((type-exists? ct-id)
-       (let ((o (find-type ct-id)))
-	  (if (or *allow-type-redefinition*
-		  (and (symbol? ct-exp) (isa? o calias))
-		  (and (pair? ct-exp)
-		       (case (car ct-exp)
-			  ((enum) (isa? o cenum))
-			  ((opaque) (isa? o copaque))
-			  ((function) (isa? o cfunction))
-			  ((pointer array) (isa? o cptr))
-			  ((struct union) (isa? o cstruct))
-			  ((struct* union*) (isa? o cstruct*)))))
-	      o
-	      (warning "declare-c-type!" "Foreign type redefinition -- " ct-id))))
-      ((symbol? ct-exp)
-       (declare-c-alias! ct-id ct-exp ct-name))
-      ((pair? ct-exp)
-       (case (car ct-exp)
-	  ((enum)
-	   (declare-c-enum! ct-id ct-exp ct-name))
-	  ((opaque)
-	   (declare-c-opaque! ct-id ct-exp ct-name))
-	  ((function)
-	   (declare-c-function! ct-id ct-exp ct-name))
-	  ((pointer array)
-	   (declare-c-pointer! ct-id ct-exp ct-name))
-	  ((struct union)
-	   (declare-c-struct! ct-id ct-exp ct-name))
-	  ((struct* union*)
-	   (declare-c-struct*! ct-id ct-exp ct-name))
-	  (else
-	   (internal-error "declare-c-type!"
-	      "Illegal c type declaration"
-	      ct-def))))
-      (else
-       (internal-error "declare-c-type!"
-	  "Illegal c type declaration"
-	  ct-def))))
+   (with-trace 'ctype "declare-c-type"
+      (trace-item "ct-def=" ct-def)
+      (trace-item "ct-id=" ct-id)
+      (trace-item "ct-exp=" ct-exp)
+      (trace-item "ct-name=" ct-name)
+      (cond
+	 ((type-exists? ct-id)
+	  (let ((o (find-type ct-id)))
+	     (if (or *allow-type-redefinition*
+		     (and (symbol? ct-exp) (isa? o calias))
+		     (and (pair? ct-exp)
+			  (case (car ct-exp)
+			     ((enum) (isa? o cenum))
+			     ((opaque) (isa? o copaque))
+			     ((function) (isa? o cfunction))
+			     ((pointer array) (isa? o cptr))
+			     ((struct union) (isa? o cstruct))
+			     ((struct* union*) (isa? o cstruct*)))))
+		 o
+		 (warning "declare-c-type!" "Foreign type redefinition -- " ct-id))))
+	 ((symbol? ct-exp)
+	  (declare-c-alias! ct-id ct-exp ct-name))
+	 ((pair? ct-exp)
+	  (case (car ct-exp)
+	     ((enum)
+	      (declare-c-enum! ct-id ct-exp ct-name))
+	     ((opaque)
+	      (declare-c-opaque! ct-id ct-exp ct-name))
+	     ((function)
+	      (declare-c-function! ct-id ct-exp ct-name))
+	     ((pointer array)
+	      (declare-c-pointer! ct-id ct-exp ct-name))
+	     ((struct union)
+	      (declare-c-struct! ct-id ct-exp ct-name))
+	     ((struct* union*)
+	      (declare-c-struct*! ct-id ct-exp ct-name))
+	     (else
+	      (internal-error "declare-c-type!"
+		 "Illegal c type declaration"
+		 ct-def))))
+	 (else
+	  (internal-error "declare-c-type!"
+	     "Illegal c type declaration"
+	     ct-def)))))
  
 ;*---------------------------------------------------------------------*/
 ;*    declare-c-alias! ...                                             */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Fri Jun  5 09:49:17 2026 (serrano)                */
+;*    Last change :  Mon Jun  8 09:50:59 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -196,86 +196,89 @@
 ;*    restore-additional-heap ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (restore-additional-heap env heap)
-   (let ((fname (find-file/path heap *lib-dir*)))
-      (if (string? fname)
-	  (let ((port (open-input-binary-file fname)))
-	     (if (not (binary-port? port))
-		 (let ((m (format "Cannot open heap file ~s" fname)))
-		    (error (if (pair? *src-files*)
-			       (car *src-files*)
-			       "-")
-		       m *lib-dir*)
-		    (compiler-exit 6))
-		 (begin
-		    (verbose 2 "      [reading " fname "]" #\Newline)
-		    (unwind-protect
-		       (let* ((Envs (input-obj port))
-			      (_ (unless (and (vector? Envs)
-					      (=fx (vector-length Envs) 7))
-				    (error heap "Corrupted heap" Envs)))
-			      (target (vector-ref Envs 0))
-			      (version (vector-ref Envs 1))
-			      (specific (vector-ref Envs 2))
-			      (Genv (vector-ref Envs 3))
-			      (Tenv (vector-ref Envs 4))
-			      (includes (vector-ref Envs 5))
-			      (ccopts (vector-ref Envs 6)))
-			  ;; check the target languages
-			  (unless (backend-heap-compatible? target)
-			     (error heap
-				"Target language mismatch"
-				(format "~a vs. ~a"
-				   target
-				   (backend-language (the-backend)))))
-			  (unless (compatible-bigloo-version? version)
-			     (error *heap-name*
-				"Release mismatch"
-				(format "Heap is `~a', Bigloo is `~a'"
-				   version
-				   *bigloo-version*)))
-			  (unless (compatible-bigloo-specific-version? specific)
-			     (error *heap-name*
-				"Specific version mismatch"
-				(format "Heap is `~a', Bigloo is `~a'"
-				   specific
-				   *bigloo-specific-version*)))
-			  ;; @label heap class handling@
-			  ;; The function add-Tenv! manages the import
-			  ;; of class definitions. That is, if the additional
-			  ;; heap contains class definitions, add-Tenv!
-			  ;; creates the accessors for that classes. Note
-			  ;; that set-Tenv! *doesn't* do the same job, it
-			  ;; supposes that the env doesn't contain classes
-			  (assert (Tenv) (hashtable? Tenv))
-			  (assert (Genv) (hashtable? Genv))
-			  (add-tenv! Tenv)
-			  (add-genv! Genv)
-			  ;; in jvm mode, we have to propagate
-			  ;; the package/module association
-			  (when (backend-qualified-types (the-backend))
-			     (for-each-global! env
-				global-package-and-qualified-type-set!))
-			  ;; we add all the heap modules
-			  (hashtable-for-each
-			     Genv
-			     (lambda (k bucket)
-				(for-each (lambda (new)
-					     (heap-module-list
-						(global-module new)))
-				   (cdr bucket))))
-			  ;; we store the list of includes
-			  (unless (eq? *pass* 'make-heap)
-			     (set! *additional-include-foreign*
-				(append *additional-include-foreign*
-				   includes))
-			     (set! *cc-options*
-				(delete-duplicates
-				   (append *cc-options* ccopts))))
-			  #t)
-		       (close-binary-port port)))))
-	  (let ((m (format "Cannot open heap file ~s" heap)))
-	     (error (if (pair? *src-files*) (car *src-files*) "-") m *lib-dir*)
-	     (compiler-exit 6)))))
+   (with-trace 'restore "restore-additional-heap"
+      (trace-item "heap=" heap)
+      (let ((fname (find-file/path heap *lib-dir*)))
+	 (trace-item "fname=" fname)
+	 (if (string? fname)
+	     (let ((port (open-input-binary-file fname)))
+		(if (not (binary-port? port))
+		    (let ((m (format "Cannot open heap file ~s" fname)))
+		       (error (if (pair? *src-files*)
+				  (car *src-files*)
+				  "-")
+			  m *lib-dir*)
+		       (compiler-exit 6))
+		    (begin
+		       (verbose 2 "      [reading " fname "]" #\Newline)
+		       (unwind-protect
+			  (let* ((Envs (input-obj port))
+				 (_ (unless (and (vector? Envs)
+						 (=fx (vector-length Envs) 7))
+				       (error heap "Corrupted heap" Envs)))
+				 (target (vector-ref Envs 0))
+				 (version (vector-ref Envs 1))
+				 (specific (vector-ref Envs 2))
+				 (Genv (vector-ref Envs 3))
+				 (Tenv (vector-ref Envs 4))
+				 (includes (vector-ref Envs 5))
+				 (ccopts (vector-ref Envs 6)))
+			     ;; check the target languages
+			     (unless (backend-heap-compatible? target)
+				(error heap
+				   "Target language mismatch"
+				   (format "~a vs. ~a"
+				      target
+				      (backend-language (the-backend)))))
+			     (unless (compatible-bigloo-version? version)
+				(error *heap-name*
+				   "Release mismatch"
+				   (format "Heap is `~a', Bigloo is `~a'"
+				      version
+				      *bigloo-version*)))
+			     (unless (compatible-bigloo-specific-version? specific)
+				(error *heap-name*
+				   "Specific version mismatch"
+				   (format "Heap is `~a', Bigloo is `~a'"
+				      specific
+				      *bigloo-specific-version*)))
+			     ;; @label heap class handling@
+			     ;; The function add-Tenv! manages the import
+			     ;; of class definitions. That is, if the additional
+			     ;; heap contains class definitions, add-Tenv!
+			     ;; creates the accessors for that classes. Note
+			     ;; that set-Tenv! *doesn't* do the same job, it
+			     ;; supposes that the env doesn't contain classes
+			     (assert (Tenv) (hashtable? Tenv))
+			     (assert (Genv) (hashtable? Genv))
+			     (add-tenv! Tenv)
+			     (add-genv! Genv)
+			     ;; in jvm mode, we have to propagate
+			     ;; the package/module association
+			     (when (backend-qualified-types (the-backend))
+				(for-each-global! env
+				   global-package-and-qualified-type-set!))
+			     ;; we add all the heap modules
+			     (hashtable-for-each
+				Genv
+				(lambda (k bucket)
+				   (for-each (lambda (new)
+						(heap-module-list
+						   (global-module new)))
+				      (cdr bucket))))
+			     ;; we store the list of includes
+			     (unless (eq? *pass* 'make-heap)
+				(set! *additional-include-foreign*
+				   (append *additional-include-foreign*
+				      includes))
+				(set! *cc-options*
+				   (delete-duplicates
+				      (append *cc-options* ccopts))))
+			     #t)
+			  (close-binary-port port)))))
+	     (let ((m (format "Cannot open heap file ~s" heap)))
+		(error (if (pair? *src-files*) (car *src-files*) "-") m *lib-dir*)
+		(compiler-exit 6))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *heap-module-list* ...                                           */

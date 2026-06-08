@@ -1,6 +1,6 @@
 (module fib
    (extern "C"
-      (macro printf::int (::string ::string ::long) "printf"))
+      (macro printf::int ::string ::string ::long))
    (main))
 
 (define (main argv::pair-nil)

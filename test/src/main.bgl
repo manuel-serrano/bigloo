@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Fri Jun  5 15:34:16 2026 (serrano)                */
+;*    Last change :  Mon Jun  8 08:43:35 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -35,8 +35,14 @@
    (import "./thread.bgl" . thread)
    (import "./unicode.bgl" . unicode)
    (import "./vector.bgl" . vector)
-   
+
+   ;; library tests
    (cond-expand ((library ssl) (import "./ssl0.bgl" . ssl0)))
+
+   ;; backend tests
+   (cond-expand (C (import "./extern_c.bgl" . c)))
+   (cond-expand (jvm (import "./extern_jvm.bgl" . jvm)))
+   (cond-expand (wasm (import "./extern_wasm.bgl" . wasm)))
    
    (main))
 
@@ -86,7 +92,12 @@
                        (cond-expand
                           ((library ssl) (ssl0.test verbose tests))
                           (else (cons 0 0)))))
-          (res (append res-core res-libs))
+          (res-extern (list
+                         (cond-expand
+                            (C (c.test verbose tests))
+                            (jvm (jvm.test verbose tests))
+                            (wasm (jvm.test verbose tests)))))
+          (res (append res-core res-libs res-extern))
 	  (success (apply + (map car (filter (lambda (x) x) res))))
 	  (failures (apply + (map cdr (filter (lambda (x) x) res))))
 	  (backend (cond-expand

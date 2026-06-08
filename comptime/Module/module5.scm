@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sun Jun  7 06:33:44 2026 (serrano)                */
+;*    Last change :  Mon Jun  8 09:13:18 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -318,7 +318,7 @@
 	    ((c-function)
 	     (with-access::CDef def (name type infix args macro)
 		(declare-global-cfun! env id alias 'foreign name type args
-		   #f macro expr expr)))
+		   infix macro expr expr)))
 	    ((c-variable)
 	     (with-access::CDef def (name type macro)
 		(declare-global-cvar! env id alias 'foreign name type macro expr expr)))
@@ -476,7 +476,8 @@
 				      (trace-item "kind=" kind)
 				      (trace-item "mod=" (-> dmod id))
 				      (trace-item "scope=" scope)
-				      (declare-type! id name 'C))))))
+				      (unless (type-exists? id)
+					 (declare-type! id name 'C)))))))
 	       types)
 
 	    ;; declare all classes
@@ -739,11 +740,11 @@
 ;*    parse-extern-c-clause ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (parse-extern-c-clause clause mod::Module x::pair)
-
+   
    (define (parse-include string clause mod::Module)
       (unless (member string *include-foreign*)
 	 (set! *include-foreign* (cons string *include-foreign*))))
-
+   
    (define (illegal-args args src mod)
       (let loop ((args args))
 	 (cond
@@ -764,7 +765,7 @@
 		(if (string? type)
 		    (loop (cdr args))
 		    args))))))
-      
+   
    (define (parse-function macro infix ident args name clause mod::Module)
       (multiple-value-bind (id type)
 	 (parse-ident ident clause mod)
@@ -799,7 +800,7 @@
 		   (hashtable-put! exports (symbol->string! id) decl)
 		   (hashtable-put! decls (symbol->string! id) decl)
 		   (hashtable-put! defs (symbol->string! id) def)))))))
-
+   
    (define (parse-variable macro ident name clause mod::Module)
       (multiple-value-bind (id type)
 	 (parse-ident ident clause mod)
@@ -813,7 +814,7 @@
 			    (type (string->symbol type))
 			    (kind 'c-variable)
 			    (expr clause)
-			    (ronly #t)
+			    (ronly #f)
 			    (decl decl)
 			    (args '())
 			    (name name)
@@ -824,14 +825,14 @@
 			     (alias id)
 			     (mod mod)
 			     (expr clause)
-			     (ronly #t)
+			     (ronly #f)
 			     (scope 'extern)
 			     (def def))))
 		(with-access::Module mod (decls defs exports)
 		   (hashtable-put! exports (symbol->string! id) decl)
 		   (hashtable-put! decls (symbol->string! id) decl)
 		   (hashtable-put! defs (symbol->string! id) def)))))))
-
+   
    (define (parse-type id name clause mod::Module)
       (co-instantiate
 	    ((def (instantiate::TDef
@@ -855,36 +856,73 @@
 	    (hashtable-put! decls (symbol->string! id) decl)
 	    (hashtable-put! defs (symbol->string! id) def))
 	 (parse-c-foreign-type clause)))
-
-   (match-case clause
-      ((include (and (? string?) ?string))
-       (parse-include string clause mod))
-      ((type (and (? symbol?) ?id) (and (? string?) ?name))
-       (parse-type id name clause mod))
-      ((type (and (? symbol?) ?id) ?- (and (? string?) ?name))
-       (parse-type id name clause mod))
-      ((macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
-       (parse-function #t #f ident args name clause mod))
-      ((infix macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
-       (parse-function #t #t ident args name clause mod))
-      ((macro (and (? symbol?) ?ident) (and (? string?) ?name))
-       (parse-variable #t ident name clause mod))
-      ((export . ?-)
-       (parse-c-foreign-export clause #t))
-      (((and (? symbol?) ?ident) ?args (and (? string?) ?name))
-       (parse-function #f #f ident args name clause mod))
-      (((and (? symbol?) ?ident) (and (? string?) ?name))
-       (parse-variable #f ident name clause mod))
-      (else
-       (error/loc mod "Illegal extern \"C\" module clause" clause x))))
+   
+   (define (parse-args id::symbol args::pair-nil mod clause x)
+      (cond
+	 ((null? args)
+	  (values '() (symbol->string id)))
+	 ((not (list? args))
+	  (error/loc mod "Illegal extern \"C\" module clause" clause x))
+	 ((string? (car (last-pair args)))
+	  (let* ((name (car (last-pair args)))
+		 (args (drop-last args 1)))
+	     (if (every symbol? args)
+		 (values args name)
+		 (error/loc mod "Illegal extern \"C\" module clause" clause x))))
+	 (else
+	  (values args (symbol->string id)))))
+   
+   (with-trace 'module5 "parse-extern-c-clause"
+      (trace-item "clause=" clause)
+      (match-case clause
+	 ((include (and (? string?) ?string))
+	  (parse-include string clause mod))
+	 ((export . ?-)
+	  (parse-c-foreign-export clause #t))
+	 ;; noew module5 syntax
+	 ((type (and (? symbol?) ?id))
+	  (parse-type id (symbol->string id) clause mod))
+	 ((type (and (? symbol?) ?id) (and (? string?) ?name))
+	  (parse-type id name clause mod))
+	 ((macro (and (? symbol?) ?ident) . ?args)
+	  (multiple-value-bind (args name)
+	     (parse-args ident args mod clause x)
+	     (parse-function #t #f ident args name clause mod)))
+	 ((infix macro (and (? symbol?) ?ident) . ?args)
+	  (multiple-value-bind (args name)
+	     (parse-args ident args mod clause x)
+	     (parse-function #t #t ident args name clause mod)))
+	 (((and (? symbol?) ?ident) . ?args)
+	  (multiple-value-bind (args name)
+	     (parse-args ident args mod clause x)
+	     (parse-function #f #f ident args name clause mod)))
+	 ((and (? symbol?) ?ident)
+	  (parse-variable #f ident (symbol->string ident) clause mod))
+	 (((and (? symbol?) ?ident) (and (? string?) ?name))
+	  (parse-variable #f ident name clause mod))
+	 ;; compatible module 4 syntax
+	 ((type (and (? symbol?) ?id) ?- (and (? string?) ?name))
+	  (parse-type id name clause mod))
+	 ((macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
+	  (parse-function #t #f ident args name clause mod))
+	 ((infix macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
+	  (parse-function #t #t ident args name clause mod))
+	 ((macro (and (? symbol?) ?ident) (and (? string?) ?name))
+	  (parse-variable #t ident name clause mod))
+	 (((and (? symbol?) ?ident) ?args (and (? string?) ?name))
+	  (parse-function #f #f ident args name clause mod))
+	 (else
+	  (error/loc mod "Illegal extern \"C\" module clause" clause x)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-c ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (module5-extern-plugin-c mod::Module x::pair)
-   (when (memq 'extern (backend-foreign-clause-support (the-backend)))
-      (for-each (lambda (c) (parse-extern-c-clause c mod x)) (cddr x)))
-   '())
+   (with-trace 'module5 "module5-extern-plugin-c"
+      (trace-item "x=" x)
+      (when (memq 'extern (backend-foreign-clause-support (the-backend)))
+	 (for-each (lambda (c) (parse-extern-c-clause c mod x)) (cddr x)))
+      '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    module4-extern-plugin-c ...                                      */

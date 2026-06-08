@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/foreign.scm     */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Module/foreign.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Fri Apr 24 09:31:22 2026 (serrano)                */
+;*    Last change :  Mon Jun  8 09:40:44 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign and extern clauses compilation. Foreign and extern   */
@@ -229,31 +229,33 @@
 ;*    parse-c-foreign-type ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (parse-c-foreign-type type)
-   (match-case type
-      ((type (and (? symbol?) ?id) (and (? string?) ?name))
-       (declare-type! id name 'C))
-      ((type (and (? symbol?) ?id) ?t-exp (and (? string?) ?name))
-       (if (check-c-foreign-type-exp? t-exp)
-	   (let ((ctype (declare-c-type! type id t-exp name))
-		 (loc   (find-location type)))
-	      ;; declare-c-type! can return otherthing than a type
-	      ;; (for instance on type redefinition).
-	      (if (type? ctype)
-		  (let ((accesses (make-ctype-accesses! ctype ctype loc
-				     *module*)))
-		     (foreign-accesses-add! accesses)
-		     ;; if the declared type is an alias to a structure
-		     ;; we automatically create the pending corresponding
-		     ;; aliasing.
-		     (if (and (calias? ctype) (cstruct? (type-alias ctype)))
-			 (parse-c-foreign-type
-			  `(type ,(symbol-append id '*)
-				 ,(symbol-append t-exp '*)
-				 ,(make-pointer-to-name ctype))))))
-	      #unspecified)
-	   (user-error "Parse error" "Illegal `C foreign type'" type '())))
-      (else
-       (user-error "Parse error" "Illegal `C foreign type'" type '()))))
+   (with-trace 'foreign "parse-c-foreign-type"
+      (trace-item "type=" type)
+      (match-case type
+	 ((type (and (? symbol?) ?id) (and (? string?) ?name))
+	  (declare-type! id name 'C))
+	 ((type (and (? symbol?) ?id) ?t-exp (and (? string?) ?name))
+	  (if (check-c-foreign-type-exp? t-exp)
+	      (let ((ctype (declare-c-type! type id t-exp name))
+		    (loc (find-location type)))
+		 ;; declare-c-type! can return otherthing than a type
+		 ;; (for instance on type redefinition).
+		 (if (type? ctype)
+		     (let ((accesses (make-ctype-accesses! ctype ctype loc
+					*module*)))
+			(foreign-accesses-add! accesses)
+			;; if the declared type is an alias to a structure
+			;; we automatically create the pending corresponding
+			;; aliasing.
+			(if (and (calias? ctype) (cstruct? (type-alias ctype)))
+			    (parse-c-foreign-type
+			       `(type ,(symbol-append id '*)
+				   ,(symbol-append t-exp '*)
+				   ,(make-pointer-to-name ctype))))))
+		 #unspecified)
+	      (user-error "Parse error" "Illegal `C foreign type'" type '())))
+	 (else
+	  (user-error "Parse error" "Illegal `C foreign type'" type '())))))
  
 ;*---------------------------------------------------------------------*/
 ;*    check-c-foreign-type-exp? ...                                    */

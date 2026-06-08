@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Jun  5 09:13:55 2026 (serrano)                */
+;*    Last change :  Mon Jun  8 09:36:52 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -525,7 +525,7 @@
 ;*    module5->ast ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (module5->ast expr genv)
-   (with-trace 'compiler "module5->ast"
+   (with-trace 'module5 "module5->ast"
       (trace-item "expr=" expr)
       (pass-prelude "Module5")
       

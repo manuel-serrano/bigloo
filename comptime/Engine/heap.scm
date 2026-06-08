@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Engine/heap.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Engine/heap.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Wed Mar 11 09:07:49 2026 (serrano)                */
+;*    Last change :  Mon Jun  8 09:56:50 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
@@ -49,57 +49,59 @@
 ;*    read-heap ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (read-heap heap)
-   (let ((fname (if (file-exists? heap)
-		    heap
-		    (find-file/path heap *lib-dir*))))
-      (if (string? fname)
-	  (let ((port (open-input-binary-file fname)))
-	     (if (not (binary-port? port))
-		 (error "dump-heap"
-		    (format "Cannot open heap file ~s" fname)
-		    *lib-dir*)
-		 (unwind-protect
-		    (let* ((Envs (input-obj port))
-			   (_ (if (not (and (vector Envs)
-					    (or (=fx (vector-length Envs) 5)
-						(=fx (vector-length Envs) 7))))
-				  (error "dump-heap" "Corrupted heap" heap)))
-			   (target (vector-ref Envs 0))
-			   (version (vector-ref Envs 1))
-			   (specific (vector-ref Envs 2))
-			   (Genv (vector-ref Envs 3))
-			   (Tenv (vector-ref Envs 4))
-			   (includes (if (=fx (vector-length Envs) 6)
-					 (vector-ref Envs 5)
-					 '())))
-		       ;; @label heap class handling@
-		       ;; The function add-Tenv! manages the import
-		       ;; of class definitions. That is, if the additional
-		       ;; heap contains class definition, add-Tenv! will
-		       ;; create the accessors for that classes. Note
-		       ;; that set-Tenv! *doesn't* do the same job, it
-		       ;; supposes that the env doesn't contain classes
-		       (assert (Tenv) (hashtable? Tenv))
-		       (assert (Genv) (hashtable? Genv))
-		       (if (=fx (vector-length Envs) 6)
-			   (begin
-			      ;(add-tenv! Tenv)
-			      (add-genv! Genv))
-			   (begin
-			      (set-tenv! Tenv)
-			      (set-genv! Genv)))
-		       ;; we add all the heap modules
-		       (hashtable-for-each
-			  Genv
-			  (lambda (k bucket)
-			     (for-each (lambda (new)
-					  (heap-module-list (global-module new)))
-				(cdr bucket))))
-		       (values heap includes Genv Tenv))
-		    (close-binary-port port))))
-	  (let ((m (format "Cannot open heap file ~s" heap)))
-	     (error "dump-heap" m *lib-dir*)
-	     #f))))
+   (with-trace 'heap "read-heap"
+      (trace-item "heap=" heap)
+      (let ((fname (if (file-exists? heap)
+		       heap
+		       (find-file/path heap *lib-dir*))))
+	 (if (string? fname)
+	     (let ((port (open-input-binary-file fname)))
+		(if (not (binary-port? port))
+		    (error "dump-heap"
+		       (format "Cannot open heap file ~s" fname)
+		       *lib-dir*)
+		    (unwind-protect
+		       (let* ((Envs (input-obj port))
+			      (_ (if (not (and (vector Envs)
+					       (or (=fx (vector-length Envs) 5)
+						   (=fx (vector-length Envs) 7))))
+				     (error "dump-heap" "Corrupted heap" heap)))
+			      (target (vector-ref Envs 0))
+			      (version (vector-ref Envs 1))
+			      (specific (vector-ref Envs 2))
+			      (Genv (vector-ref Envs 3))
+			      (Tenv (vector-ref Envs 4))
+			      (includes (if (=fx (vector-length Envs) 6)
+					    (vector-ref Envs 5)
+					    '())))
+			  ;; @label heap class handling@
+			  ;; The function add-Tenv! manages the import
+			  ;; of class definitions. That is, if the additional
+			  ;; heap contains class definition, add-Tenv! will
+			  ;; create the accessors for that classes. Note
+			  ;; that set-Tenv! *doesn't* do the same job, it
+			  ;; supposes that the env doesn't contain classes
+			  (assert (Tenv) (hashtable? Tenv))
+			  (assert (Genv) (hashtable? Genv))
+			  (if (=fx (vector-length Envs) 6)
+			      (begin
+				 ;(add-tenv! Tenv)
+				 (add-genv! Genv))
+			      (begin
+				 (set-tenv! Tenv)
+				 (set-genv! Genv)))
+			  ;; we add all the heap modules
+			  (hashtable-for-each
+			     Genv
+			     (lambda (k bucket)
+				(for-each (lambda (new)
+					     (heap-module-list (global-module new)))
+				   (cdr bucket))))
+			  (values heap includes Genv Tenv))
+		       (close-binary-port port))))
+	     (let ((m (format "Cannot open heap file ~s" heap)))
+		(error "dump-heap" m *lib-dir*)
+		#f)))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    generic-dump-heap ...                                            */
