@@ -25,9 +25,22 @@
 *.mco
 *~
 
+# Doc
+doc/*.html
+doc/objs_c
+doc/bin
+doc/index.sexp
+doc/src/flycheck*.sexp
+doc/examples/*/flycheck*.sexp
+
+# test
+test/src/flycheck*.sexp
+test/src/modules/flycheck*.sexp
+test/test_c
+test/test_jvm
+test/test_wasm
+
 # Misc files
-.hg
-.hgtags
 ChangeLog
 arch/maemo
 arch/debian/makedeb.sh
@@ -90,6 +103,7 @@ comptime/Tools/license.scm
 # runtime
 runtime/Jlib/configure.java
 runtime/Llib/bconfigure-generic.sch
+runtime/Llib/make_lib.wasm.sch
 
 runtime/Wlib/wcnst.wat
 runtime/Wlib/wfixnum.wat
