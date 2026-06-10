@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Object/predicate.scm                */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Object/predicate.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Mon Feb 16 12:23:06 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 13:56:29 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class predicate                                      */
@@ -36,6 +36,7 @@
 	    module_impuse
 	    engine_param)
    (export  (gen-class-pred! ::tclass ::pair ::symbol)
+	    (gen-java-class-pred! ::jclass ::pair ::symbol)
 	    (import-class-pred! ::tclass ::pair ::symbol)
 	    (import-java-class-pred! ::jclass ::pair ::symbol)))
 
@@ -114,19 +115,22 @@
 (define (gen-java-class-pred! class::jclass src-def mclause)
    (with-trace 'jvm "gen-java-class-pred!"
       (trace-item "class=" (jclass-id class))
-      (let* ((id      (jclass-id class))
-	     (id?     (symbol-append id '?))
+      (let* ((id (jclass-id class))
+	     (id? (symbol-append id '?))
 	     (pred-id (symbol-append id '?::bool))
-	     (obj     (mark-symbol-non-user! (gensym 'obj)))
-	     (super   (jclass-its-super class)))
+	     (obj (mark-symbol-non-user! (gensym 'obj))))
+	 
 	 (define (predicate-body)
 	    (make-private-sexp 'instanceof id obj))
+	 
 	 ;; the pragma declaration
 	 (produce-module-clause!
 	    `(,mclause (inline ,pred-id ::obj)))
 	 (produce-module-clause!
-	    `(pragma (,id? (predicate-of ,(jclass-id class)) no-cfa-top (effect))))
-	 ;; we produce the predicat definitions...
+	    `(pragma (,id? (predicate-of ,(jclass-id class))
+			no-cfa-top (effect))))
+	 
+	 ;; produce the predicat definition...
 	 (list
 	    (epairify* `(,(if (inline-pred?) 'define-inline 'define)
 			 (,pred-id ,obj)

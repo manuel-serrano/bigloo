@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/pragma.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Module/pragma.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Tue Mar 31 10:08:40 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 11:59:41 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
@@ -196,6 +196,10 @@
 		 (global-pragma-set! global
 		    (cons 'thread-local
 		       (global-pragma global))))))
+	  ((hidden)
+	   ;; hidden (from user code during ast building) variable
+	   (global-pragma-set! global
+	      (cons (cons 'hidden var) (global-pragma global))))
 	  (else
 	   (user-error "Parse error" "Illegal pragma form" clause '()))))
       (((and (? symbol?) ?key) . ?val)
@@ -230,10 +234,10 @@
 	   (args-noescape global val fun-args-noescape fun-args-noescape-set!))
 	  ((args-retescape)
 	   (args-noescape global val fun-args-retescape fun-args-retescape-set!))
-	  ((hidden)
-	   ;; hidden (from user code during ast building) variable
-	   (global-pragma-set! global
-	      (cons (cons 'hidden var) (global-pragma global))))
+;* 	  ((hidden)                                                    */
+;* 	   ;; hidden (from user code during ast building) variable     */
+;* 	   (global-pragma-set! global                                  */
+;* 	      (cons (cons 'hidden var) (global-pragma global))))       */
 	  ;; MS: removed 13 feb 2026
 ;* 	  ((qualified-type-name)                                       */
 ;* 	   (global-qualified-type-name-set! global val))               */

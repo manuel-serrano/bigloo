@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Sat May 23 09:24:04 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 16:15:29 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -458,7 +458,7 @@
 		       ,@(if (class-info-ctor class-info)
 			     (list `(,(class-info-ctor class-info) ,o))
 			     '())
-		       ;; virtual propertys
+		       ;; virtual properties
 		       ,@(filter-map (lambda (p)
 					(cond
 					   ((not (prop-info-virtual? p))

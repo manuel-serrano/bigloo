@@ -96,7 +96,7 @@
                          (cond-expand
                             (C (c.test verbose tests))
                             (jvm (jvm.test verbose tests))
-                            (wasm (jvm.test verbose tests)))))
+                            (wasm (wasm.test verbose tests)))))
           (res (append res-core res-libs res-extern))
 	  (success (apply + (map car (filter (lambda (x) x) res))))
 	  (failures (apply + (map cdr (filter (lambda (x) x) res))))

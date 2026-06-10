@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Mon Jun  8 09:13:18 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 07:33:04 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -118,12 +118,10 @@
 ;*    module5-import-def ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (module5-import-def mod::Module decl::Decl)
-   (with-trace 'module5-resolve "modulet5-import-def"
-      (trace-item "id=" (-> decl id))
-      (with-access::Decl decl ((dmod mod) def xid id expr)
-	 (if (eq? mod dmod)
-	     def
-	     (module5-get-export-def dmod (or xid id) expr)))))
+   (with-access::Decl decl ((dmod mod) def xid id expr)
+      (if (eq? mod dmod)
+	  def
+	  (module5-get-export-def dmod (or xid id) expr))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-ast! ...                                                 */
@@ -239,7 +237,7 @@
 	       (global-module holder)))))
    
    (define (declare-class-definition! kind id alias scope src def::KDef)
-      (with-trace 'module5 "declare-class-definition!"
+      (with-trace 'module_module5 "declare-class-definition!"
 	 (with-access::KDef def (expr id decl super ctor kkind properties)
 	    (trace-item "id=" id " alias=" alias)
 	    (when (isa? decl Decl)
@@ -286,7 +284,7 @@
 	  id))
    
    (define (declare-definition! kind id type alias mid scope expr def::Def)
-      (with-trace 'module5 "declare-definition!"
+      (with-trace 'module_module5 "declare-definition!"
 	 (trace-item "id=" id)
 	 (trace-item "kind=" kind)
 	 (case kind
@@ -449,7 +447,7 @@
 			(global-library-set! g lib)))))))
       g)
    
-   (with-trace 'module5 "module5-ast!"
+   (with-trace 'module_module5 "module5-ast!"
       (with-access::Module mod (defs imports (mid id))
 	 (trace-item "mid=" mid)
 	 
@@ -526,7 +524,7 @@
 ;*    module5-module-qualified-name-set! ...                           */
 ;*---------------------------------------------------------------------*/
 (define (module5-module-qualified-name-set! mod::Module)
-   (with-trace 'module5 "module5-module-qualified-name-set!"
+   (with-trace 'module_module5 "module5-module-qualified-name-set!"
       (trace-item "mod=" (-> mod id))
       (trace-item "qn=" (-> mod qualified-name))
       (trace-item "path=" (-> mod path))
@@ -568,7 +566,7 @@
 (define (module5-imported-unit mod::Module expand env)
 
    (define (init-module! imod::Module path)
-      (with-trace 'module5 "init-module!"
+      (with-trace 'module_module5 "init-module!"
 	 (trace-item "id=" (-> imod id))
 	 (with-access::Module imod (id checksum version expr)
 	    (module5-expand-and-resolve! imod module5-init-xenv!
@@ -582,7 +580,8 @@
 	    (if (=fx version 5)
 		(module5-checksum! imod)
 		(set! checksum (module-checksum expr '())))
-	    (let ((g (module5-declare-init! env (module-initialization-id id) id)))
+	    (let ((g (module5-declare-init! env
+			(module-initialization-id id) id)))
 	       (with-access::Module imod (heap)
 		  (when (string? heap)
 		     (let ((lib (string->symbol (prefix (basename heap)))))
@@ -590,7 +589,7 @@
 	    `((@ module-initialization ,id) ,checksum ,path))))
 
    (with-access::Module mod (inits path)
-      (with-trace 'module5 "module5-imported-unit"
+      (with-trace 'module_module5 "module5-imported-unit"
 	 (trace-item "path=" path)
 	 (let ((body (map (lambda (m) (init-module! m path)) inits)))
 	    (unit 'imported-modules 12 body #f #f)))))
@@ -637,7 +636,7 @@
 ;*    module5-env ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (module5-env mod::Module)
-   (with-trace 'module5 "module5-env"
+   (with-trace 'module_module5 "module5-env"
       (trace-item (-> mod id))
       (let ((e (assq mod *module5-envs*)))
 	 (if (pair? e)
@@ -661,7 +660,7 @@
 ;*    but build the inline body in the imported module environment.    */
 ;*---------------------------------------------------------------------*/
 (define (module5-imported-inline mod::Module env)
-   (with-trace 'module5-inline "module5-imported-inline"
+   (with-trace 'module_module5 "module5-imported-inline"
       (with-access::Module mod (imports)
 	 (hashtable-for-each imports
 	    (lambda (k decl)
@@ -721,7 +720,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    parse-ident ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (parse-ident id src mod)
+(define (parse-ident id::symbol src mod::Module)
    (let* ((s (symbol->string id))
 	  (l (string-length s)))
       (let loop ((i 0))
@@ -739,7 +738,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    parse-extern-c-clause ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (parse-extern-c-clause clause mod::Module x::pair)
+(define (parse-extern-c-clause version::long clause mod::Module x::pair)
    
    (define (parse-include string clause mod::Module)
       (unless (member string *include-foreign*)
@@ -856,11 +855,14 @@
 	    (hashtable-put! decls (symbol->string! id) decl)
 	    (hashtable-put! defs (symbol->string! id) def))
 	 (parse-c-foreign-type clause)))
+
+   (define (cigloo file x mod)
+      (module5-extern-plugin-preprocessor "cigloo" file x mod))
    
    (define (parse-args id::symbol args::pair-nil mod clause x)
       (cond
 	 ((null? args)
-	  (values '() (symbol->string id)))
+	  (values '() (symbol->name id clause mod)))
 	 ((not (list? args))
 	  (error/loc mod "Illegal extern \"C\" module clause" clause x))
 	 ((string? (car (last-pair args)))
@@ -870,37 +872,62 @@
 		 (values args name)
 		 (error/loc mod "Illegal extern \"C\" module clause" clause x))))
 	 (else
-	  (values args (symbol->string id)))))
-   
-   (with-trace 'module5 "parse-extern-c-clause"
-      (trace-item "clause=" clause)
+	  (values args (symbol->name id clause mod)))))
+
+   (define (symbol->name ident::symbol src mod)
+      (multiple-value-bind (id type)
+	 (parse-ident ident src mod)
+	 (symbol->string id)))
+
+   (define (parse5 clause)
+      (with-trace 'module_module5 "parse-extern-c-clause"
+	 (trace-item "clause=" clause)
+	 (match-case clause
+	    ((include (and (? string?) ?string))
+	     (parse-include string clause mod))
+	    ((import (and (? string?) ?string))
+	     (module5-extern-plugin-c mod
+		(localize clause `(include ,string)))
+	     (module5-extern-plugin-c mod
+		(call-with-input-file (cigloo string clause mod)
+		   read)))
+	    ((export . ?-)
+	     (parse-c-foreign-export clause #t))
+	    ((type (and (? symbol?) ?id))
+	     (parse-type id (symbol->string id) clause mod))
+	    ((type (and (? symbol?) ?id) (and (? string?) ?name))
+	     (parse-type id name clause mod))
+	    ((macro (and (? symbol?) ?ident) . ?args)
+	     (multiple-value-bind (args name)
+		(parse-args ident args mod clause x)
+		(parse-function #t #f ident args name clause mod)))
+	    ((infix macro (and (? symbol?) ?ident) . ?args)
+	     (multiple-value-bind (args name)
+		(parse-args ident args mod clause x)
+		(parse-function #t #t ident args name clause mod)))
+	    ((cnst macro (and (? symbol?) ?ident))
+	     (parse-variable #t ident (symbol->name ident clause mod) clause mod))
+	    ((cnst macro (and (? symbol?) ?ident) (and (? string?) ?name))
+	     (parse-variable #t ident name clause mod))
+	    ((variable (and (? symbol?) ?ident))
+	     (parse-variable #f ident (symbol->name ident x mod) clause mod))
+	    ((variable (and (? symbol?) ?ident) (and (? string?) ?name))
+	     (parse-variable #f ident name clause mod))
+	    (((and (? symbol?) ?ident) . ?args)
+	     (multiple-value-bind (args name)
+		(parse-args ident args mod clause x)
+		(parse-function #f #f ident args name clause mod)))
+	    ((and (? symbol?) ?ident)
+	     (parse-variable #f ident (symbol->name ident x mod) clause mod))
+	    (else
+	     (error/loc mod "Illegal extern \"C\" module clause" clause x)))))
+
+   (define (parse4 clause)
       (match-case clause
 	 ((include (and (? string?) ?string))
 	  (parse-include string clause mod))
-	 ((export . ?-)
-	  (parse-c-foreign-export clause #t))
-	 ;; noew module5 syntax
-	 ((type (and (? symbol?) ?id))
-	  (parse-type id (symbol->string id) clause mod))
 	 ((type (and (? symbol?) ?id) (and (? string?) ?name))
 	  (parse-type id name clause mod))
-	 ((macro (and (? symbol?) ?ident) . ?args)
-	  (multiple-value-bind (args name)
-	     (parse-args ident args mod clause x)
-	     (parse-function #t #f ident args name clause mod)))
-	 ((infix macro (and (? symbol?) ?ident) . ?args)
-	  (multiple-value-bind (args name)
-	     (parse-args ident args mod clause x)
-	     (parse-function #t #t ident args name clause mod)))
-	 (((and (? symbol?) ?ident) . ?args)
-	  (multiple-value-bind (args name)
-	     (parse-args ident args mod clause x)
-	     (parse-function #f #f ident args name clause mod)))
-	 ((and (? symbol?) ?ident)
-	  (parse-variable #f ident (symbol->string ident) clause mod))
-	 (((and (? symbol?) ?ident) (and (? string?) ?name))
-	  (parse-variable #f ident name clause mod))
-	 ;; compatible module 4 syntax
 	 ((type (and (? symbol?) ?id) ?- (and (? string?) ?name))
 	  (parse-type id name clause mod))
 	 ((macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
@@ -909,19 +936,27 @@
 	  (parse-function #t #t ident args name clause mod))
 	 ((macro (and (? symbol?) ?ident) (and (? string?) ?name))
 	  (parse-variable #t ident name clause mod))
+	 ((export . ?-)
+	  (parse-c-foreign-export clause #t))
 	 (((and (? symbol?) ?ident) ?args (and (? string?) ?name))
 	  (parse-function #f #f ident args name clause mod))
+	 (((and (? symbol?) ?ident) (and (? string?) ?name))
+	  (parse-variable #f ident name clause mod))
 	 (else
-	  (error/loc mod "Illegal extern \"C\" module clause" clause x)))))
+	  (error/loc mod "Illegal extern \"C\" module clause" clause x))))
+
+   (if (=fx version 5)
+       (parse5 clause)
+       (parse4 clause)))
    
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-c ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (module5-extern-plugin-c mod::Module x::pair)
-   (with-trace 'module5 "module5-extern-plugin-c"
+   (with-trace 'module_module5 "module5-extern-plugin-c"
       (trace-item "x=" x)
       (when (memq 'extern (backend-foreign-clause-support (the-backend)))
-	 (for-each (lambda (c) (parse-extern-c-clause c mod x)) (cddr x)))
+	 (for-each (lambda (c) (parse-extern-c-clause 5 c mod x)) (cddr x)))
       '()))
 
 ;*---------------------------------------------------------------------*/
@@ -929,14 +964,14 @@
 ;*---------------------------------------------------------------------*/
 (define (module4-extern-plugin-c mod::Module x::pair)
    (when (memq 'extern (backend-foreign-clause-support (the-backend)))
-      (for-each (lambda (c) (parse-extern-c-clause c mod x)) (cdr x)))
+      (for-each (lambda (c) (parse-extern-c-clause 4 c mod x)) (cdr x)))
    '())
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-java-type! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (declare-java-type! j::jklass mod::Module clause)
-   (with-trace 'jvm "declare-java-type"
+   (with-trace 'module_module5 "declare-java-type"
       (with-access::jklass j (id jname package src)
 	 (trace-item "jklass=" id)
 	 (trace-item "mod=" (-> mod id))
@@ -960,7 +995,7 @@
 			    (mod mod)
 			    (expr clause)
 			    (ronly #t)
-			    (scope 'export)
+			    (scope 'extern)
 			    (def def))))
 	       (with-access::Module mod (decls defs exports)
 		  (hashtable-put! exports (symbol->string! id) decl)
@@ -971,14 +1006,19 @@
 ;*    module4-extern-plugin-java ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (module4-extern-plugin-java mod::Module x::pair)
-   
+
    (define (parse-clause clause)
       (match-case clause
 	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
 	  (java-parser clause (-> mod id) '-))
 	 ((or (class ?ident . ?rest)
 	      (abstract-class ?ident . ?rest))
-	  (declare-java-type! (java-parser clause (-> mod id) '-) mod clause))
+	  (let ((jklass (java-parser clause (-> mod id) '-)))
+	     (declare-java-type! jklass mod clause)
+	     (with-access::Module mod (body)
+		(let ((pred (jklass-gen-predicate jklass clause 'export))
+		      (mets (jklass-gen-methods jklass clause 'export)))
+		   (set! body (cons pred body))))))
 	 (else
 	  (error/loc mod "Illegal extern \"C\" module clause" clause x))))
    
@@ -1028,6 +1068,8 @@
 		(cond
 		   ((null? field)
 		    (error/loc mod "Illegal class field" field x))
+		   ((not (pair? f))
+		    (error/loc mod "Illegal class field" field x))
 		   ((memq (car f) modifier-list)
 		    (loop (cdr f) (cons (car f) m)))
 		   (else
@@ -1038,12 +1080,14 @@
 			   (parse-ident ident field mod)
 			   `(field ,@(reverse! m)
 			       ,ident ,(symbol->string id))))
-		       ((field ?mod . ?rest)
+		       ((field ?modf . ?rest)
 			(let ((ident (car (last-pair rest))))
-			   (multiple-value-bind (id type)
-			      (parse-ident ident field mod)
-			      `(field ,@(append (reverse! m) (list mod) (drop-last rest 1))
-				  ,ident ,(symbol->string id)))))
+			   (if (symbol? ident)
+			       (multiple-value-bind (id type)
+				  (parse-ident ident field mod)
+				  `(field ,@(append (reverse! m) (list modf) (drop-last rest 1))
+				      ,ident ,(symbol->string id)))
+			       (error/loc mod "Illegal class field" field x))))
 		       ;; constructor
 		       ((constructor ?id . ?rest)
 			`(constructor ,@(reverse! m)
@@ -1079,53 +1123,8 @@
 		     (pkg (format "~a.~a" pkg id))
 		     (else name))))))
       
-      (define (class-predicate id x)
-	 (let* ((o (gensym 'obj))
-		(fid (fast-id-of-id id (find-location x)))
-		(pid (symbol-append fid '?)))
-	    (localize x
-	       `(define-inline (,(symbol-append pid '::bool) ,(symbol-append o '|::obj|))
-		   ,(make-private-sexp 'instanceof id o)))))
-
-      (define (jigloo file x)
-	 (with-trace 'module5 "jigloo"
-	    (trace-item "file=" file)
-	    (let ((path (if (file-name-absolute? file)
-			    file
-			    (make-file-name (dirname (-> mod path)) file))))
-	       (trace-item "path=" path)
-	       (let* ((cache-dir (make-file-path *module-cache-dir* "class"))
-		      (lock-path (make-file-name cache-dir "LOCK"))
-		      (cache (make-file-name cache-dir
-				(string-append (string-replace file #\/ #\_)
-				   ".bgh"))))
-		  (trace-item "cache=" cache)
-		  (make-directories cache-dir)
-		  (unless (directory? cache-dir)
-		     (error/loc mod "Cannot create cache directory"
-			cache-dir x))
-		  (call-with-output-file lock-path
-		     (lambda (lock)
-			(lockf lock 'lock)
-			(unwind-protect
-			   (if (or (not (file-exists? cache))
-				   (and (file-exists? path)
-					(<elong (file-modification-time cache)
-					   (file-modification-time path))))
-			       (let ((cmd (format "~a -cp ~a -s --module5 ~a -o ~a" *jvm-jigloo*
-					     (dirname (-> mod path))
-					     (if (file-exists? path) path file)
-					     cache)))
-				  (trace-item "cmd=" cmd)
-				  (if (=fx (system cmd) 0)
-				      cache
-				      (begin
-					 (when (file-exists? cache)
-					    (delete-file cache))
-					 (error/loc mod "Cannot generate Java header"
-					    file x))))
-			       cache)
-			   (lockf lock 'ulock))))))))
+      (define (jigloo file x mod)
+	 (module5-extern-plugin-preprocessor "jigloo" file x mod))
 
       (match-case clause
 	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
@@ -1134,8 +1133,9 @@
 	      (abstract-class ?ident . ?rest))
 	  (multiple-value-bind (cpkg name id super)
 	     (parse-class5-ident ident)
-	     (let ((clazz (class5->class4 clause cpkg name id super rest))
-		   (pred (class-predicate id clause)))
+	     (let* ((clazz (class5->class4 clause cpkg name id super rest))
+		   (jklass::jklass (java-parser clazz (-> mod id) '|.|))
+		   (pred (jklass-gen-predicate jklass clause 'export)))
 		(trace-item "ident=" ident)
 		(trace-item "id=" id)
 		(trace-item "super=" super)
@@ -1144,20 +1144,19 @@
 		   (if (>fx (length clazz) 5)
 		       (append (take clazz 5) '("..."))
 		       clazz))
-		(let ((jklazz (java-parser clazz (-> mod id) '|.|)))
-		   (declare-java-type! jklazz mod clause))
+		(declare-java-type! jklass mod clause)
 		(with-access::Module mod (body)
 		   (set! body (cons pred body))))))
 	 ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
  	  (java-declare-array clause ident of (-> mod id)))
 	 ((import (and ?class (? symbol?)))
 	  (module5-extern-plugin-java mod
-	     (call-with-input-file (jigloo (symbol->string class) clause)
+	     (call-with-input-file (jigloo (symbol->string class) clause mod)
 		read)))
 	 (else
 	  (error/loc mod "Illegal extern \"java\" module clause" clause x))))
    
-   (with-trace 'jvm "module5-extern-plugin-java"
+   (with-trace 'module_module5 "module5-extern-plugin-java"
       (trace-item "module=" (-> mod id))
       (when (memq 'java (backend-foreign-clause-support (the-backend)))
 	 (match-case (cddr x)
@@ -1170,6 +1169,53 @@
 	    (else
 	     (for-each (lambda (c) (parse-clause c mod x #f)) (cddr x)))))
       '()))
+
+;*---------------------------------------------------------------------*/
+;*    module5-extern-plugin-preprocessor ...                           */
+;*---------------------------------------------------------------------*/
+(define (module5-extern-plugin-preprocessor cmd::bstring file::bstring x mod::Module)
+   (with-trace 'module_module5 "module5-extern-plugin-preprocessor"
+      (trace-item "cmd=" cmd)
+      (trace-item "file=" file)
+      (let ((path (if (file-name-absolute? file)
+		      file
+		      (make-file-name (dirname (-> mod path)) file))))
+	 (trace-item "path=" path)
+	 (let* ((cache-dir (make-file-path *module-cache-dir* "preprocessor"))
+		(lock-path (make-file-name cache-dir "LOCK"))
+		(cache (make-file-name cache-dir
+			  (string-append (string-replace file #\/ #\_)
+			     ".bgh"))))
+	    (trace-item "cache=" cache)
+	    (make-directories cache-dir)
+	    (unless (directory? cache-dir)
+	       (error/loc mod "Cannot create cache directory"
+		  cache-dir x))
+	    (call-with-output-file lock-path
+	       (lambda (lock)
+		  (lockf lock 'lock)
+		  (unwind-protect
+		     (if (or (not (file-exists? cache))
+			     (and (file-exists? path)
+				  (<elong (file-modification-time cache)
+				     (file-modification-time path))))
+			 (let ((cmd (format "~a/~a -cp ~a -s --module5 ~a -o ~a"
+				       (bigloo-config 'binary-directory)
+				       cmd
+				       (dirname (-> mod path))
+				       (if (file-exists? path) path file)
+				       cache)))
+			    (trace-item "cmd=" cmd)
+			    (if (=fx (system cmd) 0)
+				cache
+				(begin
+				   (when (file-exists? cache)
+				      (delete-file cache))
+				   (error/loc mod
+				      (format "~a Cannot preprocess" cmd)
+				      file x))))
+			 cache)
+		     (lockf lock 'ulock))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-java-finalizer ...                         */
@@ -1278,16 +1324,20 @@
    (with-access::Module mod (decls (mid id))
       (hashtable-for-each decls
 	 (lambda (k d)
-	    (with-access::Decl d ((dmod mod) id attributes scope)
+	    (with-access::Decl d ((dmod mod) id attributes scope def)
 	       (when (and (eq? dmod mod) (pair? attributes))
 		  (let* ((m (if (eq? scope 'extern) 'foreign mid))
 			 (g (find-global/module env id m)))
-		     (if (isa? g global)
+		     (cond
+			((isa? g global)
 			 (for-each (lambda (p)
 				      (set-global-pragma-property! g p p))
-			    attributes)
+			    attributes))
+			((isa? def JDef)
+			 #unspecified)
+			(else
 			 (error/loc mod "Cannot find global definition" id
-			    attributes)))))))))
+			    attributes))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *heap4-modules* ...                                              */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/cigloo/Translate/declaration.scm     */
+;*    .../project/bigloo/5.0.x/cigloo/Translate/declaration.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov 29 16:27:51 1995                          */
-;*    Last change :  Mon Jul 31 10:15:58 2006 (serrano)                */
+;*    Last change :  Tue Jun  9 08:35:47 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The translation of the declarations                              */
 ;*=====================================================================*/
@@ -21,23 +21,21 @@
 	    engine_param
 	    tools_speek)
    (export  (translate-declaration <ast>)
-	    (typedef-sspec?        <sspec>)))
+	    (typedef-sspec? <sspec>)))
 
 ;*---------------------------------------------------------------------*/
 ;*    translate-declaration ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (translate-declaration ast)
    (verbose 3 "translate-declaration: " ast #\Newline)
-   (let* ((spec  (declare-spec ast))
-	  (dil   (declare-init-decl-list ast))
+   (let* ((spec (declare-spec ast))
+	  (dil (declare-init-decl-list ast))
 	  (sspec (storage-class-spec-of-decl-spec spec)))
       (cond
 	 ((and (pair? sspec)
 	       (case (storage-class-spec-value (car sspec))
-		  ((static)
-		   #t)
-		  (else
-		   #f)))
+		  ((static) #t)
+		  (else #f)))
 	  #unspecified)
 	 (else
 	  (if (null? dil)
@@ -51,7 +49,7 @@
 			       (translate-decl decl spec))
 			      (?decl
 			       (translate-decl decl spec))))
-			dil))))))
+		 dil))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    function-declaration? ...                                        */
@@ -94,12 +92,9 @@
 ;*---------------------------------------------------------------------*/
 (define (typedef-sspec? sspec)
    (cond
-      ((null? sspec)
-       #f)
-      ((eq? (storage-class-spec-value (car sspec)) 'typedef)
-       #t)
-      (else
-       (typedef-sspec? (cdr sspec)))))
+      ((null? sspec) #f)
+      ((eq? (storage-class-spec-value (car sspec)) 'typedef) #t)
+      (else (typedef-sspec? (cdr sspec)))))
        
 ;*---------------------------------------------------------------------*/
 ;*    translate-decl ...                                               */
@@ -134,8 +129,13 @@
 	  (begin
 	     (putprop! sv-id 'fun-processed #t)
 	     (verbose 1 "   " v-id #\Newline)
-	     (fprint *oport* "   (" (if *macro-variable* "macro " "")
-		     v-id "::" (type-id type) " \"" v-id "\")")))))
+	     (if (=fx *module* 4)
+		 (fprint *oport* "   ("
+		    (if *macro-variable* "macro " "")
+		    v-id "::" (type-id type) " \"" v-id "\")")
+		 (fprint *oport* "   ("
+		    (if *macro-variable* "cnst macro " "variable ")
+		    "$" v-id "::" (type-id type) " \"" v-id "\")"))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    translate-typedef-declaration ...                                */

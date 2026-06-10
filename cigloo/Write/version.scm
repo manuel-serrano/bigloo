@@ -1,11 +1,11 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/cigloo/Write/version.scm                    */
+;*    serrano/prgm/project/bigloo/5.0.x/cigloo/Write/version.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 12 14:03:51 1995                          */
-;*    Last change :  Fri Dec  1 10:11:31 1995 (serrano)                */
+;*    Last change :  Tue Jun  9 08:15:29 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
-;*    La version de Bigloo.                                            */
+;*    Cigloo version.                                                  */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -41,10 +41,7 @@
 	"a `C->Bigloo' translator"
 	(if (char=? (string-ref *cigloo-date* 0) #\space)
 	    (substring *cigloo-date* 1 (string-length *cigloo-date*))
-	    *cigloo-date*)
-	*cigloo-author*
-	"email:"
-	*cigloo-email*)
+	    *cigloo-date*))
    (display-to-column "" 79 #\-)
    (newline)
    (newline))

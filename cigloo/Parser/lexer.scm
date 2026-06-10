@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/cigloo/Parser/lexer.scm              */
+;*    serrano/prgm/project/bigloo/5.0.x/cigloo/Parser/lexer.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 24 11:36:25 1995                          */
-;*    Last change :  Sun Sep  7 10:15:25 2014 (serrano)                */
+;*    Last change :  Tue Jun  9 09:15:21 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The C lexer                                                      */
 ;*=====================================================================*/
@@ -103,6 +103,8 @@
 
       ;; comment
       ((: "/*" (* (or (out #\*) (: (+ #\*) (out #\/ #\*)))) (+ #\*) "/")
+       (ignore))
+      ((: "//" (* all))
        (ignore))
 
       ;; __extension__

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/cigloo/Engine/translate.scm          */
+;*    .../prgm/project/bigloo/5.0.x/cigloo/Engine/translate.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 24 10:53:17 1995                          */
-;*    Last change :  Mon Jul 31 10:08:20 2006 (serrano)                */
+;*    Last change :  Tue Jun  9 08:35:19 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The translation on an input-port                                 */
 ;*=====================================================================*/
@@ -93,17 +93,15 @@
 ;*    translate-ast ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (translate-ast ast)
-  
    (if (not (ast? ast))
        'ignore
        (ast-case ast
 	  ((fun-def)
-       
 	   (translate-function-definition ast))
 	  ((declare)
 	   (translate-declaration ast))
 	  (else
 	   (error/ast "cigloo"
-		      "Don't know what to do with this expression"
-		      ast)))))
+	      "Don't know what to do with this expression"
+	      ast)))))
 	    

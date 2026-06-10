@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/sexp.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/sexp.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Tue Apr 28 09:30:05 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 11:24:09 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -112,7 +112,7 @@
 ;*    `site' is a information on the place the sexp takes place        */
 ;*---------------------------------------------------------------------*/
 (define (sexp->node exp stack loc site genv)
-   (with-trace 'ast "sexp->node"
+   (with-trace 'ast_sexp "sexp->node"
       (trace-item "exp=" exp)
       (trace-item "stack=" (map shape stack))
       (trace-item "loc=" loc)
@@ -170,7 +170,7 @@
 ;*    special-form->node ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (special-form->node exp::pair stack::pair-nil loc site genv)
-   (with-trace 'ast "special-form->node"
+   (with-trace 'ast_sexp "special-form->node"
       (trace-item "exp=" exp)
       (let ((s (car exp)))
 	 (if (or (find-local s stack)
@@ -471,7 +471,7 @@
 ;*    optimization->node ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (optimization->node exp stack loc site genv)
-   (with-trace 'ast "optimization->node"
+   (with-trace 'ast_sexp "optimization->node"
       (trace-item "exp=" exp)
       (match-case exp
 	 ;; if
@@ -714,7 +714,7 @@
 ;*    call->node ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (call->node exp stack loc site genv)
-   (with-trace 'ast "call->node"
+   (with-trace 'ast_sexp "call->node"
       (trace-item "expr=" exp)
       (let ((caller (car exp))
 	    (loc (find-location/loc exp loc)))

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/cigloo/Translate/type.scm            */
+;*    serrano/prgm/project/bigloo/5.0.x/cigloo/Translate/type.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 28 10:33:46 1995                          */
-;*    Last change :  Fri Nov  4 12:10:46 2011 (serrano)                */
+;*    Last change :  Tue Jun  9 08:20:23 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type translation                                             */
 ;*=====================================================================*/
@@ -358,13 +358,13 @@
 	     new-type))))
 
 ;*---------------------------------------------------------------------*/
-;*    translate-type ...                                               */
+;*    translate-type4 ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (translate-type type)
+(define (translate-type4 type)
    (define (translate-typedef-t type)
       (let ((alias (typedef-t-alias type)))
 	 (fprint *oport* "   (type " (type-id type) " " (type-id alias) " \""
-		 (type-c-name type) "\")")))
+	    (type-c-name type) "\")")))
    (define (get-aliased-type type)
       (if (typedef-t? type)
 	  (get-aliased-type (typedef-t-alias type))
@@ -379,149 +379,160 @@
 	  (if (member (type-c-name ptr) *no-type*)
 	      'nothing
 	      (fprint *oport*
-		      "   (type "
-		      (type-id ptr)
-		      " (pointer "
-		      (type-id (pointer-t-type ptr))
-		      ") \""
-		      (type-c-name ptr)
-		      "\")"))))
+		 "   (type "
+		 (type-id ptr)
+		 " (pointer "
+		 (type-id (pointer-t-type ptr))
+		 ") \""
+		 (type-c-name ptr)
+		 "\")"))))
    (define (translate-pointer-function-t ptr)
       (if (member (type-c-name ptr) *no-type*)
 	  'nothing
 	  (fprint *oport*
-		  "   (type "
-		  (type-id ptr)
-		  " (function "
-		  (type-id (function-t-to (pointer-t-type ptr)))
-		  " "
-		  (map type-id (function-t-from (pointer-t-type ptr)))
-		  ") \""
-		  (type-c-name ptr)
-		  "\")")))
+	     "   (type "
+	     (type-id ptr)
+	     " (function "
+	     (type-id (function-t-to (pointer-t-type ptr)))
+	     " "
+	     (map type-id (function-t-from (pointer-t-type ptr)))
+	     ") \""
+	     (type-c-name ptr)
+	     "\")")))
    (define (translate-function-t fun)
       (if (member (type-c-name fun) *no-type*)
 	  'nothing
 	  (fprint *oport*
-		  "   (type "
-		  (type-id fun)
-		  " \""
-		  (type-c-name fun)
-		  "\")")))
+	     "   (type "
+	     (type-id fun)
+	     " \""
+	     (type-c-name fun)
+	     "\")")))
    (define (translate-struct-t struct)
       (if (null? (struct-t-fields struct))
 	  (warning "cigloo"
-		   "incomplete struct type -- "
-		   (struct-t-c-name struct)))
+	     "incomplete struct type -- "
+	     (struct-t-c-name struct)))
       (if (member (type-c-name struct) *no-type*)
 	  'nothing
 	  (begin
 	     (fprin *oport*
-		    "   (type "
-		    (type-id struct)
-		    (if (eq? (struct-t-class struct) 'struct)
-			" (struct"
-			" (union"))
+		"   (type "
+		(type-id struct)
+		(if (eq? (struct-t-class struct) 'struct)
+		    " (struct"
+		    " (union"))
 	     (for-each (lambda (field)
 			  (fprin *oport*
-				 " ("
-				 (cdr field)
-				 "::"
-				 (type-id (car field))
-				 " \""
-				 (cdr field)
-				 "\")"))
-		       (struct-t-fields struct))
+			     " ("
+			     (cdr field)
+			     "::"
+			     (type-id (car field))
+			     " \""
+			     (cdr field)
+			     "\")"))
+		(struct-t-fields struct))
 	     (fprint *oport*
-		     ") \""
-		     (type-c-name struct)
-		     "\")"))))
+		") \""
+		(type-c-name struct)
+		"\")"))))
    (define (translate-enum-t enum)
       (if (null? (enum-t-fields enum))
 	  (warning "cigloo"
-		   "incomplete enum type -- "
-		   (enum-t-c-name enum)))
+	     "incomplete enum type -- "
+	     (enum-t-c-name enum)))
       (cond
 	 ((member (type-c-name enum) *no-type*)
 	  'nothing)
 	 (*int-enum*
 	  (fprint *oport*
-		  "   (type "
-		  (type-id enum)
-		  " int "
-		  "\""
-		  (type-c-name enum)
-		  "\")")
+	     "   (type "
+	     (type-id enum)
+	     " int "
+	     "\""
+	     (type-c-name enum)
+	     "\")")
 	  (for-each (lambda (field)
 		       (fprint *oport*
-			       "   (macro "
-			       (ident-id field)
-			       "::int \""
-			       (ident-id field)
-			       "\")"))
-		    (enum-t-fields enum)))
+			  "   (macro "
+			  (ident-id field)
+			  "::int \""
+			  (ident-id field)
+			  "\")"))
+	     (enum-t-fields enum)))
 	 (else
 	  (fprin *oport*
-		 "   (type "
-		 (type-id enum)
-		 " (enum")
+	     "   (type "
+	     (type-id enum)
+	     " (enum")
 	  (for-each (lambda (field)
 		       (fprin *oport*
-			      " ("
-			      (ident-id field)
-			      " \""
-			      (ident-id field)
-			      "\")"))
-		    (enum-t-fields enum))
+			  " ("
+			  (ident-id field)
+			  " \""
+			  (ident-id field)
+			  "\")"))
+	     (enum-t-fields enum))
 	  (fprint *oport* ") \""
-		  (type-c-name enum)
-		  "\")")
+	     (type-c-name enum)
+	     "\")")
 	  (if *enum-macros*
 	      (for-each (lambda (field)
 			   (fprint *oport*
-				   "   (macro "
-				   (ident-id field)
-				   "::"
-				   (type-id enum)
-				   " \""
-				   (ident-id field)
-				   "\")"))
-			(enum-t-fields enum))))))
+			      "   (macro "
+			      (ident-id field)
+			      "::"
+			      (type-id enum)
+			      " \""
+			      (ident-id field)
+			      "\")"))
+		 (enum-t-fields enum))))))
    (define (translate-array-t array)
       (if (member (type-c-name array) *no-type*)
 	  'nothing
 	  (fprint *oport*
-		  "   (type "
-		  (type-id array)
-		  " (array "
-		  (type-id (array-t-type array))
-		  ") \""
-		  (type-c-name array)
-		  "\")")))
+	     "   (type "
+	     (type-id array)
+	     " (array "
+	     (type-id (array-t-type array))
+	     ") \""
+	     (type-c-name array)
+	     "\")")))
    (type-case type
-	      ((typedef-t)
-	       (translate-typedef-t type))
-	      ((simple-t)
-	       #unspecified)
-	      ((pointer-t)
-	       (if (function-t? (pointer-t-type type))
-		   (translate-pointer-function-t type)
-		   (translate-pointer-t type)))
-	      ((function-t)
-	       (translate-function-t type))
-	      ((array-t)
-	       (translate-array-t type))
-	      ((struct-t)
-	       (translate-struct-t type))
-	      ((enum-t)
-	       (translate-enum-t type))
-	      (else
-	       #unspecified)))
+      ((typedef-t)
+       (translate-typedef-t type))
+      ((simple-t)
+       #unspecified)
+      ((pointer-t)
+       (if (function-t? (pointer-t-type type))
+	   (translate-pointer-function-t type)
+	   (translate-pointer-t type)))
+      ((function-t)
+       (translate-function-t type))
+      ((array-t)
+       (translate-array-t type))
+      ((struct-t)
+       (translate-struct-t type))
+      ((enum-t)
+       (translate-enum-t type))
+      (else
+       #unspecified)))
+
+;*---------------------------------------------------------------------*/
+;*    translate-type5 ...                                              */
+;*---------------------------------------------------------------------*/
+(define (translate-type5 type)
+   (type-case type
+      ((typedef-t)
+       (fprint *oport* "   (type " (type-id type) " \"" (type-c-name type) "\")"))
+      (else #unspecified)))
 
 ;*---------------------------------------------------------------------*/
 ;*    translate-types! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (translate-types!)
-   (for-each translate-type (reverse! *Tlist*))
+   (if (=fx *module* 4)
+       (for-each translate-type4 (reverse! *Tlist*))
+       (for-each translate-type5 (reverse! *Tlist*)))
    (reset-type-list!)
    #unspecified)

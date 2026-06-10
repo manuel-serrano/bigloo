@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/dump.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/dump.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Sun Oct  5 08:21:34 2025 (serrano)                */
+;*    Last change :  Tue Jun  9 14:43:34 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -124,36 +124,35 @@
 (define-method (node->sexp node::app)
    (node->sexp-hook node)
    (location-shape (node-loc node)
-		   (cond
-		      (*type-shape?*
-		       `(,(node->sexp (app-fun node))
-			 ,@(if *access-shape?*
-			       `(side-effect: ,(side-effect? node))
-			       '())
-			 ,@(if *alloc-shape?*
-			       `(stackable: (app-stackable node))
-			       '())
-			 ,(list type: (shape (node-type node)))
-			 ,@(if (cfun? (variable-value
-					 (var-variable (app-fun node))))
-			       (let ((cf (variable-value
-					    (var-variable (app-fun node)))))
-				  `((args-type:
-				       ,(map type-id (cfun-args-type cf)))))
-			       '())
-			 ,@(map node->sexp (app-args node))))
-		      (*access-shape?*
-		       `(,(node->sexp (app-fun node))
-			 side-effect: ,(side-effect? node)
-			 stackable: ,(app-stackable node)
-			 ,@(map node->sexp (app-args node))))
-		      (*alloc-shape?*
-		       `(,(node->sexp (app-fun node))
-			 stackable: ,(app-stackable node)
-			 ,@(map node->sexp (app-args node))))
-		      (else
-		       `(,(node->sexp (app-fun node))
-			 ,@(map node->sexp (app-args node)))))))
+      (cond
+	 (*type-shape?*
+	  `(,(node->sexp (app-fun node))
+	    ,@(if *access-shape?*
+		  `(side-effect: ,(side-effect? node))
+		  '())
+	    ,@(if *alloc-shape?*
+		  `(stackable: (app-stackable node))
+		  '())
+	    ,(list type: (shape (node-type node)))
+	    ,@(if (cfun? (variable-value
+			    (var-variable (app-fun node))))
+		  (let ((cf (variable-value
+			       (var-variable (app-fun node)))))
+		     `((args-type: ,(map type-id (cfun-args-type cf)))))
+		  '())
+	    ,@(map node->sexp (app-args node))))
+	 (*access-shape?*
+	  `(,(node->sexp (app-fun node))
+	    side-effect: ,(side-effect? node)
+	    stackable: ,(app-stackable node)
+	    ,@(map node->sexp (app-args node))))
+	 (*alloc-shape?*
+	  `(,(node->sexp (app-fun node))
+	    stackable: ,(app-stackable node)
+	    ,@(map node->sexp (app-args node))))
+	 (else
+	  `(,(node->sexp (app-fun node))
+	    ,@(map node->sexp (app-args node)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::app-ly ...                                          */

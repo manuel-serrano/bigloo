@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/cigloo/Engine/engine.scm             */
+;*    serrano/prgm/project/bigloo/5.0.x/cigloo/Engine/engine.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 12 15:53:47 1995                          */
-;*    Last change :  Thu Nov  4 08:05:19 1999 (serrano)                */
+;*    Last change :  Tue Jun  9 08:17:40 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We have read the argument line. We start the real compilation    */
 ;*    process.                                                         */
@@ -54,25 +54,34 @@
 ;*    engine ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (engine)
-   ;(bigloo-debug-set! 300)
-   ;; first of all, we emit identification comment and
-   ;; the include Bigloo clauses.
-   (if (>=fx *verbose* 0)
-       (fprint *oport* ";; " *cigloo-name*
-	       ", to be used with " (bigloo-name) "."))
-   (if *directives*
-       (fprint *oport* "(directives"))
+   (when (>=fx *verbose* 0)
+      (fprint *oport* ";; " *cigloo-name*
+	 ", to be used with " (bigloo-name) "."))
+   (case *module*
+      ((4)
+       (module4))
+      ((5)
+       (module5))
+      (else
+       (module4))))
+
+;*---------------------------------------------------------------------*/
+;*    module4 ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (module4)
+   (when *directives*
+      (fprint *oport* "(directives"))
    (fprint *oport* " (extern")
-   ;; we start emiting the opaque types
+   ;; start emiting the opaque types
    (for-each (lambda (name)
 		(fprint *oport* "(type " name " (opaque) \"" name "\")"))
-	     *opaque-type*)
-   ;; we compile the files
+      *opaque-type*)
+   ;; compile the files
    (if (null? *src*)
        (translate-stdin 'emit)
        (for-each (lambda (fname) (translate-file fname 'file 'open))
-		 (reverse! *src*)))
-   ;; and we close include clauses
+	  (reverse! *src*)))
+   ;; close include clauses
    (if *directives*
        (if *eval-stub?*
 	   (begin
@@ -82,6 +91,18 @@
 	      (translate-eval-stubs))
 	   (fprint *oport* "   ))"))
        (fprint *oport* "   )")))
+
+;*---------------------------------------------------------------------*/
+;*    module5 ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (module5)
+   (fprint *oport* "(extern \"C\"")
+   (if (null? *src*)
+       (translate-stdin 'emit)
+       (for-each (lambda (fname) (translate-file fname 'file 'open))
+	  (reverse! *src*)))
+   (fprint *oport* "   )"))
+   
 
 ;*---------------------------------------------------------------------*/
 ;*    translate-stdin ...                                              */
@@ -98,8 +119,8 @@
 		   ((eq? path '<include>)
 		    (or (and *src-dirname*
 			     (find-file/path 
-			      (string-append *src-dirname* "/" fname)
-			      *include-path*))
+				(string-append *src-dirname* "/" fname)
+				*include-path*))
 			(find-file/path fname *include-path*)))
 		   ((eq? path 'include)
 		    (if *src-dirname*
@@ -120,8 +141,9 @@
 	  (let ((port (open-input-file fname)))
 	     (if (not (input-port? port))
 		 (error "cigloo" "Can't open file for input" fname)
-		 (unwind-protect (translate port fname mode)
-				 (close-input-port port))))))))
+		 (unwind-protect
+		    (translate port fname mode)
+		    (close-input-port port))))))))
    
 
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Jun  8 08:45:19 2026                          */
-;*    Last change :  Mon Jun  8 17:54:52 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 07:56:18 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the C extern interface                                   */
@@ -16,12 +16,13 @@
    
    (extern "C"
       (include "extern_c.h")
+      (import "c.h")
 
       ;; macros and functions
       (macro PLUS::long ::long ::long)
-      (macro CNST::long)
+      (cnst macro CNST::long)
       (infix macro PLUS_OP::long ::long ::long)
-      (macro $0L::void* "0L")
+      (cnst macro $0L::void* "0L")
       (macro strtod::double ::string ::void*)
 
       ;; types
@@ -59,3 +60,5 @@
 
 (define-test variable count :expected 10)
 (define-test variable (begin (set! count 20) count) :expected 20)
+
+(define-test cigloo ($inc $init) :expected 0)

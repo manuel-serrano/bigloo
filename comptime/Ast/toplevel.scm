@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct 20 15:11:28 2025                          */
-;*    Last change :  Wed May 20 09:35:04 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 11:20:00 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST construction of the toplevel forms                           */
@@ -54,12 +54,14 @@
 ;*    toplevel*->ast ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (toplevel*->ast::pair-nil sexp*::pair-nil gdefs module genv)
-   (let loop ((sexp* sexp*)
-	      (aexp* '()))
-      (if (null? sexp*)
-	  (reverse! aexp*)
-	  (loop (cdr sexp*)
-	     (append (toplevel->ast (car sexp*) gdefs module genv) aexp*)))))
+   (with-trace 'ast_toplevel "toplevel*->ast"
+      (let loop ((sexp* sexp*)
+		 (aexp* '()))
+	 (if (null? sexp*)
+	     (reverse! aexp*)
+	     (loop (cdr sexp*)
+		(append (toplevel->ast (car sexp*) gdefs module genv)
+		   aexp*))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    toplevel->ast ...                                                */

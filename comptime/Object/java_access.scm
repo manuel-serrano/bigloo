@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Object/java_access.scm              */
+;*    .../project/bigloo/5.0.x/comptime/Object/java_access.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Mon Feb 16 10:31:22 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 09:47:23 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class accessors                                      */
@@ -54,9 +54,6 @@
 	     ;; we store inside the class structure some information about
 	     ;; its slots
 	     (set-java-class-slots! pslots src class)
-	     ;; we install the coercion between the new-class and obj
-	     ;; and the class and all its super classes.
-	     ;(gen-java-class-coercions! class)
 	     ;; we produces the user access function
 	     (let ((fields (gen-java-class-slots-access! class slots src)))
 		(if (eq? id 'foreign)

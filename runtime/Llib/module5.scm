@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun Jun  7 06:46:35 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 11:27:16 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -328,7 +328,7 @@
 ;*    module5-resolve-path ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (module5-resolve-path rel::bstring base::bstring)
-   (with-trace 'module5 "module5-resolve-path"
+   (with-trace '__module5 "module5-resolve-path"
       (trace-item "rel=" rel)
       (trace-item "base=" base)
       (let ((path (if (absolute-file-name? rel)
@@ -400,7 +400,7 @@
 	       (when d
 		  (cons k ci))))))
 
-   (with-trace 'module5-serialize "serialize"
+   (with-trace '__module5 "serialize"
       (trace-item "mod=" (-> mod id))
       (trace-item "path=" (-> mod path))
       (if (eq? (-> mod decls) #unspecified)
@@ -433,7 +433,7 @@
 	  (cannot-find d path)))
    
    (define (unserialize-decl d::Decl)
-      (with-trace 'module5-serialize "unserialize-decl"
+      (with-trace '__module5 "unserialize-decl"
 	 (trace-item "id="(-> d id))
 	 (trace-item "modinfo=" (-> d modinfo))
 	 (match-case (-> d modinfo)
@@ -482,7 +482,7 @@
 	 l)
       env)
 
-   (with-trace 'module5-serialize "unserialize"
+   (with-trace '__module5 "unserialize"
       (trace-item "mod=" (-> mod id))
       (trace-item "path=" (-> mod path))
       (let ((m::Module (duplicate::Module mod
@@ -502,7 +502,7 @@
 ;*    filecache-read ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (filecache-read path lib-path cache-dir hsuffix::bstring expand)
-   (with-trace 'module5-cache "filecache-read"
+   (with-trace '__module5 "filecache-read"
       (trace-item "path=" path)
       (trace-item "lib-path=" lib-path)
       (trace-item "cache-dir=" cache-dir)
@@ -521,7 +521,7 @@
 ;*    filecache-get ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (filecache-get path lib-path cache-dir hsuffix::bstring expand parse)
-   (with-trace 'module5-cache "filecache-get"
+   (with-trace '__module5 "filecache-get"
       (trace-item "path=" path)
       (trace-item "cache-dir=" cache-dir)
       (when (string? cache-dir)
@@ -554,7 +554,7 @@
 ;*    filecache-put! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (filecache-put! path mod::Module)
-   (with-trace 'module5-cache "filecache-put!"
+   (with-trace '__module5 "filecache-put!"
       (trace-item "path=" path)
       (when (string? (-> mod cache-dir))
 	 (unless (directory? (-> mod cache-dir))
@@ -587,7 +587,7 @@
 ;*    module-read ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (module-read path::bstring lib-path cache-dir hsuffix::bstring expand stack parse)
-   (with-trace 'module5 "module-read"
+   (with-trace '__module5 "module-read"
       (synchronize module-mutex
 	 (trace-item "path=" path
 	    (if (hashtable-get *modules-by-path* path) " [in-mem-cache]" ""))
@@ -629,7 +629,7 @@
 ;*    module5-read-library ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (module5-read-library path::bstring expr mod hsuffix::bstring)
-   (with-trace 'module5 "module5-read-library"
+   (with-trace '__module5 "module5-read-library"
       (trace-item "path=" path)
       (trace-item "expr=" expr)
       (let ((init (module5-read-library-init! path)))
@@ -681,7 +681,7 @@
 ;*    module5-read-heap ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (module5-read-heap path::bstring expr mod)
-   (with-trace 'module5 "module5-read-heap"
+   (with-trace '__module5 "module5-read-heap"
       (trace-item "path=" path)
       (synchronize heap-mutex
 	 (or (hashtable-get *heaps-by-path* path)
@@ -700,7 +700,7 @@
 ;*    module5-write-heap ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (module5-write-heap path::bstring mod::Module)
-   (with-trace 'module5 "module5-write-heap"
+   (with-trace '__module5 "module5-write-heap"
       (trace-item "heap=" path)
       (trace-item "mod=" (-> mod id))
       (trace-item "mod-path=" (-> mod path))
@@ -720,7 +720,7 @@
 ;*    heap->module5 ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (heap->module5::Module heap path expr mod)
-   (with-trace 'module5 "heap->module5"
+   (with-trace '__module5 "heap->module5"
       (trace-item "path=" path)
       (trace-item "expr=" expr)
       (cond
@@ -832,7 +832,7 @@
 	    (else
 	     (error/loc #f "Illegal expression" expr #f)))))
    
-   (with-trace 'module5-parse "module5-parse"
+   (with-trace '__module5 "module5-parse"
       (trace-item "path=" path)
       (trace-item "exprs=" exprs)
       (trace-item "heap-suffix=" heap-suffix)
@@ -910,7 +910,7 @@
 	  (error/loc mod "Illegal reexport binding" b clause))))
    
    (define (parse-reexport-all clause::pair expr::pair mod::Module expand stack)
-      (with-trace 'module5-parse "parse-reexport-all"
+      (with-trace '__module5 "parse-reexport-all"
 	 (trace-item "mod=" (-> mod id))
 	 (let* ((path (cadr clause))
 		(rfrom (module5-resolve-path path (-> mod path))))
@@ -970,7 +970,7 @@
 		   (append! (-> mod inits) (list imod))))))))
    
    (define (parse-reexport-some clause::pair expr::pair mod::Module expand stack)
-      (with-trace 'module5-parse "parse-reexport-some"
+      (with-trace '__module5 "parse-reexport-some"
 	 (trace-item "mod=" (-> mod id))
 	 (let* ((path (cadr clause))
 		(bindings (cddr clause))
@@ -1020,7 +1020,7 @@
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))))))
    
    (define (parse-import-all id::symbol clause::pair expr::pair mod::Module expand stack)
-      (with-trace 'module5-parse "parse-import-all"
+      (with-trace '__module5 "parse-import-all"
 	 (trace-item "mod=" (-> mod id))
 	 (let* ((path (cadr clause))
 		(rfrom (module5-resolve-path path (-> mod path))))
@@ -1052,7 +1052,7 @@
 		      (append! (-> mod inits) (list imod)))))))))
    
    (define (parse-import-some clause::pair expr::pair mod::Module expand stack)
-      (with-trace 'module5-parse "parse-import-some"
+      (with-trace '__module5 "parse-import-some"
 	 (trace-item "mod=" (-> mod id))
 	 (let* ((path (cadr clause))
 		(bindings (cddr clause))
@@ -1202,7 +1202,7 @@
 	     ((cdr plugin) mod clause) 
 	     (error/loc mod "No extern plugin" name clause))))
       
-   (with-trace 'module5-parse "module5-parse-clause"
+   (with-trace '__module5 "module5-parse-clause"
       (trace-item "mod=" (-> mod id))
       (trace-item "mod-path=" (-> mod path))
       (trace-item "lib-path=" lib-path)
@@ -1319,7 +1319,7 @@
 	   (default-package #f)
 	   (qualified-names #f))
    (unless (-> mod resolved)
-      (with-trace 'module5-resolve "module5-expand-and-resolve!"
+      (with-trace '__module5 "module5-expand-and-resolve!"
 	 (trace-item (-> mod id)
 	    " resolved=" (-> mod resolved)
 	    " qualified-name=" (-> mod qualified-name))
@@ -1402,7 +1402,7 @@
 		     (-> mod body))))
 	    
 	    (when (pair? (-> mod body))
-	       (with-trace 'module5-resolve "module-expand-and-resolve!, expand-body"
+	       (with-trace '__module5 "module-expand-and-resolve!, expand-body"
 		  (trace-item "mod=" (-> mod id))
 		  (trace-item "body=" (-> mod body))
 		  (set! (-> mod body)
@@ -1502,7 +1502,7 @@
 	    (set! inits (delete-duplicates! inits)))
 	 mod))
 
-   (with-trace 'module5-parse "module4-parse"
+   (with-trace '__module5 "module4-parse"
       (trace-item "path=" path)
       (trace-item "exprs=" exprs)
       (trace-item "heap-suffix=" heap-suffix)
@@ -1801,7 +1801,7 @@
 	     '())))
 
    (define (parse-library-all id clause expr::pair mod::Module expand)
-      (with-trace 'module5-parse "parse-library-all"
+      (with-trace '__module5 "parse-library-all"
 	 (trace-item "id=" id)
 	 (trace-item "clause=" clause)
 	 (trace-item "mod=" (-> mod id))
@@ -1826,7 +1826,7 @@
 		      (cons (cons lib rlib) (-> mod libraries))))
 		(error/loc mod "Cannot find library" lib clause)))))
    
-   (with-trace 'module5-parse "module4-parse-clause"
+   (with-trace '__module5 "module4-parse-clause"
       (trace-item "clause=" clause)
       (trace-item "lib-path=" lib-path)
 
@@ -1921,7 +1921,7 @@
 ;*    check-unbounds ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (check-unbounds mod::Module)
-   (with-trace 'module5 "check-unbounds"
+   (with-trace '__module5 "check-unbounds"
       (trace-item "mod=" (-> mod id))
       (with-access::Module mod (decls (mid id) defs)
 	 (let ((unbounds '()))
@@ -2047,7 +2047,7 @@
 	 ((begin . ?exprs)
 	  (collect-defines! mod exprs))))
 
-   (with-trace 'module5 "collect-defines!"
+   (with-trace '__module5 "collect-defines!"
 	 (for-each (lambda (expr) (collect-define! mod expr)) body)))
 
 ;*---------------------------------------------------------------------*/
@@ -2091,12 +2091,14 @@
 	  (lambda (decl::Decl)
 	     (let ((mod::Module (-> decl mod)))
 		(unless (eq? (-> decl scope) 'extern)
+		   (trace-item "@decl id=" (-> decl id) " scope=" (-> decl scope))
 		   (set-car! src
 		      (localize `(@ ,(-> decl id) ,(-> mod id)) src)))
 		(cons decl globals))))
 	 ((find-def expr mod)
 	  =>
 	  (lambda (def::Def)
+	     (trace-item "@def id=" (-> def id))
 	     (set-car! src (localize `(@ ,(-> def id) ,(-> mod id)) src))
 	     (cons def globals)))
 	 (else
@@ -2234,35 +2236,42 @@
       (set! (-> d scope) 'export)
       (set! (-> d attributes) (cons 'hidden (-> d attributes)))
       (hashtable-symbol-put! (-> mod exports) (-> d id) d))
-   
-   (hashtable-for-each (-> mod exports)
-      (lambda (k decl::Decl)
-	 (when (isa? (-> decl def) Def)
-	    (let ((def::Def (-> decl def)))
-	       (when (eq? (-> def kind) 'inline)
-		  (let ((ds::pair-nil (inline-free-vars! def)))
-		     (for-each (lambda (d)
-				  (cond
-				     ((isa? d Decl)
-				      (unless (eq? (-> (cast::Decl d) scope) 'export)
-					 (export-hidden! d mod)))
-				     ((isa? d Def)
-				      ;; d was a static global variable, must
-				      ;; declare a fresh declaration
-				      (let* ((d::Def d)
-					     (id (-> d id))
-					     (decl (instantiate::Decl
-						      (id id)
-						      (alias id)
-						      (mod mod)
-						      (scope 'export)
-						      (def d)
-						      (expr (-> def expr)))))
-					 (set! (-> d decl) decl)
-					 (hashtable-symbol-put! (-> mod decls)
-					    (-> def id) decl)
-					 (export-hidden! decl mod)))))
-			ds))))))))
+
+   (with-trace '__module5 "export-inline-hidden!"
+      (trace-item "mod=" (-> mod id))
+      (hashtable-for-each (-> mod exports)
+	 (lambda (k decl::Decl)
+	    (when (isa? (-> decl def) Def)
+	       (let ((def::Def (-> decl def)))
+		  (when (eq? (-> def kind) 'inline)
+		     (trace-item "fun=" (-> decl id))
+		     (let ((ds::pair-nil (inline-free-vars! def)))
+			(trace-item "free="
+			   (map (lambda (d::Decl) (-> d id)) ds))
+			(for-each (lambda (d)
+				     (cond
+					((isa? d Decl)
+					 (unless (eq? (-> (cast::Decl d) scope)
+						    'export)
+					    (export-hidden! d mod)))
+					((isa? d Def)
+					 ;; d was a static global variable, must
+					 ;; declare a fresh declaration
+					 (let* ((d::Def d)
+						(id (-> d id))
+						(decl (instantiate::Decl
+							 (id id)
+							 (alias id)
+							 (mod mod)
+							 (scope 'export)
+							 (def d)
+							 (expr (-> def expr)))))
+					    (set! (-> d decl) decl)
+					    (hashtable-symbol-put!
+					       (-> mod decls)
+					       (-> def id) decl)
+					    (export-hidden! decl mod)))))
+			   ds)))))))))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    collect-classes! ...                                             */
@@ -2579,19 +2588,16 @@
 ;*    module5-get-export-def ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (module5-get-export-def mod::Module id #!optional src)
-   (with-trace 'module5-resolve "module5-get-export-def"
-      (trace-item "mod=" (-> mod id))
-      (trace-item "id=" id)
-      (with-access::Module mod (exports (mid id) resolved defs decls)
-	 (unless resolved
-	    (error/loc mod "Module definitions not resolved yet" id src))
-	 (let ((decl (hashtable-get exports (symbol->string! id))))
-	    (if (isa? decl Decl)
-		(with-access::Decl decl (def expr (dmod mod))
-		   (if (isa? def Def)
-		       def
-		       (error/loc mod "Cannot find exported definition" id expr)))
-		(error/loc mod "Cannot find exported declaration" id src))))))
+   (with-access::Module mod (exports (mid id) resolved defs decls)
+      (unless resolved
+	 (error/loc mod "Module definitions not resolved yet" id src))
+      (let ((decl (hashtable-get exports (symbol->string! id))))
+	 (if (isa? decl Decl)
+	     (with-access::Decl decl (def expr (dmod mod))
+		(if (isa? def Def)
+		    def
+		    (error/loc mod "Cannot find exported definition" id expr)))
+	     (error/loc mod "Cannot find exported declaration" id src)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-class-expander ...                                        */
@@ -2676,7 +2682,7 @@
 ;*    install-class-expanders ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (install-class-expanders ci xenv mod)
-   (with-trace 'module5-class "install-class-expanders"
+   (with-trace '__module5 "install-class-expanders"
       (trace-item "ci=" (class-info-id ci))
       (install-module5-lazy-expander xenv
 	 (string->symbol (format "instantiate::~a" (class-info-id ci)))
@@ -2722,7 +2728,7 @@
 ;*    module5-bind-class! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (module5-bind-class! mod::Module id::symbol ci)
-   (with-trace 'module5-class "module5-bind-class!"
+   (with-trace '__module5 "module5-bind-class!"
       (trace-item "class=" id " module=" (-> mod id))
       (hashtable-put! (-> mod classes) (symbol->string! id) ci)))
 

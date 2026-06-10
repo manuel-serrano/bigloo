@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Wed Jun  3 15:59:06 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 07:43:52 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -151,7 +151,7 @@
 	 'font-lock-type-face)
    (list (concat "\(\\(class\\|wide-class\\|final-class\\|abstract-class"
 		 "\\|generic\\|inline\\|macro\\|expander\\|syntax"
-		 "\\|infix[ ]macro\\)[ \t\n]")
+		 "\\|infix[ ]macro\\|cnst[ ]macro\\)[ \t\n]")
 	 1
 	 'bgl-font-lock-face-3)
    (cons "~\\|with-hop" 'bgl-font-lock-face-8)

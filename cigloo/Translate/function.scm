@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/cigloo/Translate/function.scm        */
+;*    .../prgm/project/bigloo/5.0.x/cigloo/Translate/function.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 28 09:49:40 1995                          */
-;*    Last change :  Sun Dec 30 09:11:05 2007 (serrano)                */
+;*    Last change :  Tue Jun  9 08:26:41 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The function definition and declaration translation.             */
 ;*=====================================================================*/
@@ -28,7 +28,7 @@
 	    (translate-function-declaration <decl> <spec> <para-list>)
 	    (translate-function-declarations)
 	    (detect-struct-or-union <type>)
-	    (parameter-type-list->types     <ptl>)))
+	    (parameter-type-list->types <ptl>)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *fun-decl-list* ...                                              */
@@ -50,36 +50,49 @@
 ;*    translate-function-declarations ...                              */
 ;*---------------------------------------------------------------------*/
 (define (translate-function-declarations)
+   
    (define (do-translate-function-declaration fd)
-      (let* ((decl      (fun-decl-decl fd))
-	     (spec      (fun-decl-spec fd))
+      (let* ((decl (fun-decl-decl fd))
+	     (spec (fun-decl-spec fd))
 	     (para-list (fun-decl-para-list fd))
-	     (tspec     (type-spec-of-decl-spec spec))
-	     (type      (type+decl->type (tspec->type tspec) decl))
-	     (f-ident   (get-decl-ident decl))
-	     (f-id      (ident-id f-ident)))
+	     (tspec (type-spec-of-decl-spec spec))
+	     (type (type+decl->type (tspec->type tspec) decl))
+	     (f-ident (get-decl-ident decl))
+	     (f-id (ident-id f-ident)))
 	 (verbose 2
-		  "do-translate-function-declaration: " #\Newline
-		  "   decl: " decl #\Newline
-		  "   spec: " spec #\Newline)
+	    "do-translate-function-declaration: " #\Newline
+	    "   decl: " decl #\Newline
+	    "   spec: " spec #\Newline)
 	 [assert check (type) (function-t? type)]
 	 (let ((sf-id (string->symbol (string-upcase f-id))))
 	    (if (not (getprop sf-id 'fun-processed))
 		(begin
 		   (putprop! sf-id 'fun-processed #t)
 		   (verbose 1 "   " f-id #\Newline)
-		   (fprin *oport* "   ("
-			  (if *macro-function* "macro " "")
-			  (ident->ident f-id) "::" 
-			  (type-id (function-t-to type))
-			  " ")
-		   (add-eval-function!
-		    f-id
-		    (translate-parameter
-		     f-ident
-		     (list 'parameter-type-list para-list)
-		     #f))
-		   (fprint *oport* " \"" f-id "\")"))))))
+		   (if (=fx *module* 4)
+		       (begin
+			  (fprin *oport* "   ("
+			     (if *macro-function* "macro " "")
+			     (ident->ident f-id) "::" 
+			     (type-id (function-t-to type))
+			     " ")
+			  (add-eval-function!
+			     f-id
+			     (translate-parameter
+				f-ident
+				(list 'parameter-type-list para-list)
+				#f))
+			  (fprint *oport* " \"" f-id "\")"))
+		       (begin
+			  (fprin *oport* "   ("
+			     (if *macro-function* "macro $" "$")
+			     (ident->ident f-id) "::" 
+			     (type-id (function-t-to type)))
+			  (translate-parameter f-ident
+			     (list 'parameter-type-list para-list)
+			     #f)
+			  (fprint *oport* " \"" f-id "\")"))))))))
+   
    (for-each do-translate-function-declaration (reverse *fun-decl-list*))
    (set! *fun-decl-list* '()))
 
@@ -298,6 +311,11 @@
 			  ;; prototyping
 			  '()
 			  (map type-id ptl))))
-	 (display par-list *oport*)
+	 (if (=fx *module* 4)
+	     (display par-list *oport*)
+	     (for-each (lambda (p)
+			  (display " ::" *oport*)
+			  (display p *oport*))
+		par-list))
 	 par-list)))
  

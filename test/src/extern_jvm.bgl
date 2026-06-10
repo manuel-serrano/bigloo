@@ -15,20 +15,17 @@
 (module extern_jvm
 
    (extern "java"
-      (abstract-class intf
-         (method abstract_met::int ::intf)
-         "Intf")
-      (class point::intf
+      (abstract-class Intf
+         (abstract public abstract_met::int ::intf))
+      (class Point::intf
          (constructor new)
+         (constructor new2 ::int ::int)
          (field x::int)
-         (method abstract_met::int ::point)
-         (method show::void ::point)
-         (method static statistics::int)
-         "Point")
-      (class point::intf
-         (field y::int "y")
+         (field y::int)
          (field static point_num::int)
-         (constructor new2 (::int ::int))))
+         (abstract_met::int ::point)
+         (show::void ::point)
+         (static statistics::int)))
     
    (export test))
 

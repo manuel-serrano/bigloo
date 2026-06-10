@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/cigloo/Parser/parser.scm             */
+;*    serrano/prgm/project/bigloo/5.0.x/cigloo/Parser/parser.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 24 11:17:34 1995                          */
-;*    Last change :  Mon Jul 31 10:11:01 2006 (serrano)                */
+;*    Last change :  Tue Jun  9 09:16:45 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The C syntax                                                     */
 ;*=====================================================================*/
@@ -37,7 +37,8 @@
        <<= >>= += -= *= /= %= ^= &= OR= ++ -- ID && OR ? : TYPE-ID <= >=
        < > __asm__ asm auto break case char const __const continue default do double
        else enum extern float for fortran goto if int long register FILE
-       return short signed sizeof static _Static_assert struct switch typedef union unsigned
+       return short signed sizeof static _Static_assert struct switch typedef
+       union unsigned
        void volatile while __attribute__ __attribute inline __inline__ __inline
        __extension__ obj_t
        restrict __restrict__ __restrict
@@ -87,60 +88,57 @@
 	`(,declaration ,@c++-declarations)))
       
       (declaration
-       ((declaration-specifiers SEMI-COMMA)
-	(ast-declare #f
-		     declaration-specifiers
-		     '()))
-       ((declaration-specifiers init-declarator-list SEMI-COMMA)
-	;; since the C grammar does not seem to be Lalr we are
-	;; obliged to do an awful hack in order to recognize, before
-	;; reading next expression, typedef form in order to change
-	;; the lexer behavior.
-	(if (typedef-sspec? (storage-class-spec-of-decl-spec
-			     declaration-specifiers))
-	    (for-each (lambda (decl)
-			 ;; there is no need for a match here as in the
-			 ;; translate-declaration function because
-			 ;; we know that decl is not in a list
-			 (let* ((t-ident (get-decl-ident decl))
-				(t-id    (ident-id t-ident)))
-			    (define-type-id t-id)))
-		      init-declarator-list))
-	
-	;; Record the alias of an anonymous struct.
-	(let ((tspecs (type-spec-of-decl-spec declaration-specifiers)))
-	   (for-each 
-	    (lambda (decl)
-	       (let* ((decl    (cond
-				  ((decl? decl)
-				   decl)
-				  ((and (pair? decl)
-					(decl? (car decl))
-					(or (null? (cdr decl))
-					    (and (pair? (cdr decl))
-						 (eq? (cadr decl) #unspecified)
-						 (null? (cddr decl)))))
-				   (car decl))
-				  (else
-				   (error "cigloo"
-					  "internal error"
-					  "parsing"))))
-		      (t-ident (get-decl-ident decl))
-		      (t-id    (ident-id t-ident)))
-		  ;; Look at the type being aliased.  If it is an 
-		  ;; anonymous struct set its c-name to be this alias.
-		  (for-each
-		   (lambda (tspec)
-		      (let* ((value (type-spec-value tspec))
-			     (entry (and (struct-spec? value)
-					 (assq value *anonymous-struct-alist*))))
-			 (when entry
-			    (set-cdr! entry t-ident))))
-		   tspecs)))
-	    init-declarator-list))
-	(ast-declare #f
-		     declaration-specifiers
-		     init-declarator-list)))
+	 ((declaration-specifiers SEMI-COMMA)
+	  (ast-declare #f
+	     declaration-specifiers
+	     '()))
+	 ((declaration-specifiers init-declarator-list SEMI-COMMA)
+	  ;; since the C grammar does not seem to be Lalr we are
+	  ;; obliged to do an awful hack in order to recognize, before
+	  ;; reading next expression, typedef form in order to change
+	  ;; the lexer behavior.
+	  (if (typedef-sspec?
+		 (storage-class-spec-of-decl-spec declaration-specifiers))
+	      (for-each (lambda (decl)
+			   ;; there is no need for a match here as in the
+			   ;; translate-declaration function because
+			   ;; we know that decl is not in a list
+			   (let* ((t-ident (get-decl-ident decl))
+				  (t-id (ident-id t-ident)))
+			      (define-type-id t-id)))
+		 init-declarator-list))
+	  
+	  ;; Record the alias of an anonymous struct.
+	  (let ((tspecs (type-spec-of-decl-spec declaration-specifiers)))
+	     (for-each 
+		(lambda (decl)
+		   (let* ((decl (cond
+				   ((decl? decl)
+				    decl)
+				   ((and (pair? decl)
+					 (decl? (car decl))
+					 (or (null? (cdr decl))
+					     (and (pair? (cdr decl))
+						  (eq? (cadr decl) #unspecified)
+						  (null? (cddr decl)))))
+				    (car decl))
+				   (else
+				    (error "cigloo"
+				       "internal error" "parsing"))))
+			  (t-ident (get-decl-ident decl))
+			  (t-id (ident-id t-ident)))
+		      ;; Look at the type being aliased.  If it is an 
+		      ;; anonymous struct set its c-name to be this alias.
+		      (for-each
+			 (lambda (tspec)
+			    (let* ((value (type-spec-value tspec))
+				   (entry (and (struct-spec? value)
+					       (assq value *anonymous-struct-alist*))))
+			       (when entry
+				  (set-cdr! entry t-ident))))
+			 tspecs)))
+		init-declarator-list))
+	  (ast-declare #f declaration-specifiers init-declarator-list)))
       
       (declaration-specifiers
        ((__extension__ declaration-specifiers)

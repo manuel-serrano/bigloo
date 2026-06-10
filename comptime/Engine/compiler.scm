@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Jun  8 09:36:52 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 11:21:33 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -525,7 +525,7 @@
 ;*    module5->ast ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (module5->ast expr genv)
-   (with-trace 'module5 "module5->ast"
+   (with-trace 'engine_compiler "module5->ast"
       (trace-item "expr=" expr)
       (pass-prelude "Module5")
       
@@ -732,7 +732,7 @@
 ;*    module4->ast ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (module4->ast src genv)
-   (with-trace 'compiler "module4->ast"
+   (with-trace 'engine_compiler "module4->ast"
       (trace-item "src=" src)
       (module5-default-version-set! 4)
       (register-srfi! 'bigloo-module4)

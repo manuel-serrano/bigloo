@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/api/ssl/src/Llib/ssl.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/api/ssl/src/Llib/ssl.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Tue Mar 10 08:37:37 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 16:18:41 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -394,10 +394,10 @@
 	   (ssl-rand-bytes ::int)
 	   (ssl-rand-pseudo-bytes ::int)
 	   
-	   (inline certificate-subject::bstring ::certificate)
-	   (inline certificate-issuer::bstring ::certificate)
+	   (certificate-subject::bstring ::certificate)
+	   (certificate-issuer::bstring ::certificate)
 	   
-	   (inline ssl-socket?::bool ::obj)
+	   (ssl-socket?::bool ::obj)
 	   
 	   (make-ssl-client-socket ::bstring ::int
 	      #!key
@@ -802,7 +802,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ssl-socket? ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (ssl-socket? obj)
+(define (ssl-socket? obj)
    (cond-expand
       (bigloo-c ($ssl-socket? obj))
       (else (or ($ssl-client-socket? obj) ($ssl-server-socket? obj)))))
@@ -898,13 +898,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    certificate-subject ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (certificate-subject::bstring cert::certificate)
+(define (certificate-subject::bstring cert::certificate)
    ($certificate-subject cert))
 
 ;*---------------------------------------------------------------------*/
 ;*    certificate-issuer ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (certificate-issuer::bstring cert::certificate)
+(define (certificate-issuer::bstring cert::certificate)
    ($certificate-issuer cert))
 
 ;*---------------------------------------------------------------------*/

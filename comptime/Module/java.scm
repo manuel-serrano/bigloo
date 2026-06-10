@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Module/java.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Module/java.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Thu Mar 19 14:33:03 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 14:13:33 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -65,7 +65,9 @@
 	    (heap-add-jclass! jclass)
 	    (parse-java-clause ::symbol ::pair)
 	    (java-parser ::obj ::symbol ::symbol)
-	    (java-declare-array j::pair id::symbol of::symbol ::symbol))
+	    (java-declare-array j::pair id::symbol of::symbol ::symbol)
+	    (jklass-gen-predicate::pair ::jklass ::pair ::symbol)
+	    (jklass-gen-methods::pair-nil ::jklass ::pair ::symbol))
    (static  (class jfield
 	       (src::pair read-only)
 	       (id::symbol read-only)
@@ -115,7 +117,7 @@
 ;*    java-parser ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (java-parser java module::symbol separator::symbol)
-   (with-trace 'jvm "java-parser"
+   (with-trace 'module_java "java-parser"
       (trace-item "module=" module)
       (trace-item "java="
 	 (if (>fx (length java) 10) (append (take java 6) '("...")) java))
@@ -197,7 +199,7 @@
 			    args))))
 	    constructors)))
    
-   (with-trace 'jvm "java-finalizer"
+   (with-trace 'module_java "java-finalizer"
       ;; First, we check for the foreign class. If defined but bound (i.e.,
       ;; we have seen fields or methods but not the declaration of the
       ;; class itself), we bind it
@@ -282,7 +284,7 @@
    (define new-klasses '())
    
    (define (auto-declare-jklass ty::type jklass::jklass src)
-      (with-trace 'jvm "auto-declare-jklass"
+      (with-trace 'module_java "auto-declare-jklass"
 	 (trace-item "ty=" (type-id ty))
 	 (trace-item "jk=" (jklass-id jklass))
 	 (with-access::jklass jklass (package module)
@@ -340,7 +342,7 @@
 (define (auto-declare-jarray-klass-types jarray::jarray)
    
    (define (auto-declare-jklass ty::type jarray::jarray)
-      (with-trace 'jvm "auto-declare-jklass"
+      (with-trace 'module_java "auto-declare-jklass"
 	 (trace-item "ty=" (type-id ty))
 	 (with-access::jarray jarray (location)
 	    (let* ((n (symbol->string (type-id ty)))
@@ -364,7 +366,7 @@
 ;*    java-parse-class ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (java-parse-class java ident rest abstract? module separator)
-   (with-trace 'jvm "java-parse-class"
+   (with-trace 'module_java "java-parse-class"
       (trace-item "ident=" ident)
       (let* ((tser (reverse rest))
 	     (jname (if (pair? tser) (car tser) #f)))
@@ -382,7 +384,7 @@
 ;*---------------------------------------------------------------------*/
 (define (java-declare-class::jklass j id::symbol jname::bstring
 	   comp::pair-nil a::bool module::symbol separator::symbol)
-   (with-trace 'jvm "java-declare-class"
+   (with-trace 'module_java "java-declare-class"
       (trace-item "id=" id)
       (trace-item "jname=" jname)
       (trace-item "pkg=" (jname-package jname #unspecified))
@@ -424,7 +426,7 @@
 ;*---------------------------------------------------------------------*/
 (define (java-refine-class::jklass j ident::symbol comp::pair-nil
 	   module::symbol separator::symbol)
-   (with-trace 'jvm "java-refine-class"
+   (with-trace 'module_java "java-refine-class"
       (trace-item "id=" ident)
       (let ((jklass (let ((jklass (find-jklass ident)))
 		       (if (jklass? jklass)
@@ -464,14 +466,10 @@
 	 lst))
    
    (define (make-ident base id)
-      (let* ((b (symbol->string! base))
-	     (j (string-index-right b #\$)))
-	 (if (and #f j (>fx j 0))
-	     (let ((baseid (string-replace b #\$ #\.)))
-		(string->symbol (format "~a~a~a" baseid separator id)))
-	     (symbol-append base separator id))))
+      (let ((b (symbol->string! base)))
+	 (symbol-append base separator id)))
    
-   (with-trace 'jvm "java-declare-component"
+   (with-trace 'module_java "java-declare-component"
       (match-case component
 	 ((field . ?rest)
 	  (match-case (reverse rest)
@@ -554,7 +552,7 @@
 ;*    jklass->jclass ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (jklass->jclass jklass::jklass)
-   (with-trace 'jvm "jklass->jclass"
+   (with-trace 'module_java "jklass->jclass"
       (with-access::jklass jklass (id jname package src loc)
 	 (trace-item "id=" id)
 	 (trace-item "jname=" jname)
@@ -573,7 +571,7 @@
 ;*    This function is called in the Java finalization stage.          */
 ;*---------------------------------------------------------------------*/
 (define (declare-jklass-properties! jklass::jklass jclass::jclass)
-   (with-trace 'jvm "declare-jklass-properties!"
+   (with-trace 'module_java "declare-jklass-properties!"
       (with-access::jklass jklass (id jname methods fields src loc)
 	 
 	 (define (is-class? a jklass)
@@ -582,7 +580,7 @@
 		  (or (eq? aid id) (eq? aid idd)))))
 	 
 	 (define (declare-java-static-method jmet)
-	    (with-trace 'jvm "declare-java-static-method"
+	    (with-trace 'module_java "declare-java-static-method"
 	       (with-access::jmethod jmet (id args jname src modifiers)
 		  (declare-java-method! id (jklass-id jklass)
 		     jname args modifiers
@@ -590,7 +588,7 @@
 		     src))))
 	 
 	 (define (declare-java-virtual-method jmet)
-	    (with-trace 'jvm "declare-java-virtual-method"
+	    (with-trace 'module_java "declare-java-virtual-method"
 	       (with-access::jmethod jmet (id args jname src modifiers)
 		  (trace-item "id=" id)
 		  (trace-item "modifiers=" modifiers)
@@ -605,7 +603,7 @@
 			 src)))))
 	 
 	 (define (declare-java-method jmet::jmethod)
-	    (with-trace 'jvm "declarel-java-method"
+	    (with-trace 'module_java "declarel-java-method"
 	       (with-access::jmethod jmet (id modifiers jname args)
 		  (trace-item "id=" id)
 		  (trace-item "modifiers=" modifiers)
@@ -616,7 +614,7 @@
 		      (declare-java-virtual-method jmet)))))
 	 
 	 (define (declare-java-field jfd::jfield)
-	    (with-trace 'jvm "declarel-java-field"
+	    (with-trace 'module_java "declarel-java-field"
 	       (with-access::jfield jfd (qid jname src modifiers)
 		  (trace-item "qid=" qid)
 		  (trace-item "jname=" jname)
@@ -645,7 +643,7 @@
 ;*    declare-java-method! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (declare-java-method! id module jname args modifiers kname src)
-   (with-trace 'jvm "declare-java-method!"
+   (with-trace 'module_java "declare-java-method!"
       (trace-item "id=" id)
       (trace-item "jname=" jname)
       (let* ((pid (parse-id id (find-location src)))
@@ -679,7 +677,7 @@
       (with-access::jfield jfd ((component src) id jname (mod modifiers))
 	 (list component id jname mod)))
    
-   (with-trace 'jvm "declare-java-class!"
+   (with-trace 'module_java "declare-java-class!"
       (with-access::jklass jklass (src id jname package loc
 				     fields constructors
 				     abstract?
@@ -762,7 +760,7 @@
 ;*    java-declare-array ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (java-declare-array j::pair id::symbol of::symbol module::symbol)
-   (with-trace 'jvm "java-declare-array"
+   (with-trace 'module_java "java-declare-array"
       (trace-item "id=" id)
       (trace-item "module=" module)
       ;; Only arrays are explictly associated to types. Java classes
@@ -784,3 +782,46 @@
 	     (foreign-accesses-add!
 		(make-ctype-accesses! jtype jtype (find-location j) module)))))))
       
+;*---------------------------------------------------------------------*/
+;*    jklass-gen-predicate ...                                         */
+;*---------------------------------------------------------------------*/
+(define (jklass-gen-predicate::pair class::jklass src::pair scope::symbol)
+   (with-trace 'module_java "jklass-gen-predicate"
+      (trace-item "jklass=" (jklass-id class))
+      (let* ((id (jklass-id class))
+	     (pid (symbol-append id '?))
+	     (pidt (symbol-append id '?::bool))
+	     (obj (mark-symbol-non-user! (gensym 'obj))))
+	 
+;* 	 ;; the pragma declaration                                     */
+;* 	 (produce-module-clause!                                       */
+;* 	    `(,scope (inline ,pidt ::obj)))                            */
+;* 	 (produce-module-clause!                                       */
+;* 	    `(pragma (,pid (predicate-of ,id) no-cfa-top (effect))))   */
+
+	 ;; the definition
+	 (let ((nx `(define-inline (,pidt ,obj)
+		       ,(make-private-sexp 'instanceof id obj))))
+	    (localize src nx)))))
+
+;*---------------------------------------------------------------------*/
+;*    jklass-gen-methods ...                                           */
+;*---------------------------------------------------------------------*/
+(define (jklass-gen-methods::pair-nil class::jklass src::pair scope::symbol)
+   (with-trace 'module_java "jklass-gen-methods"
+      (trace-item "jklass=" (jklass-id class))
+
+      (map (lambda (m::jmethod)
+	      (when (and (memq 'static (-> m modifiers))
+			 (not (memq 'abstract (-> m modifiers))))
+		 (let* ((id (-> m id))
+			(pid id)
+			(qid (symbol-append (-> class id) '|.| (-> m id))))
+		    (tprint "jm=" (-> m id))
+		    (let ((nx `(define-inline (,pid)
+				  (,qid))))
+		       (tprint "nx=" nx)
+		       (localize src nx)))))
+	 (-> class methods))))
+      
+

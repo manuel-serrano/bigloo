@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Thu Jun  4 08:06:33 2026 (serrano)                */
+;*    Last change :  Tue Jun  9 07:48:11 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -64,7 +64,7 @@
 	    (macro $atan2::double (::double ::double) "atan2")
 	    (macro $sqrt::double (::double) "sqrt")
 	    (macro $pow::double (::double ::double) "pow")
-	    (macro strtod::double (::string ::long) "strtod")
+	    ;;(macro strtod::double (::string ::long) "strtod")
 	    (macro $strtod::double (::string) "STRTOD")
 	    (macro $absfl::double (::double) "fabs")
 	    (macro $maxfl::double (::double ::double) "BGL_FL_MAX2")
@@ -172,8 +172,8 @@
 		  "sqrt")
 	       (method static $pow::double (::double ::double)
 		  "pow")
-	       (method static strtod::double (::string ::long)
-		  "strtod")
+;* 	       (method static strtod::double (::string ::long)         */
+;* 		  "strtod")                                            */
 	       (method static $strtod::double (::string)
 		  "strtod")
 	       (method static $absfl::double (::double)
