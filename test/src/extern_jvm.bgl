@@ -16,8 +16,8 @@
 
    (extern "java"
       (abstract-class Intf
-         (abstract public abstract_met::int ::intf))
-      (class Point::intf
+         (abstract public abstract_met::int ::Intf))
+      (class Point::Intf
          (constructor new)
          (constructor new2 ::int ::int)
          (field x::int)

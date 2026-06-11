@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Jun  9 07:33:04 2026 (serrano)                */
+;*    Last change :  Wed Jun 10 08:24:33 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -32,6 +32,7 @@
 	   module_java
 	   module_type
 	   module_eval
+	   module_extern5
 	   heap_restore
 	   expand_eps
 	   expand_object
@@ -62,51 +63,9 @@
 	   (module5-imported-unit ::Module ::procedure ::obj)
 	   (module5-object-unit ::Module)
 	   (module5-imported-inline mod::Module ::obj)
-	   (module5-extern-plugin-c ::Module ::pair)
-	   (module5-extern-plugin-java ::Module ::pair)
-	   (module5-extern-plugin-java-finalizer ::Module)
-	   (module5-extern-plugin-wasm ::Module ::pair)
-	   (module5-plugin-pragma ::Module ::pair)
-	   (module5-plugin-eval ::Module ::pair)
-	   (module4-extern-plugin-c ::Module ::pair)
-	   (module4-extern-plugin-java ::Module ::pair)
-	   (module4-plugin-eval ::Module ::pair)
-	   (module4-plugin-type ::Module ::pair)
-	   (module4-plugin-pragma ::Module ::pair)
 	   (module5-resolve-pragma! ::Module ::obj)
 	   (module5-heap4-modules::pair-nil)
-	   (module5-init-xenv! xenv ::Module))
-
-   (export (class CDef::Def
-	      (args read-only)
-	      (name::bstring read-only)
-	      (infix::bool read-only)
-	      (macro::bool read-only))
-
-	   (class TDef::Def
-	      (name::bstring read-only))
-
-	   (class JDef::TDef
-	      (super::obj read-only)
-	      (package::bstring read-only))))
-
-;*---------------------------------------------------------------------*/
-;*    object-copy ::CDef ...                                           */
-;*---------------------------------------------------------------------*/
-(define-method (object-copy d::CDef)
-   (duplicate::CDef d))
-
-;*---------------------------------------------------------------------*/
-;*    object-copy ::TDef ...                                           */
-;*---------------------------------------------------------------------*/
-(define-method (object-copy d::TDef)
-   (duplicate::TDef d))
-
-;*---------------------------------------------------------------------*/
-;*    object-copy ::JDef ...                                           */
-;*---------------------------------------------------------------------*/
-(define-method (object-copy d::JDef)
-   (duplicate::JDef d))
+	   (module5-init-xenv! xenv ::Module)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-expand ...                                               */
@@ -141,10 +100,10 @@
 
    (define (type-arg farg::symbol carg::symbol def::Def)
       (multiple-value-bind (_ ctype)
-	 (parse-ident carg (-> def expr) mod)
+	 (parse-ident carg)
 	 (if (string? ctype)
 	     (multiple-value-bind (fid _)
-		(parse-ident farg (-> def expr) mod)
+		(parse-ident farg)
 		(string->symbol (format "~a::~a" fid ctype)))
 	     farg)))
    
@@ -314,12 +273,24 @@
 	     (with-access::Def def (expr)
 		(add-macro-definition! expr id)))
 	    ((c-function)
-	     (with-access::CDef def (name type infix args macro)
-		(declare-global-cfun! env id alias 'foreign name type args
-		   infix macro expr expr)))
+	     (with-access::CDef def (name type infix args macro module pragma)
+		(let ((g (declare-global-cfun! env id alias module name
+			    type args infix macro expr expr)))
+		   (global-pragma-set! g pragma)
+		   g)))
 	    ((c-variable)
-	     (with-access::CDef def (name type macro)
-		(declare-global-cvar! env id alias 'foreign name type macro expr expr)))
+	     (with-access::CDef def (name type macro module pragma)
+		(let ((g (declare-global-cvar! env id alias module name
+			    type macro expr expr)))
+		   (global-pragma-set! g pragma)
+		   g)))
+	    ((jvm-method)
+	     (with-access::CDef def (name type modifiers args module pragma)
+		(let ((g (declare-global-cfun! env id alias module name
+			    type args #f #f expr expr)))
+		   (global-pragma-set! g pragma)
+		   (cfun-method-set! (global-value g) modifiers)
+		   g)))
 	    ((c-type)
 	     ;; already processed so ignore
 	     #unspecified)
@@ -720,7 +691,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    parse-ident ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (parse-ident id::symbol src mod::Module)
+(define (parse-ident id::symbol)
    (let* ((s (symbol->string id))
 	  (l (string-length s)))
       (let loop ((i 0))
@@ -736,595 +707,13 @@
 	     (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    parse-extern-c-clause ...                                        */
-;*---------------------------------------------------------------------*/
-(define (parse-extern-c-clause version::long clause mod::Module x::pair)
-   
-   (define (parse-include string clause mod::Module)
-      (unless (member string *include-foreign*)
-	 (set! *include-foreign* (cons string *include-foreign*))))
-   
-   (define (illegal-args args src mod)
-      (let loop ((args args))
-	 (cond
-	    ((null? args)
-	     #f)
-	    ((symbol? args)
-	     (multiple-value-bind (id type)
-		(parse-ident args src mod)
-		(unless (string? type)
-		   args)))
-	    ((not (pair? args))
-	     args)
-	    ((not (symbol? (car args)))
-	     args)
-	    (else
-	     (multiple-value-bind (id type)
-		(parse-ident (car args) src mod)
-		(if (string? type)
-		    (loop (cdr args))
-		    args))))))
-   
-   (define (parse-function macro infix ident args name clause mod::Module)
-      (multiple-value-bind (id type)
-	 (parse-ident ident clause mod)
-	 (cond
-	    ((not (string? type))
-	     (error/loc mod "Missing C type" ident clause))
-	    ((illegal-args args clause mod)
-	     =>
-	     (lambda (args) (error/loc mod "Illegal C args" args clause)))
-	    (else
-	     (co-instantiate
-		   ((def (instantiate::CDef
-			    (id id)
-			    (type (string->symbol type))
-			    (kind 'c-function)
-			    (expr clause)
-			    (ronly #t)
-			    (decl decl)
-			    (args args)
-			    (name name)
-			    (macro macro)
-			    (infix infix)))
-		    (decl (instantiate::Decl
-			     (id id)
-			     (alias id)
-			     (mod mod)
-			     (expr clause)
-			     (ronly #t)
-			     (scope 'extern)
-			     (def def))))
-		(with-access::Module mod (decls defs exports)
-		   (hashtable-put! exports (symbol->string! id) decl)
-		   (hashtable-put! decls (symbol->string! id) decl)
-		   (hashtable-put! defs (symbol->string! id) def)))))))
-   
-   (define (parse-variable macro ident name clause mod::Module)
-      (multiple-value-bind (id type)
-	 (parse-ident ident clause mod)
-	 (cond
-	    ((not (string? type))
-	     (error/loc mod "Missing C type" ident clause))
-	    (else
-	     (co-instantiate
-		   ((def (instantiate::CDef
-			    (id id)
-			    (type (string->symbol type))
-			    (kind 'c-variable)
-			    (expr clause)
-			    (ronly #f)
-			    (decl decl)
-			    (args '())
-			    (name name)
-			    (macro macro)
-			    (infix #f)))
-		    (decl (instantiate::Decl
-			     (id id)
-			     (alias id)
-			     (mod mod)
-			     (expr clause)
-			     (ronly #f)
-			     (scope 'extern)
-			     (def def))))
-		(with-access::Module mod (decls defs exports)
-		   (hashtable-put! exports (symbol->string! id) decl)
-		   (hashtable-put! decls (symbol->string! id) decl)
-		   (hashtable-put! defs (symbol->string! id) def)))))))
-   
-   (define (parse-type id name clause mod::Module)
-      (co-instantiate
-	    ((def (instantiate::TDef
-		     (id id)
-		     (kind 'c-type)
-		     (expr clause)
-		     (ronly #t)
-		     (expr clause)
-		     (decl decl)
-		     (name name)))
-	     (decl (instantiate::Decl
-		      (id id)
-		      (alias id)
-		      (mod mod)
-		      (expr clause)
-		      (ronly #t)
-		      (scope 'extern)
-		      (def def))))
-	 (with-access::Module mod (decls defs exports)
-	    (hashtable-put! exports (symbol->string! id) decl)
-	    (hashtable-put! decls (symbol->string! id) decl)
-	    (hashtable-put! defs (symbol->string! id) def))
-	 (parse-c-foreign-type clause)))
-
-   (define (cigloo file x mod)
-      (module5-extern-plugin-preprocessor "cigloo" file x mod))
-   
-   (define (parse-args id::symbol args::pair-nil mod clause x)
-      (cond
-	 ((null? args)
-	  (values '() (symbol->name id clause mod)))
-	 ((not (list? args))
-	  (error/loc mod "Illegal extern \"C\" module clause" clause x))
-	 ((string? (car (last-pair args)))
-	  (let* ((name (car (last-pair args)))
-		 (args (drop-last args 1)))
-	     (if (every symbol? args)
-		 (values args name)
-		 (error/loc mod "Illegal extern \"C\" module clause" clause x))))
-	 (else
-	  (values args (symbol->name id clause mod)))))
-
-   (define (symbol->name ident::symbol src mod)
-      (multiple-value-bind (id type)
-	 (parse-ident ident src mod)
-	 (symbol->string id)))
-
-   (define (parse5 clause)
-      (with-trace 'module_module5 "parse-extern-c-clause"
-	 (trace-item "clause=" clause)
-	 (match-case clause
-	    ((include (and (? string?) ?string))
-	     (parse-include string clause mod))
-	    ((import (and (? string?) ?string))
-	     (module5-extern-plugin-c mod
-		(localize clause `(include ,string)))
-	     (module5-extern-plugin-c mod
-		(call-with-input-file (cigloo string clause mod)
-		   read)))
-	    ((export . ?-)
-	     (parse-c-foreign-export clause #t))
-	    ((type (and (? symbol?) ?id))
-	     (parse-type id (symbol->string id) clause mod))
-	    ((type (and (? symbol?) ?id) (and (? string?) ?name))
-	     (parse-type id name clause mod))
-	    ((macro (and (? symbol?) ?ident) . ?args)
-	     (multiple-value-bind (args name)
-		(parse-args ident args mod clause x)
-		(parse-function #t #f ident args name clause mod)))
-	    ((infix macro (and (? symbol?) ?ident) . ?args)
-	     (multiple-value-bind (args name)
-		(parse-args ident args mod clause x)
-		(parse-function #t #t ident args name clause mod)))
-	    ((cnst macro (and (? symbol?) ?ident))
-	     (parse-variable #t ident (symbol->name ident clause mod) clause mod))
-	    ((cnst macro (and (? symbol?) ?ident) (and (? string?) ?name))
-	     (parse-variable #t ident name clause mod))
-	    ((variable (and (? symbol?) ?ident))
-	     (parse-variable #f ident (symbol->name ident x mod) clause mod))
-	    ((variable (and (? symbol?) ?ident) (and (? string?) ?name))
-	     (parse-variable #f ident name clause mod))
-	    (((and (? symbol?) ?ident) . ?args)
-	     (multiple-value-bind (args name)
-		(parse-args ident args mod clause x)
-		(parse-function #f #f ident args name clause mod)))
-	    ((and (? symbol?) ?ident)
-	     (parse-variable #f ident (symbol->name ident x mod) clause mod))
-	    (else
-	     (error/loc mod "Illegal extern \"C\" module clause" clause x)))))
-
-   (define (parse4 clause)
-      (match-case clause
-	 ((include (and (? string?) ?string))
-	  (parse-include string clause mod))
-	 ((type (and (? symbol?) ?id) (and (? string?) ?name))
-	  (parse-type id name clause mod))
-	 ((type (and (? symbol?) ?id) ?- (and (? string?) ?name))
-	  (parse-type id name clause mod))
-	 ((macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
-	  (parse-function #t #f ident args name clause mod))
-	 ((infix macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
-	  (parse-function #t #t ident args name clause mod))
-	 ((macro (and (? symbol?) ?ident) (and (? string?) ?name))
-	  (parse-variable #t ident name clause mod))
-	 ((export . ?-)
-	  (parse-c-foreign-export clause #t))
-	 (((and (? symbol?) ?ident) ?args (and (? string?) ?name))
-	  (parse-function #f #f ident args name clause mod))
-	 (((and (? symbol?) ?ident) (and (? string?) ?name))
-	  (parse-variable #f ident name clause mod))
-	 (else
-	  (error/loc mod "Illegal extern \"C\" module clause" clause x))))
-
-   (if (=fx version 5)
-       (parse5 clause)
-       (parse4 clause)))
-   
-;*---------------------------------------------------------------------*/
-;*    module5-extern-plugin-c ...                                      */
-;*---------------------------------------------------------------------*/
-(define (module5-extern-plugin-c mod::Module x::pair)
-   (with-trace 'module_module5 "module5-extern-plugin-c"
-      (trace-item "x=" x)
-      (when (memq 'extern (backend-foreign-clause-support (the-backend)))
-	 (for-each (lambda (c) (parse-extern-c-clause 5 c mod x)) (cddr x)))
-      '()))
-
-;*---------------------------------------------------------------------*/
-;*    module4-extern-plugin-c ...                                      */
-;*---------------------------------------------------------------------*/
-(define (module4-extern-plugin-c mod::Module x::pair)
-   (when (memq 'extern (backend-foreign-clause-support (the-backend)))
-      (for-each (lambda (c) (parse-extern-c-clause 4 c mod x)) (cdr x)))
-   '())
-
-;*---------------------------------------------------------------------*/
-;*    declare-java-type! ...                                           */
-;*---------------------------------------------------------------------*/
-(define (declare-java-type! j::jklass mod::Module clause)
-   (with-trace 'module_module5 "declare-java-type"
-      (with-access::jklass j (id jname package src)
-	 (trace-item "jklass=" id)
-	 (trace-item "mod=" (-> mod id))
-	 (trace-item "pkg=" package)
-	 (multiple-value-bind (clazz super)
-	    (parse-ident id src mod)
-	    (co-instantiate
-		  ((def (instantiate::JDef
-			   (id id)
-			   (kind 'java-type)
-			   (expr clause)
-			   (ronly #t)
-			   (expr src)
-			   (decl decl)
-			   (name jname)
-			   (package (if (string? package) package (jname-package jname ".")))
-			   (super (if (string? super) (string->symbol super) '_))))
-		   (decl (instantiate::Decl
-			    (id id)
-			    (alias id)
-			    (mod mod)
-			    (expr clause)
-			    (ronly #t)
-			    (scope 'extern)
-			    (def def))))
-	       (with-access::Module mod (decls defs exports)
-		  (hashtable-put! exports (symbol->string! id) decl)
-		  (hashtable-put! decls (symbol->string! id) decl)
-		  (hashtable-put! defs (symbol->string! id) def)))))))
-
-;*---------------------------------------------------------------------*/
-;*    module4-extern-plugin-java ...                                   */
-;*---------------------------------------------------------------------*/
-(define (module4-extern-plugin-java mod::Module x::pair)
-
-   (define (parse-clause clause)
-      (match-case clause
-	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
-	  (java-parser clause (-> mod id) '-))
-	 ((or (class ?ident . ?rest)
-	      (abstract-class ?ident . ?rest))
-	  (let ((jklass (java-parser clause (-> mod id) '-)))
-	     (declare-java-type! jklass mod clause)
-	     (with-access::Module mod (body)
-		(let ((pred (jklass-gen-predicate jklass clause 'export))
-		      (mets (jklass-gen-methods jklass clause 'export)))
-		   (set! body (cons pred body))))))
-	 (else
-	  (error/loc mod "Illegal extern \"C\" module clause" clause x))))
-   
-   (when (memq 'java (backend-foreign-clause-support (the-backend)))
-      (for-each parse-clause (cdr x)))
-   '())
-
-;*---------------------------------------------------------------------*/
-;*    module5-extern-plugin-java ...                                   */
-;*---------------------------------------------------------------------*/
-(define (module5-extern-plugin-java mod::Module x::pair)
-   
-   (define (parse-clause clause mod::Module x::pair pkg)
-      
-      (define modifier-list
-	 '(public private protected static final synchronized
-	   abstract transient volatile))
-      
-      (define (class-name name)
-	 (let ((i (string-contains name "::")))
-	    (if i
-		(substring name 0 i)
-		name)))
-      
-      (define (parse-class5-ident ident)
-	 (let* ((s (symbol->string ident))
-		(i (string-contains s "::"))
-		(name (if i (substring s 0 i) s))
-		(super (when i (string->symbol (substring s (+fx i 2))))))
-	    (if (char=? (string-ref name 0) #\.)
-		(let ((name (substring name 1)))
-		   (values #f (class-name name) (string->symbol name) super))
-		(let ((i (string-index-right name #\.)))
-		   (if i
-		       (let ((pkg (substring name 0 i))
-			     (id (substring name (+fx i 1))))
-			  (values pkg (class-name name) (string->symbol id) super))
-		       (values #f (class-name name) (string->symbol name) super))))))
-      
-      (define (field5->field4 field clazz)
-	 (if (symbol? field)
-	     (multiple-value-bind (id type)
-		(parse-ident field field mod)
-		`(field ,field ,(symbol->string id)))
-	     (let loop ((f field)
-			(m '()))
-		(cond
-		   ((null? field)
-		    (error/loc mod "Illegal class field" field x))
-		   ((not (pair? f))
-		    (error/loc mod "Illegal class field" field x))
-		   ((memq (car f) modifier-list)
-		    (loop (cdr f) (cons (car f) m)))
-		   (else
-		    (match-case f
-		       ;; field
-		       ((field (and (? symbol?) ?ident))
-			(multiple-value-bind (id type)
-			   (parse-ident ident field mod)
-			   `(field ,@(reverse! m)
-			       ,ident ,(symbol->string id))))
-		       ((field ?modf . ?rest)
-			(let ((ident (car (last-pair rest))))
-			   (if (symbol? ident)
-			       (multiple-value-bind (id type)
-				  (parse-ident ident field mod)
-				  `(field ,@(append (reverse! m) (list modf) (drop-last rest 1))
-				      ,ident ,(symbol->string id)))
-			       (error/loc mod "Illegal class field" field x))))
-		       ;; constructor
-		       ((constructor ?id . ?rest)
-			`(constructor ,@(reverse! m)
-			    ,id ,rest))
-		       ((?ident . (and (? list?) ?args))
-			;; method
-			(multiple-value-bind (id type)
-			   (parse-ident ident field mod)
-			   (if (and (pair? args) (string? (car (last-pair args))))
-			       ;; the last argument is the actual method java name
-			       (let ((sgra (reverse args)))
-				  `(method ,@(reverse m)
-				      ,ident
-				      ,(if (memq 'static m)
-					   (reverse (cdr sgra))
-					   (cons clazz (reverse (cdr sgra))))
-				      ,(car sgra)))
-			       `(method ,@(reverse m)
-				   ,ident
-				   ,(if (memq 'static m) args (cons clazz args))
-				   ,(symbol->string id)))))
-		       (else
-			(error/loc mod "Illegal class field" field x))))))))
-      
-      (define (class5->class4 clause cpkg name id super rest)
-	 (let ((clazz (symbol-append '|::| id)))
-	    (localize clause
-	       `(,(car clause)
-		 ,(if super (string->symbol (format "~a::~a" id super)) id)
-		 ,@(map (lambda (f) (localize f (field5->field4 f clazz))) rest)
-		 ,(cond
-		     (cpkg name)
-		     (pkg (format "~a.~a" pkg id))
-		     (else name))))))
-      
-      (define (jigloo file x mod)
-	 (module5-extern-plugin-preprocessor "jigloo" file x mod))
-
-      (match-case clause
-	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
-	  (java-parser clause (-> mod id) '|.|))
-	 ((or (class ?ident . ?rest)
-	      (abstract-class ?ident . ?rest))
-	  (multiple-value-bind (cpkg name id super)
-	     (parse-class5-ident ident)
-	     (let* ((clazz (class5->class4 clause cpkg name id super rest))
-		   (jklass::jklass (java-parser clazz (-> mod id) '|.|))
-		   (pred (jklass-gen-predicate jklass clause 'export)))
-		(trace-item "ident=" ident)
-		(trace-item "id=" id)
-		(trace-item "super=" super)
-		(trace-item "name=" name)
-		(trace-item "class5="
-		   (if (>fx (length clazz) 5)
-		       (append (take clazz 5) '("..."))
-		       clazz))
-		(declare-java-type! jklass mod clause)
-		(with-access::Module mod (body)
-		   (set! body (cons pred body))))))
-	 ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
- 	  (java-declare-array clause ident of (-> mod id)))
-	 ((import (and ?class (? symbol?)))
-	  (module5-extern-plugin-java mod
-	     (call-with-input-file (jigloo (symbol->string class) clause mod)
-		read)))
-	 (else
-	  (error/loc mod "Illegal extern \"java\" module clause" clause x))))
-   
-   (with-trace 'module_module5 "module5-extern-plugin-java"
-      (trace-item "module=" (-> mod id))
-      (when (memq 'java (backend-foreign-clause-support (the-backend)))
-	 (match-case (cddr x)
-	    (((package (and (? symbol?) ?pkg)) . ?other-clauses)
-	     (let ((qn (string->symbol
-			  (format "~a.~a" pkg (prefix (basename (-> mod path)))))))
-		(jvm-qualified-name-set! (-> mod id) qn)
-		(set! (-> mod qualified-name) qn))
-	     (for-each (lambda (c) (parse-clause c mod x pkg)) other-clauses))
-	    (else
-	     (for-each (lambda (c) (parse-clause c mod x #f)) (cddr x)))))
-      '()))
-
-;*---------------------------------------------------------------------*/
-;*    module5-extern-plugin-preprocessor ...                           */
-;*---------------------------------------------------------------------*/
-(define (module5-extern-plugin-preprocessor cmd::bstring file::bstring x mod::Module)
-   (with-trace 'module_module5 "module5-extern-plugin-preprocessor"
-      (trace-item "cmd=" cmd)
-      (trace-item "file=" file)
-      (let ((path (if (file-name-absolute? file)
-		      file
-		      (make-file-name (dirname (-> mod path)) file))))
-	 (trace-item "path=" path)
-	 (let* ((cache-dir (make-file-path *module-cache-dir* "preprocessor"))
-		(lock-path (make-file-name cache-dir "LOCK"))
-		(cache (make-file-name cache-dir
-			  (string-append (string-replace file #\/ #\_)
-			     ".bgh"))))
-	    (trace-item "cache=" cache)
-	    (make-directories cache-dir)
-	    (unless (directory? cache-dir)
-	       (error/loc mod "Cannot create cache directory"
-		  cache-dir x))
-	    (call-with-output-file lock-path
-	       (lambda (lock)
-		  (lockf lock 'lock)
-		  (unwind-protect
-		     (if (or (not (file-exists? cache))
-			     (and (file-exists? path)
-				  (<elong (file-modification-time cache)
-				     (file-modification-time path))))
-			 (let ((cmd (format "~a/~a -cp ~a -s --module5 ~a -o ~a"
-				       (bigloo-config 'binary-directory)
-				       cmd
-				       (dirname (-> mod path))
-				       (if (file-exists? path) path file)
-				       cache)))
-			    (trace-item "cmd=" cmd)
-			    (if (=fx (system cmd) 0)
-				cache
-				(begin
-				   (when (file-exists? cache)
-				      (delete-file cache))
-				   (error/loc mod
-				      (format "~a Cannot preprocess" cmd)
-				      file x))))
-			 cache)
-		     (lockf lock 'ulock))))))))
-
-;*---------------------------------------------------------------------*/
-;*    module5-extern-plugin-java-finalizer ...                         */
-;*---------------------------------------------------------------------*/
-(define (module5-extern-plugin-java-finalizer mod::Module)
-   ;; Mark that all the java class predicates cannot be removed
-   ;; until the coercion and checks have been inserted in the AST
-   ;; Because of the complex Java code generation and complex declarations
-   ;; associated with these codes, this cannot mark assignments cannot
-   ;; done while the classes are constructed
-   (for-each-type! (lambda (t)
-		      (when (or (isa? t jclass) (isa? t jarray))
-			 (let* ((p (symbol-append (type-id t) '?))
-				(g (find-global (get-genv) p)))
-			    (when (isa? g global)
-			       (global-removable-set! g 'coerce)))))))
-
-;*---------------------------------------------------------------------*/
-;*    module5-extern-plugin-wasm ...                                   */
-;*---------------------------------------------------------------------*/
-(define (module5-extern-plugin-wasm mod::Module expr::pair)
-   
-   (define (parse-clause clause mod::Module)
-      (match-case clause
-	 (((and (? symbol?) ?ident) (and (? string?) ?name) . ?deps)
-	  (multiple-value-bind (id type)
-	     (parse-ident ident clause mod)
-	     (let ((decl (hashtable-get (-> mod decls) (symbol->string! id))))
-		(if (isa? decl Decl)
-		    (with-access::Decl decl (attributes)
-		       (if (pair? deps)
-			   (set! attributes
-			      (cons* (cons 'wasm deps)
-				 ;(cons 'qualified-type-name name)
-				 attributes))
-			   '(set! attributes
-			      (cons (cons 'qualified-type-name name)
-				 attributes))))
-		    (error/loc "mod" "Cannot find declaration" clause expr)))))
-	 (((and (? symbol?) ?id) ?proto (and (? string?) ?cn))
-	  (extern-parser clause #f))
-	 (else
-	  (error/loc mod "Illegal extern \"wasm\" module clause" clause expr))))
-   
-   (when (memq 'wasm (backend-foreign-clause-support (the-backend)))
-      (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
-   '())
-
-;*---------------------------------------------------------------------*/
-;*    module5-plugin-pragma ...                                        */
-;*---------------------------------------------------------------------*/
-(define (module5-plugin-pragma mod::Module expr::pair)
-
-   (define (parse-clause clause::pair mod::Module)
-      (match-case clause
-	 ((?id . ?props)
-	  (let ((decl (module5-get-decl mod id clause)))
-	     (with-access::Decl decl ((dmod mod) attributes)
-		(cond
-		   ((not (eq? dmod mod))
-		    (error/loc mod
-		       (format "\"~a\" is not defined in module" id)
-		       clause mod))
-		   (else
-		    (set! attributes (append attributes props)))))))
-	 (else
-	  (error/loc mod "Illegal pragma clause" clause expr))))
-   
-   (for-each (lambda (c) (parse-clause c mod)) (cdr expr)))
-
-;*---------------------------------------------------------------------*/
-;*    module5-plugin-eval ...                                          */
-;*---------------------------------------------------------------------*/
-(define (module5-plugin-eval mod::Module expr::pair)
-   (if (eq? (-> mod id) *module*)
-       (for-each (lambda (c) (parse-eval c expr)) (cdr expr))
-       (with-remembered-eval
-	  (lambda ()
-	     (for-each (lambda (c) (parse-eval c expr)) (cdr expr))))))
-
-;*---------------------------------------------------------------------*/
-;*    module4-plugin-eval ...                                          */
-;*---------------------------------------------------------------------*/
-(define (module4-plugin-eval mod::Module expr::pair)
-   (module5-plugin-eval mod expr)
-   '())
-
-;*---------------------------------------------------------------------*/
-;*    module4-plugin-type ...                                          */
-;*---------------------------------------------------------------------*/
-(define (module4-plugin-type mod::Module x::pair)
-   (for-each (lambda (c) (type-parser #f c x)) (cdr x))
-   '())
-
-;*---------------------------------------------------------------------*/
-;*    module4-plugin-pragma ...                                        */
-;*---------------------------------------------------------------------*/
-(define (module4-plugin-pragma mod::Module x::pair)
-   (for-each (lambda (c) (pragma-parser c (-> mod id) x)) (cdr x))
-   '())
-
-;*---------------------------------------------------------------------*/
 ;*    module5-resolve-pragma! ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (module5-resolve-pragma! mod::Module env)
-   (with-access::Module mod (decls (mid id))
+   (with-access::Module mod (decls (mid id) (mexpr expr))
       (hashtable-for-each decls
 	 (lambda (k d)
-	    (with-access::Decl d ((dmod mod) id attributes scope def)
+	    (with-access::Decl d ((dmod mod) id attributes scope def expr)
 	       (when (and (eq? dmod mod) (pair? attributes))
 		  (let* ((m (if (eq? scope 'extern) 'foreign mid))
 			 (g (find-global/module env id m)))
@@ -1336,8 +725,9 @@
 			((isa? def JDef)
 			 #unspecified)
 			(else
-			 (error/loc mod "Cannot find global definition" id
-			    attributes))))))))))
+			 (error/loc mod
+			    (format "Cannot find global definition \"~a\"" id)
+			    expr mexpr))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *heap4-modules* ...                                              */
@@ -1496,6 +886,9 @@
 	 (else
 	  (error "lambda" "Illegal form" x))))
 
+   (define (identify-expand x e)
+      x)
+
    (install-module5-expander xenv 'define #f define-expander)
    (install-module5-expander xenv 'define-inline #f define-expander)
    (install-module5-expander xenv 'define-generic #f define-expander)
@@ -1554,3 +947,4 @@
 					`(,(symbol->string id) ,(proto expr) ,(loc expr))))
 				  `(,(symbol->string id) ,(proto expr) ,(loc expr))))))))
 	 port)))
+

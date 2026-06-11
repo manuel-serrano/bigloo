@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Sun May 17 09:59:00 2026 (serrano)                */
+;*    Last change :  Thu Jun 11 11:36:47 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -341,7 +341,7 @@
 	   id::symbol alias::obj module::symbol
 	   value::value import::symbol
 	   src::obj)
-   (with-trace 'ast "bind-global!"
+   (with-trace 'ast_venv "bind-global!"
       (trace-item "id=" id)
       (let* ((ident (or alias id))
 	     (old (find-global env ident module)))

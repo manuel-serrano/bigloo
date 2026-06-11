@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Jun  9 11:27:16 2026 (serrano)                */
+;*    Last change :  Thu Jun 11 11:46:04 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -2020,8 +2020,6 @@
 				(set! ddecl decl))))))
 		   def)))))
 
-   
-
    (define (collect-define! mod::Module expr)
       (match-case expr
 	 ((define (and (? symbol?) ?id) . ?-)
@@ -2221,6 +2219,8 @@
 	     expr))
 	 (((or (kwote or) (kwote and)) . ?args)
 	  (free-vars*! args env globals))
+	 ((___bgl_private_stamp_mark . ?0)
+	  globals)
 	 (else
 	  (free-vars*! expr env globals))))
    

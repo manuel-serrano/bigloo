@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Tue Jun  9 14:13:33 2026 (serrano)                */
+;*    Last change :  Wed Jun 10 07:57:39 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -54,21 +54,9 @@
 	       (methods::pair-nil (default '()))
 	       (constructors::pair-nil (default '()))
 	       (abstract?::bool (default #f))
-	       (module (default #unspecified)))
-	    
-	    (make-java-compiler)
-	    (java-finalizer)
-	    (find-java-class ::symbol)
-	    (jname-package ::bstring default)
-	    ;; heap-add-jclass is untyped other it force the module
-	    ;; object-module to be imported in too many places.
-	    (heap-add-jclass! jclass)
-	    (parse-java-clause ::symbol ::pair)
-	    (java-parser ::obj ::symbol ::symbol)
-	    (java-declare-array j::pair id::symbol of::symbol ::symbol)
-	    (jklass-gen-predicate::pair ::jklass ::pair ::symbol)
-	    (jklass-gen-methods::pair-nil ::jklass ::pair ::symbol))
-   (static  (class jfield
+	       (module (default #unspecified))
+	       (delayed-accessors?::bool (default #t)))
+	    (class jfield
 	       (src::pair read-only)
 	       (id::symbol read-only)
 	       (qid::symbol read-only)
@@ -80,7 +68,18 @@
 	       (args::pair-nil read-only)
 	       (jname::bstring read-only)
 	       (modifiers::pair-nil read-only (default '())))
-	    (class jconstructor::jmethod)))
+	    (class jconstructor::jmethod)
+	    
+	    (make-java-compiler)
+	    (java-finalizer)
+	    (find-java-class ::symbol)
+	    (jname-package ::bstring default)
+	    ;; heap-add-jclass is untyped other it force the module
+	    ;; object-module to be imported in too many places.
+	    (heap-add-jclass! jclass)
+	    (parse-java-clause ::symbol ::pair)
+	    (java-parser ::obj ::symbol ::symbol)
+	    (java-declare-array j::pair id::symbol of::symbol ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-java-compiler ...                                           */
@@ -183,21 +182,23 @@
 (define (java-finalizer)
    
    (define (jklass-ctors k::jklass)
-      (with-access::jklass k (id idd loc constructors)
-	 (map (lambda (ctor)
-		 (let* ((cid (string->symbol (format "~a.~a" idd (car ctor))))
-			(kid (fast-id-of-id id loc))
-			(tid (make-typed-ident cid idd))
-			(args (map (lambda (a) (gensym 'a)) (cdr ctor)))
-			(targs (map (lambda (a t) (symbol-append a t))
-				  args (cdr ctor))))
-		    `(define-inline (,tid ,@targs)
-			,(apply make-private-sexp 'new kid
-			    `',(map (lambda (a)
-				       (type-id (type-of-id a loc)))
-				  (cdr ctor))
-			    args))))
-	    constructors)))
+      (with-access::jklass k (id idd loc constructors delayed-accessors?)
+	 (if delayed-accessors?
+	     (map (lambda (ctor)
+		     (let* ((cid (string->symbol (format "~a.~a" idd (car ctor))))
+			    (kid (fast-id-of-id id loc))
+			    (tid (make-typed-ident cid idd))
+			    (args (map (lambda (a) (gensym 'a)) (cdr ctor)))
+			    (targs (map (lambda (a t) (symbol-append a t))
+				      args (cdr ctor))))
+			`(define-inline (,tid ,@targs)
+			    ,(apply make-private-sexp 'new kid
+				`',(map (lambda (a)
+					   (type-id (type-of-id a loc)))
+				      (cdr ctor))
+				args))))
+		constructors)
+	     '())))
    
    (with-trace 'module_java "java-finalizer"
       ;; First, we check for the foreign class. If defined but bound (i.e.,
@@ -217,11 +218,12 @@
       (let ((jclasses (map jklass->jclass *jklasses*)))
 	 ;; declare all the Java classes
 	 (for-each (lambda (jklass jclass)
-		      (with-access::jklass jklass (id jname src package)
+		      (with-access::jklass jklass (id jname src package delayed-accessors?)
 			 (remprop! (jklass-id jklass) 'jklass)
 			 (unless (string? jname)
 			    (java-error src "Can't find class declaration"))
-			 (declare-jklass-properties! jklass jclass)))
+			 (when delayed-accessors?
+			    (declare-jklass-properties! jklass jclass))))
 	    *jklasses* jclasses)
 	 ;; patch bigloo java exported variables name
 	 (for-each (lambda (jmod)
@@ -681,7 +683,8 @@
       (with-access::jklass jklass (src id jname package loc
 				     fields constructors
 				     abstract?
-				     module)
+				     module
+				     delayed-accessors?)
 	 (trace-item "id=" id)
 	 (trace-item "jname=" jname)
 	 (trace-item "package=" package)
@@ -704,6 +707,13 @@
 					  (fast-id-of-id id loc))))
 			(with-access::jklass jklass (methods)
 			   methods))))
+
+	       (with-access::jclass jclass (slots its-super)
+		  (set! slots
+		     (make-java-class-slots jclass
+			(map jfield->lfield fields)
+			its-super src)))
+
 	       ;; both registration are needed for the SawJvm backend
 	       (register-java-class! jid jname)
 	       (when (>fx (string-length package) 0)
@@ -718,15 +728,16 @@
 	       ;; message if that tclass is not defined
 	       (type-import-location-set! jclass loc)
 	       ;; when importing a class, import the accessors...
-	       (delay-class-accessors! jclass
-		  (delay (begin
-			    (import-java-class-accessors!
-			       (map jfield->lfield fields)
-			       constructors
-			       jclass
-			       abstract?
-			       module
-			       src))))
+	       (when delayed-accessors?
+		  (delay-class-accessors! jclass
+		     (delay (begin
+			       (import-java-class-accessors!
+				  (map jfield->lfield fields)
+				  constructors
+				  jclass
+				  abstract?
+				  module
+				  src)))))
 	       jclass)))))
 
 ;*---------------------------------------------------------------------*/
@@ -782,46 +793,6 @@
 	     (foreign-accesses-add!
 		(make-ctype-accesses! jtype jtype (find-location j) module)))))))
       
-;*---------------------------------------------------------------------*/
-;*    jklass-gen-predicate ...                                         */
-;*---------------------------------------------------------------------*/
-(define (jklass-gen-predicate::pair class::jklass src::pair scope::symbol)
-   (with-trace 'module_java "jklass-gen-predicate"
-      (trace-item "jklass=" (jklass-id class))
-      (let* ((id (jklass-id class))
-	     (pid (symbol-append id '?))
-	     (pidt (symbol-append id '?::bool))
-	     (obj (mark-symbol-non-user! (gensym 'obj))))
-	 
-;* 	 ;; the pragma declaration                                     */
-;* 	 (produce-module-clause!                                       */
-;* 	    `(,scope (inline ,pidt ::obj)))                            */
-;* 	 (produce-module-clause!                                       */
-;* 	    `(pragma (,pid (predicate-of ,id) no-cfa-top (effect))))   */
 
-	 ;; the definition
-	 (let ((nx `(define-inline (,pidt ,obj)
-		       ,(make-private-sexp 'instanceof id obj))))
-	    (localize src nx)))))
-
-;*---------------------------------------------------------------------*/
-;*    jklass-gen-methods ...                                           */
-;*---------------------------------------------------------------------*/
-(define (jklass-gen-methods::pair-nil class::jklass src::pair scope::symbol)
-   (with-trace 'module_java "jklass-gen-methods"
-      (trace-item "jklass=" (jklass-id class))
-
-      (map (lambda (m::jmethod)
-	      (when (and (memq 'static (-> m modifiers))
-			 (not (memq 'abstract (-> m modifiers))))
-		 (let* ((id (-> m id))
-			(pid id)
-			(qid (symbol-append (-> class id) '|.| (-> m id))))
-		    (tprint "jm=" (-> m id))
-		    (let ((nx `(define-inline (,pid)
-				  (,qid))))
-		       (tprint "nx=" nx)
-		       (localize src nx)))))
-	 (-> class methods))))
       
 

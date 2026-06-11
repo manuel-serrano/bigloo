@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct 20 15:11:28 2025                          */
-;*    Last change :  Tue Jun  9 11:20:00 2026 (serrano)                */
+;*    Last change :  Wed Jun 10 13:03:47 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST construction of the toplevel forms                           */
@@ -48,7 +48,7 @@
 	    expand_eps)
    
   (export  (toplevel*->ast::pair-nil ::pair-nil ::pair-nil ::symbol ::obj)
-	   (toplevel->ast ::obj ::pair-nil ::symbol ::obj)))
+	   (toplevel->ast::pair-nil ::obj ::pair-nil ::symbol ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    toplevel*->ast ...                                               */
@@ -611,7 +611,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-svar-definition ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (make-svar-definition id src genv)
+(define (make-svar-definition::pair id src genv)
    (def-global-svar! genv id *module* src 'now)
    ;; without the Inline global variable optimization once should except
    ;; to find here `(set-car! src 'set!)'

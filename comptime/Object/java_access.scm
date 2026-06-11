@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Tue Jun  9 09:47:23 2026 (serrano)                */
+;*    Last change :  Thu Jun 11 14:14:12 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class accessors                                      */
@@ -100,7 +100,7 @@
    ;; we store inside the class the result of the parsing
    ;; we pre-parse the class slot and we return the data structure
    ;; describing the result of this parsing
-   (let ((cslots (make-java-class-slots class
+   '(let ((cslots (make-java-class-slots class
 		    slots
 		    (jclass-its-super class)
 		    src-def)))

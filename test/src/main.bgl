@@ -37,7 +37,7 @@
    (import "./vector.bgl" . vector)
 
    ;; library tests
-   (cond-expand ((library ssl) (import "./ssl0.bgl" . ssl0)))
+   (cond-expand ((and C (library ssl)) (import "./ssl0.bgl" . ssl0)))
 
    ;; backend tests
    (cond-expand (C (import "./extern_c.bgl" . c)))
@@ -90,7 +90,7 @@
                          (vector.test verbose tests)))
           (res-libs (list
                        (cond-expand
-                          ((library ssl) (ssl0.test verbose tests))
+                          ((and C (library ssl)) (ssl0.test verbose tests))
                           (else (cons 0 0)))))
           (res-extern (list
                          (cond-expand
