@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Thu Jun 11 16:43:43 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 07:36:16 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -67,7 +67,6 @@
 	      (infix::bool read-only (default #f))
 	      (macro::bool read-only (default #f))
 	      (module::symbol read-only)
-	      (pragma::pair-nil read-only (default '()))
 	      (modifiers::pair-nil read-only (default '())))
 
 	   (class TDef::Def
@@ -488,8 +487,12 @@
 	 (module5-extern-plugin-preprocessor "jigloo" file x mod))
 
       (match-case clause
-	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
+	 ((export (? symbol?) (? string?))
 	  (java-parser clause (-> mod id) '|.|))
+	 ((export (and ?id (? symbol?)))
+	  (java-parser (localize clause
+			  `(export ,id ,(symbol->string id)))
+	     (-> mod id) '|.|))
 	 ((or (class ?ident . ?rest)
 	      (abstract-class ?ident . ?rest))
 	  (multiple-value-bind (cpkg name id super)
@@ -508,7 +511,8 @@
 		(set! (-> jklass delayed-accessors?) #f)
 		(declare-jklass-predicate! jklass mod clause)
 		(declare-jklass-constructors! jklass mod clause)
-		(declare-jklass-methods! jklass mod clause))))
+		(declare-jklass-methods! jklass mod clause)
+		(declare-jklass-fields! jklass mod clause))))
 	 ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
  	  (java-declare-array clause ident of (-> mod id)))
 	 ((import (and ?class (? symbol?)))
@@ -538,23 +542,25 @@
 (define (declare-jklass-predicate! class::jklass mod::Module clause::pair)
    (with-trace 'module_extern5 "declare-jklass-predicate!"
       (trace-item "jklass=" (-> class id))
-      (let* ((id (-> class id))
+      (let* ((id (-> class idd))
 	     (pid (symbol-append id '?))
 	     (pidt (symbol-append id '?::bool))
 	     (obj (mark-symbol-non-user! (gensym 'obj)))
 	     (expr (localize clause
 		      `(define-inline (,pidt ,obj)
 			  ,(make-private-sexp 'instanceof id obj))))
+	     (attrs `((pragma ((predicate-of ,id))) (removable 'coerce)))
 	     (decl (instantiate::Decl
 		      (id pid)
 		      (alias pid)
 		      (mod mod)
 		      (expr clause)
 		      (ronly #t)
-		      (scope 'export))))
-	 (with-access::Module mod (decls defs exports body)
+		      (attributes attrs)
+		      (scope 'static))))
+	 (with-access::Module mod (decls defs body)
 	    (set! body (cons expr body))
-	    (hashtable-put! exports (symbol->string! pid) decl)
+	    ;;(hashtable-put! exports (symbol->string! pid) decl)
 	    (hashtable-put! decls (symbol->string! pid) decl)))))
 
 ;*---------------------------------------------------------------------*/
@@ -568,7 +574,7 @@
 	 (when (isa? m jconstructor)
 	    (multiple-value-bind (mid _)
 	       (parse-ident (-> m id))
-	       (let* ((id (-> class id))
+	       (let* ((id (-> class idd))
 		      (types (map (lambda (t)
 				     (multiple-value-bind (_ ty)
 					(parse-ident t)
@@ -586,12 +592,12 @@
 			       (mod mod)
 			       (expr clause)
 			       (ronly #t)
-			       (scope 'export)
-			       (attributes '(hidden)))))
-		  (with-access::Module mod (decls defs exports body)
+			       (scope 'static))))
+		  (with-access::Module mod (decls defs body)
 		     (set! body (cons expr body))
-		     (hashtable-put! exports (symbol->string! mid) decl)
-		     (hashtable-put! decls (symbol->string! mid) decl))))))
+		     ;; (hashtable-put! exports (symbol->string! mid) decl)
+		     (hashtable-put! decls (symbol->string! mid) decl)
+		     )))))
       
       (for-each declare-method! (-> class methods))))
    
@@ -606,7 +612,7 @@
 	 (unless (isa? m jconstructor)
 	    (multiple-value-bind (mid mty)
 	       (parse-ident (-> m id))
-	       (let* ((id (-> class id))
+	       (let* ((id (-> class idd))
 		      (types (map (lambda (t)
 				     (multiple-value-bind (_ ty)
 					(parse-ident t)
@@ -635,16 +641,56 @@
 				  (expr clause)
 				  (ronly #t)
 				  (scope 'extern)
-				  (def def)
-				  (attributes '(hidden)))))
-		     (with-access::Module mod (decls defs exports)
-			(hashtable-put! exports (symbol->string! mid) decl)
+				  (def def))))
+		     (with-access::Module mod (decls defs)
+			;; (hashtable-put! exports (symbol->string! mid) decl)
 			(hashtable-put! decls (symbol->string! mid) decl)
 			(hashtable-put! defs (symbol->string! mid) def))
 		     (when (= (-> mod version) 4)
 			'todo))))))
       
       (for-each declare-method! (-> class methods))))
+   
+;*---------------------------------------------------------------------*/
+;*    declare-jklass-fields! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (declare-jklass-fields! class::jklass mod::Module clause::pair)
+   (with-trace 'module_extern5 "declare-jklass-fields!"
+      (trace-item "jklass=" (-> class id))
+      
+      (define (declare-field! f::jfield)
+	 (when (memq 'static (-> f modifiers))
+	    (multiple-value-bind (fid mty)
+	       (parse-ident (-> f id))
+	       (let* ((id (-> class idd))
+		      (sid (string->symbol (format "~a.~a" id fid))))
+		  (co-instantiate
+			((def (instantiate::CDef
+				 (id sid)
+				 (type (string->symbol mty))
+				 (kind 'jvm-variable)
+				 (expr clause)
+				 (ronly #t)
+				 (decl decl)
+				 (name (-> f jname))
+				 (args '())
+				 (modifiers (-> f modifiers))
+				 (module (string->symbol (-> class jname)))))
+			 (decl (instantiate::Decl
+				  (id sid)
+				  (alias sid)
+				  (mod mod)
+				  (expr clause)
+				  (ronly #t)
+				  (scope 'extern)
+				  (def def))))
+		     (with-access::Module mod (decls defs)
+			(hashtable-put! decls (symbol->string! sid) decl)
+			(hashtable-put! defs (symbol->string! sid) def))
+		     (when (= (-> mod version) 4)
+			'todo))))))
+      
+      (for-each declare-field! (-> class fields))))
    
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-preprocessor ...                           */
@@ -703,7 +749,8 @@
    ;; associated with these codes, this cannot mark assignments cannot
    ;; done while the classes are constructed
    (for-each-type! (lambda (t)
-		      (when (or (isa? t jclass) (isa? t jarray))
+		      (when (or #f ;; (isa? t jclass)
+				(isa? t jarray))
 			 (let* ((p (symbol-append (type-id t) '?))
 				(g (find-global (get-genv) p)))
 			    (when (isa? g global)

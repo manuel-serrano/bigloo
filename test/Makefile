@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Mon Jun  8 08:42:53 2026 (serrano)                */
+#*    Last change :  Fri Jun 12 08:34:34 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -53,7 +53,7 @@ COMMON=$(TESTS:%=%) $(MODULES4:%=modules/%) $(MODULES5:%=modules/%)
 
 BACKEND_C = ssl0 extern_c c
 
-BACKEND_J = ssl0 extern_jvm Intf Point
+BACKEND_J = extern_jvm Intf Point
 
 BACKEND_W = extern_wasm
 
@@ -134,7 +134,7 @@ objs_jvm/%.class: src/%.bgl src/test.bgh
 	$(BIGLOO) -c $(BFLAGS) $(BJFLAGS) $(EFLAGS) $< -o $@
 
 objs_jvm/%.class: src/%.java
-	$(JAVA) $< -d objs_jvm
+	$(JAVAC) $< -d objs_jvm -cp objs_jvm:$(BOOTLIBDIR)/bigloo_s.zip
 
 objs_c/%.o: src/%.scm src/test.bgh
 	$(BIGLOO) -c $(BFLAGS) $(BM$FLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
@@ -147,6 +147,8 @@ objs_jvm/%.class: src/%.scm src/test.bgh
 
 .jfile:
 	$(BGLJFILE) --strip 1 $(TESTS:%=src/%.bgl) $(MODULES5:%=src/modules/%.bgl) $(MODULES4:%=src/modules/%.scm) -o $@
+
+objs_jvm/Point.class: objs_jvm/Intf.class
 
 #*---------------------------------------------------------------------*/
 #*    sub-directories                                                  */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Thu Jun 11 11:46:04 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 07:52:40 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1943,7 +1943,7 @@
 				  (error/loc mod "Cannot find definition"
 				     id expr))))
 		  (reverse! unbounds))
-	       (error mid "Unbound exported identifier"
+	       (error mid "Unbound identifiers"
 		  (map (lambda (d) (with-access::Decl d (id) id))
 		     unbounds)))))))
 
@@ -2017,10 +2017,12 @@
 				(set! ddef def)
 				(set! ddecl decl))
 			       ((static)
+				(set! ddef def)
 				(set! ddecl decl))))))
 		   def)))))
 
    (define (collect-define! mod::Module expr)
+      (trace-item "collect-define! expr=" expr)
       (match-case expr
 	 ((define (and (? symbol?) ?id) . ?-)
 	  (multiple-value-bind (name type)
@@ -2046,7 +2048,7 @@
 	  (collect-defines! mod exprs))))
 
    (with-trace '__module5 "collect-defines!"
-	 (for-each (lambda (expr) (collect-define! mod expr)) body)))
+      (for-each (lambda (expr) (collect-define! mod expr)) body)))
 
 ;*---------------------------------------------------------------------*/
 ;*    export-inline-hidden! ...                                        */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Jun  8 08:45:19 2026                          */
-;*    Last change :  Mon Jun  8 08:48:36 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 09:44:05 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the Wasm extern interface                                */
@@ -24,7 +24,7 @@
 ;*    test ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (test verbose tests::pair-nil)
-   (when (or (null? tests) (member "ssl" tests))
-      (test-all verbose "ssl")))
+   (when (or (null? tests) (member "extern_wasm" tests))
+      (test-all verbose "extern_wasm")))
 
    

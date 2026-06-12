@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Jun 11 08:54:03 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 08:16:39 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -675,9 +675,7 @@
 		(hashtable-for-each imports
 		   (lambda (k decl)
 		      (with-access::Decl decl (mod)
-			 (module5-module-qualified-name-set! mod)))))
-	     (let ((u (java-finalizer)))
-		(when (pair? u) (set! units (cons (car u) units))))))
+			 (module5-module-qualified-name-set! mod)))))))
 	 
 	 ;; foreign unit
 	 (let ((u (foreign-finalizer)))
@@ -689,6 +687,13 @@
 	 ;; build the variable and function ast
 	 (module5-ast! mod genv 'compile)
 
+	 ;; java finalizer
+	 ;; cannot be executed before module5-ast! because of
+	 ;; jvm exports
+	 (when (eq? *target-language* 'jvm)
+	    (let ((u (java-finalizer)))
+	       (when (pair? u) (set! units (cons (car u) units)))))
+	 
 	 ;; bind the imported inline in the module environment
 	 (module5-imported-inline mod genv)
 
@@ -711,7 +716,7 @@
 		  (set! *main* m)))
 
 	    ;; handle pragma declarations
-	    (module5-resolve-pragma! mod genv)
+	    ;;(module5-resolve-pragma! mod genv)
 
 	    ;; java classes predicate and constructors
 	    (module5-extern-plugin-java-finalizer mod)

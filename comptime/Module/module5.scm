@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Jun 10 08:24:33 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 07:40:08 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -241,6 +241,24 @@
       (if (string? type)
 	  (string->symbol (format "~a::~a" id type))
 	  id))
+
+   (define (global-attributes-set! g::global decl::Decl)
+
+      (define (assq* key l)
+	 (let loop ((l l))
+	    (cond
+	       ((null? l) #f)
+	       ((not (pair? (car l))) (loop (cdr l)))
+	       ((eq? (caar l) key) (car l))
+	       (else (loop (cdr l))))))
+      
+      (with-access::Decl decl (attributes id)
+	 (let ((p (assq* 'pragma attributes)))
+	    (when (pair? p)
+	       (global-pragma-set! g (append (global-pragma g) (cadr p)))))
+	 (let ((r (assq* 'removable attributes)))
+	    (when (pair? r)
+	       (global-removable-set! g (cadr r))))))
    
    (define (declare-definition! kind id type alias mid scope expr def::Def)
       (with-trace 'module_module5 "declare-definition!"
@@ -252,20 +270,35 @@
 		(declare-global-svar! env (make-typed-ident id type) alias
 		   mid scope expr expr)))
 	    ((procedure)
-	     (def-library-set! def
-		(declare-global-sfun! env (make-typed-ident id type) alias
-		   (procedure-args expr id mid def)
-		   mid scope 'sfun expr expr)))
+	     (let ((g (def-library-set! def
+			 (declare-global-sfun! env
+			    (make-typed-ident id type) alias
+			    (procedure-args expr id mid def)
+			    mid scope 'sfun expr expr))))
+		(with-access::Def def (decl)
+		   (when (isa? decl Decl)
+		      (global-attributes-set! g decl))
+		   g)))
 	    ((inline)
-	     (def-library-set! def
-		(declare-global-sfun! env (make-typed-ident id type) alias
-		   (procedure-args expr id mid def)
-		   mid scope 'sifun expr expr)))
+	     (let ((g (def-library-set! def
+			 (declare-global-sfun! env
+			    (make-typed-ident id type) alias
+			    (procedure-args expr id mid def)
+			    mid scope 'sifun expr expr))))
+		(with-access::Def def (decl)
+		   (when (isa? decl Decl)
+		      (global-attributes-set! g decl))
+		   g)))
 	    ((generic)
-	     (def-library-set! def
-		(declare-global-sfun! env (make-typed-ident id type) alias
-		   (procedure-args expr id mid def)
-		   mid scope 'sgfun expr expr)))
+	     (let ((g (def-library-set! def
+			 (declare-global-sfun! env
+			    (make-typed-ident id type) alias
+			    (procedure-args expr id mid def)
+			    mid scope 'sgfun expr expr))))
+		(with-access::Def def (decl)
+		   (when (isa? decl Decl)
+		      (global-attributes-set! g decl))
+		   g)))
 	    ((macro)
 	     (with-access::Def def (expr)
 		(add-macro-definition! expr id)))
@@ -273,23 +306,33 @@
 	     (with-access::Def def (expr)
 		(add-macro-definition! expr id)))
 	    ((c-function)
-	     (with-access::CDef def (name type infix args macro module pragma)
+	     (with-access::CDef def (name type infix args macro module decl)
 		(let ((g (declare-global-cfun! env id alias module name
 			    type args infix macro expr expr)))
-		   (global-pragma-set! g pragma)
+		   (when (isa? decl Decl)
+		      (global-attributes-set! g decl))
 		   g)))
 	    ((c-variable)
-	     (with-access::CDef def (name type macro module pragma)
+	     (with-access::CDef def (name type macro module decl)
 		(let ((g (declare-global-cvar! env id alias module name
 			    type macro expr expr)))
-		   (global-pragma-set! g pragma)
+		   (when (isa? decl Decl)
+		      (global-attributes-set! g decl))
 		   g)))
 	    ((jvm-method)
-	     (with-access::CDef def (name type modifiers args module pragma)
+	     (with-access::CDef def (name type modifiers args module decl)
 		(let ((g (declare-global-cfun! env id alias module name
 			    type args #f #f expr expr)))
-		   (global-pragma-set! g pragma)
+		   (when (isa? decl Decl)
+		      (global-attributes-set! g decl))
 		   (cfun-method-set! (global-value g) modifiers)
+		   g)))
+	    ((jvm-variable)
+	     (with-access::CDef def (name type macro module decl)
+		(let ((g (declare-global-cvar! env id alias module name
+			    type macro expr expr)))
+		   (when (isa? decl Decl)
+		      (global-attributes-set! g decl))
 		   g)))
 	    ((c-type)
 	     ;; already processed so ignore
@@ -710,7 +753,7 @@
 ;*    module5-resolve-pragma! ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (module5-resolve-pragma! mod::Module env)
-   (with-access::Module mod (decls (mid id) (mexpr expr))
+   '''(with-access::Module mod (decls (mid id) (mexpr expr))
       (hashtable-for-each decls
 	 (lambda (k d)
 	    (with-access::Decl d ((dmod mod) id attributes scope def expr)

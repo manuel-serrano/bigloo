@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Jun  8 08:45:19 2026                          */
-;*    Last change :  Tue Jun  9 07:56:18 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 09:43:54 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the C extern interface                                   */
@@ -44,8 +44,8 @@
 ;*    test ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (test verbose tests::pair-nil)
-   (when (or (null? tests) (member "ssl" tests))
-      (test-all verbose "ssl")))
+   (when (or (null? tests) (member "extern_c" tests))
+      (test-all verbose "extern_c")))
 
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */

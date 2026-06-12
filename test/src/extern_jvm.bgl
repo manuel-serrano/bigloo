@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Jun  8 08:45:19 2026                          */
-;*    Last change :  Mon Jun  8 18:11:35 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 08:28:17 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the JVM extern interface                                 */
@@ -15,6 +15,7 @@
 (module extern_jvm
 
    (extern "java"
+      
       (abstract-class Intf
          (abstract public abstract_met::int ::Intf))
       (class Point::Intf
@@ -23,10 +24,12 @@
          (field x::int)
          (field y::int)
          (field static point_num::int)
-         (abstract_met::int ::point)
-         (show::void ::point)
-         (static statistics::int)))
-    
+         (abstract_met::int)
+         (toString::String)
+         (static statistics::int))
+      
+      (export callback))
+
    (export test))
 
 ;*---------------------------------------------------------------------*/
@@ -35,10 +38,43 @@
 (include "./test.bgh")
 
 ;*---------------------------------------------------------------------*/
+;*    callback ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (callback::int x::int)
+   (+fx x 1))
+
+;*---------------------------------------------------------------------*/
 ;*    test ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (test verbose tests::pair-nil)
-   (when (or (null? tests) (member "ssl" tests))
-      (test-all verbose "ssl")))
+   (when (or (null? tests) (member "extern_jvm" tests))
+      (test-all verbose "extern_jvm")))
 
-   
+(define-test ctor
+   (begin (Point.new) #t))
+(define-test ctor
+   (begin (Point.new2 1 2) #t))
+
+(define-test predicate
+   (Point? (Point.new)))
+(define-test predicate
+   (Intf? (Point.new)))
+(define-test predicate
+   (Intf? 3) :expected #f)
+
+(define-test field
+   (let ((o::Point (Point.new2 1 2))) (-> o x)) :expected 1)
+(define-test field
+   (let ((o::Point (Point.new2 1 2))) (-> o y)) :expected 2)
+
+(define-test method
+   (let ((o::Point (Point.new))) (string? ((-> o toString)))))
+(define-test abstract-method
+   (let ((o::Point (Point.new))) (integer? ((-> o abstract_met)))))
+
+(define-test static-field
+   (> Point.point_num 0))
+
+(define-test static-method
+   (> (Point.statistics) 1000))
+

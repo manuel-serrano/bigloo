@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Coerce/coerce.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Coerce/coerce.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Wed Apr  8 08:08:39 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 09:34:19 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce implicity type coercions                               */
@@ -246,6 +246,27 @@
    (with-access::vlength node (expr* type vtype)
       (set-car! expr* (coerce! (car expr*) caller vtype safe))
       (convert! node type to safe)))
+
+;*---------------------------------------------------------------------*/
+;*    coerce! ::instanceof ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (coerce! node::instanceof caller to safe)
+   (with-access::instanceof node (expr* type class loc)
+      (if (jclass? class)
+	  (let ((ety (node-type (car expr*))))
+	     ;; MS 12 jun 2026
+	     ;; Java's instanceof requires the value on the stack
+	     ;; to be an object, not a literal value so Bigloo
+	     ;; needs to check if the static type is known to be
+	     ;; a literal, in which case, a #f is forced in the ast
+	     (if (or (jclass? ety) (eq? ety *obj*))
+		 (call-next-method)
+		 (let ((false (instantiate::literal
+				 (type *bool*)
+				 (value #f)
+				 (loc loc))))
+		    (coerce! false caller to safe))))
+	  (call-next-method))))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::cast ...                                               */

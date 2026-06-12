@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Wed Jun 10 07:57:39 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 08:57:21 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -122,7 +122,7 @@
 	 (if (>fx (length java) 10) (append (take java 6) '("...")) java))
       (match-case java
 	 ;; export clauses
-	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
+	 ((export (? symbol?) (? string?))
 	  (set! *jexported* (cons (cons java module) *jexported*)))
 	 ((export . ?-)
 	  (java-error java "Illegal Java export form"))
@@ -244,6 +244,7 @@
 				"Re-exportation of global variable (ignored)"
 				java))
 			    (else
+			     (global-import-set! global 'export)
 			     (global-name-set! global name)))))
 	    *jexported*)
 	 ;; collect all the undeclared references type
