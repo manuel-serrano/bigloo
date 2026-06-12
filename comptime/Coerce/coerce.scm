@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Fri Jun 12 09:34:19 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 16:00:04 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce implicity type coercions                               */
@@ -44,7 +44,7 @@
 ;*    coerce-function! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (coerce-function! variable type-safe)
-   (with-trace 'coerce "coerce-function!"
+   (with-trace 'coerce_coerce "coerce-function!"
       (trace-item "variable=" (shape variable))
       (trace-item "type-safe=" type-safe)
       (enter-function (variable-id variable))
@@ -188,7 +188,7 @@
 ;*    coerce! ::new ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::new caller to safe)
-   (with-trace 'coerce "coerce! ::new"
+   (with-trace 'coerce_coerce "coerce! ::new"
       (with-access::new node (expr* type args-type)
 	 (trace-item "expr*=" (map (lambda (v) (shape (get-type v #f))) expr*))
 	 (trace-item "types=" (map shape args-type))
@@ -273,7 +273,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::cast caller to safe)
    (with-access::cast node (arg type checked)
-      (with-trace 'coerce "coerce! ::cast"
+      (with-trace 'coerce_coerce "coerce! ::cast"
 	 (trace-item "node=" (shape node))
 	 (trace-item "type=" (shape type))
 	 (trace-item "safe=" safe)
@@ -479,7 +479,7 @@
 ;*    coerce! ::let-var ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::let-var caller to safe)
-   (with-trace 'coerce "coerce! ::let-var"
+   (with-trace 'coerce_coerce "coerce! ::let-var"
       (trace-item "to=" (shape to))
       (trace-item "node=" (shape node))
       (with-access::let-var node (type body bindings)

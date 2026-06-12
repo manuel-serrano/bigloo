@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Tue Jun  9 14:43:34 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 16:34:42 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -185,12 +185,12 @@
 (define-method (node->sexp node::pragma)
    (node->sexp-hook node)
    (location-shape (node-loc node)
-		   (let ((p (if (pragma-side-effect node)
-				'pragma
-				'free-pragma)))
-		      `(,(shape-typed-node p (get-type node #f))
-			,(pragma-format node)
-			,@(map node->sexp (pragma-expr* node))))))
+      (let ((p (if (pragma-side-effect node)
+		   'pragma
+		   'free-pragma)))
+	 `(,(shape-typed-node p (get-type node #f))
+	   ,(pragma-format node)
+	   ,@(map node->sexp (pragma-expr* node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::getfield ...                                        */

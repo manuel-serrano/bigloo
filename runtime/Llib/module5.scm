@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Jun 12 07:52:40 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 10:51:19 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1019,7 +1019,7 @@
 				    :stack stack)))
 		(set! (-> mod inits) (append! (-> mod inits) (list imod))))))))
    
-   (define (parse-import-all id::symbol clause::pair expr::pair mod::Module expand stack)
+   (define (parse-import-all id clause::pair expr::pair mod::Module expand stack)
       (with-trace '__module5 "parse-import-all"
 	 (trace-item "mod=" (-> mod id))
 	 (let* ((path (cadr clause))
@@ -1038,7 +1038,9 @@
 				       :stack stack)))
 		   (hashtable-for-each (-> imod exports)
 		      (lambda (key d::Decl)
-			 (let* ((alias (module5-qualified-name d id))
+			 (let* ((alias (if (symbol? id)
+					   (module5-qualified-name d id)
+					   (-> d alias)))
 				(nd (duplicate::Decl d
 				       (alias alias)
 				       (id (-> d alias))
@@ -1222,7 +1224,7 @@
 	     (localize `(import ,@rest) clause)
 	     expr mod lib-path cache-dir hsuffix expand stack))
 	 ((import (? string?))
-	  (error/loc mod "Illegal module clause" clause expr))
+	  (parse-import-all #f clause expr mod expand stack))
 	 ((import (? string?) ())
 	  (parse-import-init clause expr mod expand stack))
 	 ((import (? string?) . (and (? symbol?) ?id))

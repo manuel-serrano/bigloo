@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Jun 12 08:16:39 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 16:30:28 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -537,6 +537,7 @@
       (module5-register-plugin! 'option (lambda (m x) (for-each eval (cdr x))))
       (module5-register-plugin! 'pragma module5-plugin-pragma)
       (module5-register-plugin! 'eval module5-plugin-eval)
+      (module5-register-plugin! 'type module4-plugin-type)
       (module5-register-extern-plugin! "C" module5-extern-plugin-c)
       (module5-register-extern-plugin! "java" module5-extern-plugin-java)
       (module5-register-extern-plugin! "wasm" module5-extern-plugin-wasm)

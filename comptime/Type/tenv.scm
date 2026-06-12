@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Mon Jun  8 09:43:47 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 14:09:23 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -442,15 +442,22 @@
       (trace-item "id=" id)
       (trace-item "name=" name)
       (trace-item "class=" class)
-      (if (not (memq class '(bigloo C _ java)))
-	  (user-error "declare-type!"
-	     "Illegal type class"
-	     class)
+      (cond
+	 ((not (memq class '(bigloo C _ java)))
+	  (user-error "declare-type!" "Illegal type class" class))
+	 ((type-exists? id)
+	  (let ((ty (find-type id)))
+	     (with-access::type ty ((tname name) (tclass class))
+		(if (and (eq? class tclass) (string=? tname name))
+		    ty
+		    ;; triggers an error
+		    (bind-type! id #t #unspecified)))))
+	 (else
 	  (let ((type (bind-type! id #t #unspecified)))
 	     (type-name-set! type name)
 	     (type-$-set! type ($-in-name? name))
 	     (type-class-set! type class)
-	     type))))
+	     type)))))
  
 ;*---------------------------------------------------------------------*/
 ;*    declare-subtype! ...                                             */

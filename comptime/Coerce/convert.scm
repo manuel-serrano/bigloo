@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Coerce/convert.scm                  */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Coerce/convert.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Fri Feb  6 15:12:57 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 16:00:34 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -96,7 +96,7 @@
 ;*    type-error/location ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (type-error/location loc function from to)
-   (with-trace 'convert "type-error/location"
+   (with-trace 'coerce_convert "type-error/location"
       (trace-item "loc=" loc)
       (trace-item "function=" function)
       (trace-item "from=" (shape from))
@@ -108,7 +108,7 @@
 ;*    type-warning/location ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (type-warning/location loc function from to)
-   (with-trace 'convert "type-warning/location"
+   (with-trace 'coerce_convert "type-warning/location"
       (trace-item "loc=" loc)
       (trace-item "function=" function)
       (trace-item "from=" (shape from))
@@ -121,7 +121,7 @@
 ;*    runtime-type-error/id ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (runtime-type-error/id loc ti id::symbol)
-   (with-trace 'convert "runtime-type-error/id"
+   (with-trace 'coerce_convert "runtime-type-error/id"
       (trace-item "id=" (shape id))
       (let ((fname (when (location? loc) (location-full-fname loc)))
 	    (pos (when (location? loc) (location-pos loc))))
@@ -136,7 +136,7 @@
 ;*    runtime-type-error ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (runtime-type-error loc ti value::node)
-   (with-trace 'convert "runtime-type-error"
+   (with-trace 'coerce_convert "runtime-type-error"
       (trace-item "ti=" (shape ti))
       (trace-item "value=" (shape value))
 
@@ -168,7 +168,7 @@
 ;*    stop the compilation.                                            */
 ;*---------------------------------------------------------------------*/
 (define (convert-error from to loc node safe)
-   (with-trace 'convert "convert-error"
+   (with-trace 'coerce_convert "convert-error"
       (trace-item "node=" (shape node))
       (trace-item "from=" (shape from))
       (trace-item "to=" (shape to))
@@ -272,8 +272,9 @@
 ;*    convertion in between Bigloo objects must not be checked.        */
 ;*---------------------------------------------------------------------*/
 (define (convert! node from to safe)
-   (with-trace 'convert "convert!"
+   (with-trace 'coerce_convert "convert!"
       (trace-item "node=" (shape node))
+      (trace-item "loc=" (node-loc node))
       (trace-item "from=" (shape from))
       (trace-item "to=" (shape to))
       (trace-item "safe=" safe)
@@ -351,7 +352,7 @@
 ;*    make-one-type-conversion ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (make-one-type-conversion from to check-op coerce-op node)
-   (with-trace 'convert "make-one-type-conversion"
+   (with-trace 'coerce_convert "make-one-type-conversion"
       (trace-item "node=" (shape node))
       (trace-item "from=" (shape from))
       (trace-item "to=" (shape to))
@@ -447,7 +448,7 @@
 	       cnode
 	       rnode))))
 
-   (with-trace 'convert "make-one-class-concversion"
+   (with-trace 'coerce_convert "make-one-class-concversion"
       (trace-item "node=" (shape node))
       (trace-item "from=" (shape from))
       (trace-item "to=" (shape to))
@@ -471,7 +472,7 @@
 ;*    do-convert ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (do-convert coerce-op node from::type to::type)
-   (with-trace 'convert "do-convert"
+   (with-trace 'coerce_convert "do-convert"
       (trace-item "node=" (shape node))
       (trace-item "from=" (shape from))
       (trace-item "to=" (shape to))

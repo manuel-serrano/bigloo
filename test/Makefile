@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Jun 12 08:34:34 2026 (serrano)                */
+#*    Last change :  Fri Jun 12 10:01:19 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -53,7 +53,7 @@ COMMON=$(TESTS:%=%) $(MODULES4:%=modules/%) $(MODULES5:%=modules/%)
 
 BACKEND_C = ssl0 extern_c c
 
-BACKEND_J = extern_jvm Intf Point
+BACKEND_J = ssl0 extern_jvm Intf Point
 
 BACKEND_W = extern_wasm
 

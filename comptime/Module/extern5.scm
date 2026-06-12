@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Fri Jun 12 07:36:16 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 10:18:56 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -662,33 +662,35 @@
 	 (when (memq 'static (-> f modifiers))
 	    (multiple-value-bind (fid mty)
 	       (parse-ident (-> f id))
-	       (let* ((id (-> class idd))
-		      (sid (string->symbol (format "~a.~a" id fid))))
-		  (co-instantiate
-			((def (instantiate::CDef
-				 (id sid)
-				 (type (string->symbol mty))
-				 (kind 'jvm-variable)
-				 (expr clause)
-				 (ronly #t)
-				 (decl decl)
-				 (name (-> f jname))
-				 (args '())
-				 (modifiers (-> f modifiers))
-				 (module (string->symbol (-> class jname)))))
-			 (decl (instantiate::Decl
-				  (id sid)
-				  (alias sid)
-				  (mod mod)
-				  (expr clause)
-				  (ronly #t)
-				  (scope 'extern)
-				  (def def))))
-		     (with-access::Module mod (decls defs)
-			(hashtable-put! decls (symbol->string! sid) decl)
-			(hashtable-put! defs (symbol->string! sid) def))
-		     (when (= (-> mod version) 4)
-			'todo))))))
+	       (if (eq? mty #unspecified)
+		   (error/loc mod "Missing field type" (-> f id) clause)
+		   (let* ((id (-> class idd))
+			  (sid (string->symbol (format "~a.~a" id fid))))
+		      (co-instantiate
+			    ((def (instantiate::CDef
+				     (id sid)
+				     (type (string->symbol mty))
+				     (kind 'jvm-variable)
+				     (expr clause)
+				     (ronly #t)
+				     (decl decl)
+				     (name (-> f jname))
+				     (args '())
+				     (modifiers (-> f modifiers))
+				     (module (string->symbol (-> class jname)))))
+			     (decl (instantiate::Decl
+				      (id sid)
+				      (alias sid)
+				      (mod mod)
+				      (expr clause)
+				      (ronly #t)
+				      (scope 'extern)
+				      (def def))))
+			 (with-access::Module mod (decls defs)
+			    (hashtable-put! decls (symbol->string! sid) decl)
+			    (hashtable-put! defs (symbol->string! sid) def))
+			 (when (= (-> mod version) 4)
+			    'todo)))))))
       
       (for-each declare-field! (-> class fields))))
    
@@ -830,4 +832,18 @@
 		 (loop (+fx i 1))))
 	    (else
 	     (loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    error/loc ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (error/loc mod msg obj container)
+   (let ((id (if (isa? mod Module)
+		 (with-access::Module mod (id) id)
+		 "module5")))
+      (match-case (cond
+		   ((epair? obj) (cer obj))
+		   ((epair? container) (cer container))
+		   (else #f))
+	 ((at ?fname ?loc) (error/location id msg obj fname loc))
+	 (else (error id msg obj)))))
 

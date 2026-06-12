@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Tue Jun  9 07:43:52 2026 (serrano)                */
+;*    Last change :  Fri Jun 12 13:29:23 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -86,7 +86,7 @@
   :group 'bgl
   :type 'string)
 
-(defcustom bgl-flycdoc-browser nil
+(defcustom bgl-flydoc-browser nil
   "*The web browser used for the documentation"
   :group 'bgl
   :type '(choice (const 'nil) string))
@@ -1658,10 +1658,10 @@ if that value is non-nil."
 	 (file (if e
 		   (format "%s/%s#%s" bgl-doc-dir (caddr e) (cadr e))
 		   (format "%s/index.html" bgl-doc-dir))))
-    (if (stringp bgl-flycdoc-browser)
+    (if (stringp bgl-flydoc-browser)
 	(let ((process-connection-type nil)
-	      (url (contact "http://" file)))
-	  (start-process "doc" nil bgl-flycdoc-browser url))
+	      (url (concat "file://" file)))
+	  (start-process "doc" nil bgl-flydoc-browser url))
 	(progn
 	  (select-frame (make-frame))
 	  (eww-open-file file)))))
