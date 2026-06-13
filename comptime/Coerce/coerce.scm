@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Fri Jun 12 16:00:04 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 05:44:58 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce implicity type coercions                               */
@@ -13,7 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module coerce_coerce
-   (include "Tools/trace.sch")
+   (include "Tools/trace.sch"
+	    "Foreign/jtype.sch")
    (import  engine_param
 	    tools_shape
 	    tools_error
@@ -22,6 +23,7 @@
 	    type_coercion
 	    type_typeof
 	    type_misc
+	    foreign_jtype
 	    object_class
 	    ast_var
 	    ast_node
@@ -252,14 +254,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::instanceof caller to safe)
    (with-access::instanceof node (expr* type class loc)
-      (if (jclass? class)
+      (if (or (jclass? class) (jarray? class))
 	  (let ((ety (node-type (car expr*))))
 	     ;; MS 12 jun 2026
 	     ;; Java's instanceof requires the value on the stack
 	     ;; to be an object, not a literal value so Bigloo
 	     ;; needs to check if the static type is known to be
 	     ;; a literal, in which case, a #f is forced in the ast
-	     (if (or (jclass? ety) (eq? ety *obj*))
+	     (if (or (jclass? ety) (jarray? ety) (eq? ety *obj*))
 		 (call-next-method)
 		 (let ((false (instantiate::literal
 				 (type *bool*)

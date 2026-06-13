@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/cse.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Reduce/cse.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Thu Jul  8 11:31:48 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 13 08:25:34 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Common sub-expression elimination.                               */
 ;*=====================================================================*/
@@ -19,7 +19,6 @@
 	    tools_error
 	    type_type
 	    type_cache
-	    coerce_coerce
 	    effect_effect
 	    ast_var
 	    ast_node

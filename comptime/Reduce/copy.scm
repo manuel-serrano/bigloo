@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Reduce/copy.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Reduce/copy.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Mon Sep  9 19:13:56 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 13 08:25:26 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The copy propagation.                                            */
 ;*=====================================================================*/
@@ -21,7 +21,6 @@
 	    type_type
 	    type_cache
 	    type_misc
-	    coerce_coerce
 	    effect_effect
 	    ast_var
 	    ast_node

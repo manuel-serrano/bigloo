@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Reduce/sbeta.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Reduce/sbeta.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Mon Oct 20 09:17:02 2025 (serrano)                */
-;*    Copyright   :  2000-25 Manuel Serrano                            */
+;*    Last change :  Sat Jun 13 08:25:59 2026 (serrano)                */
+;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
 ;*    is simpler than the 1occ stage. It apply the following           */
@@ -31,7 +31,6 @@
 	     type_type
 	     type_cache
 	     type_typeof
-	     coerce_coerce
 	     effect_effect
 	     engine_param
 	     ast_var

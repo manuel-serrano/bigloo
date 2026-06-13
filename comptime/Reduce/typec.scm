@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Reduce/typec.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Reduce/typec.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Mon Oct 20 09:00:32 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 13 08:24:59 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -24,6 +24,7 @@
 	    type_coercion
 	    coerce_coerce
 	    effect_effect
+	    foreign_jtype
 	    ast_var
 	    ast_node
 	    ast_lvtype

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/test/src/extern_jvm.bgl                     */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/extern_jvm.bgl        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Jun  8 08:45:19 2026                          */
-;*    Last change :  Fri Jun 12 08:28:17 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 16:44:21 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the JVM extern interface                                 */
@@ -18,6 +18,7 @@
       
       (abstract-class Intf
          (abstract public abstract_met::int ::Intf))
+      
       (class Point::Intf
          (constructor new)
          (constructor new2 ::int ::int)
@@ -27,6 +28,8 @@
          (abstract_met::int)
          (toString::String)
          (static statistics::int))
+
+      ;(array Point* ::Point)
       
       (export callback))
 

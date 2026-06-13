@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/walk.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Coerce/walk.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:43:37 1995                          */
-;*    Last change :  Mon Oct 20 08:52:46 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 13 08:23:15 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We perform now coercions.                                        */
 ;*=====================================================================*/
@@ -19,6 +19,7 @@
 	    tools_error
 	    type_type
 	    type_cache
+	    foreign_jtype
 	    engine_param
 	    ast_var
 	    ast_env

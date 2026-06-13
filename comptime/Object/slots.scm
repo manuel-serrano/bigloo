@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Object/slots.scm                    */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Object/slots.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Fri Feb 13 13:12:14 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 17:47:32 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -178,43 +178,46 @@
 	     (loop (cdr slot-list))))))
    
    (define (make-attribute-slot s slot-id attr vget vset vnum vover index)
-      ;; direct slot with attribute. Because of the presence of
-      ;; the attributes, this slot may be virtual
-      (let ((reado? (memq 'read-only attr)))
-	 (cond
-	    ((and vset (not vget))
-	     (user-error/location (find-location s)
-		(type-id class)
-		"Illegal virtual slot (missing getter)"
-		(car slot-id)
-		'()))
-	    ((and vset reado?)
-	     (user-error/location (find-location s)
-		(type-id class)
-		"Illegal virtual slot (read-only)"
-		(car slot-id)
-		'()))
-	    ((and vget (not vset) (not reado?))
-	     (user-error/location (find-location s)
-		(type-id class)
-		"Illegal virtual slot (missing setter)"
-		(car slot-id)
-		'()))
-	    (else
-	     (instantiate::slot
-		(id (car slot-id))
-		(index index)
-		(name (scheme-symbol->c-string (car slot-id)))
-		(src s)
-		(class-owner class)
-		(type (find-slot-type slot-id s))
-		(read-only? reado?)
-		(default-value (find-default-attr attr))
-		(virtual-num (if vget vnum -1))
-		(virtual-override vover)
-		(getter vget)
-		(setter vset)
-		(user-info (find-info-attr attr)))))))
+      (with-trace 'object_slots "make-class-slots.make-attribute-slot"
+	 (trace-item "s=" s)
+	 (trace-item "slot-id=" slot-id)
+	 ;; direct slot with attribute. Because of the presence of
+	 ;; the attributes, this slot may be virtual
+	 (let ((reado? (memq 'read-only attr)))
+	    (cond
+	       ((and vset (not vget))
+		(user-error/location (find-location s)
+		   (type-id class)
+		   "Illegal virtual slot (missing getter)"
+		   (car slot-id)
+		   '()))
+	       ((and vset reado?)
+		(user-error/location (find-location s)
+		   (type-id class)
+		   "Illegal virtual slot (read-only)"
+		   (car slot-id)
+		   '()))
+	       ((and vget (not vset) (not reado?))
+		(user-error/location (find-location s)
+		   (type-id class)
+		   "Illegal virtual slot (missing setter)"
+		   (car slot-id)
+		   '()))
+	       (else
+		(instantiate::slot
+		   (id (car slot-id))
+		   (index index)
+		   (name (scheme-symbol->c-string (car slot-id)))
+		   (src s)
+		   (class-owner class)
+		   (type (find-slot-type slot-id s))
+		   (read-only? reado?)
+		   (default-value (find-default-attr attr))
+		   (virtual-num (if vget vnum -1))
+		   (virtual-override vover)
+		   (getter vget)
+		   (setter vset)
+		   (user-info (find-info-attr attr))))))))
    
    (define (check-super-slot nslot sslots class)
       (unless (slot-virtual? nslot)
@@ -250,144 +253,155 @@
 	 (class-owner class)
 	 (user-info #f)
 	 (type (find-slot-type slot-id src))))
-   
-   (trace (ast 2) "make-class-slots: " clauses " " vnum #\Newline)
-   (let ((sslots (cond
-		    ((not (type? super))
-		     '())
-		    ((not (tclass? super))
-		     '())
-		    (else
-		     (tclass-slots super)))))
-      (let loop ((clauses clauses)
-		 (nslots '())
-		 (sslots sslots)
-		 (vnum  vnum)
-		 (index (length sslots)))
-	 (if (null? clauses)
-	     (begin
-		;; check that this class does not re-define a super class slot
-		(check-super-slots nslots sslots class)
-		(append sslots (reverse nslots)))
-	     (let ((s (car clauses)))
-		(match-case s
-		   (((id ?id) . ?attr)
-		    (multiple-value-bind (vget vset)
-		       (find-virtual-attr attr)
-		       (cond
-			  ((and vget (slot-member? (car id) nslots))
-			   (user-error/location (find-location s)
-			      (car id)
-			      "Illegal duplicated virtual slot"
-			      (car id)))
-			  ((and vget (slot-member? (car id) sslots))
-			   =>
-			   (lambda (slot)
-			      (when (and (>= (bigloo-warning) 2)
-					 *warning-overriden-slots*)
-				 (user-warning/location (find-location s)
-				    (car id)
-				    (format "Overriden \"~a\" virtual slot"
-				       (type-id (slot-class-owner slot)))
-				    (car id)))
-			      (let ((vn (slot-virtual-num slot))
-				    (vi (slot-index slot)))
-				 (loop (cdr clauses)
-				    nslots
-				    (replace
-				       (make-attribute-slot s id attr vget vset vn #t vi)
-				       slot sslots)
-				    vnum
-				    index))))
-			  (else
-			   (loop (cdr clauses)
-			      (cons (make-attribute-slot s id attr vget vset vnum #f index)
-				 nslots)
-			      sslots
-			      (if (or vget vset) (+ vnum 1) vnum)
-			      (+fx index 1))))))
-		   ((id ?id)
-		    (loop (cdr clauses)
-		       (cons (make-direct-slot id index) nslots)
-		       sslots
-		       vnum
-		       (+fx index 1)))
-		   (else
-		    (user-error/location (find-location s)
-		       (tclass-id class)
-		       "Illegal slot"
-		       s))))))))
+
+   (with-trace 'object_slots "make-class-slots"
+      (trace-item "tclass=" (tclass-id class))
+      (trace-item "clauses=" clauses)
+      (trace-item "vnum=" vnum)
+      (trace-item "src=" src)
+      (let ((sslots (cond
+		       ((not (type? super))
+			'())
+		       ((not (tclass? super))
+			'())
+		       (else
+			(tclass-slots super)))))
+	 (let loop ((clauses clauses)
+		    (nslots '())
+		    (sslots sslots)
+		    (vnum  vnum)
+		    (index (length sslots)))
+	    (if (null? clauses)
+		(begin
+		   ;; check that this class does not re-define
+		   ;; a super class slot
+		   (check-super-slots nslots sslots class)
+		   (append sslots (reverse nslots)))
+		(let ((s (car clauses)))
+		   (match-case s
+		      (((id ?id) . ?attr)
+		       (multiple-value-bind (vget vset)
+			  (find-virtual-attr attr)
+			  (cond
+			     ((and vget (slot-member? (car id) nslots))
+			      (user-error/location (find-location s)
+				 (car id)
+				 "Illegal duplicated virtual slot"
+				 (car id)))
+			     ((and vget (slot-member? (car id) sslots))
+			      =>
+			      (lambda (slot)
+				 (when (and (>= (bigloo-warning) 2)
+					    *warning-overriden-slots*)
+				    (user-warning/location (find-location s)
+				       (car id)
+				       (format "Overriden \"~a\" virtual slot"
+					  (type-id (slot-class-owner slot)))
+				       (car id)))
+				 (let ((vn (slot-virtual-num slot))
+				       (vi (slot-index slot)))
+				    (loop (cdr clauses)
+				       nslots
+				       (replace
+					  (make-attribute-slot s id
+					     attr vget vset vn #t vi)
+					  slot sslots)
+				       vnum
+				       index))))
+			     (else
+			      (loop (cdr clauses)
+				 (cons (make-attribute-slot s id
+					  attr vget vset vnum #f index)
+				    nslots)
+				 sslots
+				 (if (or vget vset) (+ vnum 1) vnum)
+				 (+fx index 1))))))
+		      ((id ?id)
+		       (loop (cdr clauses)
+			  (cons (make-direct-slot id index) nslots)
+			  sslots
+			  vnum
+			  (+fx index 1)))
+		      (else
+		       (user-error/location (find-location s)
+			  (tclass-id class)
+			  "Illegal slot"
+			  s)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-java-class-slots ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (make-java-class-slots class clauses super src)
-   (trace (ast 2) "make-java-class-slots: " clauses " " 0 #\Newline)
-   (let ((loc (find-location src)))
-      
-      (define (make-java-class-slot ident jname reado? s index)
-	 (let* ((loc (find-location/loc s loc))
-		(slot-id (parse-id ident loc)))
-	    (instantiate::slot
-	       (id (car slot-id))
-	       (index index)
-	       (name jname)
-	       (type (find-slot-type slot-id src))
-	       (read-only? reado?)
-	       (class-owner class)
-	       (src s))))
-      
-      (define (declare-static-field! id jname reado? src)
-	 (let* ((loc (find-location/loc src loc))
-		(slot-id (parse-id id loc))
-		(l-id (if (eq? (jclass-id class) 'foreign)
-			  (car slot-id)
-			  (symbol-append (jclass-id class) '- (car slot-id))))
-		(t-id (if (eq? (cdr slot-id) *_*)
-			  *obj*
-			  (cdr slot-id)))
-		(qc-id jname))
-	    (ensure-type-defined! t-id src)
-	    (let ((g (declare-global-cvar! (get-genv) l-id #f 'foreign qc-id
-			(type-id t-id) reado? src #f)))
-	       (global-module-set! g (jclass-id class))
-	       (global-qualified-type-name-set! g (jclass-name class))
-	       g)))
-
-      (let ((sslots (cond
-		       ((not (type? super))
-			'())
-		       ((not (jclass? super))
-			'())
-		       (else
-			(reverse (jclass-slots super))))))
-      (let loop ((clauses clauses)
-		 (res sslots)
-		 (index (length sslots)))
-	 (if (null? clauses)
-	     res
-	     (let* ((s (car clauses))
-		    (src (car s))
-		    (id (cadr s))
-		    (jname (caddr s))
-		    (mod (cadddr s))
-		    (reado? (memq 'final mod)))
-		(if (memq 'static mod)
-		    (begin
-		       (declare-static-field! id jname reado? src)
-		       (loop (cdr clauses) res index))
-		    (loop (cdr clauses)
-		       (cons (make-java-class-slot id jname reado? src index)
-			  res)
-		       (+fx 1 index)))))))))
+   (with-trace 'object_slots "make-java-class-slots"
+      (let ((loc (find-location src)))
+	 
+	 (define (make-java-class-slot ident jname reado? s index)
+	    (let* ((loc (find-location/loc s loc))
+		   (slot-id (parse-id ident loc)))
+	       (instantiate::slot
+		  (id (car slot-id))
+		  (index index)
+		  (name jname)
+		  (type (find-slot-type slot-id src))
+		  (read-only? reado?)
+		  (class-owner class)
+		  (src s))))
+	 
+	 (define (declare-static-field! id jname reado? src)
+	    (with-trace 'object_slots "make-java-class-slots.declare-static-field!"
+	       (let* ((loc (find-location/loc src loc))
+		      (slot-id (parse-id id loc))
+		      (l-id (if (eq? (jclass-id class) 'foreign)
+				(car slot-id)
+				(symbol-append (jclass-id class) '- (car slot-id))))
+		      (t-id (if (eq? (cdr slot-id) *_*)
+				*obj*
+				(cdr slot-id)))
+		      (qc-id jname))
+		  (ensure-type-defined! t-id src)
+		  (let ((g (declare-global-cvar! (get-genv) l-id #f 'foreign qc-id
+			      (type-id t-id) reado? src #f)))
+		     (global-module-set! g (jclass-id class))
+		     (global-qualified-type-name-set! g (jclass-name class))
+		     g))))
+	 
+	 (let ((sslots (cond
+			  ((not (type? super))
+			   '())
+			  ((not (jclass? super))
+			   '())
+			  (else
+			   (reverse (jclass-slots super))))))
+	    (let loop ((clauses clauses)
+		       (res sslots)
+		       (index (length sslots)))
+	       (if (null? clauses)
+		   res
+		   (let* ((s (car clauses))
+			  (src (car s))
+			  (id (cadr s))
+			  (jname (caddr s))
+			  (mod (cadddr s))
+			  (reado? (memq 'final mod)))
+		      (if (memq 'static mod)
+			  (begin
+			     (declare-static-field! id jname reado? src)
+			     (loop (cdr clauses) res index))
+			  (loop (cdr clauses)
+			     (cons (make-java-class-slot id jname reado? src index)
+				res)
+			     (+fx 1 index))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-slot-type ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (find-slot-type slot-id src)
-   (let ((t (if (eq? (cdr slot-id) *_*) *obj* (cdr slot-id))))
-      (ensure-type-defined! t src)
-      t))
+   (with-trace 'object_slots "find-slot-type"
+      (trace-item "slot-id=" slot-id)
+      (trace-item "src=" src)
+      (let ((t (if (eq? (cdr slot-id) *_*) *obj* (cdr slot-id))))
+	 (ensure-type-defined! t src)
+	 t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    scheme-symbol->c-string ...                                      */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 24 11:17:34 1995                          */
-;*    Last change :  Fri Jun 12 10:56:33 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 16:42:05 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The C syntax                                                     */
 ;*=====================================================================*/
@@ -97,7 +97,6 @@
 	  ;; obliged to do an awful hack in order to recognize, before
 	  ;; reading next expression, typedef form in order to change
 	  ;; the lexer behavior.
-	  (tprint "TSPEC")
 	  (if (typedef-sspec?
 		 (storage-class-spec-of-decl-spec declaration-specifiers))
 	      (for-each (lambda (decl)

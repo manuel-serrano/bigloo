@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Fri Jun 12 14:09:23 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 05:42:16 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -525,19 +525,20 @@
 ;*    `types-already-checked?*' variable).                             */
 ;*---------------------------------------------------------------------*/
 (define (check-types)
-   (let ((ut (uninitialized-types)))
-      (when (pair? ut)
-	 (for-each (lambda (t)
-		      (let ((loc (type-location t)))
-			 (if log
-			     (user-error/location loc *module*
-				"Undefined type" (shape t)
-				#unspecified)
-			     (user-error *module*
-				"Undefined type" (shape t)
-				#unspecified))))
-	    ut)
-	 (set! *types-already-checked?* #t))))
+   (with-trace 'type_tenv "check-types"
+      (let ((ut (uninitialized-types)))
+	 (when (pair? ut)
+	    (for-each (lambda (t)
+			 (let ((loc (type-location t)))
+			    (if log
+				(user-error/location loc *module*
+				   "Undefined type" (shape t)
+				   #unspecified)
+				(user-error *module*
+				   "Undefined type" (shape t)
+				   #unspecified))))
+	       ut)
+	    (set! *types-already-checked?* #t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sub-type? ...                                                    */

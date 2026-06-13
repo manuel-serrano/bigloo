@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/comptime/Bdb/bdb_initialize.scm     */
+;*    .../project/bigloo/5.0.x/comptime/Bdb/bdb_initialize.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 14:53:02 1998                          */
-;*    Last change :  Mon Oct 20 14:23:09 2025 (serrano)                */
-;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 13 08:26:25 2026 (serrano)                */
+;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module specific Bdb runtime initialization.                  */
 ;*=====================================================================*/
@@ -28,7 +28,8 @@
 	    ast_build
 	    ast_lvtype
 	    ast_glo-def
-	    coerce_coerce 
+	    coerce_coerce
+	    foreign_jtype
 	    cnst_alloc
 	    cnst_node)
    (export  (initialize-ast)))

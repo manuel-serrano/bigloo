@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Fri Jun 12 10:18:56 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 06:10:20 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -330,6 +330,9 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-java-type! ...                                           */
+;*    -------------------------------------------------------------    */
+;*    Qualified type name are handled in the Java finalizer so         */
+;*    declare-java-type! does not need to deal with type aliasing.     */
 ;*---------------------------------------------------------------------*/
 (define (declare-java-type! j::jklass mod::Module clause)
    (with-trace 'module_module5 "declare-java-type"
@@ -341,7 +344,7 @@
 	    (parse-ident id)
 	    (co-instantiate
 		  ((def (instantiate::JDef
-			   (id id)
+			   (id clazz)
 			   (kind 'java-type)
 			   (expr clause)
 			   (ronly #t)
@@ -351,17 +354,18 @@
 			   (package (if (string? package) package (jname-package jname ".")))
 			   (super (if (string? super) (string->symbol super) '_))))
 		   (decl (instantiate::Decl
-			    (id id)
-			    (alias id)
+			    (id clazz)
+			    (alias clazz)
 			    (mod mod)
 			    (expr clause)
 			    (ronly #t)
 			    (scope 'extern)
 			    (def def))))
 	       (with-access::Module mod (decls defs exports)
-		  (hashtable-put! exports (symbol->string! id) decl)
-		  (hashtable-put! decls (symbol->string! id) decl)
-		  (hashtable-put! defs (symbol->string! id) def)))))))
+		  (let ((name (symbol->string! clazz)))
+		     (hashtable-put! exports name decl)
+		     (hashtable-put! decls name decl)
+		     (hashtable-put! defs name def))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module4-extern-plugin-java ...                                   */
@@ -557,11 +561,13 @@
 		      (expr clause)
 		      (ronly #t)
 		      (attributes attrs)
-		      (scope 'static))))
-	 (with-access::Module mod (decls defs body)
+		      (attributes '(extern))
+		      (scope 'export))))
+	 (with-access::Module mod (decls defs exports body)
 	    (set! body (cons expr body))
-	    ;;(hashtable-put! exports (symbol->string! pid) decl)
-	    (hashtable-put! decls (symbol->string! pid) decl)))))
+	    (let ((name (symbol->string! pid)))
+	       (hashtable-put! exports name decl)
+	       (hashtable-put! decls name decl))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-jklass-constructors! ...                                 */
@@ -592,12 +598,13 @@
 			       (mod mod)
 			       (expr clause)
 			       (ronly #t)
-			       (scope 'static))))
-		  (with-access::Module mod (decls defs body)
+			       (attributes '(extern))
+			       (scope 'export))))
+		  (with-access::Module mod (decls exports body)
 		     (set! body (cons expr body))
-		     ;; (hashtable-put! exports (symbol->string! mid) decl)
-		     (hashtable-put! decls (symbol->string! mid) decl)
-		     )))))
+		     (let ((name (symbol->string! mid)))
+			 (hashtable-put! exports name decl)
+			 (hashtable-put! decls name decl)))))))
       
       (for-each declare-method! (-> class methods))))
    
@@ -642,10 +649,11 @@
 				  (ronly #t)
 				  (scope 'extern)
 				  (def def))))
-		     (with-access::Module mod (decls defs)
-			;; (hashtable-put! exports (symbol->string! mid) decl)
-			(hashtable-put! decls (symbol->string! mid) decl)
-			(hashtable-put! defs (symbol->string! mid) def))
+		     (with-access::Module mod (decls defs exports)
+			(let ((name (symbol->string! mid)))
+			   (hashtable-put! exports name decl)
+			   (hashtable-put! decls name decl)
+			   (hashtable-put! defs name def)))
 		     (when (= (-> mod version) 4)
 			'todo))))))
       
@@ -686,9 +694,11 @@
 				      (ronly #t)
 				      (scope 'extern)
 				      (def def))))
-			 (with-access::Module mod (decls defs)
-			    (hashtable-put! decls (symbol->string! sid) decl)
-			    (hashtable-put! defs (symbol->string! sid) def))
+			 (with-access::Module mod (decls defs exports)
+			    (let ((name (symbol->string! sid)))
+			       (hashtable-put! exports name decl)
+			       (hashtable-put! decls name decl)
+			       (hashtable-put! defs name def)))
 			 (when (= (-> mod version) 4)
 			    'todo)))))))
       
@@ -745,14 +755,15 @@
 ;*    module5-extern-plugin-java-finalizer ...                         */
 ;*---------------------------------------------------------------------*/
 (define (module5-extern-plugin-java-finalizer mod::Module)
+   ;; export global variables to java
+   (java-finalizer-exports)
    ;; Mark that all the java class predicates cannot be removed
    ;; until the coercion and checks have been inserted in the AST
    ;; Because of the complex Java code generation and complex declarations
    ;; associated with these codes, this cannot mark assignments cannot
    ;; done while the classes are constructed
    (for-each-type! (lambda (t)
-		      (when (or #f ;; (isa? t jclass)
-				(isa? t jarray))
+		      (when (isa? t jarray)
 			 (let* ((p (symbol-append (type-id t) '?))
 				(g (find-global (get-genv) p)))
 			    (when (isa? g global)
@@ -811,9 +822,10 @@
 		      (scope 'export)
 		      (def def))))
 	 (with-access::Module mod (decls defs exports)
-	    (hashtable-put! exports (symbol->string! id) decl)
-	    (hashtable-put! decls (symbol->string! id) decl)
-	    (hashtable-put! defs (symbol->string! id) def)))))
+	    (let ((name (symbol->string! id)))
+	       (hashtable-put! exports name decl)
+	       (hashtable-put! decls name decl)
+	       (hashtable-put! defs name def))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-ident ...                                                  */

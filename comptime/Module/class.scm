@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri Feb  6 17:59:47 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 17:58:45 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -109,65 +109,65 @@
 ;*    declare-export-class! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (declare-export-class! env cdef module kind abstract? src-def src-decl import)
-   (trace (ast 2) "declare-export-class!: " src-def #\Newline)
-   ;; We create the class holder
-   ;; and we create a type for this class
-   (let* ((loc (find-location src-def))
-	  (class-var (car cdef))
-	  (class-id  (id-of-id class-var loc))
-	  (holder (begin
-	 	     (produce-module-clause! `(,import ,class-id))
-		     (find-global/module env class-id module)))
-	  (final? (eq? kind 'final))
-	  (wide (if (eq? kind 'wide) 'widening #f))
-	  (tclass (module4-declare-class-type! cdef holder wide
-		     final? abstract?
-		     src-def)))
-      ;; debug information
-      (global-src-set! holder src-def)
-      ;; some paranoid checking
-      (assert (tclass) (tclass? tclass))
-      ;; we store the src-import location in order to print a nice error
-      ;; message if that tclass is not defined
-      (type-import-location-set! tclass (find-location/loc src-decl loc))
-      ;; tclass can be something else than a class if an error has been found
-      (delay-class-accessors!
-	 tclass
-	 (delay (gen-register-class! cdef holder tclass src-def)))))
+   (with-trace 'module_class "declare-export-class!"
+      (trace-item "class=" (car cdef))
+      ;; create the class holder and create a type for this class
+      (let* ((loc (find-location src-def))
+	     (class-var (car cdef))
+	     (class-id  (id-of-id class-var loc))
+	     (holder (begin
+			(produce-module-clause! `(,import ,class-id))
+			(find-global/module env class-id module)))
+	     (final? (eq? kind 'final))
+	     (wide (if (eq? kind 'wide) 'widening #f))
+	     (tclass (module4-declare-class-type! cdef holder wide
+			final? abstract?
+			src-def)))
+	 ;; debug information
+	 (global-src-set! holder src-def)
+	 ;; some paranoid checking
+	 (assert (tclass) (tclass? tclass))
+	 ;; we store the src-import location in order to print a nice error
+	 ;; message if that tclass is not defined
+	 (type-import-location-set! tclass (find-location/loc src-decl loc))
+	 ;; tclass can be something else than a class if an error has been found
+	 (delay-class-accessors!
+	    tclass
+	    (delay (gen-register-class! cdef holder tclass src-def))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-import-class! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (declare-import-class! env cdef module kind abstract? src-def src-decl)
-   (trace (ast 2) "declare-import-class!: " src-def #\Newline)
-   ;; We create the class holder
-   ;; and we create a type for this class
-   (let* ((loc (find-location src-def))
-	  (class-var (car cdef))
-	  (class-id (id-of-id class-var loc))
-	  (holder (import-parser module class-id #f))
-	  (final? (eq? kind 'final))
-	  (wide (if (eq? kind 'wide) 'widening #f))
-	  (tclass (module4-declare-class-type! cdef holder wide
-		     final? abstract?
-		     src-def)))
-      ;; some paranoid checking
-      (assert (tclass) (tclass? tclass))
-      ;; we store the src-import location in order to print a nice error
-      ;; message if that tclass is not defined
-      (type-import-location-set! tclass (find-location/loc src-decl loc))
-      ;; when importing a class, we import the accessors...
-      (delay-class-accessors!
-	 tclass
-	 (delay
-	    (begin
-	       ;; store inside the class structure some
-	       ;; information about its slots
-	       (set-class-slots! tclass cdef src-def)
-	       ;; install the coercion between the new-class and obj
-	       ;; and the class and all its super classes
-	       (gen-class-coercions! tclass)
-	       '())))))
+   (with-trace 'module_class "declare-import-class!"
+      (trace-item "class=" (car cdef))
+      ;; create the class holder and create a type for this class
+      (let* ((loc (find-location src-def))
+	     (class-var (car cdef))
+	     (class-id (id-of-id class-var loc))
+	     (holder (import-parser module class-id #f))
+	     (final? (eq? kind 'final))
+	     (wide (if (eq? kind 'wide) 'widening #f))
+	     (tclass (module4-declare-class-type! cdef holder wide
+			final? abstract?
+			src-def)))
+	 ;; some paranoid checking
+	 (assert (tclass) (tclass? tclass))
+	 ;; we store the src-import location in order to print a nice error
+	 ;; message if that tclass is not defined
+	 (type-import-location-set! tclass (find-location/loc src-decl loc))
+	 ;; when importing a class, we import the accessors...
+	 (delay-class-accessors!
+	    tclass
+	    (delay
+	       (begin
+		  ;; store inside the class structure some
+		  ;; information about its slots
+		  (set-class-slots! tclass cdef src-def)
+		  ;; install the coercion between the new-class and obj
+		  ;; and the class and all its super classes
+		  (gen-class-coercions! tclass)
+		  '()))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    delay-class-accessors! ...                                       */
@@ -192,66 +192,68 @@
 ;*    @label register-class@                                           */
 ;*---------------------------------------------------------------------*/
 (define (gen-register-class! class-def holder class src-def)
-   (if (check-class-declaration? class src-def)
-       (begin
-	  ;; store inside the class structure information about its slots
-	  (set-class-slots! class class-def src-def)
-	  ;; install the coercion between the new-class and obj
-	  ;; and the class and all its super classes
-	  (gen-class-coercions! class)
-
-	  (let* ((classid (type-id class))
-		 (classmod (global-module (tclass-holder class)))
-		 (super (tclass-its-super class))
-		 (superv (when (tclass? super)
-			    (let* ((sholder (tclass-holder super))
-				   (sholderid (global-id sholder))
-				   (sholdermodule (global-module sholder)))
-			       `(@ ,sholderid ,sholdermodule))))
-		 (decl `(define ,(global-id holder)
-			   ((@ register-class! __object)
-			    ;; class id
-			    ',classid
-			    ;; class module
-			    ',classmod
-			    ;; super class
-			    ,superv
-			    ;; hash
-			    ,(get-class-hash src-def)
-			    ;; new
-			    ,(unless (tclass-abstract? class)
-				(classgen-make-anonymous class))
-			    ;; allocator
-			    ,(cond
-				((wide-class? class)
-				 (classgen-widen-anonymous class))
-				(else
-				 ;; generator an allocator even for
-				 ;; abstract class in order to be able
-				 ;; to build the nil instance
-				 (classgen-allocate-anonymous class)))
-			    ;; constructor
-			    ,(find-class-constructor class)
-			    ;; nil
-			    ,(classgen-nil-anonymous class)
-			    ;; predicate
-			    ,(when (wide-class? class)
-				(classgen-shrink-anonymous class))
-			    ;; plain fields
-			    ,(make-class-fields class) 
-			    ;; virtual fields
-			    ,(make-class-virtual-fields class))))
-		 (edecl (if (epair? src-def)
-			    (econs (car decl) (cdr decl) (cer src-def))
-			    decl)))
-	     (set! *declared-classes*
-		(cons edecl *declared-classes*))
-	     '()))
-       ;; the class is incorrect, an error has been signaled, keep going
-       ;; as if everything is fine
-       (begin
-	  (tclass-slots-set! class '())
-	  '())))
+   (with-trace 'module_class "gen-register-class"
+      (trace-item "class=" (car class-def))
+      (if (check-class-declaration? class src-def)
+	  (begin
+	     ;; store inside the class structure information about its slots
+	     (set-class-slots! class class-def src-def)
+	     ;; install the coercion between the new-class and obj
+	     ;; and the class and all its super classes
+	     (gen-class-coercions! class)
+	     
+	     (let* ((classid (type-id class))
+		    (classmod (global-module (tclass-holder class)))
+		    (super (tclass-its-super class))
+		    (superv (when (tclass? super)
+			       (let* ((sholder (tclass-holder super))
+				      (sholderid (global-id sholder))
+				      (sholdermodule (global-module sholder)))
+				  `(@ ,sholderid ,sholdermodule))))
+		    (decl `(define ,(global-id holder)
+			      ((@ register-class! __object)
+			       ;; class id
+			       ',classid
+			       ;; class module
+			       ',classmod
+			       ;; super class
+			       ,superv
+			       ;; hash
+			       ,(get-class-hash src-def)
+			       ;; new
+			       ,(unless (tclass-abstract? class)
+				   (classgen-make-anonymous class))
+			       ;; allocator
+			       ,(cond
+				   ((wide-class? class)
+				    (classgen-widen-anonymous class))
+				   (else
+				    ;; generator an allocator even for
+				    ;; abstract class in order to be able
+				    ;; to build the nil instance
+				    (classgen-allocate-anonymous class)))
+			       ;; constructor
+			       ,(find-class-constructor class)
+			       ;; nil
+			       ,(classgen-nil-anonymous class)
+			       ;; predicate
+			       ,(when (wide-class? class)
+				   (classgen-shrink-anonymous class))
+			       ;; plain fields
+			       ,(make-class-fields class) 
+			       ;; virtual fields
+			       ,(make-class-virtual-fields class))))
+		    (edecl (if (epair? src-def)
+			       (econs (car decl) (cdr decl) (cer src-def))
+			       decl)))
+		(set! *declared-classes*
+		   (cons edecl *declared-classes*))
+		'()))
+	  ;; the class is incorrect, an error has been signaled, keep going
+	  ;; as if everything is fine
+	  (begin
+	     (tclass-slots-set! class '())
+	     '()))))
 		       
 ;*---------------------------------------------------------------------*/
 ;*    make-class-fields ...                                            */

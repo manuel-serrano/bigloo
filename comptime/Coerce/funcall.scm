@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/funcall.scm     */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Coerce/funcall.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Mon Oct 20 14:08:17 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 13 08:23:38 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
 ;*=====================================================================*/
@@ -23,6 +23,7 @@
 	    type_type
 	    type_cache
 	    type_typeof
+	    foreign_jtype
 	    ast_var
 	    ast_env
 	    ast_node

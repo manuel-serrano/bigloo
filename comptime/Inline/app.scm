@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Tue May 12 13:23:32 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 08:22:57 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
@@ -22,6 +22,7 @@
 	    ast_node
 	    ast_lvtype
 	    module_library
+	    foreign_jtype
 	    inline_walk
 	    inline_inline
 	    inline_size

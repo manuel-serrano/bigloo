@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Cnst/alloc.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Cnst/alloc.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Mon Apr 27 10:14:22 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 08:24:24 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
@@ -24,6 +24,7 @@
 	    type_typeof
 	    tvector_tvector
 	    tvector_cnst
+	    foreign_jtype
 	    ast_var
 	    ast_node
 	    ast_sexp

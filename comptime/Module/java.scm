@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Fri Jun 12 08:57:21 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 07:13:52 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -72,6 +72,8 @@
 	    
 	    (make-java-compiler)
 	    (java-finalizer)
+	    (java-finalizer-sans-exports)
+	    (java-finalizer-exports)
 	    (find-java-class ::symbol)
 	    (jname-package ::bstring default)
 	    ;; heap-add-jclass is untyped other it force the module
@@ -180,6 +182,16 @@
 ;*    to create associated Bigloo types.                               */
 ;*---------------------------------------------------------------------*/
 (define (java-finalizer)
+   (java-finalizer-exports)
+   (java-finalizer-sans-exports))
+
+;*---------------------------------------------------------------------*/
+;*    java-finalizer-sans-exports ...                                  */
+;*    -------------------------------------------------------------    */
+;*    Now that all the Java classes have been parsed, we have          */
+;*    to create associated Bigloo types.                               */
+;*---------------------------------------------------------------------*/
+(define (java-finalizer-sans-exports)
    
    (define (jklass-ctors k::jklass)
       (with-access::jklass k (id idd loc constructors delayed-accessors?)
@@ -225,28 +237,6 @@
 			 (when delayed-accessors?
 			    (declare-jklass-properties! jklass jclass))))
 	    *jklasses* jclasses)
-	 ;; patch bigloo java exported variables name
-	 (for-each (lambda (jmod)
-		      (let* ((java (car jmod))
-			     (mod (cdr jmod))
-			     (global (find-global (get-genv) (cadr java)))
-			     (name (caddr java)))
-			 (cond
-			    ((not (global? global))
-			     (if (and (not (or (eq? *pass* 'make-add-heap)
-					       (eq? *pass* 'make-heap)))
-				      (eq? mod *module*))
-				 (java-error java
-				    "Unbound (or static) global variable")))
-			    ((string? (global-name global))
-			     (user-warning
-				"Java"
-				"Re-exportation of global variable (ignored)"
-				java))
-			    (else
-			     (global-import-set! global 'export)
-			     (global-name-set! global name)))))
-	    *jexported*)
 	 ;; collect all the undeclared references type
 	 ;; bind all the undeclared field types (automatic class declaration)
 	 (let ((r (append
@@ -254,13 +244,38 @@
 		     (filter-map auto-declare-jarray-klass-types *jarrays*)
 		     (append-map jklass-ctors *jklasses*))))
 	    ;; cleanup
-	    (set! *jexported* '())
 	    (set! *jklasses* '())
 	    (set! *jarrays* '())
 	    ;; only used by module5
 	    (if (pair? r)
 		(list (unit 'java 47 r #t #f))
 		'())))))
+
+;*---------------------------------------------------------------------*/
+;*    java-finalizer-exports ...                                       */
+;*---------------------------------------------------------------------*/
+(define (java-finalizer-exports)
+   (for-each (lambda (jmod)
+		(let* ((java (car jmod))
+		       (mod (cdr jmod))
+		       (global (find-global (get-genv) (cadr java)))
+		       (name (caddr java)))
+		   (cond
+		      ((not (global? global))
+		       (if (and (not (or (eq? *pass* 'make-add-heap)
+					 (eq? *pass* 'make-heap)))
+				(eq? mod *module*))
+			   (java-error java
+			      "Unbound (or static) global variable")))
+		      ((string? (global-name global))
+		       (user-warning
+			  "Java"
+			  "Re-exportation of global variable (ignored)"
+			  java))
+		      (else
+		       (global-import-set! global 'export)
+		       (global-name-set! global name)))))
+      *jexported*))   	    (set! *jexported* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    type-declared? ...                                               */
@@ -697,7 +712,8 @@
 	    (trace-item "super=" (shape super))
 	    ;; create the class holder
 	    ;; and create a type for this class
-	    (let ((jclass (declare-java-class-type! jid super jname package src)))
+	    (let ((jclass (declare-java-class-type! jid super jname
+			     package src)))
 	       ;; bind the method names for the expansion of the
 	       ;; ((-> v f) ...) method call syntax (see Ast/object.scm)
 	       (with-access::jclass jclass (methods)

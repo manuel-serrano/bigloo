@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Wed May 13 09:41:23 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 08:26:47 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
@@ -30,6 +30,7 @@
 	    ast_occur
 	    ast_lvtype
 	    coerce_coerce
+	    foreign_jtype
 	    backend_backend
 	    backend_cplib)
    (export  (get-module-init)))

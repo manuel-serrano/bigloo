@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Coerce/apply.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Coerce/apply.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Mon Oct 20 14:09:59 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 13 08:23:49 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `apply' coercion                                            */
 ;*=====================================================================*/
@@ -22,6 +22,7 @@
 	    tools_error
 	    type_type
 	    type_cache
+	    foreign_jtype
 	    ast_var
 	    ast_env
 	    ast_node

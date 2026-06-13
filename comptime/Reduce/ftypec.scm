@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Reduce/ftypec.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Reduce/ftypec.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Jun 16 17:11:44 2021 (serrano)                */
-;*    Copyright   :  1995-2021 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 13 08:25:13 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -22,6 +22,7 @@
 	    type_typeof
 	    type_misc
 	    coerce_coerce
+	    foreign_jtype
 	    effect_effect
 	    ast_var
 	    ast_node

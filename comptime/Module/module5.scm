@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Jun 12 07:40:08 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 05:51:22 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -189,8 +189,8 @@
 	    (user-info (cdr (assq 'info p)))
 	    (type (find-type/expr (cdr (assq 'type p)) expr)))))
    
-   (define (type-class-module id)
-      (let ((old (find-type id)))
+   (define (type-class-module id expr)
+      (let ((old (find-type/expr id expr)))
 	 (when (isa? old tclass)
 	    (with-access::tclass old (holder)
 	       (global-module holder)))))
@@ -220,7 +220,7 @@
 					     src)))
 				  (gen-class-coercions! ty)
 				  ty))
-			      ((not (eq? (type-class-module id) mid))
+			      ((not (eq? (type-class-module id expr) mid))
 			       (error mid
 				  (format "Illegal type redefinition \"~a\"" id)
 				  src))
@@ -460,36 +460,43 @@
 		     (let ((lib (string->symbol (prefix (basename heap)))))
 			(global-library-set! g lib)))))))
       g)
+
+   (define (declare-jdef! t::JDef mod::Module)
+      (with-access::JDef t (id name super package expr decl scope)
+	 (with-access::Decl decl ((dmod mod) scope)
+	    ;; Java class have already been associated to Bigloo types
+	    ;; in the Java finalization stage (see Engine/compiler.scm)
+	    (trace-item "mod=" (-> dmod id))
+	    (trace-item "scope=" scope)
+	    (trace-item "pckage=" package)
+	    (unless (or (eq? dmod mod) (eq? scope 'static))
+	       (unless (type-exists? id)
+		  (declare-java-class-type! id
+		     (find-type super) name package expr))))))
+   
+   (define (declare-tdef! t::TDef)
+      (with-access::TDef t (id name decl kind)
+	 (with-access::Decl decl ((dmod mod) scope)
+	    (trace-item "kind=" kind)
+	    (trace-item "mod=" (-> dmod id))
+	    (trace-item "scope=" scope)
+	    (unless (type-exists? id)
+	       (declare-type! id name 'C)))))
    
    (with-trace 'module_module5 "module5-ast!"
       (with-access::Module mod (defs imports (mid id))
 	 (trace-item "mid=" mid)
-	 
+
 	 (multiple-value-bind (types classes others)
 	    (split-definitions mid defs imports)
-	    
-	    ;; declare all C types
+
+	    ;; declare extern types
 	    (for-each (lambda (e)
 			 (let ((t::Def (vector-ref e 0)))
 			    (trace-item "type=" (-> t id) " " (typeof t))
 			    (if (isa? t JDef)
-				(with-access::JDef t (id name super package expr decl scope)
-				   (with-access::Decl decl ((dmod mod) scope)
-				      (trace-item "mod=" (-> dmod id))
-				      (trace-item "scope=" scope)
-				      (trace-item "pckage=" package)
-				      (unless (or (eq? dmod mod)
-						  (eq? scope 'static))
-					 (unless (type-exists? id)
-					    (declare-java-class-type! id
-					       (find-type super) name package expr)))))
-				(with-access::TDef t (id name decl kind)
-				   (with-access::Decl decl ((dmod mod) scope)
-				      (trace-item "kind=" kind)
-				      (trace-item "mod=" (-> dmod id))
-				      (trace-item "scope=" scope)
-				      (unless (type-exists? id)
-					 (declare-type! id name 'C)))))))
+				(declare-jdef! t mod)
+				(declare-tdef! t))))
 	       types)
 
 	    ;; declare all classes

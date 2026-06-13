@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Thu May 21 07:53:52 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 07:09:55 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -145,7 +145,7 @@
 ;*    declare-class-type! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (declare-class-type! id super ctor var widening final? abstract? src)
-   (with-trace 'module "declare-class-type!"
+   (with-trace 'object_class "declare-class-type!"
       (trace-item "id=" id)
       (trace-item "super=" (shape super))
       (let* ((super super)
@@ -236,7 +236,7 @@
 		  (loop (jclass-its-super super)))))
 	 ty))
    
-   (with-trace 'jvm "declare-java-class-type!"
+   (with-trace 'object_class "declare-java-class-type!"
       (trace-item "class-id=" class-id)
       (trace-item "jname=" jname)
       (trace-item "super=" (shape super) " " (typeof super))
@@ -244,8 +244,12 @@
 		      ((eq? (type-id super) class-id) #f)
 		      ((eq? super *_*) #f)
 		      (else super))))
-	 (or (previously-declared-type class-id super)
-	     (declare-new-type class-id super)))))
+	 (let ((t (or (previously-declared-type class-id super)
+		      (declare-new-type class-id super))))
+	    (unless (string=? jname (symbol->string! class-id))
+	       ;; create a alias with the fully qualified type name
+	       (rebind-type! (string->symbol jname) t))
+	    t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    final-class? ...                                                 */
@@ -452,20 +456,24 @@
 ;*    See @ref ../Module/class.scm:register-class@                     */
 ;*---------------------------------------------------------------------*/
 (define (set-class-slots! class class-def src-def)
-   (let* ((super (let ((super (tclass-its-super class)))
-		    (if (eq? super class)
-			#f
-			super)))
-	  (super-vnum (if (tclass? super)
-			  (tclass-virtual-slots-number super)
-			  0))
-	  (slots (cddr class-def)))
-      ;; we store inside the class the result of the parsing
-      ;; we pre-parse the class slot and we return the data structure
-      ;; describing the result of this parsing
-      (let* ((cslots (make-class-slots class slots super super-vnum src-def))
-	     (local-vnum (get-local-virtual-slots-number class cslots)))
-	 ;; we set the number of virtual slots for the current class
-	 (tclass-virtual-slots-number-set! class local-vnum)
-	 ;; and we store the slots
-	 (tclass-slots-set! class cslots))))
+   (with-trace 'object_class "set-class-slots!"
+      (trace-item "class=" (shape class))
+      (trace-item "class-def=" class-def)
+      (trace-item "src-def=" src-def)
+      (let* ((super (let ((super (tclass-its-super class)))
+		       (if (eq? super class)
+			   #f
+			   super)))
+	     (super-vnum (if (tclass? super)
+			     (tclass-virtual-slots-number super)
+			     0))
+	     (slots (cddr class-def)))
+	 ;; we store inside the class the result of the parsing
+	 ;; we pre-parse the class slot and we return the data structure
+	 ;; describing the result of this parsing
+	 (let* ((cslots (make-class-slots class slots super super-vnum src-def))
+		(local-vnum (get-local-virtual-slots-number class cslots)))
+	    ;; we set the number of virtual slots for the current class
+	    (tclass-virtual-slots-number-set! class local-vnum)
+	    ;; and we store the slots
+	    (tclass-slots-set! class cslots)))))

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Coerce/app.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Coerce/app.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Sun Mar 29 08:19:08 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 08:23:27 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
@@ -20,6 +20,7 @@
 	    type_type
 	    type_cache
 	    type_typeof
+	    foreign_jtype
 	    ast_var
 	    ast_node
 	    ast_env

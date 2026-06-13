@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Fri Jun 12 16:00:34 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 08:23:59 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -28,6 +28,7 @@
 	    type_coercion
 	    type_env
 	    type_typeof
+	    foreign_jtype
 	    ast_sexp
 	    ast_env
 	    ast_var

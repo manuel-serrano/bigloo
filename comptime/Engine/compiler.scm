@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Jun 12 16:30:28 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 05:43:44 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -665,7 +665,7 @@
 		    (backend-force-register-gc-roots (the-backend)))
 	    (set! units (cons (make-gc-roots-unit) units)))
 
-	 ;; foreign code
+	 ;; foreign unit code
 	 (case *target-language*
 	    ((c)
 	     (let ((u (foreign-finalizer)))
@@ -676,24 +676,25 @@
 		(hashtable-for-each imports
 		   (lambda (k decl)
 		      (with-access::Decl decl (mod)
-			 (module5-module-qualified-name-set! mod)))))))
+			 (module5-module-qualified-name-set! mod)))))
+	     (let ((u (java-finalizer-sans-exports)))
+	       (when (pair? u) (set! units (cons (car u) units))))))
 	 
-	 ;; foreign unit
-	 (let ((u (foreign-finalizer)))
-	    (when (pair? u) (set! units (cons (car u) units))))
+;* 	 ;; foreign unit                                               */
+;* 	 (let ((u (foreign-finalizer)))                                */
+;* 	    (when (pair? u) (set! units (cons (car u) units))))        */
 
-	 ;; check if all types are defined
-	 (profile ctype (check-types))
-	 
 	 ;; build the variable and function ast
 	 (module5-ast! mod genv 'compile)
 
-	 ;; java finalizer
-	 ;; cannot be executed before module5-ast! because of
-	 ;; jvm exports
-	 (when (eq? *target-language* 'jvm)
-	    (let ((u (java-finalizer)))
-	       (when (pair? u) (set! units (cons (car u) units)))))
+;* 	 ;; java finalizer                                             */
+;* 	 ;; cannot be executed before module5-ast! because of jvm exports */
+;* 	 (when (eq? *target-language* 'jvm)                            */
+;* 	    (let ((u (java-finalizer)))                                */
+;* 	       (when (pair? u) (set! units (cons (car u) units)))))    */
+	 
+	 ;; check if all types are defined
+	 (profile ctype (check-types))
 	 
 	 ;; bind the imported inline in the module environment
 	 (module5-imported-inline mod genv)
@@ -719,7 +720,7 @@
 	    ;; handle pragma declarations
 	    ;;(module5-resolve-pragma! mod genv)
 
-	    ;; java classes predicate and constructors
+	    ;; java exports and classes predicate and constructors
 	    (module5-extern-plugin-java-finalizer mod)
 
 	    ;; check if inlined functions used by the backend
@@ -749,7 +750,6 @@
 	     (src-code (append (progn-tail-expressions exp0) (cdr src)))
 	     (units (profile module (produce-module! module genv)))
 	     (tu (find (lambda (u) (eq? (unit-id u) 'toplevel)) units)))
-
 	 ;; module package
 	 (module-qualified-name-register! *module*)
 	 
