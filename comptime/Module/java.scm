@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Sat Jun 13 07:13:52 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 19:14:44 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -275,7 +275,8 @@
 		      (else
 		       (global-import-set! global 'export)
 		       (global-name-set! global name)))))
-      *jexported*))   	    (set! *jexported* '())
+      *jexported*)
+   (set! *jexported* '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-declared? ...                                               */

@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/bigloo/5.0.x/test/Makefile                               */
+#*    serrano/prgm/project/bigloo/5.0.x/test/Makefile                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Jun 12 10:01:19 2026 (serrano)                */
+#*    Last change :  Sat Jun 13 19:13:07 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -148,7 +148,7 @@ objs_jvm/%.class: src/%.scm src/test.bgh
 .jfile:
 	$(BGLJFILE) --strip 1 $(TESTS:%=src/%.bgl) $(MODULES5:%=src/modules/%.bgl) $(MODULES4:%=src/modules/%.scm) -o $@
 
-objs_jvm/Point.class: objs_jvm/Intf.class
+objs_jvm/Point.class: objs_jvm/Intf.class objs_jvm/extern_jvm.class
 
 #*---------------------------------------------------------------------*/
 #*    sub-directories                                                  */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Sat Jun 13 06:10:20 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 18:44:19 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -382,7 +382,10 @@
 	     (declare-java-type! jklass mod clause)
 	     (with-access::jklass jklass (delayed-accessors?)
 		(set! delayed-accessors? #f)
-		(declare-jklass-predicate! jklass mod clause))))
+		(declare-jklass-predicate! jklass mod clause)
+		(declare-jklass-constructors! jklass mod clause)
+		(declare-jklass-methods! jklass mod clause)
+		(declare-jklass-fields! jklass mod clause))))
 	 (else
 	  (error/loc mod "Illegal extern \"C\" module clause" clause x))))
    
@@ -558,7 +561,7 @@
 		      (id pid)
 		      (alias pid)
 		      (mod mod)
-		      (expr clause)
+		      (expr expr)
 		      (ronly #t)
 		      (attributes attrs)
 		      (attributes '(extern))
@@ -596,7 +599,7 @@
 			       (id mid)
 			       (alias mid)
 			       (mod mod)
-			       (expr clause)
+			       (expr expr)
 			       (ronly #t)
 			       (attributes '(extern))
 			       (scope 'export))))
@@ -755,8 +758,6 @@
 ;*    module5-extern-plugin-java-finalizer ...                         */
 ;*---------------------------------------------------------------------*/
 (define (module5-extern-plugin-java-finalizer mod::Module)
-   ;; export global variables to java
-   (java-finalizer-exports)
    ;; Mark that all the java class predicates cannot be removed
    ;; until the coercion and checks have been inserted in the AST
    ;; Because of the complex Java code generation and complex declarations

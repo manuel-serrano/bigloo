@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Jun 13 05:43:44 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 19:23:15 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -687,6 +687,8 @@
 	 ;; build the variable and function ast
 	 (module5-ast! mod genv 'compile)
 
+	 ;; export global variables to java
+	 (java-finalizer-exports)
 ;* 	 ;; java finalizer                                             */
 ;* 	 ;; cannot be executed before module5-ast! because of jvm exports */
 ;* 	 (when (eq? *target-language* 'jvm)                            */

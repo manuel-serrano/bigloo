@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sat Jun 13 05:51:22 2026 (serrano)                */
+;*    Last change :  Sat Jun 13 19:06:59 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -108,42 +108,48 @@
 	     farg)))
    
    (define (procedure-args src id mid def::Def)
-      (let ((dfargs (procedure-args-sans-def src id mid)))
-	 (if (isa? (-> def decl) Decl)
-	     (with-access::Decl (-> def decl) (expr (amod mod))
-		(if (and (=fx (-> amod version) 4) (pair? expr))
-		    ;; Module4 function declaration is split over the
-		    ;; module declaration and definition. The arguments
-		    ;; types of the declaration have to be propagated
-		    ;; to the definition
-		    (let ((dcargs (match-case expr
-				     ((inline ?- . ?args) args)
-				     ((generic ?- . ?args) args)
-				     ((?- . ?args) args))))
-		       (let loop ((dfargs dfargs)
-				  (dcargs dcargs)
-				  (args '()))
-			  ;; this assumes that dfargs and dcargs compatibility
-			  ;; has already been checked
-			  (cond
-			     ((null? dfargs)
-			      (reverse! args))
-			     ((symbol? dfargs)
-			      (reverse (cons (type-arg dfargs dcargs def) args)))
-			     ((symbol? (car dfargs))
-			      (loop (cdr dfargs) (cdr dcargs)
-				 (cons (type-arg (car dfargs) (car dcargs) def)
-				    args)))
-			     ((pair? (car dfargs))
-			      (loop (cdr dfargs) (cdr dcargs)
-				 (cons (list (type-arg (caar dfargs) (caar dcargs) def) (cadar dfargs))
-				    args)))
-			     ((memq (car dfargs) '(#!optional #!key #!rest))
-			      (loop (cdr dfargs) (cdr dcargs) (cons (car dfargs) args)))
-			     (else
-			      (error "procedure-args" "Illegal argument list" dfargs)))))
-		    dfargs))
-	     dfargs)))
+      (with-trace 'module_module5 "module5-ast!.procedure-args"
+	 (let ((dfargs (procedure-args-sans-def src id mid)))
+	    (trace-item "src=" src)
+	    (trace-item "dfargs=" dfargs)
+	    (if (isa? (-> def decl) Decl)
+		(with-access::Decl (-> def decl) (expr (amod mod))
+		   (trace-item "expr=" expr)
+		   (trace-item "amod.version=" (-> amod version))
+		   (if (and (=fx (-> amod version) 4) (pair? expr))
+		       ;; Module4 function declaration is split over the
+		       ;; module declaration and definition. The arguments
+		       ;; types of the declaration have to be propagated
+		       ;; to the definition
+		       (let ((dcargs (match-case expr
+					((inline ?- . ?args) args)
+					((generic ?- . ?args) args)
+					((define-inline (?- . ?args) . ?-) args)
+					((?- . ?args) args))))
+			  (let loop ((dfargs dfargs)
+				     (dcargs dcargs)
+				     (args '()))
+			     ;; this assumes that dfargs and dcargs compatibility
+			     ;; has already been checked
+			     (cond
+				((null? dfargs)
+				 (reverse! args))
+				((symbol? dfargs)
+				 (reverse (cons (type-arg dfargs dcargs def) args)))
+				((symbol? (car dfargs))
+				 (loop (cdr dfargs) (cdr dcargs)
+				    (cons (type-arg (car dfargs) (car dcargs) def)
+				       args)))
+				((pair? (car dfargs))
+				 (loop (cdr dfargs) (cdr dcargs)
+				    (cons (list (type-arg (caar dfargs) (caar dcargs) def) (cadar dfargs))
+				       args)))
+				((memq (car dfargs) '(#!optional #!key #!rest))
+				 (loop (cdr dfargs) (cdr dcargs) (cons (car dfargs) args)))
+				(else
+				 (error "procedure-args" "Illegal argument list" dfargs)))))
+		       dfargs))
+		dfargs))))
    
    (define (import-kind src ronly)
       (if (not ronly)
