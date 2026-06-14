@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sun Jun 14 10:49:38 2026 (serrano)                */
+;*    Last change :  Sun Jun 14 10:52:07 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -437,6 +437,10 @@
    (match-case def
       ((generic . ?-) "function generic")
       ((?- .  ?-) "function")
+      ((define-class . ?-) "class")
+      ((define-abstract-class . ?-) "class")
+      ((define-final-class . ?-) "class")
+      ((define-wide-class . ?-) "class")
       (else "variable")))
 
 ;*---------------------------------------------------------------------*/
@@ -486,13 +490,24 @@
       `("("
           ,(xml-element 'span '((class . "generic")) (list "generic "))
           ,@(markdown-ident fun "definition") ,@(markdown-arguments args) ")"))
+
+   (define (markdown-field field)
+      (list (xml-element 'span '((class . "field")) (list (format "~s" field)))))
    
+   (define (class->markdown keyword clazz fields)
+      `("(" ,(xml-element 'span '((class . "class")) (list keyword " "))
+          ,(xml-element 'span '((class . "definition"))
+             (list (symbol->string clazz)))
+          ,@(markdown-field fields)))
+      
    (define (variable->markdown var)
       (list (xml-element 'span '((class . "definition")) (list (symbol->string var)))))
 
    (match-case def
       ((generic ?fun . ?args)
        (generic->markdown fun args))
+      ((define-class ?clazz . ?fields)
+       (class->markdown "define-class" clazz fields))
       ((?fun . ?args)
        (function->markdown fun args))
       (else
@@ -577,6 +592,19 @@
                     (hashtable-put! definitions-table (parse-ident def) def))
                    ((define-wide-class (and ?def (? symbol?)) . ?-)
                     (hashtable-put! definitions-table (parse-ident def) def))
+                   ((module ?- . ?clauses)
+                    (for-each (lambda (clause)
+                                 (match-case clause
+                                    ((or (export . ?subclauses)
+                                         (cond-expand (bigloo-c (export . ?subclauses)) . ?-))
+                                     (for-each (lambda (subclause)
+                                                  (match-case subclause
+                                                     ((class ?def . ?fields)
+                                                      (hashtable-put! definitions-table
+                                                         (parse-ident def)
+                                                         `(define-class ,def ,@fields)))))
+                                        subclauses))))
+                       clauses))
 		   (else #f)))
       src))
 	     
