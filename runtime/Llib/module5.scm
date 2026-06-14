@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Jun 13 05:20:37 2026 (serrano)                */
+;*    Last change :  Sun Jun 14 07:04:11 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1068,6 +1068,7 @@
 	 (let* ((path (cadr clause))
 		(bindings (cddr clause))
 		(rfrom (module5-resolve-path path (-> mod path))))
+	    (trace-item "path=" path)
 	    (cond
 	       ((not (string? rfrom))
 		(error/loc mod "Cannot find file" path clause))
@@ -1080,6 +1081,9 @@
 				       :heap-suffix hsuffix
 				       :expand expand
 				       :stack stack)))
+		   (trace-item "exports="
+		      (hashtable-map (-> imod exports)
+			 (lambda (key d) key)))
 		   (for-each (lambda (b)
 				(trace-item "b=" b
 				   " imod=" (-> imod id) " (import-some)")
@@ -1090,30 +1094,36 @@
 		      (append! (-> mod inits) (list imod)))))))))
 
    (define (parse-import4-all clause::pair expr::pair mod::Module expand stack)
-      (let* ((path (cadr (cddr clause)))
-	     (rfrom (module5-resolve-path path (-> mod path))))
-	 (cond
-	    ((not (string? rfrom))
-	     (error/loc mod "Cannot find file" path clause))
-	    ((member rfrom stack)
-	     (cycle-error mod "Cyclic module5 import" rfrom stack clause))
-	    (else
-	     (let ((imod::Module (module4-read rfrom
-				    :lib-path lib-path
-				    :cache-dir cache-dir
-				    :heap-suffix hsuffix
-				    :expand expand
-				    :stack stack)))
-		(hashtable-for-each (-> imod exports)
-		   (lambda (key d::Decl)
-		      (let* ((alias (-> d alias))
-			     (nd (duplicate::Decl d
-				    (alias alias)
-				    (scope 'import))))
-			 (hashtable-put! (-> mod decls) key nd)
-			 (hashtable-put! (-> mod imports) key nd))))
-		(set! (-> mod inits)
-		   (append! (-> mod inits) (list imod))))))))
+      (with-trace '__module5 "parse-import4-all"
+	 (trace-item "mod=" (-> mod id))
+	 (let* ((path (cadr (cddr clause)))
+		(rfrom (module5-resolve-path path (-> mod path))))
+	    (trace-item "path=" path)
+	    (cond
+	       ((not (string? rfrom))
+		(error/loc mod "Cannot find file" path clause))
+	       ((member rfrom stack)
+		(cycle-error mod "Cyclic module5 import" rfrom stack clause))
+	       (else
+		(let ((imod::Module (module4-read rfrom
+				       :lib-path lib-path
+				       :cache-dir cache-dir
+				       :heap-suffix hsuffix
+				       :expand expand
+				       :stack stack)))
+		   (trace-item "exports="
+		      (hashtable-map (-> imod exports)
+			 (lambda (key d) key)))
+		   (hashtable-for-each (-> imod exports)
+		      (lambda (key d::Decl)
+			 (let* ((alias (-> d alias))
+				(nd (duplicate::Decl d
+				       (alias alias)
+				       (scope 'import))))
+			    (hashtable-put! (-> mod decls) key nd)
+			    (hashtable-put! (-> mod imports) key nd))))
+		   (set! (-> mod inits)
+		      (append! (-> mod inits) (list imod)))))))))
 
    (define (parse-export clause expr::pair mod::Module expand)
       (for-each-expr (lambda (expr src)
@@ -1333,18 +1343,19 @@
 	   (qualified-names #f))
    (unless (-> mod resolved)
       (with-trace '__module5 "module5-expand-and-resolve!"
-	 (trace-item (-> mod id)
+	 (trace-item
+	    "mod=" (-> mod id)
 	    " resolved=" (-> mod resolved)
 	    " qualified-name=" (-> mod qualified-name))
-	 (trace-item "decls="
+	 (trace-item "> decls="
 	    (hashtable-map (-> mod decls)
 	       (lambda (k d::Decl)
 		  (format "~a/~a(~a)" (-> d id) (-> d alias) (-> d scope)))))
-	 (trace-item "defs="
+	 (trace-item "> defs="
 	    (hashtable-map (-> mod defs)
 	       (lambda (k d::Def)
 		  (format "~a::~a" (-> d id) (typeof d)))))
-	 (trace-item "exports="
+	 (trace-item "> exports="
 	    (hashtable-map (-> mod exports)
 	       (lambda (k d::Decl)
 		  (format "~a" (-> d id)))))
@@ -1439,14 +1450,16 @@
 	    ;; bind variables and macros
 	    (collect-defines! mod (-> mod body))
 
-	    ;; auto export all the global variables referenced in exported
-	    ;; inline functions and patch the body of exported inline functions
-	    ;; so that they only use qualified naming for global variables
-	    (export-inline-hidden! mod)
-	    
 	    ;; bind all the classes
 	    (collect-classes! mod)
-	    (check-unbounds mod))
+
+	    ;; check unbound variables (i.e., user errorr)
+	    (check-unbounds mod)
+
+	    ;; auto export all the global variables referenced in exported
+	    ;; inline functions and class defintions and patch the code
+	    ;; so that they only use qualified naming for global variables
+	    (auto-export-hidden! mod))
 
 	 (ronly! mod)
 	 ;; remove the macro and expanders definitions from body as these
@@ -1462,13 +1475,13 @@
 
 	 ;; store the body in cache for next use or import
 	 (filecache-put! (-> mod path) mod)
-	 (trace-item "decls="
+	 (trace-item "< decls="
 	    (hashtable-map (-> mod decls)
 	       (lambda (k d) (with-access::Decl d (id) id))))
-	 (trace-item "exports="
+	 (trace-item "< exports="
 	    (hashtable-map (-> mod exports)
 	       (lambda (k d) (with-access::Decl d (id) id))))
-	 (trace-item "defs="
+	 (trace-item "< defs="
 	    (hashtable-map (-> mod defs)
 	       (lambda (k d) (with-access::Def d (id kind) (cons id kind)))))))
    mod)
@@ -2064,9 +2077,12 @@
       (for-each (lambda (expr) (collect-define! mod expr)) body)))
 
 ;*---------------------------------------------------------------------*/
-;*    export-inline-hidden! ...                                        */
+;*    auto-export-hidden! ...                                          */
+;*    -------------------------------------------------------------    */
+;*    Export automatically global variables referenced in inline       */
+;*    function bodies and class ctor and init values.                  */
 ;*---------------------------------------------------------------------*/
-(define (export-inline-hidden! mod::Module)
+(define (auto-export-hidden! mod::Module)
    
    (define (args*->frame args src)
       (let loop ((args args)
@@ -2088,7 +2104,7 @@
 	     (loop (cdr args) frame))
 	    (else
 	     (error/loc mod "Illegal formal parameter" (car args) src)))))
-
+   
    (define (find-decl id mod::Module)
       ;; find the declaration of g in mod, might return false
       (hashtable-get (-> mod decls) (symbol->string! id)))
@@ -2251,42 +2267,55 @@
       (set! (-> d scope) 'export)
       (set! (-> d attributes) (cons 'hidden (-> d attributes)))
       (hashtable-symbol-put! (-> mod exports) (-> d id) d))
-
-   (with-trace '__module5 "export-inline-hidden!"
+   
+   (define (export-hidden-global! d)
+      (cond
+	 ((isa? d Decl)
+	  (unless (eq? (-> (cast::Decl d) scope) 'export)
+	     (export-hidden! d mod)))
+	 ((isa? d Def)
+	  ;; d was a static global variable, must
+	  ;; declare a fresh declaration
+	  (let* ((d::Def d)
+		 (id (-> d id))
+		 (decl (instantiate::Decl
+			  (id id)
+			  (alias id)
+			  (mod mod)
+			  (scope 'export)
+			  (def d)
+			  (expr (-> d expr)))))
+	     (set! (-> d decl) decl)
+	     (hashtable-symbol-put! (-> mod decls) id decl)
+	     (export-hidden! decl mod)))))
+   
+   (with-trace '__module5 "auto-export-hidden!"
       (trace-item "mod=" (-> mod id))
       (hashtable-for-each (-> mod exports)
 	 (lambda (k decl::Decl)
 	    (when (isa? (-> decl def) Def)
 	       (let ((def::Def (-> decl def)))
-		  (when (eq? (-> def kind) 'inline)
-		     (trace-item "fun=" (-> decl id))
-		     (let ((ds::pair-nil (inline-free-vars! def)))
-			(trace-item "free="
-			   (map (lambda (d::Decl) (-> d id)) ds))
-			(for-each (lambda (d)
-				     (cond
-					((isa? d Decl)
-					 (unless (eq? (-> (cast::Decl d) scope)
-						    'export)
-					    (export-hidden! d mod)))
-					((isa? d Def)
-					 ;; d was a static global variable, must
-					 ;; declare a fresh declaration
-					 (let* ((d::Def d)
-						(id (-> d id))
-						(decl (instantiate::Decl
-							 (id id)
-							 (alias id)
-							 (mod mod)
-							 (scope 'export)
-							 (def d)
-							 (expr (-> def expr)))))
-					    (set! (-> d decl) decl)
-					    (hashtable-symbol-put!
-					       (-> mod decls)
-					       (-> def id) decl)
-					    (export-hidden! decl mod)))))
-			   ds)))))))))
+		  (cond
+		     ((eq? (-> def kind) 'inline)
+		      (trace-item "inline " (-> decl id))
+		      (let ((ds::pair-nil (inline-free-vars! def)))
+			 ;; export all the global used by the inline function
+			 (trace-item "free="
+			    (map (lambda (d::Decl) (-> d id)) ds))
+			 (for-each export-hidden-global! ds)))
+		     ((isa? def KDef)
+		      (trace-item "kdef " (-> decl id))
+		      (let* ((kdef::KDef def)
+			     (ctor (-> kdef ctor)))
+			 (when (symbol? ctor)
+			    ;; export the class constructor
+			    (let* ((e (list ctor))
+				   (ds::pair-nil (free-vars! ctor '() '() e)))
+			       (when (pair? ds)
+				  (class-info-ctor-set! (-> kdef ci)
+				     `(@ ,ctor ,(-> mod id)))
+				  (export-hidden-global! (car ds)))))
+			 )))))))))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    collect-classes! ...                                             */

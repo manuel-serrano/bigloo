@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/api/ssl/src/Llib/ssl.scm       */
+;*    serrano/prgm/project/bigloo/bigloo/api/ssl/src/Llib/ssl.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Tue Jun  9 16:18:41 2026 (serrano)                */
+;*    Last change :  Thu Feb 15 08:06:46 2024 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -47,12 +47,13 @@
 	   (macro $ssl-session-nil::$ssl-session "0L")
 	   (macro $ssl-evp-md-nil::$ssl-evp-md "0L")
 	   (macro $ssl-evp-md-ctx-nil::$ssl-evp-md-ctx "0L")
+	   (macro $ssl-hmac-ctx-nil::$ssl-hmac-ctx "0L")
 	   (macro $ssl-cipher-nil::$ssl-cipher "0L")
 	   (macro $ssl-cipher-ctx-nil::$ssl-cipher-ctx "0L")
 
 	   (macro $obj->bignum::$bignum (::obj) "(BIGNUM *)FOREIGN_TO_COBJ")
 	   (macro $bignum->obj::obj (::$bignum) "void_star_to_obj")
-	   (macro $bignum-nil::$bignum "((BIGNUM *)0L)")
+	   (macro $bignum-nil::$bignum "(0L)")
 	   
 	   ($ssl-version::string () "bgl_ssl_version")
            ($certificate-subject::bstring (::obj)
@@ -200,11 +201,11 @@
 	      "bgl_dh_pqg_set")
 	   ($bgl-dh-q::$bignum (::$dh)
 	      "bgl_dh_p")
-;* 	   ($bgl-dh-q-set!::void (::$dh $bignum)                       */
+;* 	   ($bgl-dh-q-set!::void (::$dh ::$bignum)                       */
 ;* 	      "bgl_dh_p_set")                                          */
 	   ($bgl-dh-g::$bignum (::$dh)
 	      "bgl_dh_g")
-;* 	   ($bgl-dh-g-set!::void (::$dh $bignum)                       */
+;* 	   ($bgl-dh-g-set!::void (::$dh ::$bignum)                       */
 ;* 	      "bgl_dh_g_set")                                          */
 
 	   ($bgl-ssl-hash-init::bool (::ssl-hash)
@@ -394,10 +395,10 @@
 	   (ssl-rand-bytes ::int)
 	   (ssl-rand-pseudo-bytes ::int)
 	   
-	   (certificate-subject::bstring ::certificate)
-	   (certificate-issuer::bstring ::certificate)
+	   (inline certificate-subject::bstring ::certificate)
+	   (inline certificate-issuer::bstring ::certificate)
 	   
-	   (ssl-socket?::bool ::obj)
+	   (inline ssl-socket?::bool ::obj)
 	   
 	   (make-ssl-client-socket ::bstring ::int
 	      #!key
@@ -457,6 +458,7 @@
 	   (generic ssl-connection-get-negotiated-protocol ::ssl-connection)
 	   (generic ssl-connection-reused?::bool ::ssl-connection)
 
+	   (generic dh-init dh::dh)
 	   (generic dh-size::int ::dh)
 	   (generic dh-generate-parameters-ex ::dh ::int ::symbol)
 	   (generic dh-generate-key::bool ::dh)
@@ -575,7 +577,7 @@
 	  
 	  (class ssl-hmac
 	     ($md::$ssl-evp-md (default $ssl-evp-md-nil))
-	     ($md-ctx::$ssl-hmac-ctx (default $ssl-evp-md-ctx-nil)))
+	     ($md-ctx::$ssl-hmac-ctx (default $ssl-hmac-ctx-nil)))
 	  
 	  (generic ssl-hmac-init ::ssl-hmac ::bstring ::bstring)
 	  (generic ssl-hmac-update! ::ssl-hmac ::bstring ::long ::long)
@@ -583,7 +585,7 @@
 
 	  (class ssl-sign
 	     ($md::$ssl-evp-md (default $ssl-evp-md-nil))
-	     ($md-ctx::$ssl-hmac-ctx (default $ssl-evp-md-ctx-nil)))
+	     ($md-ctx::$ssl-evp-md-ctx (default $ssl-evp-md-ctx-nil)))
 
 	  (generic ssl-sign-init ::ssl-sign ::bstring)
 	  (generic ssl-sign-update! ::ssl-sign ::bstring ::long ::long)
@@ -591,7 +593,7 @@
 	  
 	  (class ssl-verify
 	     ($md::$ssl-evp-md (default $ssl-evp-md-nil))
-	     ($md-ctx::$ssl-hmac-ctx (default $ssl-evp-md-ctx-nil)))
+	     ($md-ctx::$ssl-evp-md-ctx (default $ssl-evp-md-ctx-nil)))
 
 	  (generic ssl-verify-init ::ssl-verify ::bstring)
 	  (generic ssl-verify-update! ::ssl-verify ::bstring ::long ::long)
@@ -802,7 +804,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ssl-socket? ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (ssl-socket? obj)
+(define-inline (ssl-socket? obj)
    (cond-expand
       (bigloo-c ($ssl-socket? obj))
       (else (or ($ssl-client-socket? obj) ($ssl-server-socket? obj)))))
@@ -898,13 +900,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    certificate-subject ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (certificate-subject::bstring cert::certificate)
+(define-inline (certificate-subject::bstring cert::certificate)
    ($certificate-subject cert))
 
 ;*---------------------------------------------------------------------*/
 ;*    certificate-issuer ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (certificate-issuer::bstring cert::certificate)
+(define-inline (certificate-issuer::bstring cert::certificate)
    ($certificate-issuer cert))
 
 ;*---------------------------------------------------------------------*/

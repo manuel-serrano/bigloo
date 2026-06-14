@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/bigloo/5.0.x/doc/Makefile                                */
+#*    serrano/prgm/project/bigloo/5.0.x/doc/Makefile                   */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Jun  5 15:32:25 2026 (serrano)                */
+#*    Last change :  Sun Jun 14 10:06:48 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -36,8 +36,8 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = bool date hash int io number pair port real string thread vector \
- condexpand match module5 module4 object
+MD = bool date hash int io number pair port real ssl string thread \
+ vector condexpand match module5 module4 object
 
 EX = c/fib java/fib wasm/fib
 

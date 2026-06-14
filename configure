@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Jun  5 08:44:53 2026 (serrano)                */
+#*    Last change :  Sun Jun 14 06:36:45 2026 (serrano)                */
 #*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2621,6 +2621,7 @@ if [ "$openssllibs" != "no" ]; then
   opensslv3=`$autoconf openssl-v3 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslv23=`$autoconf openssl-v23 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslgetter=`$autoconf openssl-getter --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
+  (cd tests/scripts/ssl-fixtures.sh)
 fi
 
 #*---------------------------------------------------------------------*/
