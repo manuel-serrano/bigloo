@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/api/ssl/src/Llib/ssl.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/api/ssl/src/Llib/ssl.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Thu Feb 15 08:06:46 2024 (serrano)                */
+;*    Last change :  Sun Jun 14 10:17:17 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -392,8 +392,8 @@
 
 	   (ssl-rand-status::bool)
 	   (ssl-rand-poll::bool)
-	   (ssl-rand-bytes ::int)
-	   (ssl-rand-pseudo-bytes ::int)
+	   (ssl-rand-bytes::bstring ::int)
+	   (ssl-rand-pseudo-bytes::bstring ::int)
 	   
 	   (inline certificate-subject::bstring ::certificate)
 	   (inline certificate-issuer::bstring ::certificate)
@@ -723,7 +723,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ssl-version ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (ssl-version)
+(define (ssl-version::string)
    (cond-expand
       (bigloo-c ($ssl-version))
       (else ($ssl-utils-ssl-version))))
@@ -804,7 +804,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ssl-socket? ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (ssl-socket? obj)
+(define-inline (ssl-socket?::bool obj)
    (cond-expand
       (bigloo-c ($ssl-socket? obj))
       (else (or ($ssl-client-socket? obj) ($ssl-server-socket? obj)))))
@@ -860,7 +860,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ssl-rand-status ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (ssl-rand-status)
+(define (ssl-rand-status::bool)
    (cond-expand
       (bigloo-c ($ssl-rand-status))
       (else #t)))
@@ -868,7 +868,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ssl-rand-poll ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (ssl-rand-poll)
+(define (ssl-rand-poll::bool)
    (cond-expand
       (bigloo-c ($ssl-rand-poll))
       (else #t)))
@@ -876,7 +876,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ssl-rand-bytes ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (ssl-rand-bytes sz::int)
+(define (ssl-rand-bytes::bstring sz::int)
    (cond-expand
       (bigloo-c
        (let ((str (make-string sz)))
@@ -888,7 +888,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ssl-rand-pseudo-bytes ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (ssl-rand-pseudo-bytes sz::int)
+(define (ssl-rand-pseudo-bytes::bstring sz::int)
    (cond-expand
       (bigloo-c
        (let ((str (make-string sz)))

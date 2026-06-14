@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sun Jun 14 10:07:36 2026 (serrano)                */
+;*    Last change :  Sun Jun 14 10:49:38 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -569,6 +569,14 @@
 		    (hashtable-put! definitions-table (parse-ident id) (cons 'generic def)))
 		   ((define (and ?def (? symbol?)) ?-)
 		    (hashtable-put! definitions-table (parse-ident def) def))
+                   ((define-class (and ?def (? symbol?)) . ?-)
+                    (hashtable-put! definitions-table (parse-ident def) def))
+                   ((define-abstract-class (and ?def (? symbol?)) . ?-)
+                    (hashtable-put! definitions-table (parse-ident def) def))
+                   ((define-final-class (and ?def (? symbol?)) . ?-)
+                    (hashtable-put! definitions-table (parse-ident def) def))
+                   ((define-wide-class (and ?def (? symbol?)) . ?-)
+                    (hashtable-put! definitions-table (parse-ident def) def))
 		   (else #f)))
       src))
 	     

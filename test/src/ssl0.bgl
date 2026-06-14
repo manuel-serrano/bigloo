@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jun  5 08:49:59 2026                          */
-;*    Last change :  Sun Jun 14 06:14:40 2026 (serrano)                */
+;*    Last change :  Sun Jun 14 10:16:11 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the ssl library.                                         */
@@ -80,7 +80,7 @@
 ;*    certificates                                                     */
 ;*---------------------------------------------------------------------*/
 (define-test read-certificate
-   (isa? *cert* certificate)
+   (isa? (read-certificate "./scripts/recette-cert.pem") certificate)
    :expected #t)
 
 (define-test certificate-subject
@@ -97,11 +97,19 @@
       (and (pair? certs) (isa? (car certs) certificate)))
    :expected #t)
 
-(define-test read-private-key-pkcs8
+(define-test read-pem-file
+   (with-handler
+      (lambda (e)
+         #t)
+      (let ((certs (read-pem-file "./scripts/DOEST-NOT-EXISTS")))
+         #f))
+   :expected #t)
+
+(define-test read-private-key
    (isa? (read-private-key "./scripts/recette-key.pem") private-key)
    :expected #t)
 
-(define-test read-private-key-pkcs1
+(define-test read-private-key
    (isa? (read-private-key "./scripts/recette-key-pkcs1.pem") private-key)
    :expected #t)
 
@@ -421,7 +429,7 @@
       #t)
    :expected #t)
 
-(define-test secure-context-add-root-certs
+(define-test secure-context-add-root-certs!
    (let ((sc (instantiate::secure-context)))
       (let ((r (secure-context-add-root-certs! sc)))
 	 (secure-context-close sc)
@@ -436,7 +444,7 @@
 	 r))
    :expected #t)
 
-(define-test secure-context-set-cert-key
+(define-test secure-context-set-cert!
    (let ((sc (instantiate::secure-context)))
       (let* ((r1 (secure-context-set-cert! sc *cert-data* 0
 		   (string-length *cert-data*)))
@@ -446,7 +454,7 @@
 	 (and r1 r2)))
    :expected #t)
 
-(define-test secure-context-set-key-then-cert
+(define-test secure-context-set-key!
    (let ((sc (instantiate::secure-context)))
       (let* ((r1 (secure-context-set-key! sc *key-data* 0
 		   (string-length *key-data*)))
@@ -456,14 +464,14 @@
 	 (and r1 r2)))
    :expected #t)
 
-(define-test secure-context-set-ciphers
+(define-test secure-context-set-ciphers!
    (let ((sc (instantiate::secure-context)))
       (let ((r (secure-context-set-ciphers! sc "TLS_AES_256_GCM_SHA384")))
 	 (secure-context-close sc)
 	 r))
    :expected #t)
 
-(define-test secure-context-set-session-id-context
+(define-test secure-context-set-session-id-context!
    (let ((sc (instantiate::secure-context)))
       (let ((r (secure-context-set-session-id-context! sc "mysession" 0 9)))
 	 (secure-context-close sc)
@@ -553,7 +561,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bn                                                               */
 ;*---------------------------------------------------------------------*/
-(define-test bn-roundtrip
+(define-test bn-bin2bn
    (let ((bn (bn-bin2bn "test")))
       (bn-bn2bin bn))
    :expected "test")
@@ -656,7 +664,7 @@
    :cond-expand (library pthread)
    :expected "echo-test")
 
-(define-test ssl-server-named
+(define-test make-ssl-server-socket
    (let* ((server (make-ssl-server-socket 0
 		     :name "127.0.0.1"
 		     :cert *cert* :pkey *pkey*))
@@ -684,7 +692,7 @@
    :cond-expand (library pthread)
    :expected "named")
 
-(define-test client-socket-use-ssl
+(define-test client-socket-use-ssl!
    (let* ((server (make-ssl-server-socket 0 :cert *cert* :pkey *pkey*))
 	  (port (socket-port-number server)))
       (let ((t (instantiate::pthread
@@ -710,7 +718,7 @@
    :cond-expand (library pthread)
    :expected "upgrade")
 
-(define-test ssl-accepted-certs
+(define-test make-ssl-client-socket
    (let* ((server (make-ssl-server-socket 0 :cert *cert* :pkey *pkey*))
 	  (port (socket-port-number server)))
       (let ((t (instantiate::pthread
