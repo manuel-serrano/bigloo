@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sun Jun 14 10:52:07 2026 (serrano)                */
+;*    Last change :  Sun Jun 14 17:26:51 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -437,10 +437,7 @@
    (match-case def
       ((generic . ?-) "function generic")
       ((?- .  ?-) "function")
-      ((define-class . ?-) "class")
-      ((define-abstract-class . ?-) "class")
-      ((define-final-class . ?-) "class")
-      ((define-wide-class . ?-) "class")
+      (((or class absract-class final-class wide-class) . ?-) "class")
       (else "variable")))
 
 ;*---------------------------------------------------------------------*/
@@ -492,13 +489,36 @@
           ,@(markdown-ident fun "definition") ,@(markdown-arguments args) ")"))
 
    (define (markdown-field field)
-      (list (xml-element 'span '((class . "field")) (list (format "~s" field)))))
+      (list (xml-element 'span '((class . "field"))
+               (cons "\n       "
+                  (match-case field
+                     ((? symbol?)
+                      (markdown-ident field "field"))
+                     (((? symbol?))
+                      (cons "(" (append (markdown-ident (car field) "field") (list ")"))))
+                     (else
+                      (let* ((ronly #t)
+                             (f (filter (lambda (a)
+                                           (match-case a
+                                              ((get . ?-) #f)
+                                              ((set . ?-) (set! ronly #f) #f)))
+                                   (cdr field))))
+                         (if (null? f)
+                             (if ronly
+                                 (cons "(" (append (markdown-ident (car field) "field") (list " read-only)")))
+                                 (markdown-ident (car field) "field"))
+                             (cons "("
+                                (append (markdown-ident (car field) "field")
+                                   (map (lambda (e) (format " ~s" e)) f)
+                                   (list ")")))))))))))
    
    (define (class->markdown keyword clazz fields)
-      `("(" ,(xml-element 'span '((class . "class")) (list keyword " "))
-          ,(xml-element 'span '((class . "definition"))
-             (list (symbol->string clazz)))
-          ,@(markdown-field fields)))
+      (list (xml-element 'span '((class . "pre"))
+               `("("
+                   ,(xml-element 'span '((class . "class")) (list keyword " "))
+                   ,@(markdown-ident clazz "definition")
+                   ,@(map markdown-field fields)
+                   ")"))))
       
    (define (variable->markdown var)
       (list (xml-element 'span '((class . "definition")) (list (symbol->string var)))))
@@ -506,8 +526,8 @@
    (match-case def
       ((generic ?fun . ?args)
        (generic->markdown fun args))
-      ((define-class ?clazz . ?fields)
-       (class->markdown "define-class" clazz fields))
+      (((or class abstract-class wide-class final-class) ?clazz . ?fields)
+       (class->markdown (symbol->string (car def)) clazz fields))
       ((?fun . ?args)
        (function->markdown fun args))
       (else
@@ -574,6 +594,18 @@
 ;*    collect-definitions ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (collect-definitions src)
+   
+   (define (field x)
+      (match-case x
+         ((? symbol?)
+          (and (not (char=? (string-ref (symbol->string! x) 0) #\$))
+               (not (char=? (string-ref (symbol->string! x) 0) #\%))))
+         (((and ?ident (? symbol?)) . ?-)
+          (and (not (char=? (string-ref (symbol->string! ident) 0) #\$))
+               (not (char=? (string-ref (symbol->string! ident) 0) #\%))))
+         (else
+          #t)))
+   
    (for-each (lambda (e)
 		(match-case e
 		   ((define (and ?def (?id . ?-)) . ?-)
@@ -584,14 +616,11 @@
 		    (hashtable-put! definitions-table (parse-ident id) (cons 'generic def)))
 		   ((define (and ?def (? symbol?)) ?-)
 		    (hashtable-put! definitions-table (parse-ident def) def))
-                   ((define-class (and ?def (? symbol?)) . ?-)
-                    (hashtable-put! definitions-table (parse-ident def) def))
-                   ((define-abstract-class (and ?def (? symbol?)) . ?-)
-                    (hashtable-put! definitions-table (parse-ident def) def))
-                   ((define-final-class (and ?def (? symbol?)) . ?-)
-                    (hashtable-put! definitions-table (parse-ident def) def))
-                   ((define-wide-class (and ?def (? symbol?)) . ?-)
-                    (hashtable-put! definitions-table (parse-ident def) def))
+                   (((or define-class define-abstract-class define-wide-class define-final-class)
+                     (and ?def (? symbol?)) . ?fields)
+                    (hashtable-put! definitions-table (parse-ident def)
+                       `(,(string->symbol (substring (symbol->string (car e)) 8))
+                         ,def ,@(filter field fields))))
                    ((module ?- . ?clauses)
                     (for-each (lambda (clause)
                                  (match-case clause
@@ -599,15 +628,15 @@
                                          (cond-expand (bigloo-c (export . ?subclauses)) . ?-))
                                      (for-each (lambda (subclause)
                                                   (match-case subclause
-                                                     ((class ?def . ?fields)
+                                                     (((or class abstract-class wide-class final-class) ?def . ?fields)
                                                       (hashtable-put! definitions-table
                                                          (parse-ident def)
-                                                         `(define-class ,def ,@fields)))))
+                                                         `(,(car subclause) ,def ,@(filter field fields))))))
                                         subclauses))))
                        clauses))
 		   (else #f)))
       src))
-	     
+
 ;*---------------------------------------------------------------------*/
 ;*    collect-tests ...                                                */
 ;*---------------------------------------------------------------------*/

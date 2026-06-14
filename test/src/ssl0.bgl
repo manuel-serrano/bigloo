@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jun  5 08:49:59 2026                          */
-;*    Last change :  Sun Jun 14 10:16:11 2026 (serrano)                */
+;*    Last change :  Sun Jun 14 17:32:03 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the ssl library.                                         */
@@ -116,13 +116,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    hash                                                             */
 ;*---------------------------------------------------------------------*/
-(define-test hash-sha256
+(define-test ssl-hash
+   (isa? (instantiate::ssl-hash (type "sha256")) ssl-hash))
+
+(define-test ssl-hash-update!
    (let ((h (instantiate::ssl-hash (type "sha256"))))
       (ssl-hash-update! h "hello" 0 5)
       (string-length (ssl-hash-digest h)))
    :expected 32)
 
-(define-test hash-sha1
+(define-test ssl-hash-digest
    (let ((h (instantiate::ssl-hash (type "sha1"))))
       (ssl-hash-update! h "test" 0 4)
       (string-length (ssl-hash-digest h)))
@@ -157,21 +160,24 @@
 ;*---------------------------------------------------------------------*/
 ;*    hmac                                                             */
 ;*---------------------------------------------------------------------*/
-(define-test hmac-sha256
+(define-test ssl-hmac
+   (isa? (instantiate::ssl-hmac) ssl-hmac))
+
+(define-test ssl-hmac-init
    (let ((h (instantiate::ssl-hmac)))
       (ssl-hmac-init h "sha256" "secret-key")
       (ssl-hmac-update! h "message" 0 7)
       (string-length (ssl-hmac-digest h)))
    :expected 32)
 
-(define-test hmac-sha1
+(define-test ssl-hmac-update!
    (let ((h (instantiate::ssl-hmac)))
       (ssl-hmac-init h "sha1" "key")
       (ssl-hmac-update! h "data" 0 4)
       (string-length (ssl-hmac-digest h)))
    :expected 20)
 
-(define-test hash-multi-update
+(define-test ssl-hmac-digest
    (let ((h (instantiate::ssl-hash (type "sha256"))))
       (ssl-hash-update! h "hello" 0 5)
       (ssl-hash-update! h " world" 0 6)
@@ -195,7 +201,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    sign / verify                                                    */
 ;*---------------------------------------------------------------------*/
-(define-test sign-verify
+(define-test ssl-sign
+   (isa? (instantiate::ssl-sign) ssl-sign))
+
+(define-test ssl-verify
+   (isa? (instantiate::ssl-verify) ssl-verify))
+
+(define-test ssl-verify-final
    (let* ((signer (instantiate::ssl-sign))
 	  (dummy (ssl-sign-init signer "sha256"))
 	  (dummy2 (ssl-sign-update! signer "hello world" 0 11))
@@ -208,7 +220,7 @@
 	 sig 0 (string-length sig)))
    :expected #t)
 
-(define-test verify-reject-bad-data
+(define-test ssl-sign-sign
    (let* ((signer (instantiate::ssl-sign))
 	  (dummy (ssl-sign-init signer "sha256"))
 	  (dummy2 (ssl-sign-update! signer "hello world" 0 11))
@@ -238,7 +250,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    cipher                                                           */
 ;*---------------------------------------------------------------------*/
-(define-test cipher-aes-256-cbc
+(define-test ssl-cipher
+   (isa? (instantiate::ssl-cipher) ssl-cipher))
+
+(define-test ssl-cipher-initiv
    (let ((key (make-string 32 #\a))
 	 (iv (make-string 16 #\b))
 	 (plaintext "hello world 1234"))
@@ -254,7 +269,7 @@
 		  (string-append dpart dfinal))))))
    :expected "hello world 1234")
 
-(define-test cipher-aes-128-cbc
+(define-test ssl-cipher-update!
    (let ((key (make-string 16 #\a))
 	 (iv (make-string 16 #\b))
 	 (plaintext "test aes128 cbc!"))
@@ -270,7 +285,7 @@
 		  (string-append dpart dfinal))))))
    :expected "test aes128 cbc!")
 
-(define-test cipher-des-cbc
+(define-test ssl-cipher-final
    (with-handler
       (lambda (e) "des test")  ;; DES may be disabled on OpenSSL 3.x
       (let ((key (make-string 8 #\a))
@@ -319,7 +334,7 @@
 		  (string-append dpart dfinal))))))
    :expected "hello world 1234")
 
-(define-test cipher-set-auto-padding
+(define-test ssl-cipher-set-auto-padding
    (let ((enc (instantiate::ssl-cipher)))
       (ssl-cipher-initiv enc "aes-256-cbc"
 	 (make-string 32 #\a) 0 32
@@ -379,7 +394,7 @@
    :expected "ctr test!")
 
 ;; DES-EDE3-CBC with EVP_BytesToKey (no explicit IV)
-(define-test cipher-des-ede3-no-iv
+(define-test ssl-cipher-init
    (with-handler
       (lambda (e) "3des no iv") ;; 3DES may be disabled
       (let ((key (make-string 24 #\a))
@@ -399,7 +414,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    pbkdf2                                                           */
 ;*---------------------------------------------------------------------*/
-(define-test pbkdf2
+(define-test pkcs5-pbkdf2-hmac-sha1
    (string-length (pkcs5-pbkdf2-hmac-sha1 "password" "salt" 1000 20))
    :expected 20)
 
@@ -423,7 +438,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    secure-context                                                   */
 ;*---------------------------------------------------------------------*/
-(define-test secure-context-init-close
+(define-test secure-context
+   (isa? (instantiate::secure-context) secure-context))
+
+(define-test secure-context-close
    (let ((sc (instantiate::secure-context)))
       (secure-context-close sc)
       #t)
@@ -495,7 +513,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    DH                                                               */
 ;*---------------------------------------------------------------------*/
-(define-test dh-generate-parameters
+(define-test dh
+   (isa? (instantiate::dh) dh))
+
+(define-test dh-generate-parameters-ex
    (let ((dh (instantiate::dh)))
       (dh-generate-parameters-ex dh 512 'DH-GENERATOR-2))
    :expected #t)
@@ -526,7 +547,7 @@
 	 (and p g public-key private-key #t)))
    :expected #t)
 
-(define-test dh-key-exchange
+(define-test dh-compute-key
    (let ((dh1 (instantiate::dh))
 	 (dh2 (instantiate::dh)))
       (dh-generate-parameters-ex dh1 512 'DH-GENERATOR-2)
@@ -543,7 +564,7 @@
 	 (string=? s1 s2)))
    :expected #t)
 
-(define-test dh-check-pub-key-valid
+(define-test dh-check-pub-key
    (let ((dh (instantiate::dh)))
       (dh-generate-parameters-ex dh 512 'DH-GENERATOR-2)
       (dh-generate-key dh)
