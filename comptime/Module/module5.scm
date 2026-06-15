@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sat Jun 13 19:06:59 2026 (serrano)                */
+;*    Last change :  Mon Jun 15 08:08:32 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -296,7 +296,7 @@
 		      (global-attributes-set! g decl))
 		   g)))
 	    ((generic)
-	     (let ((g (def-library-set! def
+ 	     (let ((g (def-library-set! def
 			 (declare-global-sfun! env
 			    (make-typed-ident id type) alias
 			    (procedure-args expr id mid def)

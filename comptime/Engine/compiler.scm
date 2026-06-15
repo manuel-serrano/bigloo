@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Jun 13 19:23:15 2026 (serrano)                */
+;*    Last change :  Mon Jun 15 07:47:57 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -49,7 +49,9 @@
 	    type_cache
 	    module_module
 	    module_module5
-	    module_extern5
+	    module_extern-c
+	    module_extern-java
+	    module_extern-wasm
 	    module_plugin5
 	    module_include
 	    module_alibrary

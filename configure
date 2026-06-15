@@ -1038,13 +1038,9 @@ while : ; do
       for a in $apis; do
         case $a in
           pthread) addp=0;;
-          fthread) addf=0;;
           srfi18) adds=0;;
         esac;
       done
-      if [ $addf = 1 ]; then
-        apis="fthread $apis";
-      fi
       if [ $adds = 1 ]; then
         apis="srfi18 $apis";
       fi
@@ -1057,7 +1053,7 @@ while : ; do
       threadsupport=no;
       napis=;
       for a in $apis; do
-         if [ $a != "fthread" -a $a != "pthread" -a $a != "srfi18" ]; then
+         if [ $a != "pthread" -a $a != "srfi18" ]; then
            if [ "$napis " = " " ]; then
              napis="$a";
            else
@@ -1550,7 +1546,6 @@ if [ "$action" != "bigloo_config_el" ]; then
   packrat_is_enabled=no
   sqlite_is_enabled=no
   dbus_is_enabled=no
-  fthread_is_enabled=no
   srfi18_is_enabled=no
   pthread_is_enabled=no
   srfi27_is_enabled=no
@@ -1569,7 +1564,6 @@ if [ "$action" != "bigloo_config_el" ]; then
       dbus) dbus_is_enabled="yes";;
       pthread) pthread_is_enabled="yes";;
       srfi18) srfi18_is_enabled="yes";;
-      fthread) fthread_is_enabled="yes";;
       crypto) crypto_is_enabled="yes";;
       openpgp) openpgp_is_enabled="yes";;
       libuv) libuv_is_enabled="yes";;
@@ -1581,14 +1575,6 @@ if [ "$action" != "bigloo_config_el" ]; then
   if [ $packrat_is_enabled = "yes" -a $srfi1_is_enabled = "no" ]; then
       $echo "*** ERROR: packrat library requires srfi1."
       $echo "Either disable packrat or enable srfi1."
-      $echo
-      $echo "Enabled apis: $apis"
-      exit 1
-  fi
-  
-  if [ $fthread_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
-      $echo "*** ERROR: fthread library requires pthread."
-      $echo "Either disable fthread or enable pthread."
       $echo
       $echo "Enabled apis: $apis"
       exit 1
@@ -2621,7 +2607,7 @@ if [ "$openssllibs" != "no" ]; then
   opensslv3=`$autoconf openssl-v3 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslv23=`$autoconf openssl-v23 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslgetter=`$autoconf openssl-getter --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
-  (cd tests/scripts/ssl-fixtures.sh)
+  (cd test/scripts; ./ssl-fixtures.sh) || exit 1;
 fi
 
 #*---------------------------------------------------------------------*/
@@ -4550,10 +4536,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
        srfitimedjoin=pthread-timedjoin;
     fi
 
-    cat api/fthread/src/Misc/fthread.init.in \
-        | sed -e "s|@BIGLOOGC_FTH@|$gclibth|g" \
-        | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
-        >  api/fthread/src/Misc/fthread.init
     cat api/srfi18/src/Misc/srfi18.init.in \
         | sed -e "s|@BIGLOOGC_FTH@|$gclibth|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
@@ -4567,7 +4549,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   else
     napis=;
     for a in $apis; do
-      if [ "pthread" != "$a" -a "srfi18" != "$a" -a "fthread" != "$a" ]; then
+      if [ "pthread" != "$a" -a "srfi18" != "$a" ]; then
         if [ "$napis " = " " ]; then
           napis="$a";
         else
