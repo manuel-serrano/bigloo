@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Mon Jun 15 08:08:32 2026 (serrano)                */
+;*    Last change :  Mon Jun 15 09:03:33 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -406,13 +406,14 @@
 	 (values types classes others)))
    
    (define (split-definitions mid defs decls)
-      (multiple-value-bind (deft defc defo)
-	 (split-local-definitions mid defs)
-	 (multiple-value-bind (declt declc declo)
-	    (split-imported-declarations mid decls)
-	    (values (append declt deft)
-	       (append declc defc)
-	       (append declo defo)))))
+      (with-trace 'module_module5 "module5-ast!.split-definitions"
+	 (multiple-value-bind (deft defc defo)
+	    (split-local-definitions mid defs)
+	    (multiple-value-bind (declt declc declo)
+	       (split-imported-declarations mid decls)
+	       (values (append declt deft)
+		  (append declc defc)
+		  (append declo defo))))))
    
    (define (super-kdef k::KDef)
       (with-access::KDef k (super decl expr id)
@@ -467,27 +468,39 @@
 			(global-library-set! g lib)))))))
       g)
 
-   (define (declare-jdef! t::JDef mod::Module)
-      (with-access::JDef t (id name super package expr decl scope)
-	 (with-access::Decl decl ((dmod mod) scope)
-	    ;; Java class have already been associated to Bigloo types
-	    ;; in the Java finalization stage (see Engine/compiler.scm)
-	    (trace-item "mod=" (-> dmod id))
-	    (trace-item "scope=" scope)
-	    (trace-item "pckage=" package)
-	    (unless (or (eq? dmod mod) (eq? scope 'static))
-	       (unless (type-exists? id)
-		  (declare-java-class-type! id
-		     (find-type super) name package expr))))))
+   (define (find-jdef id types)
+      (find (lambda (e) (eq? (vector-ref e 2) id)) types))
+      
+   (define (declare-jdef! t::JDef mod::Module types::pair-nil)
+      (with-trace 'module_module5 "module5-ast!.declar-jdef!"
+	 (with-access::JDef t (id name super package expr decl scope)
+	    (with-access::Decl decl ((dmod mod) scope)
+	       ;; Java class have already been associated to Bigloo types
+	       ;; in the Java finalization stage (see Engine/compiler.scm)
+	       (trace-item "id=" id)
+	       (trace-item "name=" name)
+	       (trace-item "super=" super)
+	       (trace-item "mod=" (-> dmod id))
+	       (trace-item "scope=" scope)
+	       (trace-item "pckage=" package)
+	       (unless (or (eq? dmod mod) (eq? scope 'static))
+		  (unless (type-exists? id)
+		     (unless (type-exists? super)
+			(let ((e (find-jdef super types)))
+			   (when e
+			      (declare-jdef! (vector-ref e 0) mod types))))
+		     (declare-java-class-type! id
+			(find-type super) name package expr)))))))
    
    (define (declare-tdef! t::TDef)
-      (with-access::TDef t (id name decl kind)
-	 (with-access::Decl decl ((dmod mod) scope)
-	    (trace-item "kind=" kind)
-	    (trace-item "mod=" (-> dmod id))
-	    (trace-item "scope=" scope)
-	    (unless (type-exists? id)
-	       (declare-type! id name 'C)))))
+      (with-trace 'module_module5 "module5-ast!.declar-tdef!"
+	 (with-access::TDef t (id name decl kind)
+	    (with-access::Decl decl ((dmod mod) scope)
+	       (trace-item "kind=" kind)
+	       (trace-item "mod=" (-> dmod id))
+	       (trace-item "scope=" scope)
+	       (unless (type-exists? id)
+		  (declare-type! id name 'C))))))
    
    (with-trace 'module_module5 "module5-ast!"
       (with-access::Module mod (defs imports (mid id))
@@ -501,7 +514,7 @@
 			 (let ((t::Def (vector-ref e 0)))
 			    (trace-item "type=" (-> t id) " " (typeof t))
 			    (if (isa? t JDef)
-				(declare-jdef! t mod)
+				(declare-jdef! t mod types)
 				(declare-tdef! t))))
 	       types)
 

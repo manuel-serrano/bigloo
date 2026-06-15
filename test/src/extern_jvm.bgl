@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Jun  8 08:45:19 2026                          */
-;*    Last change :  Sat Jun 13 16:44:21 2026 (serrano)                */
+;*    Last change :  Mon Jun 15 08:48:47 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the JVM extern interface                                 */
@@ -29,7 +29,7 @@
          (toString::String)
          (static statistics::int))
 
-      ;(array Point* ::Point)
+      (array Point* ::Point)
       
       (export callback))
 
@@ -81,3 +81,20 @@
 (define-test static-method
    (> (Point.statistics) 1000))
 
+(define-test array
+   (Point*? 3)
+   :expected #f)
+
+(define-test array
+   (Point*? (make-Point* 0))
+   :expected #t)
+
+(define-test array-length
+   (let ((a (make-Point* 4)))
+      (Point*-length a))
+   :expected 4)
+
+(define-test array-accessors
+   (let ((a (make-Point* 4)))
+      (Point*-set! a 1 (Point.new))
+      (Point? (Point*-ref a 1))))

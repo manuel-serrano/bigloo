@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Sat Jun 13 19:14:44 2026 (serrano)                */
+;*    Last change :  Mon Jun 15 08:18:23 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -81,7 +81,7 @@
 	    (heap-add-jclass! jclass)
 	    (parse-java-clause ::symbol ::pair)
 	    (java-parser ::obj ::symbol ::symbol)
-	    (java-declare-array j::pair id::symbol of::symbol ::symbol)))
+	    (java-declare-array j::pair id::symbol of::symbol ::symbol ::bool)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-java-compiler ...                                           */
@@ -135,7 +135,7 @@
 	 ((abstract-class ?ident . ?rest)
 	  (java-parse-class java ident rest #t module separator))
 	 ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
-	  (java-declare-array java ident of module))
+	  (java-declare-array java ident of module #t))
 	 (else
 	  (java-error java)))))
 
@@ -788,7 +788,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    java-declare-array ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (java-declare-array j::pair id::symbol of::symbol module::symbol)
+(define (java-declare-array j::pair id::symbol of::symbol module::symbol axs::bool)
    (with-trace 'module_java "java-declare-array"
       (trace-item "id=" id)
       (trace-item "module=" module)
@@ -808,8 +808,9 @@
 		 (tof (string->symbol (substring sof 2 (string-length sof))))
 		 (jtype (declare-jvm-type! id tof j)))
 	     (set! *jarrays* (cons jtype *jarrays*))
-	     (foreign-accesses-add!
-		(make-ctype-accesses! jtype jtype (find-location j) module)))))))
+	     (when axs
+		(foreign-accesses-add!
+		   (make-ctype-accesses! jtype jtype (find-location j) module))))))))
       
 
       
