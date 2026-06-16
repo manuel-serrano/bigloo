@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun Jun 14 07:04:11 2026 (serrano)                */
+;*    Last change :  Mon Jun 15 15:31:38 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1243,8 +1243,8 @@
 	     (localize `(import ,@rest) clause)
 	     expr mod lib-path cache-dir hsuffix expand stack))
 	 ((import (? string?))
-	  (error/loc mod "Illegal module clause" clause expr)
-	  ;;(parse-import-all #f clause expr mod expand stack)
+	  ;;(error/loc mod "Illegal module clause" clause expr)
+	  (parse-import-all #f clause expr mod expand stack)
 	  )
 	 ((import (? string?) ())
 	  (parse-import-init clause expr mod expand stack))
@@ -1438,7 +1438,10 @@
 	    (hashtable-for-each (-> mod classes)
 	       (lambda (k ci)
 		  (class-info-registration-set! ci
-		     (expand/env (registration-expand ci mod) xenv))))
+		     (expand/env
+			(localize (registration-expand ci mod)
+			   (class-info-expr ci))
+			xenv))))
 
 	    ;; Macro and class definitions are erased by the macro-expansion.
 	    ;; Because these definitions are needed to resolve the module

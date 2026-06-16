@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Fri Jun 12 13:29:23 2026 (serrano)                */
+;*    Last change :  Tue Jun 16 07:55:12 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -106,7 +106,7 @@
   :group 'bgl
   :type 'string)
 
-(defcustom bgl-tooltip-visibility-duration 4
+(defcustom bgl-tooltip-visibility-duration 10
   "*The number of seconds tooltips are visible"
   :group 'bgl
   :type 'number)
@@ -1361,7 +1361,7 @@ if that value is non-nil."
   (when bgl-flydoc-p
     (bgl-load-doc-index)
     (bgl-load-decl-index)
-    (run-with-idle-timer 0.5 t #'bgl-proto-at-point))
+    (run-with-idle-timer 0.2 t #'bgl-proto-at-point))
   
   ;; activate th emode
   (font-lock-mode t)
@@ -1614,6 +1614,20 @@ if that value is non-nil."
   bgl-last-decl-entry)
 
 ;*---------------------------------------------------------------------*/
+;*    posframe-bottom-right-above-modeline ...                         */
+;*---------------------------------------------------------------------*/
+(defun posframe-bottom-right-above-modeline (info)
+  (let* ((win (plist-get info :parent-window))
+         (win-edges (window-inside-pixel-edges win))
+         (x (- (nth 2 win-edges)
+               (plist-get info :posframe-width)
+	       4))
+         (y (- (nth 3 win-edges)
+               (plist-get info :posframe-height)
+               4)))
+    (cons x y)))
+
+;*---------------------------------------------------------------------*/
 ;*    bgl-proto-at-point ...                                           */
 ;*---------------------------------------------------------------------*/
 (defun bgl-proto-at-point ()
@@ -1641,13 +1655,9 @@ if that value is non-nil."
 	     :border-width 1
 	     :border-color "#cccccc"
 	     :internal-border-width 4
-	     :position (point)
-	     :poshandler #'posframe-poshandler-point-bottom-left-corner)
-	    (run-at-time bgl-tooltip-visibility-duration
-			 nil #'(lambda () (posframe-hide bgl-popup-buffer)))
-	    (progn
-	      (message (format "%s" cs))
-	      t))
+	     :poshandler #'posframe-bottom-right-above-modeline)
+	    '(run-at-time bgl-tooltip-visibility-duration
+			 nil #'(lambda () (posframe-hide bgl-popup-buffer))))
 	  (posframe-hide bgl-popup-buffer)))))
 
 ;*---------------------------------------------------------------------*/

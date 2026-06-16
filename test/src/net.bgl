@@ -1,0 +1,71 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/net.bgl               */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
+;*    Last change :  Mon Jun 15 09:41:36 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing network api                                              */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    net                                                              */
+;*---------------------------------------------------------------------*/
+(module net
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "net" tests))
+      (test-all verbose "net")))
+
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test socket?
+   (socket? (make-server-socket 1966)))
+
+(define-test socket?
+   (socket? '#(1))
+   :expected #f)
+
+(define-test socket?
+   (with-handler
+      (lambda (e)
+         #t)
+      (socket? (make-client-socket "localhost" 22))))
+
+(define-test socket-client?
+   (with-handler
+      (lambda (e)
+         #t)
+      (socket-client? (make-client-socket "localhost" 22))))
+
+(define-test socket-client?
+   (with-handler
+      (lambda (e)
+         #f)
+      (socket-server? (make-client-socket "localhost" 22)))
+   :expected #f)
+
+(define-test socket-server?
+   (with-handler
+      (lambda (e)
+         #t)
+      (socket-server? (make-server-socket))))
+
+(define-test datagram-socket?
+   (with-handler
+      (lambda (e)
+         #f)
+      (datagram-socket? (make-server-socket "localhost" 22)))
+   :expected #f)

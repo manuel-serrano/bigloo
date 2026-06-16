@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Tue Jun  9 16:15:29 2026 (serrano)                */
+;*    Last change :  Mon Jun 15 17:42:54 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -84,12 +84,14 @@
 	  (eq? k 'define-final-class)))
    
    (define (parse-class-ident ident x)
-      (multiple-value-bind (id super)
-	 (parse-ident ident x)
-	 (cond
-	    ((not super) (values id 'object))
-	    ((eq? id super) (values id #f))
-	    (else (values id super)))))
+      (if (not (symbol? ident))
+	  (error/loc "parse" "Illegal class definition" x x)  
+	  (multiple-value-bind (id super)
+	     (parse-ident ident x)
+	     (cond
+		((not super) (values id 'object))
+		((eq? id super) (values id #f))
+		(else (values id super))))))
 
    (define (class-depth-and-virtual-properties k)
       (if (not k)
