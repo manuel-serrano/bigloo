@@ -40,8 +40,12 @@ Returns `#t` if and only if `obj` is a client socket.
 ### datagram-socket? ###
 Returns `#t` if and only if `obj` is a datagram socket.
 
-@deffn {bigloo procedure} make-client-socket hostname port-number #!key (timeout 0) (inbuf #t) (outbuf #t) (domain 'inet)
-@cindex unbufferized socket port
+
+Sockets
+-------
+
+### make-client-socket ###
+<!-- [:@C-jvm] -->
 
 `make-client-socket` returns a new socket object. This socket establishes
 a link between the running application listening on port `port-number`
@@ -82,27 +86,18 @@ intrinsicly associates buffers with regular grammars. If the current Rgc
 implementation is improved on the coming version this restriction will
 be eliminated.
 
-Example:
-```bigloo
-;; open a client socket on port 80:
-(make-client-socket "www.inria.fr" 80) 
-;; open an unbufferized connection
-(make-client-socket "www.inria.fr" 80 :inbuf #f :outbuf #f)
-```
+### socket-hostname ###
+<!-- [:@C-jvm] -->
 
-@end deffn
-
-@deffn {bigloo procedure} socket-hostname socket
-Returns a string which contains the name of the distant host attached to  
+Returns a string which contains the name of the distant host attached to
 `socket`. If `socket` has been created with `make-client-socket`
 this procedure returns the official name of the distant machine used for 
 connection. If `socket` has been created with `make-server-socket`,
 this function returns the official name of the client connected to the socket. 
 If no client has used yet the socket, this function returns `#f`.
-@end deffn
 
-@deffn {bigloo procedure} socket-host-address socket
-@cindex @w{IP number}
+### socket-host-address ###
+<!-- [:@C-jvm] -->
 Returns a string which contains the IP number of
 the distant host attached to `socket`. If `socket` has been
 created with `make-client-socket` this procedure returns the
@@ -111,17 +106,15 @@ IP number of the distant machine used for connection. If
 function returns the address of the client connected to the
 socket.  If no client has used yet the socket, this function returns
 `#f`.
-@end deffn
 
-@deffn {bigloo procedure} socket-local-address socket
-@cindex @w{IP number}
+### socket-local-address ###
+<!-- [:@C-jvm] -->
 Returns a string which contains the IP number of
 the local host attached to `socket`.
-@end deffn
 
-@deffn {bigloo procedure} socket-port-number socket
+### socket-port-number ###
+<!-- [:@C-jvm] -->
 Returns the integer number of the port used for `socket`.
-@end deffn
 
 @deffn {bigloo procedure} socket-input socket
 @deffnx {bigloo procedure} socket-output socket

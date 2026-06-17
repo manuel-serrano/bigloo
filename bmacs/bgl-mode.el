@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Tue Jun 16 07:55:12 2026 (serrano)                */
+;*    Last change :  Wed Jun 17 13:38:06 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1628,6 +1628,28 @@ if that value is non-nil."
     (cons x y)))
 
 ;*---------------------------------------------------------------------*/
+;*    bgl-indent ...                                                   */
+;*---------------------------------------------------------------------*/
+(defun bgl-indent (str max-len)
+  (let ((len (length str)))
+    (if (> len max-len)
+	(let ((i (string-match " " str 0)))
+	  (if i
+	      (let ((res (substring str 0 i)))
+		(while (> (- len i) (- max-len 3))
+		  (let ((j (string-match " " str (1+ i))))
+		    (if j
+			(let ((s (substring str i j)))
+			  (setq res (concat res "\n   " s))
+			  (setq i j))
+			(let ((s (substring str i len)))
+			  (setq res (concat res "\n   " s))
+			  (setq i len)))))
+		(concat res "\n   " (substring str i len)))
+	      str))
+	str)))
+
+;*---------------------------------------------------------------------*/
 ;*    bgl-proto-at-point ...                                           */
 ;*---------------------------------------------------------------------*/
 (defun bgl-proto-at-point ()
@@ -1644,8 +1666,8 @@ if that value is non-nil."
 		      "::[^ )]+"
 		      '(lambda (match) (propertize match 'face 'bgl-font-lock-face-4))
 		      s2))
-		 (ls (if (and (> (length s) 60) (string-match " " s))
-			 (replace-match "\n  " t t cs)
+		 (ls (if (and (> (length s) 57) (string-match " " s))
+			 (bgl-indent cs 57)
 			 cs)))
 	    (posframe-show
 	     bgl-popup-buffer

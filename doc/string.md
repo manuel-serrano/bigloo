@@ -187,8 +187,8 @@ Behaves as `string>=?` but it is case insensitive.
 
 ### string-prefix? ###
 
-Is `s1` a prefix of `s2`? The optional `start`/`end` indices restrict
-the comparison to the indicated substrings of `s1` and `s2`.
+Is `pre` a prefix of `str`? The optional `start`/`end` indices restrict
+the comparison to the indicated substrings of `pre` and `str`.
 
 ### string-prefix-ci? ###
 
@@ -196,8 +196,8 @@ As `string-prefix` but case-insenstive.
 
 ### string-suffix? ###
 
-Is `s1` a suffix of `s2`? The optional `start`/`end` indices restrict
-the comparison to the indicated substrings of `s1` and `s2`.
+Is `suf` a suffix of `str`? The optional `start`/`end` indices restrict
+the comparison to the indicated substrings of `suf` and `str`.
 
 ### string-suffix-ci? ###
 
@@ -281,8 +281,8 @@ Behaves as `string-skip` but searches from right to left.
 
 ### string-contains ###
 
-Does string `s1` contain string `s2`? Return the index in `s1` where
-`s2` occurs first as a substring, or `#f`.
+Does string `str` contain string `sub`? Return the index in `str` where
+`sub` occurs first as a substring, or `#f`.
 
 ### string-contains-ci ###
 

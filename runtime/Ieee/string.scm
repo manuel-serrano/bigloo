@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/string.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Ieee/string.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Apr 22 13:07:41 2026 (serrano)                */
+;*    Last change :  Tue Jun 16 19:17:56 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -484,18 +484,18 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-contains ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (string-contains s1::bstring s2::bstring #!optional (start::long 0))
-   (let ((l2 (string-length s2)))
+(define (string-contains str::bstring sub::bstring #!optional (start::long 0))
+   (let ((l2 (string-length sub)))
       (if (=fx l2 1)
-	  (string-index s1 (string-ref s2 0) start)
-	  (let ((l1 (string-length s1))
+	  (string-index str (string-ref sub 0) start)
+	  (let ((l1 (string-length str))
 		(i0 (if (<fx start 0) 0 start)))
 	     (if (<fx l1 (+fx i0 l2))
 		 #f
 		 (let ((stop (-fx l1 l2)))
 		    (let loop ((i i0))
 		       (cond
-			  ((substring-at? s1 s2 i)
+			  ((substring-at? str sub i)
 			   i)
 			  ((=fx i stop)
 			   #f)
@@ -505,16 +505,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-contains-ci ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (string-contains-ci s1::bstring s2::bstring #!optional (start::long 0))
-   (let ((l1 (string-length s1))
-	 (l2 (string-length s2))
+(define (string-contains-ci str::bstring sub::bstring #!optional (start::long 0))
+   (let ((l1 (string-length str))
+	 (l2 (string-length sub))
 	 (i0 (if (<fx start 0) 0 start)))
       (if (<fx l1 (+fx i0 l2))
 	  #f
 	  (let ((stop (-fx l1 l2)))
 	     (let loop ((i i0))
 		(cond
-		   ((substring-ci-at? s1 s2 i)
+		   ((substring-ci-at? str sub i)
 		    i)
 		   ((=fx i stop)
 		    #f)
@@ -1714,10 +1714,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-prefix? ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (string-prefix?::bool s1::bstring s2::bstring
+(define (string-prefix?::bool pre::bstring str::bstring
 			      #!optional start1 end1 start2 end2)
-   (let* ((l1 (string-length s1))
-	  (l2 (string-length s2))
+   (let* ((l1 (string-length pre))
+	  (l2 (string-length str))
 	  (e1 (user-end-index 'string-prefix? "end1" end1 l1 l1))
 	  (e2 (user-end-index 'string-prefix? "end2" end2 l2 l2))
 	  (b1 (user-start-index 'string-prefix? "start1" start1 l1 0))
@@ -1729,7 +1729,7 @@
 	     #t)
 	    ((=fx i2 e2)
 	     #f)
-	    ((char=? (string-ref s1 i1) (string-ref s2 i2))
+	    ((char=? (string-ref pre i1) (string-ref str i2))
 	     (loop (+fx i1 1) (+fx i2 1)))
 	    (else
 	     #f)))))
@@ -1737,10 +1737,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-prefix-ci? ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (string-prefix-ci?::bool s1::bstring s2::bstring
+(define (string-prefix-ci?::bool pre::bstring str::bstring
 				 #!optional start1 end1 start2 end2)
-   (let* ((l1 (string-length s1))
-	  (l2 (string-length s2))
+   (let* ((l1 (string-length pre))
+	  (l2 (string-length str))
 	  (e1 (user-end-index 'string-prefix-ci? "end1" end1 l1 l1))
 	  (e2 (user-end-index 'string-prefix-ci? "end2" end2 l2 l2))
 	  (b1 (user-start-index 'string-prefix-ci? "start1" start1 l1 0))
@@ -1752,7 +1752,7 @@
 	     #t)
 	    ((=fx i2 e2)
 	     #f)
-	    ((char-ci=? (string-ref s1 i1) (string-ref s2 i2))
+	    ((char-ci=? (string-ref pre i1) (string-ref str i2))
 	     (loop (+fx i1 1) (+fx i2 1)))
 	    (else
 	     #f)))))
@@ -1760,9 +1760,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-suffix? ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (string-suffix?::bool s1::bstring s2::bstring
+(define (string-suffix?::bool suf::bstring s2::bstring
 			      #!optional start1 end1 start2 end2)
-   (let* ((l1 (string-length s1))
+   (let* ((l1 (string-length suf))
 	  (l2 (string-length s2))
 	  (b1 (user-end-index 'string-suffix? "end1" end1 l1 l1))
 	  (b2 (user-end-index 'string-suffix? "end2" end2 l2 l2))
@@ -1775,7 +1775,7 @@
 	     #t)
 	    ((<fx i2 e2)
 	     #f)
-	    ((char=? (string-ref s1 i1) (string-ref s2 i2))
+	    ((char=? (string-ref suf i1) (string-ref s2 i2))
 	     (loop (-fx i1 1) (-fx i2 1)))
 	    (else
 	     #f)))))
@@ -1783,9 +1783,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-suffix-ci? ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (string-suffix-ci?::bool s1::bstring s2::bstring
+(define (string-suffix-ci?::bool suf::bstring s2::bstring
 				 #!optional start1 end1 start2 end2)
-   (let* ((l1 (string-length s1))
+   (let* ((l1 (string-length suf))
 	  (l2 (string-length s2))
 	  (b1 (user-end-index 'string-prefix-length "end1" end1 l1 l1))
 	  (b2 (user-end-index 'string-prefix-length "end2" end2 l2 l2))
@@ -1798,7 +1798,7 @@
 	     #t)
 	    ((<fx i2 e2)
 	     #f)
-	    ((char-ci=? (string-ref s1 i1) (string-ref s2 i2))
+	    ((char-ci=? (string-ref suf i1) (string-ref s2 i2))
 	     (loop (-fx i1 1) (-fx i2 1)))
 	    (else
 	     #f)))))

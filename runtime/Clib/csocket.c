@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csocket.c        */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Clib/csocket.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sat Jun 28 10:18:26 2025 (serrano)                */
+/*    Last change :  Wed Jun 17 08:04:17 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1914,26 +1914,32 @@ bgl_socket_host_addr(obj_t sock) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_socket_local_addr(obj_t sock) {
-   struct sockaddr_storage address;
+   struct sockaddr_storage addr;
    socklen_t len = sizeof(struct sockaddr_storage);
    
    if (SOCKET(sock).stype == BGL_SOCKET_SERVER) {
      return string_to_bstring("0.0.0.0");
    }
-   
-   if (getsockname(SOCKET(sock).fd,
-                    (struct sockaddr *)&address,
-                    &len)) {
-     char *buffer = alloca(1024);
+
+   if (getsockname(SOCKET(sock).fd, (struct sockaddr *)&addr, &len)) {
+      char *buffer = alloca(1024);
      
-     BGL_MUTEX_LOCK(socket_mutex);
-     strcpy(buffer, strerror(errno));
-     BGL_MUTEX_UNLOCK(socket_mutex);
+      BGL_MUTEX_LOCK(socket_mutex);
+      strcpy(buffer, strerror(errno));
+      BGL_MUTEX_UNLOCK(socket_mutex);
      
-     socket_error("socket-local-address", buffer, sock);
+      socket_error("socket-local-address", buffer, sock);
    }
-   
-   return bgl_inet_ntop(SOCKET(sock).family, &address);
+
+   if (addr.ss_family == AF_INET) {
+      struct sockaddr_in *s = (struct sockaddr_in *)&addr;
+      
+      return bgl_inet_ntop(SOCKET(sock).family, &s->sin_addr);
+   } else {
+      struct sockaddr_in6 *s = (struct sockaddr_in6 *)&addr;
+      
+      return bgl_inet_ntop(SOCKET(sock).family, &s->sin6_addr);
+   }
 }
 
 /*---------------------------------------------------------------------*/

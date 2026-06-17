@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Mon Jun 15 09:34:28 2026 (serrano)                */
+;*    Last change :  Tue Jun 16 19:24:49 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -317,13 +317,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    socket-hostname ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (socket-hostname socket)
+(define-inline (socket-hostname socket::socket)
    ($socket-hostname socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-host-address ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (socket-host-address socket)
+(define-inline (socket-host-address socket::socket)
    ($socket-host-addr socket))
 
 ;*---------------------------------------------------------------------*/
@@ -379,7 +379,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-client-socket ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (make-client-socket::socket host port #!key (domain 'inet) (inbuf #t) (outbuf #t) (timeout 0))
+(define (make-client-socket::socket host::bstring port::int #!key (domain 'inet) (inbuf #t) (outbuf #t) (timeout 0))
    (%socket-init!)
    (let ((inbuf (get-port-buffer "make-client-socket" inbuf 512))
 	 (outbuf (get-port-buffer "make-client-socket" outbuf 1024)))

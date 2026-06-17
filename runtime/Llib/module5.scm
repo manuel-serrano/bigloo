@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Mon Jun 15 15:31:38 2026 (serrano)                */
+;*    Last change :  Tue Jun 16 19:15:13 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -830,7 +830,7 @@
 	    ((module (and (? symbol?) ?id) . ?clauses)
 	     (parse5 id path clauses expr (cdr exprs)))
 	    (else
-	     (error/loc #f "Illegal expression" expr #f)))))
+	     (error/location path "Illegal expression" expr path 1)))))
    
    (with-trace '__module5 "module5-parse"
       (trace-item "path=" path)
