@@ -10,6 +10,8 @@
 <!--==================================================================-->
 
 ,(implementation-path "../runtime/Ieee/pairlist.scm")
+,(implementation-path "../runtime/Ieee/vector.scm")
+,(implementation-path "../runtime/Ieee/control.scm")
 ,(example-path "../test/src/pair.bgl")
 
 Pairs and Lists
@@ -309,4 +311,30 @@ The function `delete-duplicates` is allowed to share common tails
 between argument and result lists -- for example, if the list argument
 contains only unique elements, it may simply return exactly this
 list. 
+
+### sort ###
+
+Sorts `obj` according to `proc` test. The argument `obj` can either be
+a vector or a list. In either case, a copy of the argument is
+returned.
+
+Iterators
+---------
+
+### map ###
+
+### map! ###
+
+### for-each ###
+
+### filter ###
+
+### filter! ###
+
+### append-map ###
+
+### append-map! ###
+
+### filter-map ###
+
 

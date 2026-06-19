@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 19 16:18:28 2026                          */
-;*    Last change :  Fri Jun 19 16:51:24 2026 (serrano)                */
+;*    Last change :  Fri Jun 19 17:48:11 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing errors                                                   */
@@ -179,6 +179,21 @@
             (args '("a" "warning")))
       &exception))
 
+(define-test raise
+   (with-handler
+      (lambda (e)
+         (eq? e 'an-error))
+      (raise 'an-error)))
+
+(define-test raise
+   (with-handler
+      (lambda (e)
+         (isa? e &exception))
+      (raise (instantiate::&error
+                (proc 'raise-test)
+                (msg "a dummy error")
+                (obj #unspecified)))))
+
 (define-test error
    (with-handler
       (lambda (e)
@@ -191,6 +206,19 @@
          (string=? (-> e fname) error.filename))
       (error/location 1 2 3 error.filename 10)))
 
+(define-test bigloo-type-error
+   (with-handler
+      (lambda (e)
+         (isa? e &type-error))
+      (bigloo-type-error 'bigloo-type-error-test 'real "a string")))
+
+(define-test bigloo-type-error/location
+   (with-handler
+      (lambda (e)
+         (isa? e &type-error))
+      (bigloo-type-error/location 'bigloo-type-error-test 'real "a string"
+         error.filename 10)))
+      
 (define-test warning
    (with-handler
       (lambda (e)
@@ -202,3 +230,55 @@
       (lambda (e::&warning)
          (string=? (-> e fname) error.filename))
       (warning error.filename 20 "this" "is" "a" 'warning)))
+
+(define-test exception-notify
+   (let ((s (with-error-to-string
+               (with-handler
+                  exception-notify
+                  (error 'a 'b 'c)))))
+      (>fx (string-length s) 0)))
+
+(define-test error-notify
+   (let ((s (with-error-to-string
+               (with-handler
+                  error-notify
+                  (error 'a 'b 'c)))))
+      (>fx (string-length s) 0)))
+
+(define-test error-notify/location
+   (let ((s (with-error-to-string
+               (with-handler
+                  (lambda (e)
+                     (error-notify/location e error.filename 100))
+                  (error 'a 'b 'c)))))
+      (>fx (string-length s) 0)))
+
+(define-test warning-notify
+   (let ((s (with-error-to-string
+               (with-handler
+                  warning-notify
+                  (warning 'a-warning-message)))))
+      (>fx (string-length s) 0)))
+
+(define-test warning-notify/location
+   (let ((s (with-error-to-string
+               (with-handler
+                  (lambda (e)
+                     (warning-notify/location e error.filename 100))
+                  (warning "a warning message")))))
+      (>fx (string-length s) 0)))
+
+(define-test get-trace-stack
+   (with-handler
+      (lambda (e)
+         (pair? (get-trace-stack)))
+      (error 'a 'b 'c)))
+
+(define-test dump-trace-stack
+   (let ((s (with-handler
+               (lambda (e)
+                  (with-output-to-string
+                     (lambda ()
+                        (dump-trace-stack (get-trace-stack) 5))))
+               (error 'a 'b 'c))))
+      (>fx (string-length s) 0)))
