@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon May 18 10:08:37 2026 (serrano)                */
+;*    Last change :  Fri Jun 19 16:27:31 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -459,27 +459,6 @@
 (define (current-exception-handler)
    (lambda (val)
       (raise val)))
-   
-;*    (define (wrong-handler handler)                                  */
-;*       (tprint "wrong handler..." (current-thread))                  */
-;*       default-exception-handler)                                    */
-;* {*       (error "current-exception-handler"                            *} */
-;* {* 	 "wrong error handler" (typeof handler)))                      *} */
-;*                                                                     */
-;*    (let ((handler ($get-error-handler)))                            */
-;*       (cond                                                         */
-;* 	 ((pair? handler)                                              */
-;* 	  (cond                                                        */
-;* 	     ((dynamic-env? (cdr handler))                             */
-;* 	                                                               */
-;* 	      ((eq? (cdr handler) #unspecified)                        */
-;* 	      (car handler))                                           */
-;* 	     ((eq? (cdr handler) #f)                                   */
-;* 	      default-exception-handler)                               */
-;* 	     (else                                                     */
-;* 	      (wrong-handler handler))))                               */
-;* 	 (else                                                         */
-;* 	  (wrong-handler handler)))))                                  */
 
 ;*---------------------------------------------------------------------*/
 ;*    raise ...                                                        */

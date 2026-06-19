@@ -1,0 +1,204 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/error.bgl             */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Fri Jun 19 16:18:28 2026                          */
+;*    Last change :  Fri Jun 19 16:51:24 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing errors                                                   */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    error                                                            */
+;*---------------------------------------------------------------------*/
+(module error
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "error" tests))
+      (test-all verbose "error")))
+
+;*---------------------------------------------------------------------*/
+;*    tests ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-test &condition
+   (isa? (instantiate::&condition) object))
+
+(define-test &exception
+   (isa? (instantiate::&exception) &condition))
+
+(define-test &exception
+   (isa? (instantiate::&exception
+            (fname ".")
+            (location 10)
+            (stack '()))
+      &exception))
+
+(define-test &error
+   (isa? (instantiate::&error
+            (proc "test")
+            (msg "this is an error")
+            (obj 'the-related-object))
+      &exception))
+
+(define-test &type-error
+   (isa? (instantiate::&type-error
+            (proc "test")
+            (msg "this is an error")
+            (obj 'the-related-object)
+            (type 'int))
+      &error))
+
+(define-test &index-out-of-bounds-error
+   (isa? (instantiate::&index-out-of-bounds-error
+            (proc "test")
+            (msg "this is an error")
+            (obj 'the-related-object)
+            (index 23))
+      &error))
+
+(define-test &io-error
+   (isa? (instantiate::&io-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &error))
+
+(define-test &io-port-error
+   (isa? (instantiate::&io-port-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &io-error))
+
+(define-test &io-read-error
+   (isa? (instantiate::&io-read-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &io-error))
+
+(define-test &io-write-error
+   (isa? (instantiate::&io-write-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &io-error))
+
+(define-test &io-closed-error
+   (isa? (instantiate::&io-closed-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &io-error))
+
+(define-test &io-file-not-found-error
+   (isa? (instantiate::&io-file-not-found-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &io-error))
+
+(define-test &io-parse-error
+   (isa? (instantiate::&io-parse-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &io-error))
+
+(define-test &io-unknown-host-error
+   (isa? (instantiate::&io-unknown-host-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &io-error))
+
+(define-test &io-malformed-url-error
+   (isa? (instantiate::&io-malformed-url-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &io-error))
+
+(define-test &io-sigpipe-error
+   (isa? (instantiate::&io-sigpipe-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &io-error))
+
+(define-test &io-timeout-error
+   (isa? (instantiate::&io-timeout-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &io-error))
+
+(define-test &io-connection-error
+   (isa? (instantiate::&io-connection-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &io-error))
+
+(define-test &process-exception
+   (isa? (instantiate::&process-exception
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &error))
+
+(define-test &stack-overflow-error
+   (isa? (instantiate::&stack-overflow-error
+            (proc "test")
+            (msg "an i/o related error")
+            (obj 'the-related-object))
+      &exception))
+
+(define-test &security-exception
+   (isa? (instantiate::&security-exception
+            (message "a security alert"))
+      &exception))
+
+(define-test &warning
+   (isa? (instantiate::&warning
+            (args '("a" "warning")))
+      &exception))
+
+(define-test &eval-warning
+   (isa? (instantiate::&eval-warning
+            (args '("a" "warning")))
+      &exception))
+
+(define-test error
+   (with-handler
+      (lambda (e)
+         (isa? e &error))
+      (error 1 2 3)))
+
+(define-test error/location
+   (with-handler
+      (lambda (e::&error)
+         (string=? (-> e fname) error.filename))
+      (error/location 1 2 3 error.filename 10)))
+
+(define-test warning
+   (with-handler
+      (lambda (e)
+         (isa? e &warning))
+      (warning "this" "is" "a" 'warning)))
+
+(define-test warning/location
+   (with-handler
+      (lambda (e::&warning)
+         (string=? (-> e fname) error.filename))
+      (warning error.filename 20 "this" "is" "a" 'warning)))

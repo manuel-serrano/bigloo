@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Mon Jun 15 09:22:29 2026 (serrano)                */
+;*    Last change :  Fri Jun 19 16:17:31 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -56,8 +56,9 @@
    '(("booleans" . "bool.html")
      ("dates" . "date.html")
      ("hash" . "hash.html")
-     ("i/o" . "io.html")
+     ("errors" . "error.html")
      ("integers" . "int.html")
+     ("i/o" . "io.html")
      ("net" . "net.html")
      ("numbers" . "number.html")
      ("pairs and lists" . "pair.html")

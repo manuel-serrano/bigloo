@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Jun 19 16:06:16 2026 (serrano)                */
+;*    Last change :  Fri Jun 19 16:47:44 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -508,7 +508,10 @@
       (trace-item "cache-dir=" cache-dir)
       (let ((p (open-input-binary-file path)))
 	 (unwind-protect
-	    (unserialize (input-obj p) lib-path cache-dir hsuffix expand)
+	    (with-handler
+	       (lambda (e)
+		  (error "filecache-read" "Cannot read cached module" path))
+	       (unserialize (input-obj p) lib-path cache-dir hsuffix expand))
 	    (close-binary-port p)))))
 
 ;*---------------------------------------------------------------------*/
