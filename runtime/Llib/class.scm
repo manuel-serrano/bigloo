@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Mon Jun 15 17:42:54 2026 (serrano)                */
+;*    Last change :  Fri Jun 19 08:09:22 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -60,11 +60,8 @@
 	    
 	    __pp_circle
 	    __evenv)
-   
+
    (export (parse-class::struct ::pair ::Module)
-	   (creator-expand::pair ::struct)
-	   (nil-creator-expand::pair ::struct ::obj)
-	   (properties-expand::pair ::struct ::bool)
 	   (registration-expand::pair ::struct ::Module)
 	   (instantiate-expander::procedure ::struct ::Module)
 	   (duplicate-expander::procedure ::struct ::Module)

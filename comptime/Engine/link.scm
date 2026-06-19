@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Fri Jun  5 10:10:31 2026 (serrano)                */
+;*    Last change :  Fri Jun 19 16:04:54 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -217,7 +217,9 @@
 	 (((include . ?includes) . ?rest)
 	  (or (any (lambda (include)
 		      (let ((p (find-file/path include *load-path*)))
-			 (find-main5 (call-with-input-file p read))))
+			 (if (file-exists? p)
+			     (find-main5 (call-with-input-file p read))
+			     (error "link" "Cannot find include" p))))
 		 includes)
 	      (loop rest)))
 	 (((cond-expand . ?-) . ?rest)

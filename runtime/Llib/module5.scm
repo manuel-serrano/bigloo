@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Jun 16 19:15:13 2026 (serrano)                */
+;*    Last change :  Fri Jun 19 16:06:16 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -774,7 +774,7 @@
 	 (let ((omod (hashtable-get *modules-by-id* (symbol->string id))))
 	    (if omod
 		(with-access::Module omod ((opath path))
-		   (error/loc mod
+		   (warning/loc mod
 		      (format "Module \"~a\" has already been declared in file ~s"
 			 id opath)
 		      path expr))
@@ -1514,7 +1514,7 @@
 	 (let ((omod (module5-find-module-by-id id)))
 	    (if omod
 		(with-access::Module omod ((opath path))
-		   (error/loc mod
+		   (warning/loc mod
 		      (format "Module \"~a\" has already been declared in file ~s"
 			 id opath)
 		      path expr))
@@ -2017,7 +2017,7 @@
 	    (if (and old
 		     (not (or (eq? kind 'macro)
 			      (eq? (with-access::Def old (kind) kind) 'macro))))
-		(error/loc mod
+		(warning/loc mod
 		   (format "Identifier ~s has already been declared" name)
 		   (with-access::Def old (expr) expr)
 		   src)
@@ -2369,7 +2369,7 @@
 		   (old (hashtable-get defs alias))
 		   (decl (hashtable-get decls alias)))
 	       (if old
-		   (error/loc mod
+		   (warning/loc mod
 		      (format "Identifier ~s has already been declared" alias)
 		      (with-access::Def old (expr) expr)
 		      (with-access::Decl decl (expr) expr))
@@ -2580,6 +2580,20 @@
 	 (else (error id msg obj)))))
 
 ;*---------------------------------------------------------------------*/
+;*    warning/loc ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (warning/loc mod msg obj container)
+   (let ((id (if (isa? mod Module)
+		 (with-access::Module mod (id) id)
+		 "module5")))
+      (match-case (cond
+		   ((epair? obj) (cer obj))
+		   ((epair? container) (cer container))
+		   (else #f))
+	 ((at ?fname ?loc) (warning/location fname loc id msg))
+	 (else (warning id msg " -- " obj)))))
+
+;*---------------------------------------------------------------------*/
 ;*    for-each-expr ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (for-each-expr proc lst)
@@ -2676,7 +2690,7 @@
 	 ;; bind the class in the module
 	 (let ((o (module5-get-class mod (class-info-id ci))))
 	    (if o
-		(error/loc mod
+		(warning/loc mod
 		   (format "Class \"~a\" has already been declared in module ~a"
 		      (class-info-id ci) (-> mod id))
 		   x x)
