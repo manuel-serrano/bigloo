@@ -92,7 +92,6 @@
 	    (fprint po
 		    ";; automatically generated, don't edit" #\Newline
 		    ";; " (pwd) #\Newline
-		    ";; " (date) #\Newline #\Newline
 		    #\()
 	    (for-each (lambda (a)
 			 (display "  " po)
