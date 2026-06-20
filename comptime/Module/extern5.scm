@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Mon Jun 15 07:47:07 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 15:51:27 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -68,6 +68,8 @@
 	   (class JDef::TDef
 	      (super::obj read-only)
 	      (package::bstring read-only))
+
+	   (class ADef::Def)
 
 	   (module5-extern-plugin-preprocessor cmd::bstring file::bstring x mod::Module)
 	   (parse-ident id::symbol)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/control.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Ieee/control.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:48:44 1995                          */
-;*    Last change :  Fri Feb  6 07:42:33 2026 (serrano)                */
+;*    Last change :  Fri Jun 19 18:50:03 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.9. Control features (page 27, r4)                              */
 ;*=====================================================================*/
@@ -111,7 +111,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    map ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define (map f . l)
+(define (map::pair-nil f::procedure . l)
    (cond
       ((null? l)
        '())
@@ -138,7 +138,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    map! ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (map! f . l)
+(define (map!::pair-nil f::procedure . l)
    (cond
       ((null? l)
        '())
@@ -165,7 +165,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    append-map ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (append-map f . l)
+(define (append-map::pair-nil f::procedure . l)
    (cond
       ((null? l)
        '())
@@ -196,7 +196,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    append-map! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (append-map! f . l)
+(define (append-map!::pair-nil f::procedure . l)
    (cond
       ((null? l)
        '())
@@ -231,7 +231,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    filter-map ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (filter-map f . l)
+(define (filter-map::pair-nil f::procedure . l)
    (cond
       ((null? l)
        '())
@@ -260,7 +260,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    for-each ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (for-each f . l)
+(define (for-each f::procedure . l)
    (cond
       ((null? l)
        #unspecified)
@@ -277,7 +277,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    filter ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (filter pred l)
+(define (filter::pair-nil pred::procedure l::pair-nil)
    (let ((hook (cons #f '())))
       (let loop ((l l)
 		 (h hook))
@@ -294,28 +294,28 @@
 ;*---------------------------------------------------------------------*/
 ;*    filter! ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (filter! pred lis)
-   (let lp ((ans lis))
+(define (filter!::pair-nil pred::procedure l::pair-nil)
+   (let lp ((ans l))
       (cond
 	 ((null? ans)
 	  ans)
 	 ((not (pred (car ans)))
 	  (lp (cdr ans)))
 	 (else
-	  (letrec ((scan-in (lambda (prev lis)
-			       (if (pair? lis)
-				   (if (pred (car lis))
-				       (scan-in lis (cdr lis))
-				       (scan-out prev (cdr lis))))))
-		   (scan-out (lambda (prev lis)
-				(let lp ((lis lis))
-				   (if (pair? lis)
-				       (if (pred (car lis))
+	  (letrec ((scan-in (lambda (prev l)
+			       (if (pair? l)
+				   (if (pred (car l))
+				       (scan-in l (cdr l))
+				       (scan-out prev (cdr l))))))
+		   (scan-out (lambda (prev l)
+				(let lp ((l l))
+				   (if (pair? l)
+				       (if (pred (car l))
 					   (begin
-					      (set-cdr! prev lis)
-					      (scan-in lis (cdr lis)))
-					   (lp (cdr lis)))
-				       (set-cdr! prev lis))))))
+					      (set-cdr! prev l)
+					      (scan-in l (cdr l)))
+					   (lp (cdr l)))
+				       (set-cdr! prev l))))))
 	     (scan-in ans (cdr ans))
 	     ans)))))
 

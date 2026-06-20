@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Wed Jun 17 13:38:06 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 12:24:57 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -429,7 +429,9 @@
   (define-key bgl-mode-map "\e\C-m" 'newline)
   (define-key bgl-mode-map "\e\C- " 'mark-sexp)
   (define-key bgl-mode-map "\e." 'bgl-goto-def)
-  (define-key bgl-mode-map "\e," 'bgl-load-module-index)
+  (define-key bgl-mode-map (kbd "ESC C-.") 'bgl-goto-def-other-frame)
+  (define-key bgl-mode-map "\e," 'bgl-pop-def)
+  (define-key bgl-mode-map "\e>" 'bgl-load-decl-index)
 
   ;; C-' keymap
   (define-key bgl-mode-map [(control \c)] 'bgl-prefix)
@@ -1452,7 +1454,7 @@ if that value is non-nil."
 	 t)
 	((string= be "C")
 	 (setq bgl-flycheck-args '("-coerce" "-dump" "module")))
-	((string= be "java")
+	((string= be "jvm")
 	 (setq bgl-flycheck-args '("-coerce" "-dump" "module" "-jvm")))
 	((string= be "wasm")
 	 (setq bgl-flycheck-args '("-coerce" "-dump" "module" "-wasm")))))
@@ -1678,10 +1680,30 @@ if that value is non-nil."
 	     :border-color "#cccccc"
 	     :internal-border-width 4
 	     :poshandler #'posframe-bottom-right-above-modeline)
-	    '(run-at-time bgl-tooltip-visibility-duration
-			 nil #'(lambda () (posframe-hide bgl-popup-buffer))))
+	    (if d
+		(unless (bgl-message-once
+			 'jump-def
+			 "[M-.] to jump to definition")
+		  (message (bgl-jump-stack-message)))
+		(bgl-message-once
+		 'open-doc
+		 "[M-.] to browse the definition")))
 	  (posframe-hide bgl-popup-buffer)))))
 
+;*---------------------------------------------------------------------*/
+;*    bgl-once-messages ...                                            */
+;*---------------------------------------------------------------------*/
+(defvar bgl-once-messages '())
+
+;*---------------------------------------------------------------------*/
+;*    bgl-message-once ...                                             */
+;*---------------------------------------------------------------------*/
+(defun bgl-message-once (key msg)
+  (unless (memq key bgl-once-messages)
+    (setq bgl-once-messages (cons key bgl-once-messages))
+    (message msg)
+    t))
+      
 ;*---------------------------------------------------------------------*/
 ;*    bgl-browse-doc-at-point ...                                      */
 ;*---------------------------------------------------------------------*/
@@ -1699,17 +1721,57 @@ if that value is non-nil."
 	  (eww-open-file file)))))
 
 ;*---------------------------------------------------------------------*/
+;*    bgl-jump-stack ...                                               */
+;*---------------------------------------------------------------------*/
+(defvar bgl-jump-stack '())
+
+;*---------------------------------------------------------------------*/
+;*    bgl-jump-stack-message ...                                       */
+;*---------------------------------------------------------------------*/
+(defun bgl-jump-stack-message ()
+  (let ((msg "")
+	(stk bgl-jump-stack))
+    (while (and (consp stk) (< (length msg) 50))
+      (let ((e (car stk)))
+	(setq stk (cdr stk))
+	(setq msg (format "%s:%s>%s" (cadr e) (caddr e) msg))))
+    msg))
+
+;*---------------------------------------------------------------------*/
 ;*    bgl-visit-decl-at-point ...                                      */
 ;*---------------------------------------------------------------------*/
-(defun bgl-visit-decl-at-point (sym)
+(defun bgl-visit-decl-at-point (sym other-frame)
   (let ((e (bgl-decl-entry-at-point sym)))
     (when e
       (let* ((loc (cadr e))
 	     (file (cadr loc))
 	     (pos (caddr loc)))
-	(let ((buf (find-file-other-frame file)))
+	(setq bgl-jump-stack
+	      (cons (list (file-name-directory (buffer-name))
+			  (current-buffer)
+			  (point))
+		    bgl-jump-stack))
+	(let ((buf (if other-frame
+		       (find-file-other-frame file)
+		       (find-file file))))
 	  (switch-to-buffer buf)
-	  (goto-char (+ 1 pos)))))))
+	  (goto-char (+ 1 pos))
+	  (unless (bgl-message-once
+		   'pop-def
+		   "[M-,] pop definition")
+	    (message (bgl-jump-stack-message))))))))
+
+;*---------------------------------------------------------------------*/
+;*    bgl-pop-def ...                                                  */
+;*---------------------------------------------------------------------*/
+(defun bgl-pop-def ()
+  (interactive)
+  (when (consp bgl-jump-stack)
+    (let* ((e (car bgl-jump-stack)))
+      (setq bgl-jump-stack (cdr bgl-jump-stack))
+      (message "buffer=%s pos=%s" (cadr e) (caddr e))
+      (switch-to-buffer (cadr e))
+      (goto-char (caddr e)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-goto-def ...                                                 */
@@ -1717,5 +1779,14 @@ if that value is non-nil."
 (defun bgl-goto-def ()
   (interactive)
   (let ((sym (thing-at-point 'symbol t)))
-    (or (bgl-visit-decl-at-point sym)
+    (or (bgl-visit-decl-at-point sym nil)
+	(bgl-browse-doc-at-point sym))))
+
+;*---------------------------------------------------------------------*/
+;*    bgl-goto-other-frame-def ...                                     */
+;*---------------------------------------------------------------------*/
+(defun bgl-goto-other-frame-def ()
+  (interactive)
+  (let ((sym (thing-at-point 'symbol t)))
+    (or (bgl-visit-decl-at-point sym t)
 	(bgl-browse-doc-at-point sym))))

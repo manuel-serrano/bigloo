@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Mon Jun 15 09:03:33 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 15:51:03 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -340,6 +340,9 @@
 		   (when (isa? decl Decl)
 		      (global-attributes-set! g decl))
 		   g)))
+	    ((jvm-array)
+	     ;; ignore
+	     #unspecified)
 	    ((c-type)
 	     ;; already processed so ignore
 	     #unspecified)
@@ -400,6 +403,7 @@
 		     (let* ((d (module5-get-export-def mod (or xid id)))
 			    (e (vector d mid alias 'import)))
 			(cond
+			   ((isa? d ADef) #unspecified)
 			   ((isa? d KDef) (set! classes (cons e classes)))
 			   ((isa? d TDef) (set! types (cons e types)))
 			   (else (set! others (cons e others)))))))))

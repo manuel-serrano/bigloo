@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/runtime/Jlib/datagram_client_socket.java      */
+/*    .../bigloo/5.0.x/runtime/Jlib/datagram_client_socket.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Fri Apr  5 11:03:06 2013 (serrano)                */
-/*    Copyright   :  2000-13 Manuel Serrano                            */
+/*    Last change :  Sat Jun 20 12:04:01 2026 (serrano)                */
+/*    Copyright   :  2000-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram Client Socket implementation for the JVM back-end.  */
 /*=====================================================================*/
@@ -26,34 +26,34 @@ public class datagram_client_socket extends datagram_socket {
       super();
    }
    
-   public datagram_client_socket( final byte[] hostname,
-				  final int port,
-				  final boolean broadcast,
-                                  final symbol family) {
+   public datagram_client_socket(final byte[] hostname,
+				 final int port,
+				 final boolean broadcast,
+				 final symbol family) {
       super();
 
       try {
-          // FIXME
-          // java provides no way to force the address family
-          // at runtime, so we ignore for now.
-	 ip = InetAddress.getByName( new String( hostname ) );
+	 // FIXME
+	 // java provides no way to force the address family
+	 // at runtime, so we ignore for now.
+	 ip = InetAddress.getByName(new String(hostname));
 	 
 	 socket = new DatagramSocket();
-	 socket.setBroadcast( broadcast );
+	 socket.setBroadcast(broadcast);
 
       } catch (final UnknownHostException e) {
 	 bigloo.runtime.Llib.error.bgl_system_failure(
 	    foreign.BGL_IO_UNKNOWN_HOST_ERROR,
 	    "make-datagram-client-socket".getBytes(),
 	    e.getMessage().getBytes(),
-	    hostname );
+	    hostname);
       } catch (final IOException e) {
-	 foreign.fail( "make-datagram-client-socket",
-		       e.getMessage(),
-		       hostname );
+	 foreign.fail("make-datagram-client-socket",
+		      e.getMessage(),
+		      hostname);
       }
       
-      output = new output_datagram_port( this, hostname, port );
+      output = new output_datagram_port(this, hostname, port);
    }
 
    // public methods
@@ -66,5 +66,17 @@ public class datagram_client_socket extends datagram_socket {
    
    public obj PORT() {
       return output;
+   }
+
+   public Object HOSTNAME() {
+      return ip.getHostName().getBytes();
+   }
+
+   public Object HOSTIP() {
+      if (socket.isConnected()) {
+	 return ip.getHostAddress().getBytes();
+      } else {
+	 return foreign.BUNSPEC;
+      }
    }
 }

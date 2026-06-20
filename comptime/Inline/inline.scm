@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Inline/inline.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Inline/inline.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Mon Jan  6 11:58:13 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 20 16:15:22 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
 ;*=====================================================================*/
@@ -36,7 +36,7 @@
 ;*    inline-sfun! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (inline-sfun! variable kfactor stack)
-   (with-trace 'inline "inline-sfun!"
+   (with-trace 'inline_inline "inline-sfun!"
       (trace-item "variable=" (shape variable))
       (trace-item "kfactor=" kfactor)
       (trace-item "occurrence=" (variable-occurrence variable))
@@ -78,7 +78,7 @@
 ;*    inline-node ::var ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::var kfactor stack)
-   (with-trace 'inline (format "inline-node ::~a" (typeof node))
+   (with-trace 'inline_inline (format "inline-node ::~a" (typeof node))
       (trace-item "node=" (shape node))
       (trace-item "type=" (shape (node-type node)))
       (with-access::var node (variable loc)

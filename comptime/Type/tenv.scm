@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Sat Jun 13 05:42:16 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 17:12:37 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -64,7 +64,7 @@
 	    (declare-subtype!::type ::symbol ::bstring symbol* ::symbol)
 	    (declare-aliastype!::type ::symbol ::bstring ::symbol ::type)
 	    (for-each-type! ::procedure)
-	    (check-types)
+	    (check-types::bool)
 	    (sub-type?::bool ::type ::type)))
 
 ;*---------------------------------------------------------------------*/
@@ -524,9 +524,10 @@
 ;*    usage of undefined types (this is implemented using the          */
 ;*    `types-already-checked?*' variable).                             */
 ;*---------------------------------------------------------------------*/
-(define (check-types)
+(define (check-types::bool)
    (with-trace 'type_tenv "check-types"
       (let ((ut (uninitialized-types)))
+	 (set! *types-already-checked?* #t)
 	 (when (pair? ut)
 	    (for-each (lambda (t)
 			 (let ((loc (type-location t)))
@@ -537,8 +538,7 @@
 				(user-error *module*
 				   "Undefined type" (shape t)
 				   #unspecified))))
-	       ut)
-	    (set! *types-already-checked?* #t)))))
+	       ut)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sub-type? ...                                                    */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Tue Jun 16 19:24:49 2026 (serrano)                */
+;*    Last change :  Fri Jun 19 19:28:40 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -244,7 +244,7 @@
 	    (inline datagram-socket?::bool ::obj)
 	    (inline datagram-socket-server?::bool ::obj)
 	    (inline datagram-socket-client?::bool ::obj)
-	    (inline make-datagram-server-socket::datagram-socket #!optional (port 0) (domain 'inet))
+	    (inline make-datagram-server-socket::datagram-socket #!optional (port 0) (domain::symbol 'inet))
 	    (inline make-datagram-unbound-socket::datagram-socket #!optional (domain::symbol 'inet))
 	    (inline make-datagram-client-socket::datagram-socket ::bstring ::int #!optional broadcast (domain::symbol 'inet))
 	    (inline datagram-socket-hostname::obj ::datagram-socket)
@@ -345,7 +345,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    socket-host-address=? ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (socket-host-address=? socket::socket addr::bstring)
+(define-inline (socket-host-address=?::bool socket::socket addr::bstring)
    (cond-expand
       (bigloo-c
        ($socket-host-addr=? socket addr))
@@ -451,7 +451,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    socket-shutdown ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (socket-shutdown socket::socket #!optional (how #t))
+(define (socket-shutdown::int socket::socket #!optional (how #t))
    (cond
       ((eq? how #t)
        (let ((r ($socket-shutdown socket 2)))
@@ -475,7 +475,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    host ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (host hostname)
+(define-inline (host::bstring hostname::bstring)
    (begin
       (%socket-init!)
       ($host hostname)))
@@ -483,7 +483,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hostinfo ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (hostinfo hostname)
+(define-inline (hostinfo::pair-nil hostname::bstring)
    (begin
       (%socket-init!)
       ($hostinfo hostname)))
@@ -491,7 +491,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hostname ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (hostname #!optional hostip)
+(define (hostname::bstring #!optional hostip)
    (%socket-init!)
    (if (string? hostip)
        ($gethostname-by-address hostip)
@@ -510,7 +510,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-interfaces ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (get-interfaces)
+(define-inline (get-interfaces::pair-nil)
    (begin
       (%socket-init!)
       ($gethostinterfaces)))
@@ -518,7 +518,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-protocols ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (get-protocols)
+(define-inline (get-protocols::pair-nil)
    ($getprotoents))
 
 ;*---------------------------------------------------------------------*/
@@ -536,13 +536,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    socket-option ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (socket-option socket option)
+(define-inline (socket-option socket::socket option::keyword)
    ($getsockopt socket option))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-option-set! ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (socket-option-set! socket option val)
+(define-inline (socket-option-set! socket::socket option::keyword val)
    ($setsockopt! socket option val))
 
 ;*---------------------------------------------------------------------*/
@@ -566,25 +566,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-hostname ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-hostname socket)
+(define-inline (datagram-socket-hostname socket::datagram-socket)
    ($datagram-socket-hostname socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-host-address ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-host-address socket)
+(define-inline (datagram-socket-host-address socket::datagram-socket)
    ($datagram-socket-hostip socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-port-number ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-port-number socket)
+(define-inline (datagram-socket-port-number socket::datagram-socket)
    ($datagram-socket-port-number socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-output ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-output socket)
+(define-inline (datagram-socket-output::output-port socket::datagram-socket)
    (if (output-port? ($datagram-socket-port socket))
        ($datagram-socket-port socket)
        (error "datagram-socket-output"
@@ -593,7 +593,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-input ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-input socket)
+(define-inline (datagram-socket-input::input-port socket::datagram-socket)
    (if (input-port? ($datagram-socket-port socket))
        ($datagram-socket-port socket)
        (error "datagram-socket-input"
@@ -602,7 +602,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-datagram-server-socket ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-datagram-server-socket #!optional (port 0) (domain 'inet))
+(define-inline (make-datagram-server-socket::datagram-socket #!optional (port 0) (domain::symbol 'inet))
    (%socket-init!)
    (case domain
       ((inet inet6)
@@ -613,7 +613,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-datagram-unbound-socket ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-datagram-unbound-socket #!optional (domain::symbol 'inet))
+(define-inline (make-datagram-unbound-socket::datagram-socket #!optional (domain::symbol 'inet))
    (%socket-init!)
    (case domain
       ((inet inet6)
@@ -624,7 +624,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-datagram-client-socket ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-datagram-client-socket hostname port #!optional broadcast (domain::symbol 'inet))
+(define-inline (make-datagram-client-socket::datagram-socket hostname::bstring port::int #!optional broadcast (domain::symbol 'inet))
    (%socket-init!)
    (case domain
       ((inet inet6 unspec)
@@ -635,30 +635,30 @@
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-close ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-close socket)
+(define-inline (datagram-socket-close socket::datagram-socket)
    ($datagram-socket-close socket))
    
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-receive ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-receive socket length)
+(define-inline (datagram-socket-receive socket::datagram-socket length::int)
    ($datagram-socket-receive socket length))
 
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-send ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-send socket string host port)
+(define-inline (datagram-socket-send socket::datagram-socket string::bstring host::bstring port::int)
    ($datagram-socket-send socket string host port))
 
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-option ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-option socket option)
+(define-inline (datagram-socket-option socket::datagram-socket option::keyword)
    ($dgetsockopt socket option))
 
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-option-set! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-option-set! socket option val)
+(define-inline (datagram-socket-option-set! socket::datagram-socket option::keyword val)
    ($dsetsockopt! socket option val))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Mon Jun 15 08:18:23 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 10:59:00 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -120,6 +120,7 @@
 (define (java-parser java module::symbol separator::symbol)
    (with-trace 'module_java "java-parser"
       (trace-item "module=" module)
+      (trace-item "current-module=" *module*)
       (trace-item "java="
 	 (if (>fx (length java) 10) (append (take java 6) '("...")) java))
       (match-case java
@@ -273,7 +274,9 @@
 			  "Re-exportation of global variable (ignored)"
 			  java))
 		      (else
-		       (global-import-set! global 'export)
+		       ;; global variables exported
+		       (when (eq? mod *module*)
+			  (global-import-set! global 'export))
 		       (global-name-set! global name)))))
       *jexported*)
    (set! *jexported* '()))

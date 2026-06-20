@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Jun 17 08:04:17 2026 (serrano)                */
+/*    Last change :  Sat Jun 20 08:21:01 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -519,7 +519,17 @@ make_bglhostent_from_name(obj_t hostaddr, struct sockaddr* address, char *n) {
    /* addr_list */
    bhp->hp.h_addr_list = l;
    d = GC_MALLOC_ATOMIC(bhp->hp.h_length + 1);
-   memcpy((unsigned char *)d, sin, bhp->hp.h_length);
+   
+   if (address->sa_family == AF_INET) {
+      memcpy(d,
+	     &((struct sockaddr_in *)address)->sin_addr,
+	     sizeof(struct in_addr));
+   } else {
+      memcpy(d,
+	     &((struct sockaddr_in6 *)address)->sin6_addr,
+	     sizeof(struct in6_addr));
+   }
+   
    *l++ = d;
    *l = 0;
 
@@ -570,9 +580,9 @@ bglhostent_fill_from_addrinfo(obj_t hostaddr, struct bglhostent *bhp, struct add
    bhp->hp.h_name = make_string(BSTRING_TO_STRING(hostaddr));
    
    /* h_length */
-   if (bhp->hp.h_addrtype = AF_INET) {
+   if (bhp->hp.h_addrtype == AF_INET) {
      bhp->hp.h_length = sizeof(struct in_addr);
-   }  else if (bhp->hp.h_addrtype = AF_INET6) {
+   }  else if (bhp->hp.h_addrtype == AF_INET6) {
      bhp->hp.h_length = sizeof(struct in6_addr);
    }
    
@@ -600,7 +610,7 @@ bglhostent_fill_from_addrinfo(obj_t hostaddr, struct bglhostent *bhp, struct add
 	 len++;
       }
 
-      l = (char **)GC_MALLOC(sizeof(char *) * len + 1);
+      l = (char **)GC_MALLOC(sizeof(char *) * (len + 1));
       bhp->hp.h_addr_list = l;
 
       if (len > 0) {
@@ -611,7 +621,7 @@ bglhostent_fill_from_addrinfo(obj_t hostaddr, struct bglhostent *bhp, struct add
       for(run = ai; run; run = run->ai_next) {
 	 if (run->ai_family == bhp->hp.h_addrtype) {
 	    void *d = GC_MALLOC_ATOMIC(bhp->hp.h_length);
-            if (run->ai_family = AF_INET) {
+            if (run->ai_family == AF_INET) {
               memcpy((unsigned char *)d,
                       (char *)&(((struct sockaddr_in *)(run->ai_addr))->sin_addr),
                       bhp->hp.h_length);
@@ -628,6 +638,8 @@ bglhostent_fill_from_addrinfo(obj_t hostaddr, struct bglhostent *bhp, struct add
    }
 }
 #endif
+
+#define DEBUG_CACHE_DNS 1
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -709,7 +721,7 @@ invalidate_hostbyname(obj_t hostname) {
    if (bgl_dns_enable_cache()) {
       int key = get_hash_number(BSTRING_TO_STRING(hostname));
       struct bglhostent *bhp;
-      
+      fprintf(stderr, "invalidate %s\n", BSTRING_TO_STRING(hostname));
       BGL_MUTEX_LOCK(socket_mutex);
       
       bhp = (struct bglhostent *)VECTOR_REF(hosttable, key);
@@ -742,7 +754,7 @@ bglhostbyname(obj_t hostname, int canon, int family) {
 #if BGL_DNS_CACHE
    if (bgl_dns_enable_cache()) {
       int key = get_hash_number(BSTRING_TO_STRING(hostname));
-
+      fprintf(stderr, "ICI.2 %s %d\n", BSTRING_TO_STRING(hostname), family);
       /* acquire the global socket lock */
       BGL_MUTEX_LOCK(socket_mutex);
 
@@ -901,7 +913,6 @@ static struct hostent *
 bglhostbyaddr(struct sockaddr *address) {
    struct bglhostent *bhp;
    
-#if BGL_DNS_CACHE
    char* address_str = NULL;
    int address_str_len = 0;
    if (address->sa_family == AF_INET) {
@@ -914,11 +925,11 @@ bglhostbyaddr(struct sockaddr *address) {
      address_str_len = sizeof(sin6->sin6_addr);
    }
     
+#if BGL_DNS_CACHE
    if (bgl_dns_enable_cache()) {
       int key = bgl_get_hash_number_len((char *)address_str,
 					 0,
 					 address_str_len);
-
       /* acquire the global socket lock */
       BGL_MUTEX_LOCK(socket_mutex);
 
@@ -937,7 +948,7 @@ bglhostbyaddr(struct sockaddr *address) {
 	 return (bhp->state == BGLHOSTENT_STATE_OK) ? &(bhp->hp) : 0L;
       } else {
 	 obj_t hostaddr = string_to_bstring_len(address_str,
-						 address_str_len);
+						address_str_len);
 	 // MS: 12may19
 	 // BGL_MUTEX_UNLOCK(socket_mutex);
 	 if (bhp = make_bglhostentbyaddr(hostaddr, address)) {
@@ -956,7 +967,7 @@ bglhostbyaddr(struct sockaddr *address) {
 #endif
    {
       obj_t hostaddr = string_to_bstring_len(address_str,
-					      address_str_len);
+					     address_str_len);
       bhp = make_bglhostentbyaddr(hostaddr, address);
       
       if (bhp)
@@ -1005,12 +1016,19 @@ bgl_gethostent(obj_t hostname, int family) {
 /*    bgl_inet_ntop ...                                                */
 /*---------------------------------------------------------------------*/
 static obj_t
-bgl_inet_ntop(int af, void *addr) {
-   obj_t obj = make_string_sans_fill(INET_ADDRSTRLEN);
-   char *buf = (char *)&(STRING_REF(obj, 0));
-   const char *s = inet_ntop(af, addr, buf, INET_ADDRSTRLEN);
-   
-   return bgl_string_shrink(obj, strlen(s));
+bgl_inet_ntop(int af, void *addr, obj_t obj) {
+   socklen_t len = (af == AF_INET ? INET_ADDRSTRLEN : INET6_ADDRSTRLEN);
+   obj_t tmp = make_string_sans_fill(len);
+   char *buf = (char *)&(STRING_REF(tmp, 0));
+   const char *s = inet_ntop(af, addr, buf, len);
+
+   if (!s) {
+      char *msg = strerror(errno);
+      
+      C_SYSTEM_FAILURE(BGL_IO_UNKNOWN_HOST_ERROR, "host", msg, obj);
+   } else {
+      return bgl_string_shrink(tmp, strlen(s));
+   }
 }
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -1020,7 +1038,7 @@ obj_t
 bgl_host(obj_t hostname) {
   struct hostent *hp = bgl_gethostent(hostname, AF_UNSPEC);
                                        
-   return bgl_inet_ntop(hp->h_addrtype, (void *)(hp->h_addr));
+  return bgl_inet_ntop(hp->h_addrtype, (void *)(hp->h_addr), hostname);
 }
 
 /*---------------------------------------------------------------------*/
@@ -1039,7 +1057,7 @@ bgl_hostinfo(obj_t hostname) {
 
    if (hp->h_addr_list) {
       for(runner = hp->h_addr_list; *runner; runner++) {
-	 s = bgl_inet_ntop(hp->h_addrtype, (void *)(*runner));
+	 s = bgl_inet_ntop(hp->h_addrtype, (void *)(*runner), hostname);
 	 addr = MAKE_PAIR(s, addr);
       }
    }
@@ -1903,7 +1921,7 @@ bgl_socket_host_addr(obj_t sock) {
       return SOCKET(sock).hostip;
    } else {
      SOCKET(sock).hostip =
-       bgl_inet_ntop(SOCKET(sock).family, (void *)&(SOCKET(sock).address));	       
+	bgl_inet_ntop(SOCKET(sock).family, (void *)&(SOCKET(sock).address), sock);	       
       return SOCKET(sock).hostip;
    }
 }
@@ -1934,11 +1952,11 @@ bgl_socket_local_addr(obj_t sock) {
    if (addr.ss_family == AF_INET) {
       struct sockaddr_in *s = (struct sockaddr_in *)&addr;
       
-      return bgl_inet_ntop(SOCKET(sock).family, &s->sin_addr);
+      return bgl_inet_ntop(SOCKET(sock).family, &s->sin_addr, sock);
    } else {
       struct sockaddr_in6 *s = (struct sockaddr_in6 *)&addr;
       
-      return bgl_inet_ntop(SOCKET(sock).family, &s->sin6_addr);
+      return bgl_inet_ntop(SOCKET(sock).family, &s->sin6_addr, sock);
    }
 }
 
@@ -2876,7 +2894,6 @@ bgl_make_datagram_client_socket(obj_t hostname, int port, bool_t broadcast, obj_
    a_socket->datagram_socket.header = BGL_MAKE_HEADER(DATAGRAM_SOCKET_TYPE, 0);
    a_socket->datagram_socket.portnum = port;
    a_socket->datagram_socket.hostname = hname;
-/*    a_socket->datagram_socket.hostip = bgl_inet_ntop(AF_INET, &(server->sin_addr)); */
    a_socket->datagram_socket.hostip = BUNSPEC;
    a_socket->datagram_socket.family = fam;
    if (fam == AF_INET) {

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Cfa/setup.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Cfa/setup.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Sun Mar 29 08:17:17 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 09:27:56 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
@@ -238,18 +238,23 @@
 ;*    fun-setup! ::sfun ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (fun-setup! fun::sfun var)
-   (if (and (global? var) (not (reshaped-global? var)))
-       (widen!::reshaped-global var))
-   (if (and (global? var) (global-imported? var))
-       (let ((approx (make-type-approx (global-type var))))
-	  (approx-set-top! approx)
-	  (widen!::extern-sfun/Cinfo fun
-	     (approx approx)))
-       (let ((approx (make-type-approx (variable-type var))))
-	  (when *optim-cfa-force-loose-local-function?*
-	     (approx-set-top! approx))
-	  (widen!::intern-sfun/Cinfo fun
-	     (approx approx)))))
+   (with-trace 'cfa_setup "fun-setup! ::sfun"
+      (trace-item "fun=" (typeof fun))
+      (trace-item "var=" (shape var) " " (typeof var))
+      (trace-item "import=" (and (global? var) (global-import var)))
+      (trace-item "args=" (map typeof (sfun-args fun)))
+      (if (and (global? var) (not (reshaped-global? var)))
+	  (widen!::reshaped-global var))
+      (if (and (global? var) (global-imported? var))
+	  (let ((approx (make-type-approx (global-type var))))
+	     (approx-set-top! approx)
+	     (widen!::extern-sfun/Cinfo fun
+		(approx approx)))
+	  (let ((approx (make-type-approx (variable-type var))))
+	     (when *optim-cfa-force-loose-local-function?*
+		(approx-set-top! approx))
+	     (widen!::intern-sfun/Cinfo fun
+		(approx approx))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    fun-setup! ::cfun ...                                            */

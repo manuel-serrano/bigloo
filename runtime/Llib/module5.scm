@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Jun 19 16:47:44 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 14:14:02 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -382,6 +382,9 @@
       (hashtable-map decls
 	 (lambda (k d::Decl)
 	    (with-access::Decl d (mod)
+	       (when (eq? (-> d id) 'R$id.R$id)
+		  (tprint "serialize d=" (-> d id) " " (-> d alias)
+		     " d.mod= " (-> d mod id) " mod=" (-> mod id)))
 	       (with-access::Module mod (path version id heap)
 		  (let ((decl::Decl (duplicate::Decl d
 				       (mod (class-nil Module))
@@ -436,6 +439,9 @@
       (with-trace '__module5 "unserialize-decl"
 	 (trace-item "id="(-> d id))
 	 (trace-item "modinfo=" (-> d modinfo))
+	 (when (eq? (-> d id) 'R$id.R$id)
+	    (tprint "unserialize d=" (-> d id) " " (-> d alias)
+	       " d.mod= " (-> d mod id) " mod=" (-> mod id)))
 	 (match-case (-> d modinfo)
 	    ((5 . ?path)
 	     (set! (-> d mod)
@@ -1272,7 +1278,8 @@
 	 ((library (? symbol?) . (? list?))
 	  (parse-library-some clause expr mod expand))
 	 ((extern (and (? string?) ?name) . ?clauses)
-	  (parse-extern clause expr mod expand))
+	  (when (pair? clauses)
+	     (parse-extern clause expr mod expand)))
 	 ((cond-expand . ?-)
 	  (parse-cond-expand clause expr mod expand))
 	 ((?id . ?rest)
@@ -2660,8 +2667,10 @@
 	     (with-access::Decl decl (def expr (dmod mod))
 		(if (isa? def Def)
 		    def
-		    (error/loc mod "Cannot find exported definition" id expr)))
-	     (error/loc mod "Cannot find exported declaration" id src)))))
+		    (error/loc mod "Cannot find exported definition"
+		       `(@ ,id ,mid) expr)))
+	     (error/loc mod "Cannot find exported declaration"
+		`(@ ,id ,mid) src)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-class-expander ...                                        */

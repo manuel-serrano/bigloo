@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Mon May 25 08:04:43 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 17:32:01 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -567,19 +567,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    mutex? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (mutex? obj)
+(define-inline (mutex?::bool obj)
    ($mutex? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-mutex ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-mutex #!optional (name (gensym 'mutex)))
+(define-inline (make-mutex::mutex #!optional (name (gensym 'mutex)))
    ($make-mutex name))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-spinlock ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-spinlock #!optional (name (gensym 'spinlock)))
+(define-inline (make-spinlock::mutex #!optional (name (gensym 'spinlock)))
    ($make-spinlock name))
 
 ;*---------------------------------------------------------------------*/
@@ -591,13 +591,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    mutex-name ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (mutex-name obj)
+(define-inline (mutex-name obj::mutex)
    ($mutex-name obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex-lock! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (mutex-lock! m #!optional (timeout::long 0))
+(define-inline (mutex-lock! m::mutex #!optional (timeout::long 0))
    (if (=fx timeout 0)
        (=fx ($mutex-lock m) 0)
        (=fx ($mutex-timed-lock m timeout) 0)))
@@ -605,14 +605,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    mutex-unlock! ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (mutex-unlock! m)
+(define-inline (mutex-unlock! m::mutex)
    (=fx ($mutex-unlock m) 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex-state ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (mutex-state mutex)
-   ($mutex-state mutex))
+(define-inline (mutex-state m::mutex)
+   ($mutex-state m))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex-backend ...                                                */
@@ -623,14 +623,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    with-lock ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (with-lock mutex thunk)
+(define (with-lock mutex::mutex thunk::procedure)
    (synchronize mutex
       (thunk)))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-timed-lock ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (with-timed-lock mutex timeout thunk)
+(define (with-timed-lock mutex::mutex timeout::int thunk::procedure)
    (when (mutex-lock! mutex timeout)
       (unwind-protect
 	 (thunk)
@@ -639,13 +639,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    condition-variable? ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (condition-variable? obj)
+(define-inline (condition-variable?::bool obj)
    ($condvar? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-condition-variable ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-condition-variable #!optional
+(define-inline (make-condition-variable::condvar #!optional
 					(name (gensym 'condition-variable)))
    ($make-condvar name))
 
@@ -658,13 +658,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    condition-variable-name ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (condition-variable-name obj)
+(define-inline (condition-variable-name obj::condvar)
    ($condvar-name obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    condition-variable-wait! ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (condition-variable-wait! c m #!optional (timeout::long 0))
+(define-inline (condition-variable-wait!::bool c::condvar m::mutex #!optional (timeout::long 0))
    (if (=fx timeout 0)
        ($condvar-wait! c m)
        ($condvar-timed-wait! c m timeout)))
@@ -672,13 +672,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    condition-variable-signal! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (condition-variable-signal! c)
+(define-inline (condition-variable-signal!::bool c::condvar)
    ($condvar-signal! c))
 
 ;*---------------------------------------------------------------------*/
 ;*    condition-variable-broadcast! ...                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (condition-variable-broadcast! c)
+(define-inline (condition-variable-broadcast!::bool c::condvar)
    ($condvar-broadcast! c))
 
 ;*---------------------------------------------------------------------*/

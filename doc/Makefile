@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Jun 19 16:17:43 2026 (serrano)                */
+#*    Last change :  Fri Jun 19 19:58:06 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -40,7 +40,7 @@ MD = bool date hash error int io net number pair port real ssl string \
  thread \
  vector condexpand match module5 module4 object
 
-EX = c/fib java/fib wasm/fib
+EX = c/fib c/sock1 c/sock2 c/sock3 c/sock4 java/fib wasm/fib 
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
@@ -101,6 +101,18 @@ objs_c/%.o: src/%.bgl
 	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
 
 objs_c/c/fib.ast.coerce: examples/c/fib.bgl objs_c/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
+objs_c/c/sock1.ast.coerce: examples/c/sock1.bgl objs_c/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
+objs_c/c/sock2.ast.coerce: examples/c/sock2.bgl objs_c/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
+objs_c/c/sock3.ast.coerce: examples/c/sock3.bgl objs_c/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
+objs_c/c/sock4.ast.coerce: examples/c/sock4.bgl objs_c/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
 objs_c/java/fib.ast.coerce: examples/java/fib.bgl objs_c/java

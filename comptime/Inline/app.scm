@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Sat Jun 13 08:22:57 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 16:18:05 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
@@ -36,7 +36,7 @@
 ;*    inline-app ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (inline-app node kfactor stack)
-   (with-trace 'inline "inline-app"
+   (with-trace 'inline_app "inline-app"
       (trace-item "mode=" *inline-mode*)
       (trace-item "node=" (shape node))
       (trace-item "node-type=" (shape (node-type node)))
@@ -103,7 +103,7 @@
 ;*    inline-app? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (inline-app? var::variable kfactor::long call-size::long stack)
-   (with-trace 'inline "inline-app?"
+   (with-trace 'inline_app "inline-app?"
       (trace-item "var=" (shape var))
       (trace-item "kfactor=" kfactor)
       (trace-item "call-size=" call-size)

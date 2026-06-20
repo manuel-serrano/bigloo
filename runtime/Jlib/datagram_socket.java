@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/runtime/Jlib/datagram_socket.java        */
+/*    .../project/bigloo/5.0.x/runtime/Jlib/datagram_socket.java       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Apr 30 06:45:59 2011                          */
-/*    Last change :  Mon Oct 24 13:45:40 2016 (serrano)                */
-/*    Copyright   :  2011-16 Manuel Serrano                            */
+/*    Last change :  Sat Jun 20 11:56:04 2026 (serrano)                */
+/*    Copyright   :  2011-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram socket implementation of the JVM back-end.          */
 /*=====================================================================*/
@@ -29,11 +29,23 @@ public abstract class datagram_socket extends obj {
 
    // abstract methods
    public Object HOSTNAME() {
-      return socket.getInetAddress().getHostName().getBytes();
+      java.net.InetAddress addr = socket.getInetAddress();
+
+      if (addr == null) {
+	 return "".getBytes();
+      } else {
+	 return addr.getHostName().getBytes();
+      }
    }
 
    public Object HOSTIP() {
-      return socket.getInetAddress().getHostAddress().getBytes();
+      java.net.InetAddress addr = socket.getInetAddress();
+
+      if (addr == null) {
+	 return "".getBytes();
+      } else {
+	 return addr.getHostAddress().getBytes();
+      }
    }
 
    public int PORTNUM() {
@@ -41,63 +53,63 @@ public abstract class datagram_socket extends obj {
    }
    
    public obj PORT() {
-      foreign.fail( "datagram-socket-output-port",
+      foreign.fail("datagram-socket-output-port",
 		    "not a datagram-client socket",
-		    this );
+		    this);
       return output;
    }
    
    public input_port INPUT_PORT() {
-      foreign.fail( "datagram-socket-input-port",
+      foreign.fail("datagram-socket-input-port",
 		    "not a datagram-client socket",
-		    this );
+		    this);
       return input;
    }
    
    public Object close() {
       try {
 	 socket.close();
-      } catch( Throwable _t ) {
+      } catch(Throwable _t) {
 	 ;
       }
 
       return bigloo.foreign.BUNSPEC;
    }
    
-   public void write( final output_port  p ) {
+   public void write(final output_port  p) {
       Object hostname = HOSTNAME();
 
-      if( hostname instanceof byte[] )
-	 hostname = new String( (byte[])hostname );
+      if (hostname instanceof byte[])
+	 hostname = new String((byte[])hostname);
 
-      p.write( "#<datagram-socket:" + hostname.toString() + "." + PORT() + ">" );
+      p.write("#<datagram-socket:" + hostname.toString() + "." + PORT() + ">");
    }
    
-   public Object receive( int len ) {
-      return foreign.fail( "receive", "not a datagram-server socket", this );
+   public Object receive(int len) {
+      return foreign.fail("receive", "not a datagram-server socket", this);
    }
    
-   public int send( byte[] string, byte[] host, int port )
+   public int send(byte[] string, byte[] host, int port)
       throws IOException {
       DatagramPacket p;
       InetAddress a[];
 
-      a = InetAddress.getAllByName( new String( host ) );
+      a = InetAddress.getAllByName(new String(host));
 
-      p = new DatagramPacket( string, string.length );
-      p.setAddress( a[0] );
-      p.setPort( port );
+      p = new DatagramPacket(string, string.length);
+      p.setAddress(a[0]);
+      p.setPort(port);
 
-      socket.send( p );
+      socket.send(p);
 
       return string.length;
    }
    
-   public Object getsockopt( keyword se ) throws IOException {
+   public Object getsockopt(keyword se) throws IOException {
       return foreign.BUNSPEC;
    }
    
-   public Object setsockopt( keyword se, Object val ) throws IOException {
+   public Object setsockopt(keyword se, Object val) throws IOException {
       return foreign.BFALSE;
    }
       

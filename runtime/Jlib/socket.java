@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0a/runtime/Jlib/socket.java        */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/socket.java       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Wed Apr 29 07:45:17 2026 (serrano)                */
+/*    Last change :  Sat Jun 20 11:46:03 2026 (serrano)                */
 /*    Copyright   :  2000-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Socket implementation for the JVM back-end.                  */
@@ -64,12 +64,12 @@ public abstract class socket extends obj {
 
    /*--- public methods -----------------------------------------------*/
    public boolean DOWNP() {
-      return down;
+      return down || closed;
    }
 
    public Object close() {
       if (!closed) {
-	 closed= true;
+	 closed = true;
 	 if (input instanceof input_port) ((input_port)input).close();
 	 if (output instanceof output_port) ((output_port)output).close();
       }

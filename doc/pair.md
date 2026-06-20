@@ -322,19 +322,49 @@ Iterators
 ---------
 
 ### map ###
+Applies the function `f` to all the elements of the lists `l`. The
+arity of `f` is the number of lists `map` received. All lists must
+have the same length. The function `map` applies `f` to all the first
+elements of all the list, then to all the second elements, etc.
+
+Returns a fresh list.
 
 ### map! ###
+Similar to `map` but modifies the first list of `l` and returns it.
 
 ### for-each ###
 
+Applies the function `f` for its side effect to all the elements of
+the lists `l`. The arity of `f` is the number of lists `map`
+received. All lists must have the same length. The function `map`
+applies `f` to all the first elements of all the list, then to all the
+second elements, etc.
+
 ### filter ###
+
+Returns a fresh list composed of the elements of `l` that satisfy the
+predicate `pred`.
 
 ### filter! ###
 
+As `filter` but instead of returning a fresh list, modifies 
+its argument `l`.
+
 ### append-map ###
+Applies the function `f` to all the elements of all the lists `s`. Each
+application should return a list. All these list are concanated.
+
+The expression `(append-map c l1 l2 ..)` is equivalent to
+`(apply append (map f l1 l2 ...))`.
 
 ### append-map! ###
+As `append-map` but modifies the first list. The expression
+`(append-map! f l1 l2 ...)` is equivalent to 
+`(apply append! (map f l1 l2 ...))`.
+
 
 ### filter-map ###
 
+As `map` but only none `#f` values are accumulated in the resulting
+list.
 

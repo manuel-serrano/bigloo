@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jun  5 08:49:59 2026                          */
-;*    Last change :  Sun Jun 14 17:32:03 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 08:37:04 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the ssl library.                                         */
@@ -611,28 +611,38 @@
    (let* ((server (make-ssl-server-socket 0
 		     :cert *cert* :pkey *pkey*
 		     :protocol 'tlsv1_2))
-	  (port (socket-port-number server)))
+	  (port (socket-port-number server))
+          (mu (make-mutex))
+          (cv (make-condition-variable))
+          (ready #f))
       (let ((t (instantiate::pthread
 		  (name "tls12-srv")
 		  (body (lambda ()
-			   (let ((cs (socket-accept server)))
-			      (let ((line (read-line (socket-input cs))))
-				 (display line (socket-output cs))
-				 (newline (socket-output cs))
-				 (flush-output-port (socket-output cs)))
-			      (socket-close cs)))))))
+                           (synchronize mu
+                              (set! ready #t)
+                              (condition-variable-signal! cv))
+                           (let ((cs (socket-accept server)))
+                              (let ((line (read-line (socket-input cs))))
+                                 (display line (socket-output cs))
+                                 (newline (socket-output cs))
+                                 (flush-output-port (socket-output cs)))
+                              (socket-close cs)))))))
 	 (thread-start-joinable! t)
-	 (let ((cs (make-ssl-client-socket "localhost" port
-		      :CAs (list *cert*)
-		      :protocol 'tlsv1_2)))
-	    (display "tls12" (socket-output cs))
-	    (newline (socket-output cs))
-	    (flush-output-port (socket-output cs))
-	    (let ((reply (read-line (socket-input cs))))
-	       (socket-close cs)
-	       (thread-join! t)
-	       (socket-close server)
-	       reply))))
+         (synchronize mu
+            (unless ready
+               (condition-variable-wait! cv mu))
+            (sleep 100)
+            (let ((cs (make-ssl-client-socket "localhost" port
+                         :CAs (list *cert*)
+                         :protocol 'tlsv1_2)))
+               (display "tls12" (socket-output cs))
+               (newline (socket-output cs))
+               (flush-output-port (socket-output cs))
+               (let ((reply (read-line (socket-input cs))))
+                  (socket-close cs)
+                  (thread-join! t)
+                  (socket-close server)
+                  reply)))))
    :cond-expand (library pthread)
    :expected "tls12")
 

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/runtime/Jlib/foreign.java                   */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/foreign.java      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Fri Jun  5 08:35:36 2026 (serrano)                */
+/*    Last change :  Sat Jun 20 11:28:51 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -5329,8 +5329,17 @@ public final class foreign {
 
    public static socket bgl_socket_accept(socket s, boolean errp,
 					  byte[] inbuf, byte[] outbuf)
-      throws IOException, SecurityException {
-      return ((server_socket) s).accept(inbuf, outbuf, errp);
+      throws IOException {
+      try {
+	 return ((server_socket) s).accept(inbuf, outbuf, errp);
+      } catch (Exception e) {
+	 bigloo.runtime.Llib.error.bgl_system_failure(
+	    BGL_IO_CLOSED_ERROR,
+	    "accept".getBytes(),
+	    e.getMessage(),
+	    s);
+	 return s;
+      }
    }
 
    public static Object socket_host_addr(socket s) {
@@ -5417,7 +5426,7 @@ public final class foreign {
       return s.HOSTIP();
    }
 
-   public static obj BGL_DATAGRAM_SOCKET_PORT(datagram_socket s) {
+   public static Object BGL_DATAGRAM_SOCKET_PORT(datagram_socket s) {
       return s.PORT();
    }
 
@@ -6725,9 +6734,28 @@ public final class foreign {
    }
 
    public static Object bgl_gethostinterfaces() {
-      // to be implemented
-      System.err.println("foreign.java: bgl_hostinterfaces not implemented");
-      return BNIL;
+      try {
+	 Enumeration<NetworkInterface> interfaces =
+	    NetworkInterface.getNetworkInterfaces();
+	 Object result = BNIL;
+
+	 while (interfaces.hasMoreElements()) {
+            NetworkInterface nif = interfaces.nextElement();
+	    Object el = BNIL;
+
+            Enumeration<InetAddress> addresses = nif.getInetAddresses();
+            while (addresses.hasMoreElements()) {
+	       InetAddress addr = addresses.nextElement();
+	       el = new pair(addr.getHostAddress().getBytes(), el);
+            }
+	    el = new pair(nif.getDisplayName().getBytes(), el);
+	    result = new pair(el, result);
+	 }
+
+	 return result;
+      } catch (SocketException e) {
+	 return BNIL;
+      }
    }
 
    

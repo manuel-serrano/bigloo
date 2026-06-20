@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Jun 19 16:18:14 2026 (serrano)                */
+#*    Last change :  Fri Jun 19 21:27:29 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -80,7 +80,10 @@ all: c
 	  $(MAKE) wasm; \
         fi
 
-check: check_c check_jvm check_wasm
+check:
+	$(MAKE) check_c
+	$(MAKE) check_jvm
+	$(MAKE) check_wasm
 
 c: objs_c
 	$(MAKE) test_c

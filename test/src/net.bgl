@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Tue Jun 16 19:23:32 2026 (serrano)                */
+;*    Last change :  Fri Jun 19 19:19:33 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing network api                                              */
@@ -13,6 +13,7 @@
 ;*    net                                                              */
 ;*---------------------------------------------------------------------*/
 (module net
+   (cond-expand ((library pthread) (library pthread)))
    (export test))
 
 ;*---------------------------------------------------------------------*/
@@ -31,12 +32,15 @@
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
 (define-test socket?
-   (socket? (make-server-socket
+   (let ((s (make-server-socket
                (cond-expand
                   (C 1966)
                   (jvm 1967)
                   (wasm 1968)
                   (else 1969)))))
+      (unwind-protect
+         (socket? s)
+         (socket-close s))))
 
 (define-test socket?
    (socket? '#(1))
@@ -46,19 +50,28 @@
    (with-handler
       (lambda (e)
          #f)
-      (socket? (make-client-socket "localhost" 22))))
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (socket? s)
+            (socket-close s)))))
 
 (define-test socket-client?
    (with-handler
       (lambda (e)
          #f)
-      (socket-client? (make-client-socket "localhost" 22))))
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (socket-client? s)
+            (socket-close s)))))
 
 (define-test socket-client?
    (with-handler
       (lambda (e)
          #t)
-      (socket-server? (make-client-socket "localhost" 22)))
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (socket-server? s)
+            (socket-close s))))
    :cond-expand (not wasm)
    :expected #f)
 
@@ -66,13 +79,38 @@
    (with-handler
       (lambda (e)
          #f)
-      (socket-server? (make-server-socket))))
+      (let ((s (make-server-socket)))
+         (unwind-protect
+            (socket-server? s)
+            (socket-close s)))))
+
+(define-test socket-down?
+   (with-handler
+      (lambda (e)
+         #f)
+      (let ((s (make-server-socket)))
+         (unwind-protect
+            (socket-down? s)
+            (socket-close s))))
+   :expected #f)
+
+(define-test socket-down?
+   (with-handler
+      (lambda (e)
+         #f)
+      (let ((s (make-server-socket)))
+         (socket-close s)
+         (socket-down? s)))
+   :expected #t)
 
 (define-test datagram-socket?
    (with-handler
       (lambda (e)
          #t)
-      (datagram-socket? (make-client-socket "localhost" 22)))
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (datagram-socket? s)
+            (socket-close s))))
    :cond-expand (not wasm)
    :expected #f)
 
@@ -80,19 +118,28 @@
    (with-handler
       (lambda (e)
          #f)
-      (socket? (make-client-socket "localhost" 22))))
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (socket? s)
+            (socket-close s)))))
 
 (define-test make-client-socket
    (with-handler
       (lambda (e)
          #f)
-      (socket? (make-client-socket "localhost" 22 :inbuf #f :outbuf #f))))
+      (let ((s (make-client-socket "localhost" 22 :inbuf #f :outbuf #f)))
+         (unwind-protect
+            (socket? s)
+            (socket-close s)))))
 
 (define-test socket-hostname
    (with-handler
       (lambda (e)
          #f)
-      (socket-hostname (make-client-socket "localhost" 22)))
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (socket-hostname s)
+            (socket-close s))))
    :cond-expand (not wasm)
    :expected "localhost")
 
@@ -100,16 +147,32 @@
    (with-handler
       (lambda (e)
          #f)
-      (socket-host-address (make-client-socket "localhost" 22)))
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (socket-host-address s)
+            (socket-close s))))
    :cond-expand (not wasm)
    :expected "127.0.0.1")
+
+(define-test socket-host-address=?
+   (with-handler
+      (lambda (e)
+         #f)
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (socket-host-address=? s "127.0.0.1")
+            (socket-close s))))
+   :cond-expand (not wasm))
 
 (define-test socket-local-address
    (with-handler
       (lambda (e)
          (exception-notify e)
          #f)
-      (socket-local-address (make-client-socket "localhost" 22)))
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (socket-local-address s)
+            (socket-close s))))
    :cond-expand (not wasm)
    :expected "127.0.0.1")
 
@@ -117,7 +180,231 @@
    (with-handler
       (lambda (e)
          #f)
-      (socket-port-number (make-client-socket "localhost" 22)))
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (socket-port-number s)
+            (socket-close s))))
    :expected 22)
 
+(define-test socket-input
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (input-port? (socket-input s))
+            (socket-close s))))
+   :cond-expand (not wasm))
 
+(define-test socket-output
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (output-port? (socket-output s))
+            (socket-close s))))
+   :cond-expand (not wasm))
+
+(define-test make-server-socket
+   (with-handler
+      (lambda (e)
+         #f)
+      (let ((s (make-server-socket :domain 'inet6)))
+         (unwind-protect
+            (socket-server? s)
+            (socket-close s))))
+   :cond-expand (not wasm))
+
+(define-test socket-accept
+   (let ((serv (make-server-socket))
+         (mu (make-mutex))
+         (cv (make-condition-variable))
+         (ready #f))
+      (thread-start!
+         (instantiate::pthread
+            (body (lambda ()
+                     (synchronize mu
+                        (set! ready #t)
+                        (condition-variable-broadcast! cv))
+                     (socket-accept serv)))))
+      (synchronize mu
+         (unless ready
+            (condition-variable-wait! cv mu)))
+      ready))
+
+(define-test socket-close
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (let ((s (make-client-socket "localhost" 22)))
+         (socket-close s)
+         (socket-down? s)))
+   :cond-expand (not wasm))
+
+(define-test socket-shutdown
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (let ((s (make-client-socket "localhost" 22)))
+         (unwind-protect
+            (socket-shutdown s)
+            (socket-close s)))
+      #t)
+   :cond-expand (not wasm))
+
+(define-test socket-option
+   (let ((s (make-client-socket "localhost" 22)))
+      (unwind-protect
+         (socket-option s :SO_KEEPALIVE)
+         (socket-close s)))
+   :cond-expand (not wasm)
+   :expected #f)
+
+(define-test socket-option-set!
+   (let ((s (make-client-socket "localhost" 22)))
+      (unwind-protect
+         (socket-option-set! s :SO_KEEPALIVE #t)
+         (socket-close s))
+      #t)
+   :cond-expand (not wasm)
+   :expected #t)
+
+(define-test make-datagram-client-socket
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (make-datagram-client-socket "localhost" 22)
+      #t)
+   :cond-expand (not wasm))
+
+(define-test make-datagram-server-socket
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (make-datagram-server-socket)
+      #t)
+   :cond-expand (not wasm))
+
+(define-test make-datagram-server-socket
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (make-datagram-server-socket)
+      #t)
+   :cond-expand (not wasm))
+
+(define-test make-datagram-unbound-socket
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (make-datagram-unbound-socket)
+      #t)
+   :cond-expand (not wasm))
+
+(define-test datagram-socket-input
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (input-port? (datagram-socket-input (make-datagram-server-socket))))
+   :cond-expand (not wasm))
+
+(define-test datagram-socket-output
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (output-port?
+         (datagram-socket-output
+            (make-datagram-client-socket "localhost" 22))))
+   :cond-expand (not wasm))
+
+(define-test datagram-socket-receive
+   (procedure-arity datagram-socket-receive)
+   :cond-expand (not wasm)
+   :expected 2)
+
+(define-test datagram-socket-send
+   (procedure-arity datagram-socket-send)
+   :cond-expand (not wasm)
+   :expected 4)
+
+(define-test datagram-socket-hostname
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (datagram-socket-hostname (make-datagram-client-socket "localhost" 22)))
+   :cond-expand (not wasm)
+   :expected "localhost")
+
+(define-test datagram-socket-host-address
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (datagram-socket-host-address (make-datagram-client-socket "localhost" 22)))
+   :cond-expand (not wasm)
+   :expected #unspecified)
+
+(define-test datagram-socket-close
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (datagram-socket-close (make-datagram-client-socket "localhost" 22))
+      #t)
+   :cond-expand (not wasm)
+   :expected #t)
+
+(define-test datagram-socket-option
+   (procedure-arity datagram-socket-option)
+   :cond-expand (not wasm)
+   :expected 2)
+
+(define-test datagram-socket-option-set!
+   (procedure-arity datagram-socket-option-set!)
+   :cond-expand (not wasm)
+   :expected 3)
+
+(define-test host
+   (string? (host "localhost"))
+   :cond-expand (not wasm))
+
+(define-test hostname
+   (hostname "127.0.1")
+   :cond-expand (not wasm)
+   :expected "localhost")
+
+(define-test hostinfo
+   (pair? (hostinfo "localhost"))
+   :cond-expand (not wasm))
+
+(define-test get-interfaces
+   (every list? (get-interfaces))
+   :cond-expand (and (not jvm) (not wasm)))
+
+(define-test get-interfaces
+   (pair? (get-interfaces))
+   :cond-expand (not wasm))
+
+(define-test get-protocols
+   (every list? (get-protocols))
+   :cond-expand (and (not jvm) (not wasm)))
+
+(define-test get-protocol
+   (with-handler
+      (lambda (e)
+         (exception-notify e)
+         #f)
+      (pair? (get-protocol (caar (get-protocols)))))
+   :cond-expand (and (not jvm) (not wasm)))

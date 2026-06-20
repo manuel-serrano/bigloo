@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Mon Jun 15 09:01:28 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 15:22:15 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -84,7 +84,7 @@
 	 ((or (class ?ident . ?rest)
 	      (abstract-class ?ident . ?rest))
 	  (let ((jklass (java-parser clause (-> mod id) '-)))
-	     (declare-java-type! jklass mod clause)
+	     (declare-java-jklass! jklass mod clause)
 	     (with-access::jklass jklass (delayed-accessors? idd)
 		(set! delayed-accessors? #f)
 		(declare-java-predicate! idd mod clause)
@@ -209,28 +209,31 @@
 	      (abstract-class ?ident . ?rest))
 	  (multiple-value-bind (cpkg name id super)
 	     (parse-class5-ident ident)
-	     (let* ((clazz (class5->class4 clause cpkg name id super rest))
-		    (jklass::jklass (java-parser clazz (-> mod id) '|.|)))
-		(trace-item "ident=" ident)
-		(trace-item "id=" id)
-		(trace-item "super=" super)
-		(trace-item "name=" name)
-		(trace-item "class5="
-		   (if (>fx (length clazz) 5)
-		       (append (take clazz 5) '("..."))
-		       clazz))
-		(declare-java-type! jklass mod clause)
-		(set! (-> jklass delayed-accessors?) #f)
-		(declare-java-predicate! (-> jklass idd) mod clause)
-		(declare-jklass-constructors! jklass mod clause)
-		(declare-jklass-methods! jklass mod clause)
-		(declare-jklass-fields! jklass mod clause))))
+	     (unless (java-type-exists? (symbol->string! id) mod)
+		(let* ((clazz (class5->class4 clause cpkg name id super rest))
+		       (jklass::jklass (java-parser clazz (-> mod id) '|.|)))
+		   (trace-item "ident=" ident)
+		   (trace-item "id=" id)
+		   (trace-item "super=" super)
+		   (trace-item "name=" name)
+		   (trace-item "class5="
+		      (if (>fx (length clazz) 5)
+			  (append (take clazz 5) '("..."))
+			  clazz))
+		   (declare-java-jklass! jklass mod clause)
+		   (set! (-> jklass delayed-accessors?) #f)
+		   (declare-java-predicate! (-> jklass idd) mod clause)
+		   (declare-jklass-constructors! jklass mod clause)
+		   (declare-jklass-methods! jklass mod clause)
+		   (declare-jklass-fields! jklass mod clause)))))
 	 ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
- 	  (java-declare-array clause ident of (-> mod id) #f)
-	  (declare-java-predicate! ident mod clause)
-	  (declare-jarray-make ident of mod clause)
-	  (declare-jarray-length ident of mod clause)
-	  (declare-jarray-accessors ident of mod clause))
+	  (unless (java-type-exists? (symbol->string! ident) mod)
+	     (declare-java-jarray! ident mod clause)
+	     (java-declare-array clause ident of (-> mod id) #f)
+	     (declare-java-predicate! ident mod clause)
+	     (declare-jarray-make ident of mod clause)
+	     (declare-jarray-length ident of mod clause)
+	     (declare-jarray-accessors ident of mod clause)))
 	 ((import (and ?class (? symbol?)))
 	  (module5-extern-plugin-java mod
 	     (call-with-input-file (jigloo (symbol->string class) clause mod)
@@ -253,13 +256,13 @@
       '()))
 
 ;*---------------------------------------------------------------------*/
-;*    declare-java-type! ...                                           */
+;*    declare-java-jklass! ...                                         */
 ;*    -------------------------------------------------------------    */
 ;*    Qualified type name are handled in the Java finalizer so         */
 ;*    declare-java-type! does not need to deal with type aliasing.     */
 ;*---------------------------------------------------------------------*/
-(define (declare-java-type! j::jklass mod::Module clause)
-   (with-trace 'module_extern-java "declare-java-type"
+(define (declare-java-jklass! j::jklass mod::Module clause)
+   (with-trace 'module_extern-java "declare-java-jklass!"
       (with-access::jklass j (id jname package src)
 	 (trace-item "jklass=" id)
 	 (trace-item "mod=" (-> mod id))
@@ -269,8 +272,7 @@
 	    (co-instantiate
 		  ((def (instantiate::JDef
 			   (id clazz)
-			   (kind 'java-type)
-			   (expr clause)
+			   (kind 'jvm-type)
 			   (ronly #t)
 			   (expr src)
 			   (decl decl)
@@ -292,6 +294,37 @@
 		     (hashtable-put! defs name def))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    declare-java-jarray! ...                                         */
+;*---------------------------------------------------------------------*/
+(define (declare-java-jarray! id::symbol mod::Module clause)
+   (co-instantiate
+	 ((def (instantiate::ADef
+		  (id id)
+		  (kind 'jvm-array)
+		  (expr clause)
+		  (ronly #t)
+		  (decl decl)))
+	  (decl (instantiate::Decl
+		   (id id)
+		   (alias id)
+		   (mod mod)
+		   (expr clause)
+		   (ronly #t)
+		   (scope 'extern)
+		   (def def))))
+      (with-access::Module mod (decls defs exports)
+	 (let ((name (symbol->string! id)))
+	    (hashtable-put! decls name decl)
+	    (hashtable-put! defs name def)))))
+
+;*---------------------------------------------------------------------*/
+;*    java-type-exists? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (java-type-exists? name::bstring mod::Module)
+   (with-access::Module mod (defs)
+      (hashtable-get defs name)))
+
+;*---------------------------------------------------------------------*/
 ;*    declare-java-predicate! ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (declare-java-predicate! id::symbol mod::Module clause::pair)
@@ -300,8 +333,9 @@
       (let* ((pid (symbol-append id '?))
 	     (pidt (symbol-append id '?::bool))
 	     (obj (mark-symbol-non-user! (gensym 'obj)))
+	     (tobj (symbol-append obj '::obj))
 	     (expr (localize clause
-		      `(define-inline (,pidt ,obj)
+		      `(define-inline (,pidt ,tobj)
 			  ,(make-private-sexp 'instanceof id obj))))
 	     (attrs `((pragma ((predicate-of ,id))) (removable 'coerce)))
 	     (decl (instantiate::Decl
@@ -312,11 +346,11 @@
 		      (ronly #t)
 		      (attributes attrs)
 		      (attributes '(extern))
-		      (scope 'export))))
+		      (scope 'static))))
 	 (with-access::Module mod (decls defs exports body)
 	    (set! body (cons expr body))
 	    (let ((name (symbol->string! pid)))
-	       (hashtable-put! exports name decl)
+	       ;;(hashtable-put! exports name decl)
 	       (hashtable-put! decls name decl))))))
 
 ;*---------------------------------------------------------------------*/
@@ -349,11 +383,11 @@
 			       (expr expr)
 			       (ronly #t)
 			       (attributes '(extern))
-			       (scope 'export))))
+			       (scope 'static))))
 		  (with-access::Module mod (decls exports body)
 		     (set! body (cons expr body))
 		     (let ((name (symbol->string! mid)))
-			 (hashtable-put! exports name decl)
+			 ;;(hashtable-put! exports name decl)
 			 (hashtable-put! decls name decl)))))))
       
       (for-each declare-method! (-> class methods))))
@@ -478,11 +512,11 @@
 			 (expr expr)
 			 (ronly #t)
 			 (attributes '(extern))
-			 (scope 'export))))
+			 (scope 'static))))
 	    (with-access::Module mod (decls exports body)
 	       (set! body (cons expr body))
 	       (let ((name (symbol->string! cid)))
-		  (hashtable-put! exports name decl)
+		  ;;(hashtable-put! exports name decl)
 		  (hashtable-put! decls name decl)))))))
       
 ;*---------------------------------------------------------------------*/
@@ -507,11 +541,11 @@
 			 (expr expr)
 			 (ronly #t)
 			 (attributes '(extern))
-			 (scope 'export))))
+			 (scope 'static))))
 	    (with-access::Module mod (decls exports body)
 	       (set! body (cons expr body))
 	       (let ((name (symbol->string! lid)))
-		  (hashtable-put! exports name decl)
+		  ;;(hashtable-put! exports name decl)
 		  (hashtable-put! decls name decl)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -544,7 +578,7 @@
 			  (expr gexpr)
 			  (ronly #t)
 			  (attributes '(extern))
-			  (scope 'export)))
+			  (scope 'static)))
 		(sdecl (instantiate::Decl
 			  (id sid)
 			  (alias sid)
@@ -552,12 +586,12 @@
 			  (expr sexpr)
 			  (ronly #t)
 			  (attributes '(extern))
-			  (scope 'export))))
+			  (scope 'static))))
 	    (with-access::Module mod (decls exports body)
 	       (set! body (cons* gexpr sexpr body))
 	       (let ((name (symbol->string! gid)))
-		  (hashtable-put! exports name gdecl)
+		  ;;(hashtable-put! exports name gdecl)
 		  (hashtable-put! decls name gdecl))
 	       (let ((name (symbol->string! sid)))
-		  (hashtable-put! exports name sdecl)
+		  ;;(hashtable-put! exports name sdecl)
 		  (hashtable-put! decls name sdecl)))))))

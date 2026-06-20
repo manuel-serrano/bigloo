@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Inline/simple.scm                   */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Inline/simple.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Fri Feb 13 10:42:34 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 16:19:22 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
@@ -47,7 +47,7 @@
 ;*    build a let construction. We just make an alpha-conversion.      */
 ;*---------------------------------------------------------------------*/
 (define (inline-app-simple node kfactor stack msg)
-   (with-trace 'inline "inline-app-simple"
+   (with-trace 'inline_simple "inline-app-simple"
       (trace-item "node=" (shape node))
       (let* ((callee (var-variable (app-fun node)))
 	     (sfun (variable-value callee))

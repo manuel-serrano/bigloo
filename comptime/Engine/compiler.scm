@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Jun 15 07:47:57 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 17:14:55 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -698,7 +698,7 @@
 ;* 	       (when (pair? u) (set! units (cons (car u) units)))))    */
 	 
 	 ;; check if all types are defined
-	 (profile ctype (check-types))
+	 (profile ctype (when (check-types) (exit 1)))
 	 
 	 ;; bind the imported inline in the module environment
 	 (module5-imported-inline mod genv)

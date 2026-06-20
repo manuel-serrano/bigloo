@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Sat Jun 13 08:23:59 2026 (serrano)                */
+;*    Last change :  Sat Jun 20 16:27:25 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -357,7 +357,7 @@
       (trace-item "node=" (shape node))
       (trace-item "from=" (shape from))
       (trace-item "to=" (shape to))
-      (let* ((aux (mark-symbol-non-user! (gensym 'aux)))
+      (let* ((aux (mark-symbol-non-user! (gensym 'conv)))
 	     (loc (node-loc node))
 	     (lnode (top-level-sexp->node
 		       ;; we coerce all checked object into `obj' because
@@ -372,6 +372,7 @@
 			       ,aux
 			       ,(runtime-type-error/id loc (type-id to) aux)))
 		       loc (get-genv))))
+	 (trace-item "aux=" aux)
 	 (increment-stat-check! from to loc)
 	 (spread-side-effect! lnode)
 	 (let* ((var (car (car (let-var-bindings lnode))))

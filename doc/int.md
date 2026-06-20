@@ -25,7 +25,7 @@ Bigloo supports several different integers, each represented by their
 own types:
 
   * `bint`: Bigloo integers. Their size depends on backend used. 
-     Examples: `1`, `-5`, `2435`.
+     Examples: `1`, `-5`, `2435`, `5_000_000`.
   * `belong`: A bigloo _exact long_. 
      Examples: `#e1`, `#e-5`, `#e2345`.
   * `bllong`: A bigloo _exact long long_. 
