@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Sat Jun 20 12:24:57 2026 (serrano)                */
+;*    Last change :  Sun Jun 21 07:08:57 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1444,7 +1444,14 @@ if that value is non-nil."
 		  "*** ERROR:" (one-or-more not-newline) "\n"
 		  (message) line-end))
 	  :modes bgl-mode)
-	(add-to-list 'flycheck-checkers 'bgl))))
+	(add-to-list 'flycheck-checkers 'bgl))
+
+      (add-hook 'flycheck-status-changed-functions
+		'#(lambda (status)
+		   (when (eq status 'finished)
+		     (unless flycheck-current-errors
+		       (bgl-load-decl-index)))))))
+
   (when (and (member (file-name-extension (buffer-file-name))
 		     bgl-flycheck-file-extensions)
 	     (< (buffer-size) bgl-flycheck-size-limit))
@@ -1500,7 +1507,9 @@ if that value is non-nil."
 ;*---------------------------------------------------------------------*/
 (defvar bgl-doc-table-index (make-hash-table :test 'equal))
 (defvar bgl-decl-table-index (make-hash-table :test 'equal))
+(defvar bgl-decl-table-loaded nil)
 (make-variable-buffer-local 'bgl-decl-table-index)
+(make-variable-buffer-local 'bgl-decl-table-loaded)
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-last-symbol ...                                              */
@@ -1541,14 +1550,16 @@ if that value is non-nil."
 			 (k (if i (substring name 0 i) name)))
 		    (puthash k (cdr el) bgl-doc-table-index)))
 	      l)
-	(setq bgl-last-doc-symbol nil)))))
+	(setq bgl-last-doc-symbol nil)
+	(setq unless bgl-decl-table-loaded t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-load-decl-index ...                                          */
 ;*---------------------------------------------------------------------*/
 (defun bgl-load-decl-index ()
   (interactive)
-  (bgl-load-module-index (expand-file-name buffer-file-name)))
+  (unless bgl-decl-table-loaded
+    (bgl-load-module-index (expand-file-name buffer-file-name))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-load-module-index ...                                        */
@@ -1746,19 +1757,18 @@ if that value is non-nil."
       (let* ((loc (cadr e))
 	     (file (cadr loc))
 	     (pos (caddr loc)))
-	(setq bgl-jump-stack
-	      (cons (list (file-name-directory (buffer-name))
-			  (current-buffer)
-			  (point))
-		    bgl-jump-stack))
 	(let ((buf (if other-frame
-		       (find-file-other-frame file)
+		       (progn
+			 (setq bgl-jump-stack
+			       (cons (list (file-name-directory (buffer-name))
+					   (current-buffer)
+					   (point))
+				     bgl-jump-stack))
+			 (find-file-other-frame file))
 		       (find-file file))))
 	  (switch-to-buffer buf)
 	  (goto-char (+ 1 pos))
-	  (unless (bgl-message-once
-		   'pop-def
-		   "[M-,] pop definition")
+	  (unless (bgl-message-once 'pop-def "[M-,] pop definition")
 	    (message (bgl-jump-stack-message))))))))
 
 ;*---------------------------------------------------------------------*/

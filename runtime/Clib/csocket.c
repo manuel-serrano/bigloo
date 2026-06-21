@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sat Jun 20 08:21:01 2026 (serrano)                */
+/*    Last change :  Sat Jun 20 18:57:56 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -111,8 +111,7 @@ typedef int socklen_t;
 #if defined(DEBUG_SEGV)
 static FILE *debug_segv_file = 0;
 
-static void
-debug_init() {
+static void debug_init() {
    struct tm *t;
    char *s;
    long sec = time(0);
@@ -145,6 +144,56 @@ debug_socket_segv(char *fun, unsigned char *ptr, int len) {
    fflush(debug_segv_file);
 }
 #endif
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    debug_hostent ...                                                */
+/*---------------------------------------------------------------------*/
+static void debug_hostent(int __line__, struct hostent *h) {
+   fprintf(stderr, "debug_hostent: %d\n", __line__);
+   
+   if (!h) {
+      fprintf(stderr, "NULL hostent\n");
+      return;
+   }
+
+   fprintf(stderr, "Official name: %s\n", h->h_name);
+
+   if (h->h_aliases != 0L) {
+      fprintf(stderr, "Aliases: %p\n", h->h_aliases);
+      for (char **alias = h->h_aliases; *alias != NULL; alias++) {
+	 fprintf(stderr, "  %s\n", *alias);
+      }
+   }
+
+   fprintf(stderr, "Address type: ");
+   switch (h->h_addrtype) {
+      case AF_INET:
+	 fprintf(stderr, "AF_INET\n");
+	 break;
+      case AF_INET6:
+	 fprintf(stderr, "AF_INET6\n");
+	 break;
+      default:
+	 fprintf(stderr, "%d\n", h->h_addrtype);
+   }
+
+   fprintf(stderr, "Address length: %d\n", h->h_length);
+
+   fprintf(stderr, "Addresses:\n");
+   char buf[INET6_ADDRSTRLEN];
+
+   for (char **addr = h->h_addr_list; *addr != NULL; addr++) {
+      const char *result = inet_ntop(
+	 h->h_addrtype,
+	 *addr,
+	 buf,
+	 sizeof(buf)
+	 );
+
+      if (result) fprintf(stderr, "  %s\n", buf);
+   }
+}
 
 /*---------------------------------------------------------------------*/
 /*    imports ...                                                      */
@@ -416,7 +465,7 @@ make_string_array(char **src) {
    for(run = src; *run; run++);
    len = (run - src);
 
-   res = (char **)GC_MALLOC(sizeof(char *) * len + 1);
+   res = (char **)GC_MALLOC(sizeof(char *) * (len + 1));
    for(run = src; *run; run++) {
       *res++ = make_string(*run);
    }
@@ -438,7 +487,7 @@ make_inet_array(char **src, int size) {
    for(run = src; *run; run++);
    len = (run - src);
 
-   res = (char **)GC_MALLOC(sizeof(char *) * len + 1);
+   res = (char **)GC_MALLOC(sizeof(char *) * (len + 1));
    for(run = src; *run; run++) {
       char *d = (char *)GC_MALLOC_ATOMIC(size);
       char *s = *run;
@@ -472,7 +521,7 @@ make_bglhostent(obj_t hostaddr, struct hostent *hp) {
    bhp->hostaddr = hostaddr;
 
    if (hp) {
-      /* a sucessful hostent */
+      /* a successful hostent */
       bhp->exptime = time(0L) + bgl_dns_cache_validity_timeout();
       bhp->state = BGLHOSTENT_STATE_OK;
       
@@ -513,8 +562,9 @@ make_bglhostent_from_name(obj_t hostaddr, struct sockaddr* address, char *n) {
 
    /* h_length */
    bhp->hp.h_length
-     = address->sa_family == AF_INET ? sizeof(struct sockaddr_in)
-     : sizeof(struct sockaddr_in6); 
+     = address->sa_family == AF_INET
+      ? sizeof(struct in_addr)
+      : sizeof(struct in6_addr); 
   
    /* addr_list */
    bhp->hp.h_addr_list = l;
@@ -575,16 +625,9 @@ bglhostent_fill_from_addrinfo(obj_t hostaddr, struct bglhostent *bhp, struct add
    /* set the correct expiration timeout and state */
    bhp->exptime = time(0L) + bgl_dns_cache_validity_timeout();
    bhp->state = BGLHOSTENT_STATE_OK;
-   
+
    /* h_name */
    bhp->hp.h_name = make_string(BSTRING_TO_STRING(hostaddr));
-   
-   /* h_length */
-   if (bhp->hp.h_addrtype == AF_INET) {
-     bhp->hp.h_length = sizeof(struct in_addr);
-   }  else if (bhp->hp.h_addrtype == AF_INET6) {
-     bhp->hp.h_length = sizeof(struct in6_addr);
-   }
    
    /* h_aliases */
    if (ai->ai_canonname) {
@@ -602,7 +645,6 @@ bglhostent_fill_from_addrinfo(obj_t hostaddr, struct bglhostent *bhp, struct add
    {
       int len = 0;
       struct addrinfo *run;
-      char **l;
 
       /* calculate the number of returned addresses. We know they are of the correct
          type since we set the family in the hints we passed to getaddrinfo */
@@ -610,36 +652,52 @@ bglhostent_fill_from_addrinfo(obj_t hostaddr, struct bglhostent *bhp, struct add
 	 len++;
       }
 
-      l = (char **)GC_MALLOC(sizeof(char *) * (len + 1));
-      bhp->hp.h_addr_list = l;
-
       if (len > 0) {
-        /* h_addrtype */
-        bhp->hp.h_addrtype = ai->ai_family; 
-      }
+	 char **l;
+	 /* h_addrtype */
+	 bhp->hp.h_addrtype = ai->ai_family; 
       
-      for(run = ai; run; run = run->ai_next) {
-	 if (run->ai_family == bhp->hp.h_addrtype) {
-	    void *d = GC_MALLOC_ATOMIC(bhp->hp.h_length);
-            if (run->ai_family == AF_INET) {
-              memcpy((unsigned char *)d,
-                      (char *)&(((struct sockaddr_in *)(run->ai_addr))->sin_addr),
-                      bhp->hp.h_length);
-            } else if (run->ai_family == AF_INET6) {
-              memcpy((unsigned char *)d,
-                      (char *)&(((struct sockaddr_in6 *)(run->ai_addr))->sin6_addr),
-                      bhp->hp.h_length);
-            }
-	    *l++ = d;
-	 }
-      }
+	 l = (char **)GC_MALLOC(sizeof(char *) * (len + 1));
+	 bhp->hp.h_addr_list = l;
 
-      *l = 0;
+	 /* h_length */
+	 if (bhp->hp.h_addrtype == AF_INET) {
+	    bhp->hp.h_length = sizeof(struct in_addr);
+	 }  else if (bhp->hp.h_addrtype == AF_INET6) {
+	    bhp->hp.h_length = sizeof(struct in6_addr);
+	 } else {
+	    bhp->hp.h_length = 0;
+	 }
+
+	 for(run = ai; run; run = run->ai_next) {
+	    if (run->ai_family == bhp->hp.h_addrtype) {
+	       void *d;
+	       if (run->ai_family == AF_INET) {
+		  int len = sizeof(struct in_addr);
+
+		  d = GC_MALLOC_ATOMIC(len);
+		  memcpy((unsigned char *)d,
+			 (char *)&(((struct sockaddr_in *)(run->ai_addr))->sin_addr),
+			 len);
+	       } else if (run->ai_family == AF_INET6) {
+		  int len = sizeof(struct in6_addr);
+		  d = GC_MALLOC_ATOMIC(len);
+	       
+		  memcpy((unsigned char *)d,
+			 (char *)&(((struct sockaddr_in6 *)(run->ai_addr))->sin6_addr),
+			 len);
+	       }
+	       *l++ = d;
+	    }
+	 }
+
+	 *l = 0;
+      }
    }
 }
 #endif
 
-#define DEBUG_CACHE_DNS 1
+//#define DEBUG_CACHE_DNS 1
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -654,10 +712,9 @@ bglhostentbyname(obj_t hostname, struct bglhostent *bhp, int canon, int family) 
    struct hostent *hp;
    struct bglhostent *res;
    
-   // MS: 12may19
-   // BGL_MUTEX_LOCK(gethostby_mutex);
-   /* gethostbyname only supports IPv4 (i.e., AF_INET) */
+   // gethostbyname only supports IPv4 (i.e., AF_INET)
    hp = gethostbyname(BSTRING_TO_STRING(hostname));
+
    bglhostent_fill_from_hostent(hostname, bhp, hp);
    // MS: 12may19
    // BGL_MUTEX_UNLOCK(gethostby_mutex);
@@ -675,11 +732,11 @@ bglhostentbyname(obj_t hostname, struct bglhostent *bhp, int canon, int family) 
      hints.ai_flags |= AI_CANONNAME;
    }
 
-   /* AI_ADDRCONFIG does not consider loopback addresses when determining whether
-      a system is configured for IPv4 or IPv6. This can result in getaddrinfo failing
-      to return configured loopback addresses on systems where no other IPv4 or IPv6
-      addresses are configured. To work around these situations we only use
-      AI_ADDRCONFIG for non-loopback addresses.  */
+   // AI_ADDRCONFIG does not consider loopback addresses when determining whether
+   // a system is configured for IPv4 or IPv6. This can result in getaddrinfo failing
+   // to return configured loopback addresses on systems where no other IPv4 or IPv6
+   // addresses are configured. To work around these situations we only use
+   // AI_ADDRCONFIG for non-loopback addresses.
    if (strcmp(BSTRING_TO_STRING(hostname), "localhost") != 0 &&
         strcmp(BSTRING_TO_STRING(hostname), "localhost.localdomain") != 0 &&
         strcmp(BSTRING_TO_STRING(hostname), "localhost6") != 0 &&
@@ -689,7 +746,7 @@ bglhostentbyname(obj_t hostname, struct bglhostent *bhp, int canon, int family) 
      hints.ai_flags |= AI_ADDRCONFIG;
    }
         
-   if (!(v=getaddrinfo(BSTRING_TO_STRING(hostname), 0L, &hints, &res))) {
+   if (!(v = getaddrinfo(BSTRING_TO_STRING(hostname), 0L, &hints, &res))) {
       bglhostent_fill_from_addrinfo(hostname, bhp, res);
 
       freeaddrinfo(res);
@@ -703,8 +760,8 @@ bglhostentbyname(obj_t hostname, struct bglhostent *bhp, int canon, int family) 
 	 bhp->state = BGLHOSTENT_STATE_FAILURE;
       }
    } else {
-      /* error message could be printed as follows: */
-      /* printf("%s\n", gai_strerror(v));       */
+      // error message could be printed as follows:
+      // printf("%s\n", gai_strerror(v));
       bhp->exptime = time(0L) + bgl_dns_cache_validity_timeout() / 4;
       bhp->state = BGLHOSTENT_STATE_FAILURE;
    }
@@ -726,8 +783,9 @@ invalidate_hostbyname(obj_t hostname) {
       
       bhp = (struct bglhostent *)VECTOR_REF(hosttable, key);
 
-      if (bhp && bigloo_strcmp(bhp->hostaddr, hostname))
+      if (bhp && bigloo_strcmp(bhp->hostaddr, hostname)) {
 	 VECTOR_SET(hosttable, key, 0);
+      }
       
       BGL_MUTEX_UNLOCK(socket_mutex);
       
@@ -754,7 +812,6 @@ bglhostbyname(obj_t hostname, int canon, int family) {
 #if BGL_DNS_CACHE
    if (bgl_dns_enable_cache()) {
       int key = get_hash_number(BSTRING_TO_STRING(hostname));
-      fprintf(stderr, "ICI.2 %s %d\n", BSTRING_TO_STRING(hostname), family);
       /* acquire the global socket lock */
       BGL_MUTEX_LOCK(socket_mutex);
 
@@ -766,6 +823,7 @@ retry_cache:
       if (bhp
 	  && bigloo_strcmp(bhp->hostaddr, hostname)
 	  && ((time(0) - bhp->exptime) <= 0)
+	  && (bhp->hp.h_addrtype == family)
 	  && (!canon || bhp->hp.h_aliases)) {
 
 	 /* we still have to check if the entry in the table corresponds */
@@ -852,7 +910,6 @@ retry_cache:
    {
       bhp = make_bglhostent(hostname, 0);
       bglhostentbyname(hostname, bhp, canon, family);
-
       return (bhp->state == BGLHOSTENT_STATE_OK) ? &(bhp->hp) : 0L;
    }
 }
@@ -1018,7 +1075,7 @@ bgl_gethostent(obj_t hostname, int family) {
 static obj_t
 bgl_inet_ntop(int af, void *addr, obj_t obj) {
    socklen_t len = (af == AF_INET ? INET_ADDRSTRLEN : INET6_ADDRSTRLEN);
-   obj_t tmp = make_string_sans_fill(len);
+   obj_t tmp = make_string_sans_fill(len + 1);
    char *buf = (char *)&(STRING_REF(tmp, 0));
    const char *s = inet_ntop(af, addr, buf, len);
 
@@ -1478,19 +1535,21 @@ bgl_make_client_socket(obj_t hostname, int port, int timeo, obj_t inb, obj_t out
    obj_t a_socket;
    obj_t hname;
    int fam = bgl_symbol_to_family(family);
-   
+
    /* Locate the host IP address */
    if ((hp = bglhostbyname(hostname, 0, fam)) == NULL) {
 #if (DEBUG_CACHE_DNS)
       fprintf(stderr, "!!!! %s:%d bglhostbyname returns null\n", __FILE__, __LINE__);
 #endif      
       C_SYSTEM_FAILURE(BGL_IO_UNKNOWN_HOST_ERROR,
-			"make-client-socket",
-			"unknown or misspelled host name",
-			hostname);
+		       "make-client-socket",
+		       "unknown or misspelled host name",
+		       hostname);
    }
-   /* if the family was originally unspec we don't know the actual family that will be chosen*/
-   /* set the address family to the family associated with the returned host entry */
+
+   // if the family was originally unspec we don't know the actual family
+   // that will be chosen set the address family to the family associated
+   // with the returned host entry.
    fam = hp->h_addrtype;
    
    /* Get a socket */
@@ -1510,19 +1569,19 @@ bgl_make_client_socket(obj_t hostname, int port, int timeo, obj_t inb, obj_t out
    debug_socket_segv("bgl_make_client", hp->h_addr, hp->h_length);
    // BGL_MUTEX_UNLOCK(socket_port_mutex);
 #endif
-   
+
    if (fam == AF_INET) {
-     struct sockaddr_in* ipv4_server = (struct sockaddr_in*)&server;
-     memcpy((char *)&(ipv4_server->sin_addr), hp->h_addr, hp->h_length);
-     ipv4_server->sin_family = fam;
-     ipv4_server->sin_port = htons(port);
+      struct sockaddr_in* ipv4_server = (struct sockaddr_in*)&server;
+      memcpy((char *)&(ipv4_server->sin_addr), hp->h_addr, hp->h_length);
+      ipv4_server->sin_family = fam;
+      ipv4_server->sin_port = htons(port);
    } else if (fam == AF_INET6) {
-     struct sockaddr_in6* ipv6_server = (struct sockaddr_in6*)&server;
-     memcpy((char *)&(ipv6_server->sin6_addr), hp->h_addr, hp->h_length);
-     ipv6_server->sin6_family = fam;
-     ipv6_server->sin6_port = htons(port);
+      struct sockaddr_in6* ipv6_server = (struct sockaddr_in6*)&server;
+      memcpy((char *)&(ipv6_server->sin6_addr), hp->h_addr, hp->h_length);
+      ipv6_server->sin6_family = fam;
+      ipv6_server->sin6_port = htons(port);
    }
-     
+
    hname = string_to_bstring(hp->h_name);
 
 #if (BGL_HAVE_SELECT && BGL_HAVE_FCNTL)
@@ -1531,12 +1590,10 @@ bgl_make_client_socket(obj_t hostname, int port, int timeo, obj_t inb, obj_t out
    
    /* Try to connect */
    socklen_t sockaddr_len = (fam == AF_INET) ?
-     sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6);
-   while((err = connect(s,
-			  (struct sockaddr *)&server,
-			  sockaddr_len)) != 0
-          && errno == EINTR);
-   
+      sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6);
+   while((err = connect(s, (struct sockaddr *)&server, sockaddr_len)) != 0
+	 && errno == EINTR);
+
    if (err < 0) {
 #if (BGL_HAVE_SELECT && defined(EINPROGRESS)) 
       if (errno == EINPROGRESS) {
@@ -1611,9 +1668,9 @@ bgl_make_client_socket(obj_t hostname, int port, int timeo, obj_t inb, obj_t out
    a_socket->socket.hostip = BUNSPEC;
    a_socket->socket.family = fam;
    if (fam == AF_INET) {
-     a_socket->socket.address.in_addr = ((struct sockaddr_in*)(&server))->sin_addr;
+      a_socket->socket.address.in_addr = ((struct sockaddr_in*)(&server))->sin_addr;
    } else if (fam == AF_INET6) {
-     a_socket->socket.address.in6_addr = ((struct sockaddr_in6*)(&server))->sin6_addr;
+      a_socket->socket.address.in6_addr = ((struct sockaddr_in6*)(&server))->sin6_addr;
    }
    a_socket->socket.fd = s;
    a_socket->socket.input = BFALSE;
@@ -1921,7 +1978,9 @@ bgl_socket_host_addr(obj_t sock) {
       return SOCKET(sock).hostip;
    } else {
      SOCKET(sock).hostip =
-	bgl_inet_ntop(SOCKET(sock).family, (void *)&(SOCKET(sock).address), sock);	       
+	bgl_inet_ntop(SOCKET(sock).family,
+		      (void *)&(SOCKET(sock).address),
+		      sock);	       
       return SOCKET(sock).hostip;
    }
 }
@@ -1936,7 +1995,7 @@ bgl_socket_local_addr(obj_t sock) {
    socklen_t len = sizeof(struct sockaddr_storage);
    
    if (SOCKET(sock).stype == BGL_SOCKET_SERVER) {
-     return string_to_bstring("0.0.0.0");
+      return string_to_bstring("0.0.0.0");
    }
 
    if (getsockname(SOCKET(sock).fd, (struct sockaddr *)&addr, &len)) {
