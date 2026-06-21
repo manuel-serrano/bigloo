@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Thu Jun 11 13:50:42 2026 (serrano)                */
+;*    Last change :  Sun Jun 21 08:26:07 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -312,7 +312,7 @@
 ;*    Build an private sexp. That is a sexp that can be processed by   */
 ;*    SEXP->NODE but that is not accessible from the user source code. */
 ;*    -------------------------------------------------------------    */
-;*    the private stamp can't be gensymed because it has to traverse   */
+;*    The private stamp can't be gensymed because it has to traverse   */
 ;*    heap files.                                                      */
 ;*    -------------------------------------------------------------    */
 ;*    Private sexps block the macro-expansion (i.e., their arguments   */
@@ -321,8 +321,7 @@
 (define (make-private-sexp::pair kind::symbol type-id::symbol . objs)
    (assert (kind) (memq kind '(getfield setfield new new/args
 			       cast cast-null
-			       ;; isa to be removed
-			       instanceof ;; isa
+			       instanceof
 			       vlength vref vset! valloc unsafe
 			       vref-ur vset-ur! meta)))
    (cons* *private-stamp* kind type-id objs))

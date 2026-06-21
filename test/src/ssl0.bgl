@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jun  5 08:49:59 2026                          */
-;*    Last change :  Sat Jun 20 08:37:04 2026 (serrano)                */
+;*    Last change :  Sun Jun 21 08:45:49 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the ssl library.                                         */
@@ -631,7 +631,7 @@
          (synchronize mu
             (unless ready
                (condition-variable-wait! cv mu))
-            (sleep 100)
+            (sleep 10)
             (let ((cs (make-ssl-client-socket "localhost" port
                          :CAs (list *cert*)
                          :protocol 'tlsv1_2)))

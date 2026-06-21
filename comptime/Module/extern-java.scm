@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Sat Jun 20 15:22:15 2026 (serrano)                */
+;*    Last change :  Sun Jun 21 08:39:18 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -209,7 +209,8 @@
 	      (abstract-class ?ident . ?rest))
 	  (multiple-value-bind (cpkg name id super)
 	     (parse-class5-ident ident)
-	     (unless (java-type-exists? (symbol->string! id) mod)
+	     ;;(unless (java-type-exists? (symbol->string! id) mod)
+	     (begin
 		(let* ((clazz (class5->class4 clause cpkg name id super rest))
 		       (jklass::jklass (java-parser clazz (-> mod id) '|.|)))
 		   (trace-item "ident=" ident)
@@ -338,20 +339,22 @@
 		      `(define-inline (,pidt ,tobj)
 			  ,(make-private-sexp 'instanceof id obj))))
 	     (attrs `((pragma ((predicate-of ,id))) (removable 'coerce)))
+	     (alias (string->symbol (format "__~a.~a" (-> mod id) pid)))
 	     (decl (instantiate::Decl
 		      (id pid)
-		      (alias pid)
+		      (alias alias)
+		      (xid alias)
 		      (mod mod)
 		      (expr expr)
 		      (ronly #t)
 		      (attributes attrs)
-		      (attributes '(extern))
-		      (scope 'static))))
+		      (scope 'export))))
 	 (with-access::Module mod (decls defs exports body)
 	    (set! body (cons expr body))
-	    (let ((name (symbol->string! pid)))
-	       ;;(hashtable-put! exports name decl)
-	       (hashtable-put! decls name decl))))))
+	    (let ((iname (symbol->string! pid))
+		  (aname (symbol->string! alias)))
+	       (hashtable-put! decls iname decl)
+	       (hashtable-put! exports aname decl))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-jklass-constructors! ...                                 */
@@ -360,7 +363,7 @@
    (with-trace 'module_extern-java "declare-jklass-constructors!"
       (trace-item "jklass=" (-> class id))
 
-      (define (declare-method! m::jmethod)
+      (define (declare-ctor! m::jmethod)
 	 (when (isa? m jconstructor)
 	    (multiple-value-bind (mid _)
 	       (parse-ident (-> m id))
@@ -376,21 +379,27 @@
 			       `(define-inline (,(-> m id) ,@targs)
 				   ,(apply make-private-sexp 'new id
 				       `',types args))))
+		      (alias (string->symbol (format "__~a.~a" (-> mod id) mid)))
 		      (decl (instantiate::Decl
 			       (id mid)
-			       (alias mid)
+			       (alias alias)
+			       (xid alias)
 			       (mod mod)
 			       (expr expr)
 			       (ronly #t)
-			       (attributes '(extern))
-			       (scope 'static))))
+			       (scope 'export))))
+		  (trace-item "ctor=" (-> m id))
 		  (with-access::Module mod (decls exports body)
 		     (set! body (cons expr body))
-		     (let ((name (symbol->string! mid)))
-			 ;;(hashtable-put! exports name decl)
-			 (hashtable-put! decls name decl)))))))
-      
-      (for-each declare-method! (-> class methods))))
+		     (let ((iname (symbol->string! mid))
+			   (aname (symbol->string! alias)))
+			(hashtable-put! decls iname decl)
+			(hashtable-put! exports aname decl)))))))
+
+      (with-trace 'module_exter-jvm "declare-jklass-constructors"
+	 (trace-item "jklass=" (-> class id))
+	 (trace-item "mod=" (-> mod id))
+	 (for-each declare-ctor! (-> class methods)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    declare-jklass-methods! ...                                      */

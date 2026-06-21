@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Sun Jun 21 07:08:57 2026 (serrano)                */
+;*    Last change :  Sun Jun 21 08:31:23 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1447,7 +1447,7 @@ if that value is non-nil."
 	(add-to-list 'flycheck-checkers 'bgl))
 
       (add-hook 'flycheck-status-changed-functions
-		'#(lambda (status)
+		#'(lambda (status)
 		   (when (eq status 'finished)
 		     (unless flycheck-current-errors
 		       (bgl-load-decl-index)))))))
@@ -1461,7 +1461,7 @@ if that value is non-nil."
 	 t)
 	((string= be "C")
 	 (setq bgl-flycheck-args '("-coerce" "-dump" "module")))
-	((string= be "jvm")
+	((string= be "java")
 	 (setq bgl-flycheck-args '("-coerce" "-dump" "module" "-jvm")))
 	((string= be "wasm")
 	 (setq bgl-flycheck-args '("-coerce" "-dump" "module" "-wasm")))))
@@ -1551,7 +1551,7 @@ if that value is non-nil."
 		    (puthash k (cdr el) bgl-doc-table-index)))
 	      l)
 	(setq bgl-last-doc-symbol nil)
-	(setq unless bgl-decl-table-loaded t)))))
+	(setq bgl-decl-table-loaded t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-load-decl-index ...                                          */

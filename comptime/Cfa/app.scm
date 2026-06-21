@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 17:36:29 1996                          */
-;*    Last change :  Sat Jun 20 08:54:37 2026 (serrano)                */
+;*    Last change :  Sun Jun 21 14:54:50 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa on `app' node                                            */
@@ -61,6 +61,8 @@
 	 (trace-item "args=" (map typeof args))
 	 ;; set the new formals approximation
 	 (for-each (lambda (arg approx)
+		      (unless (isa? arg local)
+			 (tprint "PAS BON FUN=" (shape var)))
 		      (union-approx! (svar/Cinfo-approx (local-value arg))
 			 approx))
 	    args

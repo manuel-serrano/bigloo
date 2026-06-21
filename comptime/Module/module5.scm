@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sat Jun 20 15:51:03 2026 (serrano)                */
+;*    Last change :  Sun Jun 21 16:46:04 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of the a Module5 clause.                             */
@@ -399,14 +399,21 @@
 	 (hashtable-for-each decls
 	    (lambda (k decl)
 	       (with-access::Decl decl (mod xid id alias)
-		  (with-access::Module mod ((mid id))
-		     (let* ((d (module5-get-export-def mod (or xid id)))
-			    (e (vector d mid alias 'import)))
-			(cond
-			   ((isa? d ADef) #unspecified)
-			   ((isa? d KDef) (set! classes (cons e classes)))
-			   ((isa? d TDef) (set! types (cons e types)))
-			   (else (set! others (cons e others)))))))))
+		  (with-access::Module mod ((dmid id))
+		     (with-handler
+			(lambda (e)
+			   (tprint "SPLIT-IMPORTED-FAILED..." mid
+			      " dmid=" dmid " k=" k
+			      " id=" id " alias=" alias
+			      " xid=" xid)
+			   (raise e))
+			(let* ((d (module5-get-export-def mod (or xid id)))
+			       (e (vector d dmid alias 'import)))
+			   (cond
+			      ((isa? d ADef) #unspecified)
+			      ((isa? d KDef) (set! classes (cons e classes)))
+			      ((isa? d TDef) (set! types (cons e types)))
+			      (else (set! others (cons e others))))))))))
 	 (values types classes others)))
    
    (define (split-definitions mid defs decls)

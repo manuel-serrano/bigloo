@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sun May 31 11:27:40 2026 (serrano)                */
+/*    Last change :  Sun Jun 21 19:18:27 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -408,11 +408,10 @@ class BglNodeRuntime extends BglRuntime {
 	       });
 	    });
 	    server.listen(portnum, () => { console.log("server listening"); });
-	    return server;
+	    return { server, down: false };
 	 },
 
 	 accept: async (srv) => {
-	    console.error("XXX in accept");
 	    const r = await new Promise((res, rej) => {
 	       console.error("in promise...");
 	       res(343);
@@ -425,7 +424,22 @@ class BglNodeRuntime extends BglRuntime {
 	    return createConnection({ host, port }, () => { console.log("connected"); });
 	 },
 
-	 close: (sock) => sock.destroy()
+	 close: (o) => {
+	    if (o instanceof Socket) {
+	       o.destroy();
+	    } else {
+	       o.down = true;
+	       o.server.close();
+	    }
+	 },
+
+	 downp: (o) => {
+	    if (o instanceof Socket) {
+	       return o.destroyed;
+	    } else {
+	       return o.down; 
+	    }
+	 }
       };
    }
 

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Wlib/wsocket.wat        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/wsocket.wat       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Fri May  1 08:32:01 2026 (serrano)                */
+;*    Last change :  Sun Jun 21 19:26:27 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM sockets                                                     */
@@ -122,6 +122,7 @@
    (import "__js_socket" "make_client" (func $js_make_client_socket (param i32 i32 i32 i32) (result externref)))
    (import "__js_socket" "accept" (func $js_accept (param externref) (result i32)))
    (import "__js_socket" "close" (func $js_close (param externref)))
+   (import "__js_socket" "downp" (func $js_downp (param externref) (result i32)))
    
    ;; -----------------------------------------------------------------
    ;; Global variables 
@@ -339,4 +340,10 @@
 	       (array.new_default $bstring (i32.const 1024)))
 	    ;; user-data
 	    (global.get $BUNSPEC))))
+
+   (func $SOCKET_DOWNP (export "SOCKET_DOWNP")
+      (param $s (ref $socket))
+      (result i32)
+      (return_call $js_downp (struct.get $socket $sock (local.get $s))))
+      
    )

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Jun 20 14:14:02 2026 (serrano)                */
+;*    Last change :  Sun Jun 21 08:48:37 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -196,6 +196,12 @@
    (set! *module-version* version))
 
 ;*---------------------------------------------------------------------*/
+;*    module5-cache ...                                                */
+;*---------------------------------------------------------------------*/
+(define (module5-cache)
+   #f)
+
+;*---------------------------------------------------------------------*/
 ;*    object-copy ::Decl ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (object-copy d::Decl)
@@ -382,9 +388,6 @@
       (hashtable-map decls
 	 (lambda (k d::Decl)
 	    (with-access::Decl d (mod)
-	       (when (eq? (-> d id) 'R$id.R$id)
-		  (tprint "serialize d=" (-> d id) " " (-> d alias)
-		     " d.mod= " (-> d mod id) " mod=" (-> mod id)))
 	       (with-access::Module mod (path version id heap)
 		  (let ((decl::Decl (duplicate::Decl d
 				       (mod (class-nil Module))
@@ -439,9 +442,6 @@
       (with-trace '__module5 "unserialize-decl"
 	 (trace-item "id="(-> d id))
 	 (trace-item "modinfo=" (-> d modinfo))
-	 (when (eq? (-> d id) 'R$id.R$id)
-	    (tprint "unserialize d=" (-> d id) " " (-> d alias)
-	       " d.mod= " (-> d mod id) " mod=" (-> mod id)))
 	 (match-case (-> d modinfo)
 	    ((5 . ?path)
 	     (set! (-> d mod)
@@ -474,11 +474,12 @@
    
    (define (list->defs! env l)
       (for-each (lambda (e)
-		   (with-access::Decl (cdr e) (id def)
+		   (with-access::Decl (cdr e) (id def scope)
 		      (when (isa? def Def)
 			 (with-access::Def def (decl)
 			    (set! decl (cdr e))))
-		      (hashtable-put! env (symbol->string! id) def)))
+		      (when (eq? scope 'export)
+			 (hashtable-put! env (symbol->string! id) def))))
 	 l)
       env)
    
@@ -516,6 +517,8 @@
 	 (unwind-protect
 	    (with-handler
 	       (lambda (e)
+		  (when (isa? e &exception)
+		     (exception-notify e))
 		  (error "filecache-read" "Cannot read cached module" path))
 	       (unserialize (input-obj p) lib-path cache-dir hsuffix expand))
 	    (close-binary-port p)))))
@@ -608,7 +611,7 @@
 					 (lambda (k d::Decl)
 					    (cons (-> d id) (-> d xid)))))))
 	 (or (hashtable-get *modules-by-path* path)
-	     (filecache-get path lib-path cache-dir hsuffix expand parse)
+	     ;;(filecache-get path lib-path cache-dir hsuffix expand parse)
 	     (let ((exprs (call-with-input-file path
 			     (lambda (p) (port->sexp-list p #t)))))
 		(if (null? exprs)
@@ -619,6 +622,27 @@
 		       :heap-suffix hsuffix
 		       :expand expand
 		       :stack (cons path stack))))))))
+
+;*---------------------------------------------------------------------*/
+;*    compare-modules ...                                              */
+;*---------------------------------------------------------------------*/
+(define (compare-modules mr::Module mc::Module)
+   (tprint "CMP-MODULE " (-> mr id) " " (-> mc id))
+   (let ((kr (sort string<=?
+		(hashtable-map (-> mr exports) (lambda (k d) k))))
+	 (kc (sort string<=?
+		(hashtable-map (-> mc exports) (lambda (k d) k)))))
+      (tprint " exports k=" (equal? kr kc))
+      (tprint "mr.k=" kr)
+      (tprint "mc.k=" kc)
+      (tprint " exports defs="
+	 (equal?
+	    (hashtable-map (-> mr exports)
+	       (lambda (k d::Decl)
+		  (list (-> d id) (-> d alias) (-> d xid))))
+	    (hashtable-map (-> mc exports)
+	       (lambda (k d::Decl)
+		  (list (-> d id) (-> d alias) (-> d xid))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-read ...                                                 */
@@ -778,7 +802,7 @@
 		    (path path)
 		    (expr expr)
 		    (body body)
-		    (cache-dir cache-dir))))
+		    (cache-dir (and (module5-cache) cache-dir)))))
 	 (hashtable-put! *modules-by-path* path mod)
 	 (let ((omod (hashtable-get *modules-by-id* (symbol->string id))))
 	    (if omod
@@ -857,6 +881,14 @@
 	       (id id)
 	       (alias alias)
 	       (scope 'import))))
+      (when (and (eq? (-> mod id) 'capture)
+		 (eq? decl-id 'LinearLayout$LayoutParams.new2))
+	 (tprint "IMPORT FROM " (-> idecl mod id))
+	 (let ((c::Decl (hashtable-symbol-get (-> mod decls)
+			   'LinearLayout$LayoutParams.new2)))
+	    (tprint "CURRENT=" (-> c mod id)
+	       " " (-> c scope) " " (-> c attributes))))
+	       
       (hashtable-symbol-put! (-> mod decls) decl-id d)
       (hashtable-symbol-put! (-> mod imports) import-id d)
       d))
@@ -1399,7 +1431,7 @@
 	    (hashtable-for-each (-> mod decls)
 	       (lambda (k d::Decl)
 		  (with-access::Decl d ((imod mod) alias id xid def scope expr)
-		     (trace-item "d=" id " xid=" xid
+		     (trace-item "dedl=" id " xid=" xid
 			" alias=" alias
 			" mod=" (-> imod id)
 			" scope=" scope
@@ -1488,6 +1520,7 @@
 
 	 ;; store the body in cache for next use or import
 	 (filecache-put! (-> mod path) mod)
+	 
 	 (trace-item "< decls="
 	    (hashtable-map (-> mod decls)
 	       (lambda (k d) (with-access::Decl d (id) id))))
@@ -2028,9 +2061,9 @@
 		     (not (or (eq? kind 'macro)
 			      (eq? (with-access::Def old (kind) kind) 'macro))))
 		(warning/loc mod
-		   (format "Identifier ~s has already been declared" name)
-		   (with-access::Def old (expr) expr)
-		   src)
+		      (format "Identifier ~s has already been declared" name)
+		      (with-access::Def old (expr) expr)
+		      src)
 		(let ((def (instantiate::Def
 			      (id id)
 			      (type type)
@@ -2157,7 +2190,7 @@
 	  (free-vars*! (cdr expr*) env
 	     (free-vars! (car expr*) env globals expr*))))
    
-   (define (free-vars!::pair-nil expr env::pair-nil globals::pair-nil src::pair)
+   (define (free-vars!::pair-nil expr env::pair-nil globals::pair-nil src)
       ;; Compute the list of the all the global variables used
       ;; inside the macro-expanded "expr" and patch the code so that it uses
       ;; fully qualified variable names.
@@ -2328,6 +2361,12 @@
 				  (class-info-ctor-set! (-> kdef ci)
 				     `(@ ,ctor ,(-> mod id)))
 				  (export-hidden-global! (car ds)))))
+			 (for-each (lambda (prop)
+				      (let* ((v (prop-info-value prop))
+					     (e (prop-info-expr prop))
+					     (ds::pair-nil (free-vars!  v '() '() e)))
+					 (for-each export-hidden-global! ds)))
+			    (class-info-properties (-> kdef ci)))
 			 )))))))))
 	 
 ;*---------------------------------------------------------------------*/
@@ -2660,17 +2699,17 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-get-export-def mod::Module id #!optional src)
    (with-access::Module mod (exports (mid id) resolved defs decls)
-      (unless resolved
-	 (error/loc mod "Module definitions not resolved yet" id src))
-      (let ((decl (hashtable-get exports (symbol->string! id))))
-	 (if (isa? decl Decl)
-	     (with-access::Decl decl (def expr (dmod mod))
-		(if (isa? def Def)
-		    def
-		    (error/loc mod "Cannot find exported definition"
-		       `(@ ,id ,mid) expr)))
-	     (error/loc mod "Cannot find exported declaration"
-		`(@ ,id ,mid) src)))))
+      (if resolved
+	  (let ((decl (hashtable-get exports (symbol->string! id))))
+	     (if (isa? decl Decl)
+		 (with-access::Decl decl (def expr (dmod mod))
+		    (if (isa? def Def)
+			def
+			(error/loc mod "Cannot find exported definition"
+			   `(@ ,id ,mid) expr)))
+		 (error/loc mod "Cannot find exported declaration"
+		    `(@ ,id ,mid) src)))
+	  (error/loc mod "Module definitions not resolved yet" id src))))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-class-expander ...                                        */
