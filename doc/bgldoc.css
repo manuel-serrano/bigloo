@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Sun Jun 14 17:39:41 2026 (serrano)                */
+/*    Last change :  Mon Jun 22 09:33:27 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -17,6 +17,8 @@
     --background: #fafafa;
     --textShadow: #ccc;
     --titleShadow: #ddd;
+    --linkColor: #337ab7;
+    --indexSection: #777;
 
     --menuColor: #9d9d9d;
     --menuBackgroundColor: #22222f;
@@ -115,6 +117,11 @@ body {
     font-family: "Helvetica Neue", "Hevetica", Arial, sans-serif;
     font-size: 14px;
     color: var(--bodyColor);
+}
+
+a {
+    color: var(--linkColor); 
+    text-decoration: none;
 }
 
 /*---------------------------------------------------------------------*/
@@ -400,6 +407,35 @@ div.home .main {
 }
 
 /*---------------------------------------------------------------------*/
+/*    index                                                            */
+/*---------------------------------------------------------------------*/
+html.index body {
+    margin: 0;
+}
+
+div.index {
+    background: var(--background);
+    opacity: 0.95;
+    padding: 2ex 3em 2ex 2em;
+    margin-top: var(--navHeight);
+    column-count: 3;
+}
+
+div.index-section {
+    font-size: 200%;
+    font-weight: bold;
+    text-align: center;
+    color: var(--indexSection);
+    text-shadow: var(--titleShadow) 1px 1px 1px;
+    border-bottom: 1px solid var(--textShadow);
+    margin-top: 1ex;
+}
+
+div.index-section {
+    scroll-margin-top: 2em;
+}
+    
+/*---------------------------------------------------------------------*/
 /*    Chapters and Sections                                            */
 /*---------------------------------------------------------------------*/
 .chapter {
@@ -450,6 +486,7 @@ h3 span.pre {
 
 h3.function,
 h3.variable {
+    scroll-margin-top: 8ex;
     background-color: var(--functionBackground);
     font-family: monospace;
     font-size: 105%;

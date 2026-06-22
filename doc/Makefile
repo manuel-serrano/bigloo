@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Mon Jun 22 07:02:22 2026 (serrano)                */
+#*    Last change :  Mon Jun 22 09:27:45 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -141,6 +141,9 @@ object.html: object.md bin/bgldoc
 
 index.html: index.md bin/bgldoc
 	bin/bgldoc -t home $< > $@ || rm -f $@
+
+idx.html: index.sexp bin/bgldoc
+	bin/bgldoc -t index $< > $@ || rm -f $@
 
 #*---------------------------------------------------------------------*/
 #*    sub-directories                                                  */
