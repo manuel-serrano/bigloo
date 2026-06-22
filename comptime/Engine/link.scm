@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Mon Jun 22 13:54:57 2026 (serrano)                */
+;*    Last change :  Mon Jun 22 13:56:04 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -218,13 +218,19 @@
 	  (or (any (lambda (include)
 		      (let ((p (find-file/path include *load-path*)))
 			 (if (string? p)
-			     (find-main5 (call-with-input-file p read))
-			     (error "link" "Cannot find include" include))))
+			     (find-main5
+				(call-with-input-file p
+				   (lambda (in) (read in #t))))
+			     (error/loc
+				"link" "Cannot find include" include
+				(when (epair? clauses) (cer clauses))))))
 		 includes)
 	      (loop rest)))
 	 (((cond-expand . ?-) . ?rest)
 	  (or (find-main5 (list (comptime-expand-cond-expand-only (car clauses))))
 	      (loop rest)))
+	 ((extern . ?-)
+	  #f)
 	 (else
 	  (loop (cdr clauses))))))
 

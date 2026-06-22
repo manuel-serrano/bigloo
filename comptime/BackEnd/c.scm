@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Fri Jun  5 10:03:53 2026 (serrano)                */
+;*    Last change :  Mon Jun 22 14:00:26 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -397,7 +397,7 @@
 	      (let ((port (open-input-file (caar sources))))
 		 (if (not (input-port? port))
 		     (error "" "Illegal file" (caar sources))
-		     (let ((exp (expand (compiler-read port))))
+		     (let ((exp (expand (compiler-read port #t))))
 			(close-input-port port)
 			(match-case exp
 			   ((module ?name . ?-)
