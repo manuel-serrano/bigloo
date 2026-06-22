@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Jun 19 19:58:06 2026 (serrano)                */
+#*    Last change :  Mon Jun 22 07:02:22 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -36,9 +36,9 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = bool date hash error int io net number pair port real ssl string \
- thread \
- vector condexpand match module5 module4 object
+MD = argsparse bool date hash error int io net number pair port real \
+ ssl string thread vector \
+ condexpand match module5 module4 object
 
 EX = c/fib c/sock1 c/sock2 c/sock3 c/sock4 java/fib wasm/fib 
 
@@ -53,7 +53,7 @@ EX = c/fib c/sock1 c/sock2 c/sock3 c/sock4 java/fib wasm/fib
 #*---------------------------------------------------------------------*/
 all: doc
 
-doc: objs_c bin index.html
+doc: objs_c bin index.html idx.html
 	$(MAKE) bin/bgldoc
 
 bin/bgldoc: $(C_OBJECTS:%=objs_c/%)

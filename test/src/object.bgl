@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Fri May 22 16:19:07 2026 (serrano)                */
+;*    Last change :  Mon Jun 22 08:04:52 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing Objects and Classes                                      */
@@ -101,6 +101,12 @@
    (let ((o::Point3d (instantiate::Point3d (z 30))))
       (set! (-> o z) 20)
       (+fx (-> o x) (-> o z)))
+   :expected 20)
+
+(define-test ->
+   (let ((o (instantiate::Point3d (z 30))))
+      (set! (-> o::Point3d z) 20)
+      (+fx (-> o::Point3d x) (-> o::Point3d z)))
    :expected 20)
 
 (define-test ->

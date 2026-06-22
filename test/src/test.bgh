@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:22:05 2026                          */
-;*    Last change :  Thu Jun  4 07:58:05 2026 (serrano)                */
+;*    Last change :  Mon Jun 22 07:17:24 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing macros                                                   */
@@ -58,11 +58,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    check-test ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (check-test id fname loc provided #!key (expected #t) (eq equal?))
-   (if (not (eq provided expected))
-       (error/location id "test failed"
-	  (format "expected: ~s, provided: ~s" expected provided)
-	  fname loc)))
+(define (check-test id fname loc provided #!key (expected::obj #t) (eq equal?))
+   (let ((r (if (procedure? expected)
+                ;; prevent the cfa from emitting warnings
+                ((car (list expected)) provided)
+                (eq provided expected))))
+      (unless r
+         (error/location id "test failed"
+            (format "expected: ~s, provided: ~s"
+               (if (procedure? expected) #f expected) provided)
+            fname loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ~equal? ...                                                      */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/expdargs.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/expdargs.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr  1 06:28:06 2000                          */
-;*    Last change :  Mon Apr 27 10:45:55 2026 (serrano)                */
+;*    Last change :  Mon Jun 22 07:37:12 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    args-parse expansion.                                            */
@@ -462,16 +462,17 @@
 ;*    args-parse-usage ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (args-parse-usage descrs)
-   (lambda (manual?)
+   (lambda (#!optional manual?)
       (if manual? (print "("))
-      (let ((descrs descrs)
-	    (mlen-sym 0))
+      (let* ((descrs descrs)
+             (mlen-sym 0)
+             (max-len 20))
 	 (for-each (lambda (opt)
 		      (let ((name(car opt)))
 			 (if (string? name)
 			     (let ((len (string-length name)))
-				(if (>fx len mlen-sym)
-				    (set! mlen-sym len))))))
+				(when (and (>fx len mlen-sym) (<fx len max-len))
+                                   (set! mlen-sym len))))))
 		   descrs)
 	 (for-each (lambda (opt)
 		      (let ((name (car opt)))
@@ -479,14 +480,20 @@
 			    ((string? name)
 			     (let* ((name (car opt))
 				    (len  (string-length name))
-				    (desc (cdr opt))
-				    (tab  (make-string (-fx mlen-sym len)
-						       #\space)))
-				(if manual?
-				    (begin
-				       (write `(,name ,desc))
-				       (newline))
-				    (print "   " name tab " " desc))))
+				    (desc (cdr opt)))
+				(cond
+                                   (manual?
+                                    (write `(,name ,desc))
+                                    (newline))
+                                   ((>=fx len max-len)
+                                    (print "   " name)
+                                    (print "   "
+                                       (make-string mlen-sym #\space)
+                                       " " desc))
+                                   (else
+                                    (let ((tab (make-string
+                                                  (-fx mlen-sym len) #\space)))
+                                       (print "   " name tab " " desc))))))
 			    ((eq? name 'section)
 			     (print #\Newline (cdr opt) ":")))))
 		   descrs)

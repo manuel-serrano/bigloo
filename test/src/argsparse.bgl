@@ -1,0 +1,86 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/argsparse.bgl         */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Mon Jun 22 06:59:58 2026                          */
+;*    Last change :  Mon Jun 22 08:39:31 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Command line parsing                                             */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    argsparse                                                        */
+;*---------------------------------------------------------------------*/
+(module argsparse
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "argsparse" tests))
+      (test-all verbose "argsparse")))
+
+(define-test args-parse
+   (args-parse '("?")
+      (section "Help")
+      (("?")
+       (with-output-to-string args-parse-usage))
+      ((("-h" "--help") (help "?,-h,--help" "This help message"))
+       (args-parse-usage #f))
+      (section "Misc")
+      ((("-v" "--version") (help "Version number"))
+       (print 4.3))
+      (("-o" ?file (help "The output file"))
+       #unspecified)
+      (("--input=?file" (help "The input file"))
+       #unspecified)
+      (else
+       (with-output-to-string args-parse-usage)))
+   :expected string?)
+
+(define-test args-parse
+   (let ((res 0))
+      
+      (let loop ((args '("-Obench" "-h" "--version" "64")))
+	 (args-parse args
+	    (("-Obench" (help "Benchmarking mode"))
+	     (set! res (bit-or res 1))
+	     (loop `("-O5" "-unsafe" "-copt" "-O4" "-static-bigloo"))) 
+	    (("-O?opt" (help "-O"))
+	     (set! res (bit-or res 2)))
+	    (("-unsafe?opt" (help "unsafe"))
+	     (set! res (bit-or res 4)))
+	    (("-copt" ?opt (help "copt"))
+	     (set! res (bit-or res 8)))
+	    (("-static-bigloo" (help "foo"))
+	     (set! res (bit-or res 16)))
+	    ((("-h" "--help") (help "An help message"))
+	     (set! res (bit-or res 32)))
+	    ((("-v" "--version") ?version (help "The version"))
+	     (set! res (bit-or res (string->number version))))))
+      
+      res)
+   
+   :expected (bit-or 31 (bit-or 32 64)))
+
+(define-test args-parse
+   (args-parse '("-o" "a.out" "23")
+      (("-o" ?file) #unspecified)
+      (else (string->integer else)))
+   :expected 23)
+
+(define-test args-parse-usage
+   (args-parse '("--help")
+      ((("-h" "--help") (help "this message"))
+       (with-output-to-string args-parse-usage))
+      (("-c" (help "do not link")) #unspecified)
+      (("-o" ?name (help "target name")) #unspecified)
+      (else (exit 1)))
+   :expected string?)

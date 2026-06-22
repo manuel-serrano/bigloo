@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun Jun 21 08:48:37 2026 (serrano)                */
+;*    Last change :  Sun Jun 21 20:26:58 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -196,10 +196,19 @@
    (set! *module-version* version))
 
 ;*---------------------------------------------------------------------*/
-;*    module5-cache ...                                                */
+;*    module5-file-cache-enabled ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (module5-cache)
-   #f)
+(define (module5-file-cache-enabled)
+   ;; MS 21jun2026, module cache on disk is disable for three reason:
+   ;;  - first and foremost, because I didn't manage to implement them
+   ;;    correctly in presence of Java constructors and predicates
+   ;;  - second, because the implementation is complex
+   ;;  - third, because a quick experiment did not bring evidence
+   ;;    that it accelerates the compation speed.
+   ;; The implementation of FILECACHE-GET and FILECACHE-PUT! as
+   ;; been kept in the the module but they might be removed in the
+   ;; future.
+   #F)
 
 ;*---------------------------------------------------------------------*/
 ;*    object-copy ::Decl ...                                           */
@@ -802,7 +811,7 @@
 		    (path path)
 		    (expr expr)
 		    (body body)
-		    (cache-dir (and (module5-cache) cache-dir)))))
+		    (cache-dir (and (module5-file-cache-enabled) cache-dir)))))
 	 (hashtable-put! *modules-by-path* path mod)
 	 (let ((omod (hashtable-get *modules-by-id* (symbol->string id))))
 	    (if omod

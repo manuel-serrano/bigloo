@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Wed Apr 22 11:01:39 2026 (serrano)                */
+;*    Last change :  Mon Jun 22 08:07:32 2026 (serrano)                */
 ;*    Last change :  Sun Apr 12 18:55:04 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
@@ -99,28 +99,43 @@
 		       exp loc genv)
 		    (let ((node (make-field-ref slot node stack loc site genv)))
 		       (loop node (slot-type slot) (cdr slots)))))))))
-   
-   (let* ((l2 (source->field l))
-	  (node (sexp->node (car l2) stack (find-location/loc l loc) site genv)))
-      (cond
-	 ((cast? node)
-	  (with-access::cast node (arg type)
-	     (if (var? arg)
-		 (field-ref type node (cdr l2))
-		 (error-sexp->node "Illegal -> (casted argument not a variable)" exp loc genv))))
-	 ((var? node)
-	  (with-access::variable (var-variable node) (type)
-	     (field-ref type node (cdr l2))))
-	 ((= *nb-error-on-pass* 0)
-	  (error-sexp->node "Unbound variable" exp loc genv))
-	 (else
-	  node))))
+
+   (with-trace 'ast_object "field-ref->node"
+      (trace-item "l=" l)
+      (trace-item "exp=" exp)
+      (let* ((l2 (source->field l))
+	     (v (car l2))
+	     (loc (find-location/loc l loc)))
+	 (if (and (symbol? v) (typed-ident? v))
+	     (let* ((tv (parse-id v loc))
+		    (node (sexp->node (car tv) stack loc site genv)))
+		(cond
+		   ((var? node)
+		    (field-ref (cdr tv) node (cdr l2)))
+		   ((= *nb-error-on-pass* 0)
+		    (error-sexp->node "Unbound variable" exp loc genv))
+		   (else
+		    node)))
+	     (let ((node (sexp->node v stack loc site genv)))
+		(cond
+		   ((cast? node)
+		    (with-access::cast node (arg type)
+		       (if (var? arg)
+			   (field-ref type node (cdr l2))
+			   (error-sexp->node "Illegal -> (casted argument not a variable)" exp loc genv))))
+		   ((var? node)
+		    (with-access::variable (var-variable node) (type)
+		       (field-ref type node (cdr l2))))
+		   ((= *nb-error-on-pass* 0)
+		    (error-sexp->node "Unbound variable" exp loc genv))
+		   (else
+		    node)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    field-set->node ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (field-set->node l val exp stack loc site genv)
-
+   
    (define (field-set type node slots)
       (let loop ((node node)
 		 (klass type)
@@ -146,23 +161,40 @@
 		   (else
 		    (let ((node (make-field-ref slot node stack loc site genv)))
 		       (loop node (slot-type slot) (cdr slots)))))))))
-   
-   (let* ((l2 (source->field l))
-	  (node (sexp->node (car l2) stack loc site genv))
-	  (val (sexp->node val stack loc site genv)))
-      (cond
-	 ((cast? node)
-	  (with-access::cast node (arg type)
-	     (if (var? arg)
-		 (field-set type node (cdr l2))
-		 (error-sexp->node "Illegal ->" exp loc genv))))
-	 ((var? node)
-	  (with-access::variable (var-variable node) (type)
-	     (field-set type node (cdr l2))))
-	 ((= *nb-error-on-pass* 0)
-	  (error-sexp->node "Unbound variable" exp loc genv))
-	 (else
-	  node))))
+
+   (with-trace 'ast_object "field-set->node"
+      (trace-item "l=" l)
+      (trace-item "val=" val)
+      (trace-item "exp=" exp)
+      (let* ((l2 (source->field l))
+	     (v (car l2))
+	     (loc (find-location/loc l loc))
+	     (val (sexp->node val stack loc site genv)))
+	 (if (and (symbol? v) (typed-ident? v))
+	     (let* ((tv (parse-id v loc))
+		    (node (sexp->node (car tv) stack loc site genv)))
+		(tprint "V=" v " tv=" (car tv) " " (shape (cdr tv)))
+		(cond
+		   ((var? node)
+		    (field-set (cdr tv) node (cdr l2)))
+		   ((= *nb-error-on-pass* 0)
+		    (error-sexp->node "Unbound variable" exp loc genv))
+		   (else
+		    node)))
+	     (let ((node (sexp->node v stack loc site genv)))
+		(cond
+		   ((cast? node)
+		    (with-access::cast node (arg type)
+		       (if (var? arg)
+			   (field-set type node (cdr l2))
+			   (error-sexp->node "Illegal ->" exp loc genv))))
+		   ((var? node)
+		    (with-access::variable (var-variable node) (type)
+		       (field-set type node (cdr l2))))
+		   ((= *nb-error-on-pass* 0)
+		    (error-sexp->node "Unbound variable" exp loc genv))
+		   (else
+		    node)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-field-ref ...                                               */

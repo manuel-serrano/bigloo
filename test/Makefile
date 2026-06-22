@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Jun 19 21:27:29 2026 (serrano)                */
+#*    Last change :  Mon Jun 22 07:01:25 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -38,9 +38,9 @@ BJFLAGS = -jvm
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
-TESTS = main bignum bit bool char condexpand date dsssl error hash int1 int2 \
-  io match module net number object pair port real string thread unicode \
-  vector
+TESTS = main argsparse bignum bit bool char condexpand date dsssl error \
+  hash int1 int2 io match module net number object pair port real string \
+  thread unicode vector
 
 MODULES4 = module4_ex12
 

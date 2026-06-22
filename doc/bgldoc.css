@@ -89,6 +89,8 @@
     --blockquoteBorder: #ffd33a;
     --blockquoteBorderWarning: #ebae1e;
     --blockquoteBorderNote: #007cd1;
+    --blockquoteBorderTip: #00c16c;
+    --blockquoteBorderImportant: #6a5ac9;
 
     --CBackend: #e6383c;
     --jvmBackend: #f6a70e;
@@ -765,5 +767,23 @@ blockquote.note {
 blockquote.note .title:before {
     content: "\1f6c8  Note";
     color: var(--blockquoteBorderNote);
+}
+
+blockquote.tip {
+    border-color: var(--blockquoteBorderTip);
+}
+
+blockquote.tip .title:before {
+    content: "\1F4A1  Tip";
+    color: var(--blockquoteBorderTip);
+}
+
+blockquote.important {
+    border-color: var(--blockquoteBorderImportant);
+}
+
+blockquote.important .title:before {
+    content: "\1F4AD  Important";
+    color: var(--blockquoteBorderImportant);
 }
 

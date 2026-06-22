@@ -196,12 +196,16 @@ reference and assignment. A `binding` is either a symbol or a list
 of two symbols. In the first place, it denotes a field. In the second
 case, it denotes an aliases field.
 
-### (-> expr field) ###
+### (-> var field) ###
 <!-- [:->@NoDef] -->
-Class instances can be accesses using the `->1 special form. The 
-the first argument must be the identifier of a local typed variable, otherwise
-an error is raised. The form `->` can be used to get or set value of
-an instance field. For instance:
+Class instances can be accesses using the `->` special form. 
+
+The the first argument must be the identifier of a local typed
+variable or an explicitly typed variable reference. The form `->` can
+be used to get or set value of an instance field.
+
+
+For instance:
 
 ### (co-instantiate ...) ###
 <!-- [:co-instantiate@NoDef] -->
@@ -209,13 +213,13 @@ This form is only available from compiled modules. In other words, it
 is not available from the interpreter. It permits the creation of
 recursive instances. It is specially useful for creating instances for
 which class declarations contain cyclic type references (for instance
-a class @code{c1} for a which a field is declared of class @code{c2}
-and a class @code{c2} for which a class is declared of type
-@code{c1}). The syntax of a @code{co-instantiate} form is similar to a
-@code{let} form. However the only legal `values` are
-@code{instantiate} forms. The variables introduced in the binding of a
-@code{co-instantiate} form are bound in `body`. In addition, they
-are @emph{partially} bound in the `values` expressions. In a
+a class `c1` for a which a field is declared of class `c2`
+and a class `c2` for which a class is declared of type
+`c1`). The syntax of a `co-instantiate` form is similar to a
+`let` form. However the only legal `values` are
+`instantiate` forms. The variables introduced in the binding of a
+`co-instantiate` form are bound in `body`. In addition, they
+are _partially_ bound in the `values` expressions. In a
 `value` position, a variable `var` can only be used to set the
 value of a field of an instantiated class. It cannot be used in any
 calculus. Example:
@@ -237,7 +241,7 @@ A generic function is a bag of specific functions known as methods. When
 invoked on a Bigloo object, a generic function determines the class of the
 discriminating variable (corresponding to the first argument of the generic
 function) and invokes the appropriate method. Generic functions implement
-single inheritance and each is defined using the @code{define-generic} 
+single inheritance and each is defined using the `define-generic` 
 Bigloo syntax.
 
 ### (define-generic (id o ...) ...) ###
@@ -310,9 +314,8 @@ Widening is performed by the `widen!` syntax:
 
 The object `obj` is widened to be instance of the wide class
 `wide-class`. Fields values are either picked up from the
-parameter list of the @code{widen!} form or
+parameter list of the `widen!` form or
 from the default values in the declaration of the wide class.
-@end deffn
 
 ### (shrink! obj) ###
 <!-- [:shrink!@NoDef] -->
@@ -508,7 +511,7 @@ Returns the `class` constructor.
 Returns the class that `object` belongs to.
 
 ### object-equal? ###
-Two objects can be compared with the @code{equal?} function. Two object
+Two objects can be compared with the `equal?` function. Two object
 are equal if and only if they belong to a same class, all their field
 values are equal and all their super class's field values are equal.
 
@@ -547,11 +550,10 @@ required for introspecting the classes defined in the compiled module.
 Returns the a description of the fields of `class`. This description
 is a list of field descriptions where each field description can be accessed by
 the means of the following library functions. The fields are those 
-@emph{directly} defined in @var{class}. That is `class-fields` does not
+_directly_ defined in @var{class}. That is `class-fields` does not
 return fields defined in super classes of `class`.
 
 ### class-all-fields ###
-@deffn {bigloo procedure} class-all-fields class
 Returns the a description of the fields of `class`. This description
 is a list of field descriptions where each field description can be accessed by
 the means of the following library functions. By contrast with 
@@ -579,7 +581,6 @@ Returns `#t` if the described field is mutable and `#f` otherwise.
 Returns a procedure of two arguments. Applying this function to an object
 changes the value of the field described by `field`. It is an
 error to apply `class-field-mutator` to an immutable field.
-@end deffn
 
 ### class-field-info ###
 Returns the information associated to `field` (this the class declaration

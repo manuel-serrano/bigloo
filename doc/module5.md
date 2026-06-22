@@ -1,5 +1,5 @@
 <!--==================================================================-->
-<!--    serrano/prgm/project/bigloo/5.0a/doc/boolean.md               -->
+<!--    serrano/prgm/project/bigloo/5.0a/doc/module5.md               -->
 <!--    ----------------------------------------------------------    -->
 <!--    Author      :  manuel serrano                                 -->
 <!--    Creation    :  Mon Apr 13 10:38:02 2026                       -->
@@ -62,7 +62,8 @@ Syntax
 
 <MImport> --> <MImportInit> | <MImportAll> | <MImportSome>
 <MImportInit> --> ( import <FilePath> ())
-<MImportAll> ( import <FilePath> . <Ident> )
+<MImportAll> ( import <FilePath> )
+  | ( import <FilePath> . <Ident> )
   | ( import :version 5 <FilePath> . <Ident> )
   | ( import :version 4 <FilePath> )
   | ( import <FilePath> <Alias>+ )
@@ -71,7 +72,7 @@ Syntax
   | <MLibrary> --> ( library <Ident> . <Ident> )
   | <MLibrary> --> ( library <Ident> <Alias+> )
 
-<MExtern> --> ( export <String> <EClause>+ )
+<MExtern> --> ( export <String> <EClause>* )
 
 <EClause> --> extern language depend clause
 
@@ -83,15 +84,17 @@ Syntax
 Main
 ----
 
-The `main` clause specifies the _entry point_ of the application. An application
-contains at most one module that defines a _entry point_. When building an
-application, if no _entry point_ is defined, the execution will consists in
-executing all the top-level forms of all the modules.
+The `main` clause specifies the _entry point_ of the application. An
+application contains at most one module that defines a _entry
+point_. When building an application, if no _entry point_ is defined,
+the execution will consists in executing all the top-level forms of
+all the modules.
 
 The _entry point_ is a function of one argument. It is automatically called
 _after_ all the top-level forms have been executed. It receives as parameter
 a list containing all the arguments pass on the command line when running
-the application as strings.
+the application as strings. See [Command Line Parsing](./argsparse.html)
+for parsing command line arguments.
 
 The form `(main)` specifies that the module defines a function of one argument
 that will act as en entry point that this function is named `main`. The
@@ -157,14 +160,14 @@ module `ex19` import `ex0a`, `ex0b`, and `ex0c` from module
 `EX2a` from module `module5_ex2.bgl` aliasing it, i.e., making it
 visible under the name, `EX2A`.
 
-An import can be global, meaning that all the exported variables
-are made accessible, under a _qualified name_. In the following
+An import can be global, meaning that all the exported variables are
+made accessible, optionally under a _qualified name_. In the following
 example, all variables of the module `module5_ex1.bgl` and accessible
 as exported with the prefix `ex1`, and similarly for the modules
-`module_ex4.bgl`, and module `module5_ex17.bgl`. For instance, assuming
-that `module_ex4.bgl` exports the variables `ex3b` and `ex3a` aliased 
-`EX4A`, the module `ex19` accesses it under the name `ex4.ex3b` and
-`ex4.EX4A`.
+`module_ex4.bgl`, and module `module5_ex17.bgl`. For instance,
+assuming that `module_ex4.bgl` exports the variables `ex3b` and `ex3a`
+aliased `EX4A`, the module `ex19` accesses it under the name
+`ex4.ex3b` and `ex4.EX4A`.
 
 Modules 5, can import modules 4. This is what `module5_ex19.bgl` does in the
 following example. It imports `module4_ex12.scm`, which is a module 4.
@@ -207,6 +210,10 @@ compiling to Wasm. This module could not be compiled to Jvm as it provides
 not declaration of `$printf` for that backend.
 
 [extern](../test/src/modules/module5_ex7.bgl)
+
+> [!TIP] The extern clause can be "empty", e.g. `(extern "java")`. These
+> can be used as a mark for IDE (e.g., the `bgl-mode.el` Emacs mode) 
+> to detect that the module is intended to be compile for a certain backend.
 
 Library
 -------

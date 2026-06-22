@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/ident.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/ident.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:33:09 1996                          */
-;*    Last change :  Sun Oct  5 07:35:14 2025 (serrano)                */
+;*    Last change :  Mon Jun 22 08:29:30 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The identifier managment                                         */
 ;*=====================================================================*/
@@ -18,6 +18,7 @@
 	   type_env
 	   type_cache)
    (export (type-ident?::bool ::symbol)
+	   (typed-ident?::bool ::symbol)
 	   (type-of-id::type ::obj loc)
 	   (type-of-id/import-location::type ::obj loc loci)
 	   (id-of-id::symbol ::obj loc)
@@ -42,10 +43,17 @@
 ;*    type-ident? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (type-ident? sym::symbol)
-   (let ((str (symbol->string sym)))
+   (let ((str (symbol->string! sym)))
       (and (>fx (string-length str) 2)
 	   (char=? (string-ref str 0) #\:)
 	   (char=? (string-ref str 1) #\:))))
+
+;*---------------------------------------------------------------------*/
+;*    typed-ident? ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (typed-ident?::bool sym::symbol)
+   (let ((str (symbol->string! sym)))
+      (string-contains str "::")))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-typed-ident ...                                             */

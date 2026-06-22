@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Fri Jun 19 16:17:31 2026 (serrano)                */
+;*    Last change :  Mon Jun 22 07:02:03 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -47,13 +47,14 @@
      ("libs" . "bool.html")
      ("backends" . "backend.html")
      ("dev" . "dev.html")
-     ("index" . "index.html")))
+     ("index" . "idx.html")))
 
 ;*---------------------------------------------------------------------*/
 ;*    libs-chapters ...                                                */
 ;*---------------------------------------------------------------------*/
 (define libs-chapters
-   '(("booleans" . "bool.html")
+   '(("command line parsing" . "argsparse.html")
+     ("booleans" . "bool.html")
      ("dates" . "date.html")
      ("hash" . "hash.html")
      ("errors" . "error.html")
@@ -160,8 +161,10 @@
                               (list (xml-element 'a '((class . "dev submenu"))
                                        (list (xml-element 'span '() '("Dev"))))))
                            (xml-element 'li (navbutton-attrs "index")
-                              (list (xml-element 'a '((class . "index submenu"))
-                                       (list (xml-element 'span '() '("Index"))))))))
+                              (list
+                                 (xml-element 'a '((class . "index"))
+                                    (list (xml-element 'span '() '("Index"))))
+                                 index))))
                      (xml-element 'span '((class . "version"))
                         (list
                            (xml-element 'text '()
@@ -189,7 +192,8 @@
                                          '("/"))
                                       (find-chapter-title source))
                              :libs (xml-chapter-toc 'libs libs-chapters)
-                             :lang (xml-chapter-toc 'modules lang-chapters))
+                             :lang (xml-chapter-toc 'modules lang-chapters)
+                             :index #f)
 			  (xml-element 'div '((class . "chapter"))
 			     (list
 				(xml-element 'div '((class . "body"))
@@ -207,7 +211,8 @@
                                       '("/"))
                                    "home")
                           :libs (xml-chapter-toc 'libs libs-chapters)
-                          :lang (xml-chapter-toc 'modules lang-chapters))
+                          :lang (xml-chapter-toc 'modules lang-chapters)
+                          :index #f)
                        (xml-element 'div '((class . "home"))
                           (list
                              (xml-element 'img '((class . "logo") (src . "bgl.svg")) '())
