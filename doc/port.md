@@ -494,6 +494,7 @@ A flush hook can return two types of values:
     flush buffer (see `output-port-flush-buffer) that have to be
     displayed on the system stream.
 
+<span></span>
 
 ### output-port-flush-buffer ###
 Returns the flush buffer of the output port.
