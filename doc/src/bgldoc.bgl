@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Mon Jun 22 08:49:04 2026 (serrano)                */
+;*    Last change :  Tue Jun 23 10:17:46 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -71,6 +71,14 @@
      ("vectors" . "vector.html")))
 
 ;*---------------------------------------------------------------------*/
+;*    backend-chapters ...                                             */
+;*---------------------------------------------------------------------*/
+(define backend-chapters
+   '(("C" . "c.html")
+     ("jvm" . "jvm.html")
+     ("wasm" . "wasm.html")))
+
+;*---------------------------------------------------------------------*/
 ;*    lang-chapters ...                                                */
 ;*---------------------------------------------------------------------*/
 (define lang-chapters
@@ -86,7 +94,7 @@
 (define (find-chapter-title source)
    (let* ((p (prefix (basename source)))
           (c (find (lambda (x) (string=? (prefix (cdr x)) p))
-                (append lang-chapters libs-chapters))))
+                (append lang-chapters libs-chapters backend-chapters))))
       (if (pair? c)
           (prefix (cdr c))
           (error "find-chapter-title" "Cannot find title for source" source))))
@@ -124,7 +132,7 @@
    (define main-title (xml-element 'span '((class . "main")) '("bigloo")))
 
    (define (menubar title::pair-nil
-              #!key (download "") (lang "") (libs "") backend dev)
+              #!key (download "") (lang "") (libs "") (backends "") dev)
       (xml-element 'nav '((class . "menu"))
          (list (xml-element 'div '((class . "menu"))
                   (list
@@ -155,7 +163,8 @@
                                  libs))
                            (xml-element 'li (navbutton-attrs "backends")
                               (list (xml-element 'a '((class . "backends submenu"))
-                                       (list (xml-element 'span '() '("Backends"))))))
+                                       (list (xml-element 'span '() '("Backends"))))
+                                 backends))
                            (xml-element 'li (navbutton-attrs "dev")
                               (list (xml-element 'a '((class . "dev submenu"))
                                        (list (xml-element 'span '() '("Dev"))))))
@@ -191,7 +200,8 @@
                                          '("/"))
                                       (find-chapter-title source))
                              :libs (xml-chapter-toc 'libs libs-chapters)
-                             :lang (xml-chapter-toc 'modules lang-chapters))
+                             :backends (xml-chapter-toc 'backends backend-chapters)
+                             :lang (xml-chapter-toc 'lang lang-chapters))
 			  (xml-element 'div '((class . "chapter"))
 			     (list
 				(xml-element 'div '((class . "body"))
@@ -209,7 +219,8 @@
                                       '("/"))
                                    "home")
                           :libs (xml-chapter-toc 'libs libs-chapters)
-                          :lang (xml-chapter-toc 'modules lang-chapters))
+                          :backends (xml-chapter-toc 'backends backend-chapters)
+                          :lang (xml-chapter-toc 'lang lang-chapters))
                        (xml-element 'div '((class . "home"))
                           (list
                              (xml-element 'img '((class . "logo") (src . "bgl.svg")) '())
@@ -241,7 +252,8 @@
                                       '("/"))
                                    "index")
                           :libs (xml-chapter-toc 'libs libs-chapters)
-                          :lang (xml-chapter-toc 'modules lang-chapters))
+                          :backends (xml-chapter-toc 'backends backend-chapters)
+                          :lang (xml-chapter-toc 'lang lang-chapters))
                        (xml-element 'div '((class . "chapter"))
                           (let+ ((elements sections) (index-entries indexes))
                              (list
@@ -390,7 +402,12 @@
    (define (backends bs)
       (xml-element 'span '((class . "backends"))
          (map (lambda (b)
-                 (xml-element 'span `((class . ,(format "backend ~a" (car b))) (title . ,(car b))) (cdr b)))
+                 (xml-element 'span
+                    `((class . ,(format "backend ~a" (car b)))
+                      (title . ,(car b)))
+                    (list
+                       (xml-element 'a `((href . ,(format "./~a.html" (string-downcase (car b)))))
+                          (cdr b)))))
             bs)))
 
    (define (class-backend klass)
@@ -438,7 +455,8 @@
                                         (equal? klass "NoDef-jvm-wasm"))
                                     (let* ((pseudodef (call-with-input-string name read))
                                            (md (definition->markdown pseudodef)))
-                                       (xml-element-children-set! e (cons (class-backend #f) md))
+                                       (xml-element-children-set! e
+                                          (cons (class-backend (substring klass 6)) md))
                                        (xml-element-attribute-set! e 'class (definition-class def))
                                        (if (pair? tests)
                                            (let loop ((next (xml-element-next-sibling e))

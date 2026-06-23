@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/bigloo.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/bigloo.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Tue Mar 10 17:19:51 2026 (serrano)                */
+;*    Last change :  Tue Jun 23 11:35:19 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -525,7 +525,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-mangle ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-mangle string)
+(define (bigloo-mangle::bstring string::bstring)
    (let* ((len (string-length string))
 	  (new (make-string (+fx (*fx len 3) 7))))
       (if (=fx len 0)
@@ -537,7 +537,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-module-mangle ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-module-mangle id module)
+(define (bigloo-module-mangle::bstring id::bstring module::bstring)
    (let* ((len (+fx (string-length id) (string-length module)))
 	  (new (make-string (+fx (*fx len 3) 12))))
       (if (=fx len 0)
@@ -554,7 +554,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-mangled? ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-mangled? string)
+(define (bigloo-mangled?::bool string::bstring)
    (let ((len (string-length string)))
       (and (>fx len 7)
 	   (or (substring=? string "BgL_" 4)
@@ -568,7 +568,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-need-mangling? ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-need-mangling? string)
+(define (bigloo-need-mangling?::bool string::bstring)
    (let ((len (string-length string)))
       (and (>fx len 0)
 	   (or (not (or (char-alphabetic? (string-ref string 0))
@@ -586,7 +586,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-demangle ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-demangle string)
+(define (bigloo-demangle string::bstring)
    (let* ((len (string-length string))
 	  (clen (-fx len 3)))
       (define (err)
@@ -659,7 +659,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-class-mangled? ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-class-mangled? string)
+(define (bigloo-class-mangled?::bool string::bstring)
    (let ((len (string-length string)))
       (and (>fx len 8)
 	   (char=? (string-ref string (-fx len 1)) #\t)
@@ -672,7 +672,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-class-demangle ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-class-demangle string)
+(define (bigloo-class-demangle::bstring string::bstring)
    (string-append (bigloo-demangle
 		   (substring string 0 (-fx (string-length string) 5)))
 		  "_bglt"))

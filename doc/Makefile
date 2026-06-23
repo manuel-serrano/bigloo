@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Mon Jun 22 09:27:45 2026 (serrano)                */
+#*    Last change :  Tue Jun 23 10:38:00 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -36,8 +36,8 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = argsparse bool date hash error int io net number pair port real \
- ssl string thread vector \
+MD = argsparse bool c date hash error int io jvm net number pair port \
+ real ssl string thread vector wasm \
  condexpand match module5 module4 object
 
 EX = c/fib c/sock1 c/sock2 c/sock3 c/sock4 java/fib wasm/fib 
@@ -138,6 +138,15 @@ module4.html: module4.md bin/bgldoc
 
 object.html: object.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@
+
+c.html: c.md bin/bgldoc
+	bin/bgldoc -t backends $< > $@ || rm -f $@
+
+jvm.html: jvm.md bin/bgldoc
+	bin/bgldoc -t backends $< > $@ || rm -f $@
+
+wasm.html: wasm.md bin/bgldoc
+	bin/bgldoc -t backends $< > $@ || rm -f $@
 
 index.html: index.md bin/bgldoc
 	bin/bgldoc -t home $< > $@ || rm -f $@

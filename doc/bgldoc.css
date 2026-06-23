@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Mon Jun 22 09:33:27 2026 (serrano)                */
+/*    Last change :  Tue Jun 23 10:33:43 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -291,6 +291,18 @@ div.nav-menu {
     visibility: hidden;
 }
 
+div.nav-menu#lang {
+    width: 12em;
+    column-count: 1;
+    height: 12ex;
+}
+    
+div.nav-menu#backends {
+    width: 10em;
+    height: 8ex;
+    column-count: 1;
+}
+
 ul.menu > li.navbutton > a.submenu:after {
     content: "\25be";
     font-weight: bold;
@@ -477,6 +489,24 @@ h4.section:after {
     content: "";
 }
 
+h1.C:before {
+    content: "\25cf";
+    color: var(--CBackend);
+    margin-right: 0.5em;
+}
+
+h1.jvm:before {
+    content: "\25cf ";
+    color: var(--jvmBackend);
+    margin-right: 0.5em;
+}
+
+h1.wasm:before {
+    content: "\25cf ";
+    color: var(--wasmBackend);
+    margin-right: 0.5em;
+}
+
 /*---------------------------------------------------------------------*/
 /*    functions ...                                                    */
 /*---------------------------------------------------------------------*/
@@ -510,6 +540,11 @@ h3.variable span.backends,
 h3.function span.backends {
     margin-left: 0.2em;
     margin-right: 0.2em;
+}
+
+span.backend a {
+    text-decoration: none;
+    color: inherit;
 }
 
 h3.variable span.backend,
