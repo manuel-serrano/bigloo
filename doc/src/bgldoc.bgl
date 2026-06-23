@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Tue Jun 23 10:17:46 2026 (serrano)                */
+;*    Last change :  Tue Jun 23 16:38:46 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -62,6 +62,7 @@
      ("i/o" . "io.html")
      ("net" . "net.html")
      ("numbers" . "number.html")
+     ("os" . "os.html")
      ("pairs and lists" . "pair.html")
      ("ports" . "port.html")
      ("reals" . "real.html")
@@ -456,7 +457,10 @@
                                     (let* ((pseudodef (call-with-input-string name read))
                                            (md (definition->markdown pseudodef)))
                                        (xml-element-children-set! e
-                                          (cons (class-backend (substring klass 6)) md))
+                                          (cons (class-backend
+                                                   (when (>fx (string-length klass) 6)
+                                                      (substring klass 6)))
+                                             md))
                                        (xml-element-attribute-set! e 'class (definition-class def))
                                        (if (pair? tests)
                                            (let loop ((next (xml-element-next-sibling e))

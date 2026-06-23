@@ -215,8 +215,8 @@
       (local.set $t1 (call $performanceNow))
 
       (call $BGL_MVALUES_NUMBER_SET (i32.const 4))
-      (call $BGL_MVALUES_VAL_SET (i32.const 1) (call $BINT (i64.const -1)))
-      (call $BGL_MVALUES_VAL_SET (i32.const 2) (call $BINT (i64.const -1)))
+      (call $BGL_MVALUES_VAL_SET (i32.const 1) (call $BINT (i64.const 0)))
+      (call $BGL_MVALUES_VAL_SET (i32.const 2) (call $BINT (i64.const 0)))
       (call $BGL_MVALUES_VAL_SET (i32.const 3)
 	 (call $BINT
 	    (i64.trunc_f64_u (f64.sub (local.get $t1) (local.get $t0)))))

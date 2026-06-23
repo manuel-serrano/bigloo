@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Mon Jun 22 07:00:55 2026 (serrano)                */
+;*    Last change :  Tue Jun 23 16:40:05 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -30,6 +30,7 @@
    (import "./net.bgl" . net)
    (import "./number.bgl" . number)
    (import "./object.bgl" . object)
+   (import "./os.bgl" . os)
    (import "./pair.bgl" . pair)
    (import "./port.bgl" . port)
    (import "./real.bgl" . real)
@@ -85,6 +86,7 @@
                          (net.test verbose tests)
                          (number.test verbose tests)
                          (object.test verbose tests)
+                         (os.test verbose tests)
                          (pair.test verbose tests)
                          (port.test verbose tests)
                          (real.test verbose tests)

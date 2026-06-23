@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Jun 23 10:38:00 2026 (serrano)                */
+#*    Last change :  Tue Jun 23 16:38:30 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -36,7 +36,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = argsparse bool c date hash error int io jvm net number pair port \
+MD = argsparse bool c date hash error int io jvm net number os pair port \
  real ssl string thread vector wasm \
  condexpand match module5 module4 object
 
