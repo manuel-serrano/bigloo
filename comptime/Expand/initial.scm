@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Expand/initial.scm     */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Expand/initial.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sun Mar  1 14:02:27 2026 (serrano)                */
+;*    Last change :  Tue Jun 23 06:24:41 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -566,6 +566,7 @@
 
    ;; vector-for-each, vector-map
    (install-O-comptime-expander 'vector-for-each expand-vector-for-each)
+   (install-O-comptime-expander 'vector-for-each3 expand-vector-for-each3)
    (install-O-comptime-expander 'vector-map expand-vector-map)
    (install-O-comptime-expander 'vector-map! expand-vector-map!)
 

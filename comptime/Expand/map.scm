@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/comptime/Expand/map.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Expand/map.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec  4 18:08:53 1992                          */
-;*    Last change :  Wed Mar 13 06:53:19 2019 (serrano)                */
-;*    Copyright   :  1992-2020 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jun 23 06:26:34 2026 (serrano)                */
+;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    `map' and `for-each' compile-time macro expansion.               */
 ;*=====================================================================*/
@@ -30,6 +30,7 @@
 	    (expand-find ::obj ::procedure)
 	    (expand-append-map ::obj ::procedure)
 	    (expand-vector-for-each ::obj ::procedure)
+	    (expand-vector-for-each3 ::obj ::procedure)
 	    (expand-vector-map ::obj ::procedure)
 	    (expand-vector-map! ::obj ::procedure)))
 
@@ -753,6 +754,44 @@
 	  (epairify! x res)))
       (else
        (error #f "Illegal `vector-for-each' form" x))))
+
+;*---------------------------------------------------------------------*/
+;*    expand-vector-for-each3 ...                                      */
+;*---------------------------------------------------------------------*/
+(define (expand-vector-for-each3 x e)
+   (match-case x
+      ((?- (and ?fun (? inline-map-lambda?)) ?vec)
+       (let* ((i     (mark-symbol-non-user! (gensym 'i)))
+	      (v     (mark-symbol-non-user! (gensym 'v)))
+	      (len   (mark-symbol-non-user! (gensym 'len)))
+	      (lname (mark-symbol-non-user! (gensym 'vector-for-each3)))
+	      (loc   (find-location x))
+	      (loop `(let* ((,v ,vec)
+			    (,len (vector-length ,v)))
+			(let ,lname ((,i 0))
+			     (when ((@ <fx __r4_numbers_6_5_fixnum) ,i ,len)
+				(,fun ((@ vector-ref-ur __r4_vectors_6_8) ,v ,i) ,i ,v)
+				(,lname ((@ +fx __r4_numbers_6_5_fixnum) ,i 1)))))))
+	  (let ((res (e loop e)))
+	     (epairify! x res))))
+      ((?- ?fun ?vec)
+       (let* ((i     (mark-symbol-non-user! (gensym 'i)))
+	      (v     (mark-symbol-non-user! (gensym 'v)))
+	      (len   (mark-symbol-non-user! (gensym 'len)))
+	      (lfun  (mark-symbol-non-user! (gensym 'lfun)))
+	      (lname (mark-symbol-non-user! (gensym 'vector-for-each3)))
+	      (loc   (find-location x))
+	      (loop `(let* ((,lfun ,fun)
+			    (,v ,vec)
+			    (,len (vector-length ,v)))
+			(let ,lname ((,i 0))
+			     (when ((@ <fx __r4_numbers_6_5_fixnum) ,i ,len)
+				(,lfun ((@ vector-ref-ur __r4_vectors_6_8) ,v ,i) ,i ,v)
+				(,lname ((@ +fx __r4_numbers_6_5_fixnum) ,i 1)))))))
+	  (let ((res (e loop e)))
+	     (epairify! x res))))
+      (else
+       (error #f "Illegal `vector-for-each3' form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-vector-map ...                                            */

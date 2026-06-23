@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/vector.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Ieee/vector.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Wed Apr 22 09:26:30 2026 (serrano)                */
+;*    Last change :  Tue Jun 23 06:22:40 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -130,6 +130,7 @@
 	    (vector-map::vector ::procedure ::vector . rests)
 	    (vector-map!::vector ::procedure ::vector . rests)
 	    (vector-for-each ::procedure ::vector . rests)
+	    (vector-for-each3 ::procedure ::vector)
 	    (inline vector-shrink!::vector ::vector ::long))
    
    (pragma  ($make-vector no-cfa-top nesting)
@@ -482,6 +483,16 @@
 	  (vector-for-eachN proc v rest))
 	 (else
 	  (error "vector-for-each" "Illegal arguments" rest)))))
+
+;*---------------------------------------------------------------------*/
+;*    vector-for-each3 ...                                             */
+;*---------------------------------------------------------------------*/
+(define (vector-for-each3 proc::procedure v::vector)
+   (let ((len (vector-length v)))
+      (let loop ((i 0))
+	 (when (<fx i len)
+	    (proc (vector-ref-ur v i) i v)
+	    (loop (+fx i 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-shrink! ...                                               */

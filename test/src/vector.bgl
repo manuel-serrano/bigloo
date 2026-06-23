@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/test/src/vector.bgl             */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/vector.bgl            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 08:32:16 2026                          */
-;*    Last change :  Wed Apr 22 07:48:30 2026 (serrano)                */
+;*    Last change :  Tue Jun 23 06:24:09 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing vector functions                                         */
@@ -179,6 +179,12 @@
       ((car (list vector-for-each)) (lambda (x y) (set! n (+ n (+ x y)))) '#(0 1 2) '#(1 2 3))
       n)
    :expected 9)
+
+(define-test vector-for-each3
+   (let ((v (vector 0 1 2)))
+      (vector-for-each3 (lambda (n i v) (vector-set! v i (+fx 10 n))) v)
+      v)
+   :expected '#(10 11 12))
    
 (define-test vector-map
    (let ((v (vector-map (lambda (x) (+ 1 x)) '#(0 1 2))))

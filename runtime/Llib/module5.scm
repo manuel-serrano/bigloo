@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun Jun 21 20:26:58 2026 (serrano)                */
+;*    Last change :  Mon Jun 22 14:34:43 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -2067,8 +2067,9 @@
 		(old (hashtable-get defs name))
 		(decl (hashtable-get decls name)))
 	    (if (and old
-		     (not (or (eq? kind 'macro)
-			      (eq? (with-access::Def old (kind) kind) 'macro))))
+		     (not (or (memq kind '(macro expander))
+			      (memq (with-access::Def old (kind) kind)
+				 '(macro expander)))))
 		(warning/loc mod
 		      (format "Identifier ~s has already been declared" name)
 		      (with-access::Def old (expr) expr)

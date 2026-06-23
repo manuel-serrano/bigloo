@@ -112,6 +112,11 @@ of `proc` must be the number of passed vectors. All vectors
 must have the same length. The procedure is applied from elements
 of index `0` to `(vector-length vector) - 1`.
 
+### vector-for-each3 ###
+
+Applies `proc` to all the elements of the `vectors` receiving
+the element itself, its index in the vector, and the vector itself.
+
 ### vector-map ###
 
 The function `vector-map` creates a new vector whose size the is
