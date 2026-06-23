@@ -42,7 +42,7 @@ aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile_thread_local="$CC $cflags $file.c -DTLS=thread_local -o $aout $pthreadlibs >/dev/null"
+compile_thread_local="$CC $cflags $file.c -DTLS=_Thread_local -o $aout $pthreadlibs >/dev/null"
 compile__thread="$CC $cflags $file.c -DTLS=__thread -o $aout $pthreadlibs >/dev/null"
 
 #*---------------------------------------------------------------------*/
@@ -95,7 +95,7 @@ EOF
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
 if eval "$BUILDSH $compile_thread_local"; then
-   echo "thread_local"
+   echo "_Thread_local"
 elif eval "$BUILDSH $compile__thread"; then
    echo "__thread"
 else
