@@ -55,7 +55,7 @@ The syntax for &lt;pattern&gt; is:
   | ( isa <ident> ( <ident> <pattern> )+ ) ;; a class instance
   | ?<ident>                               ;; anything, and binds <ident> 
   | ?-                                     ;; anything, without binding
-  | ??-                                    ;; a possibly empty repeition of anything in a list
+  | ??-                                    ;; a possibly empty repetition of anything in a list
   | ???-                                   ;; any end of list
 ```
 

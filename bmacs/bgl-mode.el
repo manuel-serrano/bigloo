@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Sun Jun 21 08:31:23 2026 (serrano)                */
+;*    Last change :  Wed Jun 24 10:15:27 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -431,7 +431,6 @@
   (define-key bgl-mode-map "\e." 'bgl-goto-def)
   (define-key bgl-mode-map (kbd "ESC C-.") 'bgl-goto-def-other-frame)
   (define-key bgl-mode-map "\e," 'bgl-pop-def)
-  (define-key bgl-mode-map "\e>" 'bgl-load-decl-index)
 
   ;; C-' keymap
   (define-key bgl-mode-map [(control \c)] 'bgl-prefix)

@@ -95,7 +95,7 @@ is:
   | <MCImportFunction>
   | <MCImportMacro>
   
-<MCType> --> ( <Ident> <String> )
+<MCType> --> ( type <Ident> <String> )
 
 <MCExport> --> ( export <Ident> <String> )
 ```

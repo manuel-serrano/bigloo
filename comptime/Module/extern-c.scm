@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Mon Jun 15 07:48:50 2026 (serrano)                */
+;*    Last change :  Thu Jun 25 07:28:27 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -13,6 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module module_extern-c
+
+   (include "Type/coercer.sch")
    
    (import engine_param
 	   tools_error
@@ -47,6 +49,7 @@
 	   type_type
 	   type_env
 	   type_cache
+	   type_coercion
 	   object_class
 	   object_slots
 	   object_coercion
@@ -154,29 +157,70 @@
 		   (hashtable-put! decls (symbol->string! id) decl)
 		   (hashtable-put! defs (symbol->string! id) def)))))))
    
-   (define (parse-type id name clause mod::Module)
-      (co-instantiate
-	    ((def (instantiate::TDef
-		     (id id)
-		     (kind 'c-type)
-		     (expr clause)
-		     (ronly #t)
-		     (expr clause)
-		     (decl decl)
-		     (name name)))
-	     (decl (instantiate::Decl
-		      (id id)
-		      (alias id)
-		      (mod mod)
-		      (expr clause)
-		      (ronly #t)
-		      (scope 'extern)
-		      (def def))))
-	 (with-access::Module mod (decls defs exports)
-	    (hashtable-put! exports (symbol->string! id) decl)
-	    (hashtable-put! decls (symbol->string! id) decl)
-	    (hashtable-put! defs (symbol->string! id) def))
-	 (parse-c-foreign-type clause)))
+   (define (parse-type id affinity::symbol name clause mod::Module)
+
+      (define (add-affinity-coercion! from to c)
+	 (if (coercer? c)
+	     (let ((check (caar (coercer-check-op c)))
+		   (conv (caar (coercer-coerce-op c))))
+		(let ((nx (cond
+			     ((and (eq? check #t) (eq? conv #t))
+			      `(coerce ,from ,to () ()))
+			     ((eq? check #t)
+			      `(coerce ,from ,to () (,conv)))
+			     ((eq? conv #t)
+			      `(coerce ,from ,to (,check) ()))
+			     (else
+			      `(coerce ,from ,to (,check) (,conv))))))
+		   (type-parser #t (localize clause nx) (list clause))))
+	     (error/loc mod
+		(format "Impossible type affinity from ~a to ~a"  from to)
+		clause x)))
+      
+      (define (add-affinity! affinity::symbol)
+	 (if (type-exists? affinity)
+	     (let* ((aff (find-type affinity))
+		    (obj (find-type 'obj))
+		    (->c (find-coercer obj aff))
+		    (c-> (find-coercer aff obj)))
+		(add-affinity-coercion! id 'obj c->)
+		(add-affinity-coercion! 'obj id ->c)
+		(type-parser #t
+		   (localize clause
+		      `(coerce ,id ,affinity () ())) (list clause))
+		(type-parser #t
+		   (localize clause
+		      `(coerce ,affinity ,id () ())) (list clause)))
+	     (error/loc mod "Affinity type unknown" clause x)))
+
+      (unless (type-exists? id)
+	 ;; MS 25jun2026, for now C type can override any previously
+	 ;; defined type without any check, this should be fixed in the future
+	 (co-instantiate
+	       ((def (instantiate::TDef
+			(id id)
+			(kind 'c-type)
+			(expr clause)
+			(ronly #t)
+			(expr clause)
+			(decl decl)
+			(name name)))
+		(decl (instantiate::Decl
+			 (id id)
+			 (alias id)
+			 (mod mod)
+			 (expr clause)
+			 (ronly #t)
+			 (scope 'extern)
+			 (def def))))
+	    (with-access::Module mod (decls defs exports)
+	       (hashtable-put! exports (symbol->string! id) decl)
+	       (hashtable-put! decls (symbol->string! id) decl)
+	       (hashtable-put! defs (symbol->string! id) def))
+	    (let ((clause4 (localize clause `(type ,id ,name))))
+	       (parse-c-foreign-type clause4))
+	    (unless (eq? affinity 'opaque)
+	       (add-affinity! affinity)))))
 
    (define (cigloo file x mod)
       (module5-extern-plugin-preprocessor "cigloo" file x mod))
@@ -215,10 +259,10 @@
 		   read)))
 	    ((export . ?-)
 	     (parse-c-foreign-export clause #t))
-	    ((type (and (? symbol?) ?id))
-	     (parse-type id (symbol->string id) clause mod))
 	    ((type (and (? symbol?) ?id) (and (? string?) ?name))
-	     (parse-type id name clause mod))
+	     (parse-type id 'opaque name clause mod))
+	    ((type (and (? symbol?) ?id) :affinity ?aff (and (? string?) ?name))
+	     (parse-type id aff name clause mod))
 	    ((macro (and (? symbol?) ?ident) . ?args)
 	     (multiple-value-bind (args name)
 		(parse-args ident args mod clause x)
@@ -249,9 +293,9 @@
 	 ((include (and (? string?) ?string))
 	  (parse-include string clause mod))
 	 ((type (and (? symbol?) ?id) (and (? string?) ?name))
-	  (parse-type id name clause mod))
-	 ((type (and (? symbol?) ?id) ?- (and (? string?) ?name))
-	  (parse-type id name clause mod))
+	  (parse-type id 'none name clause mod))
+	 ((type (and (? symbol?) ?id) ?affinity (and (? string?) ?name))
+	  (parse-type id affinity name clause mod))
 	 ((macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
 	  (parse-function #t #f ident args name clause mod))
 	 ((infix macro (and (? symbol?) ?ident) ?args (and (? string?) ?name))
