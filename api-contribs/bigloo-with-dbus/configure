@@ -2056,7 +2056,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       rm -f $p 2> /dev/null
       rel=`echo $release | sed -e "s|[.]|_|"`;
       cat autoconf/`basename $p`.in \
-        | sed -e "s|@CONFIGURE@|Automatically generated file (don't edit), `date`|" \
+        | sed -e "s|@CONFIGURE@|Automatically generated file (don't edit)|" \
               -e "s|@BGL_RELEASE@|BGL_$rel|" \
               -e "s|@BGL_RELEASE_NUMBER@|$release|" \
               -e "s|@BGL_SPECIFIC_VERSION@|$specific|" \
@@ -2201,7 +2201,6 @@ if [ $action = "all" -o $action = "bigloo_config_el" ]; then
 
   rm -f $bigloo_config_el 2> /dev/null
   echo ";; Automatically generated file (don't edit) */" > $bigloo_config_el
-  echo ";; `date`" >> $bigloo_config_el
   echo "" >> $bigloo_config_el
   echo "(provide 'bmacs-config)" >> $bigloo_config_el
   echo "(defvar bmacs-docdir \"$docdir\")" >> $bigloo_config_el
@@ -2230,7 +2229,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # We first cleanup the file
   rm -f $makefile_cfg 2> /dev/null
   echo "# automatically generated, don't edit" > $makefile_cfg
-  echo "# `date`" >> $makefile_cfg
   echo "" >> $makefile_cfg
 
   # The Bigloo release number

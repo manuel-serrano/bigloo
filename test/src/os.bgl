@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Thu Jun 25 11:02:27 2026 (serrano)                */
+;*    Last change :  Thu Jun 25 17:53:35 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing OS api                                                   */
@@ -41,6 +41,21 @@
       (time (lambda () (begin (sleep 10) 30)))
       (cons res (and (>= real 0) (>= real (+ user sys)))))
    :expected '(30 . #t))
+
+(define-test register-exit-function!
+   (begin (register-exit-function! (lambda (n) n)) #t))
+
+(define-test register-exit-function!
+   (with-handler
+      (lambda (e)
+         #t)
+      (begin (register-exit-function! (lambda (x y) x)) #f)))
+
+(define-test unregister-exit-function!
+   (begin (unregister-exit-function! (lambda (n) n)) #t))
+
+(define-test exit
+   (procedure? exit))
 
 (define-test getenv
    (getenv "HOME")

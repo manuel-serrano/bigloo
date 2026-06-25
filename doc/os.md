@@ -16,6 +16,26 @@
 OS
 ==
 
+Main and Exit
+-------------
+
+### register-exit-function! ###
+Register @var{proc} as an exit functions. @var{Proc} is a procedure
+accepting of one argument. This argument is the numerical value which
+is the status of the exit call. The registered functions are called when the 
+execution ends. 
+@end deffn
+
+### unregister-exit-function! ###
+Unregisters an exit function
+
+### exit ###
+Applies all the registered exit functions then stops an execution, 
+returning the integer `int`.
+
+Environment
+-----------
+
 ### getenv ###
 Reads the environment variable `name`. Returns its result as a string if
 the variable exists. Return `#f` otherwise. If `name` is omitted, 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Tue Jun 23 16:48:44 2026 (serrano)                */
+;*    Last change :  Thu Jun 25 17:54:24 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -696,7 +696,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    register-exit-function! ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (register-exit-function! fun)
+(define (register-exit-function! fun::procedure)
    (synchronize (bigloo-exit-mutex)
       (if (not (correct-arity? fun 1))
 	  (error "bigloo-exit-register!"
@@ -707,7 +707,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    unregister-exit-function! ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (unregister-exit-function! fun)
+(define (unregister-exit-function! fun::procedure)
    (synchronize (bigloo-exit-mutex)
       (set! *bigloo-exit-functions* (remq! fun *bigloo-exit-functions*))))
 
