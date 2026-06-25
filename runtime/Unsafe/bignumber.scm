@@ -134,7 +134,7 @@
 	    "GCD_BIGNUM")
 	 (method static $lcmbx::bignum (::bignum ::bignum)
 	    "LCM_BIGNUM")
-	 (method static $bignum->string::string (::bignum ::long)
+	 (method static $bignum->string::string (::bignum ::int)
 	    "bgl_bignum_to_string")
 	 (method static $string->bignum::bignum (::string ::int)
 	    "bgl_string_to_bignum")
