@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Jun 25 11:38:20 2026 (serrano)                */
+;*    Last change :  Thu Jun 25 18:05:48 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -66,7 +66,7 @@
 	    (macro $getenv::string (::string) "(char *)getenv")
 	    ($getenv-all::pair () "bgl_getenv_all")
 	    ($setenv::int (::string ::string) "bgl_setenv")
-	    (macro c-system::int  (::string) "system")
+	    (macro $system::int  (::string) "system")
 	    (macro c-chdir::bool (::string) "chdir")
 	    (macro $getcwd::string (::string ::int) "(char *)(long)getcwd")
 	    (macro $chdir::int (::string) "chdir")
@@ -186,7 +186,7 @@
 		  "getenv_all")
 	       (method static $setenv::int (::string ::string)
 		  "bgl_setenv")
-	       (method static c-system::int  (::string)
+	       (method static $system::int  (::string)
 		  "system")
 	       (method static c-chdir::bool (::string)
 		  "chdir")
@@ -249,8 +249,8 @@
 	    (getenv #!optional name)
 	    (putenv ::bstring ::bstring)
 	    (inline chdir::bool string::string)
-	    (system . strings)
-	    (system->string . strings)
+	    (system::int . strings)
+	    (system->string::bstring . strings)
 	    (pwd)
 	    (command-line)
 	    (executable-name::string)
@@ -358,25 +358,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    signal ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (signal num proc)
+(define (signal num::int proc::obj)
    (cond
+      ((<fx num 0)
+       #unspecified)
+      ((>fx num 31)
+       (error "signal" "Illegal signal" num))
       ((eq? proc 'ignore)
        ($signal num #t))
       ((eq? proc 'default)
        ($signal num #f))
       ((not (=fx (procedure-arity proc) 1))
        (error "signal" "Wrong number of arguments" proc))
-      ((<fx num 0)
-       #unspecified)
-      ((>fx num 31)
-       (error "signal" "Illegal signal" num))
       (else
        ($signal num proc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-signal-handler ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (get-signal-handler num)
+(define (get-signal-handler num::int)
    (let ((v ($get-signal-handler num)))
       (cond
 	 ((eq? v #t) 'ignore)
@@ -386,7 +386,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sigsetmask ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (sigsetmask n)
+(define-inline (sigsetmask::int n::int)
    ($sigsetmask n))
 
 ;*---------------------------------------------------------------------*/
@@ -416,19 +416,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    system ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (system . strings)
+(define (system::int . strings)
    (cond
       ((null? strings)
-       #f)
+       0)
       ((null? (cdr strings))
-       (c-system (car strings)))
+       ($system (car strings)))
       (else
-       (c-system (apply string-append strings)))))
+       ($system (apply string-append strings)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    system->string ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (system->string . strings)
+(define (system->string::bstring . strings)
    (let ((p::input-port (open-input-file (apply string-append "| " strings))))
       (unwind-protect
 	 (read-string p)
@@ -1143,66 +1143,55 @@
 ;*---------------------------------------------------------------------*/
 ;*    getuid ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (getuid)
+(define (getuid::int)
    (cond-expand
-      (bigloo-c
-       ($getuid))
-      (else
-       0)))
+      (bigloo-c ($getuid))
+      (else 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    setuid ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (setuid uid)
+(define (setuid uid::int)
    (cond-expand
-      (bigloo-c
-       ($setuid uid))
-      (else
-       (error "setuid" "operation not supported" uid))))
+      (bigloo-c ($setuid uid))
+      (else (error "setuid" "operation not supported" uid))))
 
 ;*---------------------------------------------------------------------*/
 ;*    getgid ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (getgid)
+(define (getgid::int)
    (cond-expand
-      (bigloo-c
-       ($getgid))
-      (else
-       0)))
+      (bigloo-c ($getgid))
+      (else 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    setgid ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (setgid uid)
+(define (setgid uid::int)
    (cond-expand
-      (bigloo-c
-       ($setgid uid))
-      (else
-       (error "setgid" "operation not supported" uid))))
+      (bigloo-c ($setgid uid))
+      (else (error "setgid" "operation not supported" uid))))
 
 ;*---------------------------------------------------------------------*/
 ;*    getpwnam ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (getpwnam name)
+(define (getpwnam name::bstring)
    (cond-expand
-      (bigloo-c
-       ($getpwnam name))
-      (else
-       #f)))
+      (bigloo-c ($getpwnam name))
+      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    getpwuid ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (getpwuid uid)
+(define (getpwuid uid::int)
    (cond-expand
-      (bigloo-c
-       ($getpwuid uid))
-      (else
-       #f)))
+      (bigloo-c ($getpwuid uid))
+      (else #f)))
+
 ;*---------------------------------------------------------------------*/
 ;*    getpid ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (getpid)
+(define-inline (getpid::int)
    (cond-expand
       (bigloo-c ($getpid))
       (else 0)))
@@ -1210,7 +1199,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    getppid ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (getppid)
+(define-inline (getppid::int)
    (cond-expand
       (bigloo-c ($getppid))
       (else 0)))
@@ -1218,7 +1207,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    getpgroups ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (getgroups)
+(define-inline (getgroups::vector)
    (cond-expand
       (bigloo-c ($getgroups))
       (else '#())))

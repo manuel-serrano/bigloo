@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Thu Jun 25 17:53:35 2026 (serrano)                */
+;*    Last change :  Thu Jun 25 18:00:43 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing OS api                                                   */
@@ -36,6 +36,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
+(define-test command-line (command-line)
+   :expected pair?)
+   
+(define-test executable-name (executable-name)
+   :expected string?)
+
 (define-test time
    (multiple-value-bind (res real user sys)
       (time (lambda () (begin (sleep 10) 30)))
@@ -71,6 +77,14 @@
       (getenv "XXX"))
    :cond-expand C
    :expected "24")
+
+(define-test file-separator
+   (file-separator)
+   :expected char?)
+
+(define-test path-separator
+   (file-separator)
+   :expected char?)
 
 (define-test basename
    (basename "foo")
@@ -163,6 +177,14 @@
 (define-test file-name->list
    (file-name->list "etc/passwd")
    :expected '("etc" "passwd"))
+
+(define-test unix-path->list
+   (unix-path->list ".")
+   :expected '("."))
+
+(define-test unix-path->list
+   (unix-path->list ".:/usr/bin")
+   :expected '("." "/usr/bin"))
 
 (define-test file-name-canonicalize
    (file-name-canonicalize "/etc/passwd")
@@ -317,3 +339,162 @@
 (define-test find-file/path
    (find-file/path "pass-wd" '("." "/etc"))
    :expected  #f)
+
+(define-test signal
+   (begin (signal sigint 'default) #t)
+   :cond-expand C)
+
+(define-test get-signal-handler
+   (get-signal-handler sigint)
+   :cond-expand C
+   :expected 'default)
+
+(define-test sigsetmask
+   (sigsetmask 0)
+   :cond-expand C
+   :expected 0)
+   
+(define-test system
+   (system "true > /dev/null")
+   :cond-expand (or C wasm)
+   :expected 0)
+
+(define-test system->string
+   (system->string "echo \"hello\"")
+   :cond-expand C
+   :expected "hello\n")
+
+(define-test os-class (os-class)
+   :expected string?)
+
+(define-test os-name
+   (os-name)
+   :expected string?)
+
+(define-test os-version
+   (os-version)
+   :expected string?)
+
+(define-test os-tmp
+   (os-tmp)
+   :expected string?)
+
+(define-test os-charset
+   (os-charset)
+   :expected string?)
+
+(define-test os-arch
+   (os-arch)
+   :expected string?)
+
+(define-test getuid
+   (>=fx (getuid) 0)
+   :cond-expand C)
+
+(define-test setuid
+   setuid
+   :cond-expand C
+   :expected procedure?)
+
+(define-test getgid
+   (>=fx (getgid) 0)
+   :cond-expand C)
+
+(define-test setgid
+   setgid
+   :cond-expand C
+   :expected procedure?)
+
+(define-test getpid
+   (>=fx (getpid) 0)
+   :cond-expand C)
+
+(define-test getppid
+   (>=fx (getppid) 0)
+   :cond-expand C)
+
+(define-test getgroups
+   (getgroups)
+   :cond-expand C
+   :expected vector?)
+
+(define-test getpwnam
+   (getpwnam (getenv "USER"))
+   :cond-expand C
+   :expected pair?)
+
+(define-test getpwuid
+   (getpwuid (getuid))
+   :cond-expand C
+   :expected pair?)
+
+(define-test getrlimit
+   (multiple-value-bind (soft hard)
+      (getrlimit 'NOFILE)
+      (and (elong? soft) (elong? hard)))
+   :cond-expand C)
+
+(define-test getrlimit
+   (cond-expand
+      (rlimit 'supported)
+      (else 'unsupported))
+   :cond-expand C
+   :expected 'supported)
+
+(define-test getrlimit
+   (cond-expand
+      (rlimit 'supported)
+      (else 'unsupported))
+   :cond-expand (not C)
+   :expected 'unsupported)
+
+(define-test setrlimit!
+   (begin (setrlimit! 'NOFILE #e256 #e1048576) #t)
+   :cond-expand C)
+
+(define-test openlog
+   (openlog "/dev/null"
+      (syslog-option 'LOG_PID 'LOG_ODELAY)
+      (syslog-facility 'LOG_MAIL))
+   :cond-expand C
+   :expected #unspecified)
+
+(define-test syslog
+   (begin
+      (openlog "/dev/null"
+         (syslog-option 'LOG_PID 'LOG_ODELAY)
+         (syslog-facility 'LOG_MAIL))
+      (syslog (syslog-level 'LOG_INFO) "this is a log message"))
+   :cond-expand C
+   :expected #unspecified)
+
+(define-test syslog-option
+   (openlog "/dev/null"
+      (syslog-option 'LOG_PID 'LOG_CONS)
+      (syslog-facility 'LOG_MAIL))
+   :cond-expand C
+   :expected #unspecified)
+   
+(define-test syslog-level
+   (begin
+      (openlog "/dev/null"
+         (syslog-option 'LOG_PID 'LOG_ODELAY)
+         (syslog-facility 'LOG_MAIL))
+      (syslog (syslog-level 'LOG_DEBUG) "this is a log message"))
+   :cond-expand C
+   :expected #unspecified)
+
+(define-test syslog-facility
+   (openlog "/dev/null"
+      (syslog-option 'LOG_PID 'LOG_CONS)
+      (syslog-facility 'LOG_CRON))
+   :cond-expand C
+   :expected #unspecified)
+
+(define-test closelog
+   (closelog)
+   :cond-expand C
+   :expected #unspecified)
+
+
+
