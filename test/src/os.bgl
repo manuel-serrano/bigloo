@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Tue Jun 23 16:44:48 2026 (serrano)                */
+;*    Last change :  Thu Jun 25 11:02:27 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing OS api                                                   */
@@ -28,6 +28,12 @@
       (test-all verbose "os")))
 
 ;*---------------------------------------------------------------------*/
+;*    fname ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (fname s)
+   (string-replace s #\/ (file-separator)))
+
+;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
 (define-test time
@@ -35,3 +41,264 @@
       (time (lambda () (begin (sleep 10) 30)))
       (cons res (and (>= real 0) (>= real (+ user sys)))))
    :expected '(30 . #t))
+
+(define-test getenv
+   (getenv "HOME")
+   :expected string?)
+
+(define-test getenv
+   (getenv)
+   :expected list?)
+
+(define-test putenv
+   (begin
+      (putenv "XXX" "24")
+      (getenv "XXX"))
+   :cond-expand C
+   :expected "24")
+
+(define-test basename
+   (basename "foo")
+   :expected "foo")
+(define-test basename
+   (basename (make-file-name "foo" "bar"))
+   :expected "bar")
+(define-test basename
+   (basename (make-file-path "foo" "bar" "gee"))
+   :expected "gee")
+
+(define-test prefix
+   (prefix "foo.scm") 
+   :expected  "foo")
+(define-test prefix
+   (prefix "./foo.scm") 
+   :expected  "./foo")
+(define-test prefix
+   (prefix "foo.tar.gz") 
+   :expected  "foo.tar")
+(define-test prefix
+   (prefix "foo.scm")
+   :expected "foo")
+(define-test prefix
+   (prefix (make-file-name "bar" "foo.scm"))
+   :expected 
+   (make-file-name "bar" "foo"))
+
+(define-test suffix
+   (suffix "foo.scm") 
+   :expected  "scm")
+(define-test suffix
+   (suffix "./foo.scm") 
+   :expected  "scm")
+(define-test suffix
+   (suffix "foo.tar.gz") 
+   :expected  "gz")
+(define-test suffix
+   (suffix "foo.scm")
+   :expected "scm")
+(define-test suffix
+   (suffix (make-file-name "bar" "foo.scm"))
+   :expected "scm")
+
+(define-test dirname
+   (dirname "abc/def/ghi") 
+   :expected  "abc/def")
+(define-test dirname
+   (dirname "abc") 
+   :expected   ".")
+(define-test dirname
+   (dirname "abc/") 
+   :expected  "abc")
+(define-test dirname
+   (dirname "/abc") 
+   :expected  "/")
+ (define-test dirname
+    (dirname "foo")
+    :expected ".")
+(define-test dirname
+   (dirname "")
+   :expected ".")
+(define-test dirname
+   (dirname (make-file-name "foo" "bar"))
+   :expected "foo")
+(define-test dirname
+   (dirname (make-file-path "foo" "bar" "gee"))
+   :expected (make-file-name "foo" "bar"))
+
+(define-test file-name-absolute?
+   (file-name-absolute? "foo/bar")
+   :expected #f)
+
+(define-test file-name-absolute?
+   (file-name-absolute? "/tmp/foo/bar")
+   :expected #t)
+
+(define-test make-file-name
+   (make-file-name "foo" "bar")
+   :expected (format "foo~abar" (file-separator)))
+
+(define-test make-file-path
+   (make-file-path "foo" "bar" "gee")
+   :expected (format "foo~abar~agee" (file-separator) (file-separator)))
+
+(define-test file-name->list
+   (file-name->list "/etc/passwd")
+   :expected '("" "etc" "passwd"))
+
+(define-test file-name->list
+   (file-name->list "etc/passwd")
+   :expected '("etc" "passwd"))
+
+(define-test file-name-canonicalize
+   (file-name-canonicalize "/etc/passwd")
+   :expected "/etc/passwd")
+(define-test file-name-canonicalize
+   (file-name-canonicalize "/etc/../tmp/passwd")
+   :expected "/tmp/passwd")
+(define-test file-name-canonicalize
+   (file-name-canonicalize "")
+   :expected "")
+(define-test file-name-canonicalize
+   (file-name-canonicalize "~/passwd")
+   :expected "~/passwd")
+(define-test file-name-canonicalize!
+   (file-name-canonicalize "/etc/../tmp/passwd")
+   :expected "/tmp/passwd")
+
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize "~/passwd")
+   :expected (make-file-name (getenv "HOME") "passwd"))
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize "~foo/passwd")
+   :expected (make-file-name (dirname (getenv "HOME")) "foo/passwd"))
+(define-test file-name-unix-canonicalize!
+   (file-name-unix-canonicalize "/foo/passwd")
+   :expected "/foo/passwd")
+(define-test file-name-unix-canonicalize!
+   (file-name-unix-canonicalize "/")
+   :expected "/")
+
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/tmp/bin"))
+   :expected (fname "/tmp/bin"))
+
+(define-test file-name-canonicalize
+   (file-name-canonicalize! (fname "/tmp/bin"))
+   :expected (fname "/tmp/bin"))
+
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/tmp/bin/"))
+   :expected (fname "/tmp/bin/"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize! (string-copy (fname "/tmp/bin/")))
+   :expected (fname "/tmp/bin/"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/tmp//bin/"))
+   :expected (fname "/tmp/bin/"))
+(define-test file-name-canonicalize!
+   (let ((s (fname "/tmp//bin/")))
+      (file-name-canonicalize! (string-copy s)))
+   :expected (fname "/tmp/bin/"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/tmp/../bin/"))
+   :expected (fname "/bin/"))
+(define-test file-name-canonicalize!
+   (let ((s (fname "/tmp/../bin/")))
+      (file-name-canonicalize! (string-copy (fname "/tmp/../bin/"))))
+   :expected (fname "/bin/"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/tmp/abc/../../bin/"))
+   :expected (fname "/bin/"))
+(define-test file-name-canonicalize!
+   (let ((s (fname "/tmp/../bin/")))
+      (file-name-canonicalize! (string-copy (fname "/tmp/abc/../../bin/"))))
+      :expected (fname "/bin/"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/foo/bar/."))
+   :expected (fname "/foo/bar"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/../foo/bar"))
+   :expected (fname "/foo/bar"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/foo/./bar"))
+   :expected (fname "/foo/bar"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/foo/././bar"))
+   :expected (fname "/foo/bar"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/foo/././////bar"))
+   :expected (fname "/foo/bar"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/foo/././////../bar"))
+   :expected (fname "/bar"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/foo/././////../////.//bar"))
+   :expected (fname "/bar"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/foo/././////../////.//bar/./././."))
+   :expected (fname "/bar"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/foo/bar/.."))
+   :expected (fname "/foo"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/.."))
+   :expected (fname "/"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "/foo/.bar/gee"))
+   :expected (fname "/foo/.bar/gee"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "./foo"))
+   :expected (fname "foo"))
+(define-test file-name-canonicalize
+   (file-name-canonicalize (fname "."))
+   :expected (fname "."))
+(define-test file-name-canonicalize
+   (file-name-canonicalize "")
+   :expected "")
+(define-test file-name-canonicalize
+   (file-name-canonicalize ".")
+   :expected ".")
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize "./")
+   :expected ".")
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize ".//")
+   :expected "")
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize "././")
+   :expected ".")
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize ".//a")
+   :expected "a")
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize "test/..")
+   :expected "")
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize "./test/..")
+   :expected "")
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize "../test/bar/..")
+   :expected "../test")
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize "../test/foo")
+   :expected "../test/foo")
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize "../../test/foo")
+   :expected "../../test/foo")
+(define-test file-name-unix-canonicalize
+   (file-name-unix-canonicalize "..test/foo")
+   :expected "..test/foo")
+
+(define-test relative-file-name
+   (relative-file-name "/etc/passwd" "/etc")
+   :expected "passwd")
+
+(define-test find-file/path
+   (find-file/path "/etc/passwd" '("/toto" "/titi")) 
+   :expected  "/etc/passwd")
+(define-test find-file/path
+   (find-file/path "passwd" '("/toto" "/etc"))
+   :expected  "/etc/passwd")
+(define-test find-file/path
+   (find-file/path "pass-wd" '("." "/etc"))
+   :expected  #f)

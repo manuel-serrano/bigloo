@@ -1,0 +1,27 @@
+ (module c-example
+    (extern "C"
+       (include "stdio.h")
+       (type $file* :affinity void* "FILE *")
+       (infix macro $file-null?::bool ::$file* "== 0L")
+       (cnst macro $file-null*::$file* "0L")
+       (macro $fopen::$file* ::string ::string "fopen")
+       (macro $fclose::int ::$file* "fclose")
+       (macro $getc::int ::$file* "getc"))
+    (export file* file*-null? fopen fclose getc))
+
+(define-class file*
+   ($builtin::$file* read-only))
+
+(define (file*-null? f::file*)
+   ($file-null? (-> f $builtin)))
+
+(define (fopen path::bstring mode::bstring)
+   (instantiate::file*
+      ($builtin ($fopen path mode))))
+
+(define (fclose f::file*)
+   (unless (file*-null? f)
+      ($fclose (-> f $builtin))))
+
+(define (getc::int f::file*)
+   ($getc (-> f $builtin)))

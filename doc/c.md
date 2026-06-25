@@ -90,17 +90,69 @@ is:
 <MCClause> --> <MCImport>
   | <MCType>
   | <MCExport>
+  | <MCInclude>
 
 <MCImport> --> <MCImportVariable>
   | <MCImportFunction>
   | <MCImportMacro>
   
 <MCType> --> ( type <Ident> <String> )
+  | ( type <Ident> :affinity <Ident> <String> )
 
 <MCExport> --> ( export <Ident> <String> )
+
+<MCInclude> --> ( include <String> )
 ```
 
-Embeeded C expressions
+The &lt;MCType&gt; clause enables functions to use C types as result
+or arguments. Local variables can also use these types.
+
+The &lt;MCExport&gt; clause _exports_ a Bigloo function or variable to
+C. The C types are thoses given in the Bigloo declaration. The &lt;String&gt;
+element specifies the name under which the Bigloo function or variable
+&lt;Ident&gt; will be known.
+
+The &lt;MCInclue&gt; clause instructs the Bigloo compiler to emit
+a C `#include` statement in the C generated code.
+
+C types
+-------
+
+C types can be used unrestrictively but Bigloo imposes constraints
+on those of these types are used by _escaping_ values, i.e., values
+that _escape_ the tracking of the compiler that need to be converted
+to the most general Bigloo type `obj`. For instance, if a function
+is exported or used as a value, the compiler cannot know how the
+values it returns will be used. Hence, the compiler must use a _generic
+type_ capable of representing any value and whose dynamic can be
+inspected. For that the compiler introduces conversions from and to
+specific types. 
+
+By default C declared types are not convertible to Bigloo values and
+values of that C types cannot escape. When escaping C values are needed,
+conversions from the C values to Bigloo values and vice versa must be
+specified. This is the purpose of the `:affinity` attribute of the
+C type declaration. The value of the `:affinity` property is a Bigloo
+type name. Bigloo automatically creates conversions from and to
+this Bigloo type.
+
+A common pattern is to wrap escaping C values into Bigloo classes.
+This gives more flexibility as common printers and readers can be
+defined for classes and this also eliminates the risk of spurious
+allocations required for converting the C values back and forth.
+
+Here is an example of such a wrapping.
+
+```bigloo
+,(include "./examples/c/wrap.bgl")
+```
+
+In this example, the C type `FILE *` is bound to the Bigloo type
+`$file*` (a general convention is to prefix identifiers denoting
+foreign entities with the `$` sign). A Bigloo class `file*` is created
+to _wrap_ these values.
+
+Embedded C expressions
 ----------------------
 
 Bigloo C backend has a special form which allows the inclusion of
@@ -144,42 +196,6 @@ expression does not make any side effect.
 
 This `pragma` enables _injecting_ a Bigloo mangled identifier into the
 generated C code.
-
-
-Name Mangling
--------------
-
-In order to avoid name clashes, Bigloo uses name mangling when
-compiling to C. The name mangling for a Bigloo identifier may be
-overridden by the means of an extern `export` clause.
-
-Four public functions may be used to mangle and to demangle Scheme
-identifiers:
-
-### bigloo-mangle ##
-Mangle the identifier `string`.
-
-### bigloo-module-mangle ###
-Mangle the identifier `string1` that belongs to module `string2`.
-
-### bigloo-mangled? ###
-Returns `#t` if `string` has been computed by the `bigloo-mangle`
-or `bigloo-module-mangle1 function.
-
-### bigloo-need-mangling? ###
-Returns `#t` if `string` requires name mangling because it
-is not a C or Jvm valid identifier.
-
-### bigloo-demangle ###
-Demangle any type of previously mangled identifiers. it returns one
-single value in the case of local identifiers.  In returns two values
-when demangling a module idnetifier.
-
-### bigloo-class-mangled? ##
-Returns `#t` if `string` is a mangled name of a Bigloo class.
-
-### bigloo-class-demangle ###
-Demangles previously mangled class identifier.
 
 
 Embedded Bigloo Applications

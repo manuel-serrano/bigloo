@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sun Jun 21 19:18:27 2026 (serrano)                */
+/*    Last change :  Thu Jun 25 12:05:39 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -594,9 +594,13 @@ class BglNodeRuntime extends BglRuntime {
 	 },
 	 
 	 getenv_var: (i, addr) => {
-	    const val = process.env[Object.keys(process.env)];
-	    self.storeScheme(val, addr);
-	    return val.length;
+	    const val = process.env[Object.keys(process.env)[i]];
+	    if (!val) {
+	       return 0;
+	    } else {
+	       self.storeString(val, addr);
+	       return val.length;
+	    }
 	 },
 	 
 	 setenv: (addr_id, len_id, addr_val, len_val, addr) => {

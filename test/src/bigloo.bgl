@@ -1,0 +1,102 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/bigloo.bgl            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Thu Jun 25 10:44:39 2026                          */
+;*    Last change :  Thu Jun 25 10:53:40 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing Bigloo specifics                                         */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    bigloo                                                           */
+;*---------------------------------------------------------------------*/
+(module bigloo
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "bigloo" tests))
+      (test-all verbose "bigloo")))
+
+;*---------------------------------------------------------------------*/
+;*    configuration                                                    */
+;*---------------------------------------------------------------------*/
+(define-test bigloo-configuration
+   (bigloo-configuration)
+   :expected list?)
+
+(define-test bigloo-config
+   (bigloo-config 'release-number)
+   :expected string?)
+
+(define-test bigloo-config
+   (bigloo-config)
+   :expected list?)
+
+;*---------------------------------------------------------------------*/
+;*    mangling                                                         */
+;*---------------------------------------------------------------------*/
+(define-test bigloo-mangle
+   (bigloo-mangle "fib")
+   :expected "BgL_fibz00")
+
+(define-test bigloo-mangle
+   (bigloo-mangle "string->number")
+   :expected "BgL_stringzd2ze3numberz31")
+
+(define-test bigloo-module-mangle
+   (bigloo-module-mangle "fib" "mod")
+   :expected "BGl_fibz00zzmodz00")
+
+(define-test bigloo-module-mangle
+   (bigloo-module-mangle "string->number" "lib")
+   :expected "BGl_stringzd2ze3numberz31zzlibz00")
+
+(define-test bigloo-mangled?
+   (bigloo-mangled? "BgL_fibz00"))
+
+(define-test bigloo-mangled?
+   (bigloo-mangled? "BGl_fibz00zzmodz00"))
+
+(define-test bigloo-mangled?
+   (bigloo-mangled? "BGl_fibz00zzmodz")
+   :expected #f)
+
+(define-test bigloo-demangle
+   (bigloo-demangle "BgL_fibz00")
+   :expected "fib")
+   
+(define-test bigloo-demangle
+   (multiple-value-bind (id mod)
+      (bigloo-demangle "BGl_stringzd2ze3numberz31zzlibz00")
+      (cons id mod))
+   :expected '("string->number" . "lib"))
+
+(define-test bigloo-need-mangling?
+   (bigloo-need-mangling? "fib")
+   :expected #f)
+
+(define-test bigloo-need-mangling?
+   (bigloo-need-mangling? "integer?")
+   :expected #t)
+
+(define-test bigloo-class-mangled?
+   (bigloo-class-mangled? (bigloo-mangle "Point"))
+   :expected #f)
+
+(define-test bigloo-class-mangled?
+   (bigloo-class-mangled? (string-append (bigloo-mangle "Point") "_bglt")))
+
+(define-test bigloo-class-demangle
+   (bigloo-class-demangle (string-append (bigloo-mangle "Point") "_bglt"))
+   :expected "Point_bglt")
+

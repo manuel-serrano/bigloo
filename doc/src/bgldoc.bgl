@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Tue Jun 23 16:38:46 2026 (serrano)                */
+;*    Last change :  Thu Jun 25 09:28:49 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -54,6 +54,7 @@
 ;*---------------------------------------------------------------------*/
 (define libs-chapters
    '(("command line parsing" . "argsparse.html")
+     ("bigloo" . "bigloo.html")
      ("booleans" . "bool.html")
      ("dates" . "date.html")
      ("hash" . "hash.html")
@@ -238,6 +239,8 @@
                                                             (cond
                                                                ((string=? lang "bnf")
                                                                 fontifier.ebnf)
+                                                               ((string=? lang "C")
+                                                                fontifier.c)
                                                                (else
                                                                 fontifier.bigloo))))))))
                              sources))))))
@@ -428,6 +431,8 @@
                                          (cond
                                             ((string=? lang "bnf")
                                              fontifier.ebnf)
+                                            ((string=? lang "C")
+                                             fontifier.c)
                                             (else
                                              fontifier.bigloo))))))
 		(index '())
@@ -633,6 +638,8 @@
        (call-with-input-string text fontifier.bigloo))
       ((string=? lang "bnf")
        (call-with-input-string text fontifier.ebnf))
+      ((string=? lang "C")
+       (call-with-input-string text fontifier.c))
       (else
        (format "~s" text))))
 

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/doc/src/fontifier.bgl                       */
+;*    serrano/prgm/project/bigloo/5.0.x/doc/src/fontifier.bgl          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Fri May 22 14:06:41 2026 (serrano)                */
+;*    Last change :  Thu Jun 25 09:54:17 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -1110,8 +1110,7 @@
        (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
 	      (cpp (the-string)))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class (string-append "fontifier-prog-tag " cpp) cpp))
+	  (add! (<SPAN> :class (string-append "fontifier-prog-tag " cpp) cpp))
 	  (ignore)))
       
       ;; LineComment
@@ -1127,8 +1126,7 @@
 	  (when (equal? m line-end)
 	     (set! incollect #f))
 	  (add!
-	     (<SPAN> :data-charpos charpos
-		:class "fontifier-prog-line-comment"
+	     (<SPAN> :class "fontifier-prog-line-comment"
 		(xml-string-encode str)))
 	  (add! "\n")
 	  (when (integer? line-begin)
@@ -1141,8 +1139,7 @@
        (let ((charpos (-fx (input-port-position (the-port)) (the-length)))
 	     (cmt (xml-string-encode (the-string))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-line-comment" cmt))
+	  (add! (<SPAN> :class "fontifier-prog-line-comment" cmt))
 	  (ignore)))
 
       ;; inline scheme code
@@ -1150,24 +1147,21 @@
        (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
 	      (cmt (xml-string-encode (the-string))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-special" cmt))
+	  (add! (<SPAN> :class "fontifier-prog-special" cmt))
 	  (ignore)))
       
       ;; inline html code
       ((: "/**" (+ (or (out #\*) (: #\* (out #\*)) (: #\* #\* (out #\/)))) "**/")
        (let ((charpos (-fx (input-port-position (the-port)) (the-length))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-html" (the-substring 3 -3)))
+	  (add! (<SPAN> :class "fontifier-prog-html" (the-substring 3 -3)))
 	  (ignore)))
       ;; multi-line comment on one line
       ((: "/*" (* (or (out #\*) (: (+ #\*) (out #\/ #\*)))) (+ #\*) "/")
        (let ((charpos (-fx (input-port-position (the-port)) (the-length)))
 	     (cmt (xml-string-encode (the-string))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-line-comment" cmt))
+	  (add! (<SPAN> :class "fontifier-prog-line-comment" cmt))
 	  (ignore)))
       
       ((: "/*"
@@ -1178,8 +1172,7 @@
        (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
 	      (cmt (xml-string-encode (the-string))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-line-comment" cmt))
+	  (add! (<SPAN> :class "fontifier-prog-line-comment" cmt))
 	  (ignore)))
       
       ;; multi-line comment on one line
@@ -1198,8 +1191,7 @@
        (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
 	      (cmt (xml-string-encode (the-string))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-line-comment" cmt))
+	  (add! (<SPAN> :class "fontifier-prog-line-comment" cmt))
 	  (ignore)))
       
       ;; TODO: verify if this is really the correct syntax
@@ -1216,8 +1208,7 @@
        (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
 	      (num (xml-string-encode (the-string))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-number" num))
+	  (add! (<SPAN> :class "fontifier-prog-number" num))
 	  (ignore)))
       
       ((or #\( #\) #\[ #\] #\. #\; #\, #\| "||" "|="
@@ -1236,7 +1227,7 @@
 	      (tmp (xml-string-encode str)))
 	  (set! column (+fx (the-length) column))
 	  (if (memq lang '(hopscript hiphop))
-	      (add! (<SPAN> :data-charpos charpos
+	      (add! (<SPAN> 
 		       :class (string-append "fontifier-prog-tag "
 				 (substring str 1 (-fx (string-length str) 1)))
 		       tmp))
@@ -1249,7 +1240,7 @@
 	      (tmp (xml-string-encode str)))
 	  (set! column (+fx (the-length) column))
 	  (if (memq lang '(hopscript hiphop))
-	      (add! (<SPAN> :data-charpos charpos
+	      (add! (<SPAN> 
 		       :class (if (>fx (the-length) 2)
 			   (string-append "fontifier-prog-tag "
 			      (substring str 1 (-fx (the-length) 1)))
@@ -1263,7 +1254,7 @@
 	      (tmp (xml-string-encode str)))
 	  (set! column (+fx (the-length) column))
 	  (if (memq lang '(hopscript hiphop))
-	      (add! (<SPAN> :data-charpos charpos
+	      (add! (<SPAN> 
 		       :class (string-append "fontifier-prog-tag "
 				 (substring str 1 (-fx (the-length) 1)))
 		       tmp))
@@ -1274,16 +1265,14 @@
       ((when (memq lang '(hopscript hiphop javascript)) "~{")
        (let ((charpos (-fx (input-port-position (the-port)) (the-length))))
 	  (set! column (+fx 2 column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-client" "~"))
+	  (add! (<SPAN> :class "fontifier-prog-client" "~"))
 	  (add! "{")
 	  (ignore)))
       
       ((when (memq lang '(hopscript hiphop javascript)) "${")
        (let ((charpos (-fx (input-port-position (the-port)) (the-length))))
 	  (set! column (+fx 2 column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-server" "$"))
+	  (add! (<SPAN> :class "fontifier-prog-server" "$"))
 	  (add! "{")
 	  (ignore)))
       
@@ -1292,22 +1281,19 @@
        (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
 	      (str (xml-string-encode (the-string))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-string" str))
+	  (add! (<SPAN> :class "fontifier-prog-string" str))
 	  (ignore)))
       ((: #\' (* (or (out #\' #\\ #\Newline) (: #\\ all))) #\')
        (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
 	      (str (xml-string-encode (the-string))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-string" str))
+	  (add! (<SPAN> :class "fontifier-prog-string" str))
 	  (ignore)))
       ((: #\` (* (or (out #\' #\\ #\Newline) (: #\\ all))) #\`)
        (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
 	      (str (xml-string-encode (the-string))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class "fontifier-prog-template" str))
+	  (add! (<SPAN> :class "fontifier-prog-template" str))
 	  (ignore)))
       
       ((when (memq lang '(hopscript javascript typescript))
@@ -1319,8 +1305,7 @@
 	  (let* ((charpos (-fx (input-port-position (the-port)) (+fx len 1)))
 		 (str (xml-string-encode (substring string 0 (-fx len 1)))))
 	     (set! column (+fx (-fx len 1) column))
-	     (add! (<SPAN> :data-charpos charpos
-		      :class "fontifier-prog-string" str))
+	     (add! (<SPAN> :class "fontifier-prog-string" str))
 	     (ignore))))
       
       ;; Identifiers and Keywords
@@ -1332,56 +1317,54 @@
 	  (cond
 	     ((and (memq lang '(hopscript hiphop))
 		   (memq symbol '(post postSync then catch)))
-	      (add! (<SPAN> :data-charpos charpos
-		       :class "fontifier-prog-server post" symbol-str))
+	      (add! (<SPAN> :class "fontifier-prog-server post" symbol-str))
 	      (ignore))
 	     ((and (memq lang '(hopscript hiphop))
 		   (memq symbol '(signal broadcast)))
-	      (add! (<SPAN> :data-charpos charpos
-		       :class (string-append "fontifier-prog-client " symbol-str)
+	      (add! (<SPAN>
+                       :class (string-append "fontifier-prog-client " symbol-str)
 		       symbol-str))
 	      (ignore))
 	     ((and (memq lang '(hopscript hiphop))
 		   (memq symbol '(service tag)))
-	      (add! (<SPAN> :data-charpos charpos
+	      (add! (<SPAN> 
 		       :class (string-append "fontifier-prog-define " symbol-str)
 		       symbol-str))
 	      (ignore))
 	     ((and (eq? symbol 'function)
 		   (memq lang '(hopscript hiphop javascript typescript)))
-	      (add! (<SPAN> :data-charpos charpos
+	      (add! (<SPAN> 
 		       :class (string-append "fontifier-prog-define symbol-str")
 		       symbol-str))
 	      (ignore))
 	     ((and (eq? symbol 'class)
 		   (memq lang '(hopscript hiphop javascript typescript)))
-	      (add! (<SPAN> :data-charpos charpos
+	      (add! (<SPAN> 
 		       :class (string-append "fontifier-prog-class symbol-str")
 		       symbol-str))
 	      (ignore))
 	     ((and (getprop symbol 'javascript)
 		   (memq lang '(hopscript hiphop javascript typescript)))
-	      (add! (<SPAN> :data-charpos charpos
+	      (add! (<SPAN> 
 		       :class (string-append "fontifier-prog-reserved " symbol-str)
 		       symbol-str))
 	      (ignore))
 	     ((and (getprop symbol 'c) (eq? lang 'c))
-	      (add! (<SPAN> :data-charpos charpos
+	      (add! (<SPAN>
 		       :class (string-append "fontifier-prog-reserved " symbol-str)
 		       symbol-str))
 	      (ignore))
 	     ((and (getprop symbol 'hiphop) (eq? lang 'hiphop))
-	      (add! (<SPAN> :data-charpos charpos
+	      (add! (<SPAN> 
 		       :class (string-append "fontifier-prog-reserved " symbol-str)
 		       symbol-str))
 	      (ignore))
 	     ((and (eq? lang 'hiphop)
 		   (memq symbol '(val preval nowval now pre count react)))
-	      (add! (<SPAN> :data-charpos charpos
-		       :class "fontifier-prog-type delay" symbol-str))
+	      (add! (<SPAN> :class "fontifier-prog-type delay" symbol-str))
 	      (ignore))
 	     (else
-	      (add! (<SPAN> :data-charpos charpos symbol-str))
+	      (add! (<SPAN> symbol-str))
 	      (ignore)))))
       
       ;; Identifiers and Keywords
@@ -1390,8 +1373,7 @@
        (let* ((charpos (-fx (input-port-position (the-port)) (the-length)))
 	      (kwd (xml-string-encode (the-string))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   :class (string-append "fontifier-prog-keyword " kwd)
+	  (add! (<SPAN> :class (string-append "fontifier-prog-keyword " kwd)
 		   kwd))
 	  (ignore)))
       
@@ -1399,8 +1381,7 @@
       (all
        (let ((charpos (-fx (input-port-position (the-port)) (the-length))))
 	  (set! column (+fx (the-length) column))
-	  (add! (<SPAN> :data-charpos charpos
-		   (xml-string-encode (the-string)))))
+	  (add! (<SPAN> (xml-string-encode (the-string)))))
        (ignore))
       
       ;; error

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Tue Jun 23 16:40:05 2026 (serrano)                */
+;*    Last change :  Thu Jun 25 10:45:40 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -15,6 +15,7 @@
 (module main
    (import "./argsparse.bgl" . argsparse)
    (import "./bool.bgl" . bool)
+   (import "./bigloo.bgl" . bigloo)
    (import "./bignum.bgl" . bignum)
    (import "./bit.bgl" . bit)
    (import "./char.bgl" . char)
@@ -71,6 +72,7 @@
    (let* ((res-core (list
                          (argsparse.test verbose tests)
                          (bool.test verbose tests)
+                         (bigloo.test verbose tests)
                          (bignum.test verbose tests)
                          (bit.test verbose tests)
                          (char.test verbose tests)

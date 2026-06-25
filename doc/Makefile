@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Jun 23 16:38:30 2026 (serrano)                */
+#*    Last change :  Thu Jun 25 09:59:46 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -20,8 +20,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 VERBOSE = 
 EFLAGS = 
-BFLAGS = $(VERBOSE) -cg -g -O3 -q -Wall -init-lib \
-  -eval "(set! *indent* (= 1 2))" -gself \
+BFLAGS = $(VERBOSE) -cg -unsafe -O3 -q -Wall -init-lib \
   -lib-dir $(BOOTLIBDIR) -no-auto-link-main -module5 -I src
 
 BCFLAGS =
@@ -36,11 +35,11 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = argsparse bool c date hash error int io jvm net number os pair port \
- real ssl string thread vector wasm \
+MD = argsparse bigloo bool c date hash error int io jvm net number os \
+ pair port real ssl string thread vector wasm \
  condexpand match module5 module4 object
 
-EX = c/fib c/sock1 c/sock2 c/sock3 c/sock4 java/fib wasm/fib 
+EX = c/fib c/sock1 c/sock2 c/sock3 c/sock4 c/wrap java/fib wasm/fib 
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
@@ -113,6 +112,9 @@ objs_c/c/sock3.ast.coerce: examples/c/sock3.bgl objs_c/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
 objs_c/c/sock4.ast.coerce: examples/c/sock4.bgl objs_c/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
+objs_c/c/wrap.ast.coerce: examples/c/wrap.bgl objs_c/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
 objs_c/java/fib.ast.coerce: examples/java/fib.bgl objs_c/java

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Llib/os.scm                         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/os.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Jun  4 10:25:04 2026 (serrano)                */
+;*    Last change :  Thu Jun 25 11:38:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -65,7 +65,7 @@
 	    (macro $getenv?::bool (::string) "(long)getenv")
 	    (macro $getenv::string (::string) "(char *)getenv")
 	    ($getenv-all::pair () "bgl_getenv_all")
-	    (c-setenv::int (::string ::string) "bgl_setenv")
+	    ($setenv::int (::string ::string) "bgl_setenv")
 	    (macro c-system::int  (::string) "system")
 	    (macro c-chdir::bool (::string) "chdir")
 	    (macro $getcwd::string (::string ::int) "(char *)(long)getcwd")
@@ -184,7 +184,7 @@
 		  "getenv")
 	       (method static $getenv-all::obj ()
 		  "getenv_all")
-	       (method static c-setenv::int (::string ::string)
+	       (method static $setenv::int (::string ::string)
 		  "bgl_setenv")
 	       (method static c-system::int  (::string)
 		  "system")
@@ -247,7 +247,7 @@
 	    (inline sigsetmask::int ::int)
 	    
 	    (getenv #!optional name)
-	    (putenv ::string ::string)
+	    (putenv ::bstring ::bstring)
 	    (inline chdir::bool string::string)
 	    (system . strings)
 	    (system->string . strings)
@@ -408,11 +408,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    putenv ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (putenv string val)
-   (if (and (string=? (os-class) "win32")
-            (string=? string "HOME"))
-       (set! string "USERPROFILE"))
-   (=fx (c-setenv string val) 0))
+(define (putenv name::bstring val::bstring)
+   (when (and (string=? (os-class) "win32") (string=? name "HOME"))
+      (set! name "USERPROFILE"))
+   (=fx ($setenv name val) 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    system ...                                                       */

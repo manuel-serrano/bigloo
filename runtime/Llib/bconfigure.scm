@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/bconfigure.scm     */
+;*    .../prgm/project/bigloo/5.0.x/runtime/Llib/bconfigure.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Wed Apr 22 09:08:32 2026 (serrano)                */
+;*    Last change :  Thu Jun 25 10:49:23 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -220,7 +220,7 @@
 	      (field static wasm-fixnum::int "BGL_WASM_FIXNUM")
 	      "bigloo.configure"))
 
-   (export    (bigloo-config #!optional config)
+   (export    (bigloo-config #!optional key)
 	      (bigloo-configuration::pair)
 	      (bigloo-configuration-add-entry! ::symbol ::obj)))
 
@@ -327,10 +327,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-config ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-config #!optional config)
-   (if (not config)
+(define (bigloo-config #!optional key)
+   (if (not key)
        (bigloo-configuration)
-       (let ((c (assq config *bigloo-configuration*)))
+       (let ((c (assq key *bigloo-configuration*)))
 	  (if (pair? c)
 	      (cdr c)
 	      #unspecified))))
@@ -338,7 +338,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-configuration ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (bigloo-configuration)
+(define (bigloo-configuration::pair)
    (list-copy *bigloo-configuration*))
 
 ;*---------------------------------------------------------------------*/

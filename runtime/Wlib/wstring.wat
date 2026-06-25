@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wstring.wat        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/wstring.wat       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 28 06:41:16 2024                          */
-;*    Last change :  Fri Jul 18 10:38:40 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Thu Jun 25 12:01:31 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM strings                                                     */
 ;*=====================================================================*/
@@ -48,7 +48,15 @@
       (param $s (ref $bstring))
       (result (ref $bstring))
       (return (local.get $s)))
-   
+
+   (func $STRING_PTR_NULL (export "STRING_PTR_NULL")
+      (param $s (ref $bstring))
+      (result i32)
+      (return
+	 (if (result i32) (i32.gt_u (array.len (local.get $s)) (i32.const 0))
+	     (then (i32.const 0))
+	     (else (i32.const 1)))))
+	  
    ;; -----------------------------------------------------------------
    ;; Library functions
    ;; -----------------------------------------------------------------
