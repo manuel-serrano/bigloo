@@ -271,6 +271,52 @@
 (define (dsssl-bug #!key (foo::bool #t))
    foo)
 
+
+(define-class dsssl-test)
+
+(define-generic (do-w/optional a::obj #!optional (b 5))
+   (list 'default b))
+
+(define-method (do-w/optional a::dsssl-test #!optional (b 5))
+   (list 'method b))
+
+(define-generic (do-w/key a #!key (k 5))
+   (list 'default k))
+
+(define-method (do-w/key a::dsssl-test #!key (k 5))
+   (list 'method k))
+
+(define-generic (do-w/rest a::obj #!rest r)
+   (list 'default r))
+
+(define-method (do-w/rest a::dsssl-test #!rest r)
+   (list 'method r))
+
+(define-generic (do-w/opt+key a::obj #!optional (b 1) #!key (k 2))
+   (list 'default b k))
+
+(define-method (do-w/opt+key a::dsssl-test #!optional (b 1) #!key (k 2))
+   (list 'method b k))
+
+(define-generic (do-w/opt+rest a::obj #!optional (b 1) #!rest r)
+   (list 'default b r))
+
+(define-method (do-w/opt+rest a::dsssl-test #!optional (b 1) #!rest r)
+   (list 'method b r))
+
+(define-generic (do-w/key+rest a #!key (k 1) #!rest r)
+   (list 'default k r))
+
+(define-method (do-w/key+rest a::dsssl-test #!key (k 1) #!rest r)
+   (list 'method k r))
+
+(define-generic (do-w/all3 a::obj #!optional (b 1) #!key (k 2) #!rest r)
+   (list 'default b k r))
+
+(define-method (do-w/all3 a::dsssl-test #!optional (b 1) #!key (k 2) #!rest r)
+   (list 'method b k r))
+
+
 ;*---------------------------------------------------------------------*/
 ;*    test-dsssl ...                                                   */
 ;*---------------------------------------------------------------------*/
@@ -541,5 +587,49 @@
    (test "dssss11.2" (apply dsssl11 '(3 4 5 i: 6 i: 7 8 9))
 	 '(3 4 5 i: 6 j: 1 (8 9)))
    (test "dssss11.3" ((cadr (list dsssl9 dsssl11)) 3 4 5 i: 6 i: 7 8 9)
-		      '(3 4 5 i: 6 j: 1 (8 9))))
-     
+		      '(3 4 5 i: 6 j: 1 (8 9)))
+      ;; generic with #!optional
+   (test "generic/optional default" (do-w/optional 3) '(default 5))
+   (test "generic/optional value" (do-w/optional 3 10) '(default 10))
+   (test "generic/optional method default"
+	 (do-w/optional (instantiate::dsssl-test)) '(method 5))
+   (test "generic/optional method value"
+	 (do-w/optional (instantiate::dsssl-test) 10) '(method 10))
+   ;; generic with #!key
+   (test "generic/key default" (do-w/key 3) '(default 5))
+   (test "generic/key value" (do-w/key 3 k: 10) '(default 10))
+   (test "generic/key method default"
+	 (do-w/key (instantiate::dsssl-test)) '(method 5))
+   (test "generic/key method value"
+	 (do-w/key (instantiate::dsssl-test) k: 10) '(method 10))
+   ;; generic with #!rest
+   (test "generic/rest empty" (do-w/rest 3) '(default ()))
+   (test "generic/rest values" (do-w/rest 3 4 5) '(default (4 5)))
+   (test "generic/rest method empty"
+	 (do-w/rest (instantiate::dsssl-test)) '(method ()))
+   (test "generic/rest method values"
+	 (do-w/rest (instantiate::dsssl-test) 4 5) '(method (4 5)))
+   ;; generic with #!optional + #!key combined
+   (test "generic/opt+key defaults" (do-w/opt+key 3) '(default 1 2))
+   (test "generic/opt+key opt value" (do-w/opt+key 3 7) '(default 7 2))
+   (test "generic/opt+key key value" (do-w/opt+key 3 k: 9) '(default 1 9))
+   (test "generic/opt+key both" (do-w/opt+key 3 7 k: 9) '(default 7 9))
+   (test "generic/opt+key method defaults"
+	 (do-w/opt+key (instantiate::dsssl-test)) '(method 1 2))
+   (test "generic/opt+key method both"
+	 (do-w/opt+key (instantiate::dsssl-test) 7 k: 9) '(method 7 9))
+   ;; generic with #!optional + #!rest combined
+   (test "generic/opt+rest defaults" (do-w/opt+rest 3) '(default 1 ()))
+   (test "generic/opt+rest values" (do-w/opt+rest 3 10 20 30) '(default 10 (20 30)))
+   (test "generic/opt+rest method"
+	 (do-w/opt+rest (instantiate::dsssl-test) 10 20) '(method 10 (20)))
+   ;; generic with #!key + #!rest combined
+   (test "generic/key+rest defaults" (do-w/key+rest 3) '(default 1 ()))
+   (test "generic/key+rest value" (do-w/key+rest 3 k: 10) '(default 10 ()))
+   (test "generic/key+rest method"
+	 (do-w/key+rest (instantiate::dsssl-test) k: 10) '(method 10 ()))
+   ;; generic with #!optional + #!key + #!rest combined
+   (test "generic/all3 defaults" (do-w/all3 3) '(default 1 2 ()))
+   (test "generic/all3 values" (do-w/all3 3 10 k: 20) '(default 10 20 ()))
+   (test "generic/all3 method"
+	 (do-w/all3 (instantiate::dsssl-test) 10 k: 20) '(method 10 20 ())))

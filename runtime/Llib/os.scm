@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Fri Jun 26 09:01:03 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 16:52:59 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -968,6 +968,7 @@
 ;*    relative-file-name ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (relative-file-name name base)
+   
    (define (make-file f)
       (cond
 	 ((null? (cdr f))
@@ -976,6 +977,7 @@
 	  (make-file-name (car f) (cadr f)))
 	 (else
 	  (apply make-file-path f))))
+   
    (let ((f (file-name->list name)))
       (if (not (string=? (car f) ""))
 	  name

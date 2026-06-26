@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Fri Jun 26 10:12:06 2026 (serrano)                */
+/*    Last change :  Fri Jun 26 16:55:51 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -5028,7 +5028,6 @@ public final class foreign {
    }
 
    static byte[] get_property(String name, String def) {
-      // !!!!! JDK 1.1: System.getProperty(name, def) ?????
       final Properties p = System.getProperties();
       final String s = p.getProperty(name);
 

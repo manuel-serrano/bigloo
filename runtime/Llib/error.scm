@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Jun 19 16:27:31 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 16:53:06 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -1202,7 +1202,7 @@
 ;*    We remove the current path to fname                              */
 ;*---------------------------------------------------------------------*/
 (define (relative-file-name fname)
-   (let ((pwd   (pwd))
+   (let ((pwd (pwd))
 	 (dname (dirname fname)))
       (if (or (not (string? pwd))
 	      (string=? dname ".")
