@@ -698,24 +698,33 @@
 		   res)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    parse-fun-key-args ...                                           */
+;*---------------------------------------------------------------------*/
+(define (parse-fun-key-args args src loc)
+   (append (args->locals (dsssl-before-dsssl args) src loc)
+	   (args->locals (map car (dsssl-keys args)) src loc)))
+
+;*---------------------------------------------------------------------*/
+;*    args->locals ...                                                 */
+;*    -------------------------------------------------------------    */
+;*    Create local variables from a list of formal identifiers.        */
+;*---------------------------------------------------------------------*/
+(define (args->locals args src loc)
+   (map (lambda (a)
+	   (let* ((pid (check-id (parse-id a loc) src))
+		  (id (car pid))
+		  (type (cdr pid)))
+	      (if (user-symbol? id)
+		  (make-user-local-svar id type)
+		  (make-local-svar id type))))
+      args))
+
+;*---------------------------------------------------------------------*/
 ;*    parse-fun-opt-args ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (parse-fun-opt-args args src loc)
-   (append (map (lambda (a)
-		   (let* ((pid (check-id (parse-id a loc) src))
-			  (id (car pid))
-			  (type (cdr pid)))
-		      (if (user-symbol? id)
-			  (make-user-local-svar id type)
-			  (make-local-svar id type))))
-	      (dsssl-before-dsssl args))
-      (map (lambda (o)
-	      (let* ((a (car o))
-		     (pid (check-id (parse-id a loc) src))
-		     (id (car pid))
-		     (type (cdr pid)))
-		 (make-user-local-svar id type)))
-	 (dsssl-optionals args))))
+   (append (args->locals (dsssl-before-dsssl args) src loc)
+      (args->locals (map car (dsssl-optionals args)) src loc)))
    
 ;*---------------------------------------------------------------------*/
 ;*    make-sfun-noopt-definition ...                                   */
@@ -836,10 +845,17 @@
 	     (find-location src))
 	  (list #unspecified))
        (let* ((loc (find-location src))
-	      (locals (if (and (dsssl-prototype? args)
+	      (keys (and (dsssl-prototype? args) (dsssl-keys args)))
+	      (locals (cond
+			 ((and (dsssl-prototype? args)
 			       (pair? (dsssl-optionals args)))
-			  (parse-fun-opt-args args src loc)
-			  (parse-fun-args args src loc)))
+			  (parse-fun-opt-args args src loc))
+			 ((pair? keys)
+                          ;; Key arguments become positional arguments appended to
+                          ;; the existing required arguments
+			  (parse-fun-key-args args src loc))
+			 (else
+			  (parse-fun-args args src loc))))
 	      (pid (check-id (parse-id id loc) src))
 	      (name (gensym (car pid)))
 	      (type (cdr pid))
@@ -847,7 +863,8 @@
 	      (generic (def-global-sfun! id args locals module 'sgfun src 'now gbody))
 	      ;;(def `(labels ((,name ,(typed-args args generic)
 	      (def `(labels ((,name ,(if (and (dsssl-prototype? args)
-					      (pair? (dsssl-optionals args)))
+					      (or (pair? (dsssl-optionals args))
+						  (pair? keys)))
 					 (map local-id locals)
 					 (typed-args args generic))
 				;; use labels instead of a plain lambda expr
@@ -911,6 +928,9 @@
        (make-method-no-dsssl-body ident args locals body src))
       ((dsssl-optional-only-prototype? args)
        (let ((locals (parse-fun-opt-args args src loc)))
+	  (make-method-no-dsssl-body ident (map local-id locals) locals body src)))
+      ((dsssl-key-only-prototype? args)
+       (let ((locals (parse-fun-key-args args src loc)))
 	  (make-method-no-dsssl-body ident (map local-id locals) locals body src)))
       (else
        (make-method-dsssl-body ident args locals body src))))

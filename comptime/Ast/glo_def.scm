@@ -279,7 +279,9 @@
        (eq? old new)
        (and sub?
 	    (or (type-subclass? new old)
-		(and (tclass? new) (eq? old *obj*))))))
+		;; we also have a compatible type when the old type is
+		;; explicitly *obj* or *_* and the new type is a class
+		(and (tclass? new) (or (eq? old *obj*) (eq? old *_*)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mismatch-error ...                                               */
@@ -334,7 +336,10 @@
 		    src
 		    "(incompatible function type result)")
 		 #f)
-		((let loop ((locals locals)
+                ;; we only look at the locals representing required args
+                ;; and skip the locals introduced by dsssl keywords 
+		((let loop ((locals (take locals
+                                       (absfx (sfun-arity generic-value))))
 			    (types  (map (lambda (a)
 					    (cond
 					       ((local? a)
