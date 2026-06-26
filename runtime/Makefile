@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Jun 26 11:27:13 2026 (serrano)                */
+#*    Last change :  Fri Jun 26 16:27:39 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -132,66 +132,62 @@ W_WLIB		= $(WLIB:%=Wlib/%.wat)
 #*---------------------------------------------------------------------*/
 #*    Java objects                                                     */
 #*---------------------------------------------------------------------*/
-JDK_LIBS	= JDK JDKexit
+JDK_IMPL	= JDK2x
 
-ifeq ($(JAVA_VERSION), 21)
-  JDK_LIBS += JDK2x
-endif
-ifeq ($(JAVA_VERSION), 20)
-  JDK_LIBS += JDK2x
-endif
 ifeq ($(JAVA_VERSION), 19)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 18)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 17)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 16)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 15)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 14)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 13)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 12)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 11)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 10)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 1.9)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 1.8)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 1.7)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 1.6)
-  JDK_LIBS += JDK16
+  JDK_IMPL = JDK16
 endif
 ifeq ($(JAVA_VERSION), 1.5)
-  JDK_LIBS += JDK15
+  JDK_IMPL = JDK15
 endif
 ifeq ($(JAVA_VERSION), 1.4)
-  JDK_LIBS += JDK14
+  JDK_IMPL = JDK14
 endif
 ifeq ($(JAVA_VERSION), 1.3)
-  JDK_LIBS += JDK13
-  JDK_LIBS += JDK2x
+  JDK_IMPL = JDK13
 endif
+
+JDK_LIBS	= JDK JDKexit $(JDK_IMPL)
+
 
 JLIB		= callable foreign buffer configure stackwriter\
                   bbool output_string_port output_procedure_port \

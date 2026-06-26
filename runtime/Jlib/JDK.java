@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:50:33 2008                          */
-/*    Last change :  Fri Jun 26 11:09:53 2026 (serrano)                */
+/*    Last change :  Fri Jun 26 16:25:38 2026 (serrano)                */
 /*    Copyright   :  2008-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java auto-configuration                                          */
@@ -93,8 +93,10 @@ public abstract class JDK {
       try {
 	 Class c = Class.forName(classname);
 	 return (JDK)c.newInstance();
-      } catch (Exception x) {
-	 System.err.printf("Cannot load JDK implementation" + classname);
+      } catch (Exception e) {
+	 System.err.print("Cannot load JDK implementation: " + classname);
+	 System.err.print("switching to vanilla support...");
+	 e.printStackTrace();
 	 return null;
       }
    }
