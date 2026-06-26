@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri May 22 15:52:34 2026 (serrano)                */
+#*    Last change :  Fri Jun 26 11:27:13 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -134,74 +134,63 @@ W_WLIB		= $(WLIB:%=Wlib/%.wat)
 #*---------------------------------------------------------------------*/
 JDK_LIBS	= JDK JDKexit
 
+ifeq ($(JAVA_VERSION), 21)
+  JDK_LIBS += JDK2x
+endif
 ifeq ($(JAVA_VERSION), 20)
-  JDK_LIBS += JDK16
-else
+  JDK_LIBS += JDK2x
+endif
 ifeq ($(JAVA_VERSION), 19)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 18)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 17)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 16)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 15)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 14)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 13)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 12)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 11)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 10)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 1.9)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 1.8)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 1.7)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 1.6)
   JDK_LIBS += JDK16
-else
+endif
 ifeq ($(JAVA_VERSION), 1.5)
   JDK_LIBS += JDK15
-else
+endif
 ifeq ($(JAVA_VERSION), 1.4)
   JDK_LIBS += JDK14
-else
+endif
+ifeq ($(JAVA_VERSION), 1.3)
   JDK_LIBS += JDK13
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
+  JDK_LIBS += JDK2x
 endif
 
 JLIB		= callable foreign buffer configure stackwriter\

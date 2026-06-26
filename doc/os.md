@@ -12,6 +12,7 @@
 ,(implementation-path "../runtime/Llib/bigloo.scm")
 ,(implementation-path "../runtime/Llib/os.scm")
 ,(implementation-path "../runtime/Llib/error.scm")
+,(implementation-path "../runtime/Ieee/port.scm")
 ,(example-path "../test/src/os.bgl")
 
 OS
@@ -31,14 +32,13 @@ Applies all the registered exit functions then stops an execution,
 returning the integer `int`.
 
 ### register-exit-function! ###
-Register @var{proc} as an exit functions. @var{Proc} is a procedure
+Register `fun` as an exit functions. The `fun` argument is a procedure
 accepting of one argument. This argument is the numerical value which
 is the status of the exit call. The registered functions are called when the 
 execution ends. 
-@end deffn
 
 ### unregister-exit-function! ###
-Unregisters an exit function
+Unregisters a previously registered exit function.
 
 
 Environment
@@ -53,17 +53,16 @@ the variable exists. Return `#f` otherwise. If `name` is omitted,
 <!-- [:@C] -->
 Assigns the environment variable.
 
-### time ###
-Evaluates the `thunk` and returns four values: the result of calling
-`thunk`, the actual execution time, the system time, and the user time
-in millisecond.
-
 ### getrlimit ###
 <!-- [:@C] -->
 Get system limits.
 
 The function `getrlimit` expects as argument a resource and it returns
 two values: a soft and a hard limit. Both values are `elong`.
+
+Applications can test the support of `getrlimit` with the `cond-expand`
+feature `rlimit` (see [Conditional Execution](./condexpand.html)).
+
 
 ### setrlimit! ###
 <!-- [:@C] -->
@@ -92,20 +91,6 @@ resource identifier, or a symbol amongst:
   * `STACK`
 
 All other symbols trigger an error.
-
-Bigloo defines the `cond-expand`'s `rlimit` keyword, which enables
-applications to use the two functions conditionally.
-
-@smalllisp
-(multiple-value-bind (soft hard)
-  (getrlimit 'NOFILE)
-  (cons soft hard)) @result{} (#e1024 . #e1048576)
-(setrlimit 'NOFILE #e256 #e1048576) @result{} #t
-(cond-expand
-   (rlimit 'supported)
-   (else 'unsupported)) @result{} supported
-@end smalllisp
-@end deffn
 
 
 File Names
@@ -185,6 +170,143 @@ current directory one may add `"."` to the `path` list. On
 success, the absolute file name is returned. On failure,
 `#f` is returned. Example:
 
+File Properties and Operations
+------------------------------
+
+### file-exists? ###
+This procedure returns `#t` if the file (respectively directory, and link)
+`path` exists. Otherwise it returns `#f`.
+
+### file-gzip? ###
+This procedure returns `#t` if and only if the file `path` exists
+and can be unzip by Bigloo. Otherwise it returns `#f`.
+
+### delete-file ###
+Deletes the file named `path`. The result of this procedure
+is `#t` is the operation succeeded. The result is `#f` otherwise.
+
+### rename-file ###
+Renames the file `from` as `to`. The two files have to
+be located on the same file system. If the renaming succeeds, the result
+is `#t`, otherwise it is `#f`.
+
+### truncate-file ###
+Truncates shall cause the regular file named by `path` to
+have a `size` which shall be equal to length bytes.
+
+Returns `#t` on success. Returns `#f` otherwise.
+
+### copy-file ###
+Copies the file `from` into `to`. If the copy succeeds, 
+the result is `#t`, otherwise it is `#f`.
+
+### make-symlink ###
+Creates a symbolic link named `linkpath` which contains the
+string `target`. Return `#t` on success.
+
+### file-modification-time ###
+Returns the file modification time.
+
+### file-access-time ###
+Returns the last file access time.
+
+### file-change-time ###
+Returns the last file  time.
+
+### file-times-set! ###
+Set the date (in second) of the last modification (respec. access) for
+file `path`. The number of seconds is represented by a value
+that may be converted into a date by the means of `seconds->date`
+(see [Date](./date.html).
+
+Returns `#t` if the operation succeeds.
+
+### file-size ###
+Returns the size (in bytes) for file `path`. On error, a negative size
+is returned.
+
+### file-uid ###
+Returns the user id (an integer) for file `path`. On error, `-1` is returned.
+
+### file-gid ###
+The functions return the group id (an integer) 
+for file `string`. On error, `-1` is returned.
+
+### file-mode ###
+Returns the file access mode (an integer). On error `-1` is returned.
+
+### file-type ###
+Returns the file type (a symbol). The possible returned values are:
+
+  * `regular`
+  * `directory`
+  * `link`
+  * `block`
+  * `fifo`
+  * `character`
+  * `socket`
+  * `resource`
+  * `unknown`
+  * `does-not-exist`
+
+<span></span>
+
+### chmod ###
+Change the access mode of the file named `path`. The `option`
+must be either a list of the following symbols `read`, `write` 
+and `execute` or an integer. If the operation succeeds, `chmod` 
+returns `#t`. It returns `#f` otherwise. The argument 
+`option` can also be an integer that represents the native file
+permission.
+
+Directories
+-----------
+
+### directory? ###
+This procedure returns `#t` if the file `string` exists and is a
+directory. Otherwise it returns `#f`.
+
+### pwd ###
+Returns the current working directory.
+
+### chdir ###
+<!-- [:@C] --> 
+Changes the current directory to `path`. On success, `chdir`
+returns `#t`. On failure it returns `#f`.
+
+### make-directory ###
+Attempts to creae a new directory named `path`, with access mode `#o777`. It 
+returns `#t` if the directory was created. It returns `#f` otherwise.
+
+### make-directories ###
+Creates a new directory named `path`, including any necessary
+but nonexistent parent directories. It returns `#t` if the
+directory was created. It returns `#f` otherwise. Note that 
+if this operation fails it may have succeeded in creating some 
+of the necessary parent directories.
+
+### delete-directory ###
+Deletes the directory named `path`. The directory must be empty
+in order to be deleted. The result of this procedure is unspecified.
+
+### directory-length ###
+If file `path` exists and is a directory, the function 
+`directory-length` returns the number of entries contained in `string`.
+If `path` is not a directory, returns `0`.
+
+### directory->list ###
+If file `path` exists and is a directory, the function 
+`directory->list` returns the list of files in `path`.
+
+### directory->path-list ###
+The function `directory->path-list` returns a list of files
+in `path` whose dirname are `path`.
+
+### directory->vector ###
+Similar to `directory->list` but returns a vector instead of a list.
+
+### directory->path-vector ###
+Similar to `directory->path-list` but returns a vector instead of a list.
 
 Logs
 ----
@@ -258,6 +380,18 @@ The log facility, which might be one of:
       
 <span></span>
 
+Time and Sleep
+--------------
+
+### sleep ###
+Sleeps for a delay during at least `micros` microseconds.
+
+### time ###
+Evaluates the `thunk` and returns four values: the result of calling
+`thunk`, the actual execution time, the system time, and the user time
+in millisecond.
+
+
 OS Description
 --------------
 
@@ -286,12 +420,11 @@ Users and Groups
 ----------------
 
 ### getuid ###
-<!-- [:@C] -->
 The procedure `getuid` returns the UID 
 of the user the current process is executed on behalf of.
 
 ### getgid ###
-<!-- [:@C] -->
+<!-- [:@C-wasm] -->
 The procedure `getuid` returns the GID 
 of the user the current process is executed on behalf of.
 
@@ -300,14 +433,14 @@ of the user the current process is executed on behalf of.
 The procedure sets the UID of the current process. In case of failure,
 this procedure raises an error.
 
+### getpid ###
+<!-- [:@C-wasm] -->
+Gets the current process identifier.
+
 ### setgid ###
 <!-- [:@C] -->
 The procedure sets the GID of the current process. In case of failure,
 this procedure raises an error.
-
-### getpid ###
-<!-- [:@C] -->
-Gets the current process identifier.
 
 ### getppid ###
 <!-- [:@C] -->

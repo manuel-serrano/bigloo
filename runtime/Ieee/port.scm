@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/port.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Ieee/port.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Fri May  1 15:49:48 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 08:10:04 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -147,13 +147,13 @@
 	    (macro $reset-output-port-error::obj (::output-port)
 		   "bgl_reset_output_port_error")
 	    
-	    (c-fexists?::bool (::string) "fexists")
-	    (macro c-delete-file::bool (::string) "unlink")
-	    (macro c-delete-directory::bool  (::string) "rmdir")
-	    (macro c-rename-file::int (::string ::string) "rename")
+	    ($fexists?::bool (::string) "fexists")
+	    (macro $delete-file::bool (::string) "unlink")
+	    (macro $delete-directory::bool  (::string) "rmdir")
+	    (macro $rename-file::int (::string ::string) "rename")
 	    (macro $truncate-file::int (::string ::long) "truncate")
 	    (macro $ftruncate::int (::output-port ::long) "bgl_output_port_truncate")
-	    (macro c-mkdir::bool (::string ::long) "BGL_MKDIR")
+	    (macro $mkdir::bool (::string ::long) "BGL_MKDIR")
 	    
 	    (macro $port-isatty?::bool (::output-port) "bgl_port_isatty")
  	    (macro $output-port-name::bstring (::output-port) "OUTPUT_PORT_NAME")
@@ -348,19 +348,19 @@
 	       (method static $reset-output-port-error::obj (::output-port)
 		  "bgl_reset_output_port_error")
 	       
-	       (method static c-fexists?::bool (::string)
+	       (method static $fexists?::bool (::string)
 		  "fexists")
-	       (method static c-delete-file::bool (::string)
+	       (method static $delete-file::bool (::string)
 		  "unlink")
-	       (method static c-delete-directory::bool  (::string)
+	       (method static $delete-directory::bool  (::string)
 		  "rmdir")
-	       (method static c-rename-file::int (::string ::string)
+	       (method static $rename-file::int (::string ::string)
 		  "rename")
-	       (method static $truncate-file::int (::string ::long)
+	       (method static $truncate-file::bool (::string ::long)
 		  "truncate")
 	       (method static $ftruncate::bool (::output-port ::long)
 		  "bgl_output_port_truncate")
-	       (method static c-mkdir::bool (::string ::int)
+	       (method static $mkdir::bool (::string ::int)
 		  "mkdir")
 	       
 	       (method static $output-port-position::long (::output-port)
@@ -552,32 +552,32 @@
 	    (inline output-port-buffer::bstring ::output-port)
 	    (inline output-port-buffer-set! ::output-port ::bstring)
 	    
-	    (inline file-exists?::bool ::string)
-	    (file-gzip? name)
-	    (inline delete-file ::string)
-	    (inline make-directory::bool ::string)
+	    (inline file-exists?::bool ::bstring)
+	    (file-gzip?::bool name::bstring)
+	    (inline delete-file::bool ::bstring)
+	    (inline make-directory::bool ::bstring)
 	    (make-directories::bool ::bstring)
-	    (inline delete-directory ::string)
-	    (inline rename-file::bool ::string ::string)
-	    (inline truncate-file::bool ::string ::long)
+	    (inline delete-directory ::bstring)
+	    (inline rename-file::bool ::bstring ::bstring)
+	    (inline truncate-file::bool ::bstring ::long)
 	    (inline output-port-truncate::bool ::output-port ::long)
-	    (copy-file ::string ::string)
+	    (copy-file::bool ::bstring ::bstring)
 	    (inline directory?::bool ::bstring)
 	    (inline directory-length::long ::bstring)
-	    (inline directory->list ::string)
-	    (directory->path-list ::bstring)
-	    (inline directory->vector::vector ::string)
+	    (inline directory->list::pair-nil ::bstring)
+	    (directory->path-list::pair-nil ::bstring)
+	    (inline directory->vector::vector ::bstring)
 	    (directory->path-vector::vector ::bstring)
-	    (inline file-modification-time::elong ::string)
-	    (inline file-change-time::elong ::string)
-	    (inline file-access-time::elong ::string)
-	    (inline file-times-set!::int ::string ::elong ::elong)
-	    (inline file-size::elong ::string)
-	    (inline file-uid::int ::string)
-	    (inline file-gid::int ::string)
-	    (inline file-mode::int ::string)
-	    (inline file-type::symbol ::string)
-            (inline make-symlink ::bstring ::bstring)
+	    (inline file-modification-time::elong ::bstring)
+	    (inline file-change-time::elong ::bstring)
+	    (inline file-access-time::elong ::bstring)
+	    (inline file-times-set!::bool ::bstring ::elong ::elong)
+	    (inline file-size::elong ::bstring)
+	    (inline file-uid::int ::bstring)
+	    (inline file-gid::int ::bstring)
+	    (inline file-mode::int ::bstring)
+	    (inline file-type::symbol ::bstring)
+            (inline make-symlink::bool ::bstring ::bstring)
             (inline select::pair-nil #!key (timeout 0) (read '()) (write '()) (except '()))
 	    (inline open-pipes #!optional name)
 	    (input-port-protocol prototcol)
@@ -1560,64 +1560,64 @@
 ;*---------------------------------------------------------------------*/
 ;*    file-exists? ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (file-exists? name)
-   (c-fexists? name))
+(define-inline (file-exists?::bool path::bstring)
+   ($fexists? path))
    
 ;*---------------------------------------------------------------------*/
 ;*    file-gzip? ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (file-gzip? name)
-   (and (file-exists? name)
-	(with-input-from-file name
-	   (lambda ()
-	      (with-handler
-		 (lambda (e)
-		    #f)
-		 (gunzip-parse-header (current-input-port)))))))
+(define (file-gzip?::bool path::bstring)
+   (when (file-exists? path)
+      (call-with-input-file path
+         (lambda (ip)
+            (with-handler
+               (lambda (e)
+                  #f)
+               (gunzip-parse-header ip))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    delete-file ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (delete-file string)
-   (not (c-delete-file string)))
+(define-inline (delete-file::bool path::bstring)
+   (not ($delete-file path)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-directory ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-directory string)
-   (c-mkdir string #o777))
+(define-inline (make-directory::bool path::bstring)
+   ($mkdir path #o777))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-directories ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (make-directories string)
-   (or (directory? string)
-       (make-directory string)
-       (let ((dname (dirname string)))
+(define (make-directories::bool path::bstring)
+   (or (directory? path)
+       (make-directory path)
+       (let ((dname (dirname path)))
 	  (if (or (=fx (string-length dname) 0) (file-exists? dname))
 	      #f
 	      (let ((aux (make-directories dname)))
-		 (if (char=? (string-ref string (-fx (string-length string) 1))
+		 (if (char=? (string-ref path (-fx (string-length path) 1))
 			     (file-separator))
 		     aux
-		     (make-directory string)))))))
+		     (make-directory path)))))))
       
 ;*---------------------------------------------------------------------*/
 ;*    delete-directory ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (delete-directory string)
-   (not (c-delete-directory string)))
+(define-inline (delete-directory path::bstring)
+   (not ($delete-directory path)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rename-file ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (rename-file string1 string2)
-   (if (eq? (c-rename-file string1 string2) 0) #t #f))
+(define-inline (rename-file::bool from::bstring to::bstring)
+   (if (eq? ($rename-file from to) 0) #t #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    truncate-file ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (truncate-file path size)
+(define-inline (truncate-file::bool path::bstring size::long)
    ($truncate-file path size))
 
 ;*---------------------------------------------------------------------*/
@@ -1629,10 +1629,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    copy-file ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (copy-file string1 string2)
-   (let ((pi (open-input-binary-file string1)))
+(define (copy-file::bool from::bstring to::bstring)
+   (let ((pi (open-input-binary-file from)))
       (when (binary-port? pi)
-	 (let ((po (open-output-binary-file string2)))
+	 (let ((po (open-output-binary-file to)))
 	    (if (not (binary-port? po))
 		(begin
 		   (close-binary-port pi)
@@ -1658,136 +1658,142 @@
 ;*---------------------------------------------------------------------*/
 ;*    directory? ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (directory?::bool string::bstring)
-   ($directory? string))
+(define-inline (directory?::bool path::bstring)
+   ($directory? path))
 
 ;*---------------------------------------------------------------------*/
 ;*    directory-length ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (directory-length::long string::bstring)
-   ($directory-length string))
+(define-inline (directory-length::long path::bstring)
+   ($directory-length path))
 
 ;*---------------------------------------------------------------------*/
 ;*    directory->list ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (directory->list string)
-   ($directory->list string))
+(define-inline (directory->list::pair-nil path::bstring)
+   ($directory->list path))
 
 ;*---------------------------------------------------------------------*/
 ;*    directory->path-list ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (directory->path-list dir)
-   (let ((l (string-length dir)))
+(define (directory->path-list::pair-nil path::bstring)
+   (let ((l (string-length path)))
       (cond
 	 ((=fx l 0)
 	  '())
-	 ((char=? (string-ref dir (-fx l 1)) (file-separator))
+	 ((char=? (string-ref path (-fx l 1)) (file-separator))
 	  (cond-expand
 	     (bigloo-c
-	      ($directory->path-list dir (-fx l 1) (file-separator)))
+	      ($directory->path-list path (-fx l 1) (file-separator)))
 	     (else
-	      (map! (lambda (f) (string-append dir f))
-		 (directory->list dir)))))
+	      (map! (lambda (f) (string-append path f))
+		 (directory->list path)))))
 	 (else
 	  (cond-expand
 	     (bigloo-c
-	      ($directory->path-list dir l (file-separator)))
+	      ($directory->path-list path l (file-separator)))
 	     (else
-	      (map! (lambda (f) (make-file-name dir f))
-		 (directory->list dir))))))))
+	      (map! (lambda (f) (make-file-name path f))
+		 (directory->list path))))))))
 	   
 ;*---------------------------------------------------------------------*/
 ;*    directory->vector ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (directory->vector string)
+(define-inline (directory->vector::vector path::bstring)
    (cond-expand
       ((or bigloo-c bigloo-jvm)
-       ($directory->vector string))
+       ($directory->vector path))
       (else
-       (list->vector ($directory->list string)))))
+       (list->vector ($directory->list path)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    directory->path-vector ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (directory->path-vector dir)
-   (let ((l (string-length dir)))
+(define (directory->path-vector::vector path::bstring)
+   (let ((l (string-length path)))
       (cond
 	 ((=fx l 0)
 	  '#())
-	 ((char=? (string-ref dir (-fx l 1)) (file-separator))
+	 ((char=? (string-ref path (-fx l 1)) (file-separator))
 	  (cond-expand
 	     (bigloo-c
-	      ($directory->path-vector dir (-fx l 1) (file-separator)))
+	      ($directory->path-vector path (-fx l 1) (file-separator)))
 	     (else
-	      (map! (lambda (f) (string-append dir f))
-		 (directory->list dir)))))
+	      (list->vector
+		 (map! (lambda (f) (string-append path f))
+		    (directory->list path))))))
 	 (else
 	  (cond-expand
 	     (bigloo-c
-	      ($directory->path-vector dir l (file-separator)))
+	      ($directory->path-vector path l (file-separator)))
 	     (else
-	      (map! (lambda (f) (make-file-name dir f))
-		 (directory->list dir))))))))
+	      (list->vector
+		 (map! (lambda (f) (make-file-name path f))
+		    (directory->list path)))))))))
 	   
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-modification-time@ ...                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (file-modification-time file)
-   ($modification-time file))
+(define-inline (file-modification-time::elong path::bstring)
+   ($modification-time path))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-change-time@ ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (file-change-time file)
-   ($change-time file))
+(define-inline (file-change-time::elong path::bstring)
+   ($change-time path))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-access-time@ ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (file-access-time file)
-   ($access-time file))
+(define-inline (file-access-time::elong path::bstring)
+   ($access-time path))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-times-set!@ ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (file-times-set! file atime mtime)
-   ($utime file atime mtime))
+(define-inline (file-times-set! path::bstring atime::elong mtime::elong)
+   (=fx ($utime path atime mtime) 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-size@ ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (file-size file)
-   ($file-size file))
+(define-inline (file-size::elong path::bstring)
+   ($file-size path))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-uid@ ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (file-uid file)
-   ($file-uid file))
+(define-inline (file-uid::int path::bstring)
+   ($file-uid path))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-gid@ ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (file-gid file)
-   ($file-gid file))
+(define-inline (file-gid::int path::bstring)
+   ($file-gid path))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-mode@ ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (file-mode file)
-   ($file-mode file))
+(define-inline (file-mode::int path::bstring)
+   ($file-mode path))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-type@ ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (file-type file)
-   ($file-type file))
+(define-inline (file-type::symbol path::bstring)
+   (cond-expand
+      (bigloo-wasm
+       (string->symbol (symbol->string! ($file-type path))))
+      (else
+       ($file-type path))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-symlink ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-symlink path1 path2)
-   ($symlink path1 path2))
+(define-inline (make-symlink::bool target::bstring linkpath::bstring)
+   (=fx ($symlink target linkpath) 0))
        
 ;*---------------------------------------------------------------------*/
 ;*    select ...                                                       */

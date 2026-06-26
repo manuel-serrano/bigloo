@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Wlib/wports.wat         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/wports.wat        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Thu Apr 30 11:01:27 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 15:37:18 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -86,6 +86,7 @@
    (import "__js_io" "read_dir_entry" (func $js_read_dir_entry (param externref) (param i32) (param i32) (result i32)))
 
    (import "__js_io" "file_separator" (global $js_file_separator i32))
+   (import "__js_io" "path_separator" (global $js_path_separator i32))
    (import "__js_io" "password" (func $js_password (param i32 i32 i32) (result i32)))
    (import "__js_io" "ftruncate" (func $js_ftruncate (param i32 i32) (result i32)))
    (import "__js_io" "truncate" (func $js_truncate (param i32 i32 i32) (result i32)))
@@ -2526,6 +2527,10 @@
    (global $FILE_SEPARATOR (export "FILE_SEPARATOR") i32
       (global.get $js_file_separator))
       
+   ;; PATH_SEPARATOR
+   (global $PATH_SEPARATOR (export "PATH_SEPARATOR") i32
+      (global.get $js_path_separator))
+      
    ;; fexists
    (func $fexists (export "fexists")
       (param $path (ref $bstring))
@@ -2978,9 +2983,10 @@
 
       (if (ref.is_null (local.get $arr))
 	  (then
-	     (return (i64.const -1)))
+	     (return (i64.const 0)))
 	  (else
-	   (return (i64.extend_i32_u (call $js_read_dir_size (local.get $arr))))))
+	   (return
+	      (i64.extend_i32_u (call $js_read_dir_size (local.get $arr))))))
       (unreachable))
    
 

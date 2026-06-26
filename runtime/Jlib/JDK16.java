@@ -1,5 +1,5 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0a/runtime/Jlib/JDK16.java         */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/JDK16.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:51:26 2008                          */

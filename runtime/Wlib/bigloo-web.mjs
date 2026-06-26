@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0a/runtime/Wlib/bigloo-web.mjs     */
+/*    .../prgm/project/bigloo/5.0.x/runtime/Wlib/bigloo-web.mjs        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri May  1 08:39:14 2026 (serrano)                */
+/*    Last change :  Fri Jun 26 07:51:58 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -142,6 +142,7 @@ class BglWebRuntime extends BglRuntime {
    js_io(self) {
       return {
 	 file_separator: 47,
+	 path_separator: 58,
 	 open_file: (path_addr, path_length, flags) => {
 	    const path = self.loadString(path_addr, path_length);
 
@@ -561,6 +562,9 @@ class BglWebRuntime extends BglRuntime {
 	    process.env[id] = val;
 	    return 0;
 	 },
+
+	 getuid: () => 0,
+	 getgid: () => 0,
 
 	 date: (addr) => {
 	    const d = Date();

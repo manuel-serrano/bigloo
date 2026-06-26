@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wsystem.wat        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/wsystem.wat       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Mon Sep  8 15:46:47 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Fri Jun 26 15:11:55 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM system ops                                                  */
 ;*=====================================================================*/
@@ -25,6 +25,8 @@
    (import "__js_system" "getenv_len" (func $js_getenv_len (result i32)))
    (import "__js_system" "getenv_var" (func $js_getenv_var (param i32 i32) (result i32)))
    (import "__js_system" "setenv" (func $js_setenv (param i32 i32 i32 i32) (result i32)))
+   (import "__js_system" "getuid" (func $js_getuid (result i32)))
+   (import "__js_system" "getgid" (func $js_getgid (result i32)))
    (import "__js_system" "date" (func $js_date (param i32) (result i32)))
    (import "__js_system" "umask" (func $js_umask (param i32) (result i32)))
    (import "__js_system" "chdir" (func $js_chdir (param i32 i32) (result i32)))
@@ -162,6 +164,14 @@
       (call $store_string (local.get $val) (i32.add (local.get $len) (i32.const 128)))
       (return_call $js_setenv (i32.const 128) (local.get $len)
 	 (i32.add (local.get $len) (i32.const 128)) (local.get $len2)))
+
+   (func $bgl_getuid (export "bgl_getuid")
+      (result i32)
+      (return_call $js_getuid))
+
+   (func $bgl_getgid (export "bgl_getgid")
+      (result i32)
+      (return_call $js_getgid))
 
    (func $bgl_get_trace_stack (export "bgl_get_trace_stack")
       (param $depth i32)

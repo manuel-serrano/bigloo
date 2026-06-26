@@ -38,13 +38,19 @@ formula is true under this interpretation. The formula may make use of
 identifier, `and`, `or` and `not` operators.
 
 Bigloo extends the SRFI-0 formula syntax in several directions, for
-testing the support of a library or a configuration. The syntax
-of the extensions are:
+testing the support of a library or a configuration
+(see [Bigloo chapter](./bigloo.html)). The syntax of the extensions are:
 
 ```bnf
 <CondExpandFormula> --> srfi-0 formulas
   | ( library <ident> )
-  | ( config <ident> <expr> )
+  | ( config <ident> <CExpr> )
+  
+<CExpr> --> <atom>
+  | (<CBinOp> <string> )
+  | (<CBinOp> <number> )
+  
+<CBinOp> --> < | <= | > | >=
 ```
 
 Examples: 
@@ -173,9 +179,12 @@ values of a particular setting can be obtained with:
 (bigloo-config 'int-size)
 (bigloo-config 'elong-size)
 ```
-A configuration can be tested with:
+A [configuration](./bigloo.html) can be tested with:
 
-  * `config key value`
+  * `(config key cexpr)`
+
+The expression `cexpr` can either be an atom (i.e., a number, a
+string, a boolean, ...)  or a comparison (`=`, `<`, `<=`, ...).
 
 For instance, the following formula will be true for C compilation, when
 it supports stack allocation.

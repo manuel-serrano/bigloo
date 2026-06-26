@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Pp/pp.scm               */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Pp/pp.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 27 14:10:31 1993                          */
-;*    Last change :  Thu Apr 30 09:13:57 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 08:34:09 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Le pretty-printer de Marc Feeley.                                */
 ;*=====================================================================*/
@@ -370,9 +370,6 @@
       (define (pp-defun expr col extra)
          (pp-general expr col extra #t pp-expr-defun #f pp-expr)
          (out #"\n" 0))
-      
-      (define (pp-let expr col extra)
-         (pp-general expr col extra #f pp-expr-list #f pp-expr))
       
       ; (item1 item2
       ;     item3

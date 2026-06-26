@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Jlib/JDK14.java              */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/JDK14.java        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:51:04 2008                          */
-/*    Last change :  Tue Dec  8 08:04:36 2015 (serrano)                */
-/*    Copyright   :  2008-15 Manuel Serrano                            */
+/*    Last change :  Fri Jun 26 10:54:53 2026 (serrano)                */
+/*    Copyright   :  2008-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK 1.4 specifics                                                */
 /*=====================================================================*/
@@ -66,7 +66,7 @@ public class JDK14 extends JDK {
       return null;
    }
 
-   public boolean truncateImp(FileOutputStream file, long size) {
+   public boolean truncateImpl(FileOutputStream file, long size) {
       return false;
    }
 }

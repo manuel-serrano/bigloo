@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Fri May 22 08:55:36 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 07:44:31 2026 (serrano)                */
 ;*    Copyright   :  2012-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -62,6 +62,13 @@
       (type-check #t)
       (force-register-gc-roots #f)
       (retblock #f)))
+
+;*---------------------------------------------------------------------*/
+;*    backend-initialize! ::wasm ...                                   */
+;*---------------------------------------------------------------------*/
+(define-method (backend-initialize! o::jvm)
+   (call-next-method)
+   (unregister-srfi! 'rlimit))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-select! ::jvm ...                                        */

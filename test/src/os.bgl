@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Thu Jun 25 18:00:43 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 07:55:27 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing OS api                                                   */
@@ -389,7 +389,7 @@
 
 (define-test getuid
    (>=fx (getuid) 0)
-   :cond-expand C)
+   :cond-expand (or C wasm))
 
 (define-test setuid
    setuid
@@ -398,7 +398,7 @@
 
 (define-test getgid
    (>=fx (getgid) 0)
-   :cond-expand C)
+   :cond-expand (or C wasm))
 
 (define-test setgid
    setgid
@@ -496,5 +496,328 @@
    :cond-expand C
    :expected #unspecified)
 
+(define-test sleep
+   (begin (sleep 1) #t))
+
+(define-test file-exists?
+   (file-exists? os.filename))
+
+(define-test file-exists?
+   (let ((dir (dirname os.filename)))
+      (file-exists?
+         (make-file-path dir ".." (basename dir) (basename os.filename)))))
+
+(define-test file-exists?
+   (file-exists? (string-append os.filename " does not exists"))
+   :expected #f)
+
+(define-test file-gzip?
+   (file-gzip? os.filename)
+   :expected #f)
+
+(define-test delete-file
+   (let loop ()
+      (let ((f (make-file-name (os-tmp)
+                  (format "bigloo-test-~a" (current-microseconds)))))
+         (if (file-exists? f)
+             (begin
+                (sleep 1)
+                (loop))
+             (begin
+                (unwind-protect
+                   (call-with-output-file f
+                      (lambda (op)
+                         (newline op)))
+                   (delete-file f))
+                #t)))))
+
+(define-test rename-file
+   (let loop ()
+      (let* ((f (make-file-name (os-tmp)
+                   (format "bigloo-test-~a" (current-microseconds))))
+             (r (string-append f "-renamed")))
+         (if (or (file-exists? f) (file-exists? r))
+             (begin
+                (sleep 1)
+                (loop))
+             (begin
+                (call-with-output-file f
+                   (lambda (op)
+                      (newline op)))
+                (rename-file f r)
+                (unwind-protect
+                   (and (file-exists? r) (not (file-exists? f)))
+                   (delete-file r))
+                #t)))))
+
+(define-test truncate-file
+   (let loop ()
+      (let ((f (make-file-name (os-tmp)
+                  (format "bigloo-test-~a" (current-microseconds)))))
+         (if (file-exists? f)
+             (begin
+                (sleep 1)
+                (loop))
+             (begin
+                (call-with-output-file f
+                   (lambda (op)
+                      (display "012345\n6789\n" op)))
+                (unwind-protect
+                   (when (truncate-file f 4)
+                      (file-size f))
+                   (delete-file f))))))
+   :expected 4)
+
+(define-test copy-file
+   (let loop ()
+      (let* ((f (make-file-name (os-tmp)
+                   (format "bigloo-test-~a" (current-microseconds))))
+             (c (string-append f "-copy"))
+             (s "foo bar gee\n"))
+         (if (or (file-exists? f) (file-exists? c))
+             (begin
+                (sleep 1)
+                (loop))
+             (begin
+                (call-with-output-file f
+                   (lambda (op)
+                      (display s op)))
+                (copy-file f c)
+                (unwind-protect
+                   (and (file-exists? c)
+                        (file-exists? f)
+                        (string=? (call-with-input-file c read-string) s))
+                   (begin
+                      (delete-file c)
+                      (delete-file f)
+                      #t)))))))
+
+(define-test make-symlink
+   (let loop ()
+      (let* ((f (make-file-name (os-tmp)
+                   (format "bigloo-test-~a" (current-microseconds))))
+             (l (string-append f "-link"))
+             (s "foo bar gee\n"))
+         (if (or (file-exists? f) (file-exists? l))
+             (begin
+                (sleep 1)
+                (loop))
+             (begin
+                (call-with-output-file f
+                   (lambda (op)
+                      (display s op)))
+                (unwind-protect
+                   (when (make-symlink f l)
+                      (string=? (call-with-input-file l read-string) s))
+                   (begin
+                      (delete-file f)
+                      (delete-file l))))))))
+
+(define-test file-modification-time
+   (>elong (file-modification-time os.filename) #e0))
+
+(define-test file-access-time
+   (>=elong (file-access-time os.filename)
+      (file-modification-time os.filename)))
+
+(define-test file-change-time
+   (<=elong (file-change-time os.filename)
+      (file-access-time os.filename)))
+
+(define-test file-times-set!
+   (let loop ()
+      (let ((f (make-file-name (os-tmp)
+                  (format "bigloo-test-~a" (current-microseconds)))))
+         (if (file-exists? f)
+             (begin
+                (sleep 1)
+                (loop))
+             (begin
+                (call-with-output-file f
+                   (lambda (op)
+                      (display "foo bar" op)))
+                (unwind-protect
+                   (when (file-times-set! f #e100 #e10)
+                      (cons #e100 #e10))
+                   (delete-file f))))))
+   :expected '(#e100 . #e10))
+
+(define-test file-size
+   (>elong (file-size os.filename) #e1000))
+
+(define-test file-uid
+   (let loop ()
+      (let ((f (make-file-name (os-tmp)
+                  (format "bigloo-test-~a" (current-microseconds)))))
+         (if (file-exists? f)
+             (begin
+                (sleep 1)
+                (loop))
+             (begin
+                (call-with-output-file f
+                   (lambda (op)
+                      (display "foo bar" op)))
+                (unwind-protect
+                   (file-uid f)
+                   (delete-file f))))))
+   :expected (getuid))
+
+(define-test file-gid
+   (let loop ()
+      (let ((f (make-file-name (os-tmp)
+                  (format "bigloo-test-~a" (current-microseconds)))))
+         (if (file-exists? f)
+             (begin
+                (sleep 1)
+                (loop))
+             (begin
+                (call-with-output-file f
+                   (lambda (op)
+                      (display "foo bar" op)))
+                (unwind-protect
+                   (= (file-gid f) (getgid))
+                   (delete-file f)))))))
+
+(define-test file-mode
+   (>fx (file-mode os.filename) 0))
+
+(define-test chmod
+   (let loop ()
+      (let ((f (make-file-name (os-tmp)
+                  (format "bigloo-test-~a" (current-microseconds)))))
+         (if (file-exists? f)
+             (begin
+                (sleep 1)
+                (loop))
+             (begin
+                (call-with-output-file f
+                   (lambda (op)
+                      (display "foo bar" op)))
+                (unwind-protect
+                   (begin
+                      (chmod f #o777)
+                      (file-mode f))
+                   (delete-file f))))))
+   :expected #o777)
+
+(define-test chmod
+   (let loop ()
+      (let ((f (make-file-name (os-tmp)
+                  (format "bigloo-test-~a" (current-microseconds)))))
+         (if (file-exists? f)
+             (begin
+                (sleep 1)
+                (loop))
+             (begin
+                (call-with-output-file f
+                   (lambda (op)
+                      (display "foo bar" op)))
+                (unwind-protect
+                   (begin
+                      (chmod f 'read 'write)
+                      (file-mode f))
+                   '(delete-file f))))))
+   :expected #o600)
+
+(define-test file-type
+   (file-type os.filename)
+   :expected 'regular)
+
+(define-test file-type
+   (file-type (dirname os.filename))
+   :expected 'directory)
+
+(define-test pwd
+   (pwd)
+   :expected string?)
+
+(define-test pwd
+   (directory? (pwd)))
+
+(define-test pwd
+   (file-type (pwd))
+   :expected 'directory)
+
+(define-test chdir
+   (let ((cur (pwd))
+         (src (dirname os.filename)))
+      (unwind-protect
+         (when (chdir src)
+            (string=? (basename (pwd)) src))
+         (chdir cur)))
+   :cond-expand C)
+
+(define-test directory?
+   (directory? (dirname os.filename)))
+
+(define-test directory?
+   (directory? os.filename)
+   :expected #f)
+
+(define-test make-directory
+   (let loop ()
+      (let ((f (make-file-name (os-tmp)
+                  (format "bigloo-test-~a" (current-microseconds)))))
+         (if (file-exists? f)
+             (begin
+                (sleep 1)
+                (loop))
+             (when (make-directory f)
+                (unwind-protect
+                   (directory? f)
+                   (delete-directory f)))))))
+
+(define-test make-directories
+   (let loop ()
+      (let ((f (make-file-name (os-tmp)
+                  (format "bigloo-test-~a" (current-microseconds)))))
+         (if (file-exists? f)
+             (begin
+                (sleep 1)
+                (loop))
+             (let ((p (make-file-name f "foo")))
+                (when (make-directories p)
+                   (unwind-protect
+                      (directory? p)
+                      (begin
+                         (delete-directory p)
+                         (delete-directory f)))))))))
+
+(define-test delete-directory
+   (let loop ()
+      (let ((f (make-file-name (os-tmp)
+                  (format "bigloo-test-~a" (current-microseconds)))))
+         (if (file-exists? f)
+             (begin
+                (sleep 1)
+                (loop))
+             (when (make-directory f)
+                (when (directory? f)
+                   (delete-directory f)
+                   #t))))))
+
+(define-test directory-length
+   (> (directory-length (dirname os.filename)) 0))
+
+(define-test directory-length
+   (= (directory-length os.filename) 0))
+
+(define-test directory->list
+   (member (basename os.filename) (directory->list (dirname os.filename)))
+   :expected pair?)
+
+(define-test directory->path-list
+   (member os.filename (directory->path-list (dirname os.filename)))
+   :expected pair?)
+
+(define-test directory->vector
+   (member (basename os.filename)
+      (vector->list (directory->vector (dirname os.filename))))
+   :expected pair?)
+
+(define-test directory->path-vector
+   (member os.filename
+      (vector->list (directory->path-vector (dirname os.filename))))
+   :expected pair?)
 
 

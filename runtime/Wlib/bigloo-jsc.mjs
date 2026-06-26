@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/bigloo-jsc.mjs     */
+/*    .../prgm/project/bigloo/5.0.x/runtime/Wlib/bigloo-jsc.mjs        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Sep  9 18:02:30 2025 (serrano)                */
-/*    Copyright   :  2024-25 manuel serrano                            */
+/*    Last change :  Fri Jun 26 07:52:10 2026 (serrano)                */
+/*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, JSC specific                    */
 /*=====================================================================*/
@@ -113,6 +113,7 @@ class BglJscRuntime extends BglRuntime {
    js_io(self) {
       return {
 	 file_separator: 47,
+	 path_separator: 58,
 	 open_file: (path_addr, path_length, flags) => {
 	    const path = self.loadString(path_addr, path_length);
 
@@ -530,6 +531,9 @@ class BglJscRuntime extends BglRuntime {
 	    process.env[id] = val;
 	    return 0;
 	 },
+
+	 getuid: () => 0,
+	 getgid: () => 0,
 
 	 date: (addr) => {
 	    const d = Date();

@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csystem.c        */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Clib/csystem.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Thu Jul  3 12:55:19 2025 (serrano)                */
-/*    Copyright   :  2002-25 Manuel Serrano                            */
+/*    Last change :  Fri Jun 26 14:44:08 2026 (serrano)                */
+/*    Copyright   :  2002-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
@@ -413,12 +413,12 @@ bgl_file_gid(char *file) {
 /*---------------------------------------------------------------------*/
 long
 bgl_file_mode(char *file) {
-   struct stat _stati;
+   struct stat stati;
 
-   if (stat(file, &_stati))
+   if (stat(file, &stati))
       return -1;
    else
-      return _stati.st_mode;
+      return stati.st_mode & 511;
 }
 
 /*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Jun 25 18:05:48 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 09:01:03 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -70,9 +70,8 @@
 	    (macro c-chdir::bool (::string) "chdir")
 	    (macro $getcwd::string (::string ::int) "(char *)(long)getcwd")
 	    (macro $chdir::int (::string) "chdir")
-	    (c-chmod::bool (::string ::bool ::bool ::bool) "bgl_chmod")
-	    (macro c-chmod-int::bool (::string ::int) "chmod")
-	    
+	    ($chmod::bool (::string ::bool ::bool ::bool) "bgl_chmod")
+	    (macro $chmod-int::bool (::string ::int) "chmod")
 	    (macro runtime-default-executable-name::string "BGL_DEFAULT_A_OUT")
 	    (macro runtime-default-script-name::string "BGL_DEFAULT_A_BAT")
 	    (macro runtime-os-class::string "OS_CLASS")
@@ -85,7 +84,7 @@
 	    (macro runtime-static-library-suffix::string "STATIC_LIB_SUFFIX")
 	    (macro runtime-shared-library-suffix::string "SHARED_LIB_SUFFIX")
 	    (macro runtime-os-charset::string "OS_CHARSET")
-	    (c-sleep::void (::long) "bgl_sleep")
+	    ($sleep::void (::long) "bgl_sleep")
 	    (macro %dload-init-sym::string "BGL_DYNAMIC_LOAD_INIT")
 	    (%dload::obj (::string ::string ::string) "bgl_dload")
 	    (%dunload::int (::bstring) "bgl_dunload")
@@ -192,11 +191,11 @@
 		  "chdir")
 	       (method static $getcwd::string (::string ::int)
 		  "getcwd")
-	       (method static c-chmod::bool (::string ::bool ::bool ::bool)
+	       (method static $chmod::bool (::string ::bool ::bool ::bool)
 		  "bgl_chmod")
-	       (method static c-chmod-int::bool (::string ::int)
+	       (method static $chmod-int::bool (::string ::int)
 		  "bgl_chmod")
-	       (method static c-sleep::void (::long)
+	       (method static $sleep::void (::long)
 		  "bgl_sleep")
 	       (field static %dload-init-sym::string
 		  "BGL_DYNAMIC_LOAD_INIT")
@@ -251,8 +250,8 @@
 	    (inline chdir::bool string::string)
 	    (system::int . strings)
 	    (system->string::bstring . strings)
-	    (pwd)
-	    (command-line)
+	    (pwd::bstring)
+	    (command-line::pair)
 	    (executable-name::string)
 	    (basename::bstring ::bstring)
 	    (dirname::bstring ::bstring)
@@ -275,16 +274,16 @@
 	    (make-shared-library-name::bstring ::bstring)
             (inline default-executable-name)
             (inline default-script-name)
-	    (inline os-class)
-            (inline os-name)
-	    (inline os-arch)
-	    (inline os-version)
-	    (inline os-tmp)
-	    (inline file-separator)
-	    (inline path-separator)
+	    (inline os-class::bstring)
+            (inline os-name::bstring)
+	    (inline os-arch::bstring)
+	    (inline os-version::bstring)
+	    (inline os-tmp::bstring)
+	    (inline file-separator::char)
+	    (inline path-separator::char)
 	    (inline static-library-suffix)
 	    (inline shared-library-suffix)
-	    (os-charset)
+	    (os-charset::bstring)
 	    *dynamic-load-path*
 	    *default-java-package*
 	    (inline sleep ::long)
@@ -297,9 +296,9 @@
 	    (inline dynamic-load-symbol-get::obj ::custom)
 	    (inline dynamic-load-symbol-set::obj ::custom ::obj)
 	    (unix-path->list::pair-nil ::bstring)
-	    (getuid::int)
+	    (inline getuid::int)
 	    (setuid ::int)
-	    (getgid::int)
+	    (inline getgid::int)
 	    (setgid ::int)
 	    (getpwnam ::bstring)
 	    (getpwuid ::int)
@@ -323,20 +322,20 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (default-executable-name) runtime-default-executable-name)
 (define-inline (default-script-name) runtime-default-script-name)
-(define-inline (os-class) runtime-os-class)
-(define-inline (os-name) runtime-os-name)
-(define-inline (os-arch) runtime-os-arch)
-(define-inline (os-version) runtime-os-version)
-(define-inline (os-tmp) runtime-os-tmp)
-(define-inline (file-separator) runtime-file-separator)
-(define-inline (path-separator) runtime-path-separator)
+(define-inline (os-class::bstring) runtime-os-class)
+(define-inline (os-name::bstring) runtime-os-name)
+(define-inline (os-arch::bstring) runtime-os-arch)
+(define-inline (os-version::bstring) runtime-os-version)
+(define-inline (os-tmp::bstring) runtime-os-tmp)
+(define-inline (file-separator::char) runtime-file-separator)
+(define-inline (path-separator::char) runtime-path-separator)
 (define-inline (static-library-suffix) runtime-static-library-suffix)
 (define-inline (shared-library-suffix) runtime-shared-library-suffix)
 
 ;*---------------------------------------------------------------------*/
 ;*    os-charset ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (os-charset)
+(define (os-charset::bstring)
    (cond
       ((getenv "LANG") => (lambda (x) x))
       ((getenv "LC_CTYPE") => (lambda (x) x))
@@ -346,7 +345,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    command-line ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (command-line)
+(define (command-line::pair)
    *the-command-line*)
 
 ;*---------------------------------------------------------------------*/
@@ -443,7 +442,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    pwd ...                                                          */
 ;*---------------------------------------------------------------------*/
-(define (pwd)
+(define (pwd::bstring)
    (let ((string (make-string 1024)))
       ($getcwd string 1024)))
 	  
@@ -570,16 +569,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    chmod ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (chmod file::bstring . mode)
+(define (chmod path::bstring . mode)
    (let loop ((mode mode)
 	      (read? #f)
 	      (write? #f)
 	      (exec? #f))
       (cond
 	 ((null? mode)
-	  (c-chmod file read? write? exec?))
+	  ($chmod path read? write? exec?))
 	 ((fixnum? (car mode))
-	  (c-chmod-int file (car mode)))
+	  ($chmod-int path (car mode)))
 	 ((eq? (car mode) 'read)
 	  (loop (cdr mode)
 		#t
@@ -1011,8 +1010,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    sleep ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (sleep ms)
-   (c-sleep ms)
+(define-inline (sleep ms::long)
+   ($sleep ms)
    ms)
 
 ;*---------------------------------------------------------------------*/
@@ -1143,9 +1142,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    getuid ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (getuid::int)
+(define-inline (getuid::int)
    (cond-expand
-      (bigloo-c ($getuid))
+      ((or bigloo-c bigloo-wasm) ($getuid))
       (else 0)))
 
 ;*---------------------------------------------------------------------*/
@@ -1159,9 +1158,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    getgid ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (getgid::int)
+(define-inline (getgid::int)
    (cond-expand
-      (bigloo-c ($getgid))
+      ((or bigloo-c bigloo-wasm) ($getgid))
       (else 0)))
 
 ;*---------------------------------------------------------------------*/

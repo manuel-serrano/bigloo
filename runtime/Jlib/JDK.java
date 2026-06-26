@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0a/runtime/Jlib/JDK.java           */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/JDK.java          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:50:33 2008                          */
-/*    Last change :  Tue Mar 10 16:55:12 2026 (serrano)                */
+/*    Last change :  Fri Jun 26 11:09:53 2026 (serrano)                */
 /*    Copyright   :  2008-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java auto-configuration                                          */
@@ -32,33 +32,61 @@ public abstract class JDK {
       try {
 	 Class.forName("android.os.Build");
 	 impl = getImpl("bigloo.JDKAndroid");
-      } catch (Exception x) {}
+	 
+      } catch (Throwable e) {
+	 int v = getMajorVersion();
 
-      // are we 1.6?
-      try {
-	 Class.forName("java.text.spi.BreakIteratorProvider");
-	 impl = getImpl("bigloo.JDK16");
-      } catch (Exception x) {}
+	 if (v >= 20) {
+	    impl = getImpl("bigloo.JDK2x");
+	 } else {
+	    switch (v) {
+	       
+	       default: {
+		  // are we 1.6?
+		  try {
+		     Class.forName("java.text.spi.BreakIteratorProvider");
+		     impl = getImpl("bigloo.JDK16");
+		  } catch (Exception x) {}
 
-      // are we 1.5?
-      if (impl == null)
-	 try {
-	    Class.forName("java.lang.ProcessBuilder");
-	    impl = getImpl("bigloo.JDK15");
-	 } catch (Exception x) {}
+		  // are we 1.5?
+		  if (impl == null)
+		     try {
+			Class.forName("java.lang.ProcessBuilder");
+			impl = getImpl("bigloo.JDK15");
+		     } catch (Exception x) {}
       
-      if (impl == null)
-	 // try 1.4
-	 try {
-	    Class.forName("java.nio.Buffer");
-	    impl = getImpl("bigloo.JDK14");
-	 } catch (Exception x) {}
+		  if (impl == null)
+		     // try 1.4
+		     try {
+			Class.forName("java.nio.Buffer");
+			impl = getImpl("bigloo.JDK14");
+		     } catch (Exception x) {}
     
-      // default is 1.3
-      if (impl == null)
-	 try {
-	    impl = getImpl("bigloo.JDK13");
-	 } catch (Exception x) {}
+		  // default is 1.3
+		  if (impl == null)
+		     try {
+			impl = getImpl("bigloo.JDK13");
+		     } catch (Exception x) {}
+	       }
+	    }
+	 }
+      }
+   }
+
+   public static int getMajorVersion() {
+      try {
+	 // Java 9+
+	 return Runtime.version().feature(); 
+      } catch (NoSuchMethodError e) {
+	 String v = System.getProperty("java.version");
+	 if (v.startsWith("1.")) {
+	    // Java 8 and earlier
+            return Integer.parseInt(v.substring(2, 3)); 
+	 } else {
+	    int dot = v.indexOf('.');
+	    return Integer.parseInt(dot > 0 ? v.substring(0, dot) : v);
+	 }
+      }
    }
 
    private static JDK getImpl(String classname) {
@@ -66,6 +94,7 @@ public abstract class JDK {
 	 Class c = Class.forName(classname);
 	 return (JDK)c.newInstance();
       } catch (Exception x) {
+	 System.err.printf("Cannot load JDK implementation" + classname);
 	 return null;
       }
    }
@@ -145,10 +174,76 @@ public abstract class JDK {
       }
    }
 
+   public abstract boolean truncateImpl(FileOutputStream stream, long size);
+   
    public static boolean truncate(FileOutputStream stream, long size) {
-      return impl.truncate(stream, size);
+      return impl.truncateImpl(stream, size);
    }
 
+   public int symlinkImpl(byte[] from, byte[] to) {
+      return 1;
+   }
+   
+   public static int symlink(byte[] from, byte[] to) {
+      return impl.symlinkImpl(from, to);
+   }
+
+   public static long accesstime(byte[] file) {
+      return impl.accesstimeImpl(file);
+   }
+   
+   public long accesstimeImpl(byte[] file) {
+      return 0;
+   }
+   
+   public static long modiftime(byte[] file) {
+      return impl.modiftimeImpl(file);
+   }
+   
+   public long modiftimeImpl(byte[] file) {
+      return 0;
+   }
+   
+   public static long changetime(byte[] file) {
+      return impl.changetimeImpl(file);
+   }
+   
+   public long changetimeImpl(byte[] file) {
+      return 0;
+   }
+   
+   public static long creationtime(byte[] file) {
+      return impl.creationtimeImpl(file);
+   }
+   
+   public long creationtimeImpl(byte[] file) {
+      return 0;
+   }
+
+   public static int utimes(byte[] path, long atime, long mtime) {
+      return impl.utimesImpl(path, atime, mtime);
+   }
+   
+   public int utimesImpl(byte[] path, long atime, long mtime) {
+      return 1;
+   }
+   
+   public static int filemode(byte[] path) throws IOException {
+      return impl.filemodeImpl(path);
+   }
+   
+   public int filemodeImpl(byte[] path) throws IOException {
+      return 1;
+   }
+   
+   public static boolean chmod(byte[] path, int mode) throws IOException {
+      return impl.chmodImpl(path, mode);
+   }
+   
+   public boolean chmodImpl(byte[] path, int mode) throws IOException {
+      return false;
+   }
+   
    public void exitImpl(int n) {
       System.exit(n);
    }

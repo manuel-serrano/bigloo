@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 25 10:44:39 2026                          */
-;*    Last change :  Thu Jun 25 10:53:40 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 07:26:47 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing Bigloo specifics                                         */
@@ -35,8 +35,11 @@
    :expected list?)
 
 (define-test bigloo-config
-   (bigloo-config 'release-number)
+   (bigloo-config 'version)
    :expected string?)
+
+(define-test bigloo-config
+   (string>=? (bigloo-config 'version) "5.0.0"))
 
 (define-test bigloo-config
    (bigloo-config)

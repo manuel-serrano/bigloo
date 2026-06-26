@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  3 09:40:48 2026                          */
-;*    Last change :  Wed Jun  3 10:24:41 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 07:00:19 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing cond-expand                                              */
@@ -45,6 +45,16 @@
       (rust #t)
       (else #f))
    :expected #f)
+
+(define-test cond-expand
+   (cond-expand
+      ((config version (>= "5.0.0")) #t)
+      (else #f)))
+
+(define-test cond-expand
+   (cond-expand
+      ((not (config version (< "5.0.0"))) #t)
+      (else #f)))
 
 (define-test cond-expand
    (cond-expand
@@ -107,6 +117,24 @@
 (define-test srfi-compile-list
    (compile-time-eval (pair? (memq 'bigloo-compile (srfi-compile-list)))))
 
+(define-test cond-expand
+   (cond-expand
+      (C (cond-expand
+            ((or jvm wasm) #f)
+            (else #t))))
+   :cond-expand C)
 
+(define-test cond-expand
+   (cond-expand
+      (jvm (cond-expand
+              ((or C wasm) #f)
+              (else #t))))
+   :cond-expand jvm)
 
+(define-test cond-expand
+   (cond-expand
+      (wasm (cond-expand
+               ((or C java) #f)
+               (else #t))))
+   :cond-expand was)
    

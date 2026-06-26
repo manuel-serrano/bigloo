@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Thu Jun 25 12:05:39 2026 (serrano)                */
+/*    Last change :  Fri Jun 26 07:50:03 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -12,9 +12,9 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync, lstatSync, mkdirSync, readdirSync, ftruncateSync, truncateSync, renameSync, symlinkSync, chmodSync } from "node:fs";
+import { accessSync, closeSync, constants, existsSync, fstat, openSync, readSync, rmdirSync, unlinkSync, writeSync, readFileSync, fstatSync, lstatSync, mkdirSync, readdirSync, ftruncateSync, truncateSync, renameSync, symlinkSync, chmodSync, utimesSync } from "node:fs";
 import { isatty } from "node:tty";
-import { dirname, extname, sep as file_sep } from "node:path";
+import { dirname, extname, sep as file_sep, delimiter } from "node:path";
 import { format } from "node:util";
 import { execSync, spawnSync, spawn } from "node:child_process";
 import { createServer, createConnection, Socket } from "node:net";
@@ -57,6 +57,8 @@ class BglNodeRuntime extends BglRuntime {
 
       return {
 	 file_separator: file_sep.charCodeAt(0),
+	 
+	 path_separator: delimiter.charCodeAt(0),
 	 
 	 open_file: (path_addr, path_length, flags) => {
 	    const path = self.loadString(path_addr, path_length);
@@ -122,7 +124,7 @@ class BglNodeRuntime extends BglRuntime {
 
 	 rename: (old_addr, old_length, new_addr, new_length) => {
 	    const oldf = self.loadString(old_addr, old_length);
-	    const newf = self.loadSchemeSring(new_addr, new_length);
+	    const newf = self.loadString(new_addr, new_length);
 	    renameSync(oldf, newf);
 	    return 0;
 	 },
@@ -181,7 +183,7 @@ class BglNodeRuntime extends BglRuntime {
 	 utime: (path_addr, path_length, atime, mtime) => {
 	    const path = self.loadString(path_addr, path_length);
 
-	    return utime(path, atime, mtime);
+	    return utimesSync(path, atime, mtime);
 	 },
 
 	 file_size: (fd) => {
@@ -195,7 +197,7 @@ class BglNodeRuntime extends BglRuntime {
 	 path_mode: (path_addr, path_length) => {
 	    const path = self.loadString(path_addr, path_length);
 	    try {
-	       return lstatSync(path).mode;
+	       return lstatSync(path).mode & 511;
 	    } catch (err) {
                return -1;
 	    }
@@ -247,7 +249,7 @@ class BglNodeRuntime extends BglRuntime {
 		  res = "character";
 	       } else if (s.isDirectory()) {
 		  res = "directory";
-	       } else if (s.FIFO()) {
+	       } else if (s.isFIFO()) {
 		  res = "fifo";
 	       } else if (s.isFile()) {
 		  res = "regular";
@@ -610,6 +612,9 @@ class BglNodeRuntime extends BglRuntime {
 	    return 0;
 	 },
 
+	 getuid: () => process.getuid(),
+	 getgid: () => process.getgid(),
+	 
 	 getcwd: (addr) => {
 	    const s = process.cwd();
 	    self.storeString(s, addr);

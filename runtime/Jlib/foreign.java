@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Sat Jun 20 11:28:51 2026 (serrano)                */
+/*    Last change :  Fri Jun 26 10:12:06 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -4815,9 +4815,9 @@ public final class foreign {
 	      renameTo(new File(new String(to))) ? 0 : 69);
    }
 
-   public static boolean truncate(byte[] path, long size) {
+   public static boolean truncate(byte[] path, int size) {
       try {
-	 FileOutputStream stream = new FileOutputStream(new String(path));
+	 FileOutputStream stream = new FileOutputStream(new String(path), true);
 	 try {
 	    return JDK.truncate(stream, size);
 	 } catch(Exception _e) {
@@ -4838,7 +4838,7 @@ public final class foreign {
       return (new File(new String(path))).mkdir();
    }
 
-   public static boolean bgl_directoryp(byte[]file) {
+   public static boolean bgl_directoryp(byte[] file) {
       if (is_resourcep(file)) {
 	 return bigloo.input_resource_port.bgl_directoryp(resource_name(file));
       } else {
@@ -4846,7 +4846,7 @@ public final class foreign {
       }
    }
 
-   public static long bgl_file_size(byte[]file) {
+   public static long bgl_file_size(byte[] file) {
       if (is_resourcep(file)) {
 	 return bigloo.input_resource_port.file_size(resource_name(file));
       } else {
@@ -4854,35 +4854,31 @@ public final class foreign {
       }
    }
 
-   public static long bgl_last_modification_time(byte[]file) {
+   public static long bgl_last_modification_time(byte[] file) {
       if (is_resourcep(file)) {
 	 return (long) 0;
       } else {
-	 return (long) (new File(new String(file))).lastModified();
+	 return JDK.modiftime(file);
       }
    }
 
-   public static long bgl_last_change_time(byte[]file) {
+   public static long bgl_last_change_time(byte[] file) {
       if (is_resourcep(file)) {
 	 return (long) 0;
       } else {
-	 return (long) 0;
+	 return JDK.changetime(file);
       }
    }
 
-   public static long bgl_last_access_time(byte[]file) {
-      return 0;
+   public static long bgl_last_access_time(byte[] file) {
+      return JDK.accesstime(file);
    }
 
-   public static int bgl_utime(byte[]file, long atime, long mtime) {
-      if (is_resourcep(file)) {
+   public static int bgl_utime(byte[] path, long atime, long mtime) {
+      if (is_resourcep(path)) {
 	 return 0;
       } else {
-	 if ((new File(new String(file))).setLastModified(mtime)) {
-	    return 0;
-	 } else {
-	    return 1;
-	 }
+	 return JDK.utimes(path, atime, mtime);
       }
    }
 
@@ -4890,8 +4886,19 @@ public final class foreign {
       if (is_resourcep(name)) {
 	 return bigloo.input_resource_port.bgl_directory_length(resource_name(name));
       } else {
-	 final String[] files = (new File(new String(name))).list();
-	 return files.length;
+	 File file = new File(new String(name));
+
+	 if (file != null) {
+	    final String[] files = file.list();
+
+	    if (files != null) {
+	       return files.length;
+	    } else {
+	       return 0;
+	    }
+	 } else {
+	    return 0;
+	 }
       }
    }
       
@@ -4949,13 +4956,8 @@ public final class foreign {
       }
    }
 
-   public static int bgl_symlink(byte[] path1, byte[] path2) {
-      bigloo.runtime.Llib.error.bgl_system_failure(
-	 BGL_IO_ERROR,
-	 stack_trace.get_top(),
-	 "make-symlink",
-	 "feature not supported");
-      return 0;
+   public static int bgl_symlink(byte[] from, byte[] to) {
+      return JDK.symlink(from, to);
    }
 
    public static Object bgl_select(int timeout, Object r, Object w, Object e) {
@@ -5091,7 +5093,7 @@ public final class foreign {
       return res;
    }
 
-   public static int bgl_setenv(byte[]name, byte[]val) {
+   public static int bgl_setenv(byte[] name, byte[] val) {
       return 0;
    }
 
@@ -5112,12 +5114,12 @@ public final class foreign {
       return res;
    }
    
-   public static byte[] getcwd(byte[]path, int i) {
+   public static byte[] getcwd(byte[] path, int i) {
       return get_property("user.dir", ".");
    }
 
    public static int bgl_file_mode(byte[] f) throws IOException {
-      return 0;
+      return JDK.filemode(f);
    }
 
    public static int bgl_file_uid(byte[] f) throws IOException {
@@ -5128,56 +5130,22 @@ public final class foreign {
       return 0;
    }
 
-   public static boolean bgl_chmod(byte[]f, boolean r, boolean w, boolean x)
+   public static boolean bgl_chmod(byte[] f, boolean r, boolean w, boolean x)
       throws IOException {
-      if (java.util.Arrays.equals(bigloo.os.OS_CLASS, "unix".getBytes()))
-      {
-	 final StringBuffer cmd = new StringBuffer("chmod a");
+      int mode = (r ? 0400 : 0)
+	 | (w ? 0200 : 0)
+	 | (x ? 0100 : 0);
 
-	 cmd.append(r ? "+r " : "-r ");
-	 cmd.append(w ? "+w " : "-w ");
-	 cmd.append(x ? "+x " : "-x ");
-
-	 cmd.append(f);
-
-	 final Process process = Runtime.getRuntime().exec(cmd.toString());
-
-	 try {
-	    process.waitFor ();
-	 } catch  (InterruptedException _i) {
-	 }
-
-	 return (process.exitValue() == 0);
-      }
-      else
-	 return false;
+      return JDK.chmod(f, mode);
    }
 
-   public static boolean bgl_chmod(byte[]f, int v)
-      throws IOException {
-      if (java.util.Arrays.equals(bigloo.os.OS_CLASS, "unix".getBytes()))
-      {
-	 final String cmd = "chmod " + Integer.toString(v, 8) + " ";
-	 final Process process =
-	    Runtime.getRuntime().exec(cmd + new String(f));
-
-	 try {
-	    process.waitFor ();
-	 } catch  (InterruptedException _i) {
-	 }
-
-	 return (process.exitValue() == 0);
-      }
-      else
-	 return false;
+   public static boolean bgl_chmod(byte[] f, int mode) throws IOException {
+      return JDK.chmod(f, mode);
    }
-
+   
    public static boolean chdir(byte[]path) {
       final Properties p = System.getProperties();
 
-      System.out.println("***WARNING: JVM chdir is not implemented yet");	// !!!!! ?????
-
-      // !!!!! JDK 1.2:  System.setProperty("user.dir", new String(path));
       p.put("user.dir", new String(path));
       return false;
    }

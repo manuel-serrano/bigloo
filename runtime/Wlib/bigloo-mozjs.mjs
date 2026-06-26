@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/5.0a/runtime/Wlib/bigloo-mozjs.mjs       */
+/*    .../prgm/project/bigloo/5.0.x/runtime/Wlib/bigloo-mozjs.mjs      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri May  1 08:39:00 2026 (serrano)                */
+/*    Last change :  Fri Jun 26 07:51:25 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, Mozilla specific                 */
@@ -96,6 +96,7 @@ class BglMozRuntime extends BglRuntime {
    js_io(self) {
       return {
 	 file_separator: 47,
+	 path_separator: 58,
 	 open_file: (path_addr, path_length, flags) => {
 	    const path = self.loadString(path_addr, path_length);
 

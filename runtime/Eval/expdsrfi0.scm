@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Wed Jun  3 10:26:00 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 05:32:06 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -137,27 +137,30 @@
 ;*    is added to the supported srfis.                                 */
 ;*---------------------------------------------------------------------*/
 (define (srfi-common-list)
-   (let ((l (cons* (bigloo-version)
-		   (bigloo-major-version)
-		   (bigloo-branch-version)
-		   'bigloo
-		   (bigloo-int-size)
-		   (bigloo-elong-size)
-		   '(srfi-0
-		     srfi-2
-		     srfi-4
-		     srfi-6
-		     srfi-8
-		     srfi-9
-		     srfi-10
-		     srfi-22
-		     srfi-28
-		     srfi-30
-		     rlimit
-		     gc))))
-      (if $configure-auto-finalizer
-	  (cons* 'bigloo-finalizer 'bigloo-weakptr l)
-	  l)))
+   (let* ((l (cons* (bigloo-version)
+		(bigloo-major-version)
+		(bigloo-branch-version)
+		'bigloo
+		(bigloo-int-size)
+		(bigloo-elong-size)
+		'(srfi-0
+		  srfi-2
+		  srfi-4
+		  srfi-6
+		  srfi-8
+		  srfi-9
+		  srfi-10
+		  srfi-22
+		  srfi-28
+		  srfi-30
+		  gc)))
+	  (l (cond-expand
+		(C (if (bigloo-config 'have-rlimit) (cons 'rlimit l) l))
+		(else l)))
+	  (l (if $configure-auto-finalizer
+		 (cons* 'bigloo-finalizer 'bigloo-weakptr l)
+		 l)))
+      l))
 
 ;*---------------------------------------------------------------------*/
 ;*    *srfi-eval-list* ...                                             */
@@ -178,7 +181,8 @@
 ;*---------------------------------------------------------------------*/
 (define (srfi-eval-list::pair-nil)
    (unless *srfi-eval-list*
-      (set! *srfi-eval-list* (cons 'bigloo-eval (srfi-common-list))))
+      (set! *srfi-eval-list*
+	 (cons 'bigloo-eval (srfi-common-list))))
    *srfi-eval-list*)
 
 ;*---------------------------------------------------------------------*/
@@ -308,11 +312,44 @@
 			  x)
 	      e))
 	  (((config ?key ?value) . ?body)
-	   (e (evepairify (if (equal? (bigloo-config key) value)
-			      (progn body)
-			      `(cond-expand ,@else))
-			  x)
-	      e))
+           (let ((tst (match-case value
+                         ((= (and ?v (? string?)))
+                          (let ((x (bigloo-config key)))
+                             (and (string? x) (string=? x v))))
+                         ((>= (and ?v (? string?)))
+                          (let ((x (bigloo-config key)))
+                             (and (string? x) (string>=? x v))))
+                         ((> (and ?v (? string?)))
+                          (let ((x (bigloo-config key)))
+                             (and (string? x) (string>? x v))))
+                         ((<= (and ?v (? string?)))
+                          (let ((x (bigloo-config key)))
+                             (and (string? x) (string<=? x v))))
+                         ((< (and ?v (? string?)))
+                          (let ((x (bigloo-config key)))
+                             (and (string? x) (string<? x v))))
+                         ((= (and ?v (? number?)))
+                          (let ((x (bigloo-config key)))
+                             (and (number? x) (= x v))))
+                         ((>= (and ?v (? number?)))
+                          (let ((x (bigloo-config key)))
+                             (and (number? x) (>= x v))))
+                         ((> (and ?v (? number?)))
+                          (let ((x (bigloo-config key)))
+                             (and (number? x) (> x v))))
+                         ((<= (and ?v (? number?)))
+                          (let ((x (bigloo-config key)))
+                             (and (number? x) (<= x v))))
+                         ((< (and ?v (? number?)))
+                          (let ((x (bigloo-config key)))
+                             (and (number? x) (< x v))))
+                         (else
+                          (equal? (bigloo-config key) value)))))
+              (e (evepairify (if tst
+                                 (progn body)
+                                 `(cond-expand ,@else))
+                    x)
+                 e)))
 	  (((and (? symbol?) ?feature) . ?body)
 	   (e (evepairify (if (memq feature features)
 			      (if (null? body)

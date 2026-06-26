@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0a/runtime/Clib/cports.c           */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Clib/cports.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Thu Apr 30 10:57:14 2026 (serrano)                */
+/*    Last change :  Fri Jun 26 09:47:41 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input/Output ports native implementation.                        */
 /*=====================================================================*/
@@ -2398,7 +2398,7 @@ bgl_directory_to_path_list(char *name, int len, char sep) {
 	    char *s = BSTRING_TO_STRING(bs);
 
 	    strcpy(s, name);
-	    s[ len ] = sep;
+	    s[len] = sep;
 	    strcpy(s + len + 1, fname);
 
 	    res = MAKE_PAIR(bs, res);
@@ -2550,7 +2550,7 @@ bgl_directory_to_path_vector(char *name, int len, char sep) {
 	       vlen *= 2;
 	       buf = nbuf;
 	    }
-	    buf[i++] = string_to_bstring(fname);
+	    buf[i++] = bs;
 	 }
       }
 

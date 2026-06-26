@@ -29,6 +29,10 @@ properties. If `key` is provided and correspond to an existing
 configuration property, this value is returned. Otherwise, the
 `bigloo-config` returns `#unspecified`.
 
+Bigloo configuration can be used as predicate of `cond-expand` forms
+(see [Conditional Execution](./confexpand.html).
+
+
 Name Mangling
 -------------
 

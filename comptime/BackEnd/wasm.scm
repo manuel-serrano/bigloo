@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Sat Jun  6 07:57:47 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 07:44:01 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -104,6 +104,8 @@
 ;*    backend-initialize! ::wasm ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-initialize! o::wasm)
+   (call-next-method)
+   (unregister-srfi! 'rlimit)
    (unregister-srfi! 'bint61)
    (unregister-srfi! 'bint64)
    (if (=fx *wasm-fixnum* 64)

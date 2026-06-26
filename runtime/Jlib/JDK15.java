@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:51:14 2008                          */
 /*    Last change :  Sun May 18 09:37:32 2014 (serrano)                */
-/*    Copyright   :  2008-14 Manuel Serrano                            */
+/*    Copyright   :  2008-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK 1.5 specifics                                                */
 /*=====================================================================*/

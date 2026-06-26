@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Thu Jun 25 10:49:23 2026 (serrano)                */
+;*    Last change :  Fri Jun 26 07:12:25 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -238,10 +238,10 @@
 ;*    *bigloo-configuration* ...                                       */
 ;*---------------------------------------------------------------------*/
 (define *bigloo-configuration*
-   `((release-number . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-release-number) (else $$configure-release-number)))
-     (specific-version . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-specific-version) (else $$configure-specific-version)))
+   `((version . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-release-number) (else $$configure-release-number)))
      (build-tag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-build-tag) (else $$configure-build-tag)))
-     (library-safety . ,(library-safety))
+     (release-number . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-release-number) (else $$configure-release-number)))
+     (specific-version . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-specific-version) (else $$configure-specific-version)))     (library-safety . ,(library-safety))
      (homeurl . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-homeurl) (else $$configure-homeurl)))
      (shell . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-shell) (else $$configure-shell)))
      (c-compiler-style . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-compiler-style) (else $$configure-c-compiler-style)))
