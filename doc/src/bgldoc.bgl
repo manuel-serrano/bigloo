@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Thu Jun 25 09:28:49 2026 (serrano)                */
+;*    Last change :  Sat Jun 27 09:56:17 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -653,19 +653,21 @@
 	    (list (if (pair? (cdr ts)) "Examples" "Example")))
 	 (xml-element 'pre '((class . "test"))
 	    (append-map (lambda (t)
-                           (let ((s (format "~s" (car t))))
+                           (let* ((s (format "~s" (car t)))
+                                  (r (format "~s" (cdr t)))
+                                  (m (if (string-suffix? "?" r) "&vdash;" "&rarr;")))
                               (if (>fx (string-length s) 100)
                                   (list
                                      (fontify (call-with-output-string
                                                  (lambda (op)
                                                    (pp (car t) op :width 100))))
-                                     (xml-element 'span '((class . "result")) (list "   &rarr;"))
-                                     (xml-element 'span '((class . "result-value")) (fontify (format "~s" (cdr t))))
+                                     (xml-element 'span '((class . "result")) (list "   " m))
+                                     (xml-element 'span '((class . "result-value")) (fontify r))
                                      "\n")
                                   (list
                                      (fontify s)
-                                     (xml-element 'span '((class . "result")) (list "&rarr;"))
-                                     (xml-element 'span '((class . "result-value")) (fontify (format "~s" (cdr t))))
+                                     (xml-element 'span '((class . "result")) (list m))
+                                     (xml-element 'span '((class . "result-value")) (fontify r))
                                      "\n"))))
 	       ts)))))
 

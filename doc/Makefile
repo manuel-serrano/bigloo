@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Thu Jun 25 09:59:46 2026 (serrano)                */
+#*    Last change :  Sat Jun 27 07:31:52 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -19,8 +19,9 @@ include ../Makefile.config
 #*    Variables                                                        */
 #*---------------------------------------------------------------------*/
 VERBOSE = 
-EFLAGS = 
-BFLAGS = $(VERBOSE) -cg -unsafe -O3 -q -Wall -init-lib \
+EFLAGS =
+UFLAGS = -unsafe
+BFLAGS = $(VERBOSE) -cg $(UFLAGS) -O3 -q -Wall -init-lib \
   -lib-dir $(BOOTLIBDIR) -no-auto-link-main -module5 -I src
 
 BCFLAGS =
@@ -39,7 +40,9 @@ MD = argsparse bigloo bool c date hash error int io jvm net number os \
  pair port real ssl string thread vector wasm \
  condexpand match module5 module4 object
 
-EX = c/fib c/sock1 c/sock2 c/sock3 c/sock4 c/wrap java/fib wasm/fib 
+EX = c/fib c/sock1 c/sock2 c/sock3 c/sock4 c/wrap c/function c/infix \
+  c/var \
+  java/fib wasm/fib 
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
@@ -117,6 +120,15 @@ objs_c/c/sock4.ast.coerce: examples/c/sock4.bgl objs_c/c
 objs_c/c/wrap.ast.coerce: examples/c/wrap.bgl objs_c/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
+objs_c/c/function.ast.coerce: examples/c/function.bgl objs_c/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
+objs_c/c/infix.ast.coerce: examples/c/infix.bgl objs_c/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
+objs_c/c/var.ast.coerce: examples/c/var.bgl objs_c/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
 objs_c/java/fib.ast.coerce: examples/java/fib.bgl objs_c/java
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -jvm -coerce
 
@@ -183,3 +195,4 @@ clean_html:
 clean:
 	rm -rf objs_c bin
 	rm -rf $(MD:%=%.html)
+	rm -f index.sexp

@@ -1,0 +1,7 @@
+(module c-infix
+   (extern "C"
+      (infix macro -c::long ::long ::long "-"))
+   (main))
+
+(define (main argv)
+   (print (-c (length argv) 1)))

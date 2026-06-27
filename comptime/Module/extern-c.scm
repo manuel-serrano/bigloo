@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Thu Jun 25 07:28:27 2026 (serrano)                */
+;*    Last change :  Sat Jun 27 09:16:28 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -67,26 +67,26 @@
       (unless (member string *include-foreign*)
 	 (set! *include-foreign* (cons string *include-foreign*))))
    
-   (define (illegal-args args src mod)
-      (let loop ((args args))
-	 (cond
-	    ((null? args)
-	     #f)
-	    ((symbol? args)
-	     (multiple-value-bind (id type)
-		(parse-ident args)
-		(unless (string? type)
-		   args)))
-	    ((not (pair? args))
-	     args)
-	    ((not (symbol? (car args)))
-	     args)
-	    (else
-	     (multiple-value-bind (id type)
-		(parse-ident (car args))
-		(if (string? type)
-		    (loop (cdr args))
-		    args))))))
+;*    (define (illegal-args args src mod)                              */
+;*       (let loop ((args args))                                       */
+;* 	 (cond                                                         */
+;* 	    ((null? args)                                              */
+;* 	     #f)                                                       */
+;* 	    ((symbol? args)                                            */
+;* 	     (multiple-value-bind (id type)                            */
+;* 		(parse-ident args)                                     */
+;* 		(unless (string? type)                                 */
+;* 		   args)))                                             */
+;* 	    ((not (pair? args))                                        */
+;* 	     args)                                                     */
+;* 	    ((not (symbol? (car args)))                                */
+;* 	     args)                                                     */
+;* 	    (else                                                      */
+;* 	     (multiple-value-bind (id type)                            */
+;* 		(parse-ident (car args))                               */
+;* 		(if (string? type)                                     */
+;* 		    (loop (cdr args))                                  */
+;* 		    args))))))                                         */
    
    (define (parse-function macro infix ident args name clause mod::Module)
       (multiple-value-bind (id type)
@@ -94,9 +94,9 @@
 	 (cond
 	    ((not (string? type))
 	     (error/loc mod "Missing C type" ident clause))
-	    ((illegal-args args clause mod)
-	     =>
-	     (lambda (args) (error/loc mod "Illegal C args" args clause)))
+;* 	    ((illegal-args args clause mod)                            */
+;* 	     =>                                                        */
+;* 	     (lambda (args) (error/loc mod "Illegal C args" args clause))) */
 	    (else
 	     (co-instantiate
 		   ((def (instantiate::CDef
@@ -224,6 +224,26 @@
 
    (define (cigloo file x mod)
       (module5-extern-plugin-preprocessor "cigloo" file x mod))
+
+   (define (build-args args::pair-nil mod::Module clause)
+      (let loop ((args args))
+	 (match-case args
+	    (()
+	     '())
+	    (((and (? symbol?) ?arg) (kwote ...))
+	     (multiple-value-bind (id type)
+		(parse-ident arg)
+		(if (string? type)
+		    arg
+		    (error/loc mod "Illegal C args" arg clause))))
+	    (((and (? symbol?) ?arg) . ?-)
+	     (multiple-value-bind (id type)
+		(parse-ident arg)
+		(if (string? type)
+		    (cons arg (loop (cdr args)))
+		    (error/loc mod "Illegal C args" arg clause))))
+	    (else
+	     (error/loc mod "Illegal C args" args clause)))))
    
    (define (parse-args id::symbol args::pair-nil mod clause x)
       (cond
@@ -232,13 +252,15 @@
 	 ((not (list? args))
 	  (error/loc mod "Illegal extern \"C\" module clause" clause x))
 	 ((string? (car (last-pair args)))
-	  (let* ((name (car (last-pair args)))
-		 (args (drop-last args 1)))
-	     (if (every symbol? args)
-		 (values args name)
-		 (error/loc mod "Illegal extern \"C\" module clause" clause x))))
+	  (let* ((name (car (last-pair args))))
+	     (values (build-args (drop-last args 1) mod clause) name)))
+;* 		 (args (build-args (drop-last args 1) mod clause))     */
+;* 	     (if (every symbol? args)                                  */
+;* 		 (values args name)                                    */
+;* 		 (error/loc mod "Illegal extern \"C\" module clause" clause x)) */
 	 (else
-	  (values args (symbol->name id clause mod)))))
+	  (values (build-args args mod clause) (symbol->name id clause mod)))))
+;* 	  (values args (symbol->name id clause mod)))))                */
 
    (define (symbol->name ident::symbol src mod)
       (multiple-value-bind (id type)

@@ -36,8 +36,8 @@ interface requires two kind of operations.
 > and [module 4](./module4.html)). As modules 4 are deprecated, only
 > modules 5 are documented here and are assumed all along this chapter.
 
-When compiling to C, Bigloo defines the property `cond-expand` `C` 
-property that enables.
+When compiling to C, Bigloo defines the property cond-expand's `C` 
+property.
 
 
 Introduction
@@ -57,7 +57,7 @@ uses of that C function:
 
 ```bigloo
 (module foo
-   (extern "C" (sum::long ::long))
+   (extern "C" (sum::long ::long ::long))
    (main))
 
 (define (main x)
@@ -102,10 +102,27 @@ is:
 <MCExport> --> ( export <Ident> <String> )
 
 <MCInclude> --> ( include <String> )
+
+<MCImportVariable> -->  ( variable <TypedIdent> <TypedIdent>* <String>? )
+
+<MCImportFunction> -->  ( <TypedIdent> <TypedIdent>* <String>? )
+
+<MCImportMacro> --> <MCImportMacroFunction>
+  | <MCImportInfixMacroFunction>
+  | <MCImportMacroConstant>
+
+<MCImportMacroFunction> --> ( macro <TypedIdent> <TypedIdent>* <String>? )
+
+<MCImportInfixMacroFunction> --> ( infix macro <TypedIdent> <TypedIdent>* <String>? )
+
+<MCImportMacroConstant> --> ( cnst macro <TypedIdent> <String>? )
 ```
 
 The &lt;MCType&gt; clause enables functions to use C types as result
 or arguments. Local variables can also use these types.
+
+The &lt;MCimport&gt; clause _imports_ variables, macros, and functions
+in the Bigloo module.
 
 The &lt;MCExport&gt; clause _exports_ a Bigloo function or variable to
 C. The C types are thoses given in the Bigloo declaration. The &lt;String&gt;
@@ -114,6 +131,12 @@ element specifies the name under which the Bigloo function or variable
 
 The &lt;MCInclue&gt; clause instructs the Bigloo compiler to emit
 a C `#include` statement in the C generated code.
+
+> [!IMPORTANT] C extern imports, i.e., types, functions, variables, 
+> and macros, are automatically exported and are visible by all modules 
+> that import the present one. Contrary to regular Bigloo definitions,
+> C extern definitions cannot be aliased. All modules access them
+> under the same unique Bigloo name. 
 
 C types
 -------
@@ -152,13 +175,63 @@ In this example, the C type `FILE *` is bound to the Bigloo type
 foreign entities with the `$` sign). A Bigloo class `file*` is created
 to _wrap_ these values.
 
+Functions and Macros
+--------------------
+
+C functions and C macros are imported in a Bigloo module using the
+&lt;MCImportFunction&gt; and &lt;MCImportMacroFunction&gt;. C functions
+and C macros are called as any regular Bigloo functions but cannot be
+used as first class values. They cannot be passed as
+argument, returned as values, or stored into a data structure.
+
+The function result type and Bigloo identifier are extracted from the
+first &lt;TypedIdent&gt; of the declaration. The other denotes
+the possibly empty parameters. The optional &lt;String&gt;, if given
+is the C name of the function, which defaults to the Bigloo
+identifier. 
+
+Bigloo does not produce "C extern prototype" for macro functions
+(those introduced by &lt;MCImportMacro&gt;. From the BIgloo point of
+view, this is the only difference between regular C functions and
+C macros. 
+
+Here is an example a Bigloo module that import the C `printf` and
+`putchar` functions and call them with Bigloo values. As `printf`
+and `putchar` are already declared in the `stdio.h` Bigloo is
+prevented from emitting C `extern` declarations for these two
+functions by declaring them as _macro_ instead of regular
+functions.
+
+```bigloo
+,(include "./examples/c/function.bgl")
+```
+
+A C macro can be declared `infix` which instructs Bigloo to treat it
+as an operator, instead of generating a C function call. Example:
+
+```bigloo
+,(include "./examples/c/infix.bgl")
+```
+
+Variables and Constants
+-----------------------
+
+Variables and constants, i.e., C macros, are imported with the
+&lt;MCImportVariable&gt; and &lt;MCImportMacroConstant&gt; extern
+clauses. C variables can be assigned (provided there are not C
+`const`) while macros cannot. Example:
+
+```bigloo
+,(include "./examples/c/var.bgl")
+```
+
 Embedded C expressions
 ----------------------
 
 Bigloo C backend has a special form which allows the inclusion of
 foreign text into the produced code.
 
-### (pragma::ident string arg ...) ###
+### (pragma::ident ::bstring arg ...) ###
 <!-- [:pragma@NoDef-C] -->
 
 This force Bigloo to include `string` in the produced C code as a
@@ -184,14 +257,14 @@ the expression `(pragma "$1 == 0" x)` will be considered by
 Bigloo to be returning the `unspecified` typed object.
 
 
-### (free-pragma::ident string arg ...) ###
+### (free-pragma::ident ::bstring arg ...) ###
 <!-- [:free-pragma@NoDef-C] -->
 
 This form is equivalent to a previously described `pragma`
 but it tells the compiler that the evaluation of the C
 expression does not make any side effect.
 
-### (pragma::ident ident) ###
+### (pragma::ident ::symbol) ###
 <!-- [:pragma-id@NoDef-C] -->
 
 This `pragma` enables _injecting_ a Bigloo mangled identifier into the

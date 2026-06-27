@@ -1,0 +1,11 @@
+(module c-function
+   (extern "C"
+      (include "stdio.h")
+      (macro putchar::int ::int)
+      (macro printf::int ::string ::int ...))
+   (main))
+
+(define (main argv)
+   (printf "len=%d %d" (length argv)
+      (if (pair? (cdr argv)) (string->number (cadr argv)) -1))
+   (putchar (char->integer #\Newline)))
