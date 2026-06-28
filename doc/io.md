@@ -128,7 +128,11 @@ characters read.
 The strings returned by `read-line-newline` do contain the newline delimiters.
 
 ### read-lines ###
-Accumulates all the line of an `input-port` into a list.
+Accumulates all the lines read by `read-line` of an `input-port` into a list.
+
+### read-lines-newline ###
+Accumulates all the lines read by `read-line-newline` of an
+`input-port` into a list.
 
 ### read-of-strings ###
 Reads a sequence of non-space characters on `input-port`, makes a

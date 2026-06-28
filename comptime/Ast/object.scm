@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Mon Jun 22 08:07:32 2026 (serrano)                */
+;*    Last change :  Sun Jun 28 14:46:22 2026 (serrano)                */
 ;*    Last change :  Sun Apr 12 18:55:04 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
@@ -173,7 +173,6 @@
 	 (if (and (symbol? v) (typed-ident? v))
 	     (let* ((tv (parse-id v loc))
 		    (node (sexp->node (car tv) stack loc site genv)))
-		(tprint "V=" v " tv=" (car tv) " " (shape (cdr tv)))
 		(cond
 		   ((var? node)
 		    (field-set (cdr tv) node (cdr l2)))

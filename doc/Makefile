@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Sat Jun 27 07:31:52 2026 (serrano)                */
+#*    Last change :  Sun Jun 28 08:53:50 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -20,7 +20,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 VERBOSE = 
 EFLAGS =
-UFLAGS = -unsafe
+xUFLAGS = -unsafe
 BFLAGS = $(VERBOSE) -cg $(UFLAGS) -O3 -q -Wall -init-lib \
   -lib-dir $(BOOTLIBDIR) -no-auto-link-main -module5 -I src
 

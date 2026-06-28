@@ -18,7 +18,7 @@ C Backend
 <!-- [:@C] -->
 
 We call all the pieces of program devoted to the interactions between
-Scheme and another language a _foreign interface_. This document
+Bigloo and another language a _foreign interface_. This document
 describes the C interface that is available when using the C
 backend. The [jvm](./jvm.html) and [wasm](./wasm.html) interfaces are
 described in dedicated chapters.
@@ -31,10 +31,14 @@ interface requires two kind of operations.
   * Declarations --- _type_ declarations, _import_ declarations or _export_ declarations.
   * Foreign reference in the Bigloo code.
 
-> [!IMPORTANT] Foreign declarations take place in a special module clause, whose syntax
-> varies depending on the module version (see [module 5](./module5.html)
-> and [module 4](./module4.html)). As modules 4 are deprecated, only
-> modules 5 are documented here and are assumed all along this chapter.
+C backend is the default Bigloo backend. As such, in the absence of
+other directive, the compiler generates C code.
+
+> [!IMPORTANT] Foreign declarations take place in a special module
+> clause, whose syntax varies depending on the module version (see
+> [module 5](./module5.html) and [module 4](./module4.html)). As
+> modules 4 are deprecated, only modules 5 are documented here and are
+> assumed all along this chapter.
 
 When compiling to C, Bigloo defines the property cond-expand's `C` 
 property.
@@ -112,8 +116,10 @@ is:
   | <MCImportMacroConstant>
 
 <MCImportMacroFunction> --> ( macro <TypedIdent> <TypedIdent>* <String>? )
+  | ( macro <TypedIdent> <TypedIdent>+ ... <String>? )
 
 <MCImportInfixMacroFunction> --> ( infix macro <TypedIdent> <TypedIdent>* <String>? )
+  | ( infix macro <TypedIdent> <TypedIdent>+ ... <String>? )
 
 <MCImportMacroConstant> --> ( cnst macro <TypedIdent> <String>? )
 ```
@@ -194,6 +200,10 @@ Bigloo does not produce "C extern prototype" for macro functions
 (those introduced by &lt;MCImportMacro&gt;. From the BIgloo point of
 view, this is the only difference between regular C functions and
 C macros. 
+
+In macro import clauses, the symbol `...` is used to refer variadic
+functions and macros. Bigloo restricts the optional arguments
+to be all of the same type.
 
 Here is an example a Bigloo module that import the C `printf` and
 `putchar` functions and call them with Bigloo values. As `printf`

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Wed May 20 17:21:35 2026 (serrano)                */
+;*    Last change :  Sun Jun 28 14:46:49 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing I/O                                                      */
@@ -104,6 +104,9 @@
 
 (define-test read-lines (call-with-input-string "foo\nbar\ngee" read-lines)
    :expected '("foo" "bar" "gee"))
+
+(define-test read-lines-newline (call-with-input-string "foo\nbar\ngee" read-lines-newline)
+   :expected '("foo\n" "bar\n" "gee"))
 
 (define-test read-of-strings (call-with-input-string "abcd efgh ijkl" read-of-strings)
    :expected "abcd")

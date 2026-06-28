@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/5.0a/runtime/Jlib/JDKAndroid.java        */
+/*    .../prgm/project/bigloo/5.0.x/runtime/Jlib/JDKAndroid.java       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:51:26 2008                          */
-/*    Last change :  Tue Mar 10 16:57:15 2026 (serrano)                */
+/*    Last change :  Sun Jun 28 08:35:48 2026 (serrano)                */
 /*    Copyright   :  2008-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK Android specifics                                            */
@@ -17,7 +17,7 @@ package bigloo;
 /*---------------------------------------------------------------------*/
 /*    JDKAndroid ...                                                   */
 /*---------------------------------------------------------------------*/
-public class JDKAndroid extends JDK16 {
+public class JDKAndroid extends JDK2x {
    public void exitImpl(int n) {
       android.os.Process.killProcess(android.os.Process.myPid());
       System.exit(n);

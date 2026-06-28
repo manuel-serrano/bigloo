@@ -1,0 +1,13 @@
+(module c-var
+   (extern "C"
+      (include "errno.h")
+      (variable errno::int)
+      (cnst macro EACCES::int "EACCES")
+      (cnst macro UNSUPPORTED::int "1024")
+      (infix macro -c::long ::long ::long "-"))
+   (main))
+
+(define (main argv)
+   (cond
+      ((=fx errno EACCES) (print "Permission denied"))
+      ((=fx errno UNSUPPORTED) (print "unsupported"))))

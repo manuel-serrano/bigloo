@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Wed Jun  3 18:36:01 2026 (serrano)                */
+;*    Last change :  Sun Jun 28 14:48:33 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -71,6 +71,7 @@
 	    (read-line::obj #!optional (ip::input-port (current-input-port)))
 	    (read-line-newline::obj #!optional (ip::input-port (current-input-port)))
 	    (read-lines::pair-nil #!optional (ip::input-port (current-input-port)))
+	    (read-lines-newline::pair-nil #!optional (ip::input-port (current-input-port)))
 	    (read-string::bstring #!optional (ip::input-port (current-input-port)))
 	    (read-of-strings::obj #!optional (ip::input-port (current-input-port)))
 	    (read-chars::obj ::obj #!optional (ip::input-port (current-input-port)))
@@ -290,6 +291,16 @@
       (if (eof-object? l)
 	  (reverse! ls)
 	  (loop (read-line ip) (cons l ls)))))
+
+;*---------------------------------------------------------------------*/
+;*    read-lines-newline ...                                           */
+;*---------------------------------------------------------------------*/
+(define (read-lines-newline::pair-nil #!optional (ip::input-port (current-input-port)))
+   (let loop ((l (read-line-newline ip))
+	      (ls '()))
+      (if (eof-object? l)
+	  (reverse! ls)
+	  (loop (read-line-newline ip) (cons l ls)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-string ...                                                  */

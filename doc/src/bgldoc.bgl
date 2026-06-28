@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sat Jun 27 09:56:17 2026 (serrano)                */
+;*    Last change :  Sun Jun 28 08:51:31 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -679,6 +679,9 @@
       (match-case x
 	 ((include (and ?file (? string?)))
 	  (call-with-input-file file read-string))
+	 ((include (and ?file (? string?)) :line-start (and (? integer?) ?lnum))
+          (apply string-append
+             (list-tail (call-with-input-file file read-lines-newline) lnum)))
 	 ((implementation-path (and ?file (? string?)))
 	  (let* ((src (call-with-input-file (make-file-name dir file) port->sexp-list)))
 	     (collect-definitions src)
