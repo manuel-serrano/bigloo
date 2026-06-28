@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Thu Jun 25 10:01:06 2026 (serrano)                */
+/*    Last change :  Sun Jun 28 18:16:49 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -871,3 +871,36 @@ blockquote.important .title:before {
     color: var(--blockquoteBorderImportant);
 }
 
+/*---------------------------------------------------------------------*/
+/*    jvm                                                              */
+/*---------------------------------------------------------------------*/
+html#jvm h2 {
+    counter-reset: subsubsection;
+}
+
+html#jvm h3 {
+    font-size: 120%;
+    text-shadow: var(--titleShadow) 1px 1px 1px;
+    font-weight: normal;
+    counter-increment: subsubsection;
+    counter-reset: subsubsubsection;
+}
+
+html#jvm h3:before {
+    content: counter(subsection) ". " counter(subsubsection) " ";
+}
+
+html#jvm h4 {
+    font-size: 110%;
+    text-shadow: var(--titleShadow) 1px 1px 1px;
+    font-weight: normal;
+    counter-increment: subsubsubsection;
+}
+
+html#jvm h4:before {
+    content: counter(subsection) ". " counter(subsubsection) ". " counter(subsubsubsection) " ";
+}
+
+html#jvm h4:after {
+    content: "";
+}

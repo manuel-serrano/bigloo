@@ -82,8 +82,8 @@ because the programmer is free from inserting conversion between Bigloo values
 and C values. When needed, these are automatically inserted by the compiler.
 
 
-Extern Module Clause
---------------------
+Extern "C" Module Clause
+------------------------
 
 When compiling to C, Bigloo reads the `extern "C"` module clauses. There syntax
 is:

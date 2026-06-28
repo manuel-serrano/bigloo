@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Thu Jun 25 09:54:17 2026 (serrano)                */
+;*    Last change :  Sun Jun 28 17:12:58 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -27,6 +27,7 @@
       sh
       c
       js
+      java
       hopscript
       typescript
       json
@@ -332,19 +333,6 @@
 	  (set! column (+fx column (the-length)))
 	  (add! (<SPAN> str))
 	  (ignore)))
-;*       ((: "#" (out #\/ #\space #\tab) (* (out #\# #\space)) #\#)    */
-;*        ;; anchor                                                    */
-;*        (let ((cur res))                                             */
-;* 	  (set! res '())                                               */
-;* 	  (let* ((str (the-substring 1 -1))                            */
-;* 		 (anchor (ignore)))                                    */
-;* 	     (set! res cur)                                            */
-;* 	     (tprint "ICI ANCHOR " str)                                */
-;* 	     (add! (<FTSPAN> :anchor str anchor))                      */
-;* 	     (ignore))))                                               */
-;*       ((: "#/" (+ (out #\#)) #\#)                                   */
-;*        ;; end anchor                                                */
-;*        (reverse! res))                                              */
       ((or "(" (+ (in ")[]")))
        ;; open parenthesis
        (let ((str (the-string)))
@@ -468,7 +456,8 @@
       (for-each (lambda (k)
 		   (hashtable-put! t k "important"))
 	 '("try" "with-handler" "unwind-protect"
-	   "error" "bind-exit" "call/cc"))
+	   "error" "bind-exit" "call/cc"
+           "-&gt;"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "thread"))
 	 '("thread-start!" "thread-start-joinable!" "make-thread"
@@ -1399,6 +1388,14 @@
 ;*    js ...                                                           */
 ;*---------------------------------------------------------------------*/
 (define (js ip #!key line-begin line-end)
+   (js-lexer-init!)
+   (read/rp *js-lexer* ip 'javascript line-begin line-end
+      (or (not (integer? line-begin)) (=fx line-begin 1)) '() 0))
+
+;*---------------------------------------------------------------------*/
+;*    java ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (java ip #!key line-begin line-end)
    (js-lexer-init!)
    (read/rp *js-lexer* ip 'javascript line-begin line-end
       (or (not (integer? line-begin)) (=fx line-begin 1)) '() 0))
