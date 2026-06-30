@@ -217,3 +217,6 @@ To reset the emulated machine
 ```shell
 emulator -avd Pixel_5_API_34 -wipe-data
 ```
+
+### A Complete Example
+
