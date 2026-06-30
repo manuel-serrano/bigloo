@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Sun Jun 28 08:53:50 2026 (serrano)                */
+#*    Last change :  Tue Jun 30 08:06:51 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -20,11 +20,11 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 VERBOSE = 
 EFLAGS =
-xUFLAGS = -unsafe
+UFLAGS = -unsafe
 BFLAGS = $(VERBOSE) -cg $(UFLAGS) -O3 -q -Wall -init-lib \
   -lib-dir $(BOOTLIBDIR) -no-auto-link-main -module5 -I src
-
 BCFLAGS =
+JIGLOO = $(BOOTBINDIR)/jigloo
 
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
@@ -40,9 +40,10 @@ MD = argsparse bigloo bool c date hash error int io jvm net number os \
  pair port real ssl string thread vector wasm \
  condexpand match module5 module4 object
 
-EX = c/fib c/sock1 c/sock2 c/sock3 c/sock4 c/wrap c/function c/infix \
-  c/var \
-  java/fib wasm/fib 
+EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var
+EX_J = fib Point.bgh
+EX_W = 
+EX = $(EX_C:%=c/%) $(EX_J:%=jvm/%) $(EX_W:%=wasm/%)
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
@@ -62,7 +63,7 @@ bin/bgldoc: $(C_OBJECTS:%=objs_c/%)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 	@ echo "\e[1;34m$@\e[0m done."
 
-index.html: $(MD:%=%.html) $(EX:%=objs_c/%.ast.coerce)
+index.html: $(MD:%=%.html) $(EX_C:%=objs_c/c/%.ast.coerce)
 
 distrib: clean
 
@@ -97,7 +98,7 @@ uninstall:
 	fi
 
 #*---------------------------------------------------------------------*/
-#*    .scm.o                                                           */
+#*    Compilation rules                                                */
 #*---------------------------------------------------------------------*/
 objs_c/%.o: src/%.bgl
 	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@

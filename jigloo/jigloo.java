@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0a/jigloo/jigloo.java              */
+/*    serrano/prgm/project/bigloo/5.0.x/jigloo/jigloo.java             */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan  1 17:24:51 2001                          */
-/*    Last change :  Fri Apr 24 08:21:33 2026 (serrano)                */
+/*    Last change :  Tue Jun 30 08:31:32 2026 (serrano)                */
 /*    Copyright   :  2001-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Automatic Bigloo Java module clause generation (by               */
@@ -31,8 +31,7 @@ public abstract class jigloo {
    static boolean stripPackage = false;
    static boolean pkgEmitted = false;
    static boolean superEmit = false;
-   static boolean direct = false;
-   static boolean inheritance = false;
+   static boolean inheritance = true;
    
    static boolean isInterface = false;
 
@@ -80,6 +79,61 @@ public abstract class jigloo {
       if (type.getName().startsWith("java.lang"))
 	 return "obj";
       return unpackage(type.getName(), pkg);
+   }
+
+   static String type_descr(Class type) {
+      if (type.isArray()) {
+	 if (type.getComponentType() == byte.class) {
+	    return "bstring";
+	 } else {
+	    return "A" + type_descr(type.getComponentType());
+	 }
+      }
+	 
+      if (type == boolean.class)
+	 return "Z";
+      if (type == byte.class)
+	 return "B";
+      if (type == char.class)
+	 return "C";
+      if (type == long.class)
+	 return "J";
+      if (type == int.class)
+	 return "I";
+      if (type == short.class)
+	 return "S";
+      if (type == void.class)
+	 return "V";
+      if (type == float.class)
+	 return "F";
+      if (type == double.class)
+	 return "D";
+      if (type.getName().equals("bigloo.pair"))
+	 return "P";
+      if (type.getName().equals("bigloo.procedure"))
+	 return "F";
+      if (type.getName().equals("java.lang.String"))
+	 return "S";
+      if (type.getName().equals("java.lang.Object"))
+	 return "O";
+      if (type.getName().equals("java.lang.Runnable"))
+	 return "R";
+      if (type.getName().equals("java.lang.CharSequence"))
+	 return "CS";
+      if (type.getName().startsWith("java.lang"))
+	 return "L" + type.getName().replace('.', '/');
+      return "O";
+   }
+
+   static String types_descr(Class[] types) {
+      String res = "";
+      int i;
+      
+      for (i = 0; i < types.length; i++) {
+	 res += type_descr(types[i]);
+      }
+
+      return res;
    }
 
    static void jigloo_type(Class type, String pkg) {
@@ -146,8 +200,9 @@ public abstract class jigloo {
       emit("constructor ");
 
       emit(unpackage(constr.getName(), pkg));
-      if (override_index != 0) {
-	 emit(Integer.toString(override_index));
+      if ((override_index != 0) && (args.length > 0)) {
+	 emit("_");
+	 emit(types_descr(args));
       }
 
       if (args.length > 0) {
@@ -209,10 +264,11 @@ public abstract class jigloo {
 	 jigloo_modifiers(mod);
 	 
 	 emit(method.getName());
-	 if (override_index.intValue() != 0) {
-	    emit(override_index.toString());
-	    overrides.put(method.getName(),
-			  Integer.valueOf(override_index.intValue() + 1));
+	 if ((override_index.intValue() != 0) && (args.length > 0)) {
+	    emit("_");
+	    emit(types_descr(args));
+	    emit("_");
+	    emit(type_descr(method.getReturnType()));
 	 }
 	 jigloo_type(method.getReturnType(), pkg);
 
@@ -362,12 +418,11 @@ public abstract class jigloo {
 	 String cname = unpackage(name, pkg);
 	 Class[] all_classes = a_class.getDeclaredClasses();
 	 Constructor[] all_constructors =
-	    direct ? a_class.getDeclaredConstructors() : a_class.getConstructors();
+	    inheritance ? a_class.getConstructors() : a_class.getDeclaredConstructors();
 	 Field[] all_fields =
-	    direct ? a_class.getDeclaredFields() : a_class.getFields();
+	    inheritance ? a_class.getFields() : a_class.getDeclaredFields();
 	 Method[] all_methods =
-	    direct ? a_class.getDeclaredMethods() : a_class.getMethods();
-	 //Method[] all_methods = a_class.getMethods();
+	    inheritance ? a_class.getMethods() : a_class.getDeclaredMethods();
 	 Hashtable overrides = new Hashtable();
 
 	 // handling overrides
@@ -463,7 +518,7 @@ public abstract class jigloo {
 	    } else if (argv[i].equals("--super-class") || argv[i].equals("-u")) {
 	       superEmit = true;
 	    } else if (argv[i].equals("--direct") || argv[i].equals("-d")) {
-	       inheritance = true;
+	       inheritance = false;
 	    } else {
 	       if (argv[i].equals("-o")) { 
 		  try {

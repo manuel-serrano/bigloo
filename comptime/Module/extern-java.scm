@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Sun Jun 21 08:39:18 2026 (serrano)                */
+;*    Last change :  Tue Jun 30 08:01:39 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -232,7 +232,7 @@
 	     (declare-java-jarray! ident mod clause)
 	     (java-declare-array clause ident of (-> mod id) #f)
 	     (declare-java-predicate! ident mod clause)
-	     (declare-jarray-make ident of mod clause)
+	     (declare-jarray-ctor ident of mod clause)
 	     (declare-jarray-length ident of mod clause)
 	     (declare-jarray-accessors ident of mod clause)))
 	 ((import (and ?class (? symbol?)))
@@ -498,16 +498,16 @@
       (for-each declare-field! (-> class fields))))
 
 ;*---------------------------------------------------------------------*/
-;*    declare-jarray-make ...                                          */
+;*    declare-jarray-ctor ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (declare-jarray-make id::symbol of::symbol mod::Module clause::pair)
+(define (declare-jarray-ctor id::symbol of::symbol mod::Module clause::pair)
    (with-trace 'module_extern-java "declare-jarray-constructor"
       (trace-item "array=" id)
       (multiple-value-bind (_ iname)
 	 (parse-ident of)
 	 (let* ((iid (string->symbol iname))
 		(lid (make-typed-ident 'len 'int))
-		(cid (symbol-append 'make- id))
+		(cid (symbol-append id '.new))
 		(tid (make-typed-ident cid id))
 		(expr (localize clause
 			 `(define-inline (,tid ,lid)
@@ -525,7 +525,6 @@
 	    (with-access::Module mod (decls exports body)
 	       (set! body (cons expr body))
 	       (let ((name (symbol->string! cid)))
-		  ;;(hashtable-put! exports name decl)
 		  (hashtable-put! decls name decl)))))))
       
 ;*---------------------------------------------------------------------*/
@@ -538,7 +537,7 @@
 	 (parse-ident of)
 	 (let* ((iid (string->symbol iname))
 		(oid (make-typed-ident 'o id))
-		(lid (symbol-append id '-length))
+		(lid (symbol-append id '.length))
 		(tid (make-typed-ident lid 'int))
 		(expr (localize clause
 			 `(define-inline (,tid ,oid)
@@ -554,7 +553,6 @@
 	    (with-access::Module mod (decls exports body)
 	       (set! body (cons expr body))
 	       (let ((name (symbol->string! lid)))
-		  ;;(hashtable-put! exports name decl)
 		  (hashtable-put! decls name decl)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -569,8 +567,8 @@
 		(oid (make-typed-ident 'o 'int))
 		(aid (make-typed-ident 'a id))
 		(vid (make-typed-ident 'v iid))
-		(gid (symbol-append id '-ref))
-		(sid (symbol-append id '-set!))
+		(gid (symbol-append id '.ref))
+		(sid (symbol-append id '.set!))
 		(gtid (make-typed-ident gid iid))
 		(gexpr (localize clause
 			  `(define-inline (,gtid ,aid ,oid)
@@ -599,8 +597,6 @@
 	    (with-access::Module mod (decls exports body)
 	       (set! body (cons* gexpr sexpr body))
 	       (let ((name (symbol->string! gid)))
-		  ;;(hashtable-put! exports name gdecl)
 		  (hashtable-put! decls name gdecl))
 	       (let ((name (symbol->string! sid)))
-		  ;;(hashtable-put! exports name sdecl)
 		  (hashtable-put! decls name sdecl)))))))

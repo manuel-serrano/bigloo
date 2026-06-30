@@ -57,12 +57,14 @@ illustrate this simplicity, let us consider a simple example involving
 three source files. First a Java interface `Intf.java`:
 
 ```Java
+// Intf.java
 ,(include "../test/src/Intf.java" :line-start 11)
 ```
 
 And a Java class implementation.
 
 ```Java
+// Point.java
 ,(include "../test/src/Point.java" :line-start 11)
 ```
 
@@ -156,7 +158,7 @@ class name, without a `package` module clause, one may use the following
 ((ex "org.bigloo.ex"))
 ```
 
-### Multi-modules applications
+### Multi-modules Applications
 
 The `bgljfile` is a convenient tool to use when compling and linking 
 multi-modules applications. It can be used as:
@@ -221,8 +223,43 @@ be used instead. For instance, as in:
 Java Classes
 ------------
 
+When the compiler encounters a Java class declaration, it
+automatically creates a predicate, it binds constructors, static fields and
+methods to Bigloo identifiers, for checking class instances, and it
+enables programs to get and set field using the `->` notation.
+
+The name of predicate is made of the name of the class suffixed with
+the `?` character, for instance `Intent?` or `Context?`. The names of
+the constructor are the concatenation of the class name, the
+character `.`, and the name of the constructor. For instance, the
+Bigloo name of Java constructor named `new` of a class `Point` is
+`Point.new`. Static fields and methods are named similarly. For intance
+`Context.CAMERA_SERVICE`.
+
+Finally, the compiler enables progams to get and set properties using
+the `->` notation. For instance, if `o` is a variable of type `Point`,
+a class with a `x` and `y` field, Bigloo code can use expression such
+as `(-> o x)` or `(set! (-> o y) 3)`.
+
 Java Arrays
 -----------
+
+Java arrays may be allocated and used inside Bigloo code.  When the
+compiler encounters a Java array declaration, it automatically creates
+a predicate, a constructor, and functions for getting the length of the
+array, reading, and setting elements.
+
+For an array &lt;Ident&gt;, the name of the predicate is &lt;Ident&gt;`?`,
+the name of the constructor &lt;Ident&gt;`.new`, the length
+&lt;Ident&gt;`.length`, and the getter and setter, &lt;Ident&gt;`.ref`
+and &lt;Ident&gt;`.set!`.
+
+Example:
+
+```bigloo
+,(include "../test/src/extern_jvm.bgl" :tag "doc")
+,(include "../test/src/extern_jvm.bgl" :tag "doc3")
+```
 
 Jigloo
 ------
@@ -233,9 +270,21 @@ be a good way to understand how Java classes, methods, and variables
 have to be declared in Bigloo. Jigloo reads Java class files and
 generate the Bigloo java clauses for that classes.
 
-In case of overloaded methods, Jigloo distinguishes them by suffixing
-overridden methods with types notations similar to those Java uses.
+In case of overloaded constructors or methods, Jigloo distinguishes
+them by suffixing overridden methods with types notation inspired by
+those Java uses.
 
+For instance:
+
+```shell
+jigloo Point.class
+```
+
+Produces:
+
+```bigloo
+,(include "examples/java/Point.bgh")
+```
 
 See `jigloo -help` for options.
 

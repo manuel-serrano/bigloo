@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Jun  8 08:45:19 2026                          */
-;*    Last change :  Sun Jun 28 17:01:28 2026 (serrano)                */
+;*    Last change :  Tue Jun 30 07:43:52 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the JVM extern interface                                 */
@@ -85,20 +85,22 @@
 (define-test static-method
    (> (Point.statistics) 1000))
 
+;; tag-start doc3
 (define-test array
    (Point*? 3)
    :expected #f)
 
 (define-test array
-   (Point*? (make-Point* 0))
+   (Point*? (Point*.new 0))
    :expected #t)
 
 (define-test array-length
-   (let ((a (make-Point* 4)))
-      (Point*-length a))
+   (let ((a (Point*.new 4)))
+      (Point*.length a))
    :expected 4)
 
 (define-test array-accessors
-   (let ((a (make-Point* 4)))
-      (Point*-set! a 1 (Point.new))
-      (Point? (Point*-ref a 1))))
+   (let ((a (Point*.new 4)))
+      (Point*.set! a 1 (Point.new))
+      (Point? (Point*.ref a 1))))
+;; tag-end doc3

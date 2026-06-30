@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0.x/doc/bgldoc.css                 */
+/*    serrano/bigloo/5.0.x/doc/bgldoc.css                              */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Sun Jun 28 18:16:49 2026 (serrano)                */
+/*    Last change :  Tue Jun 30 08:56:21 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -478,7 +478,8 @@ h4.section, h2 {
 }
 
 h4.section:before, h2:before{
-    content: counter(subsection) ". ";
+    content: counter(subsection) ".";
+    margin-right: 0.5em;
 }
 
 h4.section {
@@ -887,7 +888,8 @@ html#jvm h3 {
 }
 
 html#jvm h3:before {
-    content: counter(subsection) ". " counter(subsubsection) " ";
+    content: counter(subsection) "." counter(subsubsection);
+    margin-right: 0.5em;
 }
 
 html#jvm h4 {
@@ -898,7 +900,8 @@ html#jvm h4 {
 }
 
 html#jvm h4:before {
-    content: counter(subsection) ". " counter(subsubsection) ". " counter(subsubsubsection) " ";
+    content: counter(subsection) "." counter(subsubsection) "." counter(subsubsubsection);
+    margin-right: 0.5em;
 }
 
 html#jvm h4:after {
