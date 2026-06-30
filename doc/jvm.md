@@ -31,7 +31,18 @@ with the `-jvm` command line option. See `bigloo -help` for all the
 Jvm related option. 
 
 When compiling to Java, Bigloo defines the property cond-expand's `jvm` 
-property.
+property. Example
+
+```shell
+$ cat > foo.scm
+(module foo (main))
+(define (main argv)
+   (print "Hello world: " argv))
+$ bigloo -O3 -jvm foo.scm -o foo.class
+$ bigloo -O3 foo.class
+$ a.out
+  &rarr; Hello world: (a.out)
+```
 
 > [!NOTE] The Jvm interface does not support Java class definitions. 
 > Consequently, programming environments that requires new classes to be
@@ -133,19 +144,46 @@ to a qualified Java class name. For instance, when compiling a module
 
 Bigloo will use the `org.bigloo.ex` qualified name for generated class.
 
-Second the tool `bgljfile` can maps source file names to qualified type
-names. This tool generate a file named `.jfile` which is an association
-map that, if exists in the directory from which Bigloo is invoked, is
-read by the compiler, and is used to map file names to Java qualifed
+Second, the tool `bgljfile` generates mapping from source file names to 
+qualified type names. These mapping, usually stored in `.jfile` files, when
+they they exists in the directory from which Bigloo is invoked, it is
+read by the compiler, and used to map file names to Java qualifed
 class name. For instance, to map the `ex` module to the qualified
 class name, without a `package` module clause, one may use the following
-.jfile:
+`.jfile`:
 
 ```
 ((ex "org.bigloo.ex"))
 ```
 
+### Multi-modules applications
+
+The `bgljfile` is a convenient tool to use when compling and linking 
+multi-modules applications. It can be used as:
+
+```shell
+$ cat > foo.bgl
+(module foo (export (foo))) (define (foo) 'foo)
+$ cat > bar.bgl
+(module bar (export (bar))) (define (bar) 'bar)
+$ cat > hux.bgl
+(module hux (export (hux))) (define (hux) 'hux)
+$ cat > main.bgl
+(module main (main) (import "./foo.bgl" "./bar.bgl" "./hux.bgl"))
+(define (main argv)
+   (print (foo))
+   (print (bar))
+   (print (fhux)))
+$ bgljfile *.bgl -o .jfile
+$ bigloo -jvm -c foo.scm
+$ bigloo -jvm -c bar.scm
+$ bigloo -jvm -c hux.scm
+$ bigloo -jvm main.scm foo.class bar.class hux.class
+```
+
 See `bgljfile -help` for more options.
+
+### Qualified Class Names
 
 When importing a Java class defined in a package, its fully qualified
 name of that class is required. For instance, if a Bigloo modules
@@ -179,6 +217,7 @@ be used instead. For instance, as in:
    ...)
 ```
 
+
 Java Classes
 ------------
 
@@ -187,6 +226,18 @@ Java Arrays
 
 Jigloo
 ------
+
+Java clauses can be automatically generated using the Jigloo program
+which is distributed in the same package as Bigloo. Using Jigloo may
+be a good way to understand how Java classes, methods, and variables
+have to be declared in Bigloo. Jigloo reads Java class files and
+generate the Bigloo java clauses for that classes.
+
+In case of overloaded methods, Jigloo distinguishes them by suffixing
+overridden methods with types notations similar to those Java uses.
+
+
+See `jigloo -help` for options.
 
 Android
 -------
