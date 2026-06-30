@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/doc/src/bgldoc.bgl             */
+;*    serrano/bigloo/5.0.x/doc/src/bgldoc.bgl                          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sun Jun 28 17:03:03 2026 (serrano)                */
+;*    Last change :  Mon Jun 29 14:03:00 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -311,10 +311,28 @@
          (xml-element 'div `((class . "index-section")
                              (id . ,name))
             (list name))))
-   
+
+   (define (first-letter str)
+      (let ((c (string-ref str 0)))
+         (if (char=? c #\()
+             (string-ref str 1)
+             c)))
+
+   (define (index-letter c)
+      (if (char-alphabetic? c)
+          c
+          #\~))
+
+   (define (real-name str)
+      (if (char=? (string-ref str 0) #\()
+          (substring str 1)
+          str))
+         
    (let ((entries (append-map (lambda (f) (call-with-input-file f read))
                      indexes)))
-      (let loop ((entries (sort (lambda (x y) (string<=? (car x) (car y)))
+      (let loop ((entries (sort (lambda (x y)
+                                   (string<=? (real-name (car x))
+                                      (real-name (car y))))
                              entries))
                  (section #\space)
                  (elements '())
@@ -326,12 +344,13 @@
                       (reverse! sections))))
              (let* ((en (car entries))
                     (name (car en)))
-                (if (char-ci=? (string-ref name 0) section)
+                (if (char-ci=? (index-letter (first-letter name)) section)
                     (let ((el (index-entry en)))
                        (loop (cdr entries) section (cons el elements) sections))
-                    (let* ((letter (string-ref name 0))
+                    (let* ((letter (index-letter (first-letter name)))
                            (el (toc-entry letter)))
-                       (loop entries letter (cons el elements) (cons el sections)))))))))
+                       (loop entries letter
+                          (cons el elements) (cons el sections)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    xml-chapter-toc ...                                              */

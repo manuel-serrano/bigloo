@@ -26,6 +26,13 @@ enables Bigloo code to invoke Java methods (static or not) and to
 access object fields and class static fields. It also enables application
 to export functions for Java code.
 
+To generate Java class files, the Bigloo compiler has to be invoked
+with the `-jvm` command line option. See `bigloo -help` for all the
+Jvm related option. 
+
+When compiling to Java, Bigloo defines the property cond-expand's `jvm` 
+property.
+
 > [!NOTE] The Jvm interface does not support Java class definitions. 
 > Consequently, programming environments that requires new classes to be
 > declared, need a mix of Java code and Bigloo. A complete example can
@@ -65,9 +72,12 @@ Extern "java" Module Clause
 ```bnf
 <MJExtern> --> ( extern "java" <MJClause>* )
 
-<MJClause> --> <MJImport>
-  | <MJExport>
+<MJClause> --> <MJPackage>
+  | <MJImport>
   | <MJArray>
+  | <MJExport>
+  
+<MJPackage> --> ( package <Ident> )
   
 <MJImport> --> ( class <TypedIdent> <MJCtor>* <MJProperty>* )
   | ( abstract-class <TypeIdent> <MJMethod>* )
@@ -80,10 +90,10 @@ Extern "java" Module Clause
 <MJField> --> ( field <TypedIdent> )
   | ( static field <TypedIdent> )
 
-<MJMethod> --> ( <MJQualifier> <TypedIdent> <TypeIdent>* )
-  | ( <MJQualifier> <TypedIdent> <TypeIdent>* <String> )
+<MJMethod> --> ( <MJQualifier>* <TypedIdent> <TypeIdent>* )
+  | ( <MJQualifier>* <TypedIdent> <TypeIdent>* <String> )
 
-<MJQualifier> --> | abstract | static
+<MJQualifier> --> abstract | static | public | final
 
 <MJArray> --> ( array <Ident> <TypedIdent> )
 
@@ -100,6 +110,75 @@ instance methods with different syntax:
   
   * Object methods are invoked using the `((-&gt; o method) arg ...)`.
   
+Java Packages
+-------------
+
+Java and the JVM strongly relates file names to class names and packages.
+Java uses `qualified` class names, that is a mean to implement 
+name spaces. Two classes with the same name but contained in different
+packages are diffent.
+
+Bigloo compiles module to class files and offers two means to control
+are they are mappend to Java qualified class names. First, the
+module clause `(package &lt;Ident&gt;)` maps the class being compile
+to a qualified Java class name. For instance, when compiling a module
+
+```bigloo
+;; file ex.bgl
+(module ex
+  (extern "java"
+     (package org.bigloo))
+  ...)
+```
+
+Bigloo will use the `org.bigloo.ex` qualified name for generated class.
+
+Second the tool `bgljfile` can maps source file names to qualified type
+names. This tool generate a file named `.jfile` which is an association
+map that, if exists in the directory from which Bigloo is invoked, is
+read by the compiler, and is used to map file names to Java qualifed
+class name. For instance, to map the `ex` module to the qualified
+class name, without a `package` module clause, one may use the following
+.jfile:
+
+```
+((ex "org.bigloo.ex"))
+```
+
+See `bgljfile -help` for more options.
+
+When importing a Java class defined in a package, its fully qualified
+name of that class is required. For instance, if a Bigloo modules
+needs the Android Java class `Intent`, it must imported with a
+declaration such as:
+
+```bigloo
+(extern "java"
+   ...
+   (class android.content.Intent
+      (public getAction::String)
+      ...)
+   ...)
+```
+
+But Bigloo binds imported class names to their fully qualified type name
+and relative name, which can be used
+as a shorthand. To keep elaborating on the previous example, once the
+`android.content.Intent` is declared, the shorter name `Intent` can
+be used instead. For instance, as in:
+
+```bigloo
+(extern "java"
+   ...
+   (class android.content.Context
+      (field final public static CAMERA_SERVICE::String)
+      (field final public static LOCATION_SERVICE::String)
+      (abstract public registerReceiver::Intent ::BroadcastReceiver ::IntentFilter)
+      (abstract public unregisterReceiver::void ::BroadcastReceiver)
+      ...)
+   ...)
+```
+
 Java Classes
 ------------
 
