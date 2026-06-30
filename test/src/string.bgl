@@ -1,12 +1,12 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/test/src/string.bgl             */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/string.bgl            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Wed Apr 22 09:05:02 2026 (serrano)                */
+;*    Last change :  Tue Jun 30 09:16:39 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    Testing string functions                                         */
+;*    Testing strings                                                  */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/

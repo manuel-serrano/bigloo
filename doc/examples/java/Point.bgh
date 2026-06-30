@@ -1,0 +1,12 @@
+(extern "java"
+   (class Point
+     (public constructor Point_II ::int ::int)
+     (public constructor Point)
+     (field public x::int)
+     (field public y::int)
+     (field public static point_num::int)
+     (public toString::String)
+     (public abstract_met::int)
+     (public static statistics::int)
+     )
+)

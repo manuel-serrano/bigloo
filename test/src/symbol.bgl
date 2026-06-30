@@ -1,0 +1,251 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/symbol.bgl            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Tue Jun 30 10:22:00 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing symbols and keywords                                     */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    symbols                                                          */
+;*---------------------------------------------------------------------*/
+(module symbols
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "symbol" tests))
+      (test-all verbose "symbol")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test symbol? (symbol? 'foo))
+(define-test symbol? (symbol? :foo) :expected #f)
+(define-test symbol? (symbol? (string->symbol "foo")))
+(define-test symbol? (symbol? '|;|))
+
+(define-test symbol-exists? (symbol-exists? (symbol->string 'foo)))
+(define-test symbol-exists? (symbol-exists? "does not exist") :expected #f)
+
+(define-test eq? (eq? 'a 'a)
+   :expected #t)
+(define-test eq? (eq? 'a 'A)
+   :expected #f)
+(define-test eq? (eq? 'A 'A)
+   :expected #t)
+(define-test eq? (eq? 'a 'b)
+   :expected #f)
+(define-test eq? (eq? ':=   '|:=|)
+   :expected #f)
+(define-test symbol '|foo\|bar|
+   :expected (string->symbol "foo\|bar"))
+(define-test symbol
+   (string=? (call-with-output-string (lambda (p) (write '|foo\|bar| p)))
+      "|foo\\|bar|"))
+
+(define-test eqv? (eqv? 'a 'a)
+   :expected #t)
+(define-test eqv? (eqv? 'a 'A)
+   :expected #f)
+(define-test eqv? (eqv? 'A 'A)
+   :expected #t)
+(define-test eqv? (eqv? 'a 'b)
+   :expected #f)
+
+(define-test string->symbol (symbol? (string->symbol ";")))
+
+(define-test string 'étè
+   :expected (string->symbol "étè"))
+(define-test string (symbol? (with-input-from-string "||" read))
+   :expected #t)
+(define-test string (with-input-from-string "||" read)
+   :expected (string->symbol ""))
+(define-test string (symbol? (with-input-from-string "|'|" read))
+   :expected #t)
+(define-test string (with-input-from-string "|'|" read)
+   :expected (string->symbol "'"))
+(define-test string (with-input-from-string "|{|" read)
+   :expected (string->symbol "{"))
+(define-test string (with-input-from-string "|(|" read)
+   :expected (string->symbol "("))
+(define-test string (with-input-from-string "|()|" read)
+   :expected (string->symbol "()"))
+(define-test string (symbol? (with-input-from-string "|foo bar|" read))
+   :expected #t)
+(define-test string (with-input-from-string "|foo bar|" read)
+   :expected 
+   (string->symbol "foo bar"))
+
+(define-test string->symbol
+   (string->symbol "new Function( \"return hop_service( \\\"/hop/mailto\\\", arguments )\" )")
+   :expected (string->symbol (string-append "new Function( \"return hop_service( \\\"/hop/mailto\\\", arguments )\" )" "")))
+(define-test string (symbol? (string->symbol "01234"))
+   :expected #t)
+
+(let ((s1 (symbol->string '|:=|))
+      (s2 (symbol->string '|:=|)))
+   (define-test string->symbol (string=? s1 s2)
+      :expected #t))
+
+(let ((s1 (with-output-to-string (lambda () (write ':=))))
+      (s2 (with-output-to-string (lambda () (write '|:=|)))))
+   (define-test string->symbol (string=? s1 s2)
+      :expected #f))
+
+(let ((s1 (with-output-to-string (lambda () (write '|(|))))
+      (s2 (with-output-to-string (lambda () (write (string->symbol "("))))))
+   (define-test string.symbol (string=? s1 s2)
+      :expected #t))
+   
+(let ((s (with-output-to-string (lambda () (write '(|;| k))))))
+   (with-input-from-string s
+      (lambda ()
+         (let ((v (read)))
+            (define-test symbol
+               (and (pair? v)
+                    (pair? (cdr v))
+                    (null? (cddr v))
+                    (equal? v (list (string->symbol ";") 'k))))))))
+
+(define-test symbol (symbol? '|(ab)|)
+   :expected #t)
+(define-test symbol '|(a,b)|
+   :expected (string->symbol "(a,b)"))
+(define-test symbol (symbol? '|:=|)
+   :expected #t)
+(define-test symbol '|.|
+   :expected (string->symbol "."))
+
+(let ((s1 (with-output-to-string (lambda () (write '|.|))))
+      (s2 (with-output-to-string (lambda () (write (string->symbol "."))))))
+   (define-test string (string=? s1 s2)
+      :expected #t))
+
+(define-test symbol->string (symbol->string '.foo)
+   :expected ".foo")
+(define-test string->symbol '.foo
+   :expected (string->symbol ".foo"))
+(define-test string->symbol (string->symbol "`")
+   :expected '|`|)
+
+(define-test gensym(symbol? (gensym))
+   :expected #t)
+(define-test gensym (symbol? (gensym 'foo))
+   :expected #t)
+(define-test gensym (symbol? (gensym "foo"))
+   :expected #t)
+(define-test gensym (eq? (gensym) (gensym))
+   :expected #f)
+(define-test gensym (eq? (gensym 'foo) (gensym 'foo))
+   :expected #f)
+(let ((s (gensym)))
+   (define-test gensym (eq? s (string->symbol (symbol->string s)))
+      :expected #t))
+
+(define-test keyword (eq? :foo foo:)
+   :expected #t)
+(define-test keyword (eq? :foo bar:)
+   :expected #f)
+(define-test keyword (eq? :foo :Foo)
+   :expected #f)
+(define-test keyword (eq? (string->keyword "foo") foo:)
+   :expected #t)
+(define-test keyword (eq? (string->keyword "foo") :foo)
+   :expected #t)
+(define-test keyword (eq? (string->keyword "foo:") foo:)
+   :expected #f)
+
+(define-test keyword? (keyword? :foo:))
+(define-test keyword? (keyword? :foo:))
+(define-test keyword? (keyword? 'foo) :expected #f)
+(define-test keyword? (keyword? (string->keyword "foo")))
+
+(define-test keyword
+   (let* ((p (open-input-string "bar: :bar"))
+          (s0 (keyword->string (read p)))
+          (s1 (keyword->string (read p))))
+      (string-append s0 " " s1))
+   :expected "bar bar")
+(define-test keyword
+   (let* ((s0 (keyword->string :bar))
+          (s1 (keyword->string bar:)))
+      (string-append s0 " " s1))
+   :expected "bar bar")
+(define-test keyword
+   (call-with-output-string
+      (lambda (p)
+         (display :bar p)
+         (display " " p)
+         (display bar: p)))
+   :expected ":bar :bar")
+
+(define-test symbol->string (symbol->string '|foo bar|)
+   :expected "foo bar")
+
+(define-test symbol->string
+   (eq? (symbol->string 'foo) (symbol->string 'foo))
+   :expected #f)
+
+(define-test symbol->string!
+   (eq? (symbol->string! 'foo) (symbol->string! 'foo)))
+
+(define-test string->symbol-ci
+   (string->symbol-ci "foo")
+   :expected 'FOO)
+
+(define-test keyword->string
+   (eq? (keyword->string ':foo) (keyword->string ':foo))
+   :expected #f)
+
+(define-test string->keyword
+   (eq? (string->keyword "foo") :foo))
+
+(define-test string->keyword
+   (eq? (string->keyword "foo") foo:))
+
+(define-test keyword->symbol
+   (keyword->symbol :foo)
+   :expected 'foo)
+
+(define-test keyword->symbol
+   (keyword->symbol foo:)
+   :expected 'foo)
+
+(define-test symbol->keyword
+   (symbol->keyword 'foo)
+   :expected :foo)
+
+(define-test symbol-append
+   (symbol-append 'foo 'bar 'gee)
+   :expected 'foobargee)
+
+(define-test symbol-append
+   (symbol-append 'foo '|::| 'bar)
+   :expected 'foo::bar)
+
+(define-test gensym
+   (gensym)
+   :expected symbol?)
+
+(define-test gensym
+   (gensym "foo")
+   :expected symbol?)
+
+(define-test gensym
+   (gensym 'bar)
+   :expected symbol?)
+
+(define-test genuuid
+   (genuuid)
+   :expected string?)

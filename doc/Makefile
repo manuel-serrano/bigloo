@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0.x/doc/Makefile                   */
+#*    serrano/bigloo/5.0.x/doc/Makefile                                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Jun 30 08:06:51 2026 (serrano)                */
+#*    Last change :  Tue Jun 30 09:14:03 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -37,7 +37,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
 MD = argsparse bigloo bool c date hash error int io jvm net number os \
- pair port real ssl string thread vector wasm \
+ pair port real ssl string symbol thread vector wasm \
  condexpand match module5 module4 object
 
 EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var

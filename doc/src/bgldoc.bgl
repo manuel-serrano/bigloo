@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Mon Jun 29 14:03:00 2026 (serrano)                */
+;*    Last change :  Tue Jun 30 09:15:47 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -69,6 +69,7 @@
      ("reals" . "real.html")
      ("ssl" . "ssl.html")
      ("strings" . "string.html")
+     ("symbols" . "symbol.html")
      ("threads" . "thread.html")
      ("vectors" . "vector.html")))
 

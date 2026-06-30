@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Ieee/symbol.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Ieee/symbol.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Mon Feb  9 13:42:56 2026 (serrano)                */
+;*    Last change :  Tue Jun 30 09:56:35 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -178,25 +178,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    symbol? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (symbol? obj)
+(define-inline (symbol?::bool obj)
    ($symbol? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol->string ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (symbol->string symbol)
+(define-inline (symbol->string::bstring symbol::symbol)
    (string-copy (c-symbol->string symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol->string! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (symbol->string! symbol)
+(define-inline (symbol->string!::bstring symbol::symbol)
    (c-symbol->string symbol))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->symbol ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (string->symbol string)
+(define-inline (string->symbol::symbol string::bstring)
    (cond-expand
       ((or bigloo-c bigloo-jvm)
        ($bstring->symbol string))
@@ -206,13 +206,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    string->symbol-ci ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (string->symbol-ci string)
+(define (string->symbol-ci::symbol string::bstring)
    (string->symbol (string-upcase string)))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol-append ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (symbol-append . list)
+(define (symbol-append::symbol . list)
    (string->symbol
     (if (null? list)
 	""
@@ -225,12 +225,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    symbol-exists? ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (symbol-exists? sym)
+(define-inline (symbol-exists?::bool name::bstring)
    (cond-expand
       ((and (not bigloo-c) (not bigloo-jvm))
-       ($$symbol-exists? sym))
+       ($$symbol-exists? name))
       (else
-       ($symbol-exists? sym))))
+       ($symbol-exists? name))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *gensym-counter* ...                                             */
@@ -240,7 +240,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    gensym ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (gensym #!optional arg)
+(define (gensym::symbol #!optional arg)
    (cond-expand
       (bigloo-c
        (let ((arg (cond
@@ -336,25 +336,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    keyword? ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (keyword? obj)
+(define-inline (keyword?::bool obj)
    ($keyword? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    keyword->string ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (keyword->string keyword)
+(define-inline (keyword->string::bstring keyword::keyword)
    (string-copy ($keyword->string keyword)))
 
 ;*---------------------------------------------------------------------*/
 ;*    keyword->string! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (keyword->string! keyword)
+(define-inline (keyword->string!::bstring keyword::keyword)
    ($keyword->string keyword))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->keyword ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (string->keyword string)
+(define-inline (string->keyword::keyword string::bstring)
    (cond-expand
       ((or bigloo-c bigloo-jvm)
        ($bstring->keyword string))
@@ -364,11 +364,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    symbol->keyword ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (symbol->keyword symbol)
+(define (symbol->keyword::keyword symbol::symbol)
    (string->keyword (symbol->string symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    keyword->symbol ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (keyword->symbol keyword)
+(define (keyword->symbol::symbol keyword::keyword)
    (string->symbol (keyword->string keyword)))

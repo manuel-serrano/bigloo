@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Fri Jun 26 17:17:44 2026 (serrano)                */
+;*    Last change :  Tue Jun 30 09:23:51 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing DSSSL declarations and arguments passing                 */
@@ -278,42 +278,13 @@
       (+ (f 1) ((car (list f)) 2)))
    :expected 3)
 
-(define-test keyword.1 (eq? :foo foo:)
-   :expected #t)
-(define-test keyword.2 (eq? :foo bar:)
+(define-test keyword (dsssl-bug :foo #f)
    :expected #f)
-(define-test keyword.3 (eq? :foo :Foo)
-   :expected #f)
-(define-test keyword.4 (eq? (string->keyword "foo") foo:)
-   :expected #t)
-(define-test keyword.5 (eq? (string->keyword "foo") :foo)
-   :expected #t)
-(define-test keyword.6 (eq? (string->keyword "foo:") foo:)
-   :expected #f)
+
 (let* ((dt (current-date))
        (res (date->seconds dt)))
-   (define-test keyword.7 ((if (> res 0) dt->sec list) 1 x: dt)
+   (define-test keyword ((if (> res 0) dt->sec list) 1 x: dt)
       :expected res))
-(define-test keyword.8 (dsssl-bug :foo #f)
-   :expected #f)
-(define-test keyword.9
-   (let* ((p (open-input-string "bar: :bar"))
-          (s0 (keyword->string (read p)))
-          (s1 (keyword->string (read p))))
-      (string-append s0 " " s1))
-   :expected "bar bar")
-(define-test keyword.10
-   (let* ((s0 (keyword->string :bar))
-          (s1 (keyword->string bar:)))
-      (string-append s0 " " s1))
-   :expected "bar bar")
-(define-test keyword.11
-   (call-with-output-string
-      (lambda (p)
-         (display :bar p)
-         (display " " p)
-         (display bar: p)))
-   :expected ":bar :bar")
 
 (define-test dsssl.1 (foo 1 2 3 4 i: 5)
    :expected '(1 2 3 4 i: 5 j: 1))
