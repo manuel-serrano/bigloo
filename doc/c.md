@@ -34,14 +34,14 @@ interface requires two kind of operations.
 C backend is the default Bigloo backend. As such, in the absence of
 other directive, the compiler generates C code.
 
+When compiling to C, Bigloo defines the property cond-expand's `C` 
+property.
+
 > [!IMPORTANT] Foreign declarations take place in a special module
 > clause, whose syntax varies depending on the module version (see
 > [module 5](./module5.html) and [module 4](./module4.html)). As
 > modules 4 are deprecated, only modules 5 are documented here and are
 > assumed all along this chapter.
-
-When compiling to C, Bigloo defines the property cond-expand's `C` 
-property.
 
 
 Introduction
