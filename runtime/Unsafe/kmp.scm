@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/kmp.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/kmp.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Apr 10 13:43:22 2006                          */
-;*    Last change :  Sun Aug 25 09:18:21 2019 (serrano)                */
-;*    Copyright   :  2006-19 Manuel Serrano                            */
+;*    Last change :  Wed Jul  1 07:37:58 2026 (serrano)                */
+;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    "Knuth, Morris, and Pratt" search algorithm implementation.      */
 ;*=====================================================================*/
@@ -49,8 +49,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    kmp-table ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (kmp-table p)
-   (let* ((lp (string-length p))
+(define (kmp-table::pair pat::bstring)
+   (let* ((lp (string-length pat))
 	  (t (make-vector (+fx lp 2) 0))
 	  (i 0)
 	  (j -1)
@@ -59,7 +59,7 @@
       (let while ()
 	 (when (<fx i lp)
 	    (cond
-	       ((char=? (string-ref p i) c)
+	       ((char=? (string-ref pat i) c)
 		(vector-set! t (+fx i 1) (+fx j 1))
 		(set! j (+fx j 1))
 		(set! i (+fx i 1)))
@@ -69,14 +69,14 @@
 		(vector-set! t (+fx i 1) 0)
 		(set! i (+fx i 1))
 		(set! j 0)))
-	    (set! c (string-ref p j))
+	    (set! c (string-ref pat j))
 	    (while)))
-      (cons t p)))
+      (cons t pat)))
 
 ;*---------------------------------------------------------------------*/
 ;*    kmp-mmap ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (kmp-mmap tp mm m)
+(define (kmp-mmap::elong tp::pair mm::mmap offset::elong)
    (cond
       ((not (vector? (car tp)))
        (bigloo-type-error "kmp-mmap" 'vector (car tp)))
@@ -92,15 +92,15 @@
 	  (let while ((i #e0))
 	     (cond
 		((=elong i lp)
-		 m)
-		((>=elong (+elong i m) ls)
+		 offset)
+		((>=elong (+elong i offset) ls)
 		 #e-1)
 		(else
 		 (let ((fi (elong->fixnum i)))
-		    (if (char=? (mmap-ref mm (+elong i m)) (string-ref p fi))
+		    (if (char=? (mmap-ref mm (+elong i offset)) (string-ref p fi))
 			(while (+elong i #e1))
 			(let ((ti (fixnum->elong (vector-ref t fi))))
-			   (set! m (+elong m (-elong i ti)))
+			   (set! offset (+elong offset (-elong i ti)))
 			   (if (>elong i #e0)
 			       (while ti)
 			       (while i))))))))))))
@@ -108,7 +108,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    kmp-string ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (kmp-string tp str m)
+(define (kmp-string::long tp::pair str::bstring offset::long)
    (cond
       ((not (vector? (car tp)))
        (bigloo-type-error "kmp-string" 'vector (car tp)))
@@ -124,14 +124,14 @@
 	  (let while ((i 0))
 	     (cond
 		((=fx i lp)
-		 m)
-		((>=fx (+fx i m) ls)
+		 offset)
+		((>=fx (+fx i offset) ls)
 		 -1)
 		(else
-		 (if (char=? (string-ref str (+fx i m)) (string-ref-ur p i))
+		 (if (char=? (string-ref str (+fx i offset)) (string-ref-ur p i))
 		     (while (+fx i 1))
 		     (let ((ti (vector-ref t i)))
-			(set! m (+fx m (-fx i ti)))
+			(set! offset (+fx offset (-fx i ti)))
 			(if (>fx i 0)
 			    (while ti)
 			    (while i)))))))))))

@@ -11,6 +11,7 @@
 
 ,(implementation-path "../runtime/Ieee/boolean.scm")
 ,(implementation-path "../runtime/Ieee/equiv.scm")
+,(implementation-path "../runtime/Llib/object.scm")
 ,(example-path "../test/src/bool.bgl")
 
 Booleans
@@ -47,6 +48,10 @@ type and same length, and their subcomponents are recursively `equal?`.
 > [!WARNING]
 > The function `equal?` cannot be used on cyclic data structures.
 
+### object-equal? ###
+<!-- [:@NoTest-C-jvm-wasm] -->
+
+See [Object Oriented Programming](./object.html).
 
 Library functions
 -----------------

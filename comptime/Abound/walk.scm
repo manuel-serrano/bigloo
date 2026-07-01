@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Abound/walk.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Abound/walk.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Mon Oct 20 14:23:24 2025 (serrano)                */
-;*    Copyright   :  2010-25 Manuel Serrano                            */
+;*    Last change :  Wed Jul  1 09:14:24 2026 (serrano)                */
+;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
 ;*=====================================================================*/
@@ -68,6 +68,8 @@
 (define *u64vector-set!* #unspecified)
 (define *f32vector-set!* #unspecified)
 (define *f64vector-set!* #unspecified)
+(define *mmap-ref* #unspecified)
+(define *mmap-set!* #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    init-cache! ...                                                  */
@@ -97,6 +99,8 @@
    (set! *u64vector-set!* (find-global (get-genv) '$u64vector-set! 'foreign))
    (set! *f32vector-set!* (find-global (get-genv) '$f32vector-set! 'foreign))
    (set! *f64vector-set!* (find-global (get-genv) '$f64vector-set! 'foreign))
+   (set! *mmap-ref* (find-global (get-genv) '$mmap-ref 'foreign))
+   (set! *mmap-set!* (find-global (get-genv) '$mmap-set! 'foreign))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
@@ -166,6 +170,31 @@
 			 #f #f))))
 	     loc (get-genv)))))
 
+   (define (abound-mmap-access node)
+      (with-access::app node (fun args loc)
+	 (let* ((s (mark-symbol-non-user! (gensym 's)))
+		(i (mark-symbol-non-user! (gensym 'i)))
+		(l (mark-symbol-non-user! (gensym 'l)))
+		(lname (when (location? loc) (location-full-fname loc)))
+		(lpos (when (location? loc) (location-pos loc)))
+		(v (var-variable fun))
+		(name (if (eq? v *mmap-ref*) "mmap-ref" "mmap-set!"))
+		(types (cfun-args-type (variable-value v))))
+	    (top-level-sexp->node
+	       `(let ((,(make-typed-ident s (type-id (car types))) ,(car args))
+		      (,(make-typed-ident i (type-id (cadr types))) ,(cadr args)))
+		   (let ((,(make-typed-ident l (type-id (cadr types)))
+			  ($mmap-length ,s)))
+		      (if ($mmap-bound-check? ,i ,l)
+			  ,(duplicate::app node
+			      (args (cons* s i (cddr args))))
+			  (failure
+			     ((@ index-out-of-bounds-error __error)
+			      ,lname ,lpos ,name ,s
+			      (elong->fixnum ,l) (elong->fixnum ,i))
+			     #f #f))))
+	       loc (get-genv)))))
+
    (abound-node*! (app-args node))
    ;; check if we are calling string-ref/set!, or struct-ref/set!
    (with-access::app node (fun)
@@ -216,6 +245,10 @@
 			    (duplicate::app node
 			       (args (list vec i (caddr args)))))))))
 	     node)
+	    ((or (eq? v *mmap-ref*) (eq? v *mmap-set!*))
+	     (let ((node (abound-mmap-access node)))
+		(lvtype-node! node)
+		node))
 	    (else
 	     node)))))
 

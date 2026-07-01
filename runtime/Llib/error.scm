@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Jun 26 16:53:06 2026 (serrano)                */
+;*    Last change :  Wed Jul  1 09:28:49 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -278,7 +278,7 @@
 	    (error/source-location::obj ::obj ::obj ::obj ::obj)
 	    (error/source::obj ::obj ::obj ::obj ::obj)
 	    (type-error::obj fname loc proc type obj)
-	    (index-out-of-bounds-error::obj fname loc p o i::int len::int)
+	    (index-out-of-bounds-error::obj fname loc p o i::long len::long)
 	    (stack-overflow-error::obj)
 	    (module-init-error::obj ::string ::string)
 

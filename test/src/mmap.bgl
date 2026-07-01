@@ -1,0 +1,152 @@
+;; DON'T REMOVE COMMENT, USED FOR TESTING
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/mmap.bgl              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Jul  1 07:36:15 2026                          */
+;*    Last change :  Wed Jul  1 09:48:28 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing mmap                                                     */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    mmap                                                             */
+;*---------------------------------------------------------------------*/
+(module mmap
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "mmap" tests))
+      (test-all verbose "mmap")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test mmap?
+   (let ((mm (open-mmap mmap.filename)))
+      (unwind-protect
+         (mmap? mm)
+         (close-mmap mm)))
+   :expected #t)
+(define-test mmap? (mmap? list) :expected #f)
+(define-test mmap? (mmap? 1) :expected #f)
+(define-test mmap? (mmap? "foo") :expected #f)
+
+(define-test open-mmap
+   (let ((mm (open-mmap mmap.filename :write #f)))
+      (unwind-protect
+         (mmap? mm)
+         (close-mmap mm))))
+
+(define-test close-mmap
+   (begin (close-mmap (open-mmap mmap.filename :write #f)) #t))
+
+(define-test call-with-input-mmap
+   (call-with-input-mmap mmap.filename mmap?))
+
+(define-test call-with-output-mmap
+   call-with-output-mmap
+   :expected procedure?)
+
+(define-test call-with-output-mmap
+   (procedure-arity call-with-output-mmap)
+   :expected 2)
+
+(define-test mmap-length
+   (let ((mm (open-mmap mmap.filename)))
+      (unwind-protect
+         (mmap-length mm)
+         (close-mmap mm)))
+   :expected (file-size mmap.filename))
+
+(define-test string->mmap
+   (mmap? (string->mmap "foo bar")))
+
+(define-test mmap->string
+   (string-length (mmap->string (string->mmap "foo bar")))
+   :expected 7)
+
+(define-test mmap->bstring
+   (mmap->bstring (string->mmap "foo bar"))
+   :expected string?)
+
+(define-test mmap-name
+   (let ((mm (open-mmap mmap.filename)))
+      (unwind-protect
+         (mmap-name mm)
+         (close-mmap mm)))
+   :expected mmap.filename)
+
+(define-test mmap-ref
+   (call-with-input-mmap mmap.filename
+      (lambda (mm)
+         (and (char=? (mmap-ref mm 0) #\;)
+              (char=? (mmap-ref mm 1) #\;)))))
+
+(define-test mmap-set!
+   (let* ((s (make-string 10 #\a))
+          (m (string->mmap s)))
+      (mmap-set! m 0 #\b)
+      (close-mmap m)
+      (string-ref s 0))
+   :expected #\b)
+
+(define-test mmap-substring
+   (call-with-input-mmap mmap.filename
+      (lambda (mm)
+         (mmap-substring mm 3 8)))
+   :expected "DON'T")
+
+(define-test mmap-substring-set!
+   mmap-substring-set!
+   :expected procedure?)
+
+(define-test mmap-substring-set!
+   (procedure-arity mmap-substring-set!)
+   :expected 3)
+      
+   
+;* (define-test "mmap-ref.1" (mmap-ref mm 0) :expected c)              */
+;* (define-test "mmap-ref.2" (mmap-ref mm 0) :expected c)              */
+;* (mmap-set! mm 0 #\a)                                                */
+;* (define-test "mmap-set.1!" (mmap-ref mm 0) :expected #\a)           */
+;* (mmap-set! mm 0 c)                                                  */
+;* (define-test "mmap-set!.2" (mmap-ref mm 0) :expected c)             */
+;* (define-test "mmap-read-position.2" (mmap-read-position mm) :expected #e1) */
+;* (define-test "mmap-write-position.2" (mmap-write-position mm) :expected #e1) */
+;* (define-test "mmap-substring" (mmap-substring mm 20 29) :expected s) */
+;* (define-test "mmap-read-position.3" (mmap-read-position mm) :expected #e29) */
+;* (mmap-substring-set! mm 20 "abcdefghi")                             */
+;* (define-test "mmap-substring-set!" (mmap-substring mm 20 29) :expected "abcdefghi") */
+;* (mmap-substring-set! mm 20 s)                                       */
+;* (define-test "mmap-read-position.3" (mmap-read-position mm) :expected #e29) */
+;* (mmap-read-position-set! mm 20)                                     */
+;* (mmap-write-position-set! mm 21)                                    */
+;* (define-test "mmap-get-char.1" (mmap-get-char mm) :expected (string-ref s 0)) */
+;* (define-test "mmap-read-position.4" (mmap-read-position mm) :expected #e21) */
+;* (mmap-put-char! mm (string-ref s 1))                                */
+;* (define-test "mmap-put-char!.1" (mmap-get-char mm) :expected (string-ref s 1)) */
+;* (define-test "mmap-write-position.4" (mmap-write-position mm) :expected #e22) */
+;* (mmap-read-position-set! mm #e20)                                   */
+;* (mmap-write-position-set! mm #e20)                                  */
+;* (define-test "mmap-get-string.1" (mmap-get-string mm 9) :expected s) */
+;* (mmap-put-string! mm s)                                             */
+;* (mmap-read-position-set! mm #e20)                                   */
+;* (define-test "mmap-put-string!.1" (mmap-get-string mm 9) :expected s) */
+;* (define-test "mmap-read-position.5" (mmap-read-position mm) :expected #e29) */
+;* (define-test "mmap-write-position.5" (mmap-write-position mm) :expected #e29) */
+;* (define-test "close-mmap" (close-mmap mm) :expected #t)             */
+;* (let ((test-str (make-string 16 #a000)))                            */
+;*    (test "mmap->bstring"                                            */
+;*       (mmap->bstring (string->mmap test-str))                       */
+;*       test-str))                                                    */
+      

@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/bigloo/5.0.x/doc/Makefile                                */
+#*    serrano/prgm/project/bigloo/5.0.x/doc/Makefile                   */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Jun 30 09:14:03 2026 (serrano)                */
+#*    Last change :  Wed Jul  1 07:34:30 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -36,11 +36,11 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = argsparse bigloo bool c date hash error int io jvm net number os \
- pair port real ssl string symbol thread vector wasm \
+MD = argsparse bigloo bool c date hash error int io jvm mmap net \
+ number os pair port real ssl string symbol thread vector wasm \
  condexpand match module5 module4 object
 
-EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var
+EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var grep
 EX_J = fib Point.bgh
 EX_W = 
 EX = $(EX_C:%=c/%) $(EX_J:%=jvm/%) $(EX_W:%=wasm/%)
@@ -56,14 +56,14 @@ EX = $(EX_C:%=c/%) $(EX_J:%=jvm/%) $(EX_W:%=wasm/%)
 #*---------------------------------------------------------------------*/
 all: doc
 
-doc: objs_c bin index.html idx.html
+doc: objs bin index.html idx.html
 	$(MAKE) bin/bgldoc
 
-bin/bgldoc: $(C_OBJECTS:%=objs_c/%)
+bin/bgldoc: $(C_OBJECTS:%=objs/%)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 	@ echo "\e[1;34m$@\e[0m done."
 
-index.html: $(MD:%=%.html) $(EX_C:%=objs_c/c/%.ast.coerce)
+index.html: $(MD:%=%.html) $(EX_C:%=objs/c/%.ast.coerce)
 
 distrib: clean
 
@@ -100,40 +100,43 @@ uninstall:
 #*---------------------------------------------------------------------*/
 #*    Compilation rules                                                */
 #*---------------------------------------------------------------------*/
-objs_c/%.o: src/%.bgl
+objs/%.o: src/%.bgl
 	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
 
-objs_c/c/fib.ast.coerce: examples/c/fib.bgl objs_c/c
+objs/c/fib.ast.coerce: examples/c/fib.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
-objs_c/c/sock1.ast.coerce: examples/c/sock1.bgl objs_c/c
+objs/c/sock1.ast.coerce: examples/c/sock1.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
-objs_c/c/sock2.ast.coerce: examples/c/sock2.bgl objs_c/c
+objs/c/sock2.ast.coerce: examples/c/sock2.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
-objs_c/c/sock3.ast.coerce: examples/c/sock3.bgl objs_c/c
+objs/c/sock3.ast.coerce: examples/c/sock3.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
-objs_c/c/sock4.ast.coerce: examples/c/sock4.bgl objs_c/c
+objs/c/sock4.ast.coerce: examples/c/sock4.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
-objs_c/c/wrap.ast.coerce: examples/c/wrap.bgl objs_c/c
+objs/c/wrap.ast.coerce: examples/c/wrap.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
-objs_c/c/function.ast.coerce: examples/c/function.bgl objs_c/c
+objs/c/function.ast.coerce: examples/c/function.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
-objs_c/c/infix.ast.coerce: examples/c/infix.bgl objs_c/c
+objs/c/infix.ast.coerce: examples/c/infix.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
-objs_c/c/var.ast.coerce: examples/c/var.bgl objs_c/c
+objs/c/var.ast.coerce: examples/c/var.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
-objs_c/java/fib.ast.coerce: examples/java/fib.bgl objs_c/java
+objs/c/grep.ast.coerce: examples/c/grep.bgl objs/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
+objs/java/fib.ast.coerce: examples/java/fib.bgl objs/java
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -jvm -coerce
 
-objs_c/wasm/fib.ast.coerce: examples/wasm/fib.bgl objs_c/wasm
+objs/wasm/fib.ast.coerce: examples/wasm/fib.bgl objs/wasm
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -wasm -coerce
 
 %.html: %.md bin/bgldoc
@@ -172,16 +175,16 @@ idx.html: index.sexp bin/bgldoc
 #*---------------------------------------------------------------------*/
 #*    sub-directories                                                  */
 #*---------------------------------------------------------------------*/
-objs_c:
+objs:
 	@ mkdir -p $@
 
-objs_c/c:
+objs/c:
 	@ mkdir -p $@
 
-objs_c/java:
+objs/java:
 	@ mkdir -p $@
 
-objs_c/wasm:
+objs/wasm:
 	@ mkdir -p $@
 
 bin:
@@ -194,6 +197,6 @@ clean_html:
 	rm -rf $(MD:%=%.html)
 
 clean:
-	rm -rf objs_c bin
+	rm -rf objs bin
 	rm -rf $(MD:%=%.html)
 	rm -f index.sexp

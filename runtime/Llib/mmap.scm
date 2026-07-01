@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/mmap.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/mmap.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 10 10:40:10 2005                          */
-;*    Last change :  Thu Dec 26 07:31:51 2024 (serrano)                */
-;*    Copyright   :  2005-24 Manuel Serrano                            */
+;*    Last change :  Wed Jul  1 08:53:44 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Map IO                                                           */
 ;*    -------------------------------------------------------------    */
@@ -109,30 +109,32 @@
 	    (inline mmap-get-char::uchar ::mmap)
 	    (inline mmap-put-char! ::mmap ::uchar)
 	    (inline mmap-get-string::bstring ::mmap ::elong)
-	    (inline mmap-put-string! ::mmap ::bstring)))
+	    (inline mmap-put-string! ::mmap ::bstring)
+	    (call-with-input-mmap ::bstring ::procedure)
+	    (call-with-output-mmap ::bstring ::procedure)))
  
 ;*---------------------------------------------------------------------*/
 ;*    mmap? ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (mmap? obj)
+(define-inline (mmap?::bool obj)
    ($mmap? obj))
  
 ;*---------------------------------------------------------------------*/
 ;*    open-mmap ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (open-mmap name::bstring #!key (read #t) (write #t))
+(define (open-mmap::mmap name::bstring #!key (read #t) (write #t))
    ($mmap-open name read write))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->mmap ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (string->mmap s::bstring #!key (read #t) (write #t))
+(define (string->mmap::mmap s::bstring #!key (read #t) (write #t))
    ($string->mmap s read write))
 
 ;*---------------------------------------------------------------------*/
 ;*    mmap-name ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-inline (mmap-name mmap::mmap)
+(define-inline (mmap-name::bstring mmap::mmap)
    ($mmap-name mmap))
 
 ;*---------------------------------------------------------------------*/
@@ -145,7 +147,7 @@
 ;*    mmap->bstring ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (mmap->bstring::bstring mmap::mmap)
-   (let ((len::int  (elong->fixnum ($mmap-length mmap))))
+   (let ((len::long  (elong->fixnum ($mmap-length mmap))))
       ($string->bstring-len ($mmap->string mmap) len)))
 
 ;*---------------------------------------------------------------------*/
@@ -157,7 +159,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    mmap-length ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (mmap-length obj::mmap)
+(define-inline (mmap-length::elong obj::mmap)
    ($mmap-length obj))
 
 ;*---------------------------------------------------------------------*/
@@ -205,25 +207,13 @@
 ;*    mmap-ref ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (mmap-ref::uchar mm::mmap i::elong)
-   (if ($mmap-bound-check? i (mmap-length mm))
-       (mmap-ref-ur mm i)
-       (error "mmap-ref"
-	  (string-append "index out of range [0.."
-	     (elong->string (-elong (mmap-length mm) #e1))
-	     "]")
-	  i)))
+   (mmap-ref-ur mm i))
 
 ;*---------------------------------------------------------------------*/
 ;*    mmap-set! ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (mmap-set!::obj mm::mmap i::elong c::uchar)
-   (if ($mmap-bound-check? i (mmap-length mm))
-       (mmap-set-ur! mm i c)
-       (error "mmap-set!"
-	  (string-append "index out of range [0.."
-	     (elong->string (-elong (mmap-length mm) #e1))
-	     "]")
-	  i)))
+   (mmap-set-ur! mm i c))
 
 ;*---------------------------------------------------------------------*/
 ;*    mmap-substring ...                                               */
@@ -306,3 +296,21 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (mmap-put-string! mm::mmap s)
    (mmap-substring-set! mm ($mmap-wp mm) s))
+
+;*---------------------------------------------------------------------*/
+;*    call-with-input-mmap ...                                         */
+;*---------------------------------------------------------------------*/
+(define (call-with-input-mmap file::bstring proc::procedure)
+   (let ((mm (open-mmap file :read #t :write #f)))
+      (unwind-protect
+	 (proc mm)
+	 (close-mmap mm))))
+
+;*---------------------------------------------------------------------*/
+;*    call-with-output-mmap ...                                        */
+;*---------------------------------------------------------------------*/
+(define (call-with-output-mmap file::bstring proc::procedure)
+   (let ((mm (open-mmap file :read #f :write #t)))
+      (unwind-protect
+	 (proc mm)
+	 (close-mmap mm))))

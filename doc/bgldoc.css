@@ -784,6 +784,7 @@ pre.bnf .ebnf-comment {
 
 .chapter .toc a {
     text-decoration: none;
+    padding: 2px 4px 2px 4px;
 }
 
 .chapter .toc li.section a:hover,

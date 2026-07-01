@@ -1,0 +1,136 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/search.bgl            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Jul  1 07:36:15 2026                          */
+;*    Last change :  Wed Jul  1 08:26:00 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing search procedures                                        */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    search                                                           */
+;*---------------------------------------------------------------------*/
+(module search
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "search" tests))
+      (test-all verbose "search")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+;; kmp
+(define-test kmp-table
+   (kmp-table "foo bar")
+   :expected pair?)
+
+(define-test kmp-string
+   (let ((t (kmp-table "bar")))
+      (kmp-string t "foo bar gee" 0))
+   :expected 4)
+
+(define-test kmp-string
+   (let ((t (kmp-table "bar")))
+      (kmp-string t "foo bar gee" 1))
+   :expected 4)
+
+(define-test kmp-string
+   (let ((t (kmp-table "bar")))
+      (kmp-string t "foo bar bar" 5))
+   :expected 8)
+
+(define-test kmp-string
+   (let ((t (kmp-table "hux")))
+      (kmp-string t "foo bar gee" 1))
+   :expected -1)
+
+(define-test kmp-mmap
+   (let ((t (kmp-table "bar")))
+      (kmp-mmap t (string->mmap "foo bar gee") 1))
+   :expected #e4)
+
+(define-test kmp-mmap
+   (let ((t (kmp-table "bar")))
+      (kmp-mmap t (string->mmap "bar bar gee") 2))
+   :expected #e4)
+
+;; bm
+(define-test bm-table
+   (bm-table "foo bar")
+   :expected pair?)
+
+(define-test bm-string
+   (let ((t (bm-table "bar")))
+      (bm-string t "foo bar gee" 0))
+   :expected 4)
+
+(define-test bm-string
+   (let ((t (bm-table "bar")))
+      (bm-string t "foo bar gee" 1))
+   :expected 4)
+
+(define-test bm-string
+   (let ((t (bm-table "bar")))
+      (bm-string t "foo bar bar" 5))
+   :expected 8)
+
+(define-test bm-string
+   (let ((t (bm-table "hux")))
+      (bm-string t "foo bar gee" 1))
+   :expected -1)
+
+(define-test bm-mmap
+   (let ((t (bm-table "bar")))
+      (bm-mmap t (string->mmap "foo bar gee") 1))
+   :expected #e4)
+
+(define-test bm-mmap
+   (let ((t (bm-table "bar")))
+      (bm-mmap t (string->mmap "bar bar gee") 2))
+   :expected #e4)
+
+;; bmh
+(define-test bmh-table
+   (bmh-table "foo bar")
+   :expected pair?)
+
+(define-test bmh-string
+   (let ((t (bmh-table "bar")))
+      (bmh-string t "foo bar gee" 0))
+   :expected 4)
+
+(define-test bmh-string
+   (let ((t (bmh-table "bar")))
+      (bmh-string t "foo bar gee" 1))
+   :expected 4)
+
+(define-test bmh-string
+   (let ((t (bmh-table "bar")))
+      (bmh-string t "foo bar bar" 5))
+   :expected 8)
+
+(define-test bmh-string
+   (let ((t (bmh-table "hux")))
+      (bmh-string t "foo bar gee" 1))
+   :expected -1)
+
+(define-test bmh-mmap
+   (let ((t (bmh-table "bar")))
+      (bmh-mmap t (string->mmap "foo bar gee") 1))
+   :expected #e4)
+
+(define-test bmh-mmap
+   (let ((t (bmh-table "bar")))
+      (bmh-mmap t (string->mmap "bar bar gee") 2))
+   :expected #e4)

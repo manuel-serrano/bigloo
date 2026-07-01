@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/bm.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/bm.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 15 11:05:03 2016                          */
-;*    Last change :  Sun Aug 25 09:18:37 2019 (serrano)                */
-;*    Copyright   :  2016-19 Manuel Serrano                            */
+;*    Last change :  Wed Jul  1 07:59:10 2026 (serrano)                */
+;*    Copyright   :  2016-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    "Boyer Moore" search algorithm.                                  */
 ;*=====================================================================*/
@@ -46,9 +46,9 @@
    (export (bm-table::epair ::bstring)
 	   (bm-mmap::elong ::epair ::mmap ::elong)
 	   (bm-string::long ::epair ::bstring ::long)
-	   (bmh-table::epair ::bstring)
-	   (bmh-mmap::elong ::epair ::mmap ::elong)
-	   (bmh-string::long ::epair ::bstring ::long)))
+	   (bmh-table::pair ::bstring)
+	   (bmh-mmap::elong ::pair ::mmap ::elong)
+	   (bmh-string::long ::pair ::bstring ::long)))
 
 ;*---------------------------------------------------------------------*/
 ;*    alphabet-length ...                                              */
@@ -223,7 +223,7 @@
 	      (let ((delta1 (car tp))
 		    (delta2 (cdr tp))
 		    (strlen (,len obj)))
-		 (let loop ((i::long (+fx m (-fx patlen 1))))
+		 (let loop ((i::long (+fx offset (-fx patlen 1))))
 		    (if (<fx i strlen)
 			(let liip ((j (-fx patlen 1)))
 			   (cond
@@ -247,19 +247,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    bm-mmap ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (bm-mmap tp obj m)
+(define (bm-mmap::elong tp::epair obj::mmap offset::elong)
    (bm-search mmap-ref mmap-length fixnum->elong))
 
 ;*---------------------------------------------------------------------*/
 ;*    bm-string ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (bm-string tp obj m)
+(define (bm-string::long tp::epair obj::bstring offset::long)
    (bm-search string-ref string-length (lambda (x) x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bmh-table ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (bmh-table pat::bstring)
+(define (bmh-table::pair pat::bstring)
    (let ((delta1 (make-u32vector (alphabet-length))))
       (make-delta1 delta1 pat)
       (cons delta1 pat)))
@@ -267,7 +267,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bmh-search ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-macro (bmh-search ref len conv)
+(define-macro (bmh-search ref len conv vnoc)
    `(cond
        ((not (u32vector? (car tp)))
 	(bigloo-type-error "bmh" 'u32vector (car tp)))
@@ -280,9 +280,9 @@
 	       -1
 	       (let ((delta1 (car tp))
 		     (strlen (,len obj)))
-		  (let while1 ((skip 0))
+		  (let while1 ((skip (,vnoc offset)))
 		     (if (>=fx (-fx strlen skip) patlen)
-			 (let while2 ((i (-fx patlen 1)) )
+			 (let while2 ((i (-fx patlen 1)))
 			    (cond
 			       ((not (char=? (,ref obj (+fx skip i))
 					(string-ref pat i)))
@@ -298,37 +298,15 @@
 			       (else
 				(while2 (-fx i 1)))))
 			 (,conv -1)))))))))
-;*                                                                     */
-;* 		                                                       */
-;* 		 (let loop ((i::long (+fx m (-fx patlen 1))))          */
-;* 		    (if (<fx i strlen)                                 */
-;* 			(let liip ((j (-fx patlen 1)))                 */
-;* 			   (cond                                       */
-;* 			      ((<fx j 0)                               */
-;* 			       (,conv (+fx i 1)))                      */
-;* 			      ((char=? (,ref obj (,conv i))            */
-;* 				  (string-ref pat j))                  */
-;* 			       (set! i (-fx i 1))                      */
-;* 			       (liip (-fx j 1)))                       */
-;* 			      (else                                    */
-;* 			       (let ((inc (maxfx                       */
-;* 					     (uint32->fixnum           */
-;* 						(u32vector-ref delta1  */
-;* 						   (char->integer      */
-;* 						      (,ref obj i))))  */
-;* 					     (uint32->fixnum           */
-;* 						(u32vector-ref delta2 j))))) */
-;* 				  (loop (+fx i inc))))))               */
-;* 			(,conv -1)))))))))                             */
 
 ;*---------------------------------------------------------------------*/
 ;*    bmh-mmap ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (bmh-mmap tp obj m)
-   (bmh-search mmap-ref mmap-length fixnum->elong))
+(define (bmh-mmap::elong tp::pair obj::mmap offset::elong)
+   (bmh-search mmap-ref mmap-length fixnum->elong elong->fixnum))
 
 ;*---------------------------------------------------------------------*/
 ;*    bmh-string ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (bmh-string tp obj m)
-   (bmh-search string-ref string-length (lambda (x) x)))
+(define (bmh-string::long tp::pair obj::bstring offset::long)
+   (bmh-search string-ref string-length (lambda (x) x) (lambda (x) x)))

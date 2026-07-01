@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/api/web/src/Llib/html.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/api/web/src/Llib/html.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Mon Apr 27 10:50:55 2026 (serrano)                */
+;*    Last change :  Wed Jul  1 09:58:45 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
@@ -161,6 +161,18 @@
 			    ((and (char>=? c #\a) (char<=? c #\f))
 			     (loop (+fx i 1)))
 			    ((and (char>=? c #\A) (char<=? c #\F))
+			     (loop (+fx i 1)))
+			    (else #f))))))
+	       ((and (char=? (string-ref str i) #\#)
+		     (<fx i (-fx len 2))
+		     (char-numeric? (string-ref str (+fx i 1))))
+		(let loop ((i (+fx i 2)))
+		   (unless (=fx i len)
+		      (let ((c (string-ref str i)))
+			 (cond
+			    ((char=? c #\;)
+			     (+fx i 1))
+			    ((char-numeric? c)
 			     (loop (+fx i 1)))
 			    (else #f))))))
 	       (else

@@ -11,10 +11,11 @@
 
 ,(include "head.html")
 ,(implementation-path "../runtime/Llib/object.scm")
+,(implementation-path "../runtime/Ieee/output.scm")
 ,(example-path "../test/src/object.bgl")
 
-Object Programming
-==================
+Object Oriented Programming
+===========================
 
 Bigloo's object system is designed to be as simple as possible and
 belongs to the [Clos][Bobrow88] family in that it uses _classes_,
@@ -520,6 +521,16 @@ first argument is an instance of `object`.
 
 ### object-hashnumber ###
 This generic function returns an hash number of `object`.
+
+### display-object ###
+<!-- [:@NoTest-C-jvm-wasm] -->
+
+See [chapter I/O](./io.html).
+
+### write-object ###
+<!-- [:@NoTest-C-jvm-wasm] -->
+
+See [chapter I/O](./io.html).
 
 Object Serialization
 --------------------

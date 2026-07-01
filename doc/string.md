@@ -12,9 +12,12 @@
 ,(implementation-path "../runtime/Ieee/string.scm")
 ,(implementation-path "../runtime/Ieee/char.scm")
 ,(implementation-path "../runtime/Llib/unicode.scm")
+,(implementation-path "../runtime/Unsafe/kmp.scm")
+,(implementation-path "../runtime/Unsafe/bm.scm")
 ,(example-path "../test/src/string.bgl")
 ,(example-path "../test/src/char.bgl")
 ,(example-path "../test/src/unicode.bgl")
+,(example-path "../test/src/search.bgl")
 
 Strings
 =======
@@ -685,5 +688,67 @@ Returns the 8-bit integer interpretation of the character.
 
 ### integer->char ###
 Returns the character associated to the 8-bit integer representation.
+
+
+Fast Search
+-----------
+
+This section details the Bigloo supports on strings and memory mapped area
+of the search algorigthms:
+
+  * Knuth, Morris, and Pratt
+  * Boyer, Moore
+  * Boyer, Moore, Horspool.
+
+For the sake of the example, here is a prototypal implementation of
+the Usenix command `grep` using the Knuth, Morris, and Pratt algorithm:
+
+```bigloo
+,(include "examples/c/grep.bgl")
+```
+
+### kmp-table ###
+This function creates a _kmp_-table used for fast search of pattern,
+using the _Knuth, Morris, and Pratt_ algorithm. The result is an
+abstract data structure that will e passed to `kmp-string` and
+`kmp-mmap`.
+
+### kmp-string ###
+This function searches the pattern described by kmp-table `tp`
+in the string `str`. The search starts at `offset`. If an occurrence
+is found, its position in the string is returned. Otherwise
+`-1` is returned.
+
+### kmp-mmap ###
+Similar to `kmp-string` but searches on memory mapped areas.
+
+
+### bm-table ###
+This function creates a _bm_-table used for fast search of `pattern`
+using the _Boyer, Moore_ algorithm.
+
+### bm-string ###
+This function searches the pattern described by _bm_-table `bt`
+in the string `string`. The search starts at `offset`. If an occurrence
+is found, its position in the string is returned. Otherwise
+`-1` is returned.
+
+### bm-mmap ###
+Similar to `bm-string` but operates on memory mapped areas.
+
+###  bmh-table ###
+This function creates a _bm_-table used for fast search of `pattern`
+using the _Boyer, Moore, Hoorspool_ algorithm.
+
+### bmh-string ###
+This function searches the pattern described by _bm_-table `bt`
+in the string `string`. The search starts at `offset`. If an occurrence
+is found, its position in the string is returned. Otherwise
+`-1` is returned.
+
+### bmh-mmap ###
+Similar to `bmh-string` but operates on memory mapped areas.
+
+
 
 

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/doc/src/bgldoc.bgl                          */
+;*    serrano/prgm/project/bigloo/5.0.x/doc/src/bgldoc.bgl             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Tue Jun 30 09:15:47 2026 (serrano)                */
+;*    Last change :  Wed Jul  1 08:33:16 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -61,6 +61,7 @@
      ("errors" . "error.html")
      ("integers" . "int.html")
      ("i/o" . "io.html")
+     ("mmap" . "mmap.html")
      ("net" . "net.html")
      ("numbers" . "number.html")
      ("os" . "os.html")
@@ -535,7 +536,8 @@
                                            (equal? klass "NoTest-wasm")
                                            (equal? klass "NoTest-C-jvm")
                                            (equal? klass "NoTest-C-wasm")
-                                           (equal? klass "NoTest-jvm-wasm"))
+                                           (equal? klass "NoTest-jvm-wasm")
+                                           (equal? klass "NoTest-C-jvm-wasm"))
                                        e)
                                       (else
                                        (error "doc" "Cannot find test" name)))
