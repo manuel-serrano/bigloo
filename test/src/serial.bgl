@@ -1,0 +1,81 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/serial.bgl            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Thu Jul  2 15:27:47 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing serials                                                  */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    serials                                                          */
+;*---------------------------------------------------------------------*/
+(module serials
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "serial" tests))
+      (test-all verbose "serial")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test flonum (string->obj (obj->string 0.5))
+   :expected real?)
+
+(let ((o '(#s8:0 #s8:1 #s8:-1 #u8:0 #u8:1 #u8:250
+           #s16:0 #s16:1 #s16:-1 #u16:0 #u16:1 #u16:250
+           #s16:15000 #s16:-15000 #u16:30000
+           #s32:0 #s32:1 #s32:-1 #u32:0 #u32:1 #u32:250
+           #s32:15000 #s32:-15000 #u32:30000
+           #s32:70000 #s32:-70000 #u32:70000
+           #s64:0 #s64:1 #s64:-1 #u64:0 #u64:1 #u64:250
+           #s64:15000 #s64:-15000 #u64:30000
+           #s64:70000 #s64:-70000 #u64:70000)))
+   (define-test int8
+      (string->obj (obj->string o))
+      :expected o))
+
+(let* ((s (make-string 3 #\a))
+       (l (list s s)))
+   (define-test list
+      (string->obj (obj->string l))
+      :expected l))
+
+(let* ((s "toto n'est pas content")
+       (sp "titi non plus")
+       (ptr (make-weakptr sp))
+       (l (list s s s sp sp s sp sp 'toto 'toto '#(1 2 3) #\a #\a #t #f
+             ptr ptr))
+       (v `#(,l ,l ,l () ,(unspecified) 1.13 1.13 #a123
+               (point 1 2) (point 2 1) 0010 0011))
+       (vec (make-vector 3 v))
+       (rep (obj->string v)))
+   (define-test mixed (string->obj rep)
+      :expected v))
+
+(let* ((c (cons 2 3))
+       (ptr (make-weakptr c)))
+   (set-car! c ptr)
+   (let ((ptr2 (string->obj (obj->string ptr))))
+      (define-test weakptr
+         (and (weakptr? ptr2)
+              (let ((d (weakptr-data ptr2)))
+                 (tprint "P=" (pair? c)
+                    " " (pair? d)
+                    " " (typeof ptr)
+                    " " (typeof ptr2))
+                 (and (pair? d)
+                      (pair? c)
+                      (eq? (car d) ptr2)
+                      (eqv? (cdr d) 3)))))))

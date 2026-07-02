@@ -1,0 +1,89 @@
+;*=====================================================================*/
+;*    serrano/bigloo/5.0.x/test/src/tar.bgl                            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Thu Jul  2 09:13:34 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing tar                                                      */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    tar                                                              */
+;*---------------------------------------------------------------------*/
+(module tars
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "tar" tests))
+      (test-all verbose "tar")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define tgz
+   (list->string
+      (map integer->char
+         '(31 139 8 0 0 0 0 0 0 3 237 211 61 10 2 49 16 134 225 169 61 69 110 144 76 126 54 181 66 14 18 193 86 33 171 247 215 69 108 22 92 177 136 203 226 251 52 83 36 48 3 31 95 177 210 157 123 200 201 77 83 103 243 69 52 121 175 209 133 33 120 113 170 26 178 152 212 255 52 145 219 120 173 205 24 25 79 173 213 243 229 237 191 79 239 27 85 236 161 251 142 41 224 33 46 229 239 231 249 251 16 197 184 238 151 201 223 231 127 220 173 125 1 214 84 236 190 251 142 175 250 239 243 179 255 153 254 255 66 165 255 0 0 0 0 0 0 0 0 0 0 0 108 222 29 143 115 159 68 0 40 0 0))))
+
+(define-test tar-header
+   tar-header
+   :expected class?)
+
+(define-test tar-read-header
+   tar-read-header
+   :expected procedure?)
+
+(define-test tar-read-header
+   (call-with-input-string tgz
+      (lambda (zin)
+         (let ((in (port->gzip-port zin)))
+            (unwind-protect
+               (isa? (tar-read-header in) tar-header)
+               (close-input-port in))))))
+
+(define-test tar-read-block
+   (call-with-input-string tgz
+      (lambda (zin)
+         (let ((in (port->gzip-port zin)))
+            (unwind-protect
+               (let loop ()
+                  (let ((h (tar-read-header in)))
+                     (if (not h)
+                         '()
+                         (case (-> h::tar-header type)
+                            ((dir)
+                             (cons (cons 'dir (-> h::tar-header name)) (loop)))
+                            ((normal)
+                             (cons
+                                (list 'normal
+                                   (-> h::tar-header name)
+                                   (tar-read-block h in))
+                                (loop)))
+                            (else
+                             (error "untar"
+                                (format "Illegal file type `~a'"
+                                   (-> h::tar-header type))
+                                (-> h::tar-header name)))))))
+               (close-input-port in)))))
+   :expected '((dir . "E/") (normal "E/B" "b\n") (normal "E/A" "a\n")))
+
+(define-test untar
+   (call-with-input-string tgz
+      (lambda (zin)
+         (let ((in (port->gzip-port zin)))
+            (unwind-protect
+               (untar in :file "E/A")
+               (close-input-port in)))))
+   :expected "a\n")
+
+

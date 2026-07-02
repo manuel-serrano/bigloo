@@ -180,6 +180,8 @@ Open a gzipped file for input and a port on a gzipped stream.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
+See also chapter [Zip](./zip.html).
+
 ### open-input-gzip-port ###
 Open a gzipped port for input and a port on a gzipped stream.
 Note that closing a gzip port opened from a port `pi` does not close
@@ -187,10 +189,15 @@ the `pi` port.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
+See also chapter [Zip](./zip.html).
+
 ### open-input-zlib-file ###
 Open a zlib file for input. 
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
+
+See also chapter [Zip](./zip.html).
+
 
 ### open-input-zlib-port ###
 Open a port on a zlib stream for input.
@@ -198,6 +205,9 @@ Note that closing a zlib port opened from a port `pi` does not close
 the `pi port.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
+
+See also chapter [Zip](./zip.html).
+
 
 ### open-input-ftp-file ###
 Returns an `input-port` able to deliver characters from a

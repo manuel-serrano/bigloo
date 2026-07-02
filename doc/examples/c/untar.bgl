@@ -1,0 +1,36 @@
+(module untar
+   (export untar))
+
+(define (untar path::bstring)
+   (let ((pz (open-input-gzip-file path)))
+      (unwind-protect
+         (let loop ((lst '()))
+            (let ((h (tar-read-header pz)))
+               (if (not h)
+                   lst
+                   (let ((h::tar-header h))
+                      (case (-> h type)
+                         ((dir)
+                          (let ((path (-> h name)))
+                             (if (make-directory path)
+                                 (loop lst)
+                                 (error "untar"
+                                    "Cannot create directory"
+                                    path))))
+                         ((normal)
+                          (let* ((path (-> h name))
+                                 (dir (dirname path)))
+                             (when (and (file-exists? dir)
+                                        (not (directory? dir)))
+                                (delete-file dir))
+                             (unless (file-exists? dir)
+                                (make-directory dir))
+                             (with-output-to-file path
+                                (lambda ()
+                                   (display (tar-read-block h pz))))
+                             (loop (cons path lst))))
+                         (else
+                          (error "untar"
+                             (format "Illegal file type `~a'" (-> h type))
+                             (-> h name))))))))
+         (close-input-port pz))))

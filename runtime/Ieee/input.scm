@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Wed Jul  1 14:13:53 2026 (serrano)                */
+;*    Last change :  Thu Jul  2 08:00:31 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -118,7 +118,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read/lalr ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (read/lalrp lalr rgc port . eof-fun?)
+(define (read/lalrp lalr::procedure rgc::procedure port::input-port . eof-fun?)
    (if (null? eof-fun?)
        (lalr rgc port eof-object?)
        (lalr rgc port (car eof-fun?))))

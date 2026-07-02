@@ -456,24 +456,18 @@ then, in Bigloo, it would look like
       (eval altern))))
 ```
 
-@c -- Grammar definition --------------------------------------------- @c
-@node Precedence and Associativity, The Parsing Function, Grammar Definition, Lalr Parsing
-@section Precedence and associativity
-@cindex Lalr precedence and associativity
-
 The bigloo lalr(1) parser generator supports operator precedence and
 associativity.  The method for specifying the precedence for terminal symbols
 is described in @ref{Grammar Definition}.  Precedence is assigned to each
 non-terminal production from the precedence of the last terminal symbol 
 appearing in that production.
 
-Typically, when the parser generator encounters a shift/reduce conflict, it
-produces a warning message, then chooses to reduce.  When a parser generator
-has precedence and associativity information, it can make a much more
-sophisticated decision.
+Typically, when the parser generator encounters a shift/reduce
+conflict, it produces a warning message, then chooses to reduce.  When
+a parser generator has precedence and associativity information, it
+can make a much more sophisticated decision.
 
-Let's use this simple calculator grammar as an example:
-@smalllisp
+```bigloo
 (lalr-grammar
  ((left: op-mult op-div)
   (left: op-add op-sub)
@@ -488,17 +482,14 @@ Let's use this simple calculator grammar as an example:
    ((expr op-semicolon) (print expr)))
  (expr
    ((number) number)
-   ((expr@@a op-add expr@@b) (+ a b))
-   ((expr@@a op-sub expr@@b) (- a b))
-   ((expr@@a op-mult expr@@b) (* a b))
-   ((expr@@a op-div expr@@b) (/ a b))
+   ((expr@a op-add expr@b) (+ a b))
+   ((expr@a op-sub expr@b) (- a b))
+   ((expr@a op-mult expr@b) (* a b))
+   ((expr@a op-div expr@b) (/ a b))
    ((op-lparen expr op-rparen) expr))))
-@end smalllisp
+```
 
-Let's start with this input:
-@example
-1 + 2 * 3;
-@end example
+Let's start with this input: `1 + 2 * 3;`
 
 At the point where the parser has read `1 + 2` and the lookahead symbol
 is `*`, the parser encounters a shift/reduce conflict.  Should it first
@@ -507,72 +498,50 @@ the hopes of reducing the latter expression first?
 
 The `(expr op-add expr)` production has gotten its precedence from the
 `op-add` terminal symbol.  This is the precedence of the reduce.  The
-precedence of the shift comes from the precedence assigned to the lookahead
-terminal symbol, which is `op-mult`.  Since `op-mult` has higher
-precedence, the parser generator in this state chooses to shift and does not
-produce a warning.
+precedence of the shift comes from the precedence assigned to the
+lookahead terminal symbol, which is `op-mult`.  Since `op-mult` has
+higher precedence, the parser generator in this state chooses to shift
+and does not produce a warning.
 
 Here's an example which we can use to demonstrate associativity:
-@example
-1 + 2 - 3;
-@end example
+`1 + 2 - 3;`
 
-The parser generator encounters a similar shift/reduce conflict this time,
-except that when it tries to determine whether to shift or reduce, it finds
-that both actions have the same precedence.  In this case, the parser
-generator looks at the associativity of the precedence group containing the
-`op-add` and `op-sub`.  Since these are declared to be
-left-associative, the parser generator chooses to reduce from this state,
-effectively calculating the `1 + 2`.  Had these symbols been 
-right-associative, the parser would have chosen to shift, effectively
-calculating `2 - 3` first.  If these symbols had been declared
-non-associative with the `none:` keyword, the parser would generate an
-error if it ever encountered this state.
+The parser generator encounters a similar shift/reduce conflict this
+time, except that when it tries to determine whether to shift or
+reduce, it finds that both actions have the same precedence.  In this
+case, the parser generator looks at the associativity of the
+precedence group containing the `op-add` and `op-sub`.  Since these
+are declared to be left-associative, the parser generator chooses to
+reduce from this state, effectively calculating the `1 + 2`.  Had
+these symbols been right-associative, the parser would have chosen to
+shift, effectively calculating `2 - 3` first.  If these symbols had
+been declared non-associative with the `none:` keyword, the parser
+would generate an error if it ever encountered this state.
 
-@c -- The parsing function ------------------------------------------- @c
-@node The Parsing Function, The Regular Grammar, Precedence and Associativity, Lalr Parsing
-@comment  node-name,  next,  previous,  up
-@section The parsing function
-@cindex the lalr(1) parsing function
+### read/lalrp ###
 
-Once a grammar has been defined, it can be used to parse some input
-using the following function:
-
-@deffn {bigloo procedure} read/lalrp lg rg port 
-
-This function takes three, possibly four, arguments. The first, `lg`, is
-the Lalr(1) grammar. The second, `rg`, is the lexical analyzer that feeds
+This function takes three, possibly four, arguments. The first, `lalr`, is
+the Lalr(1) grammar. The second, `rgc`, is the lexical analyzer that feeds
 the grammar with tokens. The third argument, `port`, is the port that
 contains the input to be parsed. The last argument, `emptyp`, if
 provided, should be a function of one argument. It is called with each new
 token read from the port and should return `#t` if the token denotes the
 end of input. The result of the call is the value computed by the semantic
 actions of the production rules.
-@end deffn
 
-@c -- The regular grammar -------------------------------------------- @c
-@node  The Regular Grammar, Debugging Lalr Grammars, The Parsing Function, Lalr Parsing
-@comment  node-name,  next,  previous,  up
-@section The regular grammar
-@cindex Lalr grammar and Regular grammar
+In order to work properly, the regular grammar used with an Lalr(1)
+grammar should follow some conventions: if a semantic value is to be
+associated with the token just parsed, the regular grammar should
+return a pair whose `car` is the token name (a symbol) and the `cdr`
+is the semantic value.  @item If there is no value associated with the
+token, the regular grammar can return just the token name. When used
+in conjunction with an Lalr grammar, regular grammar should never
+return `#f` as a token value. This is specially true when the regular
+grammar detects the end of parsing. In that case, the regular grammar
+_must not_ return the `#f` value. A good way to handle
+end-of-file is illustrated in the following example:
 
-In order to work properly, the regular grammar used with an
-Lalr(1) grammar should follow some conventions:
-
-@itemize @bullet
-
-@item If a semantic value is to be associated with the token just
-parsed, the regular grammar should return a pair whose `car` is the
-token name (a symbol) and the `cdr` is the semantic value. 
-@item If there is no value associated with the token, the regular
-grammar can return just the token name. When used in conjunction with
-an Lalr grammar, regular grammar should never return `#f` as a token
-value. This is specially true when the regular grammar detects the end of
-parsing. In that case, the regular grammar @emph{must not} return the 
-`#f` value. A good way to handle end-of-file is illustrated in the 
-following example:
-
-@smalllisp
+```bigloo
 (let ((g (regular-grammar ()
              ...
              (else 
@@ -582,64 +551,12 @@ following example:
                      (error 'rgc "Illegal character" c))))))
       (l (lalr-grammar ...)))
    (read/lalrp l g (current-input-port)))
-@end smalllisp
+```
 
 This way, the Lalr grammar will automatically handles the end-of-file.
 @end itemize
-
-@c -- debugging ------------------------------------------------------ @c
-@node Debugging Lalr Grammars, A Simple Example, The Regular Grammar, Lalr Parsing
-@section Debugging Lalr Grammars
-@cindex Debugging Lalr Grammars
 
 Currently the debugging facility for debugging Lalr grammars is very
 limited. When the parameter `bigloo-debug` is set to a value
 greater or equal to 100, the Lalr engine outputs all of the state
 changes the parser is going through.
-
-@c -- A simple example ----------------------------------------------- @c
-@node A Simple Example,  , Debugging Lalr Grammars, Lalr Parsing
-@comment  node-name,  next,  previous,  up
-@section A simple example
-@cindex a simple example of Lalr(1) parsing
-Here is the code for a simple calculator implemented by an Lalr(1)
-grammar:
-
-@smalllisp
-(begin
-  (read/lalrp
-   (lalr-grammar
-    (nl plus mult minus div const lpar rpar)
-    (lines
-     (())
-     ((lines expression nl)    (display "--> ") 
-                               (display expression) 
-                               (newline))
-     ((lines nl)))
-    (expression
-     ((expression plus term)   (+ expression term))
-     ((expression minus term)  (- expression term))
-     ((term)                   term))
-    (term
-     ((term mult factor)       (* term factor))
-     ((term div factor)        (/ term factor))
-     ((factor)                 factor))
-    (factor
-     ((lpar expression rpar)   expression)
-     ((const)                  const)))
-
-   (regular-grammar ()
-    ((+ (or #\tab #\space)) (ignore))
-    (#\newline              'nl)
-    ((+ digit)              (cons 'const (string->number (the-string))))
-    (#\+                    'plus)
-    (#\-                    'minus)
-    (#\*                    'mult)
-    (#\/                    'div)
-    (#\(                    'lpar)
-    (#\)                    'rpar))
-
-   (current-input-port))
-  (reset-eof (current-input-port)))
-@end smalllisp
-

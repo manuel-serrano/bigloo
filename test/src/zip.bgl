@@ -1,0 +1,91 @@
+;*=====================================================================*/
+;*    serrano/bigloo/5.0.x/test/src/zip.bgl                            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Thu Jul  2 09:31:00 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing zip                                                      */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    zip                                                              */
+;*---------------------------------------------------------------------*/
+(module zips
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "zip" tests))
+      (test-all verbose "zip")))
+
+;*---------------------------------------------------------------------*/
+;*    tests ...                                                        */
+;*---------------------------------------------------------------------*/
+(define gunzip
+   ;; "hello world" 
+   (list->string
+      (map integer->char
+         '(31 139 8 8 62 18 70 106 0 3 116 101 120 116 0 203 72 205 201 201 87 40 207 47 202 73 225 2 0 45 59 8 175 12 0 0 0))))
+
+(define-test port->gzip-port
+   (call-with-input-string gunzip
+      (lambda (zin)
+         (let ((in (port->gzip-port zin)))
+            (unwind-protect
+               (read-char in)
+               (close-input-port in)))))
+   :expected #\h)
+
+(define-test port->zlib-port
+   (call-with-input-string gunzip
+      (lambda (zin)
+         (let ((in (port->gzip-port zin)))
+            (unwind-protect
+               (read-char in)
+               (close-input-port in)))))
+   :expected #\h)
+
+(define-test port->inflate-port
+   (call-with-input-string gunzip
+      (lambda (zin)
+         (let ((in (port->gzip-port zin)))
+            (unwind-protect
+               (read-char in)
+               (close-input-port in)))))
+   :expected #\h)
+
+(define-test open-input-inflate-file
+   open-input-inflate-file
+   :expected procedure?)
+   
+(define-test gunzip-sendchars
+   (call-with-input-string gunzip
+      (lambda (zin)
+         (let ((in (port->gzip-port zin)))
+            (unwind-protect
+               (call-with-output-string
+                  (lambda (out)
+                     (gunzip-sendchars in out)))
+               (close-input-port in)))))
+   :expected "hello world\n")
+
+(define-test inflate-sendchars
+   (call-with-input-string gunzip
+      (lambda (zin)
+         (let ((in (port->gzip-port zin)))
+            (unwind-protect
+               (call-with-output-string
+                  (lambda (out)
+                     (gunzip-sendchars in out)))
+               (close-input-port in)))))
+   :expected "hello world\n")
+   

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Tue Jun 30 08:56:21 2026 (serrano)                */
+/*    Last change :  Thu Jul  2 08:23:16 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -40,7 +40,7 @@
 
     --example: #333333;
     
-    --functionBackground: #f0f0f0;
+    --functionBackground: #e0e0e0;
     --functionTag: #1467e6;
     --defaultTag: #777;
 
@@ -450,10 +450,6 @@ div.index-section {
 /*---------------------------------------------------------------------*/
 /*    Chapters and Sections                                            */
 /*---------------------------------------------------------------------*/
-.chapter {
-    margin-top: 1ex;
-}
-
 h1 {
     text-shadow: var(--titleShadow) 1px 1px 1px;
     margin-top: 2em;
@@ -760,7 +756,11 @@ pre.bnf .ebnf-comment {
 /*    Chapter                                                          */
 /*---------------------------------------------------------------------*/
 .chapter {
+    margin-top: 1ex;
     width: 100%;
+    max-width: 100em;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .chapter .body {
@@ -773,10 +773,11 @@ pre.bnf .ebnf-comment {
 .chapter .toc {
     overflow-y: scroll;
     width: 25%;
+    max-width: 25em;
     position: fixed;
     top: calc(var(--navHeight) + 4ex);
     bottom: 1ex;
-    right: 0.2em;
+    right: 2em;
     background: var(--chapterTocBackground);
     border: 1px solid var(--chapterTocBorder);
     font-size: 95%;
@@ -817,6 +818,10 @@ pre.bnf .ebnf-comment {
 
 .chapter .toc li.def a {
     color: var(--chapterTocLinkColor);
+}
+
+.chapter ul.defs {
+    margin-top: 1ex;
 }
 
 /*---------------------------------------------------------------------*/

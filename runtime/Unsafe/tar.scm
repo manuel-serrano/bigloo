@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/tar.scm         */
+;*    serrano/bigloo/5.0.x/runtime/Unsafe/tar.scm                      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 23 17:07:04 2006                          */
-;*    Last change :  Mon May 18 09:27:06 2026 (serrano)                */
+;*    Last change :  Thu Jul  2 09:40:09 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Read TAR files (rfc1505)                                         */
@@ -71,7 +71,7 @@
 	   (tar-read-header #!optional (port::input-port (current-input-port)) longname)
 	   (tar-read-block ::obj #!optional (p::input-port (current-input-port)))
 	   (tar-round-up-to-record-size::long ::obj)
-	   (untar ::obj #!key (directory (pwd)) file (files '()))))
+	   (untar ::input-port #!key (directory::bstring (pwd)) file (files::pair-nil '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    tar-error ...                                                    */
@@ -136,80 +136,81 @@
 ;*    tar-read-header ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (tar-read-header #!optional (port::input-port (current-input-port)) longname)
-   (unless (input-port? port)
-      (bigloo-type-error "tar-read-header" "input-port" port))
-   (let* ((ptr 0)
-	  (data (read-chars (tar-record-size) port))
-	  (len (string-length data)))
-      (define (extract what size)
-	 (let loop ((i 0))
-	    (cond
-	       ((>=fx i size)
-		(if longname
-		    (begin
-		       (set! ptr (+fx ptr size))
-		       (string-shrink! longname
-			  (-fx (string-length longname) 1))) 
-		    (tar-error
-		       (format "no terminator for zero-terminated `~a' found" what)
-		       size)))
-	       ((>=fx i len)
-		(tar-error "corrupted tar file" port))
-	       (else
-		(let ((c (string-ref data (+fx ptr i))))
-		   (if (char=? #\null c)
-		       (let* ((nptr (+fx ptr i))
-			      (sub (substring data ptr nptr)))
-			  (set! ptr (+fx ptr size))
-			  sub)
-		       (loop (+fx 1 i))))))))
-      (define (fetch)
-	 (let ((c (string-ref data ptr)))
-	    (set! ptr (+fx 1 ptr))
-	    c))
-      (let ((name (if (or (not (string? data)) (=fx (string-length data) 0))
-		      ""
-		      (extract 'name (tar-name-size)))))
-	 (when (>fx (string-length name) 0)
-	    (let* ((mode (str->octal (extract 'mode 8)))
-		   (uid (str->octal (extract 'uid 8)))
-		   (gid (str->octal (extract 'gid 8)))
-		   (size (string->elong (extract 'size 12) 8))
-		   (mtime (string->elong (extract 'mtime 12) 8))
-		   (chksum (str->octal (extract 'chksum 8)))
-		   (linkflag (fetch))
-		   (linkname (extract 'linkname (tar-name-size)))
-		   (magic (extract 'magic 8))
-		   (uname (extract 'uname (tar-tunmlen)))
-		   (gname (extract 'gname (tar-tgnmlen)))
-		   (devmajor (str->octal (extract 'devmajor 8) #f))
-		   (devminor (str->octal (extract 'devminor 8) #f)) 
-		   (csum2 (checksum data)))
-	       (cond
-		  ((not (or (string=? (tar-tmagic) magic)
-			    (string=? (tar-umagic) magic)
-			    (string=? (tar-gnumagic) magic)))
-		   (tar-error "invalid magic number" (string-for-read magic)))
-		  ((not (=fx csum2 chksum))
-		   (tar-error
-		    (format "invalid checksum (expected: ~s)" chksum)
-		    csum2))
-		  (else
-		   (instantiate::tar-header
-		      (name name)
-		      (mode mode)
-		      (uid uid)
-		      (gid gid)
-		      (size size)
-		      (mtime (seconds->date mtime))
-		      (checksum chksum)
-		      (type (tar-type-name linkflag))
-		      (linkname linkname)
-		      (magic magic)
-		      (uname uname)
-		      (gname gname)
-		      (devmajor devmajor)
-		      (devminor devminor)))))))))
+   (define ptr 0)
+   (define data (read-chars (tar-record-size) port))
+   (define len (if (string? data) (string-length data) 0))
+
+   (define (extract what size)
+      (let loop ((i 0))
+         (cond
+            ((>=fx i size)
+             (if longname
+                 (begin
+                    (set! ptr (+fx ptr size))
+                    (string-shrink! longname
+                       (-fx (string-length longname) 1))) 
+                 (tar-error
+                    (format "no terminator for zero-terminated `~a' found" what)
+                    size)))
+            ((>=fx i len)
+             (tar-error "corrupted tar file" port))
+            (else
+             (let ((c (string-ref data (+fx ptr i))))
+                (if (char=? #\null c)
+                    (let* ((nptr (+fx ptr i))
+                           (sub (substring data ptr nptr)))
+                       (set! ptr (+fx ptr size))
+                       sub)
+                    (loop (+fx 1 i))))))))
+
+   (define (fetch)
+      (let ((c (string-ref data ptr)))
+         (set! ptr (+fx 1 ptr))
+         c))
+   
+   (let ((name (if (or (not (string? data)) (=fx (string-length data) 0))
+                   ""
+                   (extract 'name (tar-name-size)))))
+      (when (>fx (string-length name) 0)
+         (let* ((mode (str->octal (extract 'mode 8)))
+                (uid (str->octal (extract 'uid 8)))
+                (gid (str->octal (extract 'gid 8)))
+                (size (string->elong (extract 'size 12) 8))
+                (mtime (string->elong (extract 'mtime 12) 8))
+                (chksum (str->octal (extract 'chksum 8)))
+                (linkflag (fetch))
+                (linkname (extract 'linkname (tar-name-size)))
+                (magic (extract 'magic 8))
+                (uname (extract 'uname (tar-tunmlen)))
+                (gname (extract 'gname (tar-tgnmlen)))
+                (devmajor (str->octal (extract 'devmajor 8) #f))
+                (devminor (str->octal (extract 'devminor 8) #f))
+                (csum2 (checksum data)))
+            (cond
+               ((not (or (string=? (tar-tmagic) magic)
+                         (string=? (tar-umagic) magic)
+                         (string=? (tar-gnumagic) magic)))
+                (tar-error "invalid magic number" (string-for-read magic)))
+               ((not (=fx csum2 chksum))
+                (tar-error
+                   (format "invalid checksum (expected: ~s)" chksum)
+                   csum2))
+               (else
+                (instantiate::tar-header
+                   (name name)
+                   (mode mode)
+                   (uid uid)
+                   (gid gid)
+                   (size size)
+                   (mtime (seconds->date mtime))
+                   (checksum chksum)
+                   (type (tar-type-name linkflag))
+                   (linkname linkname)
+                   (magic magic)
+                   (uname uname)
+                   (gname gname)
+                   (devmajor devmajor)
+                   (devminor devminor))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    tar-round-up-to-record-size ...                                  */
@@ -254,10 +255,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    untar ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (untar ip #!key (directory (pwd)) file (files '()))
+(define (untar ip::input-port #!key (directory::bstring (pwd)) file (files::pair-nil '()))
    (cond
-      ((not (input-port? ip))
-       (bigloo-type-error "untar" "input-port" ip))
       ((string? file)
        (untar-files ip (list file)))
       ((and (pair? files) (list? files) (every string? files))

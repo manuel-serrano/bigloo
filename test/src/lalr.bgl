@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/test/src/lalr.bgl              */
+;*    serrano/bigloo/5.0.x/test/src/lalr.bgl                           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Thu Jul  2 05:41:10 2026 (serrano)                */
+;*    Last change :  Thu Jul  2 07:59:45 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing lalr                                                     */
@@ -52,7 +52,7 @@
          ((op-lparen expr op-rparen) expr)))
    :expected procedure?)
 
-(define-test read/lalr
+(define-test read/lalrp
    (let ((rg (regular-grammar ((number (posix "[0-9]+"))
                                (whitespace (+ (in "\r\n\t \v\f"))))
                 (number (cons 'number (the-fixnum)))
@@ -88,7 +88,7 @@
             (read/lalrp lg rg in))))
    :expected -9)
 
-(define-test read/lalr
+(define-test read/lalrp
    (let ((rg (regular-grammar ((number (posix "[0-9]+"))
                                (whitespace (+ (in "\r\n\t \v\f"))))
                 (number (cons 'number (the-fixnum)))

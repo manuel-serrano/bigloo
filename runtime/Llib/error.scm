@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Jul  1 09:28:49 2026 (serrano)                */
+;*    Last change :  Thu Jul  2 15:26:33 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -246,6 +246,7 @@
 	    
 	    __rgc
 	    (mmap? __mmap)
+	    (weakptr? __weakptr)
 	    
 	    __r4_vectors_6_8
 	    __r4_numbers_6_5_fixnum
@@ -1399,6 +1400,8 @@
        "uint64")
       ((cnst? obj)
        "bcnst")
+      ((weakptr? obj)
+       "weakptr")
       (else
        ($foreign-typeof obj))))
 
