@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Tue Jun 30 09:16:39 2026 (serrano)                */
+;*    Last change :  Thu Jul  2 18:53:31 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing strings                                                  */
@@ -966,6 +966,10 @@
 
 (define-test string-shrink! (string-shrink! (string-append "abc" "def") 4)
    :expected "abcd")
+
+(define-test string-shrink!
+   (string-length (string-shrink! (make-string 10000 #\a) 5000))
+   :expected 5000)
 
 (define-test string-fill! (let ((s (string-append "abc" "de"))) (string-fill! s #\-) s)
    :expected "-----")

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Unsafe/tar.scm                      */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/tar.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 23 17:07:04 2006                          */
-;*    Last change :  Thu Jul  2 09:40:09 2026 (serrano)                */
+;*    Last change :  Thu Jul  2 18:41:41 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Read TAR files (rfc1505)                                         */
@@ -167,8 +167,8 @@
       (let ((c (string-ref data ptr)))
          (set! ptr (+fx 1 ptr))
          c))
-   
-   (let ((name (if (or (not (string? data)) (=fx (string-length data) 0))
+
+   (let ((name (if (or (not (string? data)) (=fx len 0))
                    ""
                    (extract 'name (tar-name-size)))))
       (when (>fx (string-length name) 0)

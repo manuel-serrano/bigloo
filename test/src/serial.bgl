@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Thu Jul  2 15:27:47 2026 (serrano)                */
+;*    Last change :  Thu Jul  2 18:18:16 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing serials                                                  */
@@ -30,7 +30,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
-(define-test flonum (string->obj (obj->string 0.5))
+'(define-test flonum (string->obj (obj->string 0.5))
    :expected real?)
 
 (let ((o '(#s8:0 #s8:1 #s8:-1 #u8:0 #u8:1 #u8:250
@@ -52,29 +52,25 @@
       (string->obj (obj->string l))
       :expected l))
 
-(let* ((s "toto n'est pas content")
-       (sp "titi non plus")
-       (ptr (make-weakptr sp))
-       (l (list s s s sp sp s sp sp 'toto 'toto '#(1 2 3) #\a #\a #t #f
-             ptr ptr))
-       (v `#(,l ,l ,l () ,(unspecified) 1.13 1.13 #a123
-               (point 1 2) (point 2 1) 0010 0011))
-       (vec (make-vector 3 v))
-       (rep (obj->string v)))
-   (define-test mixed (string->obj rep)
-      :expected v))
+(define-test mixed
+   (let* ((s "toto n'est pas content")
+          (sp "titi non plus")
+          (ptr (make-weakptr sp))
+          (l (list s s s sp sp s sp sp 'toto 'toto '#(1 2 3) #\a #\a #t #f
+                ptr ptr))
+          (v `#(,l ,l ,l () ,(unspecified) 1.13 1.13 #a123
+                  (point 1 2) (point 2 1) 0010 0011))
+          (vec (make-vector 3 v))
+          (rep (obj->string v)))
+      (equal? (string->obj rep) v)))
 
-(let* ((c (cons 2 3))
-       (ptr (make-weakptr c)))
-   (set-car! c ptr)
-   (let ((ptr2 (string->obj (obj->string ptr))))
-      (define-test weakptr
+(define-test weakptr
+   (let* ((c (cons 2 3))
+          (ptr (make-weakptr c)))
+      (set-car! c ptr)
+      (let ((ptr2 (string->obj (obj->string ptr))))
          (and (weakptr? ptr2)
               (let ((d (weakptr-data ptr2)))
-                 (tprint "P=" (pair? c)
-                    " " (pair? d)
-                    " " (typeof ptr)
-                    " " (typeof ptr2))
                  (and (pair? d)
                       (pair? c)
                       (eq? (car d) ptr2)

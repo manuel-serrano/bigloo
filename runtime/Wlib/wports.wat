@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 27 10:34:00 2024                          */
-;*    Last change :  Fri Jun 26 15:37:18 2026 (serrano)                */
+;*    Last change :  Thu Jul  2 19:03:29 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Input/Output Ports WASM implementation.                          */
@@ -1016,6 +1016,8 @@
 	      (local.get $b) (local.get $start)
 	      (local.get $buf) (local.get $p)
 	      (local.get $l))
+           (struct.set $procedure-input-port $pbuffer (local.get $ip)
+              (local.get $buf))
 	   (struct.set $procedure-input-port $pbufpos (local.get $ip)
 	      (i32.add (struct.get $procedure-input-port $pbufpos (local.get $ip))
 		 (local.get $l)))
@@ -1031,24 +1033,25 @@
       (result i32)
       
       (local $ip (ref $procedure-input-port))
-      (local $buf (ref eq))
+      (local $pbuf (ref eq))
       
       (local.set $ip (ref.cast (ref $procedure-input-port) (local.get $port)))
-      (local.set $buf (struct.get $procedure-input-port $pbuffer (local.get $ip)))
+      (local.set $pbuf (struct.get $procedure-input-port $pbuffer (local.get $ip)))
 
-      (if (ref.test (ref $bstring) (local.get $buf))
+      (if (ref.test (ref $bstring) (local.get $pbuf))
 	  (then
-	     (return_call $bgl_procread_buf (local.get $ip) (ref.cast (ref $bstring) (local.get $buf))
+	     (return_call $bgl_procread_buf (local.get $ip)
+                (ref.cast (ref $bstring) (local.get $pbuf))
 		(local.get $b) (local.get $start) (local.get $l)))
 	  (else
-	   (local.set $buf (call $funcall0 (struct.get $procedure-input-port $proc (local.get $ip))))
+	   (local.set $pbuf (call $funcall0 (struct.get $procedure-input-port $proc (local.get $ip))))
 	   
-	   (if (ref.test (ref $bstring) (local.get $buf))
+	   (if (ref.test (ref $bstring) (local.get $pbuf))
 	       (then
-		  (return_call $bgl_procread_buf (local.get $ip) (ref.cast (ref $bstring) (local.get $buf))
+		  (return_call $bgl_procread_buf (local.get $ip) (ref.cast (ref $bstring) (local.get $pbuf))
 		     (local.get $b) (local.get $start) (local.get $l)))
 	       (else
-		(if (ref.eq (local.get $buf) (global.get $BFALSE))
+		(if (ref.eq (local.get $pbuf) (global.get $BFALSE))
 		    (then
 		       (struct.set $rgc $eof (struct.get $procedure-input-port $rgc (local.get $ip)) (i32.const 1))
 		       (return (i32.const 0)))

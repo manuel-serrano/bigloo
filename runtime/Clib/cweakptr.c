@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cweakptr.c       */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Clib/cweakptr.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Stephane Epardaud                                 */
 /*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-/*    Last change :  Fri Nov 15 07:36:29 2024 (serrano)                */
+/*    Last change :  Thu Jul  2 18:22:45 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C weak pointer management                                        */
 /*=====================================================================*/
@@ -51,7 +51,7 @@ bgl_make_weakptr(obj_t data, obj_t ref) {
    if (POINTERP(data) && GC_base(CREFSLOW(data)) != NULL) {
       GC_general_register_disappearing_link((obj_t *)&(ptr->weakptr.data), 
 					     GC_base(CREFSLOW(data)));
-      GC_general_register_disappearing_link(&(ptr->weakptr.ref), 
+      GC_general_register_disappearing_link(&(ptr->weakptr.ref),
 					     GC_base(CREFSLOW(data)));
    }
    

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Unsafe/intext.scm                   */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/intext.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Thu Jun  4 10:25:14 2026 (serrano)                */
+;*    Last change :  Thu Jul  2 18:29:44 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -445,23 +445,14 @@
 	 (when (fixnum? *defining*)
 	    (vector-set! *definitions* *defining* res)
 	    (set! *defining* #f))
-	 (weakptr-data-set! res (read-item))
+	 (let ((i (read-item)))
+	    (weakptr-data-set! res i))
 	 res))
    
    ;; read-special
    (define (read-special s converter)
-      ;; unserialize a procedure, a process, or an opaque
-      ;; fix 22 mars 2020
       (let ((s (read-item)))
 	 (converter s)))
-;*       (let ((sz::long (read-size/unsafe s)))                        */
-;* 	 (string-guard! sz)                                            */
-;* 	 (let ((res (substring s *pointer* (+fx *pointer* sz))))       */
-;* 	    (when (fixnum? *defining*)                                 */
-;* 	       (vector-set! *definitions* *defining* res)              */
-;* 	       (set! *defining* #f))                                   */
-;* 	    (set! *pointer* (+fx *pointer* sz))                        */
-;* 	    (converter res))))                                         */
    
    ;; read-structure
    (define (read-structure)
@@ -641,7 +632,7 @@
 	    ((#\l) (read-int64 s))
 	    ((#\W) (read-uint64 s))
 	    (else (set! *pointer* (-fx *pointer* 1)) (read-integer s)))))
-   
+
    (string-guard! 1)
    (let ((d (string-ref s *pointer*)))
       (when (char=? d #\c)

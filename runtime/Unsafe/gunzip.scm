@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  5 07:43:02 2006                          */
-;*    Last change :  Mon May 18 09:26:01 2026 (serrano)                */
+;*    Last change :  Thu Jul  2 18:50:31 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Traduction of gzip's inflate.c inspired from Mzscheme's port.    */
@@ -1071,7 +1071,7 @@
 		 #f)
 		((complete)
 		 (set! state 'eof)
-		 (subbuffer! buffer val bufsize in))
+                 (subbuffer! buffer val bufsize in))
 		((step)
 		 (set! state 'resume)
 		 (subbuffer buffer val bufsize in))
