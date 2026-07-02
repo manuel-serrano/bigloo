@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Sat May 23 07:12:14 2026 (serrano)                */
+;*    Last change :  Wed Jul  1 18:08:02 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -835,6 +835,8 @@
 		    (wrt str))
 		   ((#\:)
 		    (cond
+		       ((=fx 0 len-1)
+			(display-string str port))
 		       ((=fx i 0)
 			(if (and (>fx len-1 2)
 				 (char=? (string-ref str (+fx i 1)) #\:))

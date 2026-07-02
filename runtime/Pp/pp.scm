@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 27 14:10:31 1993                          */
-;*    Last change :  Fri Jun 26 08:34:09 2026 (serrano)                */
+;*    Last change :  Wed Jul  1 15:59:18 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Le pretty-printer de Marc Feeley.                                */
 ;*=====================================================================*/
@@ -433,7 +433,7 @@
 		(string->symbol (symbol->string! head))
 		head)
             ((lambda) pp-lambda)
-            ((let* letrec letrec*) pp-let)
+            ((let* letrec letrec* regular-grammar) pp-let)
             ((define define-inline define-method define-generic) pp-define)
             ((module) pp-define)
             ((defun de) pp-defun)

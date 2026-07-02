@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Rgc/rgc-generic.sch     */
+;*    .../prgm/project/bigloo/5.0.x/runtime/Rgc/rgc-generic.sch        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  1 10:13:29 2024                          */
-;*    Last change :  Tue Feb  4 08:37:18 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Wed Jul  1 21:52:51 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Rgc generic implementation                                       */
 ;*=====================================================================*/
@@ -76,13 +76,21 @@
 ;*    $$rgc-buffer-upcase-keyword ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline ($$rgc-buffer-upcase-keyword ip::input-port)
-   (string->keyword
-      (string-upcase! (rgc-buffer-substring ip 0 (rgc-buffer-length ip)))))
+   (let* ((start ($rgc-matchstart ip))
+	  (end (rgc-buffer-length ip))
+	  (str (if (=fx ($rgc-buffer-get-char ip start) (char->integer #\:))
+		   (rgc-buffer-substring ip 1 end)
+		   (rgc-buffer-substring ip 0 (-fx end 1)))))
+      (string->keyword (string-upcase! str))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $$rgc-buffer-downcase-keyword ...                                */
 ;*---------------------------------------------------------------------*/
 (define-inline ($$rgc-buffer-downcase-keyword ip::input-port)
-   (string->keyword
-      (string-downcase! (rgc-buffer-substring ip 0 (rgc-buffer-length ip)))))
+   (let* ((start ($rgc-matchstart ip))
+	  (end (rgc-buffer-length ip))
+	  (str (if (=fx ($rgc-buffer-get-char ip start) (char->integer #\:))
+		   (rgc-buffer-substring ip 1 end)
+		   (rgc-buffer-substring ip 0 (-fx end 1)))))
+      (string->keyword (string-downcase! str))))
    

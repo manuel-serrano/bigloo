@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Sun Jun 28 14:48:33 2026 (serrano)                */
+;*    Last change :  Wed Jul  1 14:13:53 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -104,7 +104,7 @@
 ;*    In consequence prototype changes must be propagate to the        */
 ;*    compiler (Expand/initial.scm).                                   */
 ;*---------------------------------------------------------------------*/
-(define (read/rp grammar port . opts)
+(define (read/rp grammar::procedure port::input-port . opts)
    (cond
       ((pair? opts)
        (apply grammar port opts))

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Wed Jul  1 07:34:30 2026 (serrano)                */
+#*    Last change :  Wed Jul  1 14:08:31 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -20,7 +20,8 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 VERBOSE = 
 EFLAGS =
-UFLAGS = -unsafe
+xUFLAGS = -unsafe
+UFLAGS = -g
 BFLAGS = $(VERBOSE) -cg $(UFLAGS) -O3 -q -Wall -init-lib \
   -lib-dir $(BOOTLIBDIR) -no-auto-link-main -module5 -I src
 BCFLAGS =
@@ -37,7 +38,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
 MD = argsparse bigloo bool c date hash error int io jvm mmap net \
- number os pair port real ssl string symbol thread vector wasm \
+ number os pair parser port real ssl string symbol thread vector wasm \
  condexpand match module5 module4 object
 
 EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var grep
@@ -146,6 +147,9 @@ condexpand.html: condexpand.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
 match.html: match.md bin/bgldoc
+	bin/bgldoc -t lang $< > $@ || rm -f $@
+
+parser.html: parser.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
 module5.html: module5.md bin/bgldoc

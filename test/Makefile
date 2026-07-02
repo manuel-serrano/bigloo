@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Wed Jul  1 07:35:31 2026 (serrano)                */
+#*    Last change :  Wed Jul  1 14:16:20 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -39,8 +39,8 @@ BJFLAGS = -jvm
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
 TESTS = main argsparse bigloo bignum bit bool char condexpand date dsssl \
-  error hash int1 int2 io match mmap module net number object os pair \
-  port real search string symbol thread unicode vector
+  error hash int1 int2 lalr io match mmap module net number object os pair \
+  port real rgc search string symbol thread unicode vector
 
 MODULES4 = module4_ex12
 

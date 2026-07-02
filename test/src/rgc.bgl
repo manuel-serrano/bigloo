@@ -1,0 +1,934 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/rgc.bgl               */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Wed Jul  1 18:31:11 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing rgc                                                      */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    rgc                                                              */
+;*---------------------------------------------------------------------*/
+(module rgc
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "rgc" tests))
+      (test-all verbose "rgc")))
+
+(define-test regular-grammar
+   (regular-grammar
+         ((sign (in #\+ #\-))
+          (optsign (>= 1 sign))
+          (octdigit (in ("07"))))
+      ((: #\0 optsign octdigit)
+       0))
+   :expected procedure?)
+
+(define-test regular-grammar
+   (regular-grammar ()
+      ((: #\a (? #\b) #\c)
+       0))
+   :expected procedure?)
+
+(define-test regular-grammar
+   (regular-grammar ()
+      ((: (? #\a) #\b #\c)
+       0))
+   :expected procedure?)
+
+(define-test regular-grammar
+   (regular-grammar ()
+      ((: #\a #\b (? #\c))
+       0))
+   :expected procedure?)
+
+(define-test regular-grammar
+   (regular-grammar ((chiffre (in ("09")))
+		     (lettre  (in ("azAZ") #a128 #a255))
+		     (special (in "!@~$%^&*></.-_+\|=?:"))
+		     (id      (: (or lettre chiffre special)
+				 (* (or lettre chiffre special #\, #\' #\`)))))
+      ((: #\# #\a chiffre chiffre chiffre)
+       ;; character ascii forms
+       0)
+      ((: ";" (* all))
+       ;; commets
+       (ignore))
+      ((: #\# (or id (: #\. (+ #\.))) #\()
+       ;; typed vectors beginning
+       1)
+      (else
+       2))
+   :expected procedure?)
+
+(define-test read/rp
+   (let ((port (open-input-string #";1line\n;2line\n;3line\n;4line\n"))
+	 (gram (regular-grammar ()
+                  ((= 2 (: #\; (* all) #\newline))
+                   (the-string))
+                  (else
+                   ""))))
+      (read/rp gram port))
+   :expected #";1line\n;2line\n")
+
+(define-test string-case
+   (string-case rgc.filename
+      ((: (* all) ".")
+       (ignore))
+      ((+ (out #\.))
+       (the-string))
+      (else
+       ""))
+   :expected "bgl")
+
+(define-test string-case
+   (string-case ",1"
+      ((: #\, #\1)
+       (unread-char! (string-ref (the-string) 1) (the-port))
+       (read (the-port))))
+   :expected 1)
+
+(define-test rgc-when
+   (let ((armed #f)
+         (res '()))
+      (let ((g (regular-grammar ()
+                  ((when (not armed) (: "#!" (+ (or #\/ alpha))))
+                   (set! armed #t)
+                   (set! res (the-string))
+                   (ignore))
+                  ((+ (in #\Space #\Tab))
+                   (ignore))
+                  (else
+                   (the-failure)))))
+         (call-with-input-string "#!/bin/sh #!/bin/zsh"
+            (lambda (ip)
+               (read/rp g ip)))
+         res))
+   :expected "#!/bin/sh")
+
+(define-test rgc-variable
+   (let ((level 0))
+      (let ((g (regular-grammar ((lpar (in #\( #\[ #\{))
+                                 (rpar (in #\) #\] #\})) )
+                  (lpar
+                   (the-string)
+                   (set! level (+ level 1)))
+                  (rpar
+                   (the-string)
+                   (set! level (- level 1))
+                   'paren)
+                  ((+ (out  #\( #\[ #\{ #\) #\] #\}))
+                   (the-string))
+                  (else (the-failure)))))
+         (call-with-input-string "(define (test-rgc-jm) (let* ((level 0) (my-grammar (regular-grammar ( (lpar (in #\( #\[ #\{)) (rpar (in #\) #\] #\})) )"
+            (lambda (in)
+               (let loop ()
+                  (let ((c (read/rp g in)))
+                     (if (eof-object? c)
+                         level
+                         (loop))))))))
+   :expected 5)
+
+(define-test rgc-var
+   (let ((g (regular-grammar ((ident (: alpha (* alnum)))
+                              (number (+ digit))
+                              (blank (in " \t\n\r")))
+               (ident (cons (cons 'ident (the-string)) (ignore)))
+               (number (cons (cons 'number (the-fixnum)) (ignore)))
+               ((+ blank) (ignore))
+               (else '()))))
+      (call-with-input-string " Foo34 45\n58 gee"
+         (lambda (in)
+            (read/rp g in))))
+   :expected '((ident . "Foo34") (number . 45) (number . 58) (ident . "gee")))
+
+(define-test rgc-char
+   (let ((g (regular-grammar ()
+               (#\a (cons 'a (the-string)))
+               (#\b (cons 'b (the-string)))
+               (else (cons 'else (the-failure))))))
+      (call-with-input-string "bac"
+         (lambda (in)
+            (read/rp g in))))
+   :expected '(b . "b"))
+
+(define-test rgc-posix
+   (let ((g (regular-grammar ()
+               ((posix "[az]+|xx*|y{3,5}")
+                (cons (the-string) (ignore)))
+               (else
+                (if (eof-object? (the-failure))
+                    '()
+                    (ignore))))))
+      (call-with-input-string " \naaz yyyy "
+         (lambda (in)
+            (read/rp g in))))
+   :expected '("aaz" "yyyy"))
+
+(define-test rgc>=
+   (let ((g (regular-grammar ()
+               ((>= 2 (: #\; (* all) #\newline))
+                (the-string))
+               (else
+                ""))))
+      (call-with-input-string #";1line\n;2line\n;3line\n;4line\n"
+         (lambda (in)
+            (read/rp g in))))
+   :expected #";1line\n;2line\n;3line\n;4line\n")
+
+(define-test rgc-and
+   (let ((g (regular-grammar ()
+		  ((+ (and (#\a #\b) "09abcd")) (the-string))
+		  (else
+		   ""))))
+      (call-with-input-string "aaaabbbbccc"
+         (lambda (in)
+            (read/rp g in))))
+   :expected "aaaabbbb")
+
+(define-test rgc-and
+   (let ((g (regular-grammar ()
+               ((+ (and "am" "nz")) (the-string))
+               (else
+                ""))))
+      (call-with-input-string "aaaabbbbccc"
+         (lambda (in)
+            (read/rp g in))))
+   :expected "")
+
+(define-test rgc-but
+   (let ((g (regular-grammar ()
+               ((+ (but ("09ad") ("ce"))) (the-string))
+               (else
+                ""))))
+      (call-with-input-string "aaaabbbbccc"
+         (lambda (in)
+            (read/rp g in))))
+   :expected "aaaabbbb")
+
+(define-test rgc-**
+   (let ((g (regular-grammar ()
+		  ((** 3 6 #\a) (the-string)))))
+      (call-with-input-string "aaaaaaaaaaabbbbccc"
+         (lambda (in)
+            (read/rp g in))))
+   :expected "aaaaaa")
+
+(define-test rgc-...
+   (let ((g (regular-grammar ()
+               ((... 3 "begin") (the-string)))))
+      (call-with-input-string "begin"
+         (lambda (in)
+            (read/rp g in))))
+   :expected "beg")
+
+(define-test rgc-bol
+   (let ((g (regular-grammar ()
+               ((bof all)
+                (let ((c (the-character)))
+                   (cons `(bof ,c) (ignore))))
+               ((eof all)
+                (let ((c (the-character)))
+                   (cons `(eof ,c) (ignore))))
+               ((bol all)
+                (let ((c (the-character)))
+                   (cons `(bol ,c) (ignore))))
+               (else
+                (let ((char (the-failure)))
+                   (cond ((eof-object? char) '())
+                         (else
+                          (cons `(char ,char) (ignore)))))))))
+      (call-with-input-string "abcd" (lambda (in) (read/rp g in))))
+   :expected '((bof #\a) (char #\b) (char #\c) (eof #\d)))
+
+(define-test the-port
+   (call-with-input-string "abc"
+      (lambda (in)
+         (let ((g (regular-grammar ()
+                     (#\a (eq? (the-port) in)))))
+            (read/rp g in)))))
+
+(define-test the-length
+   (let ((g (regular-grammar ()
+               ((+ (in ("az"))) (the-length)))))
+      (call-with-input-string "foo bargee"
+         (lambda (in)
+            (read/rp g in))))
+   :expected 3)
+
+(define-test the-string
+   (let ((g (regular-grammar ()
+               ((: (or alpha #\_) (* (or alnum #\_)))
+                (the-string))
+               (else
+                #t))))
+      (call-with-input-string "_foo45 bargee"
+         (lambda (in)
+            (read/rp g in))))
+   :expected "_foo45")
+
+(define-test the-string
+   (let ((g (regular-grammar ()
+               ((: (or alpha #\_) (* (or alnum #\_)))
+                (eq? (the-string) (the-string)))
+               (else
+                #t))))
+      (call-with-input-string "foo bargee"
+         (lambda (in)
+            (read/rp g in))))
+   :expected #f)
+      
+(define-test the-substring
+   (let ((g (regular-grammar ()
+               ((: #\" (+ alpha) #\")
+                (string=? (the-substring 1 (-fx (the-length) 1))
+                   (the-substring 1 -1)))
+               (else
+                #f))))
+      (call-with-input-string "\"foo\""
+         (lambda (in)
+            (read/rp g in)))))
+
+(define-test the-substring
+   (let ((g (regular-grammar ()
+               ((: #\" (* (out #\")) #\")
+                (the-substring 1 (-fx (the-length) 1))))))
+      (call-with-input-string "\"foo\""
+         (lambda (in)
+            (read/rp g in))))
+   :expected "foo")
+
+(define-test the-substring
+   (let ((g (regular-grammar ()
+               ((: #\" (* (out #\")) #\")
+                (the-substring 1 -1)))))
+      (call-with-input-string "\"foo\""
+         (lambda (in)
+            (read/rp g in))))
+   :expected "foo")
+
+(define-test the-character
+   (let ((g (regular-grammar ()
+               ((: #\" (* (out #\")) #\")
+                (the-character)))))
+      (call-with-input-string "\"foo\""
+         (lambda (in)
+            (read/rp g in))))
+   :expected #\")
+
+(define-test the-byte
+   (let ((g (regular-grammar ()
+               ((: #\" (* (out #\")) #\")
+                (the-byte)))))
+      (call-with-input-string "\"foo\""
+         (lambda (in)
+            (read/rp g in))))
+   :expected (char->integer #\"))
+
+(define-test the-byte-ref
+   (let ((g (regular-grammar ()
+               ((: #\" (* (out #\")) #\")
+                (the-byte-ref 1)))))
+      (call-with-input-string "\"foo\""
+         (lambda (in)
+            (read/rp g in))))
+   :expected (char->integer #\f))
+
+(define-test the-symbol
+   (let ((g (regular-grammar ()
+               ((+ (in ("az")))
+                (the-symbol))
+               ((: (in ("09")) (+ (in ("az"))))
+                (the-symbol)))))
+      (call-with-input-string "0abcdefgh"
+         (lambda (in)
+            (read/rp g in))))
+   :expected '0abcdefgh)
+
+(define-test the-downcase-symbol
+   (let ((g (regular-grammar ()
+               ((+ (in ("az")))
+                (the-downcase-symbol))
+               ((: (in ("09")) (+ (in ("AZ"))))
+                (the-downcase-symbol)))))
+      (call-with-input-string "0ABCDEFGH"
+         (lambda (in)
+            (read/rp g in))))
+   :expected '0abcdefgh)
+
+(define-test the-upcase-symbol
+   (let ((g (regular-grammar ()
+               ((+ (in ("az")))
+                (the-upcase-symbol))
+               ((: (in ("09")) (+ (in ("azAZ"))))
+                (the-upcase-symbol)))))
+      (call-with-input-string "0abcdefgh"
+         (lambda (in)
+            (read/rp g in))))
+   :expected '0ABCDEFGH)
+
+(define-test the-subsymbol
+   (let ((g (regular-grammar ()
+               ((+ (in ("az")))
+                (the-subsymbol 1 (-fx (the-length) 1)))
+               ((: (in ("09")) (+ (in ("azAZ"))))
+                (the-subsymbol - 1)))))
+      (call-with-input-string "abcdefgh"
+         (lambda (in)
+            (read/rp g in))))
+   :expected 'bcdefg)
+
+(define-test the-keyword
+   (let ((g (regular-grammar ()
+               ((+ (in ("az")))
+                (the-keyword))
+               ((: (in ("09")) (+ (in ("az"))))
+                (the-keyword)))))
+      (call-with-input-string "0abcdefgh:"
+         (lambda (in)
+            (read/rp g in))))
+   :expected :0abcdefg)
+
+(define-test the-keyword
+   (let ((g (regular-grammar ()
+               ((: #\: (+ (in ("az"))))
+                (the-keyword))
+               ((: #\: (in ("09")) (+ (in ("az"))))
+                (the-keyword)))))
+      (call-with-input-string ":0abcdefgh"
+         (lambda (in)
+            (read/rp g in))))
+   :expected :0abcdefgh)
+
+(define-test the-downcase-keyword
+   (let ((g (regular-grammar ()
+               ((+ (in ("az")))
+                (the-downcase-keyword))
+               ((: (in ("09")) (+ (in ("azAZ"))))
+                (the-downcase-keyword)))))
+      (call-with-input-string "0ABCDEFGH"
+         (lambda (in)
+            (read/rp g in))))
+   :expected :0abcdefg)
+
+(define-test the-upcase-keyword
+   (let ((g (regular-grammar ()
+               ((+ (in ("az")))
+                (the-upcase-keyword))
+               ((: (in ("09")) (+ (in ("azAZ"))))
+                (the-upcase-keyword)))))
+      (call-with-input-string "0abcdefgh"
+         (lambda (in)
+            (read/rp g in))))
+   :expected :0ABCDEFG)
+
+(define-test the-upcase-keyword
+   (let ((g (regular-grammar ()
+               ((+ (in ("az")))
+                (the-upcase-keyword))
+               ((: (in ("09")) (+ (in ("azAZ"))) #\:)
+                (the-upcase-keyword)))))
+      (call-with-input-string "0abcdefgh:"
+         (lambda (in)
+            (read/rp g in))))
+   :expected :0ABCDEFGH)
+
+(define-test the-fixnum
+   (call-with-input-string "1234"
+      (lambda (in)
+         (read/rp (regular-grammar () ((: digit) (the-fixnum))) in)))
+   :expected 1)
+
+(define-test the-fixnum
+   (call-with-input-string "1234"
+      (lambda (in)
+         (read/rp (regular-grammar () ((+ digit) (the-fixnum))) in)))
+   :expected 1234)
+
+(define-test the-flonum
+   (call-with-input-string "1234"
+      (lambda (in)
+         (read/rp (regular-grammar () ((+ digit) (the-flonum))) in)))
+   :expected 1234.)
+
+(define-test the-flonum
+   (call-with-input-string "1234"
+      (lambda (in)
+         (read/rp (regular-grammar () ((+ digit) (the-flonum))) in)))
+   :expected 1234.)
+
+(define-test the-flonum
+   (let ((g (regular-grammar ((float (or (: (* digit) "." (+ digit))
+                                         (: (+ digit) "." (* digit)))))
+               ((: (? (in "-+"))
+                   (or float
+                       (: (or float (+ digit))
+                          (in "eE") (? (in "+-"))
+                          (+ digit))))
+                (the-flonum)))))
+      (call-with-input-string "-32e-10"
+         (lambda (in)
+            (read/rp g in))))
+   :eq ~equal?
+   :expected -32e-10)
+
+(define-test the-failure
+   (let ((g (regular-grammar ()
+               ((+ alpha)
+                (the-string))
+               (digit
+                (the-failure))
+               (else
+                (unless (eof-object? (the-failure))
+                   (ignore))))))
+      (call-with-input-string "  aaaa  "
+         (lambda (in)
+            (read/rp g in))))
+   :expected "aaaa")
+
+(define-test the-failure
+   (let ((g (regular-grammar ()
+               ((+ alpha)
+                (the-string))
+               (digit
+                (the-failure))
+               (else
+                (unless (eof-object? (the-failure))
+                   (ignore))))))
+      (call-with-input-string "  1245 "
+         (lambda (in)
+            (read/rp g in))))
+   :expected #\1)
+
+(define-test ignore
+   (let ((g (regular-grammar ()
+               (")" 
+                '())
+               ("(" 
+                (let* ((car (ignore))
+                       (cdr (ignore)))
+                   (cons car cdr)))
+               ((+ (out "()"))
+                (the-string)))))
+      (call-with-input-string "(foo(bar(gee)))"
+         (lambda (in)
+            (read/rp g in))))
+   :expected '("foo" "bar" "gee"))
+
+(define-test rgc-context
+   (let ((res #f))
+      (let ((g (regular-grammar ()
+                  ((context foo "foo") (set! res 'foo-bis))
+                  ("foo" (rgc-context 'foo) (set! res 'foo) (ignore))
+                  (else 'done))))
+         (call-with-input-string "foofoo"
+            (lambda (in)
+               (read/rp g in)))
+         res))
+   :expected 'foo-bis)
+
+(define-test the-context
+   (let ((res #f))
+      (let ((g (regular-grammar ()
+                  ((context ctx "foo") (set! res (the-context)))
+                  ("foo" (rgc-context 'ctx) (ignore))
+                  (else 'done))))
+         (call-with-input-string "foofoo"
+            (lambda (in)
+               (read/rp g in)))
+         res))
+   :expected 'ctx)
+
+(define-test rgc-trap
+   (let ((ncontext 0)
+	 (ntiti 0)
+	 (neol 0)
+	 (nbol 0)
+	 (neof 0) 
+	 (n 0))
+      (let ((grammar (regular-grammar ((lettre  (in ("az"))))
+			((+ (in #\space #\newline))
+			 (set! n (+ (the-length) n))
+			 (ignore))
+			((when (rgc-context? 'titi) "titi")
+			 (rgc-context)
+			 (set! n (+ (the-length) n))
+			 (set! ncontext (+ 1 ncontext))
+			 (ignore))
+			("titi"
+			 (set! ntiti (+ 1 ntiti))
+			 (set! n (+ (the-length) n)) 
+			 (rgc-context 'titi)
+			 (ignore))
+			((eof "toto")
+			 (set! n (+ (the-length) n))
+			 (set! neof (+ 1 neof))
+			 (ignore))
+			((eol "toto")
+			 (set! n (+ (the-length) n))
+			 (set! neol (+ 1 neol))
+			 (ignore))
+			((bol "toto")
+			 (set! nbol (+ 1 nbol))
+			 (ignore))
+			("toto"
+			 (set! n (+ (the-length) n)) 
+			 (ignore))
+			((+ lettre)
+			 (set! n (+ (the-length) n)) 
+			 (ignore))
+			(else
+			 (the-failure)))))
+	 (labels ((run (port)
+                     (let loop ((r (read/rp grammar port)))
+                        (if (eof-object? r)
+                            (list ncontext ntiti neol nbol neof n)
+                            (loop (read/rp grammar port))))))
+            (call-with-input-string "titi
+titi
+toto titi et oui toto
+toto toto
+titi
+titi
+toto titi et oui toto
+toto"
+               run))))
+   :expected '(3 3 3 3 1 66))
+
+(define-test rgc-eval
+   (begin
+      (eval '(begin (define *char* 0)
+              (define *line* 0)
+              (define *word* 0)
+              (define g
+                 (regular-grammar ()
+                    ((+ #\Newline)
+                     (set! *char* (+fx *char* (the-length)))
+                     (set! *line* (+fx *line* (the-length)))
+                     'keep)
+                    ((+ (in #\space #\tab))
+                     (set! *char* (+fx *char* (the-length)))
+                     'keep)
+                    ((+ (out #\newline #\space #\tab))
+                     (set! *char* (+fx *char* (the-length)))
+                     (set! *word* (+fx 1 *word*))
+                     'keep)
+                    (else
+                     (the-failure))))))
+      (eval '(let ((p (open-input-string #"toto \ntiti \ntutu")))
+              (let loop ((exp (read/rp g p)))
+                 (if (eof-object? exp)
+                     (list *char* *line* *word*)
+                     (loop (read/rp g p)))))))
+   :expected '(16 2 3))
+
+;*---------------------------------------------------------------------*/
+;*    test-unread ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (test-read-chars bufsize strsize)
+   (let ((p (if (number? bufsize)
+		(open-input-file rgc.filename bufsize)
+		(open-input-file rgc.filename))))
+      (unwind-protect
+	 (let loop ((str (read-chars strsize p))
+		    (acc '()))
+	    (if (or (eof-object? str) (string=? str ""))
+		(apply string-append (reverse! acc))
+		(loop (read-chars strsize p)
+		      (cons str acc))))
+	 (close-input-port p))))
+
+(define (test-read-chars2 n bf of)
+   (let ((p (open-input-file rgc.filename bf)))
+      (when (> of 0) (read-chars of p))
+      (unwind-protect
+	 (begin
+	    (read-chars n p)
+	    (input-port-position p))
+	 (close-input-port p))))
+      
+(define (test-read-chars3 n bf of)
+   (let ((p (open-input-file rgc.filename bf)))
+      (when (> of 0) (read-chars of p))
+      (unwind-protect
+	 (let* ((s1 (read-chars (* 2 n) p))
+		(s2 (read-chars (* 2 n) p)))
+	    (string-append s1 s2))
+	 (close-input-port p))))
+      
+(define (test-read-chars4 n bf of)
+   (let ((p (open-input-file rgc.filename bf)))
+      (when (> of 0) (read-chars of p))
+      (unwind-protect
+	 (read-chars (* 2 n) p)
+	 (close-input-port p))))
+
+(define (test-read-chars5 s)
+   (with-input-from-string s
+      (lambda ()
+	 (let loop ((buf (read-chars 2))
+		    (old #f))
+	    (if (eof-object? buf)
+		old
+		(loop (read-chars 2) buf))))))
+
+(define-test test-unread
+   (string-case ",1"
+      ((: #\, #\1)
+       (unread-char! (string-ref (the-string) 1) (the-port))
+       (read (the-port))))
+   :expected 1)
+
+(let ((res (test-read-chars #f 8192)))
+   (define-test read-chars (test-read-chars 10 1)
+      :expected res)
+   (define-test read-chars (test-read-chars 10 2)
+      :expected res)
+   (define-test read-chars (test-read-chars 10 8)
+      :expected res)
+   (define-test read-chars (test-read-chars 10 9)
+      :expected res)
+   (define-test read-chars (test-read-chars 10 10)
+      :expected res)
+   (define-test read-chars (test-read-chars 10 11)
+      :expected res)
+   (define-test read-chars (test-read-chars 10 111)
+      :expected res)
+   (define-test read-chars2 (test-read-chars2 3 3 0)
+      :expected 3)
+   (define-test read-chars2 (test-read-chars2 3 3 3)
+      :expected 6)
+   (define-test read-chars2 (test-read-chars2 3 10 3)
+      :expected 6)
+   (define-test read-chars3 (test-read-chars3 3 3 0)
+      :expected (test-read-chars4 6 3 0))
+   (define-test read-chars3 (test-read-chars3 3 3 10)
+      :expected (test-read-chars4 6 3 10))
+   (define-test read-chars3 (test-read-chars3 10 3 10)
+      :expected (test-read-chars4 20 3 10))
+   (define-test read-chars3 (test-read-chars3 10 3 0)
+      :expected (test-read-chars4 20 3 0))
+   (define-test read-chars5 (test-read-chars5 "123")
+      :expected "3")
+   (define-test read-chars5 (test-read-chars5 "12")
+      :expected "12")
+   (define-test read-chars5 (test-read-chars5 "1")
+      :expected "1"))
+
+;*---------------------------------------------------------------------*/
+;*    insertion                                                        */
+;*---------------------------------------------------------------------*/
+(define-test unread-string-readchars
+   (let* ((p (open-input-string "123456789"))
+          (dummy1 (unread-string! "ab" p))
+          (str1 (read-chars 3 p)) ;; ab1
+          (dummy2 (unread-string! "cdefghijklmnop" p))
+          (str2 (read-chars 4 p)) ;; cdef
+          (str3 (read-chars 10 p)) ;; g-p
+          (str4 (read-chars 5 p)) ;; 23456
+          (dummy3 (unread-string! "qr" p))
+          (str5 (read-string p)) ;; qr789
+          (c-ready? (char-ready? p))
+          (dummy4 (unread-string! "st" p))
+          (str6 (read-chars 1 p)) ;; s
+          (c-ready?2 (char-ready? p))
+          (str7 (read-chars 1 p)) ;; t
+          (c-ready?3 (char-ready? p))
+          (str8 (read p)))
+      (and (equal? str1 "ab1")
+           (equal? str2 "cdef")
+           (equal? str3 "ghijklmnop")
+           (equal? str4 "23456")
+           (equal? str5 "qr789")
+           (not c-ready?)
+           (equal? str6 "s")
+           c-ready?2
+           (equal? str7 "t")
+           (not c-ready?3)
+           (eof-object? str8)))
+   :expected #t)
+
+(define-test unread-string-read
+   (let* ((p (open-input-string "a 1 #\\x \"str\""))
+          (dummy0 (unread-string! " " p))
+          (c0 (read-char p)) ;; space
+          (dummy0b (unread-string! "" p))
+          (sym (read p))     ;; a
+          ;(dummy0c (tprint (read-char p)))
+          (dummy1 (unread-string! "b" p))
+          (sym2 (read p)) ;; b
+          (dummy2 (begin
+                     (read-char p) ;; the space
+                     (unread-string! "2" p)))
+          (nb (read p)) ;; 21
+          (char (read p))
+          (dummy3 (unread-string! "\"\"" p))
+          (str1 (read p))
+          (dummy4 (begin
+                     (read-char p) ;; the space
+                     (unread-string! "#\\" p)))
+          (char2 (read p)) ;; #\"
+          (dummy5 (unread-string! "\"" p))
+          (str2 (read p)))
+      ;(tprint sym " " sym2 " " nb " " char " " str1 " " char2 " " str2)
+      (and (equal? c0 #\space)
+           (eq? sym 'a)
+           (eq? sym2 'b)
+           (=fx nb 21)
+           (char=? char #\x)
+           (string=? str1 "")
+           (char=? char2 #\")
+           (string=? str2 "str")))
+   :expected #t)
+
+(define-test unread-string-read
+   (let* ((p (open-input-string "a 1 #\\x \"str\""))
+          (dummy0 (unread-char! #\space p))
+          (c0 (read-char p)) ;; space
+          (sym (read p))     ;; a
+          (dummy1 (unread-char! #\b p))
+          (sym2 (read p)) ;; b
+          (dummy2 (begin
+                     (read-char p) ;; the space
+                     (unread-char! #\2 p)))
+          (nb (read p)) ;; 21
+          (char (read p))
+          (dummy3 (begin
+                     (unread-char! #\" p)
+                     (unread-char! #\" p)))
+          (str1 (read p))
+          (dummy4 (begin
+                     (read-char p) ;; the space
+                     (unread-char! #\\ p)
+                     (unread-char! #\# p)))
+          (char2 (read p)) ;; #\"
+          (dummy5 (unread-char! #\" p))
+          (str2 (read p)))
+      ;(tprint sym " " sym2 " " nb " " char " " str1 " " char2 " " str2)
+      (and (equal? c0 #\space)
+           (eq? sym 'a)
+           (eq? sym2 'b)
+           (=fx nb 21)
+           (char=? char #\x)
+           (string=? str1 "")
+           (char=? char2 #\")
+           (string=? str2 "str")))
+   :expected #t)
+
+(define-test unread-char-readchars
+   (let* ((p (open-input-string "123456789"))
+          (dummy1 (unread-char! #\a p))
+          (str1 (read-chars 2 p)) ;; a1
+          (dummy2 (unread-char! #\c p))
+          (str2 (read-chars 1 p))) ;; c
+      (and (equal? str1 "a1")
+           (equal? str2 "c")))
+   :expected #t)
+
+(define-test unread-substring-readchars
+   (let* ((p (open-input-string "123456789"))
+          (dummy1 (unread-substring! "0ab1" 1 3 p))
+          (str1 (read-chars 3 p)) ;; ab1
+          (dummy2 (unread-substring! "1234cdefghijklmnop11" 4 18 p))
+          (str2 (read-chars 4 p)) ;; cdef
+          (str3 (read-chars 10 p)) ;; g-p
+          (str4 (read-chars 5 p)) ;; 23456
+          (dummy3 (unread-substring! "qr1" 0 2 p))
+          (str5 (read-string p)) ;; qr789
+          (c-ready? (char-ready? p))
+          (dummy4 (unread-substring! "0st" 1 3 p))
+          (str6 (read-chars 1 p)) ;; s
+          (c-ready?2 (char-ready? p))
+          (str7 (read-chars 1 p)) ;; t
+          (c-ready?3 (char-ready? p))
+          (str8 (read p)))
+      (and (equal? str1 "ab1")
+           (equal? str2 "cdef")
+           (equal? str3 "ghijklmnop")
+           (equal? str4 "23456")
+           (equal? str5 "qr789")
+           (not c-ready?)
+           (equal? str6 "s")
+           c-ready?2
+           (equal? str7 "t")
+           (not c-ready?3)
+           (eof-object? str8)))
+   :expected #t)
+
+(define-test unread-substring-read
+   (let* ((p (open-input-string "a 1 #\\x \"str\""))
+          (dummy0 (unread-substring! "1 2" 1 2 p))
+          (c0 (read-char p)) ;; space
+          (dummy0b (unread-substring! "1234" 2 2 p))
+          (sym (read p))     ;; a
+          ;(dummy0c (tprint (read-char p)))
+          (dummy1 (unread-substring! "1b2222" 1 2 p))
+          (sym2 (read p)) ;; b
+          (dummy2 (begin
+                     (read-char p) ;; the space
+                     (unread-substring! "02" 1 2 p)))
+          (nb (read p)) ;; 21
+          (char (read p))
+          (dummy3 (unread-substring! "\"\"124332" 0 2 p))
+          (str1 (read p))
+          (dummy4 (begin
+                     (read-char p) ;; the space
+                     (unread-substring! "1234567890#\\" 10 12 p)))
+          (char2 (read p)) ;; #\"
+          (dummy5 (unread-substring! "\"" 0 1 p))
+          (str2 (read p)))
+      ;(tprint sym " " sym2 " " nb " " char " " str1 " " char2 " " str2)
+      (and (equal? c0 #\space)
+           (eq? sym 'a)
+           (eq? sym2 'b)
+           (=fx nb 21)
+           (char=? char #\x)
+           (string=? str1 "")
+           (char=? char2 #\")
+           (string=? str2 "str")))
+   :expected #t)
+
+(define-test unread-substring-error1
+   (with-handler
+      (lambda (e) #t)
+      (let ((p (open-input-string "A")))
+         (unread-substring! "" 0 2 p)
+         #f))
+   :expected #t)
+
+(define-test unread-substring-error2
+   (with-handler
+      (lambda (e) #t)
+      (let ((p (open-input-string "A")))
+         (unread-substring! "aoeu" -1 0 p)
+         #f))
+   :expected #t)
+
+(define-test unread-substring-error3
+   (with-handler
+      (lambda (e) #t)
+      (let ((p (open-input-string "A")))
+         (unread-substring! "oaeu" 2 0 p)
+         #f))
+   :expected #t)
+
+(define-test unread-substring-error4
+   (with-handler
+      (lambda (e) #t)
+      (let ((p (open-input-string "A")))
+         (close-input-port p)
+         (unread-substring! "oaeu" 0 2 p)
+         #f))
+   :expected #t)

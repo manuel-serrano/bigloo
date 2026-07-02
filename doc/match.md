@@ -6,7 +6,7 @@
 <!--    Last change :                                                 -->
 <!--    Copyright   :  2026 manuel serrano                            -->
 <!--    -----------------------------------------------------------   -->
-<!--    Modules                                                       -->
+<!--    Pattern Matching                                              -->
 <!--==================================================================-->
 
 ,(implementation-path "../runtime/Match/mexpand.scm")

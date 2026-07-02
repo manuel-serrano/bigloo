@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Sun Jun 28 17:12:58 2026 (serrano)                */
+;*    Last change :  Wed Jul  1 16:00:15 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -452,7 +452,8 @@
            "if" "when" "unless"
 	   "begin" "cond" "case" "instantiate" "duplicate" "co-instantiate"
            "set!" "else" "with-access" "widen!" "shrink!" "call-next-method"
-	   "multiple-value-bind" "values" "match-case" "match-lambda"))
+	   "multiple-value-bind" "values" "match-case" "match-lambda"
+           "regular-grammar" "lalr-grammar"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "important"))
 	 '("try" "with-handler" "unwind-protect"

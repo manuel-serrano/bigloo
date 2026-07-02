@@ -1,0 +1,127 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/lalr.bgl              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Thu Jul  2 05:41:10 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing lalr                                                     */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    lalr                                                             */
+;*---------------------------------------------------------------------*/
+(module lalr
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "lalr" tests))
+      (test-all verbose "lalr")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test lalr-grammar
+   (lalr-grammar
+      ((left: op-mult op-div)
+       (left: op-add op-sub)
+       op-lparen op-rparen
+       op-semicolon
+       number)
+      
+      (file
+         (())
+         ((file stmt)))
+      (stmt
+         ((expr op-semicolon) (print expr)))
+      (expr
+         ((number) number)
+         ((expr@a op-add expr@b) (+ a b))
+         ((expr@a op-sub expr@b) (- a b))
+         ((expr@a op-mult expr@b) (* a b))
+         ((expr@a op-div expr@b) (/ a b))
+         ((op-lparen expr op-rparen) expr)))
+   :expected procedure?)
+
+(define-test read/lalr
+   (let ((rg (regular-grammar ((number (posix "[0-9]+"))
+                               (whitespace (+ (in "\r\n\t \v\f"))))
+                (number (cons 'number (the-fixnum)))
+                (whitespace (ignore))
+                (#\+ 'op-add)
+                (#\- 'op-sub)
+                (#\* 'op-mult)
+                (#\/ 'op-div)
+                (#\( 'op-lparen)
+                (#\) 'op-rparen)
+                (#\; 'op-semicolon)))
+         (lg (lalr-grammar
+                (op-mult op-div
+                   op-add op-sub
+                   op-lparen op-rparen
+                   op-semicolon
+                   number)
+                
+                (file
+                   (())
+                   ((file stmt) stmt))
+                (stmt
+                   ((expr op-semicolon) expr))
+                (expr
+                   ((number) number)
+                   ((expr@a op-add expr@b) (+ a b))
+                   ((expr@a op-sub expr@b) (- a b))
+                   ((expr@a op-mult expr@b) (* a b))
+                   ((expr@a op-div expr@b) (/ a b))
+                   ((op-lparen expr op-rparen) expr)))))
+      (call-with-input-string "3*2+5-2*5;"
+         (lambda (in)
+            (read/lalrp lg rg in))))
+   :expected -9)
+
+(define-test read/lalr
+   (let ((rg (regular-grammar ((number (posix "[0-9]+"))
+                               (whitespace (+ (in "\r\n\t \v\f"))))
+                (number (cons 'number (the-fixnum)))
+                (whitespace (ignore))
+                (#\+ 'op-add)
+                (#\- 'op-sub)
+                (#\* 'op-mult)
+                (#\/ 'op-div)
+                (#\( 'op-lparen)
+                (#\) 'op-rparen)
+                (#\; 'op-semicolon)))
+         (lg (lalr-grammar
+                ((left: op-mult op-div)
+                 (left: op-add op-sub)
+                 op-lparen op-rparen
+                 op-semicolon
+                 number)
+                
+                (file
+                   (())
+                   ((file stmt) stmt))
+                (stmt
+                   ((expr op-semicolon) expr))
+                (expr
+                   ((number) number)
+                   ((expr@a op-add expr@b) (+ a b))
+                   ((expr@a op-sub expr@b) (- a b))
+                   ((expr@a op-mult expr@b) (* a b))
+                   ((expr@a op-div expr@b) (/ a b))
+                   ((op-lparen expr op-rparen) expr)))))
+   
+      (call-with-input-string "3*2+5-2*5;"
+         (lambda (in)
+            (read/lalrp lg rg in))))
+   :expected 1)
+
