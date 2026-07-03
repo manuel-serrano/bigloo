@@ -14,6 +14,7 @@
 ,(implementation-path "../runtime/Ieee/port.scm")
 ,(implementation-path "../runtime/Ieee/output.scm")
 ,(implementation-path "../runtime/Ieee/input.scm")
+,(implementation-path "../runtime/Llib/binary.scm")
 ,(implementation-path "../runtime/Read/reader.scm")
 ,(implementation-path "../runtime/Pp/circle.scm")
 ,(implementation-path "../runtime/Pp/pp.scm")
@@ -292,5 +293,41 @@ symbol.
 As a particular example and the reference implementation for the `#\x2c()`
 convention, this SRFI describes an interpretation of the `#\x2c()` external
 form as a read-time application.
+
+Binary I/O
+----------
+
+### input-char ###
+The function `input-char` reads a single character from a 
+`binary-port`. It returns the read character or the `end-of-file`
+object.
+
+### input-string ###
+Reads a string from a binary `port` of
+maximum length `len`. It returns a newly allocated string whose length
+is possibly smaller than `len`. 
+
+### input-fill-string! ###
+Fills a string with characters read from a binary `port` with at most
+the length of `string`. The function returns the number of filled 
+characters.
+@end deffn
+
+### input-obj ###
+<!-- [:@NoTest-C-jvm-wasm] -->
+See chapter [Serialization](./serial.html).
+
+### output-char ###
+Writes a character to a binary `port`.
+
+### output-byte ###
+Writes a byte to a binary `port`.
+
+### output-string ###
+The function `output-string` writes a string into a binary `port`.
+
+### output-obj ###
+<!-- [:@NoTest-C-jvm-wasm] -->
+See chapter [Serialization](./serial.html).
 
 

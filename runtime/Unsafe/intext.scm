@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/intext.scm      */
+;*    serrano/bigloo/5.0.x/runtime/Unsafe/intext.scm                   */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Thu Jul  2 18:29:44 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 08:00:37 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -106,7 +106,7 @@
 	    (get-procedure-serialization)
 	    
 	    (register-process-serialization! ::procedure ::procedure)
-	    (get-procedure-serialization)
+	    (get-process-serialization)
 	    
 	    (register-opaque-serialization! ::procedure ::procedure)
 	    (get-opaque-serialization)
@@ -160,7 +160,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string->obj@ ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (string->obj s #!optional extension unserialize-arg)
+(define (string->obj s::bstring #!optional extension unserialize-arg)
    
    ;; *pointer*
    (define *pointer* 0)
@@ -644,7 +644,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn obj->string@ ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (obj->string obj #!optional mark-arg)
+(define (obj->string::bstring obj #!optional mark-arg)
    (let* ((table (create-hashtable
 		    :eqtest (lambda (a b)
 			       (cond
@@ -1379,7 +1379,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    register-custom-serialization! ...                               */
 ;*---------------------------------------------------------------------*/
-(define (register-custom-serialization! ident serializer unserializer)
+(define (register-custom-serialization! ident::bstring serializer::procedure unserializer::procedure)
    (let ((cell (assoc ident *custom-serialization*)))
       (unless (pair? cell)
 	 (let ((proc (case (procedure-arity serializer)
@@ -1424,7 +1424,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-custom-serialization ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (get-custom-serialization ident)
+(define (get-custom-serialization ident::bstring)
    (let ((cell (assoc ident *custom-serialization*)))
       (if (pair? cell)
 	  (values (cadr cell) (caddr cell))
@@ -1447,7 +1447,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn register-procedure-serialization!@ ...                    */
 ;*---------------------------------------------------------------------*/
-(define (register-procedure-serialization! serializer unserializer)
+(define (register-procedure-serialization! serializer::procedure unserializer::procedure)
    (set! *procedure->string* serializer)
    (set! *string->procedure* unserializer))
    
@@ -1455,8 +1455,8 @@
 ;*    @deffn get-procedure-serialization@ ...                          */
 ;*---------------------------------------------------------------------*/
 (define (get-procedure-serialization)
-   (cons *procedure->string* *string->procedure*))
-   
+   (values *procedure->string* *string->procedure*))
+
 ;*---------------------------------------------------------------------*/
 ;*    *process->string* ...                                            */
 ;*---------------------------------------------------------------------*/
@@ -1582,7 +1582,7 @@
 ;*---------------------------------------------------------------------*/
 (define (get-class-serialization class)
    (let* ((hash (class-hash class))
-	  (cell (assq hash *class-serialization*)))
+	  (cell (assv hash *class-serialization*)))
       (if (pair? cell)
 	  (values (cadr cell) (caddr cell))
 	  (values #f #f))))

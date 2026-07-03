@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/test/src/serial.bgl            */
+;*    serrano/bigloo/5.0.x/test/src/serial.bgl                         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Thu Jul  2 18:18:16 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 07:55:05 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing serials                                                  */
@@ -30,7 +30,31 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
-'(define-test flonum (string->obj (obj->string 0.5))
+(define-test obj->string
+   (obj->string (cons 1 2))
+   :expected string?)
+
+(define-class SPoint x y)
+
+(define-class SPoint3D::SPoint z)
+
+(define-test obj->string
+   (let ((o (list (vector 1 2.3 "foo" 'bar #t #f #unspecified #z55))))
+      (equal? o (string->obj (obj->string o)))))
+
+(define-test obj->string
+   (let ((o (list (instantiate::SPoint3D (x 0) (y 0) (z 0)))))
+      (equal? o (string->obj (obj->string o)))))
+
+(define-test string->obj
+   (let* ((s "foo")
+          (p (cons s s))
+          (o (list p p))
+          (no (string->obj (obj->string o))))
+      (and (eq? (caar o) (cdar o))
+           (eq? (caadr o) (cdadr o)))))
+
+(define-test flonum (string->obj (obj->string 0.5))
    :expected real?)
 
 (let ((o '(#s8:0 #s8:1 #s8:-1 #u8:0 #u8:1 #u8:250
@@ -75,3 +99,111 @@
                       (pair? c)
                       (eq? (car d) ptr2)
                       (eqv? (cdr d) 3)))))))
+
+;*---------------------------------------------------------------------*/
+;*    custom serializers                                               */
+;*---------------------------------------------------------------------*/
+(define-test register-procedure-serialization!
+   (multiple-value-bind (serializer unserializer)
+      (get-procedure-serialization)
+      (let ((env '()))
+         (register-procedure-serialization!
+            (lambda (p)
+               (let ((id (symbol->string (gensym))))
+                  (set! env (cons (cons id p) env))
+                  id))
+            (lambda (id)
+               (cdr (assoc id env))))
+         (unwind-protect
+            (car (string->obj (obj->string (list (lambda (x) x)))))
+            (register-procedure-serialization! serializer unserializer))))
+   :expected procedure?)
+
+(define-test get-procedure-serialization
+   (multiple-value-bind (serializer unserializer)
+      (get-procedure-serialization)
+      (and (procedure? serializer) (procedure? unserializer))))
+
+(define-test register-class-serialization!
+   (begin
+      (register-class-serialization! SPoint
+         (lambda (o::SPoint)
+            (vector (-> o x) (-> o y)))
+         (lambda (o v)
+            (instantiate::SPoint
+               (x (vector-ref o 0))
+               (y (vector-ref o 1)))))
+      (isa? (string->obj
+               (obj->string
+                  (instantiate::SPoint (x 1) (y 2))))
+         SPoint)))
+
+(define-test register-class-serialization!
+   (begin
+      (register-class-serialization! SPoint
+         (lambda (o::SPoint)
+            (vector (-> o x) (-> o y)))
+         (lambda (o v)
+            (instantiate::SPoint
+               (x (vector-ref o 0))
+               (y (vector-ref o 1)))))
+      (isa? (string->obj
+               (obj->string
+                  (instantiate::SPoint3D (x 1) (y 2) (z 20))))
+         SPoint)))
+
+(define-test register-class-serialization!
+   (begin
+      (register-class-serialization! SPoint3D
+         (lambda (o::SPoint3D)
+            (vector (-> o x) (-> o y) (-> o z)))
+         (lambda (o v)
+            (instantiate::SPoint3D
+               (x (+ v (vector-ref o 0)))
+               (y (+ v (vector-ref o 1)))
+               (z (+ v (vector-ref o 2))))))
+      (let ((o::SPoint3D (string->obj
+                            (obj->string
+                               (instantiate::SPoint3D (x 1) (y 2) (z 3)))
+                            #unspecified 100)))
+         (-> o x)))
+   :expected 101)
+
+(define-test get-class-serialization
+   (multiple-value-bind (serializer unserializer)
+      (get-class-serialization SPoint)
+      (and (procedure? serializer) (procedure? unserializer))))
+
+;*---------------------------------------------------------------------*/
+;*    io                                                               */
+;*---------------------------------------------------------------------*/
+(define-test output-obj
+   (let* ((f (make-file-name (os-tmp)
+               (format "bigloo-test-~a" (current-microseconds))))
+          (o (open-output-binary-file f)))
+      (unwind-protect
+         (begin
+            (output-obj o (list f f))
+            #t)
+         (begin
+            (close-binary-port o)
+            (delete-file f)))))
+
+(define-test input-obj
+   (let* ((f (make-file-name (os-tmp)
+               (format "bigloo-test-~a" (current-microseconds))))
+          (val (list f 1 '#(3.4) 'foo bar:))
+          (out (open-output-binary-file f)))
+      (unwind-protect
+         (output-obj out val)
+         (close-binary-port out))
+      (let ((in (open-input-binary-file f)))
+         (unwind-protect
+            (equal? val (input-obj in))
+            (begin
+               (close-binary-port in)
+               (delete-file f))))))
+
+
+
+

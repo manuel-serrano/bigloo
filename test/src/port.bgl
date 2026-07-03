@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/test/src/port.bgl               */
+;*    serrano/bigloo/5.0.x/test/src/port.bgl                           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Sat May  2 16:23:09 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 08:44:04 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing ports                                                    */
@@ -256,6 +256,12 @@
    :expected #t)
 (define-test port? (port? (open-output-string))
    :expected #t)
+(define-test port?
+   (let ((p (open-input-binary-file "/dev/null")))
+      (unwind-protect
+         (port? p)
+         (close-binary-port p)))
+   :expected #f)
 
 (define-test call-with-input-file
    (call-with-input-file "misc/input.txt"
@@ -626,4 +632,53 @@
                 (delete-file path)))))
       (else #t))
    :expected #t)
-              
+
+;*---------------------------------------------------------------------*/
+;*    binary ports                                                     */
+;*---------------------------------------------------------------------*/
+(define-test binary-port? (binary-port? (current-output-port))
+   :expected #f)
+(define-test binary-port?
+   (let ((p (open-input-binary-file port.filename)))
+      (unwind-protect
+         (binary-port? p)
+         (close-binary-port p))))
+
+(define-test open-input-binary-file
+   (let ((p (open-input-binary-file port.filename)))
+      (unwind-protect
+         (binary-port? p)
+         (close-binary-port p))))
+
+(define-test open-output-binary-file
+   (let ((p (open-output-binary-file "/dev/null")))
+      (unwind-protect
+         (binary-port? p)
+         (close-binary-port p))))
+
+(define-test append-output-binary-file
+   (let ((p (append-output-binary-file "/dev/null")))
+      (unwind-protect
+         (binary-port? p)
+         (close-binary-port p))))
+
+(define-test close-binary-port
+   (begin
+      (close-binary-port (open-input-binary-file "/dev/null"))
+      #t))
+
+(define-test flush-binary-port
+   (let ((p (open-output-binary-file "/dev/null")))
+      (unwind-protect
+         (begin
+            (output-char p #\a)
+            (flush-binary-port p)
+            #t)
+         (close-binary-port p))))
+
+
+   
+                             
+
+   
+                             

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/binary.scm         */
+;*    serrano/bigloo/5.0.x/runtime/Llib/binary.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  7 10:38:25 1994                          */
-;*    Last change :  Thu Jul 17 14:30:37 2025 (serrano)                */
+;*    Last change :  Fri Jul  3 08:46:32 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Les entrees/sorties compactees des objets Scheme (eventuellement */
 ;*    circulaires).                                                    */
@@ -135,37 +135,37 @@
 ;*---------------------------------------------------------------------*/
 ;*    binary-port? ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (binary-port? obj)
+(define-inline (binary-port?::bool obj)
    ($binary-port? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-output-binary-file ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (open-output-binary-file str)
-   ($open-output-binary-file str))
+(define (open-output-binary-file path::bstring)
+   ($open-output-binary-file path))
 
 ;*---------------------------------------------------------------------*/
 ;*    append-output-binary-file ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (append-output-binary-file str)
-   ($append-output-binary-file str))
+(define (append-output-binary-file path::bstring)
+   ($append-output-binary-file path))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-binary-file ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (open-input-binary-file str)
-   ($open-input-binary-file str))
+(define (open-input-binary-file path::bstring)
+   ($open-input-binary-file path))
 
 ;*---------------------------------------------------------------------*/
 ;*    close-binary-port ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (close-binary-port port)
+(define-inline (close-binary-port port::binary-port)
    ($close-binary-port port))
 
 ;*---------------------------------------------------------------------*/
 ;*    flush-binary-port ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (flush-binary-port port)
+(define-inline (flush-binary-port port::binary-port)
    ($flush-binary-port port))
 
 ;*---------------------------------------------------------------------*/
@@ -183,19 +183,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    output-char ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-char port char)
-   ($output-char port char))
+(define-inline (output-char port::binary-port c::char)
+   ($output-char port c))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-byte ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-byte port char)
-   ($output-byte port char))
+(define-inline (output-byte port::binary-port n::byte)
+   ($output-byte port n))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-char ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-char port)
+(define-inline (input-char port::binary-port)
    (let ((char ($input-char port)))
       (if ($int-eof? char)
 	  beof
@@ -204,17 +204,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    output-string ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (output-string port string)
+(define-inline (output-string port::binary-port string::bstring)
    ($output-string port string))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-string ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-string port len)
+(define-inline (input-string::bstring port::binary-port len::int)
    ($input-string port len))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-fill-string! ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (input-fill-string! port str)
+(define-inline (input-fill-string!::int port::binary-port str::bstring)
    ($input-fill-string port str))

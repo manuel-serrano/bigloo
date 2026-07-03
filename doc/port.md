@@ -14,6 +14,7 @@
 ,(implementation-path "../runtime/Ieee/port.scm")
 ,(implementation-path "../runtime/Ieee/output.scm")
 ,(implementation-path "../runtime/Ieee/input.scm")
+,(implementation-path "../runtime/Llib/binary.scm")
 ,(implementation-path "../runtime/Unsafe/gunzip.scm")
 ,(implementation-path "../runtime/Unsafe/ftp.scm")
 ,(example-path "../test/src/port.bgl")
@@ -198,7 +199,6 @@ For the the optional argument `bufinfo` see [buffers](#buffers).
 
 See also chapter [Zip](./zip.html).
 
-
 ### open-input-zlib-port ###
 Open a port on a zlib stream for input.
 Note that closing a zlib port opened from a port `pi` does not close
@@ -208,10 +208,15 @@ For the the optional argument `bufinfo` see [buffers](#buffers).
 
 See also chapter [Zip](./zip.html).
 
-
 ### open-input-ftp-file ###
 Returns an `input-port` able to deliver characters from a
 remote file located on a FTP server.
+
+### open-input-binary-file ###
+Returns a `binary-port` open for reading byte from `path`. Returns `#f`
+if `path` cannot be opened.
+
+See also chapter [Serialization](./serial.html).
 
 ### open-output-file ###
 The same syntax as `open-input-file` for file names applies here.
@@ -244,6 +249,14 @@ is called on such a port, the optional `close` procedure is invoked.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
+### open-output-binary-file ###
+Opens an output binary port on `path`. Returns `#f` if the port cannot be
+opened.
+
+### append-output-binary-file ###
+Opens for concanatetion an output binary port on `path`. Returns `#f`
+if the port cannot be opened.
+
 ### open-pipes ###
 Opens a bi-directional pipes. Returns two values, an `input-port` and
 an `output-port`. The optional argument `name` is only used for
@@ -273,6 +286,10 @@ Predicates
 ### port? ###
 Returns `#t` if `obj` is any kind of ports. Returns `#f` otherwise.
 
+> [!WARNING] Regular ports, i.e., input and output ports are distinguished
+> from binary ports. As such a `port?` returns `#f` when passed a binary
+> port.
+
 ### input-port? ###
 Returns `#t` iff `obj` is an `input-port`. Returns `#f` otherwise.
 
@@ -286,6 +303,9 @@ Returns `#t` iff `obj` is an `output-port`. Returns `#f` otherwise.
 ### output-string-port? ###
 Returns `#t` iff `obj` is an `output-port` opened on a string. Returns
 `#f` otherwise.
+
+### binary-port? ###
+Returns `#t` iff `obj` is a binary port.
 
 ### closed-input-port? ###
 Predicates that returns `#t` if and only if its argument is closed.
@@ -400,10 +420,16 @@ Closes an `output-port`. If it was created using
 `open-output-string`, the value returned is the string consisting
 of all characters sent to the port.
 
+### close-binary-port ###
+Closes a `binary-port`.
+
 ### flush-output-port ###
-Flushes the output port @var{output-port}. It
+Flushes the output port `output-port`. It
 _does not_ reset characters accumulated in string port. For this
 uses, `reset-output-port`.
+
+### flush-binary-port ###
+Flushes the output binary.
 
 ### reset-output-port ###
 This function is equivalent to `flush-output-port` but in addition,
