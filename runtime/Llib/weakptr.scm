@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/weakptr.scm        */
+;*    serrano/bigloo/5.0.x/runtime/Llib/weakptr.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Stephane Epardaud                                 */
 ;*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-;*    Last change :  Wed Sep 24 10:00:59 2025 (serrano)                */
+;*    Last change :  Fri Jul  3 09:53:45 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Weak pointers.                                                   */
 ;*=====================================================================*/
@@ -83,38 +83,39 @@
 ;*---------------------------------------------------------------------*/
 ;*    weakptr? ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (weakptr? obj)
+(define-inline (weakptr?::bool obj)
    ($weakptr? obj))
+
+;*---------------------------------------------------------------------*/
+;*    make-weakptr ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-inline (make-weakptr::weakptr o #!optional ref)
+   ($make-weakptr o ref))
 
 ;*---------------------------------------------------------------------*/
 ;*    weakptr-data ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (weakptr-data obj)
+(define-inline (weakptr-data obj::weakptr)
    ($weakptr-data obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    weakptr-data-set! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (weakptr-data-set! ptr obj)
+(define-inline (weakptr-data-set! ptr::weakptr obj)
    ($weakptr-data-set! ptr obj)
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    weakptr-ref ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (weakptr-ref obj)
+(define-inline (weakptr-ref obj::weakptr)
    ($weakptr-ref obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    weakptr-ref-set! ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (weakptr-ref-set! ptr obj)
+(define-inline (weakptr-ref-set! ptr::weakptr obj)
    ($weakptr-ref-set! ptr obj)
    #unspecified)
 
-;*---------------------------------------------------------------------*/
-;*    make-weakptr ...                                                 */
-;*---------------------------------------------------------------------*/
-(define-inline (make-weakptr o #!optional ref)
-   ($make-weakptr o ref))
 

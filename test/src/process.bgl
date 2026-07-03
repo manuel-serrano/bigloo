@@ -1,0 +1,320 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/process.bgl           */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Fri Jul  3 15:54:25 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing Child Processes                                          */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    processes                                                        */
+;*---------------------------------------------------------------------*/
+(module processes
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "process" tests))
+      (test-all verbose "process")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test process?
+   (process?
+      (run-process (bigloo-config 'bigloo)
+         "-eval"
+         "(exit 1)"
+         wait: #t)))
+
+(define-test process-alive?
+   (let ((p (run-process (bigloo-config 'bigloo)
+                  "-q"
+                  "-eval"
+                  "(begin (read) (exit 0))"
+                  input: pipe:
+                  wait: #f)))
+      (unwind-protect
+         (process-alive? p)
+         (display "#t\n" (process-input-port p)))))
+
+(define-test run-process
+   (let* ((proc (run-process (bigloo-config 'bigloo)
+                   "-eval"
+                   "(begin (print (+ 41 27)) (exit 1))"
+                   wait: #t
+                   output: pipe:))
+          (proc-output (process-output-port proc))
+          (line (read-line proc-output)))
+      (close-input-port proc-output)
+      (list (process-alive? proc)
+         (process-exit-status proc)
+         line))
+   :expected '(#f 1 "68"))
+
+(define-test output:file
+   (let ((temp-filename "process.output.tmp"))
+      (delete-file temp-filename)
+      (unwind-protect
+         (let ((proc (run-process (bigloo-config 'bigloo)
+                        "-eval"
+                        "(begin (print (- 27 95)) (exit 2))"
+                        wait: #t
+                        output: temp-filename)))
+            (call-with-input-file temp-filename
+               (lambda (port)
+                  (list (process-alive? proc)
+                     (process-exit-status proc)
+                     (read-line port)))))
+         (if (file-exists? temp-filename)
+             (delete-file temp-filename))))
+   :expected '(#f 2 "-68"))
+
+(define-test error:pipe
+   (let* ((proc (run-process (bigloo-config 'bigloo)
+                   "-eval"
+                   "(begin (fprint (current-error-port) (* 68 2)) (exit 3))"
+                   wait: #t
+                   error: pipe:))
+          (proc-error (process-error-port proc))
+          (line (read-line proc-error)))
+      (close-input-port proc-error)
+      (list (process-alive? proc) (process-exit-status proc) line))
+   :expected '(#f 3 "136"))
+
+(define-test error:file
+   (let ((temp-filename "process.error.tmp"))
+      (delete-file temp-filename)
+      (unwind-protect
+         (let ((proc (run-process (bigloo-config 'bigloo)
+                        "-eval"
+                        "(begin (fprint (current-error-port) (* 68 -2)) (exit 4))"
+                        wait: #t
+                        error: temp-filename)))
+            (call-with-input-file temp-filename
+               (lambda (port)
+                  (list (process-alive? proc)
+                     (process-exit-status proc)
+                     (read-line port)))))
+         (if (file-exists? temp-filename)
+             (delete-file temp-filename))))
+   :expected '(#f 4 "-136"))
+
+(define-test input:file
+   (let ((temp-filename "process.input.tmp"))
+      (delete-file temp-filename)
+      (unwind-protect
+         (begin
+            (call-with-output-file temp-filename
+               (lambda (port)
+                  (fprint port "(* 68 -3)")))
+            (let* ((proc (run-process (bigloo-config 'bigloo)
+                            "-eval"
+                            "(begin (print (eval (read))) (exit 5))"
+                            wait: #t
+                            input: temp-filename
+                            output: pipe:))
+                   (proc-output (process-output-port proc))
+                   (line (read-line proc-output))
+                   (close-input-port proc-output))
+               (list (process-alive? proc)
+                  (process-exit-status proc)
+                  line)))
+         (if (file-exists? temp-filename)
+             (delete-file temp-filename))))
+   :expected '(#f 5 "-204"))
+
+(define-test input:pipe
+   (let* ((proc (run-process (bigloo-config 'bigloo)
+                   "-eval"
+                   "(let ((e (read))) (print (eval e)) (exit 6))"
+                   wait: #f
+                   input: pipe:
+                   output: pipe:))
+          (proc-input (process-input-port proc))
+          (proc-output (process-output-port proc)))
+      (fprint proc-input "(* 68 3)")
+      (close-output-port proc-input)
+      (let ((line (read-line proc-output)))
+         (process-wait proc)
+         (close-input-port proc-output)
+         (list (process-alive? proc)
+            (process-exit-status proc)
+            line)))
+   :cond-expand (or C jvm)
+   :expected '(#f 6 "204"))
+
+(define-test &io-timeout-error
+   (let* ((proc  (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (sleep 4)"
+                    output: pipe:))
+          (output (process-output-port proc)))
+      (input-port-timeout-set! output 1000)
+      (let ((result (with-handler
+                       (lambda (e)
+                          (isa? e &io-timeout-error))
+                       (begin
+                          (read-lines output)
+                          #f))))
+         (close-input-port output)
+         (process-wait proc)
+         result))
+   :cond-expand (not (or bigloo-jvm bigloo-wasm)))
+
+(define-test env
+   (let* ((proc (run-process (bigloo-config 'bigloo)
+                   "-eval"
+                   "(begin (print (getenv \"foo\")) (exit 7))"
+                   wait: #t
+                   output: pipe:
+                   env: "foo=bar"))
+          (proc-output (process-output-port proc))
+          (line (read-line proc-output)))
+      (close-input-port proc-output)
+      (list (process-alive? proc)
+         (process-exit-status proc)
+         line))
+   :cond-expand (not (or bigloo-jvm bigloo-wasm))
+   :expected '(#f 7 "bar"))
+
+(define-test kill
+   (let ((proc (run-process (bigloo-config 'bigloo)
+                  "-eval"
+                  "(define (loop n) (when (>fx n 0) (sleep 100) (loop (-fx n 1)))) (loop 100)"
+                  wait: #f)))
+      (list (process-alive? proc)
+         (begin (sleep 500) (process-kill proc) (sleep 500) '-)
+         '-))
+   :expected '(#t - -))
+
+(define-test close-process-ports
+   (let ((p (run-process (bigloo-config 'bigloo)
+               "-eval"
+               "(exit 1)"
+               wait: #t)))
+      (close-process-ports p)
+      #t))
+
+(define-test process-pid
+   (process-pid (run-process (bigloo-config 'bigloo) "-eval" "(exit 1)"))
+   :expected integer?)
+
+(define-test process-input-port
+   (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"
+               output: null:
+               input: pipe:)))
+      (unwind-protect
+         (process-input-port p)
+         (process-kill p)))
+   :cond-expand (or C jvm)
+   :expected output-port?)
+
+(define-test process-output-port
+   (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"
+               output: null:
+               input: pipe:)))
+      (unwind-protect
+         (process-output-port p)
+         (process-kill p)))
+   :cond-expand (or C jvm)
+   :expected input-port?)
+
+(define-test process-error-port
+   (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"
+               error: null:
+               output: null:
+               input: pipe:)))
+      (unwind-protect
+         (process-error-port p)
+         (process-kill p)))
+   :cond-expand (or C jvm)
+   :expected input-port?)
+
+(define-test process-wait
+   (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(exit 0)"
+               error: null:
+               output: null:
+               input: pipe:)))
+      (process-wait p))
+   :cond-expand (or C jvm)
+   :expected boolean?)
+
+(define-test process-exit-status
+   (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(exit 4)"
+               error: null:
+               output: null:
+               input: pipe:)))
+      (process-wait p)
+      (process-exit-status p))
+   :cond-expand (or C jvm)
+   :expected 4)
+
+(define-test process-send-signal
+   (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"
+               output: null:
+               input: pipe:)))
+      (process-send-signal p sigint)
+      #t)
+   :cond-expand C)
+
+(define-test process-kill
+   (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"
+               output: null:
+               input: pipe:)))
+      (process-kill p)
+      #t))
+
+(define-test process-stop
+   (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"
+               output: null:
+               input: pipe:
+               wait: #f)))
+      (unwind-protect
+         (begin
+            (process-stop p)
+            #t)
+         (process-kill p)))
+   :cond-expand C)
+
+(define-test process-continue
+   (let ((p (run-process (bigloo-config 'bigloo)
+               output: null:
+               input: pipe:
+               wait: #f)))
+      (process-stop p)
+      (process-continue p)
+      (display "(exit 0)\n" (process-input-port p))
+      (flush-output-port (process-input-port p))
+      (process-wait p)
+      #t)
+   :cond-expand C)
+
+(define-test process-list
+   (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"
+               output: null:
+               input: pipe:
+               wait: #f)))
+      (unwind-protect
+         (process-list)
+         (process-kill p)))
+;;   :cond-expand (or C jvm)
+   :expected list?)
+
+(define-test process-list
+   (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(exit 0)"
+               output: null:
+               input: pipe:
+               wait: #f)))
+      (process-list))
+   :expected list?)
+
+   

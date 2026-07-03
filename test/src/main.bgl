@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Thu Jul  2 08:28:37 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 09:47:23 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -36,6 +36,7 @@
    (import "./os.bgl" . os)
    (import "./pair.bgl" . pair)
    (import "./port.bgl" . port)
+   (import "./process.bgl" . process)
    (import "./real.bgl" . real)
    (import "./rgc.bgl" . rgc)
    (import "./search.bgl" . search)
@@ -46,6 +47,7 @@
    (import "./thread.bgl" . thread)
    (import "./unicode.bgl" . unicode)
    (import "./vector.bgl" . vector)
+   (import "./weakptr.bgl" . weakptr)
    (import "./zip.bgl" . zip)
 
    ;; library tests
@@ -101,6 +103,7 @@
                          (os.test verbose tests)
                          (pair.test verbose tests)
                          (port.test verbose tests)
+                         (process.test verbose tests)
                          (real.test verbose tests)
                          (rgc.test verbose tests)
                          (search.test verbose tests)
@@ -111,6 +114,7 @@
                          (thread.test verbose tests)
                          (unicode.test verbose tests)
                          (vector.test verbose tests)
+                         (weakptr.test verbose tests)
                          (zip.test verbose tests)))
           (res-libs (list
                        (cond-expand

@@ -1,0 +1,60 @@
+;*=====================================================================*/
+;*    serrano/bigloo/5.0.x/test/src/weakptr.bgl                        */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Fri Jul  3 10:01:11 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing Weak Pointers                                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    weakptrs                                                         */
+;*---------------------------------------------------------------------*/
+(module weakptrs
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "weakptr" tests))
+      (test-all verbose "weakptr")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test weakptr? (weakptr? (make-weakptr 32)))
+(define-test weakptr? (weakptr? #f) :expected #f)
+(define-test weakptr? (weakptr? 32) :expected #f)
+(define-test weakptr? (weakptr? "foo") :expected #f)
+
+(define-test make-weakptr (make-weakptr 32 "foo")
+   :expected weakptr?)
+
+(define-test weakptr-data
+   (weakptr-data (make-weakptr 32))
+   :expected 32)
+
+(define-test weakptr-data-set!
+   (let ((ptr (make-weakptr 32)))
+      (weakptr-data-set! ptr 33)
+      (weakptr-data ptr))
+   :expected 33)
+
+(define-test weakptr-ref
+   (weakptr-ref (make-weakptr #f 32))
+   :expected 32)
+
+(define-test weakptr-ref-set!
+   (let ((ptr (make-weakptr 32)))
+      (weakptr-ref-set! ptr 33)
+      (weakptr-ref ptr))
+   :expected 33)
+

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/process.scm        */
+;*    serrano/bigloo/5.0.x/runtime/Llib/process.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Thu Jul 24 13:32:52 2025 (serrano)                */
+;*    Last change :  Fri Jul  3 10:12:04 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Process handling. This part is mostly compatible with            */
 ;*    STk. This code is extracted from STk by Erick Gallesio.          */
@@ -56,7 +56,7 @@
 	    ($run-process::process (::obj ::obj ::obj ::obj ::obj ::obj ::bstring ::obj ::obj)
 				    "c_run_process")
 	    ($unregister-process::obj (::process) "c_unregister_process")
-	    ($process-list::obj () "c_process_list")
+	    ($process-list::pair-nil () "c_process_list")
 	    ($process-nil::process () "bgl_process_nil"))
 
    (java    (class foreign
@@ -90,7 +90,7 @@
 		       "c_run_process")
 	       (method static $unregister-process::obj (::process)
 		       "c_unregister_process")
-	       (method static $process-list::obj ()
+	       (method static $process-list::pair-nil ()
 		       "c_process_list")))
    
    (export  (inline process?::bool ::obj)
@@ -106,7 +106,7 @@
 	    (inline process-kill::obj ::process)
 	    (inline process-stop::obj ::process)
 	    (inline process-continue::obj ::process)
-	    (inline process-list::obj)
+	    (inline process-list::pair-nil)
 	    (run-process::process ::bstring . rest)
 	    (close-process-ports ::process)
 	    (inline unregister-process ::process))
@@ -120,7 +120,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    process? ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (process? obj)
+(define-inline (process?::bool obj)
    ($process? obj))
 
 ;*---------------------------------------------------------------------*/
@@ -132,75 +132,75 @@
 ;*---------------------------------------------------------------------*/
 ;*    process-pid ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-pid proc)
+(define-inline (process-pid proc::process)
    ($process-pid proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-output-port ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-output-port proc)
+(define-inline (process-output-port proc::process)
    ($process-output-port proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-input-port ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-input-port proc)
+(define-inline (process-input-port proc::process)
    ($process-input-port proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-error-port ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-error-port proc)
+(define-inline (process-error-port proc::process)
    ($process-error-port proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-alive? ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-alive? proc)
+(define-inline (process-alive?::bool proc::process)
    ($process-alive? proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-wait ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-wait proc)
+(define-inline (process-wait proc::process)
    (if (process-alive? proc)
        ($process-wait proc)))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-exit-status ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-exit-status proc)
+(define-inline (process-exit-status proc::process)
    ($process-exit-status proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-send-signal ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-send-signal proc signal)
+(define-inline (process-send-signal proc::process signal::int)
    ($process-send-signal proc signal))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-kill ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-kill proc)
+(define-inline (process-kill proc::process)
    ($process-kill proc)
    (close-process-ports proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-stop ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-stop proc)
+(define-inline (process-stop proc::process)
    ($process-stop proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-continue ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-continue proc)
+(define-inline (process-continue proc::process)
    ($process-continue proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    process-list ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (process-list)
+(define-inline (process-list::pair-nil)
    ($process-list))
 
 ;*---------------------------------------------------------------------*/
@@ -209,7 +209,7 @@
 ;*    This function accepts keyworded arguments. E.g.                  */
 ;*      (run-process "ls" "-l" "/bin" output: "/tmp/X" wait: #f        */
 ;*---------------------------------------------------------------------*/
-(define (run-process command . rest)
+(define (run-process::process command::bstring . rest)
    (let ((fork   #t)
 	 (wait   #f)
 	 (input  #unspecified)
@@ -269,13 +269,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    close-process-ports ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (close-process-ports proc)
-   (if (output-port? (process-input-port proc))
-       (close-output-port (process-input-port proc)))
-   (if (input-port? (process-error-port proc))
-       (close-input-port (process-error-port proc)))
-   (if (input-port? (process-output-port proc))
-       (close-input-port (process-output-port proc))))
+(define (close-process-ports proc::process)
+   (when (output-port? (process-input-port proc))
+      (close-output-port (process-input-port proc)))
+   (when (input-port? (process-error-port proc))
+      (close-input-port (process-error-port proc)))
+   (when (input-port? (process-output-port proc))
+      (close-input-port (process-output-port proc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unregister-process ...                                           */

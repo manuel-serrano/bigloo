@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0.x/runtime/Llib/bconfigure.scm        */
+;*    serrano/bigloo/5.0.x/runtime/Llib/bconfigure.scm                 */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Fri Jun 26 07:12:25 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 10:21:36 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -270,6 +270,7 @@
      (c-linker-shared-option . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-linker-shared-option) (else $$configure-c-linker-shared-option)))
      (ld-library-dir . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-ld-library-dir) (else $$configure-ld-library-dir)))
      (library-directory . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-library-directory) (else $$configure-library-directory)))
+     (bigloo . ,(string-append (cond-expand ((or bigloo-c bigloo-jvm) $configure-binary-directory) (else $$configure-binary-directory)) "/bigloo"))
      (binary-directory . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-binary-directory) (else $$configure-binary-directory)))
      (non-custom-gc-directory . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-non-custom-gc-directory) (else $$configure-non-custom-gc-directory)))
      (zip-directory . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-zip-directory) (else $$configure-zip-directory)))

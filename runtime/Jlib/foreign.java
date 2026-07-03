@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/foreign.java      */
+/*    serrano/bigloo/5.0.x/runtime/Jlib/foreign.java                   */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Fri Jun 26 16:55:51 2026 (serrano)                */
+/*    Last change :  Fri Jul  3 11:19:40 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -4989,23 +4989,23 @@ public final class foreign {
    //////
    // SYSTEM and OS
    //////
-   public static final int PTR_ALIGNMENT = 2;
-   public static final int SIGHUP = 1;
-   public static final int SIGINT = 2;
-   public static final int SIGQUIT = 3;
-   public static final int SIGILL = 4;
-   public static final int SIGTRAP = 5;
-   public static final int SIGABRT = 6;
-   public static final int SIGBUS = 7;
-   public static final int SIGFPE = 8;
-   public static final int SIGKILL = 9;
-   public static final int SIGSEGV = 11;
-   public static final int SIGPIPE = 13;
-   public static final int SIGALRM = 14;
-   public static final int SIGTERM = 15;
-   public static final int SIGUSR1 = 16;
-   public static final int SIGUSR2 = 17;
-   public static final int SIGWINCH = 20;
+/*    public static final int PTR_ALIGNMENT = 2;                       */
+/*    public static final int SIGHUP = 1;                              */
+/*    public static final int SIGINT = 2;                              */
+/*    public static final int SIGQUIT = 3;                             */
+/*    public static final int SIGILL = 4;                              */
+/*    public static final int SIGTRAP = 5;                             */
+/*    public static final int SIGABRT = 6;                             */
+/*    public static final int SIGBUS = 7;                              */
+/*    public static final int SIGFPE = 8;                              */
+/*    public static final int SIGKILL = 9;                             */
+/*    public static final int SIGSEGV = 11;                            */
+/*    public static final int SIGPIPE = 13;                            */
+/*    public static final int SIGALRM = 14;                            */
+/*    public static final int SIGTERM = 15;                            */
+/*    public static final int SIGUSR1 = 16;                            */
+/*    public static final int SIGUSR2 = 17;                            */
+/*    public static final int SIGWINCH = 20;                           */
 
    public static int sigsetmask(int n) {
       return n;

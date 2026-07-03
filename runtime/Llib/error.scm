@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/error.scm         */
+;*    serrano/bigloo/5.0.x/runtime/Llib/error.scm                      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Jul  2 15:26:33 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 11:15:12 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -52,23 +52,6 @@
 	    (macro $set-error-notifiers!::obj (::obj) "BGL_ERROR_NOTIFIERS_SET")
 	    (macro $get-interrupt-notifier::obj () "BGL_INTERRUPT_NOTIFIER_GET")
 	    (macro $set-interrupt-notifier!::void (::obj) "BGL_INTERRUPT_NOTIFIER_SET")
-	    (macro sighup::int "SIGHUP")
-	    (macro sigquit::int "SIGQUIT")
-	    (macro sigill::int "SIGILL")
-	    (macro sigabrt::int "SIGABRT")
-	    (macro sigfpe::int "SIGFPE")
-	    (macro sigkill::int "SIGKILL")
-	    (macro sigbus::int "SIGBUS")
-	    (macro sigsegv::int "SIGSEGV")
-	    (macro sigpipe::int "SIGPIPE")
-	    (macro sigalrm::int "SIGALRM")
-	    (macro sigterm::int "SIGTERM")
-	    (macro sigint::int "SIGINT")
-	    (macro sigusr1::int "SIGUSR1")
-	    (macro sigusr2::int "SIGUSR2")
-	    (macro sigwinch::int "SIGWINCH")
-	    (macro sigtrap::int "SIGTRAP")
-	    
 	    (macro $foreign-typeof::string (::obj) "FOREIGN_TYPE_NAME")
 	    
 	    (macro $errno-type-error::int "BGL_TYPE_ERROR")
@@ -88,23 +71,6 @@
 	    (macro $errno-io-timeout-error::int "BGL_IO_TIMEOUT_ERROR")
 	    (macro $errno-io-connection-error::int "BGL_IO_CONNECTION_ERROR")
 	    (macro $errno-process-exception::int "BGL_PROCESS_EXCEPTION"))
-
-   (wasm    (sighup "(i32.const 1)")
-            (sigint "(i32.const 2)")
-	    (sigquit "(i32.const 3)")
-	    (sigill "(i32.const 4)")
-	    (sigtrap "(i32.const 5)")
-	    (sigabrt "(i32.const 6)")
-	    (sigbus "(i32.const 7)")
-	    (sigfpe "(i32.const 8)")
-	    (sigkill "(i32.const 9)")
-	    (sigusr1 "(i32.const 10)")
-	    (sigsegv "(i32.const 11)")
-	    (sigusr2 "(i32.const 12)")
-	    (sigpipe "(i32.const 13)")
-	    (sigalrm "(i32.const 14)")
-	    (sigterm "(i32.const 15)")
-	    (sigwinch "(i32.const 28)"))
 
    (java    (export the_failure "the_failure")
 	    (export error/errno "bgl_system_failure")
@@ -156,23 +122,6 @@
 		       "BGL_INTERRUPT_NOTIFIER_GET")
 	       (method static $set-interrupt-notifier!::void (::obj)
 		       "BGL_INTERRUPT_NOTIFIER_SET")
-	       
-	       (field static sighup::int "SIGHUP")
-	       (field static sigint::int "SIGINT")
-	       (field static sigquit::int "SIGQUIT")
-	       (field static sigill::int "SIGILL")
-	       (field static sigabrt::int "SIGABRT")
-	       (field static sigfpe::int "SIGFPE")
-	       (field static sigsegv::int "SIGSEGV")
-	       (field static sigalrm::int "SIGALRM")
-	       (field static sigbus::int "SIGBUS")
-	       (field static sigpipe::int "SIGPIPE")
-	       (field static sigterm::int "SIGTERM")
-	       (field static sigkill::int "SIGKILL")
-	       (field static sigusr1::int "SIGUSR1")
-	       (field static sigusr2::int "SIGUSR2")
-	       (field static sigwinch::int "SIGWINCH")
-	       (field static sigtrap::int "SIGTRAP")
 	       
 	       (field static $errno-type-error::int
 		      "BGL_TYPE_ERROR")

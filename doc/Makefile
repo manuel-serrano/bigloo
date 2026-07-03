@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Thu Jul  2 08:27:41 2026 (serrano)                */
+#*    Last change :  Fri Jul  3 09:46:51 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -38,8 +38,8 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
 MD = argsparse bigloo bool date hash error int io mmap net \
- number os pair parser port real serial ssl string symbol \
- tar thread vector zip \
+ number os pair parser port process real serial ssl string symbol \
+ tar thread vector weakptr zip \
  c jvm wasm \
  condexpand match module5 module4 object
 

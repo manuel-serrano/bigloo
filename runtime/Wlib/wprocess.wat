@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wprocess.wat       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/wprocess.wat      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Mon Jul 28 07:44:22 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Fri Jul  3 14:08:23 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM processes                                                   */
 ;*=====================================================================*/
@@ -325,9 +325,8 @@
 	 (call $xstatus (struct.get $process $proc (local.get $process))))
 
       (if (result (ref eq)) (i32.lt_s (local.get $status) (i32.const 0))
-	  (then (return (global.get $BFALSE)))
-	  (else (return (call $BINT (i64.extend_i32_u (local.get $status)))))))
-	     
+	  (then (return_call $BINT (i64.const 1)))
+	  (else (return_call $BINT (i64.extend_i32_u (local.get $status))))))
 
    (func $c_process_send_signal (export "c_process_send_signal")
       (param $process (ref $process))
@@ -358,6 +357,6 @@
 
    (func $c_process_list (export "c_process_list")
       (result (ref eq))
-      (return (global.get $BUNSPEC)))
+      (return (global.get $BNIL)))
 
    )

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Thu Jul  2 08:13:46 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 09:46:40 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -67,6 +67,7 @@
      ("os" . "os.html")
      ("pairs and lists" . "pair.html")
      ("ports" . "port.html")
+     ("processes" . "process.html")
      ("reals" . "real.html")
      ("serialization" . "serial.html")
      ("ssl" . "ssl.html")
@@ -75,6 +76,7 @@
      ("tar" . "tar.html")
      ("threads" . "thread.html")
      ("vectors" . "vector.html")
+     ("weak pointers" . "weakptr.html")
      ("zip" . "zip.html")))
 
 ;*---------------------------------------------------------------------*/

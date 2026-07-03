@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Sat Jun  6 08:46:17 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 13:21:15 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -960,6 +960,21 @@
 		 `(return_call_ref ,@args))
 		((@ ?loc call-ref . ?args)
 		 `(@ ,loc (return_call_ref ,@args)))
+		(((@ ?loc (if (result ?ty) ?test
+			     (then (cast ?ty (call . ?yes)))
+			     (else (cast ?ty (call_ref . ?no))))))
+		 `(@ ,loc
+		     (if ,test
+		      (return_call ,@yes)
+		      (return_call_ref ,@node))))
+		(((@ ?loc
+		    (if (result ?ty) ?test
+			(then (call . ?yes))
+			(else (call_ref . ?no)))))
+		 `(@ ,loc
+		     (if ,test
+			  (then (return_call ,@yes))
+			  (else (return_call_ref ,@no)))))
 		(else
 		 `(return ,@expr)))
 	     `(return ,@expr)))))

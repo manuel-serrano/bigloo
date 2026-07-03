@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sun May 31 09:12:26 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 13:55:28 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -19,12 +19,10 @@
 
    (extern  (export c-debug-repl "bgl_debug_repl")
 
-	    (reset-console!::obj (::obj) "reset_console")
-	    (macro sigint::int "SIGINT"))
+	    (reset-console!::obj (::obj) "reset_console"))
    
    (java    (class foreign
-	       (method static reset-console!::obj (::obj) "reset_console")
-	       (field static sigint::int "SIGINT")))
+	       (method static reset-console!::obj (::obj) "reset_console")))
  
    (import  __type
 	    __object

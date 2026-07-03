@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jun 26 07:50:03 2026 (serrano)                */
+/*    Last change :  Fri Jul  3 15:50:25 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -518,8 +518,11 @@ class BglNodeRuntime extends BglRuntime {
 	       }
 	    } else {
 	       res = { proc: spawn(cmd, args, opt), alive: 1 };
+	       res.proc.on('exit', (code, signal) => {
+		  res.alive = 0;
+		  res.status = code;
+	       });
 	       res.proc.on('close', code => {
-		  console.log("C=", code);
 		  res.alive = 0;
 		  res.status = code;
 	       });
@@ -528,7 +531,7 @@ class BglNodeRuntime extends BglRuntime {
 	    return res;
 	 },
 
-	 xstatus: proc => proc.status ? proc.status : -1,
+	 xstatus: proc => proc.status ? proc.status : 1,
 
 	 alive: proc => proc.alive,
 	 

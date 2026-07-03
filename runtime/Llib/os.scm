@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/os.scm            */
+;*    serrano/bigloo/5.0.x/runtime/Llib/os.scm                         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Fri Jun 26 16:52:59 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 11:13:00 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -57,6 +57,23 @@
 	    __r5_control_features_6_4)
    
    (extern  ($signal::obj (::int ::obj) "bgl_signal")
+            (macro $sighup::int "SIGHUP")
+	    (macro $sigquit::int "SIGQUIT")
+	    (macro $sigill::int "SIGILL")
+	    (macro $sigabrt::int "SIGABRT")
+	    (macro $sigfpe::int "SIGFPE")
+	    (macro $sigkill::int "SIGKILL")
+	    (macro $sigbus::int "SIGBUS")
+	    (macro $sigsegv::int "SIGSEGV")
+	    (macro $sigpipe::int "SIGPIPE")
+	    (macro $sigalrm::int "SIGALRM")
+	    (macro $sigterm::int "SIGTERM")
+	    (macro $sigint::int "SIGINT")
+	    (macro $sigusr1::int "SIGUSR1")
+	    (macro $sigusr2::int "SIGUSR2")
+	    (macro $sigwinch::int "SIGWINCH")
+	    (macro $sigtrap::int "SIGTRAP")
+
 	    (macro $sigsetmask::int (::int) "BGL_SIGSETMASK")
 	    ($get-signal-handler::obj (::int) "bgl_get_signal_handler")
 	    ($restore-signal-handlers::void () "bgl_restore_signal_handlers")
@@ -165,6 +182,7 @@
 	    (*the-executable-name* "(call $bgl_executable_name)"))
 
    (java    (class foreign
+	       
 	       (field static *the-command-line*::obj
 		  "command_line")
 	       (field static *the-executable-name*::string
@@ -242,6 +260,24 @@
 	 "bigloo.os"))
    
    (export  (signal num::int ::obj)
+            
+            sighup
+	    sigquit
+	    sigill
+	    sigabrt
+	    sigfpe
+	    sigkill
+	    sigbus
+	    sigsegv
+	    sigpipe
+	    sigalrm
+	    sigterm
+	    sigint
+	    sigusr1
+	    sigusr2
+	    sigwinch
+	    sigtrap
+
 	    (get-signal-handler::obj ::int)
 	    (inline sigsetmask::int ::int)
 	    
@@ -371,6 +407,26 @@
        (error "signal" "Wrong number of arguments" proc))
       (else
        ($signal num proc))))
+
+;*---------------------------------------------------------------------*/
+;*    signals                                                          */
+;*---------------------------------------------------------------------*/
+(define sighup (cond-expand (bigloo-c $sighup) (else 1)))
+(define sigint (cond-expand (bigloo-c $sigint) (else 2)))
+(define sigquit (cond-expand (bigloo-c $sigquit) (else 3)))
+(define sigill (cond-expand (bigloo-c $sigill) (else 4)))
+(define sigtrap (cond-expand (bigloo-c $sigtrap) (else 5)))
+(define sigabrt (cond-expand (bigloo-c $sigabrt) (else 6)))
+(define sigbus (cond-expand (bigloo-c $sigbus) (else 7)))
+(define sigfpe (cond-expand (bigloo-c $sigfpe) (else 8)))
+(define sigkill (cond-expand (bigloo-c $sigkill) (else 9)))
+(define sigsegv (cond-expand (bigloo-c $sigsegv) (else 11)))
+(define sigpipe (cond-expand (bigloo-c $sigpipe) (else 13)))
+(define sigalrm (cond-expand (bigloo-c $sigalrm) (else 14)))
+(define sigterm (cond-expand (bigloo-c $sigterm) (else 15)))
+(define sigusr1 (cond-expand (bigloo-c $sigusr1) (else 16)))
+(define sigusr2 (cond-expand (bigloo-c $sigusr2) (else 17)))
+(define sigwinch (cond-expand (bigloo-c $sigwinch) (else 20)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-signal-handler ...                                           */
