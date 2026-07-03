@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/runtime/Unsafe/base64.scm                    */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/base64.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 29 17:52:57 2004                          */
-;*    Last change :  Mon Feb 16 17:30:54 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 16:34:21 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    base64 encoding/decoding                                         */
@@ -68,7 +68,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    base64-encode ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (base64-encode s #!optional (padding 76))
+(define (base64-encode::bstring s::bstring #!optional (padding 76))
    (let* ((x 0)
 	  (y 0)
 	  (n 3)
@@ -127,7 +127,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    base64-encode-port ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (base64-encode-port ip op #!optional (padding 76))
+(define (base64-encode-port ip::input-port op::output-port #!optional (padding 76))
    (let ((pad (-fx padding 4)))
       (let loop ((i 0))
 	 (let ((i0 (read-byte ip)))
@@ -218,7 +218,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    base64-decode ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (base64-decode s #!optional eof-no-padding)
+(define (base64-decode::bstring s::bstring #!optional eof-no-padding)
    (let* ((len (actual-string-length s))
 	  (nlen (if eof-no-padding
 		    (*fx (+fx 1 (/fx len 4)) 3)
@@ -380,7 +380,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    base64-decode-port ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (base64-decode-port ip op #!optional eof-no-padding)
+(define (base64-decode-port ip::input-port op::output-port #!optional eof-no-padding)
    (read/rp base64-decode-grammar ip op (make-string 84) 0 84
       (lambda (c) #f) #t))
 

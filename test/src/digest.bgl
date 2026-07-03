@@ -1,0 +1,122 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/digest.bgl            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Fri Jul  3 16:46:38 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing digest                                                   */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    digest                                                           */
+;*---------------------------------------------------------------------*/
+(module digest
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "digest" tests))
+      (test-all verbose "digest")))
+
+;*---------------------------------------------------------------------*/
+;*    tests ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-test base64-encode
+   (let ((s "abcdef"))
+      (string=? (base64-decode (base64-encode s)) s)))
+
+(define-test base64-encode
+   (let ((s "abcdef"))
+      (string=? (base64-decode (base64-encode s 0)) s)))
+
+(define-test base64-encode
+   (let ((s "abcdef"))
+      (string=? (base64-encode s) s))
+   :expected #f)
+
+(define-test base64-decode
+   (let ((s "abcdefg"))
+      (string=? (base64-decode (base64-encode s)) s)))
+
+(define-test base64-decode
+   (let ((s "abcdefg"))
+      (string=? (base64-decode (base64-encode s 0)) s)))
+
+(define-test base64-decode
+   (let ((s "abcdefgh"))
+      (string=? (base64-decode (base64-encode s)) s)))
+
+(define-test base64-decode
+   (let ((s "abcdefgh"))
+      (string=? (base64-decode (base64-encode s 0)) s)))
+
+(define-test base64-encode
+   (let ((s "Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure."))
+      (base64-encode s))
+   :expected "TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlz\nIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2Yg\ndGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGlu\ndWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRo\nZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=")
+
+(define-test base64-decode
+   (let ((s "Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure."))
+      (string=? (base64-decode (base64-encode s)) s)))
+
+(define-test base64-decode
+   (let ((s "Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure."))
+      (string=? (base64-decode (base64-encode s 0)) s)))
+
+(define-test base64-decode
+   (let ((s "Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure."))
+      (let ((ip (open-input-string s))
+	    (op (open-output-string)))
+         (base64-encode-port ip op)
+         (string=? (close-output-port op) (base64-encode s)))))
+
+(define-test base64-encode-port
+   (let ((s "Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure."))
+      (let ((ip (open-input-string s))
+	    (op (open-output-string)))
+         (begin
+            (base64-encode-port ip op)
+	       (let* ((ip (open-input-string (close-output-port op)))
+		      (op (open-output-string)))
+		  (base64-decode-port ip op)
+		  (string=? (close-output-port op) s))))))
+
+(define-test base64-decode-port
+   (let ((s "Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure."))
+      (let ((ip (open-input-string s))
+	    (op (open-output-string)))
+	    (begin
+	       (base64-encode-port ip op)
+	       (let* ((ip (open-input-string (close-output-port op)))
+		      (s2 (read-string ip)))
+		  (string=? s (base64-decode s2)))))))
+
+(define-test base64-decode
+   (let ((s "Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure."))
+      (let* ((base64encode (lambda (obj)
+			      (base64-encode (obj->string obj))))
+	     (base64unencode (lambda (obj)
+				(string->obj (base64-decode obj))))
+	     (a (list->vector (iota 20 1 1)))
+	     (b (base64encode a))
+	     (c (base64unencode b)))
+         (equal? a c))))
+
+(define-test pem-read-file
+;*    (let ((file "string:-----BEGIN PRIVACY-ENHANCED MESSAGE-----     */
+;* Proc-Type: 4,ENCRYPTED                                              */
+;* DEK-Info: DES-CBC,F8143EDE5960C597                                  */
+;*                                                                     */
+;* SGVsbG8sIEJvYiE=                                                    */
+;* -----END PRIVACY-ENHANCED MESSAGE-----"))                           */
+   (pem-read-file "./scripts/recette-cert.pem")
+   :expected "toto")

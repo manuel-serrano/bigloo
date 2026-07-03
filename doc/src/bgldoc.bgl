@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Fri Jul  3 09:46:40 2026 (serrano)                */
+;*    Last change :  Fri Jul  3 16:16:17 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -57,6 +57,7 @@
      ("bigloo" . "bigloo.html")
      ("booleans" . "bool.html")
      ("dates" . "date.html")
+     ("digest & crc" . "digest.html")
      ("hash" . "hash.html")
      ("errors" . "error.html")
      ("integers" . "int.html")
