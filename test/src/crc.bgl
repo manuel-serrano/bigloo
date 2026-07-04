@@ -1,0 +1,538 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/crc.bgl               */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Sat Jul  4 08:59:15 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing crc                                                      */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    crc                                                              */
+;*---------------------------------------------------------------------*/
+(module crc
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "crc" tests))
+      (test-all verbose "crc")))
+
+(define-test crc-names
+   (crc-names)
+   :expected list?)
+
+(define-test crc-polynomial
+   (crc-polynomial (car (crc-names)))
+   :expected number?)
+
+(define-test crc-polynomial-le
+   (crc-polynomial (car (crc-names)))
+   :expected number?)
+
+(define-test crc-polynomial-be->le
+   (crc-polynomial-be->le 1 (crc-polynomial (car (crc-names))))
+   :expected number?)
+
+(define-test crc-length
+   (crc-length 'can-15)
+   :expected 15)
+      
+(define-test crc
+   (crc 'atm-8 "W" :big-endian? #f)
+   :expected #zx19)
+
+(define-test crc
+   (crc 'ieee-32 "0")
+   :expected #zxd4326d90)
+
+(define-test crc
+   (crc 'ieee-32 "0")
+   :expected  #zxd4326d90)
+
+(define-test crc
+   (crc 'ieee-32 "A")
+   :expected  #zx30476dc0)
+
+(define-test crc
+   (crc 'ieee-32 "the quick brown fox jumps over the lazy dog")
+    :expected #zx7cf3039d)
+
+(define-test crc
+   (crc 'ieee-32 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxf0269282)
+
+(define-test crc
+   (crc 'radix-64-24 "0")
+   :expected #zxc99f60)
+
+(define-test crc
+   (crc 'radix-64-24 "A")
+   :expected #zx9fef29)
+
+(define-test crc
+   (crc 'radix-64-24 "the quick brown fox jumps over the lazy dog")
+   :expected #zx70d45d)
+
+(define-test crc
+   (crc 'radix-64-24 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxff8015)
+
+(define-test crc
+   (crc 'ccitt-16 "0")
+   :expected #zx3653)
+
+(define-test crc
+   (crc 'ccitt-16 "A")
+   :expected #zx58e5)
+
+(define-test crc
+   (crc 'ccitt-16 "the quick brown fox jumps over the lazy dog")
+   :expected #zx7025)
+
+(define-test crc
+   (crc 'ccitt-16 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxf0cf)
+
+(define-test crc
+   (crc 'dnp-16 "0")
+   :expected #zx8f64)
+
+(define-test crc
+   (crc 'dnp-16 "A")
+   :expected #zx53)
+
+(define-test crc
+   (crc 'dnp-16 "the quick brown fox jumps over the lazy dog")
+   :expected #zx13e6)
+
+(define-test crc
+   (crc 'dnp-16 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx63ff)
+
+(define-test crc
+   (crc 'ibm-16 "0")
+   :expected #zxa0)
+
+(define-test crc
+   (crc 'ibm-16 "A")
+   :expected #zx186)
+
+(define-test crc
+   (crc 'ibm-16 "the quick brown fox jumps over the lazy dog")
+   :expected #zxb04c)
+
+(define-test crc
+   (crc 'ibm-16 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx8d99)
+
+(define-test crc
+   (crc '24 "0")
+   :expected #zxb8d16f)
+
+(define-test crc
+   (crc '24 "A")
+   :expected #zx6a182d)
+
+(define-test crc
+   (crc '24 "the quick brown fox jumps over the lazy dog")
+   :expected #zx695db)
+
+(define-test crc
+   (crc '24 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxa8853)
+
+(define-test crc
+   (crc '30 "0")
+   :expected #zx61739e0)
+
+(define-test crc
+   (crc '30 "A")
+   :expected #zx8148c0a)
+
+(define-test crc
+   (crc '30 "the quick brown fox jumps over the lazy dog")
+   :expected #zx2e093295)
+
+(define-test crc
+   (crc '30 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx349979c5)
+
+(define-test crc
+   (crc 'c-32 "0")
+   :expected #zxbf3c2b2)
+
+(define-test crc
+   (crc 'c-32 "A")
+   :expected #zxf1d2b3c6)
+
+(define-test crc
+   (crc 'c-32 "the quick brown fox jumps over the lazy dog")
+   :expected #zxdc57d5c1)
+
+(define-test crc
+   (crc 'c-32 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx8630ec48)
+
+(define-test crc
+   (crc 'k-32 "0")
+   :expected #zx8a222886)
+
+(define-test crc
+   (crc 'k-32 "A")
+   :expected #zxe7879e08)
+
+(define-test crc
+   (crc 'k-32 "the quick brown fox jumps over the lazy dog")
+   :expected #zx15725c85)
+
+(define-test crc
+   (crc 'k-32 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxa4ed801e)
+
+(define-test crc
+   (crc 'q-32 "0")
+   :expected #zx28283560)
+
+(define-test crc
+   (crc 'q-32 "A")
+   :expected #zx61e1cdb2)
+
+(define-test crc
+   (crc 'q-32 "the quick brown fox jumps over the lazy dog")
+   :expected #zxc14dda96)
+
+(define-test crc
+   (crc 'q-32 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxdcbe462e)
+
+(define-test crc
+   (crc 'itu-4 "0")
+   :expected #zxf)
+
+(define-test crc
+   (crc 'itu-4 "A")
+   :expected #zx4)
+
+(define-test crc
+   (crc 'itu-4 "the quick brown fox jumps over the lazy dog")
+   :expected #zx0)
+
+(define-test crc
+   (crc 'itu-4 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx1)
+
+(define-test crc
+   (crc 'epc-5 "0")
+   :expected #zxe)
+
+(define-test crc
+   (crc 'epc-5 "A")
+   :expected #zx6)
+
+(define-test crc
+   (crc 'epc-5 "the quick brown fox jumps over the lazy dog")
+   :expected #zx1a)
+
+(define-test crc
+   (crc 'epc-5 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxb)
+
+(define-test crc
+   (crc 'itu-5 "0")
+   :expected #zx1e)
+
+(define-test crc
+   (crc 'itu-5 "A")
+   :expected #zx1b)
+
+(define-test crc
+   (crc 'itu-5 "the quick brown fox jumps over the lazy dog")
+   :expected #zx0)
+
+(define-test crc
+   (crc 'itu-5 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxa)
+
+(define-test crc
+   (crc 'usb-5 "0")
+   :expected #zxb)
+
+(define-test crc
+   (crc 'usb-5 "A")
+   :expected #zx2)
+
+(define-test crc
+   (crc 'usb-5 "the quick brown fox jumps over the lazy dog")
+   :expected #zx1a)
+
+(define-test crc
+   (crc 'usb-5 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx6)
+
+(define-test crc
+   (crc 'itu-6 "0")
+   :expected #zx13)
+
+(define-test crc
+   (crc 'itu-6 "A")
+   :expected #zx6)
+
+(define-test crc
+   (crc 'itu-6 "the quick brown fox jumps over the lazy dog")
+   :expected #zx3c)
+
+(define-test crc
+   (crc 'itu-6 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx12)
+
+(define-test crc
+   (crc '7 "0")
+   :expected #zx2b)
+
+(define-test crc
+   (crc '7 "A")
+   :expected #zx6d)
+
+(define-test crc
+   (crc '7 "the quick brown fox jumps over the lazy dog")
+   :expected #zx21)
+
+(define-test crc
+   (crc '7 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx5b)
+
+(define-test crc
+   (crc 'atm-8 "0")
+   :expected #zx90)
+
+(define-test crc
+   (crc 'atm-8 "A")
+   :expected #zxc0)
+
+(define-test crc
+   (crc 'atm-8 "the quick brown fox jumps over the lazy dog")
+   :expected #zx6c)
+
+(define-test crc
+   (crc 'atm-8 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx96)
+
+(define-test crc
+   (crc 'ccitt-8 "0")
+   :expected #zx2d)
+
+(define-test crc
+   (crc 'ccitt-8 "A")
+   :expected #zxe1)
+
+(define-test crc
+   (crc 'ccitt-8 "the quick brown fox jumps over the lazy dog")
+   :expected #zxe7)
+
+(define-test crc
+   (crc 'ccitt-8 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxb)
+
+(define-test crc
+   (crc 'dallas/maxim-8 "0")
+   :expected #zxc5)
+
+(define-test crc
+   (crc 'dallas/maxim-8 "A")
+   :expected #zxc)
+
+(define-test crc
+   (crc 'dallas/maxim-8 "the quick brown fox jumps over the lazy dog")
+   :expected #zxf)
+
+(define-test crc
+   (crc 'dallas/maxim-8 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxd2)
+
+(define-test crc
+   (crc '8 "0")
+   :expected #zxf6)
+
+(define-test crc
+   (crc '8 "A")
+   :expected #zx48)
+
+(define-test crc
+   (crc '8 "the quick brown fox jumps over the lazy dog")
+   :expected #zxb8)
+
+(define-test crc
+   (crc '8 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxac)
+
+(define-test crc
+   (crc 'sae-j1850-8 "0")
+   :expected #zx4a)
+
+(define-test crc
+   (crc 'sae-j1850-8 "A")
+   :expected #zxe)
+
+(define-test crc
+   (crc 'sae-j1850-8 "the quick brown fox jumps over the lazy dog")
+   :expected #zx62)
+
+(define-test crc
+   (crc 'sae-j1850-8 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zxa7)
+
+(define-test crc
+   (crc '10 "0")
+   :expected #zx53)
+
+(define-test crc
+   (crc '10 "A")
+   :expected #zx2f7)
+
+(define-test crc
+   (crc '10 "the quick brown fox jumps over the lazy dog")
+   :expected #zx143)
+
+(define-test crc
+   (crc '10 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx3c3)
+
+(define-test crc
+   (crc '11 "0")
+   :expected #zx3d2)
+
+(define-test crc
+   (crc '11 "A")
+   :expected #zx6bd)
+
+(define-test crc
+   (crc '11 "the quick brown fox jumps over the lazy dog")
+   :expected #zx3)
+
+(define-test crc
+   (crc '11 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx11a)
+
+(define-test crc
+   (crc '12 "0")
+   :expected #zx1e0)
+
+(define-test crc
+   (crc '12 "A")
+   :expected #zx28a)
+
+(define-test crc
+   (crc '12 "the quick brown fox jumps over the lazy dog")
+   :expected #zx198)
+
+(define-test crc
+   (crc '12 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx5d4)
+
+(define-test crc
+   (crc 'can-15 "0")
+   :expected #zx76b9)
+
+(define-test crc
+   (crc 'can-15 "A")
+   :expected #zx365c)
+
+(define-test crc
+   (crc 'can-15 "the quick brown fox jumps over the lazy dog")
+   :expected #zx7d22)
+
+(define-test crc
+   (crc 'can-15 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx43a8)
+
+(define-test crc
+   (crc 'iso-64 "0")
+   :expected #zx2d0)
+
+(define-test crc
+   (crc 'iso-64 "A")
+   :expected #zx6db)
+
+(define-test crc
+   (crc 'iso-64 "the quick brown fox jumps over the lazy dog")
+   :expected #l-3548411528793318000)
+
+(define-test crc
+   (crc 'iso-64 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx313ebbd058a0626f)
+
+(define-test crc
+   (crc 'ecma-182-64 "0")
+   :expected #l-6176817727850508751)
+
+(define-test crc
+   (crc 'ecma-182-64 "A")
+   :expected #l-7424777729456334916)
+
+(define-test crc
+   (crc 'ecma-182-64 "the quick brown fox jumps over the lazy dog")
+   :expected #l-3362914373358366792)
+
+(define-test crc
+   (crc 'ecma-182-64 "the quick brown fox jumps over the lazy dog" :init -1 :final-xor -1)
+   :expected #zx2c6c6e457767a695)
+
+(define-test crc-string
+   (crc-string 'ieee-32 "the quick brown fox jumps over the lazy dog")
+    :expected #zx7cf3039d)
+
+(define-test crc-port
+   (call-with-input-string "the quick brown fox jumps over the lazy dog"
+      (lambda (in)
+         (crc-port 'ieee-32 in)))
+    :expected #zx7cf3039d)
+
+(define-test crc-mmap
+   (crc-mmap 'ieee-32 (string->mmap "the quick brown fox jumps over the lazy dog"))
+    :expected #zx7cf3039d)
+
+(define-test crc-file
+   (crc-file 'ieee-32
+      (make-file-path (dirname (dirname crc.filename))
+         "scripts" "ssl-fixtures.sh"))
+   :expected #z610157011)
+
+(define-test register-crc!
+   (begin
+      (register-crc! 'invalid 1337 55)
+      (crc-length 'invalid ))
+   :expected 55)
+
+(define-test crc-long
+   (crc-long #\a #xB704CE #x864CFB 24)
+   :expected 2582796051)
+
+(define-test crc-elong
+   (crc-long #\a #e432 #e143 24)
+   :expected #e1627488943)
+
+(define-test crc-llong
+   (crc-long #\a #l432 #l143 24)
+   :expected #l1627488943)
+
+(define-test crc-long-le
+   (crc-long-le #\a #xB704CE #x864CFB 24)
+   :expected 2641004)
+
+(define-test crc-elong-le
+   (crc-long-le #\a #e432 #e143 24)
+   :expected #e19)
+
+(define-test crc-llong-le
+   (crc-long-le #\a #l432 #l143 24)
+   :expected #l19)
