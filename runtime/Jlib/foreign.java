@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/runtime/Jlib/foreign.java                   */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/foreign.java      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Fri Jul  3 11:19:40 2026 (serrano)                */
+/*    Last change :  Sat Jul  4 10:12:30 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -617,7 +617,7 @@ public final class foreign {
       return (long)n;
    }
 
-   public static long INT64_TO_INT32(long n) {
+   public static int INT64_TO_INT32(long n) {
       return (int)n;
    }
 
