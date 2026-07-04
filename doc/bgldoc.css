@@ -777,7 +777,7 @@ pre.bnf .ebnf-comment {
     position: fixed;
     top: calc(var(--navHeight) + 4ex);
     bottom: 1ex;
-    right: 2em;
+    right: 1em;
     background: var(--chapterTocBackground);
     border: 1px solid var(--chapterTocBorder);
     font-size: 95%;

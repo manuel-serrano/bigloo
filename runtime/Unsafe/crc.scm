@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/crc.scm               */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/crc.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  3 12:03:10 2009                          */
-;*    Last change :  Tue Apr 17 07:53:43 2012 (serrano)                */
-;*    Copyright   :  2009-12 Manuel Serrano                            */
+;*    Last change :  Sat Jul  4 08:29:24 2026 (serrano)                */
+;*    Copyright   :  2009-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CRC                                                              */
 ;*=====================================================================*/
@@ -46,8 +46,8 @@
 	   __param)
    
    (export (crc-polynomial name)
-	   (crc-names)
-	   (crc-length name)
+	   (crc-names::pair)
+	   (crc-length::long name)
 	   (crc-polynomial-le name)
 	   (crc-polynomial-be->le len poly)
 	   (crc name obj #!key (init 0) (final-xor 0) (big-endian? #t))
@@ -61,7 +61,7 @@
 	   (inline crc-long-le::long c::char crc::long poly::long len::long)
 	   (inline crc-elong-le::elong c::char crc::elong poly::elong len::long)
 	   (inline crc-llong-le::llong c::char crc::llong poly::llong len::long)
-	   (register-crc! name poly len)))
+	   (register-crc! name poly len::long)))
 
 ;*---------------------------------------------------------------------*/
 ;*    crc-long ...                                                     */
@@ -81,12 +81,12 @@
 		crc
 		(let ((new-crc::long (bit-lsh crc 1)))
 		   (loop (+fx i 1)
-			 ;; bit-and m crc will be either 0 or 1<<len-1
-			 ;; we shift it back to 0 or 1 and multiply the
-			 ;; generator polynomial with it. -> no 'if'.
-			 (bit-xor (*fx (bit-rsh (bit-and m crc) (-fx len 1))
-				       poly)
-				  new-crc)))))))
+                      ;; bit-and m crc will be either 0 or 1<<len-1
+                      ;; we shift it back to 0 or 1 and multiply the
+                      ;; generator polynomial with it. -> no 'if'.
+                      (bit-xor (*fx (bit-rsh (bit-and m crc) (-fx len 1))
+                                  poly)
+                         new-crc)))))))
    (define (even-slower-crc)
       ;; we can't pre-xor as the remainder is smaller than 8 bits...
       (let* ((octet (char->integer c))
@@ -98,16 +98,16 @@
 	    (if (=fx i 8)
 		crc
 		(let* ((crc2 (bit-xor crc
-				      (bit-and m
-					       (bit-rsh shifted-value
-							8))))
+                                (bit-and m
+                                   (bit-rsh shifted-value
+                                      8))))
 		       (new-crc::long (bit-lsh crc2 1)))
 		   (loop (+fx i 1)
-			 (bit-xor (*fx (bit-rsh (bit-and m crc2)
-						(-fx len 1))
-				       poly)
-				  new-crc)
-			 (bit-lsh shifted-value 1)))))))
+                      (bit-xor (*fx (bit-rsh (bit-and m crc2)
+                                       (-fx len 1))
+                                  poly)
+                         new-crc)
+                      (bit-lsh shifted-value 1)))))))
    (if (>=fx len 8) ;; this if should be extremely well branch-predicted.
        (slow-crc)
        (even-slower-crc)))
@@ -274,7 +274,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    register-crc! ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (register-crc! name poly len)
+(define (register-crc! name poly len::long)
    (set! *crcs*
 	 (cons (list name len poly (crc-polynomial-be->le poly len)) *crcs*)))
 
@@ -295,14 +295,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    crc-length ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (crc-length name)
+(define (crc-length::long name)
    (let ((t (assq name *crcs*)))
-      (and t (cadr t))))
+      (if t (cadr t) 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    crc-names ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (crc-names)
+(define (crc-names::pair)
    (map car *crcs*))
 
 ;*---------------------------------------------------------------------*/

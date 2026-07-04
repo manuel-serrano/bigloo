@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/md5.scm               */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/md5.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  6 14:35:24 2005                          */
-;*    Last change :  Tue Jun 17 08:01:46 2014 (serrano)                */
-;*    Copyright   :  2002-14 Manuel Serrano                            */
+;*    Last change :  Sat Jul  4 06:41:12 2026 (serrano)                */
+;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MD5 encryption                                                   */
 ;*    -------------------------------------------------------------    */
@@ -62,7 +62,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    md5sum ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (md5sum obj)
+(define (md5sum::bstring obj)
    (cond
       ((mmap? obj)
        (md5sum-mmap obj))
@@ -76,7 +76,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    md5sum-file ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (md5sum-file fname)
+(define (md5sum-file::bstring fname::bstring)
    (let ((mm (open-mmap fname :write #f)))
       (unwind-protect
 	 (md5sum-mmap mm)
@@ -211,7 +211,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    md5sum-mmap ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (md5sum-mmap mm)
+(define (md5sum-mmap::bstring mm::mmap)
    (multiple-value-bind (len padding)
       (step1-2-mmap mm)
       (step3-4-5-mmap mm len padding)))
@@ -219,7 +219,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    md5sum-string ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (md5sum-string str)
+(define (md5sum-string::bstring str::bstring)
    (multiple-value-bind (len padding)
       (step1-2-string str (fixnum->elong (string-length str)))
       (step3-4-5-string str len padding)))
@@ -227,7 +227,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    md5sum-port ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (md5sum-port port)
+(define (md5sum-port::bstring port::input-port)
    (step3-4-1-2-5-port port))
 
 ;*---------------------------------------------------------------------*/
@@ -582,7 +582,7 @@
 ;*    See RFC2202 (http://tools.ietf.org/html/rfc2202) for             */
 ;*    hmac-md5 test case.                                              */
 ;*---------------------------------------------------------------------*/
-(define (hmac-md5sum-string key message)
+(define (hmac-md5sum-string::bstring key::bstring message::bstring)
    (hmac-string key message md5sum-string))
 
 ;*---------------------------------------------------------------------*/
@@ -591,7 +591,7 @@
 ;*    Challenge-Response Authentication Mechanism as specified in      */
 ;*    RFC 2195 (http://tools.ietf.org/html/rfc2195).                   */
 ;*---------------------------------------------------------------------*/
-(define (cram-md5sum-string user key data)
+(define (cram-md5sum-string::bstring user::bstring key::bstring data::bstring)
    ;; CRAM-MD5 digest suppose that you got base64-encoded data
    ;; and the result is base64-encoded
    (base64-encode

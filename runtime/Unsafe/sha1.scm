@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/sha1.scm              */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/sha1.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Wed Oct  7 11:51:14 2015 (serrano)                */
-;*    Copyright   :  2008-15 Manuel Serrano                            */
+;*    Last change :  Sat Jul  4 06:47:51 2026 (serrano)                */
+;*    Copyright   :  2008-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-1 Bigloo implementation                                      */
 ;*    -------------------------------------------------------------    */
@@ -250,7 +250,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha1sum-string ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (sha1sum-string str::bstring)
+(define (sha1sum-string::bstring str::bstring)
    
    ;; convert str into 512-bit/16-integer blocks arrays of integers
    (let* ((len::long (string-length str))
@@ -275,7 +275,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha1sum-mmap ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (sha1sum-mmap str::mmap)
+(define (sha1sum-mmap::bstring str::mmap)
    
    ;; convert str into 512-bit/16-integer blocks arrays of integers
    (let* ((len::long (mmap-length str))
@@ -300,7 +300,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha1sum-port ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (sha1sum-port ip::input-port)
+(define (sha1sum-port::bstring ip::input-port)
    
    ;; convert str into 512-bit/16-integer blocks arrays of integers
    (let ((buf::bstring (make-string 64)))
@@ -337,7 +337,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha1sum-file ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (sha1sum-file fname)
+(define (sha1sum-file::bstring fname::bstring)
    (let ((mm (open-mmap fname :write #f)))
       (if (mmap? mm)
 	  (unwind-protect
@@ -351,7 +351,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha1sum ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (sha1sum obj)
+(define (sha1sum::bstring obj)
    (cond
       ((mmap? obj)
        (sha1sum-mmap obj))
@@ -365,6 +365,6 @@
 ;*---------------------------------------------------------------------*/
 ;*    hmac-sha1sum-string ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (hmac-sha1sum-string key message)
+(define (hmac-sha1sum-string::bstring key::bstring message::bstring)
    (hmac-string key message sha1sum-string))
 

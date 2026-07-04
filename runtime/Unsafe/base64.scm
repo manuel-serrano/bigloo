@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 29 17:52:57 2004                          */
-;*    Last change :  Fri Jul  3 16:34:21 2026 (serrano)                */
+;*    Last change :  Sat Jul  4 06:11:08 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    base64 encoding/decoding                                         */
@@ -49,9 +49,7 @@
    (export (base64-encode::bstring ::bstring #!optional (padding 76))
 	   (base64-decode::bstring ::bstring #!optional eof-no-padding)
 	   (base64-encode-port ::input-port ::output-port  #!optional (padding 76))
-	   (base64-decode-port ::input-port ::output-port #!optional eof-no-padding)
-	   (pem-decode-port ::input-port ::output-port)
-	   (pem-read-file::bstring ::bstring)))
+	   (base64-decode-port ::input-port ::output-port #!optional eof-no-padding)))
 
 ;*---------------------------------------------------------------------*/
 ;*    base64-table ...                                                 */
@@ -384,71 +382,3 @@
    (read/rp base64-decode-grammar ip op (make-string 84) 0 84
       (lambda (c) #f) #t))
 
-;*---------------------------------------------------------------------*/
-;*    pem-markup-grammar ...                                           */
-;*---------------------------------------------------------------------*/
-(define pem-markup-grammar
-   (regular-grammar (count)
-      ((+ #\-)
-       (set! count (+fx (the-length) count))
-       (ignore))
-      ((: (+ #\-) #\Newline)
-       (-fx (the-length) 1))
-      ((+ (out #\- #\Newline #\Return))
-       (let* ((s (the-string))
-	      (counte (ignore)))
-	  (if (eq? count counte)
-	      s
-	      (raise (instantiate::&io-parse-error
-			(proc "pem-decode-port")
-			(msg "Illegal PEM markup")
-			(obj (list s count counte)))))))
-      (else
-       (let ((c (the-failure)))
-	  (raise (instantiate::&io-parse-error
-		    (proc "pem-decode-port")
-		    (msg "Illegal character in PEM markup")
-		    (obj (format "{~a}~a" c (read-line (the-port))))))))))
-
-;*---------------------------------------------------------------------*/
-;*    pem-decode-port ...                                              */
-;*---------------------------------------------------------------------*/
-(define (pem-decode-port ip op)
-   (define (hook start c)
-      ;; check the correctness of the closing markup
-      (if (not (char=? c #\-))
-	  (raise (instantiate::&io-parse-error
-		    (proc "pem-decode-port")
-		    (msg "Illegal character")
-		    (obj (format "{~a}~a" c (read-line ip)))))
-	  (let ((end (read/rp pem-markup-grammar ip 1)))
-	     (if (substring-at? end "END " 0)
-		 (if (string=? start (substring end 5 (string-length end)))
-		     #t
-		     (raise
-		      (instantiate::&io-parse-error
-			 (proc "pem-decode-port")
-			 (msg "PEM begin/end markup mismatch")
-			 (obj end))))))))
-   ;; read the PEM header
-   (let ((start (read/rp pem-markup-grammar ip 0)))
-      (if (substring-at? start "BEGIN " 0)
-	  (read/rp base64-decode-grammar ip op (make-string 84) 0 84
-		   (lambda (c)
-		      (hook (substring start 7 (string-length start)) c))
-		   #f)
-	  (raise
-	   (instantiate::&io-parse-error
-	      (proc "pem-decode-port")
-	      (msg "Illegal PEM begin markup")
-	      (obj start))))))
-
-;*---------------------------------------------------------------------*/
-;*    pem-read-file ...                                                */
-;*---------------------------------------------------------------------*/
-(define (pem-read-file file)
-   (let ((p (open-output-string)))
-      (with-input-from-file file
-	 (lambda ()
-	    (pem-decode-port (current-input-port) p)))
-      (close-output-port p)))

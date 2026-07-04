@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Fri Jul  3 16:46:38 2026 (serrano)                */
+;*    Last change :  Sat Jul  4 06:11:52 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing digest                                                   */
@@ -28,7 +28,7 @@
       (test-all verbose "digest")))
 
 ;*---------------------------------------------------------------------*/
-;*    tests ...                                                        */
+;*    base64 ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define-test base64-encode
    (let ((s "abcdef"))
@@ -111,12 +111,291 @@
 	     (c (base64unencode b)))
          (equal? a c))))
 
-(define-test pem-read-file
-;*    (let ((file "string:-----BEGIN PRIVACY-ENHANCED MESSAGE-----     */
-;* Proc-Type: 4,ENCRYPTED                                              */
-;* DEK-Info: DES-CBC,F8143EDE5960C597                                  */
-;*                                                                     */
-;* SGVsbG8sIEJvYiE=                                                    */
-;* -----END PRIVACY-ENHANCED MESSAGE-----"))                           */
-   (pem-read-file "./scripts/recette-cert.pem")
-   :expected "toto")
+;*---------------------------------------------------------------------*/
+;*    md5sum                                                           */
+;*---------------------------------------------------------------------*/
+(define-test md5sum
+   (md5sum "")
+   :expected "d41d8cd98f00b204e9800998ecf8427e")
+
+(define-test md5sum
+   (call-with-input-string "" md5sum)
+   :expected "d41d8cd98f00b204e9800998ecf8427e")
+
+(define-test md5sum
+   (md5sum (string->mmap ""))
+   :expected "d41d8cd98f00b204e9800998ecf8427e")
+
+(define-test md5sum-string (md5sum-string "")
+   :expected "d41d8cd98f00b204e9800998ecf8427e")
+
+(define-test md5sum-string
+   (md5sum-string "a")
+   :expected "0cc175b9c0f1b6a831c399e269772661")
+
+(define-test md5sum-string
+   (md5sum-string "abc")
+   :expected "900150983cd24fb0d6963f7d28e17f72")
+
+(define-test md5sum-string
+   (md5sum-string "message digest")
+   :expected "f96b697d7cb7938d525a2f31aaf161d0")
+
+(define-test md5sum-port
+   (call-with-input-string "abcdefghijklmnopqrstuvwxyz" md5sum-port)
+   :expected "c3fcd3d76192e4007dfb496cca67e13b")
+
+(define-test md5sum-port
+   (call-with-input-string "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" md5sum-port)
+   :expected "d174ab98d277d9f5a5611c2c9f419d9f")
+
+(define-test md5sum-mmap
+   (md5sum-mmap (string->mmap "12345678901234567890123456789012345678901234567890123456789012345678901234567890"))
+      :expected "57edf4a22be3c955ac49da2e2107b67a")
+
+(define-test hmac-md5sum-string
+   (hmac-md5sum-string (make-string 16 #a011) "Hi There")
+   :expected "9294727a3638bb1c13f48ef8158bfc9d")
+
+(define-test hmac-md5sum-string
+   (hmac-md5sum-string "Jefe" "what do ya want for nothing?")
+   :expected "750c783e6ab0b503eaa86e310a5db738")
+
+(define-test hmac-md5dum-string
+   (hmac-md5sum-string (make-string 16 #a170) (make-string 50 #a221))
+   :expected "56be34521d144c88dbb8c733f0e8b3f6")
+
+(define-test hmac-md5sum-string
+   (hmac-md5sum-string
+      (string-hex-intern "0102030405060708090a0b0c0d0e0f10111213141516171819")
+      (make-string 50 #a205))
+   :expected "697eaf0aca3a3aea3a75164746ffaa79")
+
+(define-test md5sum-file
+   (md5sum-file (make-file-path (dirname (dirname digest.filename))
+                   "scripts" "ssl-fixtures.sh"))
+   :expected "614a65a169d639da5ffea6ec7b111c95")
+
+(define-test hmac-md5sum-string
+   (hmac-md5sum-string (make-string 16 #a011) "Hi There") 
+   :expected "9294727a3638bb1c13f48ef8158bfc9d")
+
+(define-test cram-md5sum-string
+   (cram-md5sum-string "tim" "tanstaaftanstaaf"
+      (base64-encode "<1896.697170952@pop.example.com>"))
+   :expected "dGltIDllNTRjMGQ5NDE1OGUzN2YxMmExNzNjYzRjNTEzNmY3")
+
+;*---------------------------------------------------------------------*/
+;*    sha1                                                             */
+;*---------------------------------------------------------------------*/
+(define (test-sha1 str sum)
+   (and (string=? (sha1sum-string str) sum)
+        (string=? (call-with-input-string str sha1sum-port) sum)
+        (string=? (sha1sum-mmap (string->mmap str)) sum)))
+
+(define-test sha1sum
+   (sha1sum "")
+   :expected "da39a3ee5e6b4b0d3255bfef95601890afd80709")
+
+(define-test sha1sum
+   (call-with-input-string "" sha1sum)
+   :expected "da39a3ee5e6b4b0d3255bfef95601890afd80709")
+
+(define-test sha1sum
+   (sha1sum (string->mmap ""))
+   :expected "da39a3ee5e6b4b0d3255bfef95601890afd80709")
+
+(define-test sha1sum-string (sha1sum-string "")
+   :expected "da39a3ee5e6b4b0d3255bfef95601890afd80709")
+
+(define-test sha1sum-string
+   (sha1sum-string "a")
+   :expected "86f7e437faa5a7fce15d1ddcb9eaeaea377667b8")
+
+(define-test sha1sum-string
+   (sha1sum-string "abc")
+   :expected "a9993e364706816aba3e25717850c26c9cd0d89d")
+
+(define-test sha1sum-string
+   (sha1sum-string "message digest")
+   :expected "c12252ceda8be8994d5fa0290a47231c1d16aae3")
+
+(define-test sha1sum-port
+   (call-with-input-string "abcdefghijklmnopqrstuvwxyz" sha1sum-port)
+   :expected "32d10c7b8cf96570ca04ce37f2a19d84240d3a89")
+
+(define-test sha1sum-port
+   (call-with-input-string "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" sha1sum-port)
+   :expected "761c457bf73b14d27e9e9265c46f4b4dda11f940")
+
+(define-test sha1sum-mmap
+   (sha1sum-mmap (string->mmap "12345678901234567890123456789012345678901234567890123456789012345678901234567890"))
+      :expected "50abf5706a150990a08b2c5ea40fa0e585554732")
+
+(define-test sha1sum-file
+   (sha1sum-file (make-file-path (dirname (dirname digest.filename))
+                   "scripts" "ssl-fixtures.sh"))
+   :expected "2a561096bce0a4a8d9f78cc13c2d32439f593367")
+
+(define-test hmac-sha1sum-string
+   (hmac-sha1sum-string "secret" "message") 
+   :expected "0caf649feee4953d87bf903ac1176c45e028df16")
+
+(define-test sha1
+   (test-sha1 "abc"
+      "a9993e364706816aba3e25717850c26c9cd0d89d"))
+(define-test sha1
+   (test-sha1 "The quick brown fox jumps over the lazy dog"
+      "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12"))
+(define-test sha1
+   (test-sha1 "The quick brown fox jumps over the lazy cog"
+      "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3"))
+(define-test sha1
+   (test-sha1 (make-string 63 #\a)
+      "03f09f5b158a7a8cdad920bddc29b81c18a551f5"))
+(define-test sha1
+   (test-sha1 (make-string 64 #\a)
+      "0098ba824b5c16427bd7a1122a5a442a25ec644d"))
+(define-test sha1
+   (test-sha1 (make-string 65 #\a)
+      "11655326c708d70319be2610e8a57d9a5b959d3b"))
+(define-test sha1
+   (test-sha1 (make-string 127 #\a)
+      "89d95fa32ed44a7c610b7ee38517ddf57e0bb975"))
+(define-test sha1
+   (test-sha1 (make-string 128 #\a)
+      "ad5b3fdbcb526778c2839d2f151ea753995e26a0"))
+(define-test sha1
+   (test-sha1 (make-string 129 #\a)
+      "d96debf1bdcbc896e6c134ea76e8141f40d78536"))
+(define-test sha1
+   (test-sha1 "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+      "84983e441c3bd26ebaae4aa1f95129e5e54670f1"))
+(define-test sha1
+   (test-sha1 "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnop"
+      "47b172810795699fe739197d1a1f5960700242f1"))
+(define-test sha1
+   (test-sha1 "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopqr"
+      "e4690e96180cb89fdd79a3ba0f2a741224a50e62"))
+(define-test sha1
+   (test-sha1 ""
+      "da39a3ee5e6b4b0d3255bfef95601890afd80709"))
+(define-test sha1
+   (test-sha1 "The quick brown fox jumps over the lazy dog"
+      "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12"))
+(define-test sha1
+   (test-sha1 "The quick brown fox jumps over the lazy cog"
+      "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3"))
+
+;*---------------------------------------------------------------------*/
+;*    sha256                                                           */
+;*---------------------------------------------------------------------*/
+(define (test-sha256 str sum)
+   (and (string=? (sha256sum-string str) sum)
+        (string=? (call-with-input-string str sha256sum-port) sum)
+        (string=? (sha256sum-mmap (string->mmap str)) sum)))
+
+(define-test sha256sum
+   (sha256sum "")
+   :expected "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+
+(define-test sha256sum
+   (call-with-input-string "" sha256sum)
+   :expected "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+
+(define-test sha256sum
+   (sha256sum (string->mmap ""))
+   :expected "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+
+(define-test sha256sum-string (sha256sum-string "")
+   :expected "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+
+(define-test sha256sum-string
+   (sha256sum-string "a")
+   :expected "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb")
+
+(define-test sha256sum-string
+   (sha256sum-string "abc")
+   :expected "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+
+(define-test sha256sum-string
+   (sha256sum-string "message digest")
+   :expected "f7846f55cf23e14eebeab5b4e1550cad5b509e3348fbc4efa3a1413d393cb650")
+
+(define-test sha256sum-port
+   (call-with-input-string "abcdefghijklmnopqrstuvwxyz" sha256sum-port)
+   :expected "71c480df93d6ae2f1efad1447c66c9525e316218cf51fc8d9ed832f2daf18b73")
+
+(define-test sha256sum-port
+   (call-with-input-string "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" sha256sum-port)
+   :expected "db4bfcbd4da0cd85a60c3c37d3fbd8805c77f15fc6b1fdfe614ee0a7c8fdb4c0")
+
+(define-test sha256sum-mmap
+   (sha256sum-mmap (string->mmap "12345678901234567890123456789012345678901234567890123456789012345678901234567890"))
+      :expected "f371bc4a311f2b009eef952dd83ca80e2b60026c8e935592d0f9c308453c813e")
+
+(define-test sha256sum-file
+   (sha256sum-file (make-file-path (dirname (dirname digest.filename))
+                   "scripts" "ssl-fixtures.sh"))
+   :expected "8391f025350a1e7571431deb62cb3ea673ff85af5e20b20c31422f61ef374f52")
+
+(define-test hmac-sha256sum-string
+   (hmac-sha256sum-string "secret" "message") 
+   :expected "8b5f48702995c1598c573db1e21866a9b825d4a794d169d7060a03605796360b")
+
+;*---------------------------------------------------------------------*/
+;*    sha512                                                           */
+;*---------------------------------------------------------------------*/
+(define (test-sha512 str sum)
+   (and (string=? (sha512sum-string str) sum)
+        (string=? (call-with-input-string str sha512sum-port) sum)
+        (string=? (sha512sum-mmap (string->mmap str)) sum)))
+
+(define-test sha512sum
+   (sha512sum "")
+   :expected "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e")
+
+(define-test sha512sum
+   (call-with-input-string "" sha512sum)
+   :expected "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e")
+
+(define-test sha512sum
+   (sha512sum (string->mmap ""))
+   :expected "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e")
+
+(define-test sha512sum-string (sha512sum-string "")
+   :expected "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e")
+
+(define-test sha512sum-string
+   (sha512sum-string "a")
+   :expected "1f40fc92da241694750979ee6cf582f2d5d7d28e18335de05abc54d0560e0f5302860c652bf08d560252aa5e74210546f369fbbbce8c12cfc7957b2652fe9a75")
+
+(define-test sha512sum-string
+   (sha512sum-string "abc")
+   :expected "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f")
+
+(define-test sha512sum-string
+   (sha512sum-string "message digest")
+   :expected "107dbf389d9e9f71a3a95f6c055b9251bc5268c2be16d6c13492ea45b0199f3309e16455ab1e96118e8a905d5597b72038ddb372a89826046de66687bb420e7c")
+
+(define-test sha512sum-port
+   (call-with-input-string "abcdefghijklmnopqrstuvwxyz" sha512sum-port)
+   :expected "4dbff86cc2ca1bae1e16468a05cb9881c97f1753bce3619034898faa1aabe429955a1bf8ec483d7421fe3c1646613a59ed5441fb0f321389f77f48a879c7b1f1")
+
+(define-test sha512sum-port
+   (call-with-input-string "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" sha512sum-port)
+   :expected "1e07be23c26a86ea37ea810c8ec7809352515a970e9253c26f536cfc7a9996c45c8370583e0a78fa4a90041d71a4ceab7423f19c71b9d5a3e01249f0bebd5894")
+
+(define-test sha512sum-mmap
+   (sha512sum-mmap (string->mmap "12345678901234567890123456789012345678901234567890123456789012345678901234567890"))
+      :expected "72ec1ef1124a45b047e8b7c75a932195135bb61de24ec0d1914042246e0aec3a2354e093d76f3048b456764346900cb130d2a4fd5dd16abb5e30bcb850dee843")
+
+(define-test sha512sum-file
+   (sha512sum-file (make-file-path (dirname (dirname digest.filename))
+                   "scripts" "ssl-fixtures.sh"))
+   :expected "6a1e3d98ef26ca0ef6ebafb6ab23c396a76409f95c4cd7778579d90cf241f3101ba9def709249d542ec61051f083773ff761010fd58b5231fa39df7e67fd4521")
+
+(define-test hmac-sha512sum-string
+   (hmac-sha512sum-string "secret" "message") 
+   :expected "1bba587c730eedba31f53abb0b6ca589e09de4e894ee455e6140807399759adaafa069eec7c01647bb173dcb17f55d22af49a18071b748c5c2edd7f7a829c632")
+

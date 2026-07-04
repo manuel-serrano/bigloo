@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/sha2.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/sha2.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Tue Mar 11 08:12:52 2025 (serrano)                */
-;*    Copyright   :  2008-25 Wayne Richards, Manuel Serrano            */
+;*    Last change :  Sat Jul  4 06:57:49 2026 (serrano)                */
+;*    Copyright   :  2008-26 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
 ;*=====================================================================*/
@@ -676,7 +676,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha256sum-mmap ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (sha256sum-mmap mm)
+(define (sha256sum-mmap::bstring mm::mmap)
    
    (define (u32mmap-ref::uint32 mm::mmap i::long)
       (char->integer ($mmap-ref mm i)))
@@ -721,7 +721,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha256sum-string ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (sha256sum-string str)
+(define (sha256sum-string::bstring str::bstring)
    
    (define (u32string-ref::uint32 str i)
       (char->integer (string-ref str i)))
@@ -766,7 +766,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha256sum-port ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (sha256sum-port p)
+(define (sha256sum-port::bstring p::input-port)
 
    (define buf (make-u32vector 4))
 
@@ -829,7 +829,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha256sum-file ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (sha256sum-file fname)
+(define (sha256sum-file::bstring fname::bstring)
    (let ((mm (open-mmap fname :write #f)))
       (if (mmap? mm)
 	  (unwind-protect
@@ -843,7 +843,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha256sum ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (sha256sum obj)
+(define (sha256sum::bstring obj)
    (cond
       ((mmap? obj)
        (sha256sum-mmap obj))
@@ -1024,7 +1024,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha512sum-mmap ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (sha512sum-mmap mm)
+(define (sha512sum-mmap::bstring mm::mmap)
    
    (define (u32mmap-ref::uint32 mm:mmap i)
       (char->integer ($mmap-ref mm i)))
@@ -1079,7 +1079,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha512sum-string ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (sha512sum-string str)
+(define (sha512sum-string::bstring str::bstring)
    
    (define (u32string-ref::uint32 str i)
       (char->integer (string-ref str i)))
@@ -1134,7 +1134,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha512sum-port ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (sha512sum-port p)
+(define (sha512sum-port::bstring p::input-port)
 
    (define buf (make-u32vector 8))
 
@@ -1207,7 +1207,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha512sum-file ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (sha512sum-file fname)
+(define (sha512sum-file::bstring fname::bstring)
    (let ((mm (open-mmap fname :write #f)))
       (if (mmap? mm)
 	  (unwind-protect
@@ -1221,7 +1221,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sha512sum ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (sha512sum obj)
+(define (sha512sum::bstring obj)
    (cond
       ((mmap? obj)
        (sha512sum-mmap obj))
@@ -1235,13 +1235,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    hmac-sh256sum-string ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (hmac-sha256sum-string key msg)
+(define (hmac-sha256sum-string::bstring key::bstring msg::bstring)
    (hmac-string key msg sha256sum-string))
 
 ;*---------------------------------------------------------------------*/
 ;*    hmac-sh512sum-string ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (hmac-sha512sum-string key msg)
+(define (hmac-sha512sum-string::bstring key::bstring msg::bstring)
    (hmac-string key msg sha512sum-string))
 
 
