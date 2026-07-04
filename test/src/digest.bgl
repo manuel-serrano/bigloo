@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Sat Jul  4 06:11:52 2026 (serrano)                */
+;*    Last change :  Sat Jul  4 09:30:16 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing digest                                                   */
@@ -378,6 +378,10 @@
    (sha512sum-string "message digest")
    :expected "107dbf389d9e9f71a3a95f6c055b9251bc5268c2be16d6c13492ea45b0199f3309e16455ab1e96118e8a905d5597b72038ddb372a89826046de66687bb420e7c")
 
+(define-test sha512sum-string
+   (sha512sum-string "abcdefghijklmnopqrstuvwxyz")
+   :expected "4dbff86cc2ca1bae1e16468a05cb9881c97f1753bce3619034898faa1aabe429955a1bf8ec483d7421fe3c1646613a59ed5441fb0f321389f77f48a879c7b1f1")
+
 (define-test sha512sum-port
    (call-with-input-string "abcdefghijklmnopqrstuvwxyz" sha512sum-port)
    :expected "4dbff86cc2ca1bae1e16468a05cb9881c97f1753bce3619034898faa1aabe429955a1bf8ec483d7421fe3c1646613a59ed5441fb0f321389f77f48a879c7b1f1")
@@ -398,4 +402,3 @@
 (define-test hmac-sha512sum-string
    (hmac-sha512sum-string "secret" "message") 
    :expected "1bba587c730eedba31f53abb0b6ca589e09de4e894ee455e6140807399759adaafa069eec7c01647bb173dcb17f55d22af49a18071b748c5c2edd7f7a829c632")
-

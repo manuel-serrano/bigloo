@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  6 14:35:24 2005                          */
-;*    Last change :  Sat Jul  4 06:41:12 2026 (serrano)                */
+;*    Last change :  Sat Jul  4 10:00:36 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MD5 encryption                                                   */
@@ -583,7 +583,7 @@
 ;*    hmac-md5 test case.                                              */
 ;*---------------------------------------------------------------------*/
 (define (hmac-md5sum-string::bstring key::bstring message::bstring)
-   (hmac-string key message md5sum-string))
+   (hmac-string key message 64 md5sum-string))
 
 ;*---------------------------------------------------------------------*/
 ;*    cram-md5sum-string ...                                           */

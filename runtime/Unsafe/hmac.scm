@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/hmac.scm              */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/hmac.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun  5 08:31:42 2008                          */
-;*    Last change :  Tue Apr 17 07:52:18 2012 (serrano)                */
-;*    Copyright   :  2008-12 Manuel Serrano                            */
+;*    Last change :  Sat Jul  4 09:56:44 2026 (serrano)                */
+;*    Copyright   :  2008-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HMAC and CRAM                                                    */
 ;*=====================================================================*/
@@ -47,17 +47,16 @@
    (import __param
 	   __base64)
    
-   (export (hmac-string::bstring ::bstring ::bstring ::procedure)))
+   (export (hmac-string::bstring ::bstring ::bstring ::long ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    hmac-string ...                                                  */
 ;*    -------------------------------------------------------------    */
 ;*    keyed-Hash Message Authentication Code.                          */
 ;*---------------------------------------------------------------------*/
-(define (hmac-string key message hash)
+(define (hmac-string key message block-size::long hash)
 
-   (let* ((block-size 64)
-	  (ipadc #x36)
+   (let* ((ipadc #x36)
 	  (opadc #x5c)
 	  ;; keyb is the key padded to 64 with 0
 	  (keyb (make-string block-size #a000))

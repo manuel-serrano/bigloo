@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Sat Jul  4 06:47:51 2026 (serrano)                */
+;*    Last change :  Sat Jul  4 10:00:44 2026 (serrano)                */
 ;*    Copyright   :  2008-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-1 Bigloo implementation                                      */
@@ -366,5 +366,5 @@
 ;*    hmac-sha1sum-string ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (hmac-sha1sum-string::bstring key::bstring message::bstring)
-   (hmac-string key message sha1sum-string))
+   (hmac-string key message 64 sha1sum-string))
 

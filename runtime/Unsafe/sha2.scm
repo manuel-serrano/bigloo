@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Sat Jul  4 06:57:49 2026 (serrano)                */
+;*    Last change :  Sat Jul  4 09:03:51 2026 (serrano)                */
 ;*    Copyright   :  2008-26 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
-;*    SHA-256 Bigloo implementation                                    */
+;*    SHA-256/SHA-512 Bigloo implementation                            */
 ;*=====================================================================*/
 
 ;; This code has been inspired by a C implementation written by
@@ -71,7 +71,9 @@
 	   __r4_strings_6_7
 	   __r4_ports_6_10_1
 	   __r4_input_6_10_2
+	   __r4_output_6_10_3
 	   __r5_control_features_6_4
+	   
 	   __mmap
 	   __foreign
 	   __error
@@ -1009,15 +1011,14 @@
 		   ;; )
 		;; )
 	     ;; Fatal: Error: input module is not valid.
-
-	     '(let ((ulen::uint64 (*fx 8 (+fx (-fx l 1) bytes))))
+	     (let ((ulen::uint64 (*fx 8 (+fx (-fx l 1) bytes))))
 		(u64vector-set! buffer 15 ulen))
 	     (sha512-internal-transform state buffer))
 	    (else
 	     ;; we don't have space for the length
 	     (sha512-internal-transform state buffer)
 	     (u64vector-fill! buffer 15 #u64:0)
-	     '(let ((ulen::uint64 (*fx 8 (+fx (-fx l 1) bytes))))
+	     (let ((ulen::uint64 (*fx 8 (+fx (-fx l 1) bytes))))
 		(u64vector-set! buffer 15 ulen))
 	     (sha512-internal-transform state buffer))))))
 
@@ -1026,7 +1027,7 @@
 ;*---------------------------------------------------------------------*/
 (define (sha512sum-mmap::bstring mm::mmap)
    
-   (define (u32mmap-ref::uint32 mm:mmap i)
+   (define (u32mmap-ref::uint32 mm:mmap i::long)
       (char->integer ($mmap-ref mm i)))
 
    (define (fill-word64-mmap! v64::u64vector i::long mm::mmap n::long)
@@ -1139,15 +1140,15 @@
    (define buf (make-u32vector 8))
 
    (define len 0)
-
+   
    (define (read-word! p::input-port)
       (let loop ((i 0))
-	 (if (=fx i 4)
+	 (if (=fx i 8)
 	     i
 	     (let ((c (read-byte p)))
 		(if (eof-object? c)
 		    (let liip ((j i))
-		       (if (=fx j 4)
+		       (if (=fx j 8)
 			   i
 			   (begin
 			      (u32vector-set! buf j 0)
@@ -1157,10 +1158,10 @@
 		       (loop (+fx i 1))))))))
 
    (define (fill-word64-port! v64::u64vector i::long p::input-port n::long)
-      (let ((l (read-word! p)))
-	 (set! len (+fx len l))
+      (let ((s (read-word! p)))
+	 (set! len (+fx len s))
 	 (cond
-	    ((<=fx (+fx n 8) l)
+	    ((<=fx (+fx n 8) len)
 	     (let* ((v0::uint32 (u32vector-ref buf 0))
 		    (v1::uint32 (u32vector-ref buf 1))
 		    (v2::uint32 (u32vector-ref buf 2))
@@ -1173,12 +1174,12 @@
 				  (u16 v4 v5) (u16 v6 v7))))
 		(u64vector-set! v64 i v)
 		8))
-	    ((>=fx n (+fx 1 l))
+	    ((>=fx n (+fx 1 len))
 	     (u64vector-set! v64 i 0)
 	     0)
 	    (else
 	     (let ((v (make-u32vector 8 0))
-		   (k (-fx 8 (-fx (+fx n 8) l))))
+		   (k (-fx 8 (-fx (+fx n 8) len))))
 		(let loop ((j 0))
 		   (if (=fx j k)
 		       (begin
@@ -1236,12 +1237,13 @@
 ;*    hmac-sh256sum-string ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (hmac-sha256sum-string::bstring key::bstring msg::bstring)
-   (hmac-string key msg sha256sum-string))
+   (hmac-string key msg 64 sha256sum-string))
 
 ;*---------------------------------------------------------------------*/
 ;*    hmac-sh512sum-string ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (hmac-sha512sum-string::bstring key::bstring msg::bstring)
-   (hmac-string key msg sha512sum-string))
+   (hmac-string key msg 128 sha512sum-string))
+   
 
 
