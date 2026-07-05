@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Mon May 11 16:25:50 2026 (serrano)                */
+;*    Last change :  Sat Jul  4 10:16:03 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing boolean and equivalence functions                        */
@@ -114,6 +114,6 @@
 (define-test equal? (equal? (make-vector 5 'a) (make-vector 5 'a))
    :expected #t)
 
+(define-test equal? (equal? #l-519994705 -519994705))
 
-
-
+(define-test equal? (equal? #e-519994705 -519994705))
