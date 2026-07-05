@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/url.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/url.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 13:32:00 2005                          */
-;*    Last change :  Thu Dec 29 18:00:26 2022 (serrano)                */
-;*    Copyright   :  2005-22 Manuel Serrano                            */
+;*    Last change :  Sun Jul  5 12:59:51 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    URL parsing                                                      */
 ;*=====================================================================*/
@@ -127,7 +127,7 @@
 	      (abspath (read/rp abspath-grammar (the-port))))
 	  (values protocol userinfo host port abspath)))
       ((: "/" (* (out ":\r\n")))
-       (values protocol #f #f #f (the-string)))
+       (values protocol #f #f #f (the-substring 1 (the-length))))
       (CRLF
        #f)
       (else
@@ -219,7 +219,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    url-sans-protocol-parse ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (url-sans-protocol-parse url protocol)
+(define (url-sans-protocol-parse url protocol::bstring)
    (cond
       ((input-port? url)
        (read/rp absolute-uri-grammar url protocol #f))

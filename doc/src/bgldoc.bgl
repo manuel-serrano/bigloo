@@ -61,6 +61,7 @@
      ("hash" . "hash.html")
      ("errors" . "error.html")
      ("integers" . "int.html")
+     ("internet" . "internet.html")
      ("i/o" . "io.html")
      ("mmap" . "mmap.html")
      ("net" . "net.html")

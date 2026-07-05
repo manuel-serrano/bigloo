@@ -37,9 +37,9 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = argsparse bigloo bool date digest hash error int io mmap net \
- number os pair parser port process real serial ssl string symbol \
- tar thread vector weakptr zip \
+MD = argsparse bigloo bool date digest hash error int internet \
+ io mmap net number os pair parser port process real serial ssl \
+ string symbol tar thread vector weakptr zip \
  c jvm wasm \
  condexpand match module5 module4 object
 
