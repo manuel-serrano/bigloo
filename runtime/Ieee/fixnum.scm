@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Jun  3 14:08:26 2026 (serrano)                */
+;*    Last change :  Sun Jul  5 07:30:38 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -24,6 +24,7 @@
    (use     __type
 	    __bigloo
 	    __tvector
+	    __bit
 	    __r4_equivalence_6_2
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_flonum
@@ -285,6 +286,8 @@
 	   ($llong->int64 "~0")
 	   ($llong->uint64 "~0")
 	   ($uint64->llong  "~0")
+
+	   ($elong->string "(call $elong_to_string ~0 ~1)")
 	   
 	   ($=fx "(i64.eq ~0 ~1)")
 	   ($=elong "(i64.eq ~0 ~1)")

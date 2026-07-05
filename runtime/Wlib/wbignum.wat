@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep 25 12:51:44 2024                          */
-;*    Last change :  Wed Jun  3 11:32:31 2026 (serrano)                */
+;*    Last change :  Sun Jul  5 08:40:10 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM/JavaScript bignum implementation                            */
@@ -38,6 +38,7 @@
    (import "__js_bignum" "rand_fixnum" (func $rand_fixnum (result i32)))
    (import "__js_bignum" "double_to_bignum" (func $js_double_to_bignum (param f64) (result externref)))
    (import "__js_bignum" "string_to_bignum" (func $string_to_bignum (param i32 i32 i32) (result externref)))
+   (import "__js_bignum" "llong_to_bignum" (func $js_llong_to_bignum (param i32) (param i32) (result externref)))
    (import "__js_bignum" "bignum_abs" (func $bignum_abs (param externref) (result externref)))
    (import "__js_bignum" "bignum_gcd" (func $bignum_gcd (param externref) (param externref) (result externref)))
    (import "__js_bignum" "bignum_lcm" (func $bignum_lcm (param externref) (param externref) (result externref)))
@@ -147,19 +148,22 @@
    (func $bgl_llong_to_bignum (export "bgl_llong_to_bignum")
       (param $n i64)
       (result (ref $bignum))
-      (return_call $bgl_long_to_bignum (local.get $n)))
+      (return (struct.new $bignum
+		 (call $js_llong_to_bignum
+		    (i32.wrap_i64 (i64.shr_s (local.get $n) (i64.const 32)))
+		    (i32.wrap_i64 (i64.and (local.get $n) (i64.const 4294967295)))))))
 
    ;; bgl_int64_to_bignum
    (func $bgl_int64_to_bignum (export "bgl_int64_to_bignum")
       (param $n i64)
       (result (ref $bignum))
-      (return (struct.new $bignum (call $js_double_to_bignum (f64.convert_i64_s (local.get $n))))))
+      (return (call $bgl_llong_to_bignum (local.get $n))))
 
    ;; bgl_uint64_to_bignum
    (func $bgl_uint64_to_bignum (export "bgl_uint64_to_bignum")
       (param $n i64)
       (result (ref $bignum))
-      (return (struct.new $bignum (call $js_double_to_bignum (f64.convert_i64_u (local.get $n))))))
+      (return (call $bgl_llong_to_bignum (local.get $n))))
 
    ;; bgl_flonum_to_bignum
    (func $bgl_flonum_to_bignum (export "bgl_flonum_to_bignum")

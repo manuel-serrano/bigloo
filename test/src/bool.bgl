@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Sat Jul  4 10:16:03 2026 (serrano)                */
+;*    Last change :  Sun Jul  5 06:34:38 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing boolean and equivalence functions                        */
@@ -96,6 +96,14 @@
 (define-test eqv? (eqv? #f '())
    :expected #f)
 
+(define-test eqv? (eqv? #l-519994705 -519994705))
+
+(define-test eqv? (eqv? #e-519994705 -519994705))
+
+(define-test eqv? (eqv? #l-519994705 #z-519994705))
+
+(define-test eqv? (eqv? #e-519994705 #z-519994705))
+
 (define-test equal? (equal? '(a) '(a))
    :expected #t)
 
@@ -117,3 +125,10 @@
 (define-test equal? (equal? #l-519994705 -519994705))
 
 (define-test equal? (equal? #e-519994705 -519994705))
+
+(define-test equal? (equal? #l-519994705 #z-519994705))
+
+(define-test equal? (equal? #e-519994705 #z-519994705))
+
+(define-test equal? (equal? #z3201054679788660373 #l3201054679788660373))
+

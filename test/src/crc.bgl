@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Sat Jul  4 08:59:15 2026 (serrano)                */
+;*    Last change :  Sun Jul  5 12:25:55 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing crc                                                      */
@@ -518,11 +518,11 @@
    :expected 2582796051)
 
 (define-test crc-elong
-   (crc-long #\a #e432 #e143 24)
+   (crc-elong #\a #e432 #e143 24)
    :expected #e1627488943)
 
 (define-test crc-llong
-   (crc-long #\a #l432 #l143 24)
+   (crc-llong #\a #l432 #l143 24)
    :expected #l1627488943)
 
 (define-test crc-long-le
@@ -530,9 +530,9 @@
    :expected 2641004)
 
 (define-test crc-elong-le
-   (crc-long-le #\a #e432 #e143 24)
+   (crc-elong-le #\a #e432 #e143 24)
    :expected #e19)
 
 (define-test crc-llong-le
-   (crc-long-le #\a #l432 #l143 24)
+   (crc-llong-le #\a #l432 #l143 24)
    :expected #l19)

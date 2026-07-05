@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Fri Jun  5 08:37:51 2026 (serrano)                */
+/*    Last change :  Sun Jul  5 08:42:05 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -275,6 +275,7 @@ export class BglRuntime {
 		  return BigInt(0);
 	    }
 	 },
+	 llong_to_bignum: (high, low) => BigInt(high) << BigInt(32) | BigInt(low),
 	 bignum_abs: (x) => x < 0 ? -x : x,
 	 bignum_neg: (x) => -x,
 	 bignum_add: (x, y) => x + y,

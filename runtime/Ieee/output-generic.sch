@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/runtime/Ieee/output-generic.sch     */
+;*    .../project/bigloo/5.0.x/runtime/Ieee/output-generic.sch         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 15:24:13 2024                          */
-;*    Last change :  Thu Sep 25 11:47:58 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Sun Jul  5 07:17:07 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable output implementation                                   */
 ;*=====================================================================*/
@@ -116,27 +116,38 @@
 ;*    bgl_display_elong ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (bgl_display_elong o op)
-   (display-fixnum ($long->bint ($elong->long o)) op))
+   (if (or (<elong o (bit-lshelong #e-1 30))
+	   (>elong o (bit-lshelong #e1 30)))
+       (bgl_display_llong ($elong->llong o) op)
+       (display-fixnum ($long->bint ($elong->long o)) op)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl_write_elong ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (bgl_write_elong o op)
-   (display-string "#e" op)
-   (display-fixnum ($long->bint ($elong->long o)) op))
+   (if (or (<elong o (bit-lshelong #e-1 30))
+	   (>elong o (bit-lshelong #e1 30)))
+       (bgl_display_llong ($elong->llong o) op)
+       (display-fixnum ($long->bint ($elong->long o)) op)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl_display_llong ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (bgl_display_llong o op)
-   (display-fixnum ($long->bint ($llong->long o)) op))
+   (if (or (>llong o (bit-lshllong #l1 30))
+	   (<llong o (bit-lshllong #l-1 30)))
+       (display-string (llong->string o 10) op)
+       (display-fixnum ($long->bint ($llong->long o)) op)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl_write_llong ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (bgl_write_llong o op)
    (display-string "#l" op)
-   (display-fixnum ($long->bint ($llong->long o)) op))
+   (if (or (>llong o (bit-lshllong #l1 30))
+	   (<llong o (bit-lshllong #l-1 30)))
+       (display-string (llong->string o 10) op)
+       (display-fixnum ($long->bint ($llong->long o)) op)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl_display_bignum ...                                           */

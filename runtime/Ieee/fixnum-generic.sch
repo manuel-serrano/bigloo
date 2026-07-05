@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul 22 12:33:04 2024                          */
-;*    Last change :  Wed Jun  3 14:33:21 2026 (serrano)                */
+;*    Last change :  Sun Jul  5 07:11:58 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable fixnum implementation                                   */
@@ -18,6 +18,7 @@
 	   (ullong_to_string::bstring ::long ::long)
 	   ($integer->string/padding::bstring ::long ::long ::long)
 	   (llong_to_string::bstring ::llong ::long)
+	   (elong_to_string::bstring ::elong ::long)
 	   ($$strtol::long string::bstring start::long radix::long)
 	   ($$strtoel::elong string::bstring start::long radix::long)
 	   ($$strtoeul::elong string::bstring start::long radix::long)
@@ -27,7 +28,8 @@
 	   (export unsigned_to_string "unsigned_to_string")
 	   (export ullong_to_string "ullong_to_string")
 	   (export $integer->string/padding "integer->string/padding")
-	   (export llong_to_string "llong_to_string")))
+	   (export llong_to_string "llong_to_string")
+	   (export elong_to_string "elong_to_string")))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer_to_string ...                                            */
@@ -98,7 +100,17 @@
 ;*    llong_to_string ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (llong_to_string x radix)
-   (integer_to_string x radix))
+   (if (<llong x (bit-lshllong #l-1 62))
+       (string-append
+	  (integer_to_string (/llong x radix) radix)
+	  (integer_to_string (absllong (remainderllong x radix)) radix))
+       (integer_to_string x radix)))
+
+;*---------------------------------------------------------------------*/
+;*    elong_to_string ...                                              */
+;*---------------------------------------------------------------------*/
+(define (elong_to_string x radix)
+   (llong_to_string (elong->llong x) radix))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer-bits-count ...                                           */
