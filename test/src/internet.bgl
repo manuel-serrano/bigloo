@@ -1,0 +1,109 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/internet.bgl          */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
+;*    Last change :  Sun Jul  5 13:34:26 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing internet faclities                                       */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    internet                                                         */
+;*---------------------------------------------------------------------*/
+(module internet
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "internet" tests))
+      (test-all verbose "internet")))
+
+;*---------------------------------------------------------------------*/
+;*    tests ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-test url-parse
+   (multiple-value-bind (protocol uinfo host port abspath)
+      (url-parse "http://www.inria.fr/sophia/teams/indes/index.html")
+      (list protocol uinfo host port abspath))
+   :expected '("http" #f "www.inria.fr" 80 "/sophia/teams/indes/index.html"))
+
+(define-test url-parse
+   (multiple-value-bind (protocol uinfo host port abspath)
+      (url-parse "https://foo:bar@www.inria.fr/sophia/teams/indes/index.html")
+      (list protocol uinfo))
+   :expected '("https" "foo:bar"))
+
+(define-test url-sans-protocol-parse
+   (multiple-value-bind (protocol uinfo host port abspath)
+      (url-sans-protocol-parse "www.inria.fr/sophia/teams/indes/index.html" "http")
+      (list "http" uinfo host port abspath))
+   :expected '("http" #f "www.inria.fr" 80 "/sophia/teams/indes/index.html"))
+
+(define-test url-sans-protocol-parse
+   (multiple-value-bind (protocol uinfo host port abspath)
+      (url-sans-protocol-parse "foo:bar@www.inria.fr/sophia/teams/indes/index.html" "https")
+      (list protocol uinfo))
+   :expected '("https" "foo:bar"))
+   
+(define-test http-url-parse
+   (multiple-value-bind (protocol uinfo host port abspath)
+      (http-url-parse "*")
+      (list protocol uinfo host port abspath))
+   :expected '("*" #f #f #f "*"))
+
+(define-test http-url-parse
+   (multiple-value-bind (protocol uinfo host port abspath)
+      (http-url-parse "/tmp/foo")
+      (list protocol uinfo host port abspath))
+   :expected '("*" #f #f #f "/tmp/foo"))
+
+(define-test http-url-parse
+   (multiple-value-bind (protocol uinfo host port abspath)
+      (http-url-parse "http://www.inria.fr:8080/tmp/foo")
+      (list protocol uinfo host port abspath))
+   :expected '("http"  #f "www.inria.fr" 8080 "/tmp/foo"))
+
+(define-test http-url-parse
+   (multiple-value-bind (protocol uinfo host port abspath)
+      (http-url-parse "http://foo:bar@www.inria.fr:8080/tmp/foo")
+      (list protocol uinfo host port abspath))
+   :expected '("http"  "foo:bar" "www.inria.fr" 8080 "/tmp/foo"))
+
+(define-test url-path-encode
+   (url-path-encode "/tmp/foo")
+   :expected "/tmp/foo")
+(define-test url-path-encode
+   (url-path-encode "/tmp/foo&bar")
+   :expected "/tmp/foo%26bar")
+(define-test url-path-encode
+   (url-path-encode "http://tmp/foo")
+   :expected "http%3A//tmp/foo")
+
+(define-test url-encode
+   (url-encode "http://tmp/foo")
+   :expected "http://tmp:80/foo")
+(define-test url-encode
+   (url-encode "http://tmp/foo&bar")
+   :expected "http://tmp:80/foo%26bar")
+(define-test url-encode
+   (url-encode "http://tmp/foo&bar+(foo=3)")
+   :expected "http://tmp:80/foo%26bar%2B%28foo%3D3%29")
+
+(define-test uri-encode
+   (url-encode "http://tmp/foo")
+   :expected "http://tmp:80/foo")
+(define-test uri-encode
+   (url-encode "http://tmp/foo&bar")
+   :expected "http://tmp:80/foo%26bar")
+(define-test uri-encode
+   (url-encode "http://tmp/foo&bar+(foo=3)")
+   :expected "http://tmp:80/foo%26bar%2B%28foo%3D3%29")
