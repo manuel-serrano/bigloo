@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/bigloo/5.0.x/doc/Makefile                                */
+#*    serrano/prgm/project/bigloo/5.0.x/doc/Makefile                   */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Jul  3 16:19:23 2026 (serrano)                */
+#*    Last change :  Mon Jul  6 10:19:32 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -43,7 +43,7 @@ MD = argsparse bigloo bool date digest hash error int internet \
  c jvm wasm \
  condexpand match module5 module4 object
 
-EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var grep untar
+EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var grep untar wget
 EX_J = fib Point.bgh
 EX_W = 
 EX = $(EX_C:%=c/%) $(EX_J:%=jvm/%) $(EX_W:%=wasm/%)
@@ -137,6 +137,9 @@ objs/c/grep.ast.coerce: examples/c/grep.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
 objs/c/untar.ast.coerce: examples/c/untar.bgl objs/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
+objs/c/wget.ast.coerce: examples/c/wget.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
 objs/java/fib.ast.coerce: examples/java/fib.bgl objs/java

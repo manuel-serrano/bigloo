@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 13:32:00 2005                          */
-;*    Last change :  Sun Jul  5 12:59:51 2026 (serrano)                */
+;*    Last change :  Mon Jul  6 07:56:05 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    URL parsing                                                      */
@@ -315,25 +315,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    url-path-encode ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (url-path-encode str)
+(define (url-path-encode::bstring str::bstring)
    (url-path-encode/set str "# \"'`&=%?:\n^[]\\<>;,{|}()~$!+@"))
 
 ;*---------------------------------------------------------------------*/
 ;*    uri-encode ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (uri-encode str)
+(define (uri-encode::bstring str::bstring)
    (url-path-encode/set str " \"`%\n^[]\\<>{|}"))
 
 ;*---------------------------------------------------------------------*/
 ;*    uri-encode-component ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (uri-encode-component str)
+(define (uri-encode-component::bstring str::bstring)
    (url-path-encode/set str "# \"`+=%?:\n^[]\\<>;/@&$,{|}"))
 
 ;*---------------------------------------------------------------------*/
 ;*    url-encode ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (url-encode str)
+(define (url-encode::bstring str::bstring)
    (multiple-value-bind (scheme uinfo host port abspath)
       (url-parse str)
       (if (string=? scheme "file")
@@ -348,7 +348,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Is a string a valid URL?                                         */
 ;*---------------------------------------------------------------------*/
-(define (url? str)
+(define (url?::bool str::bstring)
    (let ((len (string-length str)))
       (let loop ((i 0))
 	 (if (=fx i len)
@@ -466,37 +466,37 @@
 ;*---------------------------------------------------------------------*/
 ;*    url-decode ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (url-decode str)
+(define (url-decode::bstring str::bstring)
    (url-decode/set str ""))
 
 ;*---------------------------------------------------------------------*/
 ;*    uri-decode ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (uri-decode str)
+(define (uri-decode::bstring str::bstring)
    (url-decode/set str "#$&+,/:;=?@"))
 
 ;*---------------------------------------------------------------------*/
 ;*    uri-decode-component ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (uri-decode-component str)
+(define (uri-decode-component::bstring str::bstring)
    (url-decode/set str ""))
 
 ;*---------------------------------------------------------------------*/
 ;*    url-decode! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (url-decode! str)
+(define (url-decode!::bstring str::bstring)
    (url-decode/set! str ""))
 
 ;*---------------------------------------------------------------------*/
 ;*    uri-decode! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uri-decode! str)
+(define (uri-decode!::bstring str::bstring)
    (url-decode/set! str "#$&+,/:;=?@"))
 
 ;*---------------------------------------------------------------------*/
 ;*    uri-decode-component! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (uri-decode-component! str)
+(define (uri-decode-component!::bstring str::bstring)
    (url-decode/set! str ""))
 
 ;*---------------------------------------------------------------------*/
@@ -544,10 +544,21 @@
 			      (loop (+fx i 1) (+fx j 1)))))))))))
    
    (define (count-arg arg)
-      (let ((cname (count-string (car arg))))
-	 (if (eq? (cadr arg) #unspecified)
-	     cname
-	     (+fx (+fx cname 1) (count-string (cadr arg))))))
+      (cond
+         ((or (not (pair? arg))
+              (not (string? (car arg)))
+              (null? (cdr arg))
+              (not (null? (cddr arg))))
+          (error "form-urlencode" "bad argument" arg))
+         (else
+          (let ((cname (count-string (car arg))))
+             (cond
+                ((eq? (cadr arg) #unspecified)
+                 cname)
+                ((string? (cadr arg))
+                 (+fx (+fx cname 1) (count-string (cadr arg))))
+                (else
+                 (error "form-urlencode" "bad argument" arg)))))))
    
    (define (encode-arg string i arg)
       (let ((ni (encode-string string i (car arg))))
@@ -578,13 +589,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    www-form-urlencode ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (www-form-urlencode args)
+(define (www-form-urlencode::bstring args::pair-nil)
    (form-urlencode args #\;))
 
 ;*---------------------------------------------------------------------*/
 ;*    x-www-form-urlencode ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (x-www-form-urlencode args)
+(define (x-www-form-urlencode::bstring args::pair-nil)
    (form-urlencode args #\&))
 
 ;*---------------------------------------------------------------------*/
@@ -598,7 +609,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    www-form-urldecode ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (www-form-urldecode string)
+(define (www-form-urldecode::pair-nil string::bstring)
 
    (define (string-count str ol)
       (let loop ((i (-fx ol 3))

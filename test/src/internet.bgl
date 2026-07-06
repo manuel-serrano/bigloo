@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Sun Jul  5 13:34:26 2026 (serrano)                */
+;*    Last change :  Mon Jul  6 07:40:06 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing internet faclities                                       */
@@ -30,6 +30,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests ...                                                        */
 ;*---------------------------------------------------------------------*/
+(define-test url?
+   (url? "http://foo/bar"))
+   
+(define-test url?
+   (url? "http://foo/bar%64"))
+
+(define-test url?
+   (url? "http://foo/bar%a")
+   :expected #f)
+   
 (define-test url-parse
    (multiple-value-bind (protocol uinfo host port abspath)
       (url-parse "http://www.inria.fr/sophia/teams/indes/index.html")
@@ -87,6 +97,9 @@
 (define-test url-path-encode
    (url-path-encode "http://tmp/foo")
    :expected "http%3A//tmp/foo")
+(define-test url-path-encode
+   (url-path-encode "http://tmp/foo+z=foo|bar")
+   :expected "http%3A//tmp/foo%2Bz%3Dfoo%7Cbar")
 
 (define-test url-encode
    (url-encode "http://tmp/foo")
@@ -95,15 +108,226 @@
    (url-encode "http://tmp/foo&bar")
    :expected "http://tmp:80/foo%26bar")
 (define-test url-encode
-   (url-encode "http://tmp/foo&bar+(foo=3)")
-   :expected "http://tmp:80/foo%26bar%2B%28foo%3D3%29")
+   (url-encode "http://tmp/foo&bar<foo=3>")
+   :expected "http://tmp:80/foo%26bar%3Cfoo%3D3%3E")
 
 (define-test uri-encode
-   (url-encode "http://tmp/foo")
-   :expected "http://tmp:80/foo")
+   (uri-encode "http://tmp/foo")
+   :expected "http://tmp/foo")
 (define-test uri-encode
-   (url-encode "http://tmp/foo&bar")
-   :expected "http://tmp:80/foo%26bar")
+   (uri-encode "http://tmp/foo&bar")
+   :expected "http://tmp/foo&bar")
 (define-test uri-encode
-   (url-encode "http://tmp/foo&bar+(foo=3)")
-   :expected "http://tmp:80/foo%26bar%2B%28foo%3D3%29")
+   (uri-encode "http://tmp/foo&bar+(foo=3)")
+   :expected "http://tmp/foo&bar+(foo=3)")
+
+(define-test uri-encode-component
+   (uri-encode-component "http://tmp/foo")
+   :expected "http%3A%2F%2Ftmp%2Ffoo")
+(define-test uri-encode-component
+   (uri-encode-component "http://tmp/foo&bar")
+   :expected "http%3A%2F%2Ftmp%2Ffoo%26bar")
+(define-test uri-encode-component
+   (uri-encode-component "http://tmp/foo&bar+(foo=3)<x45>")
+   :expected "http%3A%2F%2Ftmp%2Ffoo%26bar%2B(foo%3D3)%3Cx45%3E")
+
+(define-test url-decode
+   (url-decode "http://tmp:80/foo%26bar")
+   :expected "http://tmp:80/foo&bar")
+
+(define-test url-decode
+   (url-decode "http://tmp/foo%26bar%3Cfoo%3D3%3E")
+   :expected "http://tmp/foo&bar<foo=3>")
+
+(define-test url-decode
+   (let ((s "http://tmp/foo"))
+      (eq? (url-decode s) s))
+   :expected #f)
+
+(define-test url-decode!
+   (url-decode! "http://tmp/foo%26bar%3Cfoo%3D3%3E")
+   :expected "http://tmp/foo&bar<foo=3>")
+   
+(define-test url-decode!
+   (let ((s "http://tmp/foo"))
+      (eq? (url-decode! s) s)))
+   
+(define-test uri-decode-component
+   (uri-decode-component "http%3A%2F%2Ftmp%2Ffoo%26bar")
+   :expected "http://tmp/foo&bar")
+
+(define-test uri-decode-component
+   (uri-decode-component "http%3A%2F%2Ftmp%2Ffoo%26bar%2B(foo%3D3)%3Cx45%3E")
+   :expected "http://tmp/foo&bar+(foo=3)<x45>")
+
+(define-test uri-decode-component
+   (let ((s "http://tmp/foo"))
+      (eq? (uri-decode-component s) s))
+   :expected #f)
+
+(define-test uri-decode-component!
+   (let ((s "http://tmp/foo"))
+      (eq? (uri-decode-component! s) s)))
+
+(define-test uri-decode-component!
+   (uri-decode-component! "http%3A%2F%2Ftmp%2Ffoo%26bar")
+   :expected "http://tmp/foo&bar")
+
+(define-test www-form-urlencode
+   (www-form-urlencode '(("foo" #unspecified) ("bar" "45")))
+   :expected "foo;bar=45")
+
+(define-test www-form-urlencode
+   (www-form-urlencode '(("foo" #unspecified) ("bar" "pierre&gilles")))
+   :expected "foo;bar=pierre%26gilles")
+
+(define-test x-www-form-urlencode
+   (x-www-form-urlencode '(("foo" #unspecified) ("bar" "45")))
+   :expected "foo&bar=45")
+
+(define-test x-www-form-urlencode
+   (x-www-form-urlencode '(("foo" #unspecified) ("bar" "pierre&gilles")))
+   :expected "foo&bar=pierre%26gilles")
+
+(define-test www-form-urldecode
+   (www-form-urldecode "foo;bar=pierre%26gilles")
+   :expected '(("foo" #unspecified) ("bar" "pierre&gilles")))
+
+;*---------------------------------------------------------------------*/
+;*    http                                                             */
+;*---------------------------------------------------------------------*/
+(define-test &http-error
+   (isa? (instantiate::&http-error
+            (proc "test")
+            (msg "a test")
+            (obj #unspecified))
+      &error))
+
+(define-test &http-redirection
+   (isa? (instantiate::&http-redirection
+            (port (current-input-port))
+            (url "http://tmp/foo"))
+      &exception))
+
+(define-test &http-redirection-error
+   (isa? (instantiate::&http-redirection-error
+            (proc "test")
+            (msg "a test")
+            (obj #unspecified))
+      &http-error))
+
+(define-test &http-status-error
+   (isa? (instantiate::&http-status-error
+            (status 404)
+            (proc "test")
+            (msg "a test")
+            (obj #unspecified))
+      &http-error))
+
+(define-test http-read-line
+   (call-with-input-string "foo\r\nhuxbar\r\n"
+      http-read-line)
+   :expected "foo\r\n")
+
+(define-test http-read-crlf
+   (call-with-input-string "  \r\nfoo\r\n"
+      http-read-crlf)
+   :expected "\r\n")
+
+(define-test http-read-crlf
+   (with-handler
+      (lambda (e)
+         (isa? e &io-parse-error))
+      (call-with-input-string "x  \r\nfoo\r\n"
+         http-read-crlf)))
+
+(define-test http-parse-status-line
+   (multiple-value-bind (http code reason)
+      (call-with-input-string "http/1.1 100 Continue"
+         http-parse-status-line)
+      (list http code reason))
+   :expected '("http/1.1" 100 "Continue"))
+
+(define-test http-parse-status-line
+   (multiple-value-bind (http code reason)
+      (call-with-input-string "HTTPS/1.1 200 Ok"
+         http-parse-status-line)
+      (list http code reason))
+   :expected '("HTTPS/1.1" 200 "Ok"))
+
+(define-test http-parse-status-line
+   (multiple-value-bind (http code reason)
+      (call-with-input-string "HTTPS/1.1 200 Ok\r\nfoo"
+         http-parse-status-line)
+      (list http code reason))
+   :expected '("HTTPS/1.1" 200 "Ok\r\n"))
+
+(define-test http-parse-status-line
+   (with-handler
+      (lambda (e)
+         (isa? e &io-parse-error))
+      (multiple-value-bind (http code reason)
+         (call-with-input-string "https 200 Ok\r\nfoo"
+            http-parse-status-line)
+         (list http code reason))))
+
+(define-test http-parse-header
+   (multiple-value-bind (header host port len enc auth pauth conn)
+      (call-with-input-string "Content-Type: application/json\r
+Content-Length: 62\r
+X-Foo: 23\r\n"
+         http-parse-header)
+      (list header len))
+   :expected '(((:content-type . "application/json") (:content-length . #e62) (:x-foo . "23")) #e62))
+      
+(define-test http-parse-response
+   (call-with-input-string "HTTPS/1.1 200 Ok\r\nContent-Length: 3\r\n\r\nfoo"
+      (lambda (in)
+         (let ((out (open-output-string)))
+            (unwind-protect
+               (http-parse-response in out
+                  (lambda (ip status header clen tenc)
+                     (list status clen (read-string ip))))
+               (close-output-port out)))))
+   :expected '(200 #e3 "foo"))
+
+(define-test http-response-body->port
+   (call-with-input-string "HTTPS/1.1 200 Ok\r\nContent-Length: 3\r\n\r\nfoo"
+      (lambda (in)
+         (let ((out (open-output-string)))
+            (unwind-protect
+               (read-string (http-response-body->port in out))
+               (close-output-port out)))))
+   :expected "foo")
+
+(define-test http-chunks->procedure
+   (call-with-input-string "7\r\nMozilla\r\n9\r\nDeveloper\r\n7\r\nNetwork\r\n0\r\n"
+      (lambda (in)
+         (let ((proc (http-chunks->procedure in)))
+            (proc)
+            (proc))))
+   :expected "Developer")
+
+(define-test http-chunks->port
+   (call-with-input-string "7\r\nMozilla\r\n9\r\nDeveloper\r\n7\r\nNetwork\r\n0\r\n"
+      (lambda (in)
+         (read-string (http-chunks->port in))))
+   :expected "MozillaDeveloperNetwork")
+   
+(define-test http-send-chunks
+   (call-with-output-string
+      (lambda (op)
+         (call-with-input-string "7\r\nMozilla\r\n9\r\nDeveloper\r\n7\r\nNetwork\r\n0\r\n"
+            (lambda (in)
+               (http-send-chunks in op #f)))))
+   :expected "7\r\nMozilla\r\n9\r\nDeveloper\r\n7\r\nNetwork\r\n0\r\n")
+
+(define-test http-send-chunks
+   (call-with-output-string
+      (lambda (op)
+         (call-with-input-string "7\r\nMozilla\r\n9\r\nDeveloper\r\n7\r\nNetwork\r\n0\r\nfoo\r\nbar\r\ngee"
+            (lambda (in)
+               (http-send-chunks in op #t)))))
+   :expected "7\r\nMozilla\r\n9\r\nDeveloper\r\n7\r\nNetwork\r\n0\r\nfoo\r\nbar\r\ngee")
+
+   

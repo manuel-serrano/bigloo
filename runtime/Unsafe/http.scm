@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/http.scm              */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/http.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Thu Oct 13 11:56:13 2016 (serrano)                */
-;*    Copyright   :  2007-16 Manuel Serrano                            */
+;*    Last change :  Mon Jul  6 08:32:21 2026 (serrano)                */
+;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
 ;*=====================================================================*/
@@ -78,9 +78,9 @@
 		 (body #f))
 
 	   (http-read-line ::input-port)
-	   (http-read-crlf ::input-port)
+	   (http-read-crlf::bstring ::input-port)
 	   (http-parse-status-line ::input-port)
-	   (http-parse-header ::input-port ::obj)
+	   (http-parse-header ::input-port #!optional op)
 	   (http-parse-response ::input-port ::obj ::procedure)
 	   (http-response-body->port::input-port ::input-port ::output-port)
 	   (http-chunks->procedure::procedure ::input-port)
@@ -361,13 +361,13 @@
 ;*    as follows:                                                      */
 ;*    Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF  */
 ;*---------------------------------------------------------------------*/
-(define (http-parse-status-line ip)
+(define (http-parse-status-line ip::input-port)
    (read/rp status-line-grammar ip))
 
 ;*---------------------------------------------------------------------*/
 ;*    http-read-line ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (http-read-line p)
+(define (http-read-line ip::input-port)
    (read/rp (regular-grammar ()
 	       ((or (: (+ all) "\r\n") (: (+ all) "\n") (+ all))
 		(the-string))
@@ -376,7 +376,7 @@
 		   (if (eof-object? c)
 		       c
 		       (the-string)))))
-      p))
+      ip))
 
 ;*---------------------------------------------------------------------*/
 ;*    http-skip-blank ...                                              */
@@ -422,7 +422,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    http-parse-header ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (http-parse-header p po)
+(define (http-parse-header ip::input-port #!optional op)
    
    (define value-grammar
       (regular-grammar ()
@@ -604,8 +604,8 @@
 				   (http-parse-error-msg
 				      (the-failure) (the-port)))))))))))
    
-   (read/rp header-grammar p
-      po    ;; output port
+   (read/rp header-grammar ip
+      op    ;; output port
       '()   ;; header
       #f    ;; hostname
       #f    ;; port
@@ -618,7 +618,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    http-parse-response ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (http-parse-response ip op proc)
+(define (http-parse-response ip::input-port op proc::procedure)
    (multiple-value-bind (_1 status _2)
       (http-parse-status-line ip)
       (multiple-value-bind (header _host _port clen tenc _aut _paut _conn)
@@ -656,12 +656,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    http-response-body->port ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (http-response-body->port ip op)
+(define (http-response-body->port::input-port ip::input-port op::output-port)
    (define (parse-body ip status-code header clen tenc)
       (cond
 	 ((not (input-port? ip))
 	  (open-input-string ""))
-	 (clen
+	 ((elong? clen)
 	  (let ((p (open-input-procedure (barrier-port ip clen))))
 	     (input-port-close-hook-set! p (lambda (in) (close-input-port ip)))
 	     p))
@@ -672,7 +672,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    http-read-crlf ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (http-read-crlf p)
+(define (http-read-crlf::bstring ip::input-port)
    (define crlf-grammar
       (regular-grammar ()
 	 ((: (* (in #\space #\tab)) (? #\Return) #\Newline)
@@ -682,7 +682,7 @@
 		    (proc 'http-read-crlf)
 		    (msg "Illegal character")
 		    (obj (http-parse-error-msg (the-failure) (the-port))))))))
-   (read/rp crlf-grammar p))
+   (read/rp crlf-grammar ip))
 
 ;*---------------------------------------------------------------------*/
 ;*    *chunk-size-grammar* ...                                         */
@@ -737,13 +737,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    barrier-port ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (barrier-port port content-length)
+(define (barrier-port port content-length::elong)
    (let ((buf (make-string *buffer-length*)))
       (lambda ()
 	 (when (>elong content-length #e0)
 	    (let* ((n (minfx *buffer-length* (elong->fixnum content-length)))
 		   (m (read-chars! buf n port)))
-	       (set! content-length (-elong content-length (fixnum->elong m)))
+	       (set! content-length
+                  (-elong content-length (fixnum->elong m)))
 	       (if (<fx m *buffer-length*)
 		   (substring buf 0 m)
 		   buf))))))
@@ -751,7 +752,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    http-chunks->procedure ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (http-chunks->procedure ip::input-port)
+(define (http-chunks->procedure::procedure ip::input-port)
    (let* ((state 'size)
 	  (sz 0)
 	  (bufsz 512)
@@ -803,7 +804,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    http-chunks->port ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (http-chunks->port ip)
+(define (http-chunks->port::input-port ip::input-port)
    (let ((ip2 (open-input-procedure (http-chunks->procedure ip))))
       (input-port-close-hook-set! ip (lambda (in) (close-input-port ip)))
       ip2))
@@ -837,6 +838,4 @@
 			      (if (>fx (string-length l) 2)
 				  (loop)
 				  (flush-output-port op))))))
-		 (begin
-		    (display (http-read-line ip) op)
-		    (flush-output-port op)))))))
+                 (flush-output-port op))))))

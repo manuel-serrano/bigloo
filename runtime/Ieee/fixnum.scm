@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Sun Jul  5 07:30:38 2026 (serrano)                */
+;*    Last change :  Mon Jul  6 09:42:12 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -164,10 +164,9 @@
 	   (infix macro $+u32::uint32 (::uint32 ::uint32) "+")
 	   (infix macro $+s64::int64 (::int64 ::int64) "+")
 	   (infix macro $+u64::uint64 (::uint64 ::uint64) "+")
-	   (infix macro $-elong::long (::elong ::elong) "-")
+	   (infix macro $-elong::elong (::elong ::elong) "-")
 	   (infix macro $-llong::llong (::llong ::llong) "-")
 	   (infix macro $-fx::long (::long ::long) "-")
-	   (infix macro $-elong::long (::elong ::elong) "-")
 	   (infix macro $-llong::llong (::llong ::llong) "-")
 	   (infix macro $-s8::int8 (::int8 ::int8) "-")
 	   (infix macro $-u8::uint8 (::uint8 ::uint8) "-")

@@ -1,0 +1,48 @@
+(module wget
+   (main))
+
+(define (main argv)
+   (wget (cadr argv)))
+
+(define (wget url::bstring)
+   
+   (define (parser ip status-code header clen tenc)
+      (if (not (and (>=fx status-code 200) (<=fx status-code 299)))
+	  (case status-code
+	     ((401)
+	      (raise (instantiate::&io-port-error
+			(proc 'open-input-file)
+			(msg "Cannot open URL, authentication required")
+			(obj url))))
+	     ((404)
+	      (raise (instantiate::&io-file-not-found-error
+			(proc 'open-input-file)
+			(msg "Cannot open URL")
+			(obj url))))
+	     (else
+	      (raise (instantiate::&io-port-error
+			(proc 'open-input-file)
+			(msg (format "Cannot open URL (~a)" status-code))
+			(obj url)))))
+	  (cond
+	     ((not (input-port? ip))
+	      (open-input-string ""))
+	     (clen
+	      (input-port-fill-barrier-set! ip (elong->fixnum clen))
+	      ip)
+	     (else
+	      ip))))
+   
+   (multiple-value-bind (protocol login host port abspath)
+      (url-parse url)
+      (let* ((sock (http :host host :port port :login login :path abspath))
+	     (ip (socket-input sock))
+	     (op (socket-output sock)))
+	 (with-handler
+	    (lambda (e)
+	       (if (isa? e &http-redirection)
+                   (with-access::&http-redirection e (url)
+		      (wget url))
+		   (raise e)))
+	    (read-string (http-parse-response ip op parser))))))
+   

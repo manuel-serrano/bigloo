@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Sun Jul  5 06:37:11 2026 (serrano)                */
+;*    Last change :  Mon Jul  6 09:29:34 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing bit functions                                            */
@@ -468,6 +468,10 @@
 (define-test >=u64 (>=u64 #u64:23 (+u64 #u64:19 #u64:4322)) :expected #f)
 (define-test >=u64 (>=u64 #u64:23928798 (+u64 #u64:19 #u64:9879803)) :expected #t)
 
+(define-test elong
+   (typeof (-elong #e3 (fixnum->elong 3)))
+   :expected "elong")
+
 (define-test llong
    (let* ((octet 116)
           (len 64)
@@ -478,7 +482,7 @@
 (define-test llong
    (let ((len 64))
       (bit-lshllong #l1 (-fx len 1)))
-   :expected #l-9223372036854775808)
+   :expected (string->llong "-9223372036854775808"))
 
 (define-test llong
    (let ((len 64))
