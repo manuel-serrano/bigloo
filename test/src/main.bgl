@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Sun Jul  5 12:49:03 2026 (serrano)                */
+;*    Last change :  Mon Jul  6 16:05:16 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -54,6 +54,7 @@
    (import "./zip.bgl" . zip)
 
    ;; library tests
+   (cond-expand ((library csv) (import "./csv0.bgl" . csv0)))
    (cond-expand ((library ssl) (import "./ssl0.bgl" . ssl0)))
 
    ;; backend tests
@@ -83,49 +84,51 @@
        (set! tests (cons else tests))))
 
    (let* ((res-core (list
-                         (argsparse.test verbose tests)
-                         (bool.test verbose tests)
-                         (bigloo.test verbose tests)
-                         (bignum.test verbose tests)
-                         (bit.test verbose tests)
-                         (char.test verbose tests)
-                         (condexpand.test verbose tests)
-                         (crc.test verbose tests)
-                         (date.test verbose tests)
-                         (digest.test verbose tests)
-                         (dsssl.test verbose tests)
-                         (hash.test verbose tests)
-                         (int1.test verbose tests)
-                         (int2.test verbose tests)
-                         (internet.test verbose tests)
-                         (io.test verbose tests)
-                         (lalr.test verbose tests)
-                         (match.test verbose tests)
-                         (module.test verbose tests)
-                         (mmap.test verbose tests)
-                         (net.test verbose tests)
-                         (number.test verbose tests)
-                         (object.test verbose tests)
-                         (os.test verbose tests)
-                         (pair.test verbose tests)
-                         (port.test verbose tests)
-                         (process.test verbose tests)
-                         (real.test verbose tests)
-                         (rgc.test verbose tests)
-                         (search.test verbose tests)
-                         (serial.test verbose tests)
-                         (string.test verbose tests)
-                         (symbol.test verbose tests)
-                         (tar.test verbose tests)
-                         (thread.test verbose tests)
-                         (unicode.test verbose tests)
-                         (vector.test verbose tests)
-                         (weakptr.test verbose tests)
-                         (zip.test verbose tests)))
-          (res-libs (list
-                       (cond-expand
-                          ((library ssl) (ssl0.test verbose tests))
-                          (else (cons 0 0)))))
+                       (argsparse.test verbose tests)
+                       (bool.test verbose tests)
+                       (bigloo.test verbose tests)
+                       (bignum.test verbose tests)
+                       (bit.test verbose tests)
+                       (char.test verbose tests)
+                       (condexpand.test verbose tests)
+                       (crc.test verbose tests)
+                       (date.test verbose tests)
+                       (digest.test verbose tests)
+                       (dsssl.test verbose tests)
+                       (hash.test verbose tests)
+                       (int1.test verbose tests)
+                       (int2.test verbose tests)
+                       (internet.test verbose tests)
+                       (io.test verbose tests)
+                       (lalr.test verbose tests)
+                       (match.test verbose tests)
+                       (module.test verbose tests)
+                       (mmap.test verbose tests)
+                       (net.test verbose tests)
+                       (number.test verbose tests)
+                       (object.test verbose tests)
+                       (os.test verbose tests)
+                       (pair.test verbose tests)
+                       (port.test verbose tests)
+                       (process.test verbose tests)
+                       (real.test verbose tests)
+                       (rgc.test verbose tests)
+                       (search.test verbose tests)
+                       (serial.test verbose tests)
+                       (string.test verbose tests)
+                       (symbol.test verbose tests)
+                       (tar.test verbose tests)
+                       (thread.test verbose tests)
+                       (unicode.test verbose tests)
+                       (vector.test verbose tests)
+                       (weakptr.test verbose tests)
+                       (zip.test verbose tests)))
+          (res-libs (filter pair?
+                       (list
+                          (cond-expand
+                             ((library csv) (csv0.test verbose tests)))
+                          (cond-expand
+                             ((library ssl) (ssl0.test verbose tests))))))
           (res-extern (list
                          (cond-expand
                             (C (c.test verbose tests))

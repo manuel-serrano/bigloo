@@ -16,5 +16,7 @@
    :srfi '(csv)
    :basename "bigloocsv"
    :module-init '__csv
-   :module-eval '__csv_make_lib)
+   :module-eval '__csv_make_lib
+   :class-init "bigloo.csv.csv"
+   :class-eval "bigloo.csv.make_lib")
 

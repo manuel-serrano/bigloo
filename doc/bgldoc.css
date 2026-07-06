@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/doc/bgldoc.css                              */
+/*    serrano/prgm/project/bigloo/5.0.x/doc/bgldoc.css                 */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Thu Jul  2 08:23:16 2026 (serrano)                */
+/*    Last change :  Mon Jul  6 10:27:29 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -431,6 +431,24 @@ div.index {
     padding: 2ex 3em 2ex 2em;
     margin-top: var(--navHeight);
     column-count: 3;
+}
+
+@media (min-width: 1600px) {
+    html.index .chapter .body {
+        width: 80%;
+    }
+    div.index {
+        column-count: 4;
+    }
+}
+
+@media (min-width: 1900px) {
+    html.index .chapter .body {
+        width: 90%;
+    }
+    div.index {
+        column-count: 5;
+    }
 }
 
 div.index-section {

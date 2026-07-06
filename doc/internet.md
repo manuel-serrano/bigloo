@@ -171,6 +171,8 @@ Returns an input port the delivers the body of a _chuncked_ http response.
 Reads an http chunked response and output the read chunks to the output port.
 If `trailer` is true, sends all the character after the last chunk.
 
+Closing `ip` closes automatically the returned chunked port.
+
 ### http ###
 <!-- [:@NoTest] -->
 

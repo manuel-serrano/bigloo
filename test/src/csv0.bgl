@@ -1,0 +1,78 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/csv0.bgl              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Jul  6 16:06:56 2026                          */
+;*    Last change :  Mon Jul  6 17:27:09 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing CSV parsing                                              */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    csv0                                                             */
+;*---------------------------------------------------------------------*/
+(module csv0
+   (cond-expand ((library csv) (library csv)))
+   (library csv)
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "csv" tests))
+      (test-all verbose "csv")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test read-csv-record
+   (call-with-input-string "dog,cat,horse\npig,cow,squirrel"
+      read-csv-record)
+   :expected '("dog" "cat" "horse"))
+
+(define-test read-csv-records
+   (call-with-input-string "dog,cat,horse\npig,cow,squirrel"
+      read-csv-records)
+   :expected '(("dog" "cat" "horse") ("pig" "cow" "squirrel")))
+
+(define-test csv-for-each
+   (let ((rec #f))
+      (call-with-input-string "dog,cat,horse\npig,cow,squirrel"
+         (lambda (in)
+            (csv-for-each (lambda (r) (set! rec r)) in)))
+      rec)
+   :expected '("pig" "cow" "squirrel"))
+
+(define-test csv-map
+   (let ((rec #f))
+      (call-with-input-string "dog,cat,horse\npig,cow,squirrel"
+         (lambda (in)
+            (csv-map (lambda (r) r) in))))
+   :expected '(("dog" "cat" "horse") ("pig" "cow" "squirrel")))
+
+(define-test +csv-lexer+
+   (call-with-input-string "dog,cat,horse\npig,cow,squirrel"
+      (lambda (in) (read-csv-record in +csv-lexer+)))
+   :expected '("dog" "cat" "horse"))
+
+(define-test +ssv-lexer+
+   (call-with-input-string "dog;cat;horse\npig;cow;squirrel"
+      (lambda (in) (read-csv-records in +ssv-lexer+)))
+   :expected '(("dog" "cat" "horse") ("pig" "cow" "squirrel")))
+
+(define-test +tsv-lexer+
+   (call-with-input-string "dog\tcat\thorse\npig\tcow\tsquirrel"
+      (lambda (in) (read-csv-record in +tsv-lexer+)))
+   :expected '("dog" "cat" "horse"))
+
+(define-test +psv-lexer+
+   (call-with-input-string "dog|cat|horse\npig|cow|squirrel"
+      (lambda (in) (read-csv-record in +psv-lexer+)))
+   :expected '("dog" "cat" "horse"))

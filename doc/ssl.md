@@ -1,5 +1,5 @@
 <!--==================================================================-->
-<!--    serrano/prgm/project/bigloo/5.0a/doc/string.md                -->
+<!--    serrano/prgm/project/bigloo/5.0a/doc/ssl.md                   -->
 <!--    ----------------------------------------------------------    -->
 <!--    Author      :  manuel serrano                                 -->
 <!--    Creation    :  Mon Apr 13 10:38:02 2026                       -->
@@ -17,8 +17,10 @@ SSL
 
 Bigloo allows access to SSL sockets, certificates and private keys, in
 order to build secure encrypted and/or signed communications. The SSL
-API is implemented in the `ssl` library. A module using it must
-include in its declaration the clause `(library ssl)`. Example:
+API is implemented in the `ssl` library. 
+
+> [!IMPORTANT] A module using it must include in its declaration 
+> the clause `(library ssl)`. Example:
 
 ```bigloo
 (module ssl-ex

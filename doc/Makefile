@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0.x/doc/Makefile                   */
+#*    serrano/bigloo/5.0.x/doc/Makefile                                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Mon Jul  6 10:19:32 2026 (serrano)                */
+#*    Last change :  Mon Jul  6 16:01:12 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -37,7 +37,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = argsparse bigloo bool date digest hash error int internet \
+MD = argsparse bigloo bool csv date digest hash error int internet \
  io mmap net number os pair parser port process real serial ssl \
  string symbol tar thread vector weakptr zip \
  c jvm wasm \

@@ -15,6 +15,12 @@
 Zip
 ===
 
+This chapter describes Bigloo function that can be used to inflate
+zip and gzip compressed data.
+
+Ports
+-----
+
 ### port->gzip-port ###
 Creates a new port that automatically `unzip` the characters read from
 `in`.
@@ -40,6 +46,9 @@ unzipped when the characters are read. It is equivalent to:
 The function `open-input-inflate-file` is similar to
 `open-input-gzip-file` (see [port](./port.html) but it does not parse
 a gunzip-header before inflating the content.
+
+Transfer
+--------
 
 ### gunzip-sendchars ###
 Transmit all the characters from the gzipped input port `in` to the output port

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Joseph Donaldson (donaldsonjw@yahoo.com)          */
 ;*    Creation    :  Fri Feb 24 07:12:29 2012                          */
-;*    Last change :  Sun May 24 19:44:28 2026 (serrano)                */
+;*    Last change :  Mon Jul  6 16:55:03 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Joseph Donaldson                          */
 ;*    -------------------------------------------------------------    */
 ;*    This file is part of bigloo-csv.                                 */
@@ -22,10 +22,10 @@
 	   +ssv-lexer+
            +tsv-lexer+
            +psv-lexer+
-           (read-csv-record in #!optional (lexer +csv-lexer+))
-           (read-csv-records in #!optional (lexer +csv-lexer+))
-           (csv-for-each proc in #!optional (lexer +csv-lexer+))
-           (csv-map proc in #!optional (lexer +csv-lexer+))))
+           (read-csv-record in::input-port #!optional (lexer +csv-lexer+))
+           (read-csv-records in::input-port #!optional (lexer +csv-lexer+))
+           (csv-for-each proc in::input-port #!optional (lexer +csv-lexer+))
+           (csv-map proc in::input-port #!optional (lexer +csv-lexer+))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unique unspecified value for csv                                 */
@@ -64,7 +64,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-csv-record ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (read-csv-record in #!optional (lexer +csv-lexer+))
+(define (read-csv-record in::input-port #!optional (lexer +csv-lexer+))
    (when (not (input-port? in))
       (raise (instantiate::&io-port-error (proc "read-csv-record")
                                           (msg "invalid input port")
@@ -101,7 +101,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-csv-records ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (read-csv-records in #!optional (lexer +csv-lexer+))
+(define (read-csv-records in::input-port #!optional (lexer +csv-lexer+))
    (let loop ((curr (read-csv-record in lexer))
 	      (res '()))
       (if (eof-object? curr)
@@ -112,7 +112,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    csv-for-each ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (csv-for-each proc in #!optional (lexer +csv-lexer+))
+(define (csv-for-each proc::procedure in::input-port #!optional (lexer +csv-lexer+))
    (let loop ((curr (read-csv-record in lexer)))
       (if (eof-object? curr)
 	  #unspecified
@@ -123,7 +123,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    csv-map ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (csv-map proc in #!optional (lexer +csv-lexer+))
+(define (csv-map proc::procedure in::input-port #!optional (lexer +csv-lexer+))
    (let loop ((curr (read-csv-record in lexer))
 	      (res '()))
       (if (eof-object? curr)

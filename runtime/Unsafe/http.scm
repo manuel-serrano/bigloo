@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Mon Jul  6 08:32:21 2026 (serrano)                */
+;*    Last change :  Mon Jul  6 17:37:07 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -806,7 +806,7 @@
 ;*---------------------------------------------------------------------*/
 (define (http-chunks->port::input-port ip::input-port)
    (let ((ip2 (open-input-procedure (http-chunks->procedure ip))))
-      (input-port-close-hook-set! ip (lambda (in) (close-input-port ip)))
+      (input-port-close-hook-set! ip (lambda (in) (close-input-port ip2)))
       ip2))
 
 ;*---------------------------------------------------------------------*/
