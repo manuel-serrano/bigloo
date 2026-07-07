@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon May 25 10:43:56 2026 (serrano)                */
+#*    Last change :  Tue Jul  7 08:07:43 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -47,24 +47,11 @@ CEFLAGS		= $(CSVCFLAGS)
 # wasm as
 WASMAS		= $(BGLWATIB)
 
-# Additional pthread lib for C
-ifeq "$(CSVLIBS) " " "
-else
-EXTRALIBS	+= $(CSVLIBS)
-endif
-
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= csv
 _BGL5_OBJECTS	= make_lib5
-
-ifeq "$(CSVLIBS) " " "
-_C_OBJECTS	= 
-else
-_C_OBJECTS	= 
-endif
-_JAVA_CLASSES	= 
 
 _OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS) 
 OBJECTS		= $(_OBJECTS:%=objs/%.o)

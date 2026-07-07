@@ -1,0 +1,512 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/regexp.bgl            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Tue Jul  7 10:14:06 2026                          */
+;*    Last change :  Tue Jul  7 13:36:38 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Regular Expressions tests                                        */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    regexp                                                           */
+;*---------------------------------------------------------------------*/
+(module regexp
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "regexp" tests))
+      (test-all verbose "regexp")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define date-re
+  ;match `month year' or `month day, year'.
+  ;subpattern matches day, if present
+  (pregexp "([a-z]+) +([0-9]+,)? *([0-9]+)"))
+
+(define n0-255
+  "(?x:
+  \\d          #  0 through   9
+  | \\d\\d     # 00 through  99
+  | [01]\\d\\d #000 through 199
+  | 2[0-4]\\d  #200 through 249
+  | 25[0-5]    #250 through 255
+  )")
+
+(define ip-re1
+  (string-append
+    "^"        ;nothing before
+    n0-255     ;the first n0-255,
+    "(?x:"     ;then the subpattern of
+    "\\."      ;a dot followed by
+    n0-255     ;an n0-255,
+    ")"        ;which is
+    "{3}"      ;repeated exactly 3 times
+    "$"        ;with nothing following
+    ))
+
+(define ip-re
+  (string-append
+    "(?=[1-9])" ;ensure there's a non-0 digit
+    ip-re1))
+
+(define ip-re2
+   (string-append
+      "(?![0.]*$)" ;not just zeros and dots
+      ;dot is not metachar inside []
+      ip-re1))
+
+(define-test regexp?
+   (pregexp "c.r")
+   :expected regexp?)
+
+(define-test pregexp
+   (pregexp "c.r")
+   :expected regexp?)
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "brain" "bird")
+   :expected #f)
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "needle" "hay needle stack")
+   :expected '((4 . 10)))
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "needle"
+      "his hay needle stack -- my hay needle stack -- her hay needle stack"
+      24 43)
+    :expected '((31 . 37)))
+
+(define-test pregexp-match
+   (pregexp-match "brain" "bird")
+   :expected #f)
+
+(define-test pregexp-match
+   (pregexp-match "needle" "hay needle stack")
+   :expected '("needle"))
+
+(define-test pregexp-replace
+   (pregexp-replace "te" "liberte" "ty")
+   :expected "liberty")
+
+(define-test pregexp-replace*
+   (pregexp-replace* "te" "liberte egalite fraternite" "ty")
+   :expected "liberty egality fratyrnity")
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "^contact" "first contact")
+   :expected #f)
+
+(define-test pregexp-match-positions
+    (pregexp-match-positions "laugh$" "laugh laugh laugh laugh")
+    :expected '((18 . 23)))
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "yack\\b" "yackety yack")
+   :expected '((8 . 12)))
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "an\\B" "an analysis")
+   :expected '((3 . 5)))
+
+(define-test pregexp-match
+   (pregexp-match "p.t" "pet")
+   :expected '("pet"))
+
+(define-test pregexp-match
+   (pregexp-match "\\d\\d" "0 dear, 1 have to read catch 22 before 9")
+   :expected '("22"))
+
+(define-test pregexp-match
+   (pregexp-match "[[:alpha:]_]" "--x--")
+   :expected '("x"))
+
+(define-test pregexp-match
+   (pregexp-match "[[:alpha:]_]" "--_--")
+   :expected '("_"))
+
+(define-test pregexp-match
+   (pregexp-match "[[:alpha:]_]" "--:--")
+   :expected #f)
+
+(define-test pregexp-match
+   (pregexp-match "[[:alpha:]]" "--a--")
+   :expected '("a"))
+
+(define-test pregexp-match
+   (pregexp-match "[[:alpha:]]" "--_--")
+   :expected #f)
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "c[ad]*r" "cadaddadddr")
+   :expected '((0 . 11)))
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "c[ad]*r" "cr")
+   :expected '((0 . 2)))
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "c[ad]+r" "cadaddadddr")
+    :expected '((0 . 11)))
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "c[ad]+r" "cr")
+   :expected #f)
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "c[ad]?r" "cadaddadddr")
+   :expected #f)
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "c[ad]?r" "cr")
+    :expected '((0 . 2)))
+
+(define-test pregexp-match-positions
+    (pregexp-match-positions "c[ad]?r" "car")
+    :expected '((0 . 3)))
+
+(define-test pregexp-match
+   (pregexp-match "[aeiou]{3}" "vacuous")
+   :expected '("uou"))
+
+(define-test pregexp-match
+   (pregexp-match "[aeiou]{3}" "evolve")
+   :expected #f)
+
+(define-test pregexp-match
+   (pregexp-match "[aeiou]{2,3}" "evolve")
+   :expected #f)
+
+(define-test pregexp-match
+   (pregexp-match "[aeiou]{2,3}" "zeugma")
+   :expected '("eu"))
+
+(define-test pregexp-match
+   (pregexp-match "<.*>" "<tag1> <tag2> <tag3>")
+   :expected '("<tag1> <tag2> <tag3>"))
+
+(define-test pregexp-match
+    (pregexp-match "<.*?>" "<tag1> <tag2> <tag3>")
+    :expected '("<tag1>"))
+
+(define-test pregexp-match
+   (pregexp-match "([a-z]+) ([0-9]+), ([0-9]+)" "jan 1, 1970")
+   :expected '("jan 1, 1970" "jan" "1" "1970"))
+
+(define-test pregexp-match
+   (pregexp-match (pregexp "([a-z]+) ([0-9]+), ([0-9]+)") "jan 1, 1970")
+   :expected '("jan 1, 1970" "jan" "1" "1970"))
+
+(define-test pregexp-match
+   (pregexp-match "(poo )*" "poo poo platter")
+   :expected '("poo poo " "poo "))
+
+(define-test pregexp-match
+   (pregexp-match "([a-z ]+;)*" "lather; rinse; repeat;")
+   :expected '("lather; rinse; repeat;" " repeat;"))
+
+(define-test pregexp-match
+   (pregexp-match date-re "jan 1, 1970")
+   :expected '("jan 1, 1970" "jan" "1," "1970"))
+
+(define-test pregexp-match
+   (pregexp-match date-re "jan 1970")
+   :expected '("jan 1970" "jan" #f "1970"))
+
+(define-test pregexp-replace
+   (pregexp-replace "_(.+?)_"
+      "the _nina_, the _pinta_, and the _santa maria_"
+      "*\\1*")
+   :expected "the *nina*, the _pinta_, and the _santa maria_")
+
+(define-test pregexp-replace*
+   (pregexp-replace* "_(.+?)_"
+      "the _nina_, the _pinta_, and the _santa maria_"
+      "*\\1*")
+   :expected "the *nina*, the *pinta*, and the *santa maria*")
+
+(define-test pregexp-replace
+   (pregexp-replace "(\\S+) (\\S+) (\\S+)"
+      "eat to live"
+      "\\3 \\2 \\1")
+    :expected "live to eat")
+
+(define-test pregexp-match
+   (pregexp-match "[ac-]" "b")
+   :expected #f)
+
+(define-test pregexp-match
+   (pregexp-match "[-ac]" "b")
+   :expected #f)
+
+(define-test pregexp-match
+   (pregexp-match "([a-z]+) and \\1"
+      "billions and billions")
+   :expected '("billions and billions" "billions"))
+
+(define-test pregexp-match
+   (pregexp-match "([a-z]+) and \\1"
+      "billions and millions")
+    :expected #f)
+
+(define-test pregexp-replace*
+   (pregexp-replace* "(\\S+) \\1"
+      "now is the the time for all good men to to come to the aid of of the party"
+      "\\1")
+   :expected "now is the time for all good men to come to the aid of the party")
+
+(define-test pregexp-replace*
+   (pregexp-replace* "(\\d+)\\1"
+      "123340983242432420980980234"
+      "{\\1,\\1}")
+   :expected "12{3,3}40983{24,24}3242{098,098}0234")
+
+(define-test pregexp-match
+   (pregexp-match "^(?:[a-z]*/)*([a-z]+)$" "/usr/local/bin/mzscheme")
+   :expected '("/usr/local/bin/mzscheme" "mzscheme"))
+
+(define-test pregexp-match
+   (pregexp-match "(?i:hearth)" "HeartH")
+   :expected '("HeartH"))
+
+(define-test pregexp-match
+   (pregexp-match "(?x: a   lot)" "alot")
+   :expected '("alot"))
+
+(define-test pregexp-match
+   (pregexp-match "(?x: a  \\  lot)" "a lot")
+   :expected '("a lot"))
+
+(define-test pregexp-match
+   (pregexp-match "(?x:
+    a \\ man  \\; \\   # ignore
+    a \\ plan \\; \\   # me
+    a \\ canal         # completely
+    )"
+      "a man; a plan; a canal")
+   :expected '("a man; a plan; a canal"))
+
+(define-test pregexp-match
+   (pregexp-match "(?ix:
+    a \\ man  \\; \\   # ignore
+    a \\ plan \\; \\   # me
+    a \\ canal         # completely
+    )"
+      "A Man; a Plan; a Canal")
+   :expected '("A Man; a Plan; a Canal"))
+
+(define-test pregexp-match
+   (pregexp-match "(?i:the (?-i:TeX)book)"
+      "The TeXbook")
+   :expected '("The TeXbook"))
+
+(define-test pregexp-match
+   (pregexp-match "f(ee|i|o|um)" "a small, final fee")
+    :expected '("fi" "i"))
+
+(define-test pregexp-replace*
+   (pregexp-replace* "([yi])s(e[sdr]?|ing|ation)"
+      "it is energising to analyse an organisation pulsing with noisy organisms"
+      "\\1z\\2")
+   :expected "it is energizing to analyze an organization pulsing with noisy organisms")
+
+(define-test pregexp-match
+   (pregexp-match "f(?:ee|i|o|um)" "fun for all")
+   :expected '("fo"))
+
+(define-test pregexp-match
+   (pregexp-match "call|call-with-current-continuation"
+      "call-with-current-continuation")
+   :expected '("call"))
+
+(define-test pregexp-match
+   (pregexp-match "call-with-current-continuation|call"
+      "call-with-current-continuation")
+   :expected '("call-with-current-continuation"))
+
+(define-test pregexp-match
+   (pregexp-match "(?:call|call-with-current-continuation) constrained"
+      "call-with-current-continuation constrained")
+   :expected '("call-with-current-continuation constrained"))
+
+(define-test pregexp-match
+   (pregexp-match "(?>a+)." "aaaa")
+   :expected #f)
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "grey(?=hound)"
+      "i left my grey socks at the greyhound")
+    :expected '((28 . 32)))
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "grey(?!hound)"
+      "the gray greyhound ate the grey socks")
+    :expected '((27 . 31)))
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "(?<=grey)hound"
+      "the hound in the picture is not a greyhound")
+   :expected '((38 . 43)))
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions "(?<!grey)hound"
+      "the greyhound in the picture is not a hound")
+    :expected '((38 . 43)))
+
+(define-test pregexp-match
+   (pregexp-match ip-re1
+      "1.2.3.4")
+   :expected '("1.2.3.4"))
+
+(define-test pregexp-match
+   (pregexp-match ip-re1
+      "55.155.255.265")
+    :expected #f)
+
+(define-test pregexp-match
+   (pregexp-match ip-re1
+      "0.00.000.00")
+    :expected '("0.00.000.00"))
+
+(define-test pregexp-match
+   (pregexp-match ip-re
+      "1.2.3.4")
+    :expected '("1.2.3.4"))
+
+(define-test pregexp-match
+   (pregexp-match ip-re
+      "0.0.0.0")
+    :expected #f)
+
+(define-test pregexp-match
+   (pregexp-match ip-re2
+      "1.2.3.4")
+    :expected '("1.2.3.4"))
+
+(define-test pregexp-match
+   (pregexp-match ip-re2
+      "0.0.0.0")
+   :expected #f)
+
+(define-test pregexp-match
+   (pregexp-match "a[^a]*b" "glauber")
+   :expected '("aub"))
+
+(define-test pregexp-match
+   (pregexp-match "a([^a]*)b" "glauber")
+   :expected '("aub" "u"))
+
+(define-test pregexp-match
+   (pregexp-match "a([^a]*)b" "ababababab")
+   :expected '("ab" ""))
+
+(define-test pregexp-match
+   (pregexp-match "(?x: s  e  * k )" "seeeeek")
+   :expected '("seeeeek"))
+
+(define-test pregexp-match
+   (pregexp-match "(?x: t  #matches t
+    h          #   matches h
+    e           ###   matches e
+    \\              # # # matches space
+    \\;          #  matches ;
+    )"
+      "the ;")
+   :expected '("the ;"))
+
+(define-test pregexp-split
+   (pregexp-split ":" "/bin:/usr/bin:/usr/bin/X11:/usr/local/bin")
+   :expected '("/bin" "/usr/bin" "/usr/bin/X11" "/usr/local/bin"))
+
+(define-test pregexp-split
+   (pregexp-split " " "pea soup")
+   :expected '("pea" "soup"))
+
+(define-test pregexp-split
+   (pregexp-split "" "smithereens")
+   :expected '("s" "m" "i" "t" "h" "e" "r" "e" "e" "n" "s"))
+
+(define-test pregexp-split
+   (pregexp-split " +" "split pea     soup")
+   :expected '("split" "pea" "soup"))
+
+(define-test pregexp-split
+   (pregexp-split " *" "split pea     soup")
+   :expected '("s" "p" "l" "i" "t" "p" "e" "a" "s" "o" "u" "p"))
+
+(define-test pregexp-match
+   (pregexp-match "a{3,}" "aaaaa")
+   :expected '("aaaaa"))
+
+(define-test pregexp-match
+   (pregexp-match "a{3,100}" "aaaaa")
+   :expected '("aaaaa"))
+
+(define-test pregexp-match
+   (pregexp-match "^a{3,}" "aaaaa")
+   :expected '("aaaaa"))
+
+(define-test pregexp-match
+   (pregexp-match "^a{3,}$" "aaaaa")
+   :expected '("aaaaa"))
+
+(define-test pregexp-replace*
+   (pregexp-replace* "^(.*)$" "foobar" "\\1abc")
+   :expected "foobarabc")
+
+(define-test pregexp-replace*
+   (pregexp-replace* "^(.*)$" "foobar" "abc\\1")
+   :expected "abcfoobar")
+
+(define-test pregexp-replace*
+   (pregexp-replace* "(.*)$" "foobar" "abc\\1")
+   :expected "abcfoobar")
+
+(define-test pregexp-quote
+   (pregexp-quote "cons")
+   :expected "cons")
+
+(define-test pregexp-quote
+   (pregexp-quote "list?")
+   :expected "list\\?")
+
+(define-test pregexp-match-n-positions!
+   (let ((v (make-vector 2))
+         (s "hay needle stack")
+         (p (pregexp "needle")))
+      (pregexp-match-n-positions! p s v 0 (string-length s))
+      v)
+   :expected '#(4 10))
+
+(define-test pregexp-match-n-positions!
+   (let ((v (make-vector 8))
+         (s "4f-4c-72")
+         (p (pregexp "([[:xdigit:]]+)-([[:xdigit:]]+)-([[:xdigit:]]+)")))
+      (pregexp-match-n-positions! p s v 0 (string-length s))
+      v)
+   :expected '#(0 8 0 2 3 5 6 8))
+
+(define-test pregexp-match-n-positions!
+   (let ((v (make-vector 8))
+         (s "4f-4c-72")
+         (p (pregexp "([[:xdigit:]]+)-([[:xdigit:]]+)-([[:xdigit:]]+)")))
+      (pregexp-match-n-positions! p s v 0 (string-length s)))
+   :expected 4)
+
+(define-test pregexp-match-positions
+   (pregexp-match-positions
+      (pregexp "([[:xdigit:]]+)-([[:xdigit:]]+)-([[:xdigit:]]+)")
+      "4f-4c-72")
+   :expected '((0 . 8) (0 . 2) (3 . 5) (6 . 8)))

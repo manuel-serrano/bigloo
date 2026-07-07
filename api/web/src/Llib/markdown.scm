@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr  9 17:38:56 2026                          */
-;*    Last change :  Thu Jun  4 11:33:04 2026 (serrano)                */
+;*    Last change :  Tue Jul  7 11:05:45 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Markdown parser                                                  */
@@ -541,6 +541,8 @@
       ;; escaped characters
       ((: "\\" (in ".`*_{}[]()#+-!>,~$&"))
        (token 'text (the-substring 1 2) (the-length)))
+      ((: #\\ #\\)
+       (token 'text (the-string) (the-length)))
       
       ;; single escape characters
       ((or punct blank #\space #\\ #\&)

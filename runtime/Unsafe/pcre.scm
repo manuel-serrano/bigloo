@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/pcre.scm       */
+;*    serrano/bigloo/5.0.x/runtime/Unsafe/pcre.scm                     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Wed Aug 28 12:59:49 2024 (serrano)                */
-;*    Copyright   :  2011-24 Manuel Serrano                            */
+;*    Last change :  Tue Jul  7 11:18:35 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (PCRE)                                 */
 ;*=====================================================================*/
@@ -59,7 +59,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    regexp? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (regexp? obj)
+(define-inline (regexp?::bool obj)
    ($regexp? obj))
 
 ;*---------------------------------------------------------------------*/
@@ -86,7 +86,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    pregexp ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (pregexp re . opt-args)
+(define (pregexp re::bstring . opt-args)
    ($regcomp re opt-args #t))
 
 ;*---------------------------------------------------------------------*/
@@ -103,19 +103,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match-positions ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-match-positions pat str #!optional (beg 0) (end (string-length str)) (offset 0))
+(define (pregexp-match-positions pat str::bstring #!optional (beg 0) (end (string-length str)) (offset 0))
    (match pat str #f beg end offset))
 
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match-n-positions! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (pregexp-match-n-positions! pat::regexp str vres beg end #!optional (offset 0))
+(define-inline (pregexp-match-n-positions!::long pat::regexp str::bstring vres::vector beg::long end::long #!optional (offset 0))
    ($regmatch-n pat str vres beg end offset))
 
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-match pat str #!optional (beg 0) (end (string-length str)))
+(define (pregexp-match pat str::bstring #!optional (beg 0) (end (string-length str)))
    (match pat str #t beg end))
 
 ;*---------------------------------------------------------------------*/
@@ -177,7 +177,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-split ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-split pat str)
+(define (pregexp-split::pair-nil pat str::bstring)
    ;split str into substrings, using pat as delimiter
    (let ((n (string-length str)))
       (let loop ((i 0) (r '()) (picked-up-one-undelimited-char? #f))
@@ -199,7 +199,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-replace ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-replace pat str ins)
+(define (pregexp-replace::bstring pat str::bstring ins::bstring)
    (let* ((n (string-length str))
 	  (pp (pregexp-match-positions pat str 0 n)))
       (if (not pp) str
@@ -214,7 +214,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-replace* ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-replace* pat str ins)
+(define (pregexp-replace*::bstring pat str::bstring ins::bstring)
    ;return str with every occurrence of pat 
    ;replaced by ins
    (let ((pat (if (string? pat) (pregexp pat) pat))
@@ -244,7 +244,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-quote ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-quote s)
+(define (pregexp-quote::bstring s::bstring)
    (let loop ((i (- (string-length s) 1)) (r '()))
       (if (< i 0)
 	  (list->string r)

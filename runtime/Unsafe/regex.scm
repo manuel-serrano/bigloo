@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/regex.scm      */
+;*    serrano/bigloo/5.0.x/runtime/Unsafe/regex.scm                    */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Wed Aug 28 12:59:33 2024 (serrano)                */
-;*    Copyright   :  2011-24 Manuel Serrano                            */
+;*    Last change :  Tue Jul  7 13:40:35 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (REGEX)                                */
 ;*=====================================================================*/
@@ -175,7 +175,7 @@
 		 (pos pos))
 	 (cond
 	    ((or (=fx i len) (null? pos))
-	     i)
+	     (/fx i 2))
 	    ((pair? (car pos))
 	     (vector-set! vres i (caar pos))
 	     (vector-set! vres (+fx i 2) (cadr pos))

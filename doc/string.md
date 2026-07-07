@@ -261,8 +261,8 @@ argument `count`, is the number of characters to be scanned in `string`.
 
 ### string-skip ###
 
-Searches through the `string from the left  and 
-returns the index of the first occurrence of a character rs which:
+Searches through the `string` from left to right and 
+returns the index of the first occurrence of a character `rs` which:
 
    * is not equal to `rs` (if `rs` is a character);
    * is not in `rs` (if `rs` is a character set);
@@ -275,7 +275,7 @@ the search; the search includes the start index, but not the end
 index. Be careful of "fencepost" considerations: when searching
 right-to-left, the first index considered is end-1 whereas when
 searching left-to-right, the first index considered is start. That is,
-the start/end indices describe a same half-open interval `start` &ge; i &gt; end.
+the start/end indices describe a same half-open interval `start` &ge; i &gt; `end`.
 
 ### string-skip-right ###
 

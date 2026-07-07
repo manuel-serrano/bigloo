@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Unsafe/pregexp.scm      */
+;*    serrano/bigloo/5.0.x/runtime/Unsafe/pregexp.scm                  */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Tue Sep 17 14:50:17 2024 (serrano)                */
+;*    Last change :  Tue Jul  7 13:39:55 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
@@ -762,7 +762,7 @@
 			(pos pos))
 		(cond
 		   ((or (=fx i len) (null? pos))
-		    i)
+		    (/fx i 2))
 		   ((pair? (car pos))
 		    (vector-set! res i (caar pos))
 		    (vector-set! res (+fx i 1) (cdar pos))

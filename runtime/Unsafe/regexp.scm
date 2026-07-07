@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug 28 13:00:16 2024                          */
 ;*    Last change :  Wed Aug 28 13:08:06 2024 (serrano)                */
-;*    Copyright   :  2024 Manuel Serrano                               */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Regular expressions                                              */
 ;*=====================================================================*/
