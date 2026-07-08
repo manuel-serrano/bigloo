@@ -3,16 +3,39 @@
   <link href='./bgldoc.css' rel='stylesheet' type='text/css'>
   <link href='./favicon.png' rel='shortcut icon'>
   <script type="module">
-    const index = @INDEXJSON@
-    
+     let index = false;
+     let searchElement;
+
+     const debug = [["utf8-string-append*",'string.html#g1092'],["utf8-string-append",'string.html#g1090'],["utf8-substring",'string.html#g1089'],["utf8-string-index->string-index",'string.html#g1088'],["utf8-string-ref",'string.html#g1087'],["utf8-string-encode",'string.html#g1086'],["utf8-string-length",'string.html#g1085'],["utf8-char-size",'string.html#g1084'],["utf8-string-minimal-charset",'string.html#g1083'],["string-minimal-charset",'string.html#g1082'],["utf8-string?",'string.html#g1080'],["ascii-string?",'string.html#g1078']];
+     
      window.search = function(txt) {
-        if (txt.length > 3) {
-           index.forEach(e => {
-              if (e[0].includes(txt)) {
-                 console.log("e=" + e);
+        let html = "";
+        if (txt.length >= 3) {
+           searchElement = document.getElementById("search-results");
+           if (!index) {
+              if (txt === "string") {
+                 index = debug;
+              } else {
+                 html = "<em>not available when browsed locally</em>";
+                 import("./index.json")
+                    .then(v => { html = ""; index = v });
               }
            }
-        });
+
+           if (index) {
+              index.forEach(e => {
+                 if (e[0].includes(txt)) {
+                    html += `<div class="search-result"><a href='${e[1]}'><code>${e[0]}</code></a></div>`;
+                 }
+              });
+           }
+           searchElement.innerHTML = html;
+           searchElement.setAttribute("visible", "yes");
+        }
+     }
+
+     window.hideSearch = function() {
+        if (searchElement) searchElement.setAttribute("visible", "no");
      }
   </script>
 </head>

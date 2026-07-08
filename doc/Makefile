@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/bigloo/5.0.x/doc/Makefile                                */
+#*    serrano/prgm/project/bigloo/5.0.x/doc/Makefile                   */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Jul  7 10:21:12 2026 (serrano)                */
+#*    Last change :  Wed Jul  8 07:09:37 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -59,7 +59,7 @@ EX = $(EX_C:%=c/%) $(EX_J:%=jvm/%) $(EX_W:%=wasm/%)
 #*---------------------------------------------------------------------*/
 all: doc
 
-doc: objs bin index.html idx.html head.html
+doc: objs bin index.html idx.html
 	$(MAKE) bin/bgldoc
 
 bin/bgldoc: $(C_OBJECTS:%=objs/%)
@@ -148,43 +148,43 @@ objs/java/fib.ast.coerce: examples/java/fib.bgl objs/java
 objs/wasm/fib.ast.coerce: examples/wasm/fib.bgl objs/wasm
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -wasm -coerce
 
-%.html: %.md bin/bgldoc head.html
+%.html: %.md bin/bgldoc
 	bin/bgldoc -t libs $< > $@ || rm -f $@
 
-condexpand.html: condexpand.md bin/bgldoc  head.html
+condexpand.html: condexpand.md bin/bgldoc 
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-match.html: match.md bin/bgldoc head.html
+match.html: match.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-parser.html: parser.md bin/bgldoc head.html
+parser.html: parser.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-module5.html: module5.md bin/bgldoc head.html
+module5.html: module5.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-module4.html: module4.md bin/bgldoc head.html
+module4.html: module4.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-object.html: object.md bin/bgldoc head.html
+object.html: object.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-c.html: c.md bin/bgldoc head.html
+c.html: c.md bin/bgldoc
 	bin/bgldoc -t backends $< > $@ || rm -f $@
 
-jvm.html: jvm.md bin/bgldoc head.html
+jvm.html: jvm.md bin/bgldoc
 	bin/bgldoc -t backends $< > $@ || rm -f $@
 
-wasm.html: wasm.md bin/bgldoc head.html
+wasm.html: wasm.md bin/bgldoc
 	bin/bgldoc -t backends $< > $@ || rm -f $@
 
-index.html: index.md bin/bgldoc head.html
+index.html: index.md bin/bgldoc
 	bin/bgldoc -t home $< > $@ || rm -f $@
 
-idx.html: index.sexp bin/bgldoc head.html
+idx.html: index.sexp bin/bgldoc
 	bin/bgldoc -t index $< > $@ || rm -f $@
 
-head.html: head.html.in index.sexp 
+index.json: index.sexp
 	bigloo -i src/bglidx.bgl $+ > $@ || rm -f $@
 
 #*---------------------------------------------------------------------*/
@@ -213,5 +213,6 @@ clean_html:
 
 clean:
 	rm -rf objs bin
-	rm -rf $(MD:%=%.html) head.html
+	rm -rf $(MD:%=%.html)
 	rm -f index.sexp
+	rm -f index.json

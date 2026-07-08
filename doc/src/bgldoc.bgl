@@ -218,9 +218,11 @@
                              :lang (xml-chapter-toc 'lang lang-chapters))
 			  (xml-element 'div '((class . "chapter"))
 			     (list
-				(xml-element 'div '((class . "body"))
+				(xml-element 'div '((class . "body")
+                                                    (onclick . "hideSearch()"))
 				   (xml-element-children chapter))
-                                (xml-search)
+                                (xml-search-input)
+                                (xml-search-results)
 				(xml-toc toc)))))))
 	    (write-html doc))))
 
@@ -278,11 +280,13 @@
                        (xml-element 'div '((class . "chapter"))
                           (let+ ((elements sections) (index-entries indexes))
                              (list
-                                (xml-element 'div '((class . "body"))
+                                (xml-element 'div '((class . "body")
+                                                    (onclick . "hideSearch()"))
                                    (list
                                       (xml-element 'div '((class . "index"))
                                          (reverse! elements))))
-                                (xml-search)
+                                (xml-search-input)
+                                (xml-search-results)
                                 (xml-toc sections))))))))
          (write-html doc)))
       
@@ -385,17 +389,22 @@
 		     chapters)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    xml-search ...                                                   */
+;*    xml-search-input ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (xml-search)
+(define (xml-search-input)
    (xml-element 'div '((class . "search"))
       (list
          (xml-element 'label '()
             (list "&#x1f50d;"))
          (xml-element 'input '((oninput . "search(this.value)"))
-            '())
-         (xml-element 'div '((class . "search-results"))
             '()))))
+
+;*---------------------------------------------------------------------*/
+;*    xml-search-results ...                                           */
+;*---------------------------------------------------------------------*/
+(define (xml-search-results)
+   (xml-element 'div '((class . "search-results") (id . "search-results"))
+      '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    xml-toc ...                                                      */

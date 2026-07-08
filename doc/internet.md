@@ -47,7 +47,6 @@ The argument `url` can either be a string or an input-port. As
 `url-parse`, it returns four values.
 
 This function parses URLs as found in HTTP GET responses.
-@end deffn
 
 ### url-path-encode ###
 Encodes a path that can be used in valid URL. Escapes all the characters

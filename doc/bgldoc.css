@@ -793,7 +793,7 @@ pre.bnf .ebnf-comment {
     max-width: 25em;
     position: fixed;
     top: calc(var(--navHeight) + 4ex);
-    right: 1em;
+    right: 16px;
     display: flex;
     flex-direction: row;
     align-items: flex-end;
@@ -808,7 +808,7 @@ pre.bnf .ebnf-comment {
 }
 
 .chapter .search input:focus {
-    border: 2px solid var(--chapterTocBorder);
+    border: 1px solid var(--chapterTocBorder);
     outline: none; 
 }
 
@@ -816,14 +816,24 @@ pre.bnf .ebnf-comment {
     width: 2em;
 }
 
-.chapter .search .search-results {
+.chapter .search-results {
     display: none;
     position: fixed;
     top: calc(var(--navHeight) + 6ex);
-    right: 1em;
+    right: 16px;
     border: 1px solid var(--chapterTocBorder);
     overflow-y: auto;
-    width: 40%;
+    max-height: 30ex;
+    width: 30%;
+    background: white;
+    opacity: 1;
+    font-size: 100%;
+    padding: 4px;
+    z-index: 2;
+}
+
+#search-results[visible=yes] {
+    display: block;
 }
 
 .chapter .toc {
@@ -833,7 +843,7 @@ pre.bnf .ebnf-comment {
     position: fixed;
     top: calc(var(--navHeight) + 10ex);
     bottom: 1ex;
-    right: 1em;
+    right: 16px;
     background: var(--chapterTocBackground);
     border: 1px solid var(--chapterTocBorder);
     font-size: 95%;
