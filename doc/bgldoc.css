@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0.x/doc/bgldoc.css                 */
+/*    serrano/bigloo/5.0.x/doc/bgldoc.css                              */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Mon Jul  6 10:27:29 2026 (serrano)                */
+/*    Last change :  Tue Jul  7 13:48:29 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -788,12 +788,50 @@ pre.bnf .ebnf-comment {
     padding-top: 2ex;
 }
 
-.chapter .toc {
-    overflow-y: scroll;
+.chapter .search {
     width: 25%;
     max-width: 25em;
     position: fixed;
     top: calc(var(--navHeight) + 4ex);
+    right: 1em;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 0.1rem;
+    font-size: 95%;
+}
+
+.chapter .search input {
+    border: 1px solid var(--chapterTocBorder);
+    flex: 1;
+    font-size: 130%;
+}
+
+.chapter .search input:focus {
+    border: 2px solid var(--chapterTocBorder);
+    outline: none; 
+}
+
+.chapter .search label {
+    width: 2em;
+}
+
+.chapter .search .search-results {
+    display: none;
+    position: fixed;
+    top: calc(var(--navHeight) + 6ex);
+    right: 1em;
+    border: 1px solid var(--chapterTocBorder);
+    overflow-y: auto;
+    width: 40%;
+}
+
+.chapter .toc {
+    overflow-y: auto;
+    width: 25%;
+    max-width: 25em;
+    position: fixed;
+    top: calc(var(--navHeight) + 10ex);
     bottom: 1ex;
     right: 1em;
     background: var(--chapterTocBackground);

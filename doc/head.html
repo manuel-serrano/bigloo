@@ -2,4 +2,17 @@
   <meta charset="UTF-8">
   <link href='./bgldoc.css' rel='stylesheet' type='text/css'>
   <link href='./favicon.png' rel='shortcut icon'>
+  <script type="module">
+    const index = @INDEXJSON@
+    
+     window.search = function(txt) {
+        if (txt.length > 3) {
+           index.forEach(e => {
+              if (e[0].includes(txt)) {
+                 console.log("e=" + e);
+              }
+           }
+        });
+     }
+  </script>
 </head>

@@ -21,7 +21,8 @@ Standard Serialization
 
 ### obj->string ###
 This function converts into a string `any` Bigloo object
-which does not contain a procedure. 
+which does not contain procedures. The serialization preserves the
+sharing of values.
 
 ### string->obj ###
 

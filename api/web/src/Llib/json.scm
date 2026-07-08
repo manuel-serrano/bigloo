@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/api/web/src/Llib/json.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/api/web/src/Llib/json.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Thu Apr 23 08:26:00 2026 (serrano)                */
+;*    Last change :  Tue Jul  7 14:52:34 2026 (serrano)                */
 ;*    Copyright   :  2014-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -13,9 +13,6 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __web_json
-   
-   (option (set! *unsafe-type* #t)
-      (set! *unsafe-arity* #t))
    
    (export (json-parse ::input-port #!key
               (array-alloc (lambda ()
@@ -357,10 +354,13 @@
        (vector->json obj op fallback))
       ((pair? obj)
        (if (every (lambda (c)
-		     (and (pair? c) (or (string? (car c)) (symbol? (car c)))))
+		     (and (pair? c)
+			  (or (string? (car c))
+			      (symbol? (car c))
+			      (keyword? (car c)))))
 	      obj)
 	   (alist->json obj op fallback)
-	   (list->json obj op fallback)))
+	   (fallback obj op fallback)))
       (else
        (fallback obj op fallback))))
 
@@ -386,28 +386,6 @@
 		    (display "," op)
 		    (obj->json (vector-ref vec i) op fallback)
 		    (loop (+fx i 1)))))))))
-
-;*---------------------------------------------------------------------*/
-;*    list->json ...                                                   */
-;*---------------------------------------------------------------------*/
-(define (list->json lst op::output-port fallback)
-   (cond
-      ((null? lst)
-       (display "[]" op))
-      ((null? (cdr lst))
-       (display "[" op)
-       (obj->json (car lst) op fallback)
-       (display "]" op))
-      (else
-       (display "[" op)
-       (obj->json (car lst) op fallback)
-       (let loop ((l (cdr lst)))
-	  (if (null? l)
-	      (display "]" op)
-	      (begin
-		 (display "," op)
-		 (obj->json (car l) op fallback)
-		 (loop (cdr l))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alist->json ...                                                  */

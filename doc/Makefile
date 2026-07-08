@@ -59,7 +59,7 @@ EX = $(EX_C:%=c/%) $(EX_J:%=jvm/%) $(EX_W:%=wasm/%)
 #*---------------------------------------------------------------------*/
 all: doc
 
-doc: objs bin index.html idx.html
+doc: objs bin index.html idx.html head.html
 	$(MAKE) bin/bgldoc
 
 bin/bgldoc: $(C_OBJECTS:%=objs/%)
@@ -148,41 +148,44 @@ objs/java/fib.ast.coerce: examples/java/fib.bgl objs/java
 objs/wasm/fib.ast.coerce: examples/wasm/fib.bgl objs/wasm
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -wasm -coerce
 
-%.html: %.md bin/bgldoc
+%.html: %.md bin/bgldoc head.html
 	bin/bgldoc -t libs $< > $@ || rm -f $@
 
-condexpand.html: condexpand.md bin/bgldoc
+condexpand.html: condexpand.md bin/bgldoc  head.html
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-match.html: match.md bin/bgldoc
+match.html: match.md bin/bgldoc head.html
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-parser.html: parser.md bin/bgldoc
+parser.html: parser.md bin/bgldoc head.html
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-module5.html: module5.md bin/bgldoc
+module5.html: module5.md bin/bgldoc head.html
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-module4.html: module4.md bin/bgldoc
+module4.html: module4.md bin/bgldoc head.html
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-object.html: object.md bin/bgldoc
+object.html: object.md bin/bgldoc head.html
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
-c.html: c.md bin/bgldoc
+c.html: c.md bin/bgldoc head.html
 	bin/bgldoc -t backends $< > $@ || rm -f $@
 
-jvm.html: jvm.md bin/bgldoc
+jvm.html: jvm.md bin/bgldoc head.html
 	bin/bgldoc -t backends $< > $@ || rm -f $@
 
-wasm.html: wasm.md bin/bgldoc
+wasm.html: wasm.md bin/bgldoc head.html
 	bin/bgldoc -t backends $< > $@ || rm -f $@
 
-index.html: index.md bin/bgldoc
+index.html: index.md bin/bgldoc head.html
 	bin/bgldoc -t home $< > $@ || rm -f $@
 
-idx.html: index.sexp bin/bgldoc
+idx.html: index.sexp bin/bgldoc head.html
 	bin/bgldoc -t index $< > $@ || rm -f $@
+
+head.html: head.html.in index.sexp 
+	bigloo -i src/bglidx.bgl $+ > $@ || rm -f $@
 
 #*---------------------------------------------------------------------*/
 #*    sub-directories                                                  */
@@ -210,5 +213,5 @@ clean_html:
 
 clean:
 	rm -rf objs bin
-	rm -rf $(MD:%=%.html)
+	rm -rf $(MD:%=%.html) head.html
 	rm -f index.sexp
