@@ -17,12 +17,13 @@
                  index = debug;
               } else {
                  html = "<em>not available when browsed locally</em>";
-                 import("./index.json")
-                    .then(v => { html = ""; index = v });
+                 import("./index.json", { with: { type: "json" } })
+                    .then(v => { html = ""; index = v.default });
               }
            }
 
            if (index) {
+              console.log("index=", index);
               index.forEach(e => {
                  if (e[0].includes(txt)) {
                     html += `<div class="search-result"><a href='${e[1]}'><code>${e[0]}</code></a></div>`;

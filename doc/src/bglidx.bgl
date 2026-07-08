@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Jul  7 14:38:44 2026                          */
-;*    Last change :  Wed Jul  8 07:48:05 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 10:29:49 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Build the JSON doc index                                         */
@@ -21,5 +21,5 @@
 (define (main argv)
    (printf "[~(,)]"
       (map (lambda (a)
-              (format "[~s,'~a#~a']" (car a) (cadddr a) (caddr a)))
+              (format "[~s,\"~a#~a\"]" (car a) (cadddr a) (caddr a)))
          (call-with-input-file (cadr argv) read))))

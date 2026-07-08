@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/doc/bgldoc.css                              */
+/*    serrano/prgm/project/bigloo/5.0.x/doc/bgldoc.css                 */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Tue Jul  7 13:48:29 2026 (serrano)                */
+/*    Last change :  Wed Jul  8 09:23:29 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -294,7 +294,7 @@ div.nav-menu {
 div.nav-menu#lang {
     width: 12em;
     column-count: 1;
-    height: 12ex;
+    height: 18ex;
 }
     
 div.nav-menu#backends {

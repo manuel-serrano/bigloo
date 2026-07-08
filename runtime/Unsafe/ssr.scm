@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Unsafe/ssr.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/ssr.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Olivier Melancon                                  */
 ;*    Creation    :  Fri Jun 21 15:42:17 2024                          */
-;*    Last change :  Wed Feb  5 09:33:28 2025 (serrano)                */
-;*    Copyright   :  2024-25 Olivier Melancon                          */
+;*    Last change :  Wed Jul  8 10:57:03 2026 (serrano)                */
+;*    Copyright   :  2024-26 Olivier Melancon                          */
 ;*    -------------------------------------------------------------    */
 ;*    ssr                                                              */
 ;*    -------------------------------------------------------------    */
@@ -64,11 +64,11 @@
 	    __r4_ports_6_10_1
 	    __evenv)
    
-   (export (ssr-make-graph::vector #!key (source 0))
+   (export (ssr-make-graph::vector #!key (source::long 0))
 	   (ssr-add-edge! graph::vector from::long to::long #!key onconnect)
 	   (ssr-remove-edge! graph::vector from::long to::long #!key ondisconnect)
 	   (ssr-redirect! graph::vector node::long other::long #!key onconnect ondisconnect)
-	   (ssr-connected? graph::vector node::long)))
+	   (ssr-connected?::bool graph::vector node::long)))
 
 ;*---------------------------------------------------------------------*/
 ;*    compatibility kit                                                */
@@ -172,7 +172,7 @@
           (table-set! table x default)
           default))))
 
-(define (ssr-make-graph #!key (source 0))
+(define (ssr-make-graph::vector #!key (source::long 0))
   (vector
     source                                  ;; source
     (list->table (list (cons source 0)))    ;; ranks table
@@ -289,7 +289,7 @@
   (let ((friends (table-ref (graph-friends graph) x #f)))
     (if friends (set-contains? friends f) #f)))
 
-(define (ssr-add-edge! graph from to #!key onconnect)
+(define (ssr-add-edge! graph::vector from::long to::long #!key onconnect)
   (define queue (make-queue))
 
   (define (hoist hoister node)
@@ -312,7 +312,7 @@
 	       (n (queue-get! queue)))
 	   (hoist h n)))))
 
-(define (ssr-remove-edge! graph from to #!key ondisconnect)
+(define (ssr-remove-edge! graph::vector from::long to::long #!key ondisconnect)
   (cond
     ((not (parent? graph to from)) ;; edge not in BFS, can be removed safely
       (remove-friend! graph from to))
@@ -411,7 +411,7 @@
       (catch (queue-get! catch-queue)))
     (if ondisconnect (set-for-each ondisconnect disconnected))))
 
-(define (ssr-redirect! graph node other #!key onconnect ondisconnect)
+(define (ssr-redirect! graph::vector node::long other::long #!key onconnect ondisconnect)
   (define (find-min-by-rank nodes)
     (let loop ((best (car nodes))
                (rank (get-rank graph (car nodes)))
@@ -457,7 +457,7 @@
             ;; next edges cannot udpate rank
             (for-each (lambda (f) (when (not (= f adopter)) (add-friend! graph f other))) friendlies)))))))
 
-(define (ssr-connected? graph node)
+(define (ssr-connected?::bool graph::vector node::long)
   (not (= (get-rank graph node) infinity)))
 
 ;; tests

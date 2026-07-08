@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/doc/src/bgldoc.bgl                          */
+;*    serrano/prgm/project/bigloo/5.0.x/doc/src/bgldoc.bgl             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Tue Jul  7 13:49:13 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 09:24:25 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -61,6 +61,7 @@
      ("digest & crc" . "digest.html")
      ("hash" . "hash.html")
      ("errors" . "error.html")
+     ("graphs" . "graph.html")
      ("integers" . "int.html")
      ("internet" . "internet.html")
      ("i/o" . "io.html")
@@ -76,7 +77,7 @@
      ("serialization" . "serial.html")
      ("ssl" . "ssl.html")
      ("strings" . "string.html")
-     ("symbols" . "symbol.html")
+     ("symbols & keywords" . "symbol.html")
      ("tar" . "tar.html")
      ("threads" . "thread.html")
      ("vectors" . "vector.html")

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Wed Jul  8 07:09:37 2026 (serrano)                */
+#*    Last change :  Wed Jul  8 10:19:38 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -37,7 +37,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
-MD = argsparse bigloo bool csv date digest hash error int internet \
+MD = argsparse bigloo bool csv date digest graph hash error int internet \
  io mmap net number os pair parser port process real regexp serial ssl \
  string symbol tar thread vector weakptr zip \
  c jvm wasm \
@@ -59,7 +59,7 @@ EX = $(EX_C:%=c/%) $(EX_J:%=jvm/%) $(EX_W:%=wasm/%)
 #*---------------------------------------------------------------------*/
 all: doc
 
-doc: objs bin index.html idx.html
+doc: objs bin index.html idx.html index.json
 	$(MAKE) bin/bgldoc
 
 bin/bgldoc: $(C_OBJECTS:%=objs/%)

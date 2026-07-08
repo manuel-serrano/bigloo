@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Tue Jul  7 10:13:25 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 09:26:20 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -45,6 +45,7 @@
    (import "./rgc.bgl" . rgc)
    (import "./search.bgl" . search)
    (import "./serial.bgl" . serial)
+   (import "./ssr.bgl" . ssr)
    (import "./string.bgl" . string)
    (import "./symbol.bgl" . symbol)
    (import "./tar.bgl" . tar)
@@ -117,6 +118,7 @@
                        (rgc.test verbose tests)
                        (search.test verbose tests)
                        (serial.test verbose tests)
+                       (ssr.test verbose tests)
                        (string.test verbose tests)
                        (symbol.test verbose tests)
                        (tar.test verbose tests)
