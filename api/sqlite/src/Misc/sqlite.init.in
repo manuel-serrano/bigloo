@@ -1,11 +1,11 @@
 ;; -*- mode: bee -*-
 ;*=====================================================================*/
-;*    .../project/bigloo/wasm/api/sqlite/src/Misc/sqlite.init.in       */
+;*    .../project/bigloo/5.0.x/api/sqlite/src/Misc/sqlite.init.in      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Wed Sep 10 09:48:07 2025 (serrano)                */
-;*    Copyright   :  2001-25 Manuel Serrano                            */
+;*    Last change :  Wed Jul  8 17:21:13 2026 (serrano)                */
+;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The SQLITE init file.                                            */
 ;*=====================================================================*/
@@ -16,7 +16,7 @@
 (declare-library! 'sqlite
    :srfi '(@SQLITESRFI@)
    :basename "bigloosqlite"
-   :module-init '__sqlite_sqlite
+   :module-init '__sqlite
    :module-eval '__sqlite_makelib
    :class-init "bigloo.sqlite.sqlite"
    :class-eval "bigloo.sqlite.make_lib"

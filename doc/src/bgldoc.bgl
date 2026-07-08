@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Wed Jul  8 09:24:25 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 15:31:16 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -75,6 +75,7 @@
      ("reals" . "real.html")
      ("regexp" . "regexp.html")
      ("serialization" . "serial.html")
+     ("sqlite" . "sqlite.html")
      ("ssl" . "ssl.html")
      ("strings" . "string.html")
      ("symbols & keywords" . "symbol.html")
@@ -832,7 +833,8 @@
                     (for-each (lambda (clause)
                                  (match-case clause
                                     ((or (export . ?subclauses)
-                                         (cond-expand (bigloo-c (export . ?subclauses)) . ?-))
+                                         (cond-expand (bigloo-c (export . ?subclauses)) . ?-)
+                                         (cond-expand (((kwote and) ((kwote or) bigloo-c . ?-) . ?-) (export . ?subclauses)) . ?-))
                                      (for-each (lambda (subclause)
                                                   (match-case subclause
                                                      (((or class abstract-class wide-class final-class) ?def . ?fields)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 17:44:47 2007                          */
-;*    Last change :  Wed May 20 08:37:16 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 17:55:10 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The portable replacement for sqlite                              */
@@ -129,7 +129,7 @@
 ;*    $sqltiny-get ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define ($sqltiny-get builtin proc cmd obj)
-   (let ((p (lambda (res) (when (pair? res) (apply proc (car res))))))
+   (let ((p (lambda (res) (when (pair? res) (apply proc (car res) #f)))))
       (sqltiny-do builtin cmd obj p)))
 
 ;*---------------------------------------------------------------------*/

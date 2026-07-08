@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/api/sqlite/src/Makefile         */
+#*    serrano/prgm/project/bigloo/5.0.x/api/sqlite/src/Makefile        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Mar 10 09:09:44 2026 (serrano)                */
+#*    Last change :  Wed Jul  8 17:30:04 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -79,7 +79,9 @@ JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
 
 _WIN32_SRC	= 
 
-WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) Wlib/wsqlite.wat
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) \
+                  $(_BGL5_OBJECTS:%=objs/%.wat) \
+                  Wlib/wsqlite.wat
 WEOBJECTS	= $(EOBJECTS:%.o=%.wat)
 
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)

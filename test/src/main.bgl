@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Wed Jul  8 09:26:20 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 15:34:07 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -57,6 +57,7 @@
 
    ;; library tests
    (cond-expand ((library csv) (import "./csv0.bgl" . csv0)))
+   (cond-expand ((library sqlite) (import "./sqlite0.bgl" . sqlite0)))
    (cond-expand ((library ssl) (import "./ssl0.bgl" . ssl0)))
 
    ;; backend tests
@@ -131,6 +132,8 @@
                        (list
                           (cond-expand
                              ((library csv) (csv0.test verbose tests)))
+                          (cond-expand
+                             ((library sqlite) (sqlite0.test verbose tests)))
                           (cond-expand
                              ((library ssl) (ssl0.test verbose tests))))))
           (res-extern (list

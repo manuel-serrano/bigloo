@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 14 14:18:12 2006                          */
-;*    Last change :  Wed Jul  8 15:19:10 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 17:41:30 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Facilities for handling a the database                           */
@@ -528,82 +528,3 @@
                                 WHERE p.name=name
                                 GROUP BY name)
               GROUP BY name")))
-
-;*---------------------------------------------------------------------*/
-;*    db-list ...                                                      */
-;*---------------------------------------------------------------------*/
-(define (db-list db)
-   (sqlite-map db
-      (lambda (id name version language description url authors reldate)
-	 (display (pkglib-color 'arg0 name))
-	 (sqlite-map db
-	    (lambda (version)
-	       (sqlite-map db
-		  (lambda (release path)
-		     (display " ")
-		     (cond
-			((not (file-exists? path))
-			 (display version)
-			 (display "-")
-			 (display release))
-			((or (string=? url "") (string=? release "0"))
-			 (display (pkglib-color 'warning version))
-			 (display (pkglib-color 'warning "-"))
-			 (display (pkglib-color 'warning release))
-			 (display (pkglib-color 'warning "!")))
-			(else
-			 (display (pkglib-color 'arg1 version))
-			 (display (pkglib-color 'arg1 "-"))
-			 (display (pkglib-color 'arg1 release))
-			 (display "*"))))
-		  "SELECT release, path
-                   FROM package
-                   WHERE (name=~q) and (version=~q)
-                   ORDER BY release DESC"
-		  name version))
-	    "SELECT version
-             FROM package
-             WHERE (name=~q)
-             ORDER BY version DESC"
-	    name)
-	 (sqlite-eval db
-	    (lambda (host)
-	       (display* " " (pkglib-color 'error "fail")))
-	    "SELECT host
-              FROM port
-              WHERE (package=~q) and (status='failure') and (host='bigloo')"
-	    id)
-	 (newline)
-	 (when (>=fx (pkglib-verbose) 1)
-	    (unless (string=? description "")
-	       (display "  ")
-	       (print (pkglib-color 'arg2 description))))
-	 (when (>=fx (pkglib-verbose) 2)
-	    (unless (string=? url "")
-	       (print "  url: " url))
-	    (unless (string=? authors "")
-	       (print "  authors: " authors))
-	    (let ((l language))
-	       (print "  language: " (substring l 1 (- (string-length l) 1))))
-	    (let ((tunings (sqlite-map db
-			      (lambda (t) t)
-			      "SELECT host
-                                FROM tuning
-                                WHERE (package=~q)
-                                ORDER BY host"
-			      id)))
-	       (when (pair? tunings)
-		  (print "  tunings: " tunings)))
-	    (let ((dep (sqlite-map db
-			  (lambda (n) n)
-			  "SELECT name
-                            FROM depend
-                            WHERE (package=~q)
-                            ORDER BY name"
-			  id)))
-	       (when (pair? dep)
-		  (print "  dependencies: " dep))
-	       (print "  sync date: " (seconds->date (string->elong reldate))))))
-      "SELECT id, name, version, language, description, url, authors, reldate
-        FROM package p
-        ORDER BY name"))

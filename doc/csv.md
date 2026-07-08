@@ -20,7 +20,7 @@ data. By default, it enables the parsing of comma, tab, and pipe
 separated data. In addition, facilities are provided that enable
 extending the library to support additonal csv-like formats.
 
-> [!IMPORTANT] A module using the CSV must include in its declaration
+> [!IMPORTANT] A module using CSV features must include in its declaration
 > the clause `(library csv)`. Example:
 
 ```bigloo

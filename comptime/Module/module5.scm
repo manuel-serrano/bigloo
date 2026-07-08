@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Jul  7 15:00:02 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 16:57:50 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -129,13 +129,17 @@
 			  (let loop ((dfargs dfargs)
 				     (dcargs dcargs)
 				     (args '()))
-			     ;; this assumes that dfargs and dcargs compatibility
-			     ;; has already been checked
+			     ;; this assumes that dfargs and dcargs
+			     ;; compatibility has already been checked
 			     (cond
 				((null? dfargs)
 				 (reverse! args))
 				((symbol? dfargs)
-				 (reverse (cons (type-arg dfargs dcargs def) args)))
+				 (if (null? args)
+				     (type-arg dfargs dcargs def)
+				     (let ((args (reverse args)))
+					(set-cdr! (last-pair args) (type-arg dfargs dcargs def))
+					args)))
 				((symbol? (car dfargs))
 				 (loop (cdr dfargs) (cdr dcargs)
 				    (cons (type-arg (car dfargs) (car dcargs) def)

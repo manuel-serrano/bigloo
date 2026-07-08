@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Mon Jun 22 14:34:43 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 16:55:34 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -890,14 +890,6 @@
 	       (id id)
 	       (alias alias)
 	       (scope 'import))))
-      (when (and (eq? (-> mod id) 'capture)
-		 (eq? decl-id 'LinearLayout$LayoutParams.new2))
-	 (tprint "IMPORT FROM " (-> idecl mod id))
-	 (let ((c::Decl (hashtable-symbol-get (-> mod decls)
-			   'LinearLayout$LayoutParams.new2)))
-	    (tprint "CURRENT=" (-> c mod id)
-	       " " (-> c scope) " " (-> c attributes))))
-	       
       (hashtable-symbol-put! (-> mod decls) decl-id d)
       (hashtable-symbol-put! (-> mod imports) import-id d)
       d))

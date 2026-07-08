@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/test/src/port.bgl                           */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/port.bgl              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Fri Jul  3 08:44:04 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 15:40:27 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing ports                                                    */
@@ -527,7 +527,8 @@
    :expected '(#t . #t))
 
 (define-test output-port-flush-hook-set!
-   (let* ((p (open-output-file "/tmp/recette.TMP" 10))
+   (let* ((f (make-file-name (os-tmp) "recette.TMP"))
+          (p (open-output-file f 10))
 	  (n 0)
 	  (fhook (lambda (p s) (set! n (+ s n)))))
       (output-port-flush-hook-set! p fhook)
@@ -536,7 +537,7 @@
       (write "bar" p)
       (write '(1 2 3) p)
       (close-output-port p)
-      (delete-file "recette.TMP")
+      (delete-file f)
       n)
    :expected 17)
 
@@ -620,7 +621,7 @@
 (define-test lockf
    (cond-expand
       (c
-       (let ((path "/tmp/bigloo-test-lock"))
+       (let ((path (make-file-name (os-tmp) "bigloo-test-lock")))
           (unwind-protect 
              (call-with-output-file path
                 (lambda (op)

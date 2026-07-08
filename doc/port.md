@@ -68,7 +68,7 @@ differently. Here are the recognized prefixes:
     * `http://server:port-number/path`.
     * `http://user:password@server:port-number/path`.
 
-  * `https:` opens an `https` connection. See `http:`.
+  * `https:` opens an `https` connection similarly to an `http` connection.
   
   * `ftp:` Opens an `ftp` connection on `server` and open an input file
      on file `path`. Log in as anonymous.

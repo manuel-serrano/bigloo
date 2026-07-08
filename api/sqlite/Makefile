@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/wasm/api/sqlite/Makefile             */
+#*    serrano/prgm/project/bigloo/5.0.x/api/sqlite/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Thu Jul 31 06:05:11 2025 (serrano)                */
-#*    Copyright   :  2001-25 Manuel Serrano                            */
+#*    Last change :  Wed Jul  8 17:51:04 2026 (serrano)                */
+#*    Copyright   :  2001-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -39,8 +39,6 @@ all: build
 boot: build
 
 build:
-	@ $(MAKE) build-c && $(MAKE) build-jvm
-build.bug:
 	@ $(MAKE) build-c && $(MAKE) build-jvm && $(MAKE) build-wasm
 
 c: build-c
@@ -60,8 +58,6 @@ build-jvm:
           fi
 
 build-wasm:
-
-XXbuild-wasm:
 	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
 	    echo "[0m[1;31m>>> WASM[0m"; \
 	    $(MAKE) -C src build-wasm; \

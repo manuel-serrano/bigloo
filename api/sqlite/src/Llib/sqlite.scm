@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Thu Nov 10 13:55:46 2005                          */
-;*    Last change :  Wed May 20 08:35:56 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 17:21:30 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SQLITE Scheme binding                                            */
@@ -12,7 +12,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __sqlite_sqlite
+(module __sqlite
    
    (option (set! *dlopen-init-gc* #t))
 
@@ -53,14 +53,14 @@
 	    
 	    (sqlite-last-insert-rowid ::%sqlite)
 
-	    (sqlite-format ::bstring . ::obj))
+	    (sqlite-format::bstring ::bstring . ::obj))
 
    (cond-expand
       ((and (or bigloo-c bigloo-wasm) (not sqltiny))
        (export (class sqlite::%sqlite
 		  (%setup-sqlite!)
 		  ($builtin::$sqlite (default ($sqlite-nil))))
-	       ($sqlite-nil)))
+	       ($sqlite-nil::$sqlite)))
       (else
        (export (class sqlite::sqltiny)))))
 
@@ -69,7 +69,7 @@
 ;*---------------------------------------------------------------------*/
 (cond-expand
    ((and (or bigloo-c bigloo-wasm) (not sqltiny))
-    (define ($sqlite-nil)
+    (define ($sqlite-nil::$sqlite)
        ($_sqlite-nil))))
 
 ;*---------------------------------------------------------------------*/
@@ -381,7 +381,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    sqlite-format ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (sqlite-format fmt . objs)
+(define (sqlite-format::bstring fmt::bstring . objs)
    (let ((p (open-output-string))
 	 (len (string-length fmt)))
       (let loop ((i 0)
