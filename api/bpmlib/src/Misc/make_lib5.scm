@@ -1,18 +1,17 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/5.0.x/api/sqlite/src/Misc/make_lib5.scm       */
+;*    .../project/bigloo/5.0.x/api/bpmlib/src/Misc/make_lib5.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
-;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Wed Jul  8 14:34:45 2026 (serrano)                */
-;*    Copyright   :  2001-26 Manuel Serrano                            */
+;*    Creation    :  Wed Jul  8 13:50:26 2026                          */
+;*    Last change :  Wed Jul  8 13:50:29 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    The module used to build the heap file.                          */
+;*    bpmlib                                                           */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module sqlite
-   (export :version 4 "../Llib/sqltypes.scm")
-   (export :version 4 "../Llib/sqlite.scm")
-   (export :version 4 "../Llib/sqltiny.scm"))
+(module bpmlib
+   (export :version 4 "../Llib/bpmlib.scm")
+   (export :version 4 "../Llib/verify.scm"))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Fri Jun 26 08:10:04 2026 (serrano)                */
+;*    Last change :  Wed Jul  8 11:49:56 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -957,6 +957,7 @@
      ("| " . ,%open-input-pipe)
      ("pipe:" . ,%open-input-pipe)
      ("http://" . ,%open-input-http-socket)
+     ("https://" . ,%open-input-http-socket)
      ("gzip:" . ,open-input-gzip-file)
      ("zlib:" . ,open-input-zlib-file)
      ("inflate:" . ,open-input-inflate-file)

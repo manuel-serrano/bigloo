@@ -1,0 +1,22 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/api/csv/src/Misc/bpmlib.init.in      */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Joseph Donaldson (donaldsonjw@yahoo.com)          */
+;*    Creation    :  Fri Feb 24 07:12:29 2012                          */
+;*    Last change :  Fri Dec 13 12:02:19 2013 (serrano)                */
+;*    Copyright   :  2011-13 Joseph Donaldson                          */
+;*    -------------------------------------------------------------    */
+;*    This file is part of bpm.                                        */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'bpmlib 
+   :srfi '(bpmlib)
+   :basename "bigloobpmlib"
+   :module-init '__bpmlib
+   :module-eval '__bpmlib_make_lib
+   :class-init "bigloo.bpmlib.bpmlib"
+   :class-eval "bigloo.bpmlib.make_lib")
+

@@ -1,0 +1,107 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/bpm/database.bgl               */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
+;*    Last change :  Wed Jul  8 15:26:35 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    npm database                                                     */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    database                                                         */
+;*---------------------------------------------------------------------*/
+(module database
+   (library sqlite)
+   (import "./config.bgl" . config)
+   (import "./utils.bgl" . utils)
+   (export update list-packages))
+
+;*---------------------------------------------------------------------*/
+;*    update ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (update)
+   (unless (directory? config.rc-directory)
+      (make-directories config.rc-directory)
+      (instantiate::sqltiny
+         (path (make-file-name config.rc-directory "packages")))))
+   
+;*---------------------------------------------------------------------*/
+;*    list-packages ...                                                */
+;*---------------------------------------------------------------------*/
+(define (list-packages db)
+   (sqlite-map db
+      (lambda (id name version language description url authors reldate)
+	 (display (utils.color 'arg0 name))
+	 (sqlite-map db
+	    (lambda (version)
+	       (sqlite-map db
+		  (lambda (release path)
+		     (display " ")
+		     (cond
+			((not (file-exists? path))
+			 (display version)
+			 (display "-")
+			 (display release))
+			((or (string=? url "") (string=? release "0"))
+			 (display (utils.color 'warning version))
+			 (display (utils.color 'warning "-"))
+			 (display (utils.color 'warning release))
+			 (display (utils.color 'warning "!")))
+			(else
+			 (display (utils.color 'arg1 version))
+			 (display (utils.color 'arg1 "-"))
+			 (display (utils.color 'arg1 release))
+			 (display "*"))))
+		  "SELECT release, path
+                   FROM package
+                   WHERE (name=~q) and (version=~q)
+                   ORDER BY release DESC"
+		  name version))
+	    "SELECT version
+             FROM package
+             WHERE (name=~q)
+             ORDER BY version DESC"
+	    name)
+	 (sqlite-eval db
+	    (lambda (host)
+	       (display* " " (utils.color 'error "fail")))
+	    "SELECT host
+              FROM port
+              WHERE (package=~q) and (status='failure') and (host='bigloo')"
+	    id)
+	 (newline)
+	 (when (config.verbose? 1)
+	    (unless (string=? description "")
+	       (display "  ")
+	       (print (utils.color 'arg2 description))))
+	 (when (config.verbose? 2)
+	    (unless (string=? url "")
+	       (print "  url: " url))
+	    (unless (string=? authors "")
+	       (print "  authors: " authors))
+	    (let ((l language))
+	       (print "  language: " (substring l 1 (- (string-length l) 1))))
+	    (let ((tunings (sqlite-map db
+			      (lambda (t) t)
+			      "SELECT host
+                                FROM tuning
+                                WHERE (package=~q)
+                                ORDER BY host"
+			      id)))
+	       (when (pair? tunings)
+		  (print "  tunings: " tunings)))
+	    (let ((dep (sqlite-map db
+			  (lambda (n) n)
+			  "SELECT name
+                            FROM depend
+                            WHERE (package=~q)
+                            ORDER BY name"
+			  id)))
+	       (when (pair? dep)
+		  (print "  dependencies: " dep))
+	       (print "  sync date: " (seconds->date (string->elong reldate))))))
+      "SELECT id, name, version, language, description, url, authors, reldate
+        FROM package p
+        ORDER BY name"))

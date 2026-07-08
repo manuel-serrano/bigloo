@@ -1,0 +1,141 @@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/5.0.x/api/bpmlib/src/Makefile        */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Apr  1 18:45:46 1998                          */
+#*    Last change :  Wed Jul  8 15:07:14 2026 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    The makefile to build the library.                               */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Standard Bpm configuration                                       */
+#*---------------------------------------------------------------------*/
+include ../../../Makefile.buildconfig
+include ../../../Makefile.config
+include ../../../Makefile.misc
+
+#*---------------------------------------------------------------------*/
+#*    Compilers, Tools and Destinations                                */
+#*---------------------------------------------------------------------*/
+# the library name
+API		= bpmlib
+# Directories
+BIGLOO_SRC_DIR 	= Llib
+C_SRC_DIR 	= Clib
+PLUGIN_SRC_DIR 	= 
+MISC_SRC_DIR 	= Misc
+# Where to store the library class files
+PBASE		= bigloo.$(API)
+CLASS_DIR	= objs/class_s/bigloo/$(API)
+CLASS_EDIR	= objs/class_es/bigloo/$(API)
+# The Bigloo compiler
+AFILE		= $(BGLBUILDBINDIR)/bglafile.sh
+JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
+DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
+BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
+CIGLOO		= $(BGLBUILDBINDIR)/cigloo
+# Bigloo compilation options
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee \
+                  -srfi $(API) -copt "$(BPMCFLAGS) -DBGL_DUMMY"
+CAPIFLAGS       = $(BPMCFLAGS) $(CGCTHREADFLAGS)
+# Flags to build a heap
+BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
+                  -heap-library $(API) -srfi $(API)
+# C flags
+CEFLAGS		= $(BPMCFLAGS)
+# wasm as
+WASMAS		= $(BGLWATIB)
+# Extra libs
+BIGLOOEXTRALIBS += bigloosqlite
+
+#*---------------------------------------------------------------------*/
+#*    Scheme extended objects                                          */
+#*---------------------------------------------------------------------*/
+_BGL_OBJECTS	= bpmlib verify database
+_BGL5_OBJECTS	= make_lib5
+
+_OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS) 
+OBJECTS		= $(_OBJECTS:%=objs/%.o)
+
+EOBJECTS	= objs/make_lib.o
+
+BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class) \
+                  $(_BGL5_OBJECTS:%=$(CLASS_DIR)/%.class)
+BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
+
+JAVA_CLASSES	= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.class)
+JAVA_CLASSES_SRC= $(_JAVA_CLASSES:%=$(CLASS_DIR)/%.java)
+
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) $(_BGL5_OBJECTS:%=objs/%.wat)
+WEOBJECTS	= $(EOBJECTS:%.o=%.wat)
+
+_WIN32_SRC	= 
+
+_BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm)
+_C_SOURCES	= $(_C_OBJECTS:%=$(C_SRC_DIR)/%.c)
+_JAVA_SOURCES	= $(_JAVA_CLASSES:%=$(JAVA_SRC_DIR)/%.java)
+_WIN32_SOURCES	= $(_WIN32_SRC:%=$(WIN32_SRC_DIR)/%)
+
+SOURCES		= $(_BGL_SOURCES) \
+                  $(_C_SOURCES) \
+                  $(_JAVA_SOURCES)
+INCLUDES	= $(BIGLOO_SRC_DIR)/csv.sch
+
+#*---------------------------------------------------------------------*/
+#*    all                                                              */
+#*---------------------------------------------------------------------*/
+.PHONY: c jvm build-c build-jvm build-wasm
+
+all: 
+	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
+             $(MAKE) build-c; \
+	  fi
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+             $(MAKE) build-jvm; \
+	  fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+             $(MAKE) build-wasm; \
+	  fi
+
+c: build-c
+build-c: api-c
+
+jvm: build-jvm
+build-jvm: api-jvm
+
+wasm: build-wasm
+build-wasm: api-wasm
+
+$(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
+	@ echo "*** ERROR: $@ is out of date (older than $?)"
+	@ echo "You need to re-configure \"(cd ..; ./configure --bootconfig)\""
+	@ exit 1
+
+#*---------------------------------------------------------------------*/
+#*    pop ...                                                          */
+#*---------------------------------------------------------------------*/
+pop:
+	@ echo $(POPULATION:%=$(API)/src/%)
+
+#*---------------------------------------------------------------------*/
+#*    clean                                                            */
+#*---------------------------------------------------------------------*/
+clean: api-clean
+
+cleanall: api-cleanall
+
+distclean: cleanall
+
+#*---------------------------------------------------------------------*/
+#*    Common API rules                                                 */
+#*---------------------------------------------------------------------*/
+include ../../Makefile.api
+
+#bdepend start (don't edit)
+#*---------------------------------------------------------------------*/
+#*    Dependencies ...                                                 */
+#*---------------------------------------------------------------------*/
+objs/bpm.o Llib/bpm.class:
+
+#bdepend stop

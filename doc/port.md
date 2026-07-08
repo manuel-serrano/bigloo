@@ -66,13 +66,15 @@ differently. Here are the recognized prefixes:
     * `http://server/path` opens an `http` connection on `server` and open an 
       input file on file `path`.
     * `http://server:port-number/path`.
-    * `http://user:password@@server:port-number/path`.
+    * `http://user:password@server:port-number/path`.
 
+  * `https:` opens an `https` connection. See `http:`.
+  
   * `ftp:` Opens an `ftp` connection on `server` and open an input file
      on file `path`. Log in as anonymous.
 
     * `ftp://server/path`
-    * `ftp://user:password@@server/path`
+    * `ftp://user:password@server/path`
 
   * `ressource:` opens a JVM `ressource` file. Opening a `ressource:` file in 
     non JVM backend always return `#f`. On the JVM backend it returns

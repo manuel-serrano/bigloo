@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Jun 14 06:36:45 2026 (serrano)                */
+#*    Last change :  Wed Jul  8 13:46:09 2026 (serrano)                */
 #*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -43,7 +43,7 @@ lispdir=
 rpath=
 
 #*--- api -------------------------------------------------------------*/
-importantapis="pthread srfi18 ssl sqlite web multimedia mail srfi1 calendar text crypto openpgp csv upnp libuv libbacktrace"
+importantapis="pthread srfi18 ssl sqlite web multimedia mail srfi1 calendar text crypto openpgp csv upnp libuv libbacktrace bpmlib"
 apis="$importantapis alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat mqtt browser"
 
 #*--- bee configuration -----------------------------------------------*/
@@ -1569,6 +1569,7 @@ if [ "$action" != "bigloo_config_el" ]; then
       libuv) libuv_is_enabled="yes";;
       libbacktrace) libbacktrace_is_enabled="yes";;
       browser) browser_is_enabled="yes";;
+      bpmlib) bpmlib_is_enabled="yes";;
     esac
   done
   
@@ -4923,6 +4924,12 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       >>  api/csv/src/Misc/csv.init
   cat api/csv/src/Llib/csv.sch \
       >>  api/csv/src/Misc/csv.init
+  
+  # BPMLIB
+  $echo ";; automatically generated. Don't edit" > api/bpmlib/src/Misc/bpmlib.init
+  cat api/bpmlib/src/Misc/bpmlib.init.in \
+      >>  api/bpmlib/src/Misc/bpmlib.init
+  
   # BROWSER
   if [ " $browser " != " no" ]; then
     $echo "BROWSER=$browser" >> $makefile_cfg
