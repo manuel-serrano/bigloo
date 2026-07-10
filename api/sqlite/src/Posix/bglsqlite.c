@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/bigloo/api/sqlite/src/Posix/bglsqlite.c       */
+/*    .../project/bigloo/5.0.x/api/sqlite/src/Posix/bglsqlite.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sun Dec 10 09:15:43 2023 (serrano)                */
-/*    Copyright   :  2005-23 Manuel Serrano                            */
+/*    Last change :  Thu Jul  9 08:03:46 2026 (serrano)                */
+/*    Copyright   :  2005-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SQLITE support                                                   */
 /*=====================================================================*/
@@ -71,13 +71,16 @@ bgl_sqlite_close(sqlite3 *db, obj_t odb) {
 /*---------------------------------------------------------------------*/
 static int
 sqlite_callback_exec(obj_t *res, int argc, char **argv, char **colname) {
-   if (argc == 0) {
-      *res = BFALSE;
-   } else {
-      if (argv[0]) {
-	 *res = string_to_bstring(argv[0]);
+   if (res[0] == BFALSE) {
+      res[0] = BTRUE;
+      if (argc == 0) {
+	 res[1] = BFALSE;
       } else {
-	 *res = BUNSPEC;
+	 if (argv[0]) {
+	    res[1] = string_to_bstring(argv[0]);
+	 } else {
+	    res[1] = BUNSPEC;
+	 }
       }
    }
       
@@ -91,7 +94,7 @@ sqlite_callback_exec(obj_t *res, int argc, char **argv, char **colname) {
 BGL_RUNTIME_DEF obj_t
 bgl_sqlite_exec(sqlite3 *db, char *str, obj_t odb) {
   char *msg;
-  obj_t result = BFALSE;
+  obj_t result[] = { BFALSE, BUNSPEC };
   int rc;
 
   rc = sqlite3_exec(db, str, (int (*)(void *, int, char **, char **))sqlite_callback_exec,
@@ -113,7 +116,7 @@ bgl_sqlite_exec(sqlite3 *db, char *str, obj_t odb) {
      }
   }
   
-  return result;
+  return result[1];
 }
 
 /*---------------------------------------------------------------------*/
@@ -486,10 +489,10 @@ bgl_sqlite_eval(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
 /*    sqlite_callback_get ...                                          */
 /*---------------------------------------------------------------------*/
 static int
-sqlite_callback_get(obj_t proc, int argc, char **argv, char **colname) {
+sqlite_callback_get(obj_t *res, int argc, char **argv, char **colname) {
    if (argc != 0) {
       obj_t keys = sqlite_make_vector(argc, colname);
-      BGL_PROCEDURE_CALL2(proc, keys, sqlite_make_vector(argc, argv));
+      res[1] = BGL_PROCEDURE_CALL2(res[0], keys, sqlite_make_vector(argc, argv));
    }
 
    return 1;
@@ -502,10 +505,11 @@ sqlite_callback_get(obj_t proc, int argc, char **argv, char **colname) {
 BGL_RUNTIME_DEF obj_t
 bgl_sqlite_get(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
   char *msg;
+  obj_t result[] = { proc, BFALSE };
   int rc;
 
   rc = sqlite3_exec(db, str, (int (*)(void *, int, char **, char **))sqlite_callback_get,
-                    proc, &msg);
+                    result, &msg);
 
   if (rc != SQLITE_OK && rc != SQLITE_ABORT) {
      char *buf = (char *)alloca(strlen(str) + strlen(msg) + 17);
@@ -523,7 +527,7 @@ bgl_sqlite_get(sqlite3 *db, obj_t proc, char *str, obj_t odb) {
      }
   }
   
-  return BINT(rc);
+  return result[1];
 }
    
 /*---------------------------------------------------------------------*/

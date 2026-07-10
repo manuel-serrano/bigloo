@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/api/sqlite/src/Llib/parser.scm      */
+;*    .../prgm/project/bigloo/5.0.x/api/sqlite/src/Llib/parser.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 18 08:30:50 2007                          */
-;*    Last change :  Tue Mar 10 09:06:57 2026 (serrano)                */
+;*    Last change :  Thu Jul  9 09:17:31 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable sqltiny parser                                          */
@@ -57,7 +57,8 @@
       ;; tokens
       (CREATE DROP ALTER TABLE
 	      INDEX TRIGGER VIEW
-	      SEMI-COMMA COMMA PAR-OPEN PAR-CLO NAME RENAME TO ADD COLUMN
+	      SEMI-COMMA COMMA PAR-OPEN PAR-CLO NAME BUILTIN RENAME
+	      TO ADD COLUMN
 	      CONSTRAINT NULL ISNULL NOTNULL
 	      ON CONFLICT PRIMARY KEY UNIQUE CHECK
 	      DEFAULT COLLATE AUTOINCREMENT
@@ -487,8 +488,10 @@
 		 ,where
 		 ,group-by
 		 ,order-by
-		 ,limit)))
-      
+		 ,limit))
+       ((SELECT BUILTIN PAR-OPEN PAR-CLO)
+	`(builtin ,(car BUILTIN))))
+
       ;; all-or-distinct
       (all-or-distinct
        (()

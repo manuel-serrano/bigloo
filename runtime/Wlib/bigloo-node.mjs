@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul  3 15:50:25 2026 (serrano)                */
+/*    Last change :  Fri Jul 10 13:29:05 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -758,7 +758,6 @@ const processArgv = (globalThis.window && "Deno" in window)
    : process.argv;
 
 const { client, rts, libs, argv } = bglParseArgs(processArgv);
-
 
 /*---------------------------------------------------------------------*/
 /*    top-level                                                        */

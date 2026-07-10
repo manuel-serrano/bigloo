@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Jul  7 08:07:43 2026 (serrano)                */
+#*    Last change :  Fri Jul 10 16:53:47 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -44,8 +44,6 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API) -srfi $(API)
 # C flags
 CEFLAGS		= $(CSVCFLAGS)
-# wasm as
-WASMAS		= $(BGLWATIB)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */

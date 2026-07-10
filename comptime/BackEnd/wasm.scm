@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Fri Jun 26 07:44:01 2026 (serrano)                */
+;*    Last change :  Thu Jul  9 15:31:11 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -363,6 +363,7 @@ esac")
    (define data (create-hashtable :weak 'open-string))
    (define exports-whitelist (create-hashtable :weak 'open-string))
    (define initial-order (create-hashtable :weak 'open-string))
+   (define funcs (create-hashtable :weak 'open-string))
    
    (define (collect-exports modules)
       (for-each (lambda (d)
@@ -375,13 +376,25 @@ esac")
 		       (hashtable-put! exports n #t))))
 	 modules))
    
+   (define (collect-funcs modules)
+      (let ((fs (collect-module modules 'func)))
+	 (for-each (lambda (f)
+		      (hashtable-put! funcs (symbol->string (cadr f)) f))
+	    fs)
+	 fs))
+
    (define (remove-scheme-imports! modules)
       (filter! (lambda (d)
 		  (match-case d
+		     ((import ?m ?n (func (and (? symbol?) ?id) . ?-))
+		      (or (string-prefix? "__js" m)
+			  (and (not (hashtable-contains? exports n))
+			       (not (hashtable-contains? funcs (symbol->string id))))))
 		     ((import ?m ?n ???-)
 		      (or (string-prefix? "__js" m)
 			  (not (hashtable-contains? exports n))))
-		     (else #t)))
+		     (else
+		      #t)))
 	 modules))
    
    (define (remove-duplicate-imports! modules)
@@ -405,7 +418,15 @@ esac")
    (define (remove-duplicate-memories! memories)
       (map! (lambda (i) `(memory ,i))
 	 (delete-duplicates!
-	    (map! cadr memories))))
+	    (map! (lambda (m)
+		     (match-case m
+			((memory ?id)
+			 id)
+			((memory (? symbol?) (export (? string?)) ?id)
+			 id)
+			(eles
+			 (error "wasm" "illegal memory declaration" m))))
+	       memories))))
    
    (define (remove-duplicate-tags! modules)
       (filter! (lambda (d)
@@ -629,10 +650,11 @@ esac")
    
    (let* ((modules (append-map read-module files))
 	  ;; tags must be collected before the imports
-	  (tags (remove-duplicate-tags! (collect-module modules 'tag))))
+	  (tags (remove-duplicate-tags! (collect-module modules 'tag)))
+	  (funcs (collect-funcs modules)))
       (collect-exports modules)
       (remove-scheme-imports! modules)
-      
+
       (with-output-to-file target
 	 (lambda ()
 	    (wasm-pp
@@ -657,8 +679,7 @@ esac")
 		   (comment "data")
 		   ,@(remove-duplicate-data! (collect-module modules 'data))
 		   (comment "func")
-		   ,@(collect-module modules 'func)
-		   ;;(sort-modules! modules)
+		   ,@funcs
 		   ))
 	    :scheme-string #f))))
 
@@ -1253,11 +1274,6 @@ esac")
    (let ((ids *extra-ref-funcs*))
       (for-each-global! (get-genv)
 	 (lambda (g)
-;* 	    (tprint "g=" (shape g)                                     */
-;* 	       " req=" (require-prototype? g)                          */
-;* 	       " eqm=" (eq? (global-module g) *module*)                */
-;* 	       " scnst=" (scnst? (global-value g))                     */
-;* 	       " tof=" (typeof (global-value g)))                      */
 	    (when (and (require-prototype? g) (eq? (global-module g) *module*))
 	       (let ((v (global-value g)))
 		  (cond
@@ -1674,7 +1690,8 @@ esac")
 	    (library
 	     (string-append "__" (symbol->string library)))
 	    ((not (eq? module 'foreign))
-	     (string-append "$" (symbol->string module)))
+	     (symbol->string module))
+	     ;(string-append "$" (symbol->string module)))
 	    (else
 	     ($bigloo))))))
 
@@ -1740,7 +1757,7 @@ esac")
 ;*    emit-memory ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (emit-memory)
-   `((import ,($bigloo) "memory" (memory 0))))
+   `((import ,($bigloo) "memoryBigloo" (memory 0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-tmp-file-name ...                                           */

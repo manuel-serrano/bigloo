@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/api/sqlite/src/Llib/engine.scm      */
+;*    .../prgm/project/bigloo/5.0.x/api/sqlite/src/Llib/engine.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 18:35:10 2007                          */
-;*    Last change :  Tue Mar 10 09:26:29 2026 (serrano)                */
+;*    Last change :  Thu Jul  9 10:26:01 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple SQLTINY evaluator                                         */
@@ -315,6 +315,8 @@
 		   (when (keycheck obj row rows replacep)
 		      (set! rowid (+fx 1 rowid))
 		      (vector-set! row 0 rowid)
+		      (with-access::$sqltiny builtin (last-insert-rowid)
+			 (set! last-insert-rowid rowid))
 		      (let ((last (cons row '())))
 			 (if (pair? last-row-pair)
 			     (set-cdr! last-row-pair last)
@@ -391,7 +393,7 @@
 	  (rows (select-c '())))
       (map (lambda (row)
 	      (map! (lambda (v) (if (integer? v) (integer->string v) v)) row))
-	   rows)))
+	 rows)))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqltiny-update ...                                               */
@@ -422,7 +424,7 @@
 ;*    compile-select ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (compile-select tnames result where group orderby distinct
-			limit env obj builtin)
+	   limit env obj builtin)
    (let* ((frame (map (lambda (t) (make-select-frame t obj builtin)) tnames))
 	  (nenv (append frame env))
 	  (table (prod (map (lambda (b)
@@ -446,7 +448,7 @@
 			    (lambda (rows)
 			       (let ((gs (select-group-by rows group-c)))
 				  (map (lambda (g) (sort g order-c)) gs)))))))
-      (multiple-value-bind (print-c aggregation)
+      (multiple-value-bind (print-c aggregation cols)
 	 (compile-select-results result nenv obj builtin)
 	 (let ((grps->res (cond
 			     (aggregation
@@ -454,21 +456,21 @@
 				 (filter-map (lambda (g)
 						(when (pair? g)
 						   (make-select-result-row
-						    (car g) g print-c)))
-					     groups)))
+						      (car g) g print-c)))
+				    groups)))
 			     ((pair? group)
 			      (lambda (groups)
 				 (filter-map (lambda (g)
 						(when (pair? g)
 						   (make-select-result-row
-						    (car g) group print-c)))
-					     groups)))
+						      (car g) group print-c)))
+				    groups)))
 			     (else
 			      (lambda (groups)
 				 (map (lambda (r)
 					 (make-select-result-row
-					  r group print-c))
-				      (car groups))))))
+					    r group print-c))
+				    (car groups))))))
 	       (limit (match-case limit
 			 (#f
 			  (lambda (rows)
@@ -492,13 +494,13 @@
 	    (lambda (rows)
 	       (let* ((rows (filter-iter (lambda (r)
 					    (where-c (append r rows)))
-					 table))
+			       table))
 		      (groups (rows->groups rows))
 		      (res0 (grps->res groups))
 		      (res1 (if distinct
 				(select-distinguish res0)
 				res0)))
-		  (limit res1)))))))
+		  (values (limit res1) cols)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    compile-update ...                                               */
@@ -512,8 +514,10 @@
 			  frame)))
 	  (where-c (compile-expr where nenv obj builtin)))
       (lambda (rows)
-	 (apply append
-		(filter-iter (lambda (r) (where-c (append r rows))) table)))))
+	 (values
+	    (apply append
+	       (filter-iter (lambda (r) (where-c (append r rows))) table))
+	    #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    filter-iter ...                                                  */
@@ -564,10 +568,10 @@
       (else
        (let ((tests (map (lambda (o)
 			    (list
-			     (compile-expr (car o) env obj builtin)
-			     (if (eq? (cdr o) 'desc) sqltiny> sqltiny<)
-			     (if (eq? (cdr o) 'desc) sqltiny< sqltiny>)))
-			 order)))
+			       (compile-expr (car o) env obj builtin)
+			       (if (eq? (cdr o) 'desc) sqltiny> sqltiny<)
+			       (if (eq? (cdr o) 'desc) sqltiny< sqltiny>)))
+		       order)))
 	  (lambda (v1 v2)
 	     (let loop ((tests tests))
 		(if (null? tests)
@@ -646,17 +650,18 @@
 		      l0)))))
 
 ;*---------------------------------------------------------------------*/
-;*    compile-select-results ...                                       */
+;*    compile-select-results..                                         */
 ;*---------------------------------------------------------------------*/
 (define (compile-select-results results env obj builtin)
    (let loop ((results results)
 	      (compilers '())
-	      (aggreg #f))
+	      (aggreg #f)
+	      (cols '()))
       (if (null? results)
-	  (values (reverse! compilers) aggreg)
-	  (multiple-value-bind (c a)
+	  (values (reverse! compilers) aggreg (reverse! cols))
+	  (multiple-value-bind (c a s)
 	     (compile-select-result (car results) env obj builtin)
-	     (loop (cdr results) (cons c compilers) (or a aggreg))))))
+	     (loop (cdr results) (cons c compilers) (or a aggreg) (cons s cols))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    compile-select-result ...                                        */
@@ -664,30 +669,39 @@
 (define (compile-select-result expr env obj builtin)
    (match-case expr
       (*
-       (let ((tbl (cdr (car env))))
-	  (values 
-	   (lambda (row rows)
-	      (append-map (lambda (v)
-			     (map (lambda (col)
-				     (with-access::$sqltiny-column col (index)
-					(vector-ref v index)))
-				(with-access::$sqltiny-table tbl (*columns)
-				   *columns)))
-			  row))
-	   #f)))
+       (values 
+	  (lambda (row rows)
+	     (append-map (lambda (v env)
+			    (let ((tbl (cdr env)))
+			       (map (lambda (col)
+				       (with-access::$sqltiny-column col (index)
+					  (vector-ref v index)))
+				  (with-access::$sqltiny-table tbl (*columns)
+				     *columns))))
+		row env))
+	  #f
+	  (append-map (lambda (env)
+			 (let ((tbl (cdr env)))
+			    (map (lambda (col)
+				    (with-access::$sqltiny-column col (name) name))
+			       (with-access::$sqltiny-table tbl (*columns)
+				  *columns))))
+	     env)))
       ((?name . *)
        (let ((i (table-offset-in-list obj env name)))
 	  (values 
 	   (lambda (row rows)
 	      (cdr (vector->list (list-ref row i))))
-	   #f)))
+	   #f
+	   (list name))))
       ((colref ?table-name ?name)
        (multiple-value-bind (i j)
 	  (find-column-offset obj env table-name name)
 	  (values 
 	   (lambda (row rows)
 	      (list (vector-ref (list-ref row i) j)))
-	   #f)))
+	   #f
+	   (list name))))
       ((funcall ?aggregator (colref ?table-name ?name))
        (multiple-value-bind (i j)
 	  (find-column-offset obj env table-name name)
@@ -710,7 +724,10 @@
 				   (vector-ref (list-ref r i) j))
 				rows)))
 		    (list (op as))))
-	      #t))))
+	      #t
+	      (list (format "~a(~a)"
+		       (string-upcase (symbol->string! aggregator))
+		       name))))))
       (else
        (raise
 	(instantiate::&error
@@ -771,10 +788,10 @@
 		 #t))
 	     (else
 	      (raise
-	       (instantiate::&error
-		  (proc "compile-expr")
-		  (msg (format "SQL error: not implemented (OP) ~a" expr))
-		  (obj obj)))))))
+		 (instantiate::&error
+		    (proc "compile-expr")
+		    (msg (format "SQL error: not implemented (OP) ~a" expr))
+		    (obj obj)))))))
       ((is-select ?select-statement)
        (let ((select-c (compile-expr select-statement env obj builtin)))
 	  (lambda (rows)
@@ -792,7 +809,7 @@
 		(if (eq? op 'in) ret (not ret))))))
       ((select ?distinct ?result ?tnames ?where ?group ?order ?lim)
        (compile-select tnames result where group order distinct lim
-		       env obj builtin))
+	  env obj builtin))
       ((update ?tname ?where)
        (compile-update tname where env obj builtin))
       ((in-value ?expr ?value-list)
@@ -816,10 +833,10 @@
 			(pregexp-match (like->regexp vpat) vstr)))))
 	     ((GLOB)
 	      (raise
-	       (instantiate::&error
-		  (proc "compile-expr")
-		  (msg (format "SQL error: not implemented (GLOB) ~a" expr))
-		  (obj obj))))
+		 (instantiate::&error
+		    (proc "compile-expr")
+		    (msg (format "SQL error: not implemented (GLOB) ~a" expr))
+		    (obj obj))))
 	     ((REGEXP)
 	      (if (eq? no 'not)
 		  (lambda (rows)
@@ -832,18 +849,30 @@
 			(pregexp-match vpat vstr)))))
 	     ((MATCH)
 	      (raise
-	       (instantiate::&error
-		  (proc "compile-expr")
-		  (msg (format "SQL error: not implemented (MATCH) ~a" expr))
-		  (obj obj)))))))
+		 (instantiate::&error
+		    (proc "compile-expr")
+		    (msg (format "SQL error: not implemented (MATCH) ~a" expr))
+		    (obj obj)))))))
+      ((builtin (and ?op (? string?)))
+       (cond
+	  ((string=? op "last_insert_rowid")
+	   (lambda (rows)
+	      (with-access::$sqltiny builtin (last-insert-rowid)
+		 (values (list (list last-insert-rowid)) #f))))
+	  (else
+	   (raise
+	      (instantiate::&error
+		 (proc "compile-expr")
+		 (msg (format "SQL error: not implemented ~s" expr))
+		 (obj obj))))))
       (#t
-       (lambda (rows) #t))
+       (lambda (rows) (values #t #f)))
       (else
        (raise
-	(instantiate::&error
-	   (proc "compile-expr")
-	   (msg (format "SQL error: not implemented (ELSE) ~a" expr))
-	   (obj obj))))))
+	  (instantiate::&error
+	     (proc "compile-expr")
+	     (msg (format "SQL error: not implemented ~s" expr))
+	     (obj obj))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    like->regexp ...                                                 */

@@ -15,12 +15,9 @@
 SQLITE
 ======
 
-The C and wasm back-ends support SQL queries. It relies on the SQLite
-library (@url{http://www.sqlite.org/}). The SQLite binding is
-accessible to Bigloo via the @code{sqlite} library. Here is an example
-of module that uses this library.
-
-The jvm backend only supports the limited `sqlitiny` implementation
+The threw backend supports SQL queries but only the C backend relies
+on the native SQLite library (@url{http://www.sqlite.org/}). The jvm
+and wasm backends only supports the limited `sqlitiny` implementation
 that is compatible with sqlite but that is slower.
 
 > [!IMPORTANT] A module that uses Sqlite features must include in its
@@ -92,7 +89,7 @@ implicitly invoking `sqlite-format` on `string` and the optional
 `arg` arguments. The result of the function is built by applying 
 `procedure` to the first value returned by the SQLite call.
 
-> [!NOTE] user callback (`procedure`) _must not_ exit. That is they must
+> [!NOTE] user callbacks (`procedure`) _must not_ exit. That is they must
 > not invoke a function create by `bind-exit`. Exiting from a callback will
 > leave the database in a inconsistent state that prevent transactions to
 > be rolled back.
@@ -101,111 +98,60 @@ implicitly invoking `sqlite-format` on `string` and the optional
 Similar to `sqlite-eval` but the callback is invoked with two
 arguments: an array of column names and an array of values.
 
-@deffn {bigloo sqlite function} sqlite-for-each @var{sqlite} @var{procedure} @var{string} @var{arg} @dots{}
-The function @code{sqlite-for-each} invokes a SQLite command built by
-implicitly invoking @code{sqlite-format} on @var{string} and the optional
-@var{arg} arguments. The function @var{procedure} is applied to all
+> [!NOTE] user callbacks (`procedure`) _must not_ exit. That is they must
+> not invoke a function create by `bind-exit`. Exiting from a callback will
+> leave the database in a inconsistent state that prevent transactions to
+> be rolled back.
+
+### sqlite-for-each ###
+The function `sqlite-for-each` invokes a SQLite command built by
+implicitly invoking `sqlite-format` on `string` and the optional
+`arg` arguments. The function `procedure` is applied to all
 the elements statisfying the request. It accepts two vectors. The
 first one is the name of the table column, the second the values.
-The function @var{sqlite-for-each} does not return any value.
+The function `sqlite-for-each` does not return any value.
 
-Note: user callback (@var{procedure}) @b{must not} exit. That is they must
-not invoke a function create by @code{bind-exit}. Exiting from a callback will
-leave the database in a inconsistent state that prevent transactions to
-be rolled back.
+> [!NOTE] user callbacks (`procedure`) _must not_ exit. That is they must
+> not invoke a function create by `bind-exit`. Exiting from a callback will
+> leave the database in a inconsistent state that prevent transactions to
+> be rolled back.
 
-Example:
+### sqlite-map ###
+The function `sqlite-map` invokes a SQLite command built by
+implicitly invoking `sqlite-format` on `string` and the optional
+`arg` arguments. The result is a list whose elements are built by applying 
+`procedure` to all the values returned by the SQLite call.
 
-@smalllisp
-(module example
-   (library sqlite))
+> [!NOTE] user callbacks (`procedure`) _must not_ exit. That is they must
+> not invoke a function create by `bind-exit`. Exiting from a callback will
+> leave the database in a inconsistent state that prevent transactions to
+> be rolled back.
 
-(define *db* (instantiate::sqlite))
-
-(sqlite-exec *db* "CREATE TABLE foo (x INTEGER, y INTEGER)")
-(for-each (lambda (x)
-		(sqlite-exec *db*  "INSERT INTO foo VALUES(~A, ~A)" x (* x x)))
-	     (iota 10))
-(sqlite-map *db* 
-  (lambda (keys vals) (print keys vals))
-  "SELECT * FROM foo")
-   @print{} #("x" "y") #(0 0)
-            #("x" "y") #(1 1)
-            ...
-@end smalllisp
-@end deffn
-
-@deffn {bigloo sqlite function} sqlite-map @var{sqlite} @var{procedure} @var{string} @var{arg} @dots{}
-The function @code{sqlite-map} invokes a SQLite command built by
-implicitly invoking @code{sqlite-format} on @var{string} and the optional
-@var{arg} arguments. The result is a list whose elements are built by applying 
-@var{procedure} to all the values returned by the SQLite call.
-
-Note: user callback (@var{procedure}) @b{must not} exit. That is they must
-not invoke a function create by @code{bind-exit}. Exiting from a callback will
-leave the database in a inconsistent state that prevent transactions to
-be rolled back.
-Example:
-
-@smalllisp
-(module example
-   (library sqlite))
-
-(define *db* (instantiate::sqlite))
-
-(sqlite-exec *db* "CREATE TABLE foo (x INTEGER, y INTEGER)")
-(for-each (lambda (x)
-		(sqlite-exec *db*  "INSERT INTO foo VALUES(~A, ~A)" x (* x x)))
-	     (iota 10))
-(sqlite-map *db* 
-  (lambda (s1 s2) (+ (string->integer s1) (string->integer s2))) 
-  "SELECT * FROM foo")
-   @result{} (0 2 6 12 20 30 42 56 72 90)
-@end smalllisp
-@end deffn
-
-Example2:
-@smalllisp
-(module example
-   (library sqlite))
-
-(define *db* (instantiate::sqlite))
-
-(sqlite-exec *db* "CREATE TABLE foo (x INTEGER, y INTEGER)")
-(for-each (lambda (x)
-		(sqlite-exec *db*  "INSERT INTO foo VALUES(~A, ~A)" x (* x x)))
-	     (iota 10))
-(sqlite-map *db* vector "SELECT * FROM foo")
-   @result{} '(#("0" "0")
-	#("1" "1")
-	#("2" "4")
-	#("3" "9")
-	#("4" "16")
-	#("5" "25")
-	#("6" "36")
-	#("7" "49")
-	#("8" "64")
-	#("9" "81"))
-@end smalllisp
-
-@deffn {bigloo sqlite function} sqlite-name-of-tables @var{sqlite}
+### sqlite-name-of-tables ###
 Returns the name of tables in the database. This list can also be
-obtained with
+obtained with:
 
-@smalllisp
+```bigloo
 (sqlite-map db
    (lambda (x) x)
    "SELECT name FROM sqlite_master WHERE type='table'")
-@end smalllisp
-@end deffn
+```
 
-@deffn {bigloo sqlite function} sqlite-table-name-of-columns @var{sqlite} @var{table}
+<span></span>
+
+### sqlite-table-name-of-columns ###
 Returns the name of columns in the table.
-@end deffn
 
-@deffn {bigloo sqlite function} sqlite-last-insert-rowid @var{sqlite}
-Returns the SQLite @emph{rowid} of the last inserted row.
-@end deffn
+### sqlite-last-insert-rowid ###
+Returns the SQLite _rowid_ of the last inserted row. This can also be
+obtained with:
+
+```bigloo
+(sqlite-exec db
+   "SELECT last_insert_rowid()")
+```
+
+<span></span>
 
 
 

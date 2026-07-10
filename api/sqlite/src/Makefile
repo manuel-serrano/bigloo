@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Jul  8 17:30:04 2026 (serrano)                */
+#*    Last change :  Fri Jul 10 16:53:50 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -43,8 +43,6 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API) -srfi $(SQLITESRFI)
 # C flags
 CEFLAGS		= 
-# wasm as
-WASMAS		= $(BGLWATIB)
 
 # Additional sqlite lib for C
 ifeq "$(SQLITELIBS) " " "

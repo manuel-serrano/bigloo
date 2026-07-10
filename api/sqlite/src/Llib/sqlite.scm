@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Thu Nov 10 13:55:46 2005                          */
-;*    Last change :  Wed Jul  8 17:21:30 2026 (serrano)                */
+;*    Last change :  Thu Jul  9 08:48:37 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SQLITE Scheme binding                                            */
@@ -56,7 +56,7 @@
 	    (sqlite-format::bstring ::bstring . ::obj))
 
    (cond-expand
-      ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+      ((and bigloo-c (not sqltiny))
        (export (class sqlite::%sqlite
 		  (%setup-sqlite!)
 		  ($builtin::$sqlite (default ($sqlite-nil))))
@@ -68,7 +68,7 @@
 ;*    $sqlite-nil ...                                                  */
 ;*---------------------------------------------------------------------*/
 (cond-expand
-   ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+   ((and bigloo-c (not sqltiny))
     (define ($sqlite-nil::$sqlite)
        ($_sqlite-nil))))
 
@@ -91,7 +91,7 @@
 ;*---------------------------------------------------------------------*/
 (define (%setup-sqlite! o::sqlite)
    (cond-expand
-      ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+      ((and bigloo-c (not sqltiny))
        (with-access::sqlite o ($builtin path)
 	  (set! $builtin ($sqlite-open path))))
       (else
@@ -110,7 +110,7 @@
 ;*---------------------------------------------------------------------*/
 (define (sqlite-config . args)
    (cond-expand
-      ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+      ((and bigloo-c (not sqltiny))
        (for-each (lambda (arg)
 		    (let ((cfg (case arg
 				  ((SQLITE_CONFIG_MULTITHREAD) $SQLITE_CONFIG_MULTITHREAD)
@@ -160,7 +160,7 @@
       (set! $builtin (class-nil $sqltiny))))
 
 (cond-expand
-   ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+   ((and bigloo-c (not sqltiny))
     (define-method (sqlite-close o::sqlite)
        (with-access::sqlite o ($builtin)
 	  ($sqlite-close $builtin o)))))
@@ -177,7 +177,7 @@
 	  ($sqltiny-exec $builtin (apply sqlite-format fmt args) o))))
 
 (cond-expand
-   ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+   ((and bigloo-c (not sqltiny))
     (define-method (sqlite-exec o::sqlite fmt::bstring . args)
        (with-access::sqlite o ($builtin)
 	  (if (null? args)
@@ -217,7 +217,7 @@
 	  ($sqltiny-eval $builtin p (apply sqlite-format fmt args) o))))
 
 (cond-expand
-   ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+   ((and bigloo-c (not sqltiny))
     (define-method (sqlite-eval o::sqlite p::procedure fmt::bstring . args)
        (let* ((exc #f)
 	      (p (sqlite-callback p exc)))
@@ -242,7 +242,7 @@
 	  (error "sqlite-get" "wrong callback arity" p))))
 
 (cond-expand
-   ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+   ((and bigloo-c (not sqltiny))
     (define-method (sqlite-get o::sqlite p::procedure fmt::bstring . args)
       (if (correct-arity? p 2)
 	  (let* ((exc #f)
@@ -267,7 +267,7 @@
 	  ($sqltiny-map $builtin p (apply sqlite-format fmt args) o))))
 
 (cond-expand
-   ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+   ((and bigloo-c (not sqltiny))
     (define-method (sqlite-map o::sqlite p::procedure fmt::bstring . args)
        (let* ((exc #f)
 	      (p (sqlite-callback p exc)))
@@ -292,7 +292,7 @@
 	  (error "sqlite-for-each" "wrong callback arity" p))))
 
 (cond-expand
-   ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+   ((and bigloo-c (not sqltiny))
     (define-method (sqlite-for-each o::sqlite p::procedure fmt::bstring . args)
       (if (correct-arity? p 2)
 	  (let* ((exc #f)
@@ -302,8 +302,8 @@
 		   (if (null? args)
 		       ($sqlite-for-each $builtin p fmt o)
 		       ($sqlite-for-each $builtin p (apply sqlite-format fmt args) o)))
-		(when exc (raise exc)))
-	     (error "sqlite-for-each" "wrong callback arity" p))))))
+		(when exc (raise exc))))
+	  (error "sqlite-for-each" "wrong callback arity" p)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqlite-run ...                                                   */
@@ -374,7 +374,7 @@
    #unspecified)
 
 (cond-expand
-   ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+   ((and bigloo-c (not sqltiny))
     (define-method (sqlite-dump-table db::sqlite table out)
        (write (sqlite-exec db (string-append ".dump " table)) out))))
 
@@ -386,14 +386,17 @@
 	 (len (string-length fmt)))
       (let loop ((i 0)
 		 (os objs))
+	 
 	 (define (next os fmt)
 	    (if (null? os)
 		(error "sqlite-format" "Insufficient number of arguments" fmt)
 		(car os)))
+	 
 	 (define (print-radix radix num)
 	    (if (not (number? num))
 		(error "sqlite-format" "Illegal number" num)
 		(display (number->string num radix) p)))
+	 
 	 (define (display-sqlite obj p l)
 	    (cond
 	       ((string? obj)
@@ -423,6 +426,7 @@
 		(display-sqlite-struct obj p))
 	       (else
 		(display obj p))))
+	 
 	 (define (display-sqlite-pair obj p)
 	    (display "(" p)
 	    (let loop ((obj obj))
@@ -437,6 +441,7 @@
 		  (else
 		   (display " " p)
 		   (loop (cdr obj))))))
+	 
 	 (define (display-sqlite-vector obj p)
 	    (display "#(" p)
 	    (let ((len (vector-length obj)))
@@ -447,6 +452,7 @@
 			 (display " " p)
 			 (display-sqlite (vector-ref obj i) p 1)
 			 (loop (+fx i 1)))))))
+	 
 	 (define (display-sqlite-struct obj p)
 	    (display "#{" p)
 	    (display (struct-key obj) p)
@@ -458,6 +464,7 @@
 			 (display " " p)
 			 (display-sqlite (struct-ref obj i) p 1)
 			 (loop (+fx i 1)))))))
+	 
 	 (define (display-sqlite-list obj p)
 	    (cond
 	       ((null? obj)
@@ -477,6 +484,7 @@
 		       (display (car o) p))
 		      (else
 		       (error "sqlite-form" "Illegal list" obj)))))))
+	 
 	 (define (display-sqlite-quote-list obj p)
 	    (cond
 	       ((not (pair? obj))
@@ -496,6 +504,7 @@
 		       (display-sqlite (car o) p 0))
 		      (else
 		       (error "sqlite-form" "Illegal list" obj)))))))
+	 
 	 (if (<fx i len)
 	     (let ((c (string-ref fmt i)))
 		(if (char=? c #\~)
@@ -561,4 +570,3 @@
 ;*---------------------------------------------------------------------*/
 (define (sqlite-last-insert-rowid db)
    (sqlite-exec db "SELECT last_insert_rowid()"))
-

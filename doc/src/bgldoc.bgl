@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Wed Jul  8 15:31:16 2026 (serrano)                */
+;*    Last change :  Fri Jul 10 17:53:22 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -834,6 +834,7 @@
                                  (match-case clause
                                     ((or (export . ?subclauses)
                                          (cond-expand (bigloo-c (export . ?subclauses)) . ?-)
+                                         (cond-expand (((kwote and) bigloo-c . ?-) (export . ?subclauses)) . ?-)
                                          (cond-expand (((kwote and) ((kwote or) bigloo-c . ?-) . ?-) (export . ?subclauses)) . ?-))
                                      (for-each (lambda (subclause)
                                                   (match-case subclause

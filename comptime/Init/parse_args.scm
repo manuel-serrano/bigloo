@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri May 22 07:30:20 2026 (serrano)                */
+;*    Last change :  Fri Jul 10 14:02:40 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -443,7 +443,12 @@
 			  "-freturn"
 			  "-freturn-goto"
 			  "-copt" ,*cflags-optim*
-			  "-static-all-bigloo"))) 
+			  "-static-all-bigloo")))
+      (("-Ox" (help "Experimental optimizations on"))
+       (do-parse-args `("-O6"
+			  "-freturn"
+			  "-freturn-goto"
+			  "-copt" ,*cflags-optim*)))
       ;; optimization
       (("-O?opt" (help "-O[0..6]" "Optimization modes"))
        (parse-optim-args opt))

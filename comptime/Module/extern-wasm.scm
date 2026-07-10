@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Mon Jun 15 07:49:01 2026 (serrano)                */
+;*    Last change :  Thu Jul  9 15:22:51 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -61,6 +61,26 @@
    
    (define (parse-clause clause mod::Module)
       (match-case clause
+	 (((and (? string?) ?mod) (and (? symbol?) ?ident) . ?args)
+	  (multiple-value-bind (id type)
+	     (parse-ident ident)
+	     (let* ((nc `(,ident ,args ,(symbol->string id)))
+		    (g (extern-parser nc #f)))
+		(global-module-set! g (string->symbol mod))
+		g)))
+	 (((and (? string?) ?mod) (and (? string?) ?cn) ?id . ?args)
+	  (let* ((nc `(,id ,args ,cn))
+		 (g (extern-parser nc #f)))
+	     (global-module-set! g (string->symbol mod))
+	     g))
+	 (((and (? symbol?) ?id) ?proto (and (? string?) ?cn))
+	  (extern-parser clause #f))
+	 (((and (? symbol?) ?id) ?proto (and (? string?) ?cn) (and (? symbol?) ?mod))
+	  (let* ((nc `(,id ,proto ,cn))
+		 (g (extern-parser nc #f)))
+	     (tprint "c=" nc " " (typeof g))
+	     (global-module-set! g mod)
+	     g))
 	 (((and (? symbol?) ?ident) (and (? string?) ?name) . ?deps)
 	  (multiple-value-bind (id type)
 	     (parse-ident ident)
@@ -76,8 +96,7 @@
 			      (cons (cons 'qualified-type-name name)
 				 attributes))))
 		    (error/loc "mod" "Cannot find declaration" clause expr)))))
-	 (((and (? symbol?) ?id) ?proto (and (? string?) ?cn))
-	  (extern-parser clause #f))
+	 
 	 (else
 	  (error/loc mod "Illegal extern \"wasm\" module clause" clause expr))))
    

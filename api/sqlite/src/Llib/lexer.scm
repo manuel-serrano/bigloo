@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/api/sqlite/src/Llib/lexer.scm       */
+;*    .../prgm/project/bigloo/4.7b/api/sqlite/src/Llib/lexer.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 18 08:28:42 2007                          */
-;*    Last change :  Mon Apr 27 10:50:27 2026 (serrano)                */
+;*    Last change :  Fri Jul 10 14:21:11 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Portable sqltiny lexer                                           */
@@ -37,19 +37,25 @@
 			"UNION" "INTERSECT" "EXCEPT" "OR" "IF" "EXISTS"
 			"USING" "DELETE" "REPLACE" "SET" "UPDATE" "VACUUM"
 			"PRAGMA"))
-	  (t (create-hashtable :size (* 3 (length l)))))
+	  (t (create-hashtable :size (* 3 (length l)) :weak 'open-string)))
       (for-each (lambda (v) (hashtable-put! t v #t)) l)
       t))
 
 (define *like*
    (let ((l '("LIKE" "GLOB" "REGEXP" "MATCH"))
-	 (t (create-hashtable :size 12)))
+	 (t (create-hashtable :size 12 :weak 'open-string)))
       (for-each (lambda (v) (hashtable-put! t v #t)) l)
       t))
 
 (define *join*
    (let* ((l '("NATURAL" "LEFT" "RIGHT" "FULL" "OUTER" "INNER" "CROSS" "JOIN"))
-	  (t (create-hashtable :size (* 3 (length l)))))
+	  (t (create-hashtable :size (* 3 (length l)) :weak 'open-string)))
+      (for-each (lambda (v) (hashtable-put! t v #t)) l)
+      t))
+
+(define *builtin*
+   (let* ((l '("last_insert_rowid"))
+	  (t (create-hashtable :size (* 3 (length l)) :weak 'open-string)))
       (for-each (lambda (v) (hashtable-put! t v #t)) l)
       t))
 
@@ -158,6 +164,8 @@
 	      (list 'LIKE-OP (string->symbol id) (the-loc (the-port))))
 	     ((hashtable-get *join* id)
 	      (list 'JOIN-OP (string->symbol id) (the-loc (the-port))))
+	     ((hashtable-get *builtin* str)
+	      (list 'BUILTIN str (the-loc (the-port))))
 	     (else
 	      (list 'NAME str (the-loc (the-port)))))))
       ;; error or eof

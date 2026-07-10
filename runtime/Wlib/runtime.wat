@@ -1,10 +1,10 @@
 ;; -*- eval: (bee-mode) -*-
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Wlib/runtime.wat                    */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/runtime.wat       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 13 10:34:00 2024                          */
-;*    Last change :  Thu Jun  4 10:07:02 2026 (serrano)                */
+;*    Last change :  Fri Jul 10 09:19:18 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM builtin runtime                                      */
@@ -17,7 +17,7 @@
    ;; -----------------------------------------------------------------
 
    (memory 1)
-   (export "memory" (memory 0))
+   (export "memoryBigloo" (memory 0))
    
    ;; -----------------------------------------------------------------
    ;; Imports

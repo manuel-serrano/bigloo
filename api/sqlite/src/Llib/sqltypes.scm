@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/5.0a/api/sqlite/src/Llib/sqltypes.scm         */
+;*    .../project/bigloo/5.0.x/api/sqlite/src/Llib/sqltypes.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 10 09:09:05 2026                          */
-;*    Last change :  Tue Mar 10 09:24:00 2026 (serrano)                */
+;*    Last change :  Thu Jul  9 10:35:06 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Sqlitiny classes                                                 */
@@ -20,7 +20,8 @@
 	      (sync::symbol read-only (default 'automatic))
 	      (tables::pair-nil (default '()))
  	      (mutex::mutex (default (make-mutex)))
-	      (transaction::bool (default #f)))
+	      (transaction::bool (default #f))
+	      (last-insert-rowid::long (default 0)))
 	   (class $sqltiny-table
 	      (name::bstring read-only)
 	      (mutex::mutex (default (make-mutex)))

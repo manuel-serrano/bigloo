@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Sat Jun 27 09:16:28 2026 (serrano)                */
+;*    Last change :  Fri Jul 10 09:04:03 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -67,36 +67,12 @@
       (unless (member string *include-foreign*)
 	 (set! *include-foreign* (cons string *include-foreign*))))
    
-;*    (define (illegal-args args src mod)                              */
-;*       (let loop ((args args))                                       */
-;* 	 (cond                                                         */
-;* 	    ((null? args)                                              */
-;* 	     #f)                                                       */
-;* 	    ((symbol? args)                                            */
-;* 	     (multiple-value-bind (id type)                            */
-;* 		(parse-ident args)                                     */
-;* 		(unless (string? type)                                 */
-;* 		   args)))                                             */
-;* 	    ((not (pair? args))                                        */
-;* 	     args)                                                     */
-;* 	    ((not (symbol? (car args)))                                */
-;* 	     args)                                                     */
-;* 	    (else                                                      */
-;* 	     (multiple-value-bind (id type)                            */
-;* 		(parse-ident (car args))                               */
-;* 		(if (string? type)                                     */
-;* 		    (loop (cdr args))                                  */
-;* 		    args))))))                                         */
-   
    (define (parse-function macro infix ident args name clause mod::Module)
       (multiple-value-bind (id type)
 	 (parse-ident ident)
 	 (cond
 	    ((not (string? type))
 	     (error/loc mod "Missing C type" ident clause))
-;* 	    ((illegal-args args clause mod)                            */
-;* 	     =>                                                        */
-;* 	     (lambda (args) (error/loc mod "Illegal C args" args clause))) */
 	    (else
 	     (co-instantiate
 		   ((def (instantiate::CDef
@@ -254,13 +230,8 @@
 	 ((string? (car (last-pair args)))
 	  (let* ((name (car (last-pair args))))
 	     (values (build-args (drop-last args 1) mod clause) name)))
-;* 		 (args (build-args (drop-last args 1) mod clause))     */
-;* 	     (if (every symbol? args)                                  */
-;* 		 (values args name)                                    */
-;* 		 (error/loc mod "Illegal extern \"C\" module clause" clause x)) */
 	 (else
 	  (values (build-args args mod clause) (symbol->name id clause mod)))))
-;* 	  (values args (symbol->name id clause mod)))))                */
 
    (define (symbol->name ident::symbol src mod)
       (multiple-value-bind (id type)

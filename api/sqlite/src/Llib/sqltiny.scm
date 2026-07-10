@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 17:44:47 2007                          */
-;*    Last change :  Wed Jul  8 17:55:10 2026 (serrano)                */
+;*    Last change :  Thu Jul  9 08:09:56 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The portable replacement for sqlite                              */
@@ -24,7 +24,7 @@
 	   ($sqltiny-eval::obj ::$sqltiny ::procedure ::bstring ::obj)
 	   ($sqltiny-get::obj ::$sqltiny ::procedure ::bstring ::obj)
 	   ($sqltiny-map::pair-nil ::$sqltiny ::procedure ::bstring ::obj)
-	   ($sqltiny-for-each::pair-nil ::$sqltiny ::procedure ::bstring ::obj)
+	   ($sqltiny-for-each ::$sqltiny ::procedure ::bstring ::obj)
 	   ($sqltiny-dump-table ::obj ::$sqltiny ::bstring ::output-port)))
 
 ;*---------------------------------------------------------------------*/
@@ -103,40 +103,47 @@
    (with-input-from-string cmd
       (lambda ()
 	 (let loop ((actions (sqltiny-parse (current-input-port)))
-		    (res #f))
+		    (res #f)
+		    (cols #f))
 	    (if (null? actions)
-		(proc res)
-		(let* ((a (car actions))
-		       (r (a obj builtin)))
-		   (loop (cdr actions) (or r res))))))))
+		(proc res cols)
+		(let ((act (car actions)))
+		   (multiple-value-bind (r c)
+		      (act obj builtin)
+		      (loop (cdr actions) (or r res) (or c cols)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $sqltiny-exec ...                                                */
 ;*---------------------------------------------------------------------*/
 (define ($sqltiny-exec builtin cmd obj)
-   (let ((l (sqltiny-do builtin cmd obj (lambda (x) (when (pair? x) (car x))))))
-      (when (pair? l)
-	 (car l))))
+   (let ((p (lambda (res cols) (when (pair? res) (car res)))))
+      (let ((l (sqltiny-do builtin cmd obj p)))
+	 (when (pair? l)
+	    (car l)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $sqltiny-eval ...                                                */
 ;*---------------------------------------------------------------------*/
 (define ($sqltiny-eval builtin proc cmd obj)
-   (let ((p (lambda (res) (when (pair? res) (apply proc (car res))))))
+   (let ((p (lambda (res cols) (when (pair? res) (apply proc (car res))))))
       (sqltiny-do builtin cmd obj p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    $sqltiny-get ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define ($sqltiny-get builtin proc cmd obj)
-   (let ((p (lambda (res) (when (pair? res) (apply proc (car res) #f)))))
+   (let ((p (lambda (res cols)
+	       (when (pair? res)
+		  (proc
+		     (if (pair? cols) (list->vector (car cols)) '#())
+		     (list->vector (car res)))))))
       (sqltiny-do builtin cmd obj p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    $sqltiny-map ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define ($sqltiny-map builtin proc cmd obj)
-   (let ((p (lambda (res)
+   (let ((p (lambda (res cols)
 	       (if (pair? res)
 		   (map (lambda (r) (apply proc r)) res)
 		   '()))))
@@ -146,7 +153,13 @@
 ;*    $sqltiny-for-each ...                                            */
 ;*---------------------------------------------------------------------*/
 (define ($sqltiny-for-each builtin proc cmd obj)
-   (error "sqltiny" "sqlite-for-each not supported" #f))
+   (let ((p (lambda (res cols)
+	       (when (pair? res)
+		  (let ((cols (if (pair? cols) (list->vector (car cols)) '#())))
+		     (for-each (lambda (r)
+				  (proc cols (list->vector r)))
+			res))))))
+      (sqltiny-do builtin cmd obj p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    for-list ...                                                     */

@@ -17,7 +17,7 @@ JVM Backend
 
 We call all the pieces of program devoted to the interactions between
 Bigloo and another language a _foreign interface_. This document
-describes the Jvm interface that is available when using the C
+describes the Jvm interface that is available when using the jvm
 backend. The [C](./c.html) and [wasm](./wasm.html) interfaces are
 described in dedicated chapters.
 

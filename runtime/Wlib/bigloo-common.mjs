@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Sun Jul  5 08:42:05 2026 (serrano)                */
+/*    Last change :  Fri Jul 10 09:22:33 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -114,7 +114,7 @@ export class BglRuntime {
 
    link(instance, client = null) {
       this.instance = instance;
-      this.memory = instance.exports.memory;
+      this.memory = instance.exports.memoryBigloo;
 
       if (client) this.bigloo_main = client.exports.bigloo_main;
    }
