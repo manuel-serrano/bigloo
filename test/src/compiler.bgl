@@ -1,0 +1,100 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/compiler.bgl          */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
+;*    Last change :  Sat Jul 11 08:44:59 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing the compiler                                             */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    compiler                                                         */
+;*---------------------------------------------------------------------*/
+(module compiler
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "compiler" tests))
+      (test-all verbose "compiler")))
+
+;*---------------------------------------------------------------------*/
+;*    cse                                                              */
+;*---------------------------------------------------------------------*/
+(define (cse-foo x)
+   (let ((y (car x)))
+      (set-car! x 3)
+      (let ((z (car x)))
+	 z)))
+
+(define-test cse
+   (cse-foo (list 1 2))
+   :expected 3)
+
+(define-test cse
+   (let ((x (list 1 2)))
+      (let ((y (car x)))
+         (cse-foo x)
+         (let ((z (car x)))
+            z)))
+   :expected 3)
+
+(define-test cse
+   (let ((l '((1))))
+      ;; this function was badly compiled due to a bug in the cse
+      ;; that propagate the binding (a (c-car l)) into the loop.
+      (let ((a ($car l)))
+         (let loop ((a a))
+            (if ($pair? a)
+                (begin
+                   ($set-car! l '(3))
+                   (loop ($cdr a)))
+                (let ((a ($car l)))
+                   ($set-cdr! a 4)
+                   a)))))
+   :expected '(3 . 4))
+
+(define-test cse
+   (let ((p (open-input-string "1 2 3 4 5 6 7")))
+      (let* ((x (read p))
+	     (y (eq? 'toto (read p)))
+	     (z (read p)))
+	 (= (+ x z) 4))))
+
+;*---------------------------------------------------------------------*/
+;*    higher order                                                     */
+;*---------------------------------------------------------------------*/
+(define-test higher-order
+   ((((((((((((((((((((((((((((((((((((((lambda (x) x) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) (lambda (i) i)) #t))
+
+;*---------------------------------------------------------------------*/
+;*    cfa                                                              */
+;*---------------------------------------------------------------------*/
+(define-test cfa
+   (let ((random-strings '#(#"d909ef3e" 0)))
+      (substring (vector-ref random-strings 0) 0 1))
+   :expected "d")
+
+;*---------------------------------------------------------------------*/
+;*    expand                                                           */
+;*---------------------------------------------------------------------*/
+(define-test expand
+   (let ((x 3))
+      (define (f1 x)
+         (+fx 1000 x))
+      (define (f2 x)
+         (f1 (+fx 100 x)))
+      (define f
+         (lambda (x)
+            (f2 (+fx 10 x))))
+      (f x))
+   :expected 1113)

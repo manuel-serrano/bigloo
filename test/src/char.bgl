@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 28 19:21:00 2026                          */
-;*    Last change :  Thu May 28 19:49:12 2026 (serrano)                */
+;*    Last change :  Sat Jul 11 06:35:09 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing characters                                               */
@@ -25,7 +25,19 @@
 ;*---------------------------------------------------------------------*/
 (define (test verbose tests::pair-nil)
    (when (or (null? tests) (member "character" tests))
+      (reset)
       (test-all verbose "character")))
+
+;*---------------------------------------------------------------------*/
+;*    maybe and reset                                                  */
+;*---------------------------------------------------------------------*/
+(define *maybe* #f)
+(define (reset)
+   (let ((n (cons 2 3)))
+      (set! *maybe* (eq? (cddr (cons n n)) (cdr n)))))
+
+(define (maybe n)
+   (if *maybe* n 'never))
 
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
@@ -132,3 +144,13 @@
 
 (define-test integer->char (integer->char (char->integer #\A))
    :expected #\A)
+
+(define-test char? (char? (maybe #\a)))
+(define-test char (char? (maybe 32)) :expected #f)
+(define-test char? (char? (string-ref (maybe "hello") 1)))
+(define-test char->integer
+   (char->integer (maybe #\a))
+   :expected (char->integer #\a))
+(define-test char->integer
+   (char->integer (maybe #a200))
+   :expected 200)

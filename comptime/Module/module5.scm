@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Jul  8 16:57:50 2026 (serrano)                */
+;*    Last change :  Sat Jul 11 08:41:36 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -903,21 +903,21 @@
 (define (module5-init-xenv! xenv mod)
 
    (define (expand-args args e)
-      (let loop ((args args))
+      (let loop ((as args))
 	 (cond
-	    ((null? args)
+	    ((null? as)
 	     '())
-	    ((symbol? args)
-	     args)
-	    ((not (pair? args))
-	     (error "expand" "Illegal argument" args))
-	    ((not (and (pair? (car args))
-		       (pair? (cdr (car args)))
-		       (null? (cddr (car args)))))
-	     (cons (car args) (loop (cdr args))))
+	    ((symbol? as)
+	     as)
+	    ((not (pair? as))
+	     (error/loc mod "Illegal argument" as args))
+	    ((not (and (pair? (car as))
+		       (pair? (cdr (car as)))
+		       (null? (cddr (car as)))))
+	     (cons (car as) (loop (cdr as))))
 	    (else
-	     (cons (list (car (car args)) (e (cadr (car args)) e))
-		(loop (cdr args)))))))
+	     (cons (list (car (car as)) (e (cadr (car as)) e))
+		(loop (cdr as)))))))
        
    (define (define-expander x e)
       (match-case x
@@ -926,7 +926,7 @@
 	 ((?def ?proto . ?body)
 	  (localize x `(,def ,(expand-args proto e) ,@(map (lambda (x) (e x e)) body))))
 	 (else
-	  (error "expand" "Illegal form" x))))
+	  (error/loc mod "Illegal form" x x))))
 
    (define (define-macro-expander x e)
       ;; macro expander cannot use regular module5 initial env because
@@ -945,7 +945,7 @@
       (expand-define-macro x e)
       #unspecified)
 
-   (define (letrec-expand x e)
+   (define (let+-expand x e)
       (match-case x
 	 ((?klet (and ?bs (? list?)) . ?body)
 	  (localize x
@@ -954,12 +954,25 @@
 			 (match-case b
 			    ((?var ?val)
 			     (localize b `(,var ,(e val e))))
+			    ((? symbol?)
+			     (localize bs `(,b #unspecified)))
 			    (else
-			     (error "expand" "Illegal let binding" b))))
+			     (error/loc mod "Illegal let binding" b x))))
 		    bs)
 	       ,@(map (lambda (b) (e b e)) body))))
+	 ((let (and (? symbol?) ?id) (and ?bs (? list?)) . ?body)
+	  (localize x
+	     `(let ,id
+		 ,(map (lambda (b)
+			  (match-case b
+			     ((?var ?val)
+			      (localize b `(,var ,(e val e))))
+			     (else
+			      (error/loc mod "Illegal let binding" b x))))
+		     bs)
+		 ,@(map (lambda (b) (e b e)) body))))
 	 (else
-	  (error "expand" "Illegal form" x))))
+	  (error/loc mod "Illegal form" x x))))
 
    (define (lambda-expand x e)
       (match-case x
@@ -968,7 +981,7 @@
 	     `(lambda ,(expand-args args e)
 		 ,@(map (lambda (b) (e b e)) body))))
 	 (else
-	  (error "lambda" "Illegal form" x))))
+	  (error/loc mod "Illegal form" x x))))
 
    (define (identify-expand x e)
       x)
@@ -981,8 +994,9 @@
    (install-module5-expander xenv '$class-allocate #f expand-class-allocate)
    (install-module5-expander xenv 'assert #f expand-assert)
 
-   (install-module5-expander xenv 'letrec #f letrec-expand)
-   (install-module5-expander xenv 'letrec* #f letrec-expand)
+   (install-module5-expander xenv 'let #f let+-expand)
+   (install-module5-expander xenv 'letrec #f let+-expand)
+   (install-module5-expander xenv 'letrec* #f let+-expand)
    
    (install-module5-expander xenv 'lambda #f lambda-expand)
    

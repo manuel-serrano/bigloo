@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/comptime/Expand/define.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Expand/define.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:56:53 1994                          */
-;*    Last change :  Thu Aug 30 11:51:57 2018 (serrano)                */
-;*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jul 11 08:37:14 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `define' forms                                               */
 ;*=====================================================================*/

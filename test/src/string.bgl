@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Thu Jul  2 18:53:31 2026 (serrano)                */
+;*    Last change :  Sat Jul 11 06:40:22 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing strings                                                  */
@@ -37,31 +37,43 @@
              string
              (begin 
                 (case (string-ref string i)
-                   ((#\é #\è)
+                   ((#a232 #a233 #a234 #a235 #\e)
                     (string-set! string i #\e))
-                   ((#\É #\È)
+                   ((#a201 #a202 #a203 #\E)
                     (string-set! string i #\E))
-                   ((#\à)
+                   ((#a224 #\a)
                     (string-set! string i #\a))
-                   ((#\À)
+                   ((#a192 #a193 #a194 #a195 #a196 #\A)
                     (string-set! string i #\A))
-                   ((#\û #\ü)
+                   ((#a251 #a252)
                     (string-set! string i #\u))
-                   ((#\Û #\Ü)
+                   ((#a219 #a220)
                     (string-set! string i #\U))
-                   ((#\î #\ï)
+                   ((#a236 #a237 #a238 #a239 #\i)
                     (string-set! string i #\i))
-                   ((#\Î #\Ï)
+                   ((#a204 #a205 #a206 #a207 #\I)
                     (string-set! string i #\I))
-                   ((#\ö #\ô)
+                   ((#a243 #a244 #a245 #a246 #\o)
                     (string-set! string i #\o))
-                   ((#\Ö #\Ô)
+                   ((#a242 #a243 #a244 #a245 #a246 #\o)
                     (string-set! string i #\O))
-                   ((#\ç)
+                   ((#a231 #\c)
                     (string-set! string i #\c))
-                   ((#\C)
+                   ((#a199 #\C)
                     (string-set! string i #\C)))
                 (loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    ecs                                                              */
+;*---------------------------------------------------------------------*/
+(define (ecs s)
+   (let* ((ss (string-as-read s))
+	  (n (string-length ss)))
+      (if (=fx n 1)
+	  (char->integer (string-ref ss 0))
+	  (if (=fx n 0)
+	      -1000
+	      (char->integer (string-ref ss 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-natural<? ...                                             */
@@ -319,23 +331,23 @@
    :expected #f)
 (define-test substring-ci-at? (substring-ci-at? "abcdefghij" "defj" 3 -3)
    :expected #f)
-(define-test 8bits (8bits->7bits "ÉéÈèÏï")
+(define-test 8bits (8bits->7bits "\311\350\312\352\317\356")
    :expected "EeEeIi")
-(define-test 8bits-string<? (string<? "abecd" "abécd")
+(define-test 8bits-string<? (string<? "abecd" "ab\351cd")
    :expected #t)
-(define-test 8bits-string<=? (string<=? "abecd" "abécd")
+(define-test 8bits-string<=? (string<=? "abecd" "ab\350cd")
    :expected #t)
-(define-test 8bits-string>? (string>? "abécd" "abecd")
+(define-test 8bits-string>? (string>? "ab\350cd" "abecd")
    :expected #t)
-(define-test 8bits-string>=? (string>=? "abécd" "abecd")
+(define-test 8bits-string>=? (string>=? "ab\350cd" "abecd")
    :expected #t)
-(define-test 8bits-string-ci<? (string-ci<? "abecd" "abécd")
+(define-test 8bits-string-ci<? (string-ci<? "abecd" "ab\350cd")
    :expected #t)
-(define-test 8bits-string-ci<=? (string-ci<=? "abecd" "abécd")
+(define-test 8bits-string-ci<=? (string-ci<=? "abecd" "ab\350cd")
    :expected #t)
-(define-test 8bits-string-ci>? (string-ci>? "abécd" "abecd")
+(define-test 8bits-string-ci>? (string-ci>? "ab\350cd" "abecd")
    :expected #t)
-(define-test 8bits-string-ci>=? (string-ci>=? "abécd" "abecd")
+(define-test 8bits-string-ci>=? (string-ci>=? "ab\350cd" "abecd")
    :expected #t)
 (define-test foreign (let ((x "\n\t\\\"")) (string->list x))
    :expected '(#\newline #\tab #\\ #\"))
@@ -378,8 +390,8 @@
    :expected (list->string '(#\f #\1 #\2 #\g)))
 (define-test escape "f\123g"
    :expected (list->string '(#\f #\S #\g)))
-(define-test escape8bits (list "böig")
-   :expected '("böig"))
+(define-test escape8bits (list "bÃƒÂ¶ig")
+   :expected '("bÃƒÂ¶ig"))
 
 (define-test trigraph "??-"
    :expected (string-append "?" "?" "-"))
@@ -992,3 +1004,69 @@
 
 (define-test string-trim-both (string-trim-both "  foo bar ")
    :expected "foo bar")
+
+(define-test string-as-read (ecs "\\n") :expected 10)
+(define-test string-as-read (ecs "\\t") :expected 9)
+(define-test string-as-read (ecs "\\b") :expected 8)
+(define-test string-as-read (ecs "\\r") :expected 13)
+(define-test string-as-read (ecs "\\f") :expected 12)
+(define-test string-as-read (ecs "\\v") :expected 11)
+(define-test string-as-read (ecs "\\\\") :expected 92)
+(define-test string-as-read (ecs "\\'") :expected 39)
+(define-test string-as-read (ecs "\\\"") :expected 34)
+(define-test string-as-read (ecs "\\a") :expected 7)
+(define-test string-as-read (ecs "\\?") :expected 63)
+(define-test string-as-read (ecs "\\040") :expected 32)
+(define-test string-as-read (ecs "\\000") :expected 0)
+(define-test string-as-read (ecs "\\001") :expected 1)
+(define-test string-as-read (ecs "\\377") :expected 255)
+(define-test string-as-read (ecs "\\200") :expected 128)
+
+(define-test string-as-read (string-as-read "\\n") :expected #"\n")
+(define-test string-as-read (string-as-read "\\t") :expected #"\t")
+(define-test string-as-read (string-as-read "\\b") :expected #"\b")
+(define-test string-as-read (string-as-read "\\r") :expected #"\r")
+(define-test string-as-read (string-as-read "\\f") :expected #"\f")
+(define-test string-as-read (string-as-read "\\v") :expected #"\v")
+(define-test string-as-read (string-as-read "\\\\") :expected #"\\")
+(define-test string-as-read (string-as-read "\\'") :expected #"\'")
+(define-test string-as-read (string-as-read "\\\"") :expected #"\"")
+(define-test string-as-read (string-as-read "\\a") :expected #"\a")
+(define-test string-as-read (string-as-read "\\?") :expected (list->string '(#\?)))
+(define-test string-as-read (string-as-read "\\040") :expected #"\040")
+(define-test string-as-read (string-as-read "\\000") :expected #"\000")
+(define-test string-as-read (string-as-read "\\001") :expected #"\001")
+(define-test string-as-read (string-as-read "\\377") :expected #"\377")
+(define-test string-as-read (string-as-read "\\200") :expected #"\200")
+(define-test string-as-read (string-as-read "k") :expected "k")
+(define-test string-as-read (string-as-read "\\\\k") :expected "\\k")
+
+(define-test string-for-read
+   (string-for-read
+      (let ((r (make-string 256)))
+      (let loop ((i 0))
+	 (if (=fx i 256)
+	     r
+	     (begin
+                (string-set! r i (integer->char i))
+                (loop (+fx i 1)) )))))
+   :expected "\\000\\001\\002\\003\\004\\005\\006\\007\\b\\t\\n\\v\\f\\r\\016\\017\\020\\021\\022\\023\\024\\025\\026\\027\\030\\031\\032\\033\\034\\035\\036\\037 !\\\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177\200\201\202\203\204\205\206\207\210\211\212\213\214\215\216\217\220\221\222\223\224\225\226\227\230\231\232\233\234\235\236\237\240\241\242\243\244\245\246\247\250\251\252\253\254\255\256\257\260\261\262\263\264\265\266\267\270\271\272\273\274\275\276\277\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377")
+
+(define-test blit-string!
+   (let ((s (string-copy "abcdefghijklmnopqrstuvwxyz")))
+      (blit-string! s 1 s 1 11)
+      s)
+   :expected "abcdefghijklmnopqrstuvwxyz")
+(define-test blit-string!
+   (let ((s (string-copy "abcdefghijklmnopqrstuvwxyz")))
+      (blit-string! s 1 s 1 11)
+      (blit-string! s 1 s 3 11)
+      s)
+   :expected "abcbcdefghijklopqrstuvwxyz")
+(define-test blit-string!
+   (let ((s (string-copy "abcdefghijklmnopqrstuvwxyz")))
+      (blit-string! s 1 s 1 11)
+      (blit-string! s 1 s 3 11)
+      (blit-string! s 4 s 1 17)
+      s)
+   :expected "acdefghijklopqrstustuvwxyz")

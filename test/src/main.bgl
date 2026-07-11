@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Wed Jul  8 15:34:07 2026 (serrano)                */
+;*    Last change :  Sat Jul 11 06:23:48 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -19,6 +19,8 @@
    (import "./bignum.bgl" . bignum)
    (import "./bit.bgl" . bit)
    (import "./char.bgl" . char)
+   (import "./closure.bgl" . closure)
+   (import "./compiler.bgl" . compiler)
    (import "./condexpand.bgl" . condexpand)
    (import "./crc.bgl" . crc)
    (import "./date.bgl" . date)
@@ -93,6 +95,8 @@
                        (bignum.test verbose tests)
                        (bit.test verbose tests)
                        (char.test verbose tests)
+                       (closure.test verbose tests)
+                       (compiler.test verbose tests)
                        (condexpand.test verbose tests)
                        (crc.test verbose tests)
                        (date.test verbose tests)

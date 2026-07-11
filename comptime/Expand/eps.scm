@@ -1,5 +1,5 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Expand/eps.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Expand/eps.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
