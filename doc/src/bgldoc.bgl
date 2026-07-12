@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Fri Jul 10 17:53:22 2026 (serrano)                */
+;*    Last change :  Sun Jul 12 07:13:04 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -102,7 +102,8 @@
      ("module 5" . "module5.html")
      ("module 4" . "module4.html")
      ("objects" . "object.html")
-     ("pattern matching" . "match.html")))
+     ("pattern matching" . "match.html")
+     ("traces (debugging)" . "trace.html")))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-chapter-title ...                                           */

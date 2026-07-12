@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Wed Jul  8 17:22:37 2026 (serrano)                */
+;*    Last change :  Sun Jul 12 06:32:05 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -20,5 +20,8 @@
 
    (eval   (export-all)
 	   (class %sqlite)
-	   (class sqlite)
-	   (class sqltiny)))
+	   (class sqltiny))
+
+   (cond-expand
+      ((and bigloo-c (not sqltiny))
+       (eval (class sqlite)))))

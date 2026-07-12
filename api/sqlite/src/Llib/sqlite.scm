@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Thu Nov 10 13:55:46 2005                          */
-;*    Last change :  Thu Jul  9 08:48:37 2026 (serrano)                */
+;*    Last change :  Sun Jul 12 06:30:28 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SQLITE Scheme binding                                            */
@@ -32,7 +32,6 @@
 	       ($builtin::$sqltiny (default (class-nil $sqltiny))))
 	    
 	    (%setup-sqltiny! ::sqltiny)
-	    (%setup-sqlite! ::sqlite)
 	    
 	    (sqlite-config . args)
 	    
@@ -60,9 +59,8 @@
        (export (class sqlite::%sqlite
 		  (%setup-sqlite!)
 		  ($builtin::$sqlite (default ($sqlite-nil))))
-	       ($sqlite-nil::$sqlite)))
-      (else
-       (export (class sqlite::sqltiny)))))
+	       ($sqlite-nil::$sqlite)
+	       (%setup-sqlite! ::sqlite)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $sqlite-nil ...                                                  */
@@ -75,28 +73,29 @@
 ;*---------------------------------------------------------------------*/
 ;*    display-object ::sqlite ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (display-object o::sqlite #!optional (port::output-port (current-output-port)))
-   (with-access::sqlite o (path)
-      (fprintf port "#<sqlite:~a>" path)))
+(cond-expand
+   ((and bigloo-c (not sqltiny))
+    (define-method (display-object o::sqlite #!optional (port::output-port (current-output-port)))
+       (with-access::sqlite o (path)
+	  (fprintf port "#<sqlite:~a>" path)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    write-object ::sqlite ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (write-object o::sqlite #!optional (port::output-port (current-output-port)))
-   (with-access::sqlite o (path)
-      (fprintf port "#<sqlite:~a>" path)))
+(cond-expand
+   ((and bigloo-c (not sqltiny))
+    (define-method (write-object o::sqlite #!optional (port::output-port (current-output-port)))
+       (with-access::sqlite o (path)
+	  (fprintf port "#<sqlite:~a>" path)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %setup-sqlite! ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (%setup-sqlite! o::sqlite)
-   (cond-expand
-      ((and bigloo-c (not sqltiny))
+(cond-expand
+   ((and bigloo-c (not sqltiny))
+    (define (%setup-sqlite! o::sqlite)
        (with-access::sqlite o ($builtin path)
-	  (set! $builtin ($sqlite-open path))))
-      (else
-       (with-access::sqlite o ($builtin path sync)
-	  (set! $builtin ($sqltiny-open path sync))))))
+	  (set! $builtin ($sqlite-open path))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %setup-sqltiny! ...                                              */
@@ -315,7 +314,7 @@
       (apply sqlite-get o (lambda (x y) #unspecified fmt args))))
 
 (cond-expand
-   ((and (or bigloo-c bigloo-wasm) (not sqltiny))
+   ((and bigloo-c (not sqltiny))
     (define-method (sqlite-run o::sqlite fmt::bstring . args)
        (with-access::sqlite o ($builtin)
 	  (if (null? args)

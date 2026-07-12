@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Read/jvm.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Read/jvm.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Wed Mar 25 21:27:41 2026 (serrano)                */
+;*    Last change :  Sun Jul 12 09:32:43 2026 (serrano)                */
 ;*    Copyright   :  1993-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handles `qualified type <-> module' associations*/
@@ -91,7 +91,7 @@
 (define (jvm-qualified-name-set! module::symbol qn::symbol)
    (with-trace 'jvm "jvm-qualified-name-set!"
       (trace-item "module=" module)
-      (trace-item "pkg=" pkg)
+      (trace-item "qn=" qn)
       (let ((name (symbol->string! module)))
 	 (let ((old (hashtable-get *jvm-qualified-names* name)))
 	    (cond

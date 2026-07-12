@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu Jul  9 08:03:46 2026 (serrano)                */
+/*    Last change :  Sun Jul 12 06:57:44 2026 (serrano)                */
 /*    Copyright   :  2005-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SQLITE support                                                   */
@@ -94,11 +94,11 @@ sqlite_callback_exec(obj_t *res, int argc, char **argv, char **colname) {
 BGL_RUNTIME_DEF obj_t
 bgl_sqlite_exec(sqlite3 *db, char *str, obj_t odb) {
   char *msg;
-  obj_t result[] = { BFALSE, BUNSPEC };
+  obj_t result[] = { BFALSE, BFALSE };
   int rc;
 
   rc = sqlite3_exec(db, str, (int (*)(void *, int, char **, char **))sqlite_callback_exec,
-                    &result, &msg);
+                    result, &msg);
 
   if (rc != SQLITE_OK) {
      char *buf = (char *)alloca(strlen(str) + 16);

@@ -1,0 +1,19 @@
+;; trace.bgl
+(module trace-example
+   (main main))
+
+(define (foo x)
+   (with-trace 'foo "foo"
+      (let loop ((n x))
+	 (with-trace 'loop "loop"
+	    (trace-item "n=" n)
+	    (when (> n 0)
+	       (let liip ((m n))
+		  (with-trace 'liip "liip"
+		     (trace-item "m=" m))
+		  (when (>fx m 0)
+		     (liip (-fx m 1))))
+	       (loop (-fx n 1)))))))
+
+(define (main x)
+   (foo 2))

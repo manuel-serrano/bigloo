@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Wed Jul  1 16:00:15 2026 (serrano)                */
+;*    Last change :  Sun Jul 12 09:17:09 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -458,7 +458,7 @@
 		   (hashtable-put! t k "important"))
 	 '("try" "with-handler" "unwind-protect"
 	   "error" "bind-exit" "call/cc"
-           "-&gt;"))
+           "-&gt;" "with-trace"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "thread"))
 	 '("thread-start!" "thread-start-joinable!" "make-thread"

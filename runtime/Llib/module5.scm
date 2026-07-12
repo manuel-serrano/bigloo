@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Jul  8 16:55:34 2026 (serrano)                */
+;*    Last change :  Sun Jul 12 06:27:44 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -679,8 +679,11 @@
 	    ((declare-library! (quote ?id) . ?rest)
 	     (let ((srfi (memq :srfi rest)))
 		(match-case srfi
-		   ((:srfi (quote ?srfis) . ?-)
-		    (for-each register-srfi! srfis))))
+		   ((:srfi ?l . ?-)
+		    (let ((srfis (eval l)))
+		       (if (and (list? srfis) (every symbol? srfis))
+			   (for-each register-srfi! srfis)
+			   (error/loc mod "Illegal library" path init))))))
 	     (let ((heap (memq :heap rest)))
 		(match-case heap
 		   ((:heap (and (? string?) ?file . ?-))

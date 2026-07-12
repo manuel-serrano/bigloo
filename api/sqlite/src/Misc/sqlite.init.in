@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Wed Jul  8 17:21:13 2026 (serrano)                */
+;*    Last change :  Sun Jul 12 06:28:29 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The SQLITE init file.                                            */
@@ -14,7 +14,9 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'sqlite
-   :srfi '(@SQLITESRFI@)
+   :srfi (cond-expand
+	    (bigloo-c '(sqltiny @SQLITESRFI@))
+	    (else '(sqltiny)))
    :basename "bigloosqlite"
    :module-init '__sqlite
    :module-eval '__sqlite_makelib

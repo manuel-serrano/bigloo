@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Sat Jul 11 06:23:48 2026 (serrano)                */
+;*    Last change :  Sun Jul 12 07:19:30 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -51,6 +51,7 @@
    (import "./string.bgl" . string)
    (import "./symbol.bgl" . symbol)
    (import "./tar.bgl" . tar)
+   (import "./trace.bgl" . trace)
    (import "./thread.bgl" . thread)
    (import "./unicode.bgl" . unicode)
    (import "./vector.bgl" . vector)
@@ -127,6 +128,7 @@
                        (string.test verbose tests)
                        (symbol.test verbose tests)
                        (tar.test verbose tests)
+                       (trace.test verbose tests)
                        (thread.test verbose tests)
                        (unicode.test verbose tests)
                        (vector.test verbose tests)

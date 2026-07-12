@@ -1,0 +1,70 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/trace.bgl             */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Sun Jul 12 07:14:52 2026                          */
+;*    Last change :  Sun Jul 12 09:25:52 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing traces                                                   */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    trace                                                            */
+;*---------------------------------------------------------------------*/
+(module trace
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "trace" tests))
+      (test-all verbose "trace")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test with-trace
+   (with-trace 'debug "with-trace" 'a-value)
+   :expected 'a-value)
+
+(define-test trace-item
+   (with-trace 'debug 'with-trace
+      (trace-item "time=" 1)
+      #t))
+
+(define-test trace-bold
+   (trace-bold '(1 2))
+   :expected string?)
+
+(define-test trace-color
+   (trace-color 3 "foo bar")
+   :expected string?)
+
+(define-test trace-margin
+   trace-margin
+   :expected procedure?)
+
+(define-test trace-margin-set!
+   (begin
+      (trace-margin-set! "~")
+      (trace-margin))
+   :expected "~")
+
+(define-test trace-port
+   trace-port
+   :expected procedure?)
+
+(define-test trace-port-set!
+   (let ((op (open-output-string)))
+      (unwind-protect
+         (begin
+            (trace-port-set! op)
+            (eq? (trace-port) op))
+         (close-output-port op))))

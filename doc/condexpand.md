@@ -1,12 +1,12 @@
 <!--==================================================================-->
-<!--    serrano/prgm/project/bigloo/5.0a/doc/boolean.md               -->
+<!--    serrano/prgm/project/bigloo/5.0a/doc/condexpand.md            -->
 <!--    ----------------------------------------------------------    -->
 <!--    Author      :  manuel serrano                                 -->
 <!--    Creation    :  Mon Apr 13 10:38:02 2026                       -->
 <!--    Last change :                                                 -->
 <!--    Copyright   :  2026 manuel serrano                            -->
 <!--    -----------------------------------------------------------   -->
-<!--    Modules                                                       -->
+<!--    Conditional Executions                                        -->
 <!--==================================================================-->
 
 ,(implementation-path "../runtime/Eval/expdsrfi0.scm")

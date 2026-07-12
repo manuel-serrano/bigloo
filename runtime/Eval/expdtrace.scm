@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expdtrace.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/expdtrace.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel SERRANO                                    */
 ;*    Creation    :  Tue Sep  1 16:21:59 1992                          */
-;*    Last change :  Sun Aug 25 09:15:55 2019 (serrano)                */
+;*    Last change :  Sun Jul 12 08:43:25 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Trace forms expansion                                            */
 ;*=====================================================================*/
@@ -78,15 +78,13 @@
       (match-case x
 	 ((?- ?level ?lbl . ?arg*)
 	  (if (if (=fx (bigloo-profile) 0)
-		  (if (eq? mode 'compiler)
-		      (>fx (bigloo-compiler-debug) 0)
+		  (if (>fx (bigloo-compiler-debug) 0)
+		      #t
 		      (>fx (bigloo-debug) 0))
 		  #f)
 	      (let* ((f (gensym 'f))
 		     (nx `(let ((,f (lambda () (begin ,@arg*))))
-			     (if (>fx (bigloo-debug) 0)
-				 (%with-trace ,level ,lbl ,f)
-				 (,f)))))
+			     (%with-trace ,level ,lbl ,f))))
 		 (e nx e))
 	      (e `(begin ,@arg*) e)))
 	 (else
@@ -98,11 +96,9 @@
 (define (make-expand-trace-item mode)
    (lambda (x e)
       (if (if (=fx (bigloo-profile) 0)
-	      (if (eq? mode 'compiler)
-		  (>fx (bigloo-compiler-debug) 0)
+	      (if (>fx (bigloo-compiler-debug) 0)
+		  #t
 		  (>fx (bigloo-debug) 0))
 	      #f)
-	  `(if (>fx (bigloo-debug) 0)
-	       (trace-item ,@(map (lambda (x) (e x e)) (cdr x)))
-	       #unspecified)
+	  `(trace-item ,@(map (lambda (x) (e x e)) (cdr x)))
 	  #unspecified)))

@@ -15,10 +15,11 @@
 SQLITE
 ======
 
-The threw backend supports SQL queries but only the C backend relies
-on the native SQLite library (@url{http://www.sqlite.org/}). The jvm
-and wasm backends only supports the limited `sqlitiny` implementation
-that is compatible with sqlite but that is slower.
+All the backends support SQL queries but only the C backend supports
+on the native SQLite library (@url{http://www.sqlite.org/}). The Jvm
+and Wasm backends only support the limited `sqlitiny` implementation
+that is mostly compatible with sqlite but it does not implement
+the whole sql query language SQLite does and it is slower.
 
 > [!IMPORTANT] A module that uses Sqlite features must include in its
 > declaration the clause `(library sqlite)`. Example:
@@ -47,6 +48,7 @@ instance is created a SQLite database is _opened_.
 > supported by Sqlite should be prefered.
 
 ### sqlite ###
+<!-- [:@C] -->
 
 Similar to `sqltiny` but uses the SQLite library to implement the database.
 

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Wed Jul  8 15:31:33 2026 (serrano)                */
+#*    Last change :  Sun Jul 12 07:12:40 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -39,11 +39,11 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 MD = argsparse bigloo bool csv date digest graph hash error int internet \
  io mmap net number os pair parser port process real regexp serial sqlite \
- ssl string symbol tar thread vector weakptr zip \
+ ssl string symbol tar trace thread vector weakptr zip \
  c jvm wasm \
- condexpand match module5 module4 object
+ condexpand match module5 module4 object trace
 
-EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var grep untar wget
+EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var grep untar wget trace
 EX_J = fib Point.bgh
 EX_W = 
 EX = $(EX_C:%=c/%) $(EX_J:%=jvm/%) $(EX_W:%=wasm/%)
@@ -142,6 +142,9 @@ objs/c/untar.ast.coerce: examples/c/untar.bgl objs/c
 objs/c/wget.ast.coerce: examples/c/wget.bgl objs/c
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
 
+objs/c/trace.ast.coerce: examples/c/trace.bgl objs/c
+	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -coerce
+
 objs/java/fib.ast.coerce: examples/java/fib.bgl objs/java
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -jvm -coerce
 
@@ -187,6 +190,17 @@ idx.html: index.sexp bin/bgldoc
 index.json: index.sexp
 	bigloo -i src/bglidx.bgl $+ > $@ || rm -f $@
 
+examples/c/trace-full.txt: objs/c/trace
+	BIGLOOTRACE="foo loop liip" objs/c/trace 2> $@
+
+examples/c/trace-loop.txt: objs/c/trace
+	BIGLOOTRACE="loop" objs/c/trace 2> $@
+
+objs/c/trace: examples/c/trace.bgl objs/c
+	$(BIGLOO) -g $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ 
+
+trace.html: examples/c/trace-full.txt examples/c/trace-loop.txt
+
 #*---------------------------------------------------------------------*/
 #*    sub-directories                                                  */
 #*---------------------------------------------------------------------*/
@@ -216,3 +230,4 @@ clean:
 	rm -rf $(MD:%=%.html)
 	rm -f index.sexp
 	rm -f index.json
+	rm -f examples/c/trace examples/c/trace-full.txt examples/c/trace-loop.txt

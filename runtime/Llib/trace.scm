@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/trace.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/trace.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Fri Jan 30 08:23:35 2026 (serrano)                */
+;*    Last change :  Sun Jul 12 09:06:18 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
@@ -136,7 +136,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    trace-color ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (trace-color col::int . o)
+(define (trace-color::bstring col::int . o)
    (with-output-to-string
       (if (bigloo-trace-color)
 	  (lambda ()
@@ -149,7 +149,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    trace-bold ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (trace-bold . o)
+(define (trace-bold::bstring . o)
    (apply trace-color -30 o))
 
 ;*---------------------------------------------------------------------*/
@@ -174,16 +174,15 @@
 ;*    trace-item ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (trace-item . args)
-   (when (>fx (bigloo-debug) 0)
-      (let ((al (trace-alist)))
-	 (when (trace-active? (trace-alist-get al 'margin-level))
-	    (let ((p (trace-port)))
-	       (synchronize (trace-mutex)
-		  (display (trace-alist-get al 'margin) p)
-		  (display (tty-trace-color (-fx (trace-alist-get al 'depth) 1) "- ") p)
-		  (for-each (lambda (a) (display-circle a p)) args)
-		  (newline p)
-		  (flush-output-port p)))))))
+   (let ((al (trace-alist)))
+      (when (trace-active? (trace-alist-get al 'margin-level))
+	 (let ((p (trace-port)))
+	    (synchronize (trace-mutex)
+	       (display (trace-alist-get al 'margin) p)
+	       (display (tty-trace-color (-fx (trace-alist-get al 'depth) 1) "- ") p)
+	       (for-each (lambda (a) (display-circle a p)) args)
+	       (newline p)
+	       (flush-output-port p))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-active? ...                                                */
