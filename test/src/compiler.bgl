@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Sat Jul 11 08:44:59 2026 (serrano)                */
+;*    Last change :  Mon Jul 13 06:29:20 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the compiler                                             */
@@ -98,3 +98,122 @@
             (f2 (+fx 10 x))))
       (f x))
    :expected 1113)
+
+;*---------------------------------------------------------------------*/
+;*    define                                                           */
+;*---------------------------------------------------------------------*/
+(define (foo1 x) (+fx x 1))
+(define gee1 foo1)
+
+(define (foo2 . x) (+fx (car x) 1))
+(define gee2 foo2)
+
+(define (foo3 x . y) (apply + (cons x y)))
+(define gee3 foo3)
+
+(define (foo4) 5)
+(define gee4 foo4)
+
+(define (foo5 x) (+fx x 1))
+(define gee5 foo5)
+(set! foo5 (lambda (y) 9))
+
+(define-inline (foo6 x)
+   (define (foo-inner x)
+      x)
+   (foo-inner x))
+
+(define (typed-define y)
+   (define (inner::int x) x)
+   (inner y))
+
+(define (n-ary-define y)
+   (define (inner x . y)
+      (cons x y))
+   (inner y y))
+
+(define (n-ary-typed-define y)
+   (define (inner::pair x . y) (cons x y))
+   (inner y y))
+
+(define (set-derives)
+  (define dset  (make-vector 10 -1))
+  dset)
+
+(define-macro (mk-hwdebug-available)
+   `(begin
+       (define hwdebug 7)))
+   
+(define (texpand)
+   (mk-hwdebug-available)
+   8)
+
+(define (inner-print)
+   (define (print) (begin 1 2 3 4 #t))
+   (print))
+
+(lambda (x)
+   (define (bar x)
+      x)
+   (bar x))
+ 
+(lambda (x)
+   (define (bar x)
+      (define (hux x)
+	 x)
+      (hux x))
+   (bar x))
+
+(define inner-test1
+   (lambda (x)
+      (define (bar x)
+	 x)
+      (bar x)))
+
+(define (inner-test3 x)
+   (define (bar x)
+      x)
+   (bar x))
+
+(define (inner-test4 x)
+   (define (bar x)
+      (define (hux x)
+	 x)
+      (hux x))
+   (bar x))
+
+(define (inner-test5 f)
+   (f 1))
+
+(define-test internal (inner-test1 1) :expected 1)
+(define-test internal (inner-test3 1) :expected 1)
+(define-test internal (inner-test4 1) :expected 1)
+(define-test internal
+   (inner-test5 (lambda (x)
+                   (define (bar x)
+                      (define (hux x)
+                         x)
+                      (hux x))
+                   (bar x)))
+   :expected 1)
+(define-test internal
+   (inner-test5 (lambda (x)
+                   (define (bar x)
+                      x)
+                   (bar x)))
+   :expected 1)
+(define-test alias (gee1 5) :expected 6)
+(define-test alias (gee2 5) :expected 6)
+(define-test alias (gee3 5 6) :expected 11)
+(define-test alias (gee4) :expected 5)
+(define-test alias (gee5 5) :expected 6)
+(define-test alias (foo5 5) :expected 9)
+(define-test inline (foo6 6) :expected 6)
+(define-test inner (typed-define 5) :expected 5)
+(define-test inner (n-ary-define 5) :expected '(5 5))
+(define-test inner (n-ary-typed-define 5) :expected '(5 5))
+(define-test inner (vector? (set-derives)) :expected #t)
+(define-test inner (inner-print) :expected #t) 
+(define-test expand (texpand) :expected 8)
+
+

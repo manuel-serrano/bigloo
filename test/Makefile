@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Sun Jul 12 07:14:37 2026 (serrano)                */
+#*    Last change :  Mon Jul 13 06:22:36 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -38,7 +38,7 @@ BJFLAGS = -jvm
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
-TESTS = main argsparse bigloo bignum bit bool char closure compiler \
+TESTS = main argsparse bigloo bignum bit bool case char closure compiler \
   condexpand crc csv0 date digest dsssl error hash int1 int2 internet \
   lalr io match mmap module net number object os pair port process real \
   regexp rgc search serial sqlite0 ssr string symbol tar trace thread \

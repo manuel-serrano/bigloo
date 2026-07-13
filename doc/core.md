@@ -1,0 +1,514 @@
+<!--==================================================================-->
+<!--    serrano/prgm/project/bigloo/5.0a/doc/core.md                  -->
+<!--    ----------------------------------------------------------    -->
+<!--    Author      :  manuel serrano                                 -->
+<!--    Creation    :  Mon Apr 13 10:38:02 2026                       -->
+<!--    Last change :                                                 -->
+<!--    Copyright   :  2026 manuel serrano                            -->
+<!--    -----------------------------------------------------------   -->
+<!--    Core language                                                 -->
+<!--==================================================================-->
+
+,(implementation-path "../runtime/Eval/expdsrfi0.scm")
+,(example-path "../test/src/condexpand.bgl")
+
+
+Core Language
+=============
+
+The syntax of Bigloo is that of Scheme (a parenthesis based one) with
+four exceptions: type information, multi-line comments, extended strings
+escape characters, and Java-like syntax for large integers. Type
+information is supplied when identifiers are introduced (via
+`lambda`, `let`, `define`, ...) and those identifiers
+holding type information are referred to as typed identifiers.
+They are defined by the following grammar:
+
+```bnf
+<ident> --> <r5rs-ident> | <typed-ident>
+<typed-ident> --> <r5rs-ident>::<r5rs-ident>
+<r5rs-ident> --> the standard Scheme identifiers
+```
+
+For details of the standard Scheme identifiers, see 
+[R5RS](https://conservatory.scheme.org/schemers/Documents/Standards/R5RS).
+
+[Multi-lines comments](http://srfi.schemers.org/srfi-30) are defined as:
+
+```bnf
+<ident> --> <r5rs-ident> | <typed-ident>
+<comment> --> ;<all subsequent characters up to a line break>
+   | #| <comment-text> (<comment> <comment-text>)* |#
+<comment-text> --> <character sequence not containing #| or |#>
+```
+
+A Bigloo string literal is defined by:
+
+```bnf
+<string> --> <bgl-string> | <r5rs-string>
+<r5rs-string> a normal R5RS string or a Bigloo string
+<bgl-string> #"<character>*"
+<character> --> any character but the character \
+  | \\ | \n | \t | \b | \r | \f | \v | \"
+  | \x<hex><hex>
+  | \ux<hex><hex><hex><hex>
+  | \u\@{<hex>@}
+  | \u@{<hex><hex>@}
+  | \u@{<hex><hex><hex>@}
+  | \u@{<hex><hex><hex><hex>@}
+<hex> --> an hexa-decimal digit
+```
+
+@deffn {bigloo function} bigloo-strict-r5rs-string
+@deffnx {bigloo function} bigloo-strict-r5rs-string-set! bool
+If @code{#t} r5rs-string literals are restricted to the official R5Rs
+character set. Otherwise, they are interpreted as Bigloo string.
+@end deffn
+
+Large integers can be written as:
+
+```bnf
+<integer> --> <r5rs-integer> | <large-integer>
+<large-integer> --> (+|-?)?<digit><digit>?(_<digit><digit><digit>)+
+<comment-text> --> <character sequence not containing #| or |#>
+```
+
+That is, large integer constants can use the `_` character to separate
+sequences of 3 digits. Examples:
+
+```bigloo
+1_000_102
+89_223
+```
+
+@c ------------------------------------------------------------------- @c
+@c    Comments                                                         @c
+@c ------------------------------------------------------------------- @c
+@node Comments, Expressions, Syntax, Core Language
+@comment  node-name,  next,  previous,  up
+@subsection Comments
+@cindex comments
+@cindex #;
+
+Comments and whitespaces are the same as in 
+@ref{Whitespace and comments,,r5rs.info,R5RS}.
+
+@smalllisp
+;;; The FACT procedure computes the factorial
+;;; of a non-negative integer.
+(define fact
+  (lambda (n)
+    (if (= n 0)
+        1        ;; Base case: return 1
+        (* n (fact (- n 1))))))
+@end smalllisp
+
+In addition, Bigloo supports @emph{s-expressions} comments. These
+are introduced with the @code{#;} syntax:
+
+@smalllisp
+;;; The FACT procedure computes the factorial
+;;; of a non-negative integer.
+(define fact
+  (lambda (n)
+    #;(if (< n 2) 1 (* #;n (fact (- n 1))))
+    (if (= n 0)
+        1
+        (* n (fact (- n 1))))))
+@end smalllisp
+
+
+@c ------------------------------------------------------------------- @c
+@c    Expressions                                                      @c
+@c ------------------------------------------------------------------- @c
+@node Expressions, Definitions, Comments, Core Language
+@comment  node-name,  next,  previous,  up
+@subsection Expressions
+@cindex Expressions
+
+Bigloo expressions are the same as in @ref{Expressions, , r5rs.info, R5RS}.
+Bigloo has more syntactic keywords than Scheme. The Bigloo syntactic
+keywords are:
+
+@example
+=>                      do                    or
+and                     else                  quasiquote
+begin                   if                    quote
+case                    lambda                set!
+cond                    let                   unquote
+unquote-splicing        define                let*
+delay                   letrec                module
+labels                  try                   define-struct
+unwind-protect          bind-exit             define-inline
+regular-grammar         lalr-grammar          regular-search
+define-expander         define-macro          match-case
+match-lambda            pragma                failure
+assert                  define-generic        define-method
+instantiate             duplicate             with-access
+widen!                  shrink!               multiple-value-bind
+let-syntax              letrec-syntax         define-syntax
+cond-expand             receive               args-parse
+define-record-type      and-let*              letrec*
+@end example
+
+@noindent All other non atomic Bigloo forms are evaluated as function
+calls or macro class.
+
+@deffn {syntax} @r{<variable>}
+@deffnx {syntax} quote datum
+@deffnx {syntax} @code{'}@r{datum}
+@deffnx {syntax} @r{<constant>}
+@smalllisp
+(define x 28)                          @result{}
+x                                      @result{} 28
+(quote a)                              @result{} A
+(quote #(a b c))                       @result{} #(A B C)
+(quote (+ 1 2))                        @result{} (+ 1 2)
+'a                                     @result{} A
+'#(a b c)                              @result{} #(A B C)
+'()                                    @result{} ()
+'(+ 1 2)                               @result{} (+ 1 2)
+'(quote a)                             @result{} (QUOTE A)
+'"abc"                                 @result{} "abc"
+"abc"                                  @result{} "abc"
+'145932                                @result{} 145932
+145932                                 @result{} 145932
+'#t                                    @result{} #t
+#t                                     @result{} #t
+@end smalllisp
+@end deffn
+
+@deffn {syntax} operator operand @dots{}
+@cindex @w{procedure call}
+@cindex @w{call}
+@smalllisp
+(+ 3 4)                                @result{} 7
+((if #f + *) 3 4)                      @result{} 12
+((lambda (x) (+ 1 x)) 5)               @result{} 6
+@end smalllisp
+@end deffn
+
+@deffn {syntax} lambda formals body
+@smalllisp
+(lambda (x) (+ x x))                   @result{} @emph{a procedure}
+((lambda (x) (+ x x)) 4)               @result{} 8
+
+(define reverse-subtract
+  (lambda (x y) (- y x)))
+(reverse-subtract 7 10)                @result{} 3
+
+(define add4
+  (let ((x 4))
+    (lambda (y) (+ x y))))
+(add4 6)                               @result{} 10
+
+((lambda x x) 3 4 5 6)                 @result{} (3 4 5 6)
+((lambda (x y . z) z)
+ 3 4 5 6)                              @result{} (5 6)
+@end smalllisp
+@end deffn
+
+@deffn {syntax} if test consequent [alternate]
+@smalllisp
+(if (> 3 2) 'yes 'no)                  @result{} yes
+(if (> 2 3) 'yes 'no)                  @result{} no
+(if (> 3 2)
+    (- 3 2)
+    (+ 3 2))                           @result{} 1
+@end smalllisp
+@end deffn
+
+@deffn {syntax} set!  variable expression
+@smalllisp
+(define x 2)
+(+ x 1)                                @result{} 3
+(set! x 4)                             @result{} @emph{unspecified}
+(+ x 1)                                @result{} 5
+@end smalllisp
+@end deffn
+
+@deffn {library syntax} cond clause clause @dots{}
+
+Bigloo considers @code{else} as a keyword. It thus ignores clauses
+following an @code{else}-clause.
+
+@smalllisp
+(cond ((> 3 2) 'greater)
+      ((< 3 2) 'less))                 @result{} greater
+
+(cond ((> 3 3) 'greater)
+      ((< 3 3) 'less)
+      (else 'equal))                   @result{} equal
+
+(cond ((assv 'b '((a 1) (b 2))) => cadr)
+      (else #f))                       @result{} 2
+@end smalllisp
+@end deffn
+
+@deffn {library syntax} case key clause clause @dots{}
+@smalllisp
+(case (* 2 3)
+  ((2 3 5 7) 'prime)
+  ((1 4 6 8 9) 'composite))            @result{} composite
+(case (car '(c d))
+  ((a) 'a)
+  ((b) 'b))                            @result{} @emph{unspecified}
+(case (car '(c d))
+  ((a e i o u) 'vowel)
+  ((w y) 'semivowel)
+  (else 'consonant))                   @result{} consonant
+@end smalllisp
+@end deffn
+
+@deffn {library syntax} and test @dots{}
+@smalllisp
+(and (= 2 2) (> 2 1))                  @result{} #t
+(and (= 2 2) (< 2 1))                  @result{} #f
+(and 1 2 'c '(f g))                    @result{} (f g)
+(and)                                  @result{} #t
+@end smalllisp
+@end deffn
+ 
+@deffn {bigloo syntax} and-let* test @dots{}
+@cindex SRFI-2
+
+@smalllisp
+(and-let* ((x 1) (y 2)) (cons x y))    @result{} (1 . 2)
+(and-let* ((x 1) (z #f)) x)            @result{} #f
+
+(and-let* ((my-list (compute-list)) ((not (null? my-list))))
+          (do-something my-list))
+
+(define (look-up key alist)
+  (and-let* ((x (assq key alist))) (cdr x)))
+
+(or (and-let* ((c (read-char))
+               ((not (eof-object? c))))
+              (string-set! some-str i c)  
+              (set! i (+ 1 i)))
+@end smalllisp
+
+@end deffn
+ 
+@deffn {library syntax} or test @dots{}
+@smalllisp
+(or (= 2 2) (> 2 1))                   @result{} #t
+(or (= 2 2) (< 2 1))                   @result{} #t
+(or #f #f #f)                          @result{} #f
+(or (memq 'b '(a b c)) 
+    (/ 3 0))                           @result{} (b c)
+@end smalllisp
+@end deffn
+
+@deffn {library syntax} let [name] (binding @dots{}) body
+@smalllisp
+(let ((x 2) (y 3))
+  (* x y))                             @result{} 6
+
+(let ((x 2) (y 3))
+  (let ((x 7)
+        (z (+ x y)))
+    (* z x)))                          @result{} 35
+
+(let loop ((l '(1 2 3)))
+   (if (null? l)
+       '()
+       (cons (+ 1 (car l)) 
+             (loop (cdr l)))))         @result{} (2 3 4)
+@end smalllisp
+
+If a @var{binding} is a symbol, then, it introduces a variable bound
+to the @code{#unspecified} value.
+
+@smalllisp
+(let (x)
+   x)                                 @result{} #unspecified
+@end smalllisp
+
+Bigloo's named let differs from R5Rs named let because @var{name}
+is bound in @var{binding}. That is,
+
+@smalllisp
+(let ((l 'a-symbol))
+  (let l ((x l))
+     x))                               @result{} #<procedure>
+@end smalllisp
+
+while R5Rs states that,
+
+@smalllisp
+(let ((l 'a-symbol))
+  (let l ((x l))
+     x))                               @result{} a-symbol
+@end smalllisp
+@end deffn
+
+@deffn {library syntax} let* (binding @dots{}) body
+@smalllisp
+(let ((x 2) (y 3))
+  (let* ((x 7)
+         (z (+ x y)))
+    (* z x)))                          @result{} 70
+@end smalllisp
+@end deffn
+
+@deffn {library syntax} letrec (binding @dots{}) body
+@smalllisp
+(letrec ((even?
+          (lambda (n)
+            (if (zero? n)
+                #t
+                (odd? (- n 1)))))
+         (odd?
+          (lambda (n)
+            (if (zero? n)
+                #f
+                (even? (- n 1))))))
+  (even? 88))   
+                                       @result{} #t
+@end smalllisp
+@end deffn
+
+@deffn {bigloo syntax} letrec* (binding @dots{}) body
+
+Each binding has the form
+
+@smalllisp
+((<variable1> <init1>) ...)
+@end smalllisp
+
+Each @code{<init>} is an expression.Any variable must not appear more
+than once in the @code{<variable>}s.
+
+The @code{<variable>}s are bound to fresh locations, each <variable>
+is assigned in left-to-right order to the result of evaluating the
+corresponding @code{<init>}, the @code{<body>} is evaluated in the resulting
+environment, and the values of the last expression in <body> are
+returned. Despite the left-to-right evaluation and assignment order,
+each binding of a <variable> has the entire letrec* expression as its
+region, making it possible to define mutually recursive procedures.
+
+Examples:
+
+@smalllisp
+(letrec* ((x 1)
+          (f (lambda (y) (+ x y))))
+   (f 3))
+                                       @result{} 4
+(letrec* ((p (lambda (x)
+                (+ 1 (q (- x 1)))))
+          (q (lambda (y)
+                (if (zero? y)
+                    0
+                    (+ 1 (p (- y 1))))))
+          (x (p 5))
+          (y x))
+  y)
+                                       @result{} 5
+@end smalllisp
+
+It must be possible to evaluate each @code{<init>} without assigning or
+referring to the value of the corresponding <variable> or the
+@code{<variable>} of any of the bindings that follow it in
+<bindings>. Another restriction is that the continuation of each
+@code{<init>} should not be invoked more than once. 
+
+@end deffn
+
+@deffn {bigloo syntax} labels ((name (arg @dots{}) body) @dots{}) body
+The syntax is similar to the Common Lisp one [Steele90],
+where created bindings are immutable.
+
+@smalllisp
+(labels ((loop (f l acc)
+               (if (null? l) 
+                   (reverse! acc) 
+                   (loop f (cdr l) (cons (f (car l)) acc)))))
+   (loop (lambda (x) (+ 1 x)) (list 1 2 3) '()))
+   @result{} (2 3 4)
+@end smalllisp
+@end deffn
+
+@deffn {library syntax} begin expression expression @dots{}
+@smalllisp
+(define x 0)
+
+(begin (set! x 5)
+       (+ x 1))                        @result{} 6
+
+(begin (display "4 plus 1 equals ")
+       (display (+ 4 1)))              @result{} @emph{unspecified}
+                                       @print{} 4 plus 1 equals 5
+@end smalllisp
+@end deffn
+
+@c @deffn {library syntax} do ((variable init step)@dots{})
+@deffn {library syntax} do ((variable init step) @dots{}) (test expression @dots{}) body
+@smalllisp
+(do ((vec (make-vector 5))
+     (i 0 (+ i 1)))
+    ((= i 5) vec)
+  (vector-set! vec i i))               @result{} #(0 1 2 3 4)
+
+(let ((x '(1 3 5 7 9)))
+  (do ((x x (cdr x))
+       (sum 0 (+ sum (car x))))
+      ((null? x) sum)))                @result{} 25
+@end smalllisp
+@end deffn
+
+@deffn {library syntax} delay expression
+@end deffn
+
+@deffn {syntax} quasiquote template
+@deffnx {syntax} @t{`} template
+@cindex @w{quotation}
+@smalllisp
+`(list ,(+ 1 2) 4)                     @result{} (list 3 4)
+(let ((name 'a)) `(list ,name ',name))           
+          @result{} (list a (quote a))
+`(a ,(+ 1 2) ,@@(map abs '(4 -5 6)) b)           
+          @result{} (a 3 4 5 6 b)
+`((@samp{foo} ,(- 10 3)) ,@@(cdr '(c)) . ,(car '(cons)))           
+          @result{} ((foo 7) . cons)
+`#(10 5 ,(sqrt 4) ,@@(map sqrt '(16 9)) 8)           
+          @result{} #(10 5 2 4 3 8)
+`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f)           
+          @result{} (a `(b ,(+ 1 2) ,(foo 4 d) e) f)
+(let ((name1 'x)
+      (name2 'y))
+  `(a `(b ,,name1 ,',name2 d) e))           
+          @result{} (a `(b ,x ,'y d) e)
+(quasiquote (list (unquote (+ 1 2)) 4))           
+          @result{} (list 3 4)
+'(quasiquote (list (unquote (+ 1 2)) 4))           
+          @result{} `(list ,(+ 1 2) 4)
+     @emph{}i.e., (quasiquote (list (unquote (+ 1 2)) 4))
+@end smalllisp
+@end deffn
+
+@c ------------------------------------------------------------------- @c
+@c    Definitions                                                      @c
+@c ------------------------------------------------------------------- @c
+@node Definitions, , Expressions, Core Language
+@comment  node-name,  next, Expressions,  up
+@subsection Definitions
+@cindex Definitions
+
+Global bindings are introduced by the @code{define} form:
+@deffn {syntax} define variable expression
+@deffnx {syntax} define (variable arg @dots{}) body
+@smalllisp
+(define add3
+  (lambda (x) (+ x 3)))
+(add3 3)                               @result{} 6
+(define first car)
+(first '(1 2))                         @result{} 1
+@end smalllisp
+@end deffn
+
+@xref{Definitions, ,r5rs.info}, for more details. The Bigloo module
+language (See @ref{Module Declaration}) enables @emph{exports} and
+@emph{imports} of global definitions.
+
+

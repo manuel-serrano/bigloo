@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Thu Jun 11 11:37:42 2026 (serrano)                */
+;*    Last change :  Mon Jul 13 06:46:56 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -54,7 +54,7 @@
 ;*    function is _not_used.                                           */
 ;*---------------------------------------------------------------------*/
 (define (declare-global-sfun! env id alias args module import class srce srci)
-   (with-trace 'ast_glo_decl "declare-global-sfun"
+   (with-trace 'ast_glo-decl "declare-global-sfun"
       (trace-item "id=" id)
       (cond
 	 ((dsssl-optional-only-prototype? args)
@@ -68,7 +68,7 @@
 ;*    declare-global-dsssl-sfun! ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (declare-global-dsssl-sfun! env opts keys id alias args module scope class srce srci)
-   (with-trace 'ast_glo_decl "declare-global-dsssl-sfun!"
+   (with-trace 'ast_glo-decl "declare-global-dsssl-sfun!"
       (trace-item "id=" id)
       (trace-item "opts=" (shape opts))
       (trace-item "keys=" (shape keys))
@@ -172,7 +172,7 @@
 ;*    declare-global-noopt-sfun! ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (declare-global-noopt-sfun! env id alias args module scope class srce srci)
-   (with-trace 'ast_glo_decl "declare-global-noopt-sfun"
+   (with-trace 'ast_glo-decl "declare-global-noopt-sfun"
       (trace-item "id=" id)
       (let* ((arity (global-arity args))
 	     (args (args*->args-list args))

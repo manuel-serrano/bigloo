@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct 20 15:11:28 2025                          */
-;*    Last change :  Fri Jun 26 17:54:37 2026 (serrano)                */
+;*    Last change :  Mon Jul 13 06:55:05 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST construction of the toplevel forms                           */
@@ -69,178 +69,180 @@
 ;*    !!! WARNING: this function must build a reversed list !!!        */
 ;*---------------------------------------------------------------------*/
 (define (toplevel->ast sexp gdefs module genv)
-   (match-case sexp
-      ((begin)
-       (list sexp))
-      ((begin . ?nsexp*)
-       (reverse! (toplevel*->ast nsexp* gdefs module genv)))
-      ((define (?var . ?args) . ?exp)
-       (let* ((id (id-of-id var (find-location sexp)))
-	      (def (assq id gdefs))
-	      (global (find-global/module genv id module)))
-	  ;; exported variable are set to be written hence, we don't
-	  ;; have to check here if the variable has been declared has
-	  ;; exported (as a variable vs a function). We just have to
-	  ;; check if it is written.
-	  ;; We may not find global in def because it can has been
-	  ;; introduced after the computation of gdefs (for instance
-	  ;; if it is a default method of a generic).
+   (with-trace 'ast_toplevel "toplevel->ast"
+      (trace-item "sexp=" sexp)
+      (match-case sexp
+	 ((begin)
+	  (list sexp))
+	 ((begin . ?nsexp*)
+	  (reverse! (toplevel*->ast nsexp* gdefs module genv)))
+	 ((define (?var . ?args) . ?exp)
+	  (let* ((id (id-of-id var (find-location sexp)))
+		 (def (assq id gdefs))
+		 (global (find-global/module genv id module)))
+	     ;; exported variable are set to be written hence, we don't
+	     ;; have to check here if the variable has been declared has
+	     ;; exported (as a variable vs a function). We just have to
+	     ;; check if it is written.
+	     ;; We may not find global in def because it can has been
+	     ;; introduced after the computation of gdefs (for instance
+	     ;; if it is a default method of a generic).
+	     (when (and (type-exists? var) (isa? (find-type var) tclass))
+		(error-class-shadow var module sexp))
+	     (if (or (not (pair? def))
+		     (and (eq? (car (cdr def)) 'read)
+			  (or (not (global? global))
+			      (eq? (global-access global) 'read))))
+		 (make-sfun-definition var
+		    module args
+		    (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
+		    sexp 'sfun genv)
+		 (let ((new-sexp `(set! ,var (lambda ,args ,@exp))))
+		    (replace! sexp new-sexp)
+		    (make-svar-definition var sexp genv)))))
+	 ((define ?var (lambda ?args . ?exp))
 	  (when (and (type-exists? var) (isa? (find-type var) tclass))
 	     (error-class-shadow var module sexp))
-	  (if (or (not (pair? def))
-		  (and (eq? (car (cdr def)) 'read)
-		       (or (not (global? global))
-			   (eq? (global-access global) 'read))))
-	      (make-sfun-definition var
-		 module args
-		 (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
-		 sexp 'sfun genv)
-	      (let ((new-sexp `(set! ,var (lambda ,args ,@exp))))
-		 (replace! sexp new-sexp)
-		 (make-svar-definition var sexp genv)))))
-      ((define ?var (lambda ?args . ?exp))
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (error-class-shadow var module sexp))
-       (let* ((id (id-of-id var (find-location sexp)))
-	      (def (assq id gdefs))
-	      (global (find-global/module genv id module)))
-	  ;; same remark as in the previous match (variables vs functions)
-	  (if (and (eq? (car (cdr def)) 'read)
-		   (or (not (global? global))
-		       (eq? (global-access global) 'read)))
-	      (make-sfun-definition var
-		 module args
-		 (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
-		 sexp 'sfun genv)
-	      (make-svar-definition var sexp genv))))
-      ((define ?var (labels ((?f ?args . ?exp)) ?f))
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (error-class-shadow var module sexp))
-       (let* ((id (id-of-id var (find-location sexp)))
-	      (def (assq id gdefs))
-	      (global (find-global/module genv id module)))
-	  ;; same remark as in the previous match (variables vs functions)
-	  (if (and (eq? (car (cdr def)) 'read)
-		   (or (not (global? global))
-		       (eq? (global-access global) 'read))
-		   (eq? id f))
-	      (make-sfun-definition var
-		 module args
-		 (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
-		 sexp 'sfun genv)
-	      (make-svar-definition var sexp genv))))
-      ((define ?var ((and ?lam (? lambda?)) ?args . ?exp))
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (error-class-shadow var module sexp))
-       (let* ((id (id-of-id var (find-location sexp)))
-	      (def (assq id gdefs))
-	      (global (find-global/module genv id module))
-	      (tlam (type-of-id lam #f)))
-	  ;; same remark as in the previous match (variables vs functions)
-	  (if (and (eq? (car (cdr def)) 'read)
-		   (or (not (global? global))
-		       (eq? (global-access global) 'read)))
-	      (make-sfun-definition (make-typed-ident id (type-id tlam))
-		 module args
-		 (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
-		 sexp 'sfun genv)
-	      (make-svar-definition var sexp genv))))
-      ((define ?var (begin ?1-exp))
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (error-class-shadow var module sexp))
-       (set-car! (cddr sexp) 1-exp)
-       (toplevel->ast sexp gdefs module genv))
-      ((define ?var (and (? symbol?) ?var2))
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (error-class-shadow var module sexp))
-       (let ((def (assq (id-of-id var (find-location sexp)) gdefs)))
-	  (if (eq? (car (cdr def)) 'read)
-	      (let* ((g (find-global genv var2))
-		     (arity (and (global? g)
-				 (fun? (global-value g))
-				 (fun-arity (global-value g)))))
-		 (if (fixnum? arity)
-		     (cond
-			((global-optional? g)
-			 (user-warning var
-			    "Unable to eta-expand #!optional alias"
-			    sexp)
-			 (make-svar-definition var sexp genv))
-			((global-key? g)
-			 (user-warning var
-			    "Unable to eta-expand #!key alias"
-			    sexp)
-			 (make-svar-definition var sexp genv))
-			(else
-			 (let ((def (eta-expanse sexp arity)))
-			    (toplevel->ast def gdefs module genv))))
-		     (make-svar-definition var sexp genv)))
-	      (make-svar-definition var sexp genv))))
-      ((define ?var (@ (and (? symbol?) ?var2) (and (? symbol?) ?module)))
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (error-class-shadow var module sexp))
-       (let ((def (assq (id-of-id var (find-location sexp)) gdefs)))
-	  (if (eq? (car (cdr def)) 'read)
-	      (let* ((g (find-global/module genv var2 module))
-		     (arity (and (global? g)
-				 (fun? (global-value g))
-				 (global-arity g))))
-		 (if (fixnum? arity)
-		     (cond
-			((global-optional? g)
-			 (user-warning var
-			    "Unable to eta-expand #!optional alias"
-			    sexp)
-			 (make-svar-definition var sexp genv))
-			((global-key? g)
-			 (user-warning var
-			    "Unable to eta-expand #!key alias"
-			    sexp)
-			 (make-svar-definition var sexp genv))
-			(else
-			 (let ((def (eta-expanse sexp arity)))
-			    (toplevel->ast def gdefs module genv))))
-		     (make-svar-definition var sexp genv)))
-	      (make-svar-definition var sexp genv))))
-      ((define ?var . ?exp)
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (unless (match-case exp
-		     ((((@ register-class! __object) . ?-)) #t)
-		     (else #f))
-	     (error-class-shadow var module sexp)))
-       (make-svar-definition var sexp genv))
-      ((define-inline ((@ ?var ?module) . ?args) . ?exp)
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (error-class-shadow var module sexp))
-       (make-sfun-definition var
-	  module args
-	  (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
-	  sexp 'sifun genv))
-      ((define-inline (?var . ?args) . ?exp)
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (error-class-shadow var module sexp))
-       (make-sfun-definition var
-	  module args
-	  (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
-	  sexp 'sifun genv))
-      ((define-generic ((@ ?var ?module) . ?args) . ?exp)
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (error-class-shadow var module sexp))
-       (warning "define-generic" "form no longer supported" sexp)
-       (make-generic-definition var module args exp sexp genv))
-      ((define-generic (?var . ?args) . ?exp)
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (error-class-shadow var module sexp))
-       (make-generic-definition var module args exp sexp genv))
-      ((define-method (?var . ?args) . ?exp)
-       (when (and (type-exists? var) (isa? (find-type var) tclass))
-	  (error-class-shadow var module sexp))
-       (make-method-definition genv var
-	  args
-	  (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
-	  sexp genv))
-      (else
-       (list sexp))))
+	  (let* ((id (id-of-id var (find-location sexp)))
+		 (def (assq id gdefs))
+		 (global (find-global/module genv id module)))
+	     ;; same remark as in the previous match (variables vs functions)
+	     (if (and (eq? (car (cdr def)) 'read)
+		      (or (not (global? global))
+			  (eq? (global-access global) 'read)))
+		 (make-sfun-definition var
+		    module args
+		    (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
+		    sexp 'sfun genv)
+		 (make-svar-definition var sexp genv))))
+	 ((define ?var (labels ((?f ?args . ?exp)) ?f))
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (error-class-shadow var module sexp))
+	  (let* ((id (id-of-id var (find-location sexp)))
+		 (def (assq id gdefs))
+		 (global (find-global/module genv id module)))
+	     ;; same remark as in the previous match (variables vs functions)
+	     (if (and (eq? (car (cdr def)) 'read)
+		      (or (not (global? global))
+			  (eq? (global-access global) 'read))
+		      (eq? id f))
+		 (make-sfun-definition var
+		    module args
+		    (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
+		    sexp 'sfun genv)
+		 (make-svar-definition var sexp genv))))
+	 ((define ?var ((and ?lam (? lambda?)) ?args . ?exp))
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (error-class-shadow var module sexp))
+	  (let* ((id (id-of-id var (find-location sexp)))
+		 (def (assq id gdefs))
+		 (global (find-global/module genv id module))
+		 (tlam (type-of-id lam #f)))
+	     ;; same remark as in the previous match (variables vs functions)
+	     (if (and (eq? (car (cdr def)) 'read)
+		      (or (not (global? global))
+			  (eq? (global-access global) 'read)))
+		 (make-sfun-definition (make-typed-ident id (type-id tlam))
+		    module args
+		    (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
+		    sexp 'sfun genv)
+		 (make-svar-definition var sexp genv))))
+	 ((define ?var (begin ?1-exp))
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (error-class-shadow var module sexp))
+	  (set-car! (cddr sexp) 1-exp)
+	  (toplevel->ast sexp gdefs module genv))
+	 ((define ?var (and (? symbol?) ?var2))
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (error-class-shadow var module sexp))
+	  (let ((def (assq (id-of-id var (find-location sexp)) gdefs)))
+	     (if (eq? (car (cdr def)) 'read)
+		 (let* ((g (find-global genv var2))
+			(arity (and (global? g)
+				    (fun? (global-value g))
+				    (fun-arity (global-value g)))))
+		    (if (fixnum? arity)
+			(cond
+			   ((global-optional? g)
+			    (user-warning var
+			       "Unable to eta-expand #!optional alias"
+			       sexp)
+			    (make-svar-definition var sexp genv))
+			   ((global-key? g)
+			    (user-warning var
+			       "Unable to eta-expand #!key alias"
+			       sexp)
+			    (make-svar-definition var sexp genv))
+			   (else
+			    (let ((def (eta-expanse sexp arity)))
+			       (toplevel->ast def gdefs module genv))))
+			(make-svar-definition var sexp genv)))
+		 (make-svar-definition var sexp genv))))
+	 ((define ?var (@ (and (? symbol?) ?var2) (and (? symbol?) ?module)))
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (error-class-shadow var module sexp))
+	  (let ((def (assq (id-of-id var (find-location sexp)) gdefs)))
+	     (if (eq? (car (cdr def)) 'read)
+		 (let* ((g (find-global/module genv var2 module))
+			(arity (and (global? g)
+				    (fun? (global-value g))
+				    (global-arity g))))
+		    (if (fixnum? arity)
+			(cond
+			   ((global-optional? g)
+			    (user-warning var
+			       "Unable to eta-expand #!optional alias"
+			       sexp)
+			    (make-svar-definition var sexp genv))
+			   ((global-key? g)
+			    (user-warning var
+			       "Unable to eta-expand #!key alias"
+			       sexp)
+			    (make-svar-definition var sexp genv))
+			   (else
+			    (let ((def (eta-expanse sexp arity)))
+			       (toplevel->ast def gdefs module genv))))
+			(make-svar-definition var sexp genv)))
+		 (make-svar-definition var sexp genv))))
+	 ((define ?var . ?exp)
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (unless (match-case exp
+			((((@ register-class! __object) . ?-)) #t)
+			(else #f))
+		(error-class-shadow var module sexp)))
+	  (make-svar-definition var sexp genv))
+	 ((define-inline ((@ ?var ?module) . ?args) . ?exp)
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (error-class-shadow var module sexp))
+	  (make-sfun-definition var
+	     module args
+	     (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
+	     sexp 'sifun genv))
+	 ((define-inline (?var . ?args) . ?exp)
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (error-class-shadow var module sexp))
+	  (make-sfun-definition var
+	     module args
+	     (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
+	     sexp 'sifun genv))
+	 ((define-generic ((@ ?var ?module) . ?args) . ?exp)
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (error-class-shadow var module sexp))
+	  (warning "define-generic" "form no longer supported" sexp)
+	  (make-generic-definition var module args exp sexp genv))
+	 ((define-generic (?var . ?args) . ?exp)
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (error-class-shadow var module sexp))
+	  (make-generic-definition var module args exp sexp genv))
+	 ((define-method (?var . ?args) . ?exp)
+	  (when (and (type-exists? var) (isa? (find-type var) tclass))
+	     (error-class-shadow var module sexp))
+	  (make-method-definition genv var
+	     args
+	     (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
+	     sexp genv))
+	 (else
+	  (list sexp)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error-class-shadow ...                                           */
@@ -262,37 +264,39 @@
 ;*    eta-expanse ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (eta-expanse sexp arity)
-   (let ((args (make-n-proto arity)))
-      (define (do-eta-expanse/module var id2 module)
-	 (cond
-	    ((>=fx arity 0)
-	     `(define ,(cons var args)
-		 ((@ ,id2 ,module) ,@args)))
-	    ((=fx arity -1)
-	     `(define ,(cons var args)
-		 (apply (@ ,id2 ,module) ,args)))
-	    (else
-	     `(define ,(cons var args)
-		 (apply (@ ,id2 ,module)
-			(cons* ,@(args*->args-list args)))))))
-      (define (do-eta-expanse var id2)
-	 (cond
-	    ((>=fx arity 0)
-	     `(define ,(cons var args)
-		 (,id2 ,@args)))
-	    ((=fx arity -1)
-	     `(define ,(cons var args)
-		 (apply ,id2 ,args)))
-	    (else
-	     `(define ,(cons var args)
-		 (apply ,id2 (cons* ,@(args*->args-list args)))))))
-      (match-case sexp
-	 ((define ?var1 (@ ?var2 ?module2))
-	  (let* ((id2 (id-of-id var2 (find-location sexp))))
-	     (replace! sexp (do-eta-expanse/module var2 id2 module2))))
-	 ((define ?var1 ?var2)
-	  (let ((id2 (id-of-id var2 (find-location sexp))))
-	     (replace! sexp (do-eta-expanse var1 id2)))))))
+   (with-trace 'ast_toplevel "eta-expanse"
+      (trace-item "sexp=" sexp)
+      (let ((args (make-n-proto arity)))
+	 (define (do-eta-expanse/module var id2 module)
+	    (cond
+	       ((>=fx arity 0)
+		`(define ,(cons var args)
+		    ((@ ,id2 ,module) ,@args)))
+	       ((=fx arity -1)
+		`(define ,(cons var args)
+		    (apply (@ ,id2 ,module) ,args)))
+	       (else
+		`(define ,(cons var args)
+		    (apply (@ ,id2 ,module)
+		       (cons* ,@(args*->args-list args)))))))
+	 (define (do-eta-expanse var id2)
+	    (cond
+	       ((>=fx arity 0)
+		`(define ,(cons var args)
+		    (,id2 ,@args)))
+	       ((=fx arity -1)
+		`(define ,(cons var args)
+		    (apply ,id2 ,args)))
+	       (else
+		`(define ,(cons var args)
+		    (apply ,id2 (cons* ,@(args*->args-list args)))))))
+	 (match-case sexp
+	    ((define ?var1 (@ ?var2 ?module2))
+	     (let* ((id2 (id-of-id var2 (find-location sexp))))
+		(replace! sexp (do-eta-expanse/module var2 id2 module2))))
+	    ((define ?var1 ?var2)
+	     (let ((id2 (id-of-id var2 (find-location sexp))))
+		(replace! sexp (do-eta-expanse var1 id2))))))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    make-sfun-definition ...                                         */

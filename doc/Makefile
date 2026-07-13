@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Sun Jul 12 07:12:40 2026 (serrano)                */
+#*    Last change :  Mon Jul 13 07:17:35 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -41,7 +41,7 @@ MD = argsparse bigloo bool csv date digest graph hash error int internet \
  io mmap net number os pair parser port process real regexp serial sqlite \
  ssl string symbol tar trace thread vector weakptr zip \
  c jvm wasm \
- condexpand match module5 module4 object trace
+ condexpand core match module5 module4 object trace
 
 EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var grep untar wget trace
 EX_J = fib Point.bgh

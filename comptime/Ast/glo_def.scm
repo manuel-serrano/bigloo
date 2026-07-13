@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Wed May 20 09:32:39 2026 (serrano)                */
+;*    Last change :  Mon Jul 13 06:38:12 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the functions used to def (define) a      */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -78,133 +78,150 @@
 ;*    compiling a define expression.                                   */
 ;*---------------------------------------------------------------------*/
 (define (def-global-sfun! env id args locals module class src-exp rem expr)
-   (trace (ast 3) "def-global-sfun!: "
-      (shape id) " " (shape args) " " (shape locals) #\Newline
-      "    src: " src-exp #\Newline
-      "    loc: " (shape (find-location src-exp)) #\newline)
-   (enter-function id)
-   (let* ((loc (find-location src-exp))
-	  (id-type (parse-id id loc))
-	  (type-res (cdr id-type))
-	  (id (car id-type))
-	  (scope (if (and (>=fx *bdb-debug* 3)
-			   (memq 'bdb (backend-debug-support (the-backend))))
-		      'export
-		      'static))
-	  (old-global (find-global/module env id module))
-	  (global (cond
-		     ((not (global? old-global))
-		      (declare-global-sfun! env id #f args module
-			 scope class src-exp #f))
-		     (else
-		      (check-sfun-definition old-global type-res
-			 args locals class src-exp))))
-	  (def-loc (find-location src-exp)))
-      (if (sfun? (global-value global))
-	  ;; if global-value is not an sfun then it means that
-	  ;; check-sfun-definition has failed and so there is an error
-	  ;; (already reported) that will stop the compilation. we just
-	  ;; return the global variable without any additional check.
-	  (begin
-	     ;; we set the type of the function
-	     (most-defined-type! global type-res)
-	     ;; and the type of the formals
-	     (if (=fx (length locals)
-		    (length (sfun-args (global-value global))))
-		 (let ((types (map (lambda (a)
-				      (cond
-					 ((local? a)
-					  (local-type a))
-					 ((type? a)
-					  a)
-					 (else
-					  (internal-error
-					     "check-method-definition"
-					     "unexpected generic arg"
-					     (shape a)))))
-				 (sfun-args (global-value global)))))
-		    (for-each most-defined-type! locals types)))
-	     ;; we set the removable field
-	     (remove-var-from! rem global)
-	     ;; we set the body field
-	     (sfun-body-set! (global-value global) expr)
-	     ;; we set the arg field
-	     (sfun-args-set! (global-value global) locals)
-	     ;; we set the define location for this function
-	     (sfun-loc-set! (global-value global) def-loc)
-	     ;; and we return the global
-	     (leave-function)))
-      global))
+   (with-trace 'ast_glo-def "def-global-sfun!"
+      (trace-item "id=" id)
+      (trace-item "args=" (shape args))
+      (trace-item "locals=" (map shape locals))
+      (trace-item "module=" module)
+      (trace-item "class=" class)
+      (trace-item "src=" src-exp)
+      (trace-item "loc=" (shape (find-location src-exp)))
+      (enter-function id)
+      (let* ((loc (find-location src-exp))
+	     (id-type (parse-id id loc))
+	     (type-res (cdr id-type))
+	     (id (car id-type))
+	     (scope (if (and (>=fx *bdb-debug* 3)
+			     (memq 'bdb (backend-debug-support (the-backend))))
+			'export
+			'static))
+	     (old-global (find-global/module env id module))
+	     (global (cond
+			((not (global? old-global))
+			 (declare-global-sfun! env id #f args module
+			    scope class src-exp #f))
+			((and (eq? (global-import old-global) 'static)
+			      (svar? (global-value old-global)))
+			 ;; module5 addition, static variables are all
+			 ;; declared, in case of function aliasing the alias
+			 ;; as to be redeclared as a static function
+			 (unbind-global! env id module)
+			 (declare-global-sfun! env id #f args module
+			    scope class src-exp #f))
+			(else
+			 (check-sfun-definition old-global type-res
+			    args locals class src-exp))))
+	     (def-loc (find-location src-exp)))
+	 (if (sfun? (global-value global))
+	     ;; if global-value is not an sfun then it means that
+	     ;; check-sfun-definition has failed and so there is an error
+	     ;; (already reported) that will stop the compilation. we just
+	     ;; return the global variable without any additional check.
+	     (begin
+		;; we set the type of the function
+		(most-defined-type! global type-res)
+		;; and the type of the formals
+		(if (=fx (length locals)
+		       (length (sfun-args (global-value global))))
+		    (let ((types (map (lambda (a)
+					 (cond
+					    ((local? a)
+					     (local-type a))
+					    ((type? a)
+					     a)
+					    (else
+					     (internal-error
+						"check-method-definition"
+						"unexpected generic arg"
+						(shape a)))))
+				    (sfun-args (global-value global)))))
+		       (for-each most-defined-type! locals types)))
+		;; we set the removable field
+		(remove-var-from! rem global)
+		;; we set the body field
+		(sfun-body-set! (global-value global) expr)
+		;; we set the arg field
+		(sfun-args-set! (global-value global) locals)
+		;; we set the define location for this function
+		(sfun-loc-set! (global-value global) def-loc)
+		;; and we return the global
+		(leave-function)))
+	 global)))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-sfun-definition ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (check-sfun-definition::global old type-res args locals class src-exp)
-   (trace (ast 3) "check-sfun-definition: " (shape old) " "
-      (shape args) " " (shape locals) #\newline)
-   (let ((old-value (global-value old)))
-      (cond
-	 ((not (sfun? old-value))
-	  (mismatch-error old src-exp
-	     "(not declared as function)"))
-	 ((not (eq? (sfun-class old-value) class))
-	  (mismatch-error old src-exp
-	     (format "(declared as function of another class (~a/~a))"
-		(sfun-class old-value) class)))
-	 ((not (=fx (sfun-arity old-value) (global-arity args)))
-	  (mismatch-error old src-exp "(arity differs)"))
-	 ((not (compatible-type? (eq? 'sgfun class)
-		  type-res
-		  (global-type old)))
-	  (mismatch-error old
-	     src-exp
-	     (format "(incompatible function type result (~a/~a))"
-		(shape type-res) (shape (global-type old)))))
-	 ((dsssl-prototype? args)
-	  (cond
-	     ((dsssl-optional-only-prototype? args)
-	      (if (equal? (dsssl-optionals args) (sfun-optionals old-value))
-		  old
-		  (mismatch-error
-		     old src-exp
-		     "(incompatible DSSSL #!optional prototype)")))
-	     ((dsssl-key-only-prototype? args)
-	      (if (equal? (dsssl-keys args) (sfun-keys old-value))
-		  old
-		  (mismatch-error
-		     old src-exp
-		     "(incompatible DSSSL #!key prototype)")))
-	     ((not (equal? (sfun-dsssl-keywords old-value)
-		      (dsssl-formals args)))
-	      (mismatch-error old src-exp "(incompatible Dsssl prototype)"))))
-	 (else
-	  (let loop ((locals locals)
-		     (types  (map (lambda (a)
-				     (cond
-					((local? a)
-					 (local-type a))
-					((type? a)
-					 a)
-					(else
-					 (internal-error "check-method-definition"
-					    "unexpected generic arg"
-					    (shape a)))))
-				(sfun-args old-value))))
+   (with-trace 'ast_glo-def "check-sfun-global"
+      (trace-item "old=" (shape old))
+      (trace-item "args=" (shape args))
+      (trace-item "locals=" (map shape locals))
+      (trace-item "class=" class)
+      (let ((old-value (global-value old)))
+	 (cond
+	    ((not (sfun? old-value))
+	     (trace-item "old-value=" (shape old-value))
+	     (trace-item "export=" (global-import old))
+	     (mismatch-error old src-exp
+		"(not declared as function)"))
+	    ((not (eq? (sfun-class old-value) class))
+	     (mismatch-error old src-exp
+		(format "(declared as function of another class (~a/~a))"
+		   (sfun-class old-value) class)))
+	    ((not (=fx (sfun-arity old-value) (global-arity args)))
+	     (mismatch-error old src-exp "(arity differs)"))
+	    ((not (compatible-type? (eq? 'sgfun class)
+		     type-res
+		     (global-type old)))
+	     (mismatch-error old
+		src-exp
+		(format "(incompatible function type result (~a/~a))"
+		   (shape type-res) (shape (global-type old)))))
+	    ((dsssl-prototype? args)
 	     (cond
-		((null? locals)
-		 ;; we save the definition for a better location in
-		 ;; the source file.
-		 (if (null? types)
-		     (global-src-set! old src-exp)
-		     (mismatch-error old src-exp "(arity differs)")))
-		((or (null? types)
-		     (not (compatible-type? #f
-			     (local-type (car locals))
-			     (car types))))
-		 (mismatch-error old src-exp "(incompatible formal type)"))
-		(else
-		 (loop (cdr locals) (cdr types)))))))
-      old))
+		((dsssl-optional-only-prototype? args)
+		 (if (equal? (dsssl-optionals args) (sfun-optionals old-value))
+		     old
+		     (mismatch-error
+			old src-exp
+			"(incompatible DSSSL #!optional prototype)")))
+		((dsssl-key-only-prototype? args)
+		 (if (equal? (dsssl-keys args) (sfun-keys old-value))
+		     old
+		     (mismatch-error
+			old src-exp
+			"(incompatible DSSSL #!key prototype)")))
+		((not (equal? (sfun-dsssl-keywords old-value)
+			 (dsssl-formals args)))
+		 (mismatch-error old src-exp "(incompatible Dsssl prototype)"))))
+	    (else
+	     (let loop ((locals locals)
+			(types  (map (lambda (a)
+					(cond
+					   ((local? a)
+					    (local-type a))
+					   ((type? a)
+					    a)
+					   (else
+					    (internal-error "check-method-definition"
+					       "unexpected generic arg"
+					       (shape a)))))
+				   (sfun-args old-value))))
+		(cond
+		   ((null? locals)
+		    ;; we save the definition for a better location in
+		    ;; the source file.
+		    (if (null? types)
+			(global-src-set! old src-exp)
+			(mismatch-error old src-exp "(arity differs)")))
+		   ((or (null? types)
+			(not (compatible-type? #f
+				(local-type (car locals))
+				(car types))))
+		    (mismatch-error old src-exp "(incompatible formal type)"))
+		   (else
+		    (loop (cdr locals) (cdr types)))))))
+	 old)))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    def-global-scnst! ...                                            */

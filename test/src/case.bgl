@@ -1,0 +1,159 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/case.bgl              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Mon Jul 13 06:23:09 2026                          */
+;*    Last change :  Mon Jul 13 06:26:37 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing case construct                                           */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    case                                                             */
+;*---------------------------------------------------------------------*/
+(module case
+   (export test)
+   (option (set! *inlining?* #f)))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "case" tests))
+      (test-all verbose "case")))
+
+;*---------------------------------------------------------------------*/
+;*    tests ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (dummy-macro x)
+   x)
+
+(define (test1 x) 
+   (case (dummy-macro x)
+      ((tutu) 'tutu)
+      ((toto) 'toto)
+      ((toto1 toto2 toto3 toto4 toto5 toto6 toto7) 'toto-bis)
+      ((fofo1 fofo2 fofo3 fofo4 fofo5 fofo6 fofo7) 'toto-ter)
+      ((fofo1 fofo2 fofo3 fofo4 fofo5 fofo6 fofo7 fofo8 fofo9
+	      fofo10 fofo11 fofo12 fofo13 fofo14 fofo15 fofo16
+	      fofo17 fofo18 fofo19)
+       'toto-quar)
+      (else
+       'dummy
+       'else)))
+
+(define (test2 x)
+   (case (begin 1 2 x)
+      ((tete tutu tyty) 1)
+      ((toto) 2)
+      ((tata) 3)))
+
+(define (test3 x)
+   (case (begin 2 3 x)
+      ((1 2 3 4) 1)
+      ((5 6 7 8) 5)
+      (else 0)))
+
+(define (test4 x)
+   (case x
+      ((tutu 1) "tutu ou 1")
+      ((toto 1 2 #\a) "toto")
+      ((2 3) "2 ou 3") 
+      (else "else")))
+
+(define (test5 x)
+   (case (dummy-macro x)
+      ((SHOW show) 'show)
+      ((compute!) 'compute!)
+      (else 'else)))
+
+(define (test6 x)
+   (case x
+      ((#\o) #\o)
+      ((#\d) #\d)
+      ((#\x) #\x)))
+
+(define (test7 x)
+   (case x
+      ((set!) 'set!)
+      (else 'else)))
+
+(define-macro (push! stack o)
+   `(begin
+       (set! ,stack (cons ,o ,stack))
+       ,o))
+
+(define (test.8 data)
+   (let ((elem-stack '()))
+      (push! elem-stack
+	     (read/rp (regular-grammar ()
+			 (else 2))
+		      (open-input-string data)))
+      elem-stack))
+
+(define (test-case-cond-1 case)
+   (cond
+      ((=fx case 0) 1)
+      ((=fx case 1) 2)
+      ((=fx case 2) 3)
+      ((=fx case 3) 4)
+      ((=fx case 4) 5)
+      ((=fx case 5) 6)
+      (else 7)))
+
+(define (test-case-cond-2 val)
+   (cond
+      ((=fx val 0) 1)
+      ((=fx val 1) 2)
+      ((=fx val 2) 3)
+      ((=fx val 3) 4)
+      ((=fx val 4) 5)
+      ((=fx val 5) 6)
+      (else 7)))
+
+(define (test-uint32 x::uint32)
+   (case x
+      ((#u32:0) (begin 28))
+      ((#u32:1) (begin 'un))
+      ((#u32:2) (begin #f))
+      (else (begin #t))))
+
+(define-test symbol (test1 'tutu) :expected 'tutu)
+(define-test symbol (test1 'toto) :expected 'toto)
+(define-test symbol (test1 'tata) :expected 'else)
+(define-test symbol (test1 5) :expected 'else)
+(define-test symbol (test1 'fofo15) :expected 'toto-quar)
+(define-test symbol (test2 'tutu) :expected 1)
+(define-test symbol (test2 'toto) :expected 2)
+(define-test symbol (test2 'tata) :expected 3)
+(define-test symbol (test2 5) :expected #unspecified)
+(define-test integer (test3 (+ 1 2)) :expected 1)
+(define-test integer (test3 'toto) :expected 0)
+(define-test mixte (test4 'tutu) :expected "tutu ou 1")
+(define-test mixte (test4 1) :expected "tutu ou 1")
+(define-test mixte (test4 3) :expected "2 ou 3")
+(define-test mixte (test4 'titi) :expected "else")
+(define-test mixte (test4 #\a) :expected "toto")
+(define-test mixte (test4 2) :expected "toto")
+(define-test hash (test5 'show) :expected 'show)
+(define-test hash (test5 'SHOW) :expected 'show)
+(define-test hash (test5 'compute!) :expected 'compute!)
+(define-test hash (test5 'toto) :expected 'else)
+(define-test char  (test6 #\a) :expected #unspecified)
+(define-test char (test6 #\x) :expected #\x)
+(define-test char (test6 (string-ref "o" 0)) :expected #\o)
+(define-test hash (test7 'fibo) :expected 'else)
+(define-test cond.1 (test-case-cond-1 5) :expected 6)
+(define-test cond.2 (test-case-cond-2 5) :expected 6)
+(define-test uint32.1 (test-uint32 0) :expected 28)
+(define-test uint32.2 (test-uint32 1) :expected 'un)
+(define-test uint32.3 (test-uint32 2) :expected #f)
+(define-test uint32.4 (test-uint32 3) :expected #t)
+(define-test uint32.5 (test-uint32 4) :expected #t)
+   
