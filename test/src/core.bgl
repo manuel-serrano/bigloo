@@ -1,0 +1,292 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/core.bgl              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
+;*    Last change :  Tue Jul 14 09:00:16 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing the core constructs                                      */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    core                                                             */
+;*---------------------------------------------------------------------*/
+(module core
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "core" tests))
+      (test-all verbose "core")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test operator
+   (+ 3 4)
+   :expected 7)
+(define-test operator
+   ((if #f + *) 3 4)
+   :expected 12)
+(define-test operator
+   ((lambda (x) (+ 1 x)) 5)
+   :expected 6)
+
+(define-test lambda
+   (lambda (x) (+ x x))
+   :expected procedure?)
+(define-test lambda 
+   ((lambda (x) (+ x x)) 4)
+   :expected 8)
+(define-test lambda 
+   ((lambda x x) 3 4 5 6)
+   :expected '(3 4 5 6))
+(define-test lambda
+   ((lambda (x y . z) z) 3 4 5 6)
+   :expected '(5 6))
+(define-test lambda
+   (let ((add4 (let ((x 4)) (lambda (y) (+ x y)))))
+      (add4 6))
+   :expected 10)
+(define-test lambda
+   (let ((reverse-subtract (lambda (x y) (- y x))))
+      (reverse-subtract 7 10))
+   :expected 3)
+
+(define-test if
+   (if (> 3 2) 'yes 'no)
+   :expected 'yes)
+(define-test if
+   (if (> 2 3) 'yes 'no)
+   :expected 'no)
+(define-test if
+   (if (> 3 2) (- 3 2) (+ 3 2))
+   :expected 1)
+(define-test if
+   (if #t 'true)
+   :expected 'true)
+(define-test if
+   (if #f 'true)
+   :expected #f)
+
+(define-test and
+   (and (= 2 2) (> 2 1))
+   :expected #t)
+(define-test and
+   (and)
+   :expected #t)
+(define-test and 
+   (and (= 2 2) (< 2 1))
+   :expected #f)
+(define-test and
+   (and 1 2 'c '(f g))
+   :expected '(f g))
+
+(define-test and-let*
+   (and-let* ((x 1) (y 2)) (cons x y))
+   :expected '(1 . 2))
+
+(define-test and-let*
+   (and-let* ((x 1) (z #f)) x)
+   :expected #f)
+
+(define-test and-let*
+   (and-let* ((my-list '(compute-list)) ((not (null? my-list))))
+          my-list)
+   :expected '(compute-list))
+
+(define-test and-let*
+   (let ((lookup (lambda (key alist)
+                    (and-let* ((x (assq key alist))) (cdr x)))))
+      (lookup 'foo '((bar . 3) (foo . 2))))
+   :expected 2)
+
+(define-test or
+   (or (= 2 2) (> 2 1))
+   :expected #t)
+(define-test or
+   (or)
+   :expected #f)
+(define-test or
+   (or (= 2 2) (< 2 1))
+   :expected #t)
+(define-test or
+   (or #f #f #f)
+   :expected #f)
+(define-test or
+   (or (memq 'b '(a b c)) 
+       (/ 3 0))
+   :expected '(b c))
+
+(define-test cond
+   (cond ((> 3 2) 'greater)
+         ((< 3 2) 'less))
+   :expected 'greater)
+(define-test cond
+   (cond ((> 3 3) 'greater)
+         ((< 3 3) 'less)
+         (else 'equal))
+   :expected 'equal)
+(define-test cond
+   (cond ((assv 'b '((a 1) (b 2))) => cadr)
+         (else #f))
+   :expected 2)
+
+(define-test case
+   (case (* 2 3)
+      ((2 3 5 7) 'prime)
+      ((1 4 6 8 9) 'composite))
+   :expected 'composite)
+(define-test case
+   (case (car '(c d))
+      ((a) 'a)
+      ((b) 'b))
+   :expected #unspecified)
+(define-test case
+   (case (car '(c d))
+      ((a e i o u) 'vowel)
+      ((w y) 'semivowel)
+      (else 'consonant))
+   :expected 'consonant)
+
+(define-test set!
+   (let ((x 2))
+      (set! x 4)
+      x)
+   :expected 4)
+
+(define-test let
+   (let ((x 2) (y 3))
+      (* x y))
+   :expected 6)
+
+(define-test let
+   (let ((x 2) (y 3))
+      (let ((x 7)
+            (z (+ x y)))
+         (* z x)))
+   :expected 35)
+
+(define-test let
+   (let (z (t 23))
+      (cons z t))
+   :expected '(#unspecified . 23))
+
+(define-test letn
+   (let loop ((l '(1 2 3)))
+      (if (null? l)
+          '()
+          (cons (+ 1 (car l)) 
+             (loop (cdr l)))))
+   :expected '(2 3 4))
+
+(define-test let*
+   (let ((x 2) (y 3))
+      (let* ((x 7)
+             (z (+ x y)))
+         (* z x)))
+   :expected 70)
+
+(define-test letrec
+   (letrec ((even?
+               (lambda (n)
+                  (if (zero? n)
+                      #t
+                      (odd? (- n 1)))))
+            (odd?
+               (lambda (n)
+                  (if (zero? n)
+                      #f
+                      (even? (- n 1))))))
+      (even? 88))
+   :expected #t)
+
+(define-test letrec*
+   (letrec* ((x 1)
+             (f (lambda (y) (+ x y))))
+      (f 3))
+   :expected 4)
+(define-test letrec*
+   (letrec* ((p (lambda (x)
+                   (+ 1 (q (- x 1)))))
+             (q (lambda (y)
+                   (if (zero? y)
+                       0
+                       (+ 1 (p (- y 1))))))
+             (x (p 5))
+             (y x))
+      y)
+   :expected 5)
+
+(define-test begin
+   (let ((x 0))
+      (begin
+         (set! x 5)
+         (+fx x 1)))
+   :expected 6)
+
+(define-test do
+   (do ((vec (make-vector 5))
+        (i 0 (+ i 1)))
+       ((= i 5) vec)
+       (vector-set! vec i i))
+   :expected '#(0 1 2 3 4))
+(define-test do
+   (let ((x '(1 3 5 7 9)))
+      (do ((x x (cdr x))
+           (sum 0 (+ sum (car x))))
+          ((null? x) sum)))
+   :expected 25)
+
+(define-test quasiquote
+   `(list ,(+ 1 2) 4)
+   :expected '(list 3 4))
+(define-test quasiquote
+   (let ((name 'a)) `(list ,name ',name))           
+   :expected '(list a (quote a)))
+(define-test quasiquot
+   `(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b)
+   :expected '(a 3 4 5 6 b))
+(define-test quasiquote
+   `((foo ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons)))
+   :expected '((foo 7) . cons))
+(define-test quasiquote
+   `#(10 5 ,(sqrt 4) ,@(map sqrt '(16 9)) 8)           
+   :expected '#(10 5 2.0 4.0 3.0 8))
+(define-test quasiquote
+   `(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f)           
+   :expected '(a `(b ,(+ 1 2) ,(foo 4 d) e) f))
+(define-test quasiquote
+   (let ((name1 'x)
+         (name2 'y))
+      `(a `(b ,,name1 ,',name2 d) e))           
+   :expected '(a `(b ,x ,'y d) e))
+(define-test quasiquote
+   (quasiquote (list (unquote (+ 1 2)) 4))           
+   :expected '(list 3 4))
+
+(define-test define
+   (let ()
+      (define x 123)
+      x)
+   :expected 123)
+
+(define-test definefun
+   (let ()
+      (define add3
+         (lambda (x) (+ x 3)))
+      (add3 3))
+   :expected 6)
+(define-test definefun
+   (let ()
+      (define first car)
+      (first '(1 2)))
+   :expected 1)

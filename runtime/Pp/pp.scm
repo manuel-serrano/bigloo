@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 27 14:10:31 1993                          */
-;*    Last change :  Wed Jul  1 15:59:18 2026 (serrano)                */
+;*    Last change :  Tue Jul 14 09:09:10 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Le pretty-printer de Marc Feeley.                                */
 ;*=====================================================================*/
@@ -439,7 +439,7 @@
             ((defun de) pp-defun)
             ((if set!) pp-if)
             ((cond) pp-cond)
-            ((case) pp-case)
+            ((case match-case) pp-case)
             ((and or) pp-and)
             ((let) pp-let)
             ((begin) pp-begin)

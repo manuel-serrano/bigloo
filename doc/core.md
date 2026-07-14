@@ -10,11 +10,17 @@
 <!--==================================================================-->
 
 ,(implementation-path "../runtime/Eval/expdsrfi0.scm")
-,(example-path "../test/src/condexpand.bgl")
+,(example-path "../test/src/core.bgl")
 
 
 Core Language
 =============
+
+This chapter presents the Bigloo basics. It presents the elements
+that compose the body of a [module](./module5.html).
+
+Syntax
+------
 
 The syntax of Bigloo is that of Scheme (a parenthesis based one) with
 four exceptions: type information, multi-line comments, extended strings
@@ -31,7 +37,7 @@ They are defined by the following grammar:
 ```
 
 For details of the standard Scheme identifiers, see 
-[R5RS](https://conservatory.scheme.org/schemers/Documents/Standards/R5RS).
+[Scheme R5RS](https://conservatory.scheme.org/schemers/Documents/Standards/R5RS).
 
 [Multi-lines comments](http://srfi.schemers.org/srfi-30) are defined as:
 
@@ -52,18 +58,12 @@ A Bigloo string literal is defined by:
   | \\ | \n | \t | \b | \r | \f | \v | \"
   | \x<hex><hex>
   | \ux<hex><hex><hex><hex>
-  | \u\@{<hex>@}
-  | \u@{<hex><hex>@}
-  | \u@{<hex><hex><hex>@}
-  | \u@{<hex><hex><hex><hex>@}
+  | \u<hex>
+  | \u<hex><hex>
+  | \u<hex><hex><hex>
+  | \u<hex><hex><hex><hex>
 <hex> --> an hexa-decimal digit
 ```
-
-@deffn {bigloo function} bigloo-strict-r5rs-string
-@deffnx {bigloo function} bigloo-strict-r5rs-string-set! bool
-If @code{#t} r5rs-string literals are restricted to the official R5Rs
-character set. Otherwise, they are interpreted as Bigloo string.
-@end deffn
 
 Large integers can be written as:
 
@@ -81,32 +81,22 @@ sequences of 3 digits. Examples:
 89_223
 ```
 
-@c ------------------------------------------------------------------- @c
-@c    Comments                                                         @c
-@c ------------------------------------------------------------------- @c
-@node Comments, Expressions, Syntax, Core Language
-@comment  node-name,  next,  previous,  up
-@subsection Comments
-@cindex comments
-@cindex #;
+Comments and whitespaces are the same as in [Scheme R5RS](https://conservatory.scheme.org/schemers/Documents/Standards/R5RS).
 
-Comments and whitespaces are the same as in 
-@ref{Whitespace and comments,,r5rs.info,R5RS}.
-
-@smalllisp
+```biglloo
 ;;; The FACT procedure computes the factorial
 ;;; of a non-negative integer.
 (define fact
   (lambda (n)
     (if (= n 0)
-        1        ;; Base case: return 1
+        1 ;; Base case: return 1
         (* n (fact (- n 1))))))
-@end smalllisp
+```
 
-In addition, Bigloo supports @emph{s-expressions} comments. These
-are introduced with the @code{#;} syntax:
+In addition, Bigloo supports _s-expressions_ comments. These
+are introduced with the `#; syntax:
 
-@smalllisp
+```bigloo
 ;;; The FACT procedure computes the factorial
 ;;; of a non-negative integer.
 (define fact
@@ -115,400 +105,214 @@ are introduced with the @code{#;} syntax:
     (if (= n 0)
         1
         (* n (fact (- n 1))))))
-@end smalllisp
+```
 
 
-@c ------------------------------------------------------------------- @c
-@c    Expressions                                                      @c
-@c ------------------------------------------------------------------- @c
-@node Expressions, Definitions, Comments, Core Language
-@comment  node-name,  next,  previous,  up
-@subsection Expressions
-@cindex Expressions
+Expressions
+-----------
 
-Bigloo expressions are the same as in @ref{Expressions, , r5rs.info, R5RS}.
-Bigloo has more syntactic keywords than Scheme. The Bigloo syntactic
+Bigloo does not distinguish statements from expressions as most languages do.
+In Bigloo all expressions produce a value.
+
+Bigloo expressions are the same as in 
+[Scheme R5RS](https://conservatory.scheme.org/schemers/Documents/Standards/R5RS)
+with some extensions. The Bigloo syntactic
 keywords are:
 
-@example
-=>                      do                    or
-and                     else                  quasiquote
-begin                   if                    quote
-case                    lambda                set!
-cond                    let                   unquote
-unquote-splicing        define                let*
-delay                   letrec                module
-labels                  try                   define-struct
-unwind-protect          bind-exit             define-inline
-regular-grammar         lalr-grammar          regular-search
-define-expander         define-macro          match-case
-match-lambda            pragma                failure
-assert                  define-generic        define-method
-instantiate             duplicate             with-access
-widen!                  shrink!               multiple-value-bind
-let-syntax              letrec-syntax         define-syntax
-cond-expand             receive               args-parse
-define-record-type      and-let*              letrec*
-@end example
+```
+->                      =>                    and 
+and-let*                args-parse            assert
+begin                   bind-exit             case
+cond                    cond-expand           define
+define-expander         define-generic        define-inline
+define-macro            define-method         define-record-type
+define-struct           define-syntax         delay
+do                      duplicate             else
+failure                 if                    instantiate
+labels                  lalr-grammar          lambda
+let                     let*                  let-syntax
+letrec                  letrec*               letrec-syntax
+match-case              match-lambda          module
+multiple-value-bind     or                    pragma
+quasiquote              quote                 receive
+regular-grammar         regular-search        set! 
+shrink!                 try                   unquote
+unquote-splicing        unwind-protect        widen! 
+with-access             with-handler
+```
 
-@noindent All other non atomic Bigloo forms are evaluated as function
-calls or macro class.
+All other non atomic Bigloo forms are evaluated as function
+calls or macro calls.
 
-@deffn {syntax} @r{<variable>}
-@deffnx {syntax} quote datum
-@deffnx {syntax} @code{'}@r{datum}
-@deffnx {syntax} @r{<constant>}
-@smalllisp
-(define x 28)                          @result{}
-x                                      @result{} 28
-(quote a)                              @result{} A
-(quote #(a b c))                       @result{} #(A B C)
-(quote (+ 1 2))                        @result{} (+ 1 2)
-'a                                     @result{} A
-'#(a b c)                              @result{} #(A B C)
-'()                                    @result{} ()
-'(+ 1 2)                               @result{} (+ 1 2)
-'(quote a)                             @result{} (QUOTE A)
-'"abc"                                 @result{} "abc"
-"abc"                                  @result{} "abc"
-'145932                                @result{} 145932
-145932                                 @result{} 145932
-'#t                                    @result{} #t
-#t                                     @result{} #t
-@end smalllisp
-@end deffn
+Variables, literals, and quote:
 
-@deffn {syntax} operator operand @dots{}
-@cindex @w{procedure call}
-@cindex @w{call}
-@smalllisp
-(+ 3 4)                                @result{} 7
-((if #f + *) 3 4)                      @result{} 12
-((lambda (x) (+ 1 x)) 5)               @result{} 6
-@end smalllisp
-@end deffn
+```bigloo
+(define x 28)                          &rarr;
+x                                      &rarr; 28
+(quote a)                              &rarr; A
+(quote #(a b c))                       &rarr; #(A B C)
+(quote (+ 1 2))                        &rarr; (+ 1 2)
+'a                                     &rarr; A
+'#(a b c)                              &rarr; #(A B C)
+'()                                    &rarr; ()
+'(+ 1 2)                               &rarr; (+ 1 2)
+'(quote a)                             &rarr; (QUOTE A)
+'"abc"                                 &rarr; "abc"
+"abc"                                  &rarr; "abc"
+'145932                                &rarr; 145932
+145932                                 &rarr; 145932
+'#t                                    &rarr; #t
+#t                                     &rarr; #t
+```
 
-@deffn {syntax} lambda formals body
-@smalllisp
-(lambda (x) (+ x x))                   @result{} @emph{a procedure}
-((lambda (x) (+ x x)) 4)               @result{} 8
+### (operator arg ...) ###
+<!-- [:operator@NoDef] -->
 
-(define reverse-subtract
-  (lambda (x y) (- y x)))
-(reverse-subtract 7 10)                @result{} 3
+Operators are implemented via functions. As such, they can be applied
+to values to compute a result but they can also be used as values, i.e.,
+passed as argument to other functions, returned from another function call,
+or stored into variables and data structures.
 
-(define add4
-  (let ((x 4))
-    (lambda (y) (+ x y))))
-(add4 6)                               @result{} 10
+### (lambda args body) ###
+<!-- [:lambda@NoDef] -->
 
-((lambda x x) 3 4 5 6)                 @result{} (3 4 5 6)
-((lambda (x y . z) z)
- 3 4 5 6)                              @result{} (5 6)
-@end smalllisp
-@end deffn
+Functions are defined with the keyword `lambda`. The syntax
 
-@deffn {syntax} if test consequent [alternate]
-@smalllisp
-(if (> 3 2) 'yes 'no)                  @result{} yes
-(if (> 2 3) 'yes 'no)                  @result{} no
-(if (> 3 2)
-    (- 3 2)
-    (+ 3 2))                           @result{} 1
-@end smalllisp
-@end deffn
+```bnf
+<DefineLambda> --> (define (<Ident> <Arguments>) <Expression>
+```
 
-@deffn {syntax} set!  variable expression
-@smalllisp
-(define x 2)
-(+ x 1)                                @result{} 3
-(set! x 4)                             @result{} @emph{unspecified}
-(+ x 1)                                @result{} 5
-@end smalllisp
-@end deffn
+is a shorthand for:
 
-@deffn {library syntax} cond clause clause @dots{}
+```bnf
+<Define> --> (define <Ident> (lambda <Arguments> <Expression>))
+```
 
-Bigloo considers @code{else} as a keyword. It thus ignores clauses
-following an @code{else}-clause.
+<span></span>
 
-@smalllisp
-(cond ((> 3 2) 'greater)
-      ((< 3 2) 'less))                 @result{} greater
+### (if test consequence alternate) ###
+<!-- [:if@NoDef] -->
 
-(cond ((> 3 3) 'greater)
-      ((< 3 3) 'less)
-      (else 'equal))                   @result{} equal
+The simple condiditional forms are implemente by the `if` construct.
 
-(cond ((assv 'b '((a 1) (b 2))) => cadr)
-      (else #f))                       @result{} 2
-@end smalllisp
-@end deffn
+### (cond clause clause ...) ###
+<!-- [:cond@NoDef] -->
+Cascades of condiditionals can be expressed using the `cond` form.
+Bigloo considers `else` as a keyword. It thus ignores clauses
+following an `else`-clause.
 
-@deffn {library syntax} case key clause clause @dots{}
-@smalllisp
-(case (* 2 3)
-  ((2 3 5 7) 'prime)
-  ((1 4 6 8 9) 'composite))            @result{} composite
-(case (car '(c d))
-  ((a) 'a)
-  ((b) 'b))                            @result{} @emph{unspecified}
-(case (car '(c d))
-  ((a e i o u) 'vowel)
-  ((w y) 'semivowel)
-  (else 'consonant))                   @result{} consonant
-@end smalllisp
-@end deffn
+### (case expr clause ...) ###
+<!-- [:case@NoDef] -->
+When all the tests of a cascade of `if` compare the same value to a string,
+a symbol, or a number, the compact form `case` can be used instead.
 
-@deffn {library syntax} and test @dots{}
-@smalllisp
-(and (= 2 2) (> 2 1))                  @result{} #t
-(and (= 2 2) (< 2 1))                  @result{} #f
-(and 1 2 'c '(f g))                    @result{} (f g)
-(and)                                  @result{} #t
-@end smalllisp
-@end deffn
- 
-@deffn {bigloo syntax} and-let* test @dots{}
-@cindex SRFI-2
+> [!NOTE] A `case` is equivalent to a cascade of `if`. They have
+> the same semantics but `case` gives opportunities to the compiler for
+> more aggresive optimizations.
 
-@smalllisp
-(and-let* ((x 1) (y 2)) (cons x y))    @result{} (1 . 2)
-(and-let* ((x 1) (z #f)) x)            @result{} #f
+### (and expr ...) ###
+<!-- [:and@NoDef] -->
+Logical _and_ .
 
-(and-let* ((my-list (compute-list)) ((not (null? my-list))))
-          (do-something my-list))
+### (and-let* bindings expr ...) ###
+<!-- [:and-let*@NoDef] -->
 
-(define (look-up key alist)
-  (and-let* ((x (assq key alist))) (cdr x)))
+### (or expr ...) ###
+<!-- [:or@NoDef] -->
+Logical _or_.
 
-(or (and-let* ((c (read-char))
-               ((not (eof-object? c))))
-              (string-set! some-str i c)  
-              (set! i (+ 1 i)))
-@end smalllisp
 
-@end deffn
- 
-@deffn {library syntax} or test @dots{}
-@smalllisp
-(or (= 2 2) (> 2 1))                   @result{} #t
-(or (= 2 2) (< 2 1))                   @result{} #t
-(or #f #f #f)                          @result{} #f
-(or (memq 'b '(a b c)) 
-    (/ 3 0))                           @result{} (b c)
-@end smalllisp
-@end deffn
+### (set! variable value) ###
+<!-- [:set!@NoDef] -->
+Assigns a new value to a declared variable.
 
-@deffn {library syntax} let [name] (binding @dots{}) body
-@smalllisp
-(let ((x 2) (y 3))
-  (* x y))                             @result{} 6
+> [!NOTE] the form `(set! (-> obj field) value)` is the assignment of
+> object fields. The form is described in the [Object](./object.html) chapter.
 
-(let ((x 2) (y 3))
-  (let ((x 7)
-        (z (+ x y)))
-    (* z x)))                          @result{} 35
 
-(let loop ((l '(1 2 3)))
-   (if (null? l)
-       '()
-       (cons (+ 1 (car l)) 
-             (loop (cdr l)))))         @result{} (2 3 4)
-@end smalllisp
+### (let bindings body) ###
+<!-- [:let@NoDef] -->
+Bindings are of the form
 
-If a @var{binding} is a symbol, then, it introduces a variable bound
-to the @code{#unspecified} value.
+```bnf
+<binding> --> ( <Ident> <Expression> )
+  | <Ident>
+```
 
-@smalllisp
-(let (x)
-   x)                                 @result{} #unspecified
-@end smalllisp
+The first syntax binds a variable to an expression. The second form
+binds it to the `#unspecfied` value. The form
 
-Bigloo's named let differs from R5Rs named let because @var{name}
-is bound in @var{binding}. That is,
+```bigloo
+(let (x) x)
+```
 
-@smalllisp
-(let ((l 'a-symbol))
-  (let l ((x l))
-     x))                               @result{} #<procedure>
-@end smalllisp
+is equivalent to:
 
-while R5Rs states that,
+```bigloo
+(let ((x #unspecfied)) x)
+```
 
-@smalllisp
-(let ((l 'a-symbol))
-  (let l ((x l))
-     x))                               @result{} a-symbol
-@end smalllisp
-@end deffn
+The identifiers introduced by `let` construct are bound in the `body`
+of the `let`. 
 
-@deffn {library syntax} let* (binding @dots{}) body
-@smalllisp
-(let ((x 2) (y 3))
-  (let* ((x 7)
-         (z (+ x y)))
-    (* z x)))                          @result{} 70
-@end smalllisp
-@end deffn
+<span></span>
 
-@deffn {library syntax} letrec (binding @dots{}) body
-@smalllisp
-(letrec ((even?
-          (lambda (n)
-            (if (zero? n)
-                #t
-                (odd? (- n 1)))))
-         (odd?
-          (lambda (n)
-            (if (zero? n)
-                #f
-                (even? (- n 1))))))
-  (even? 88))   
-                                       @result{} #t
-@end smalllisp
-@end deffn
+### (let ident bindings body) ###
+<!-- [:let@NoDef] -->
+Binds a local function definition.
 
-@deffn {bigloo syntax} letrec* (binding @dots{}) body
+### (let* bindings body) ###
+<!-- [:letn@NoDef] -->
+Similar to `let` but the fresh variables are bound in the remaining bindings.
+A `let*` form is equivalent to the cascade of `let` forms.
 
-Each binding has the form
+### (letrec bindings body) ###
+<!-- [:letrec@NoDef] -->
+Binds mutually recursive local variables.
 
-@smalllisp
-((<variable1> <init1>) ...)
-@end smalllisp
+### (letrec* bindings body) ###
+<!-- [:letrec*@NoDef] -->
 
-Each @code{<init>} is an expression.Any variable must not appear more
-than once in the @code{<variable>}s.
+Each binding has the form:
 
-The @code{<variable>}s are bound to fresh locations, each <variable>
+```bnf
+<Bindings> --> ( (<Ident> <Expression>)+ )
+```
+
+Each &lt;Expression&gt; is an expression. Any variable must not appear more
+than once in the `&lt;variable&gt;}s.
+
+The &lt;variable&gt;s are bound to fresh locations, each &lt;variable&gt;
 is assigned in left-to-right order to the result of evaluating the
-corresponding @code{<init>}, the @code{<body>} is evaluated in the resulting
-environment, and the values of the last expression in <body> are
+corresponding &lt;expression&gt;, the `body` is evaluated in the resulting
+environment, and the values of the last expression in `body` are
 returned. Despite the left-to-right evaluation and assignment order,
-each binding of a <variable> has the entire letrec* expression as its
+each binding of a &lt;variable&gt; has the entire letrec* expression as its
 region, making it possible to define mutually recursive procedures.
 
-Examples:
+It must be possible to evaluate each &lt;expression&gt; without assigning or
+referring to the value of the corresponding &lt;variable&gt; or the
+&lt;variable&gt; of any of the bindings that follow it in
+`bindings`. Another restriction is that the continuation of each
+&lt;expression&gt; should not be invoked more than once. 
 
-@smalllisp
-(letrec* ((x 1)
-          (f (lambda (y) (+ x y))))
-   (f 3))
-                                       @result{} 4
-(letrec* ((p (lambda (x)
-                (+ 1 (q (- x 1)))))
-          (q (lambda (y)
-                (if (zero? y)
-                    0
-                    (+ 1 (p (- y 1))))))
-          (x (p 5))
-          (y x))
-  y)
-                                       @result{} 5
-@end smalllisp
+### (begin expression ...) ###
+<!-- [:begin@NoDef] -->
+Sequence of expression. It returns the evaluation value of the last
+expression.
 
-It must be possible to evaluate each @code{<init>} without assigning or
-referring to the value of the corresponding <variable> or the
-@code{<variable>} of any of the bindings that follow it in
-<bindings>. Another restriction is that the continuation of each
-@code{<init>} should not be invoked more than once. 
+### quasiquote template ###
+<!-- [:quasiquote@NoDef] -->
+Syntactic form for creating lists and vectors. Similar to `quote` except
+that a `quasiquote` evaluates un `unquote` and `unquote-splicing` expression
+it contains.
 
-@end deffn
+### define variable expression ###
+<!-- [:define@NoDef] -->
+Defines a variable.
 
-@deffn {bigloo syntax} labels ((name (arg @dots{}) body) @dots{}) body
-The syntax is similar to the Common Lisp one [Steele90],
-where created bindings are immutable.
-
-@smalllisp
-(labels ((loop (f l acc)
-               (if (null? l) 
-                   (reverse! acc) 
-                   (loop f (cdr l) (cons (f (car l)) acc)))))
-   (loop (lambda (x) (+ 1 x)) (list 1 2 3) '()))
-   @result{} (2 3 4)
-@end smalllisp
-@end deffn
-
-@deffn {library syntax} begin expression expression @dots{}
-@smalllisp
-(define x 0)
-
-(begin (set! x 5)
-       (+ x 1))                        @result{} 6
-
-(begin (display "4 plus 1 equals ")
-       (display (+ 4 1)))              @result{} @emph{unspecified}
-                                       @print{} 4 plus 1 equals 5
-@end smalllisp
-@end deffn
-
-@c @deffn {library syntax} do ((variable init step)@dots{})
-@deffn {library syntax} do ((variable init step) @dots{}) (test expression @dots{}) body
-@smalllisp
-(do ((vec (make-vector 5))
-     (i 0 (+ i 1)))
-    ((= i 5) vec)
-  (vector-set! vec i i))               @result{} #(0 1 2 3 4)
-
-(let ((x '(1 3 5 7 9)))
-  (do ((x x (cdr x))
-       (sum 0 (+ sum (car x))))
-      ((null? x) sum)))                @result{} 25
-@end smalllisp
-@end deffn
-
-@deffn {library syntax} delay expression
-@end deffn
-
-@deffn {syntax} quasiquote template
-@deffnx {syntax} @t{`} template
-@cindex @w{quotation}
-@smalllisp
-`(list ,(+ 1 2) 4)                     @result{} (list 3 4)
-(let ((name 'a)) `(list ,name ',name))           
-          @result{} (list a (quote a))
-`(a ,(+ 1 2) ,@@(map abs '(4 -5 6)) b)           
-          @result{} (a 3 4 5 6 b)
-`((@samp{foo} ,(- 10 3)) ,@@(cdr '(c)) . ,(car '(cons)))           
-          @result{} ((foo 7) . cons)
-`#(10 5 ,(sqrt 4) ,@@(map sqrt '(16 9)) 8)           
-          @result{} #(10 5 2 4 3 8)
-`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f)           
-          @result{} (a `(b ,(+ 1 2) ,(foo 4 d) e) f)
-(let ((name1 'x)
-      (name2 'y))
-  `(a `(b ,,name1 ,',name2 d) e))           
-          @result{} (a `(b ,x ,'y d) e)
-(quasiquote (list (unquote (+ 1 2)) 4))           
-          @result{} (list 3 4)
-'(quasiquote (list (unquote (+ 1 2)) 4))           
-          @result{} `(list ,(+ 1 2) 4)
-     @emph{}i.e., (quasiquote (list (unquote (+ 1 2)) 4))
-@end smalllisp
-@end deffn
-
-@c ------------------------------------------------------------------- @c
-@c    Definitions                                                      @c
-@c ------------------------------------------------------------------- @c
-@node Definitions, , Expressions, Core Language
-@comment  node-name,  next, Expressions,  up
-@subsection Definitions
-@cindex Definitions
-
-Global bindings are introduced by the @code{define} form:
-@deffn {syntax} define variable expression
-@deffnx {syntax} define (variable arg @dots{}) body
-@smalllisp
-(define add3
-  (lambda (x) (+ x 3)))
-(add3 3)                               @result{} 6
-(define first car)
-(first '(1 2))                         @result{} 1
-@end smalllisp
-@end deffn
-
-@xref{Definitions, ,r5rs.info}, for more details. The Bigloo module
-language (See @ref{Module Declaration}) enables @emph{exports} and
-@emph{imports} of global definitions.
+### define (variable args) expression) ###
+<!-- [:definefun@NoDef] -->
+Defines a function.
 
 
