@@ -1,0 +1,85 @@
+(module main
+
+   (extern "java")
+   
+   (include "./java.bgh")
+   (include "./android.bgh")
+   (include "./android-location.bgh")
+   (include "./widgets.bgh")
+   (include "../../../../gen/org/bigloo/gps/R.bgh")
+   
+   (import "./geotag.bgl" . geotag)
+   
+   (export onCreate onResume onPause onDestroy onException)
+   
+   (main init))
+
+;*---------------------------------------------------------------------*/
+;*    init ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (init args)
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    onCreate ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (onCreate self::Activity)
+   
+   (log.init ((-> self getString) R$string.app_name))
+   (log.v "MainActivity onCreate =========================================")
+   ((-> self setContentView) R$layout.activity_main)
+
+   ;; inits (gui, prefs, and camera discovery)
+   (with-handler
+      (lambda (e)
+	 (log.v (format "ERROR (onCreate) ~a ~a" e (typeof e)))
+	 (when (isa? e &error)
+	    (with-access::&error e (proc msg obj)
+	       (log.v (format "proc=~a msg=~a obj=~a" proc msg obj))
+	       (exception-notify e)
+	       (exit 1))))
+      (geotag.init self))
+
+   ;; geotag update
+   (let ((geotag ((-> self findViewById) R$id.geotagUpdateCamera)))
+      (on-click geotag
+	 (lambda (v)
+	    (on-prefs-camera-reconnect self
+	       (lambda (c::Camera)
+		  (geotag.get-location self
+		     (lambda (l)
+			(when (Location? l)
+			   (camera-geotag c l)))))))))
+
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    onDestroy ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (onDestroy self::Activity)
+   (log.v "MainActivity onDestroy =========================================")
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    onResume ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (onResume self::Activity)
+   (log.v "MainActivity onResume =========================================")
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    onPause ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (onPause self::Activity)
+   (log.v "MainActivity onPause ==========================================")
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    onException ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (onException::bool thread exn::Throwable)
+   (log.e "MainActivity onException ==========================================")
+   (log.e "*** EXCEPTION: ~s" ((-> exn getMessage)))
+   ((-> exn printStackTrace))
+   #t)
+

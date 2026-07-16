@@ -51,6 +51,7 @@
     --programBorder: #eeeeee;
     --programBorderColor: #f91a03;
     --shellBorderColor: #a09103;
+    --xmlBorderColor: #e0e103;
 
     --type: #05ca04;
     --expression: #444;
@@ -672,6 +673,10 @@ pre.java {
 
 pre.wasm {
     border-left-color: var(--WasmBackend);
+}
+
+pre.xml {
+    border-left-color: var(--xmlBorderColor);
 }
 
 pre .fontifier-prog-reserved {

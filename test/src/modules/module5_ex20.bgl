@@ -9,7 +9,10 @@
    (call-with-input-string text read-csv-record))
 
 (define (hyphenize::pair word::bstring)
-   (t.hyphenate word (t.load-hyphens 'fr)))
+   (t.hyphenate word
+      (t.load-hyphens
+         (make-file-path (dirname ex20.filename)
+            ".." ".." ".." "api" "text" "data" "fr-hyphens.sch"))))
 
 (define (wdate::bstring)
    (date->w3c-datetime (current-date)))

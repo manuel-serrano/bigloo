@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/text/src/Llib/hyphenation.scm        */
+;*    .../project/bigloo/5.0.x/api/text/src/Llib/hyphenation.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Phil Bewig and Laurent Bloch                      */
 ;*    Creation    :  Tue Aug 31 10:15:44 2010                          */
-;*    Last change :  Thu Nov 18 10:57:48 2010 (serrano)                */
-;*    Copyright   :  2010 Phil Bewig, Laurent Bloch, Manuel Serrano    */
+;*    Last change :  Thu Jul 16 09:29:42 2026 (serrano)                */
+;*    Copyright   :  2010-26 Phil Bewig, Laurent Bloch, Manuel Serrano */
 ;*    -------------------------------------------------------------    */
 ;*    This Bigloo module is intended to provide word hyphenation.      */
 ;*                                                                     */
@@ -44,10 +44,11 @@
 		  (msg "file does not exist")
 		  (obj path-or-symbol))))))
       ((symbol? path-or-symbol)
-       (load-hyphens (make-file-path (bigloo-config 'library-directory)
-				     "text"
-				     "data"
-				     (format "~a-hyphens.sch" path-or-symbol))))
+       (load-hyphens
+          (make-file-path (bigloo-config 'library-directory)
+             "text"
+             "data"
+             (format "~a-hyphens.sch" path-or-symbol))))
       (else
        (bigloo-type-error "load-hyphens" "string or symbol" path-or-symbol))))
 

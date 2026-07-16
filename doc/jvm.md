@@ -46,8 +46,18 @@ $ a.out
 
 > [!NOTE] The Jvm interface does not support Java class definitions. 
 > Consequently, programming environments that requires new classes to be
-> declared, need a mix of Java code and Bigloo. A complete example can
+> declared, need a mix of Java code and Bigloo code. A complete example can
 > be found in the Android section.
+
+> [!IMPORTANT] Java and Bigloo share many data types, e.g., Bigloo
+> strings are implemented as Java `byte[]` and Bigloo vectors are Java
+> `Object[]`. Java and Bigloo also share the same control flow implementation,
+> i.e., a Bigloo function is implemented as a Java method, the implementation
+> of a Java method call is the same whether the method is invoked from 
+> Java or Bigloo, etc. Consequently, the cost of mixing Java and Bigloo
+> is minimal and hardly noticeable. This enables applications to mix
+> both languages without being concerned by performance issues.
+
 
 Introduction
 ------------
@@ -397,5 +407,63 @@ To reset the emulated machine
 emulator -avd Pixel_5_API_34 -wipe-data
 ```
 
-### A Complete Example
+### A Complete Android Example
 
+This section contains a complete Android example. It shows how to
+build an Android application that updates and displays the GPS
+location of a device at the user request. This Bigloo application will
+combine Java code required to extended the Android API and Bigloo code
+for implementing the logic of the application.
+
+The implementation of an Android application requires several
+components. An absolutely minimal program would need the following:
+
+  1. `AndroidManifest.xml`: the application meta information.
+  3. `res/config.xml`: the application constants.
+  2. `res/layout/activite_mail.xml`: the UI declaration.
+  4. a signature file;
+  5. the Java and Bigloo source codes. 
+  
+#### AndroidManifest.xml 
+
+The `AndroidManifest.xml` file declares the main characteristic of the
+application such as the Java package of the application, its public
+name, its general shape and style, and the main authorizations (e.g.,
+access to the camera, to internet, etc.).
+
+
+```xml
+,(include "examples/java/android/AndroidManifest.xml")
+```
+
+The main features of this file are:
+
+  * The application is implemented in the Java package
+    `org.bigloo.gps`. 
+  * The attributes `android:label="@string/app_name"` means that the
+    public name of the application is declared as an xml element in
+	the `res/values/config.xml` file.
+  * The element `&lt;uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/&gt;` declares that the application request, when installed the
+    perrmission to access the device geo-localization informat (e.g., its
+	GPS).
+
+#### config.xml
+
+The Android building process collects all the resources of all the `.xml`
+files located in the `res/values` directory. They are identified by a
+user give name that is used wither in other xml files or in the source
+code under the automatically generated Java `R` class. 
+
+```xml
+,(include "examples/java/android/res/values/config.xml")
+```
+
+#### activity_main.xml
+
+The UI of the application is declared in `res/layout/activity_main.xml`. It
+specifies text view into which the GPS coordinates will be written by
+the application and a button that when click will update them.
+
+```xml
+,(include "examples/java/android/res/layout/activity_main.xml")
+```
