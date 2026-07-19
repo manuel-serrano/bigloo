@@ -424,6 +424,10 @@ components. An absolutely minimal program would need the following:
   4. a signature file;
   5. the Java and Bigloo source codes. 
   
+The whole source of this applicationn can be found in the directory
+`examples/java/android`.
+
+
 #### AndroidManifest.xml 
 
 The `AndroidManifest.xml` file declares the main characteristic of the
@@ -466,4 +470,40 @@ the application and a button that when click will update them.
 
 ```xml
 ,(include "examples/java/android/res/layout/activity_main.xml")
+```
+
+#### MainActivity.java
+
+The entry of the application *must* be implemented in Java because it
+must at least, subclass the Android `Activity` class and override the
+methods `onCreate`, `onResume`, `onPause`, and `onDestroy`. Bigloo
+modules are implemented as classes but there is no way to control
+their super classes and they cannot override methods. 
+
+In the GPS example, in addition to the already mentioned methods, the main
+Java class also overrides the `onRequestPermissionsResult` method that will
+be used to be notified of the success or failure of the user request
+to use the GPS localisation. 
+
+```java
+,(include "examples/java/android/src/org/bigloo/gps/MainActivity.java")
+```
+
+> [!IMPORTANT] The main Java class (`MainActivity` in our example) can
+> be implement as a mere wrapper that redirect the java method calls
+> to Bigloo calls. However, this class *must* declare a new Bigloo
+> `setExit` object to deal with Andrdoid application life cycle.
+> A classical desktop application starts with an main function and
+> exists when the body of this function is fully evaluated. 
+> An Android application behaves differently. It ends when the user
+> abort the applications and it is suspended by the OS, when the application
+> is set to the background. Dealing with the life cycle and preventing
+> applications from terminating when the `main` function completes is 
+> the purpose of the `bigloo.JDK.setExit` call. It merely disables
+> the regular Bigloo `exit` function.
+
+#### main.bgl
+
+```bigloo
+,(include "examples/java/android/src/org/bigloo/gps/main.bgl")
 ```

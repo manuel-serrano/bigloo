@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Mon Jul 13 07:17:53 2026 (serrano)                */
+;*    Last change :  Sat Jul 18 08:57:18 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -90,7 +90,7 @@
 ;*---------------------------------------------------------------------*/
 (define backend-chapters
    '(("C" . "c.html")
-     ("jvm" . "jvm.html")
+     ("jvm/android" . "jvm.html")
      ("wasm" . "wasm.html")))
 
 ;*---------------------------------------------------------------------*/
