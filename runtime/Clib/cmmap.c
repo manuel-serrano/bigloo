@@ -245,3 +245,137 @@ bgl_mmap_nommap_set(obj_t mm, long i, unsigned char c) {
    }
 }
 #endif
+
+#if !defined(__GNUC__)
+/*---------------------------------------------------------------------*/
+/*    Numeric mmap access functions for non-GCC compilers             */
+/*---------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------*/
+/*    16-bit reads                                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int16_t
+bgl_mmap_s16_ref(obj_t mm, long i) {
+   int16_t result;
+   memcpy(&result, &BGL_MMAP(mm).map[i], sizeof(int16_t));
+   return result;
+}
+
+BGL_RUNTIME_DEF uint16_t
+bgl_mmap_u16_ref(obj_t mm, long i) {
+   uint16_t result;
+   memcpy(&result, &BGL_MMAP(mm).map[i], sizeof(uint16_t));
+   return result;
+}
+
+/*---------------------------------------------------------------------*/
+/*    32-bit reads                                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int32_t
+bgl_mmap_s32_ref(obj_t mm, long i) {
+   int32_t result;
+   memcpy(&result, &BGL_MMAP(mm).map[i], sizeof(int32_t));
+   return result;
+}
+
+BGL_RUNTIME_DEF uint32_t
+bgl_mmap_u32_ref(obj_t mm, long i) {
+   uint32_t result;
+   memcpy(&result, &BGL_MMAP(mm).map[i], sizeof(uint32_t));
+   return result;
+}
+
+/*---------------------------------------------------------------------*/
+/*    64-bit reads                                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int64_t
+bgl_mmap_s64_ref(obj_t mm, long i) {
+   int64_t result;
+   memcpy(&result, &BGL_MMAP(mm).map[i], sizeof(int64_t));
+   return result;
+}
+
+BGL_RUNTIME_DEF uint64_t
+bgl_mmap_u64_ref(obj_t mm, long i) {
+   uint64_t result;
+   memcpy(&result, &BGL_MMAP(mm).map[i], sizeof(uint64_t));
+   return result;
+}
+
+/*---------------------------------------------------------------------*/
+/*    Float reads                                                      */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF float
+bgl_mmap_f32_ref(obj_t mm, long i) {
+   float result;
+   memcpy(&result, &BGL_MMAP(mm).map[i], sizeof(float));
+   return result;
+}
+
+BGL_RUNTIME_DEF double
+bgl_mmap_f64_ref(obj_t mm, long i) {
+   double result;
+   memcpy(&result, &BGL_MMAP(mm).map[i], sizeof(double));
+   return result;
+}
+
+/*---------------------------------------------------------------------*/
+/*    16-bit writes                                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_mmap_s16_set(obj_t mm, long i, int16_t val) {
+   memcpy(&BGL_MMAP(mm).map[i], &val, sizeof(int16_t));
+   return BUNSPEC;
+}
+
+BGL_RUNTIME_DEF obj_t
+bgl_mmap_u16_set(obj_t mm, long i, uint16_t val) {
+   memcpy(&BGL_MMAP(mm).map[i], &val, sizeof(uint16_t));
+   return BUNSPEC;
+}
+
+/*---------------------------------------------------------------------*/
+/*    32-bit writes                                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_mmap_s32_set(obj_t mm, long i, int32_t val) {
+   memcpy(&BGL_MMAP(mm).map[i], &val, sizeof(int32_t));
+   return BUNSPEC;
+}
+
+BGL_RUNTIME_DEF obj_t
+bgl_mmap_u32_set(obj_t mm, long i, uint32_t val) {
+   memcpy(&BGL_MMAP(mm).map[i], &val, sizeof(uint32_t));
+   return BUNSPEC;
+}
+
+/*---------------------------------------------------------------------*/
+/*    64-bit writes                                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_mmap_s64_set(obj_t mm, long i, int64_t val) {
+   memcpy(&BGL_MMAP(mm).map[i], &val, sizeof(int64_t));
+   return BUNSPEC;
+}
+
+BGL_RUNTIME_DEF obj_t
+bgl_mmap_u64_set(obj_t mm, long i, uint64_t val) {
+   memcpy(&BGL_MMAP(mm).map[i], &val, sizeof(uint64_t));
+   return BUNSPEC;
+}
+
+/*---------------------------------------------------------------------*/
+/*    Float writes                                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_mmap_f32_set(obj_t mm, long i, float val) {
+   memcpy(&BGL_MMAP(mm).map[i], &val, sizeof(float));
+   return BUNSPEC;
+}
+
+BGL_RUNTIME_DEF obj_t
+bgl_mmap_f64_set(obj_t mm, long i, double val) {
+   memcpy(&BGL_MMAP(mm).map[i], &val, sizeof(double));
+   return BUNSPEC;
+}
+#endif /* !__GNUC__ */
