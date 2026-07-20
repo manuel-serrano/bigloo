@@ -7808,4 +7808,212 @@ public final class foreign
    public static void BGL_MMAP_WP_SET( mmap o, long i ) {
       o.wp = i;
    }
+
+   //////
+   // Numeric mmap access - 8-bit
+   //////
+   public static byte BGL_MMAP_S8_REF( mmap o, long i ) {
+      if( o.map == null ) {
+         return (byte)o.get( i );
+      } else {
+        return (byte) o.map.get( (int)i );
+      }
+   }
+   
+   public static byte BGL_MMAP_U8_REF( mmap o, long i ) {
+      if( o.map == null ) {
+        return (byte)o.get( i );
+      } else {
+        return (byte) o.map.get( (int)i );
+      }
+   }
+   
+   public static Object BGL_MMAP_S8_SET( mmap o, long i, byte v ) {
+      if( o.map == null ) {
+        o.put( i, v );
+      } else {
+        o.map.put( (int)i, v );
+      }
+      return o;
+   }
+   
+   public static Object BGL_MMAP_U8_SET( mmap o, long i, byte v ) {
+      if( o.map == null ) {
+         o.put( i, v);
+      } else {
+         o.map.put( (int)i, v );
+      }
+      return o;
+   }
+
+   //////
+   // Numeric mmap access - 16-bit
+   //////
+   public static short BGL_MMAP_S16_REF( mmap o, long i ) {
+      if( o.map == null ) {
+         // Fallback for non-mapped: read two bytes manually
+         int b0 = o.get( i ) & 0xff;
+         int b1 = o.get( i + 1 ) & 0xff;
+         return (short)((b1 << 8) | b0); // little-endian
+      } else {
+         return o.map.getShort( (int)i );
+      }
+   }
+   
+   public static short BGL_MMAP_U16_REF( mmap o, long i ) {
+      if( o.map == null ) {
+         int b0 = o.get( i ) & 0xff;
+         int b1 = o.get( i + 1 ) & 0xff;
+         return (short)(((b1 << 8) | b0) & 0xffff); // little-endian
+      } else {
+         return o.map.getShort( (int)i );
+      }
+   }
+   
+   public static Object BGL_MMAP_S16_SET( mmap o, long i, short v ) {
+      if( o.map == null ) {
+         o.put( i, (byte)(v & 0xff) );
+         o.put( i + 1, (byte)((v >> 8) & 0xff) );
+      } else {
+         o.map.putShort( (int)i, v );
+      }
+      return o;
+   }
+   
+   public static Object BGL_MMAP_U16_SET( mmap o, long i, short v ) {
+      if( o.map == null ) {
+         o.put( i, (byte)(v & 0xff) );
+         o.put( i + 1, (byte)((v >> 8) & 0xff) );
+      } else {
+         o.map.putShort( (int)i, (short)v );
+      }
+      return o;
+   }
+
+   //////
+   // Numeric mmap access - 32-bit
+   //////
+   public static int BGL_MMAP_S32_REF( mmap o, long i ) {
+      if( o.map == null ) {
+         int b0 = o.get( i ) & 0xff;
+         int b1 = o.get( i + 1 ) & 0xff;
+         int b2 = o.get( i + 2 ) & 0xff;
+         int b3 = o.get( i + 3 ) & 0xff;
+         return (b3 << 24) | (b2 << 16) | (b1 << 8) | b0; // little-endian
+      } else {
+         return o.map.getInt( (int)i );
+      }
+   }
+   
+   public static int BGL_MMAP_U32_REF( mmap o, long i ) {
+      if( o.map == null ) {
+         long b0 = o.get( i ) & 0xffL;
+         long b1 = o.get( i + 1 ) & 0xffL;
+         long b2 = o.get( i + 2 ) & 0xffL;
+         long b3 = o.get( i + 3 ) & 0xffL;
+         return (int)((b3 << 24) | (b2 << 16) | (b1 << 8) | b0); // little-endian
+      } else {
+         return o.map.getInt( (int)i );
+      }
+   }
+   
+   public static Object BGL_MMAP_S32_SET( mmap o, long i, int v ) {
+      if( o.map == null ) {
+         o.put( i, (byte)(v & 0xff) );
+         o.put( i + 1, (byte)((v >> 8) & 0xff) );
+         o.put( i + 2, (byte)((v >> 16) & 0xff) );
+         o.put( i + 3, (byte)((v >> 24) & 0xff) );
+      } else {
+         o.map.putInt( (int)i, v );
+      }
+      return o;
+   }
+   
+   public static Object BGL_MMAP_U32_SET( mmap o, long i, int v ) {
+      if( o.map == null ) {
+         o.put( i, (byte)(v & 0xff) );
+         o.put( i + 1, (byte)((v >> 8) & 0xff) );
+         o.put( i + 2, (byte)((v >> 16) & 0xff) );
+         o.put( i + 3, (byte)((v >> 24) & 0xff) );
+      } else {
+         o.map.putInt( (int)i, (int)v );
+      }
+      return o;
+   }
+
+   //////
+   // Numeric mmap access - 64-bit
+   //////
+   public static long BGL_MMAP_S64_REF( mmap o, long i ) {
+      if( o.map == null ) {
+         long result = 0;
+         for( int j = 0; j < 8; j++ ) {
+            result |= ((long)(o.get( i + j ) & 0xff)) << (j * 8);
+         }
+         return result; // little-endian
+      } else {
+         return o.map.getLong( (int)i );
+      }
+   }
+   
+   public static long BGL_MMAP_U64_REF( mmap o, long i ) {
+      // In Java, long is signed, so u64 and s64 are the same
+      return BGL_MMAP_S64_REF( o, i );
+   }
+   
+   public static Object BGL_MMAP_S64_SET( mmap o, long i, long v ) {
+      if( o.map == null ) {
+         for( int j = 0; j < 8; j++ ) {
+            o.put( i + j, (byte)((v >> (j * 8)) & 0xff) );
+         }
+      } else {
+         o.map.putLong( (int)i, v );
+      }
+      return o;
+   }
+   
+   public static Object BGL_MMAP_U64_SET( mmap o, long i, long v ) {
+      return BGL_MMAP_S64_SET( o, i, v );
+   }
+
+   //////
+   // Numeric mmap access - floats
+   //////
+   public static float BGL_MMAP_F32_REF( mmap o, long i ) {
+      if( o.map == null ) {
+         int bits = BGL_MMAP_S32_REF( o, i );
+         return Float.intBitsToFloat( bits );
+      } else {
+         return o.map.getFloat( (int)i );
+      }
+   }
+   
+   public static double BGL_MMAP_F64_REF( mmap o, long i ) {
+      if( o.map == null ) {
+         long bits = BGL_MMAP_S64_REF( o, i );
+         return Double.longBitsToDouble( bits );
+      } else {
+         return o.map.getDouble( (int)i );
+      }
+   }
+   
+   public static Object BGL_MMAP_F32_SET( mmap o, long i, float v ) {
+      if( o.map == null ) {
+         int bits = Float.floatToRawIntBits( v );
+         BGL_MMAP_S32_SET( o, i, bits );
+      } else {
+         o.map.putFloat( (int)i, v );
+      }
+      return o;
+   }
+   
+   public static Object BGL_MMAP_F64_SET( mmap o, long i, double v ) {
+      if( o.map == null ) {
+         long bits = Double.doubleToRawLongBits( v );
+         BGL_MMAP_S64_SET( o, i, bits );
+      } else {
+         o.map.putDouble( (int)i, v );
+      }
+      return o;
+   }
 }

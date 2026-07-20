@@ -2039,6 +2039,138 @@ BGL_RUNTIME_DECL obj_t bgl_init_fx_procedure(obj_t, function_t, int, int);
 #endif
 
 /*---------------------------------------------------------------------*/
+/*    Alignment-safe mmap numeric access                               */
+/*---------------------------------------------------------------------*/
+/* 8-bit access doesn't need memcpy (always aligned) */
+#define BGL_MMAP_S8_REF(mm, i) ((int8_t)(BGL_MMAP(mm).map[i]))
+#define BGL_MMAP_U8_REF(mm, i) ((uint8_t)(BGL_MMAP(mm).map[i]))
+#define BGL_MMAP_S8_SET(mm, i, v) (BGL_MMAP(mm).map[i] = (int8_t)(v), BUNSPEC)
+#define BGL_MMAP_U8_SET(mm, i, v) (BGL_MMAP(mm).map[i] = (uint8_t)(v), BUNSPEC)
+
+#if defined(__GNUC__)
+/* GCC statement expressions allow efficient inline code with memcpy */
+
+#define BGL_MMAP_S16_REF(mm, i) ({ \
+   int16_t __result; \
+   memcpy(&__result, &BGL_MMAP(mm).map[i], sizeof(int16_t)); \
+   __result; })
+
+#define BGL_MMAP_U16_REF(mm, i) ({ \
+   uint16_t __result; \
+   memcpy(&__result, &BGL_MMAP(mm).map[i], sizeof(uint16_t)); \
+   __result; })
+
+#define BGL_MMAP_S32_REF(mm, i) ({ \
+   int32_t __result; \
+   memcpy(&__result, &BGL_MMAP(mm).map[i], sizeof(int32_t)); \
+   __result; })
+
+#define BGL_MMAP_U32_REF(mm, i) ({ \
+   uint32_t __result; \
+   memcpy(&__result, &BGL_MMAP(mm).map[i], sizeof(uint32_t)); \
+   __result; })
+
+#define BGL_MMAP_S64_REF(mm, i) ({ \
+   int64_t __result; \
+   memcpy(&__result, &BGL_MMAP(mm).map[i], sizeof(int64_t)); \
+   __result; })
+
+#define BGL_MMAP_U64_REF(mm, i) ({ \
+   uint64_t __result; \
+   memcpy(&__result, &BGL_MMAP(mm).map[i], sizeof(uint64_t)); \
+   __result; })
+
+#define BGL_MMAP_F32_REF(mm, i) ({ \
+   float __result; \
+   memcpy(&__result, &BGL_MMAP(mm).map[i], sizeof(float)); \
+   __result; })
+
+#define BGL_MMAP_F64_REF(mm, i) ({ \
+   double __result; \
+   memcpy(&__result, &BGL_MMAP(mm).map[i], sizeof(double)); \
+   __result; })
+
+/* Writes */
+#define BGL_MMAP_S16_SET(mm, i, v) ({ \
+   int16_t __val = (v); \
+   memcpy(&BGL_MMAP(mm).map[i], &__val, sizeof(int16_t)); \
+   BUNSPEC; })
+
+#define BGL_MMAP_U16_SET(mm, i, v) ({ \
+   uint16_t __val = (v); \
+   memcpy(&BGL_MMAP(mm).map[i], &__val, sizeof(uint16_t)); \
+   BUNSPEC; })
+
+#define BGL_MMAP_S32_SET(mm, i, v) ({ \
+   int32_t __val = (v); \
+   memcpy(&BGL_MMAP(mm).map[i], &__val, sizeof(int32_t)); \
+   BUNSPEC; })
+
+#define BGL_MMAP_U32_SET(mm, i, v) ({ \
+   uint32_t __val = (v); \
+   memcpy(&BGL_MMAP(mm).map[i], &__val, sizeof(uint32_t)); \
+   BUNSPEC; })
+
+#define BGL_MMAP_S64_SET(mm, i, v) ({ \
+   int64_t __val = (v); \
+   memcpy(&BGL_MMAP(mm).map[i], &__val, sizeof(int64_t)); \
+   BUNSPEC; })
+
+#define BGL_MMAP_U64_SET(mm, i, v) ({ \
+   uint64_t __val = (v); \
+   memcpy(&BGL_MMAP(mm).map[i], &__val, sizeof(uint64_t)); \
+   BUNSPEC; })
+
+#define BGL_MMAP_F32_SET(mm, i, v) ({ \
+   float __val = (v); \
+   memcpy(&BGL_MMAP(mm).map[i], &__val, sizeof(float)); \
+   BUNSPEC; })
+
+#define BGL_MMAP_F64_SET(mm, i, v) ({ \
+   double __val = (v); \
+   memcpy(&BGL_MMAP(mm).map[i], &__val, sizeof(double)); \
+   BUNSPEC; })
+
+#else
+/* For non-GCC compilers, use function calls */
+BGL_RUNTIME_DECL int16_t bgl_mmap_s16_ref(obj_t, long);
+BGL_RUNTIME_DECL uint16_t bgl_mmap_u16_ref(obj_t, long);
+BGL_RUNTIME_DECL int32_t bgl_mmap_s32_ref(obj_t, long);
+BGL_RUNTIME_DECL uint32_t bgl_mmap_u32_ref(obj_t, long);
+BGL_RUNTIME_DECL int64_t bgl_mmap_s64_ref(obj_t, long);
+BGL_RUNTIME_DECL uint64_t bgl_mmap_u64_ref(obj_t, long);
+BGL_RUNTIME_DECL float bgl_mmap_f32_ref(obj_t, long);
+BGL_RUNTIME_DECL double bgl_mmap_f64_ref(obj_t, long);
+
+BGL_RUNTIME_DECL obj_t bgl_mmap_s16_set(obj_t, long, int16_t);
+BGL_RUNTIME_DECL obj_t bgl_mmap_u16_set(obj_t, long, uint16_t);
+BGL_RUNTIME_DECL obj_t bgl_mmap_s32_set(obj_t, long, int32_t);
+BGL_RUNTIME_DECL obj_t bgl_mmap_u32_set(obj_t, long, uint32_t);
+BGL_RUNTIME_DECL obj_t bgl_mmap_s64_set(obj_t, long, int64_t);
+BGL_RUNTIME_DECL obj_t bgl_mmap_u64_set(obj_t, long, uint64_t);
+BGL_RUNTIME_DECL obj_t bgl_mmap_f32_set(obj_t, long, float);
+BGL_RUNTIME_DECL obj_t bgl_mmap_f64_set(obj_t, long, double);
+
+#define BGL_MMAP_S16_REF(mm, i) bgl_mmap_s16_ref(mm, i)
+#define BGL_MMAP_U16_REF(mm, i) bgl_mmap_u16_ref(mm, i)
+#define BGL_MMAP_S32_REF(mm, i) bgl_mmap_s32_ref(mm, i)
+#define BGL_MMAP_U32_REF(mm, i) bgl_mmap_u32_ref(mm, i)
+#define BGL_MMAP_S64_REF(mm, i) bgl_mmap_s64_ref(mm, i)
+#define BGL_MMAP_U64_REF(mm, i) bgl_mmap_u64_ref(mm, i)
+#define BGL_MMAP_F32_REF(mm, i) bgl_mmap_f32_ref(mm, i)
+#define BGL_MMAP_F64_REF(mm, i) bgl_mmap_f64_ref(mm, i)
+
+#define BGL_MMAP_S16_SET(mm, i, v) bgl_mmap_s16_set(mm, i, v)
+#define BGL_MMAP_U16_SET(mm, i, v) bgl_mmap_u16_set(mm, i, v)
+#define BGL_MMAP_S32_SET(mm, i, v) bgl_mmap_s32_set(mm, i, v)
+#define BGL_MMAP_U32_SET(mm, i, v) bgl_mmap_u32_set(mm, i, v)
+#define BGL_MMAP_S64_SET(mm, i, v) bgl_mmap_s64_set(mm, i, v)
+#define BGL_MMAP_U64_SET(mm, i, v) bgl_mmap_u64_set(mm, i, v)
+#define BGL_MMAP_F32_SET(mm, i, v) bgl_mmap_f32_set(mm, i, v)
+#define BGL_MMAP_F64_SET(mm, i, v) bgl_mmap_f64_set(mm, i, v)
+#endif
+
+/*---------------------------------------------------------------------*/
 /*    WEAKPTR                                                          */
 /*---------------------------------------------------------------------*/
 #define WEAKPTR(o) CREF(o)->weakptr

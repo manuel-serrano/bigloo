@@ -54,6 +54,8 @@ public class mmap extends obj {
 	 }
 	 name = file;
 	 
+	 // Set byte order to little-endian for numeric access
+	 map.order( ByteOrder.LITTLE_ENDIAN );
 	 map.load();
 	 
 	 rp = 0; wp = 0;
