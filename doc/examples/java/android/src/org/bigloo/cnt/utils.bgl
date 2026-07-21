@@ -1,0 +1,8 @@
+(module utils
+   (include "./AndroidUtils.bgh")
+   (export on-click))
+
+(define (on-click v::View p::procedure)
+   (let ((l (AndroidUtils.procedureToOnClickListener p)))
+      ((-> v setOnClickListener) l)))
+

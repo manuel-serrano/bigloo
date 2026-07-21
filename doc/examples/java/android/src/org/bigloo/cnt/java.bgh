@@ -1,0 +1,6 @@
+(extern "java"
+   (class java.lang.Object)
+   (class java.lang.Runnable)
+   (class java.lang.Throwable
+      (public getMessage::String)
+      (public printStackTrace::void)))

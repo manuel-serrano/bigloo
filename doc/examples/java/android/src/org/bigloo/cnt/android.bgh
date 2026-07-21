@@ -1,0 +1,66 @@
+(extern "java"
+   
+   (class android.os.Handler
+      (constructor new)
+      (public postDelayed::bool ::Runnable ::llong))
+
+   (class android.util.TypedValue
+      (public static applyDimension::float ::int ::float ::DisplayMetrics)
+      (field public static COMPLEX_UNIT_DIP::int))
+   
+   (class android.content.Intent
+      (public getParcelableExtra::Parcelable ::String)
+      (public getAction::String))
+
+   (class android.content.IntentFilter
+      (constructor new ::String))
+   
+   (class android.content.Context
+      (abstract public registerReceiver::Intent ::BroadcastReceiver ::IntentFilter)
+      (abstract public unregisterReceiver::void ::BroadcastReceiver))
+
+   (class android.content.res.Resources
+      (public getStringArray::String* ::int)
+      (public getColor::int ::int)
+      (public getDisplayMetrics::DisplayMetrics))
+   
+   (class android.app.Activity::android.content.Context
+      (field final public static MODE_PRIVATE::int)
+      (public getWindow::Window)
+      (public getMainExecutor::Executor)
+      (public getSystemService::Object ::String)
+      (final public getString::String ::int)
+      (findViewById::android.view.View ::int)
+      (public setContentView::void ::int)
+      (public getResources::Resources)
+      (public checkSelfPermission::int ::String)
+      (public runOnUiThread::void ::Runnable)
+      (public requestPermissions::void ::String* ::int)
+      (public registerReceiver::Intent ::BroadcastReceiver ::IntentFilter)
+      (public unregisterReceiver::void ::BroadcastReceiver))
+
+
+   (abstract-class android.view.View$OnClickListener
+      (abstract public onClick::void ::View))
+   
+   (class android.view.View
+      (field final public static GONE::int)
+      (field final public static VISIBLE::int)
+      (public startAnimation::void ::Animation)
+      (public setVisibility::void ::int)
+      (public setOnClickListener::void ::android.view.View$OnClickListener))
+
+   (class android.view.Window::android.view.View
+      (public addFlags::void ::int)
+      (public clearFlags::void ::int))
+      
+   (class android.widget.TextView::android.view.View
+      (constructor new ::Context)
+      (public setText::void ::CharSequence))
+   
+   (class android.widget.Button::android.widget.TextView
+      (public setOnClickListener::void ::android.view.View$OnClickListener)
+      (public setText::void ::CharSequence)
+      (public setTextColor::void ::int))
+   
+   )

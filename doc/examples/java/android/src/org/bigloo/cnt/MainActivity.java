@@ -1,8 +1,9 @@
-package org.bigloo.gps;
+package org.bigloo.cnt;
 
 import android.app.Activity;
 import android.Manifest;
 import android.content.Context;
+import android.os.Bundle;
 
 public class MainActivity extends Activity {
 
@@ -41,11 +42,5 @@ public class MainActivity extends Activity {
    protected void onDestroy() {
       super.onDestroy();
       main.onDestroy(this);
-   }
-
-   @Override
-   public void onRequestPermissionsResult(int requestCode, String[] perms, int[] grantResults) {
-      super.onRequestPermissionsResult(requestCode, perms, grantResults);
-      permissions.onRequestPermissionsResult(requestCode, perms, grantResults);
    }
 }

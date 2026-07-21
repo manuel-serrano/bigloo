@@ -409,11 +409,10 @@ emulator -avd Pixel_5_API_34 -wipe-data
 
 ### A Complete Android Example
 
-This section contains a complete Android example. It shows how to
-build an Android application that updates and displays the GPS
-location of a device at the user request. This Bigloo application will
-combine Java code required to extended the Android API and Bigloo code
-for implementing the logic of the application.
+This section contains a minimalist but complete Android example. It
+shows how to build an Android application using Bigloo code for the
+core of the application and how to connect it to the Android Java
+environment. 
 
 The implementation of an Android application requires several
 components. An absolutely minimal program would need the following:
@@ -427,14 +426,12 @@ components. An absolutely minimal program would need the following:
 The whole source of this applicationn can be found in the directory
 `examples/java/android`.
 
-
 #### AndroidManifest.xml 
 
 The `AndroidManifest.xml` file declares the main characteristic of the
 application such as the Java package of the application, its public
 name, its general shape and style, and the main authorizations (e.g.,
 access to the camera, to internet, etc.).
-
 
 ```xml
 ,(include "examples/java/android/AndroidManifest.xml")
@@ -464,9 +461,10 @@ code under the automatically generated Java `R` class.
 
 #### activity_main.xml
 
-The UI of the application is declared in `res/layout/activity_main.xml`. It
-specifies text view into which the GPS coordinates will be written by
-the application and a button that when click will update them.
+The UI of the application is declared in
+`res/layout/activity_main.xml`. It specifies text view into the value
+of the counter will be written by the application and a button that
+when click will update it.
 
 ```xml
 ,(include "examples/java/android/res/layout/activity_main.xml")
@@ -480,13 +478,13 @@ methods `onCreate`, `onResume`, `onPause`, and `onDestroy`. Bigloo
 modules are implemented as classes but there is no way to control
 their super classes and they cannot override methods. 
 
-In the GPS example, in addition to the already mentioned methods, the main
+In the cnt example, in addition to the already mentioned methods, the main
 Java class also overrides the `onRequestPermissionsResult` method that will
 be used to be notified of the success or failure of the user request
-to use the GPS localisation. 
+to use the CNT localisation. 
 
 ```java
-,(include "examples/java/android/src/org/bigloo/gps/MainActivity.java")
+,(include "examples/java/android/src/org/bigloo/cnt/MainActivity.java")
 ```
 
 > [!IMPORTANT] The main Java class (`MainActivity` in our example) can
@@ -504,6 +502,79 @@ to use the GPS localisation.
 
 #### main.bgl
 
+Because of the simplicity of the application that is built, the main
+Bigloo file implements mostly empty handlers. Only in the `onCreate`
+function, which is by the Java code, when Android creates or resumes
+the application contains useful code. This code, first intentiate
+the ui with the call to the Java method `setContentView`, then it
+grabs the UI elements implementing the text aread of the application
+and the button. It binds a call to the button.
+
 ```bigloo
-,(include "examples/java/android/src/org/bigloo/gps/main.bgl")
+,(include "examples/java/android/src/org/bigloo/cnt/main.bgl")
+```
+
+#### Android Java Interface
+
+The Bigloo codes requires the definition of several Java and Android classes.
+In this demo they are split into two different files. First, `java.bgh`,
+declares the general Java classes:
+
+```bigloo
+,(include "examples/java/android/src/org/bigloo/cnt/java.bgh")
+```
+
+The Android specific classes are declared in the `android.bgh` file:
+
+```bigloo
+,(include "examples/java/android/src/org/bigloo/cnt/android.bgh")
+```
+
+In order to add a callback to a UI element, Android Java requires to 
+implement a Java interface. In the case of a button, the interface to 
+be implemented is `View.OnClickListener`. As Bigloo offers no mean to
+implement this Java operation, a Java wrapper is needed:
+
+```java
+,(include "examples/java/android/src/org/bigloo/cnt/AndroidUtils.java")
+```
+
+Access to this class from within the Bigloo, will be done via the
+`utils.bgl` modules defined as:
+
+```bigloo
+,(include "examples/java/android/src/org/bigloo/cnt/utils.bgl")
+```
+
+Finally, the file `AndroidUtils.bgh` is defined by:
+
+```bigloo
+,(include "examples/java/android/src/org/bigloo/cnt/AndroidUtils.bgh")
+```
+
+> [!NOTE] The `bgh` files do not need to be hand-written. They can be
+> generated automatically the the `jigloo` tool contained in the standard
+> Bigloo distribution. The next section shows how to use it to generate
+> the files `R.bgh` and `AndroidUtils.bgl`.
+
+#### Building the Android App
+
+Assuming the `env.sh` containing the path to the Android and Bigloo
+installation directories:
+
+```shell
+,(include "examples/java/android/env.sh")
+```
+
+Building the app can be done with the following script:
+
+```shell
+,(include "examples/java/android/build.sh")
+```
+
+Finally to run and start the application:
+
+```shell
+adb install -r ${APP_NAME}.apk
+adb shell am start -n ${APP_PKG_CLASS}.${APP_NAME}/.MainActivity"
 ```

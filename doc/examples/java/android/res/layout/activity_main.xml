@@ -5,47 +5,24 @@
     android:gravity="center"
     android:orientation="vertical">
 
-  <TextView
-      android:id="@+id/geotagLatitude"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="start"
-      android:layout_marginBottom="16dp"
-      android:paddingLeft="16dp"
-      android:text="-"
-      android:textSize="24sp"
-      android:gravity="left" />
-    
-  <TextView
-      android:id="@+id/geotagLongitude"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="start"
-      android:layout_marginBottom="16dp"
-      android:paddingLeft="16dp"
-      android:text="-"
-      android:textSize="24sp"
-      android:gravity="left" />
-    
-  <TextView
-      android:id="@+id/geotagAltitude"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="start"
-      android:layout_marginBottom="16dp"
-      android:paddingLeft="16dp"
-      android:text="-"
-      android:textSize="24sp"
-      android:gravity="left" />
-    
   <Button
-      style="@style/NormalButtonStyle"
-      android:id="@+id/geotagUpdateCamera"
-      android:text="update camera location"
+      android:id="@+id/counterButton"
+      android:text="click me to increment"
       android:padding="4dp"
       android:layout_height="wrap_content"
       android:layout_width="256dp"
       android:layout_gravity="end"/>
 
+  <TextView
+      android:id="@+id/counterValue"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="start"
+      android:layout_marginBottom="16dp"
+      android:paddingLeft="16dp"
+      android:text="-"
+      android:textSize="24sp"
+      android:gravity="left" />
+    
 </FrameLayout>
 

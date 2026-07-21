@@ -20,19 +20,16 @@ export PATH=$PATH:$ANDROID_HOME/cmdline-tools/bin
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 export PATH=$PATH:$ANDROID_HOME/emulator
 
-#* export AVD=${AVD:-Pixel_5_API_34}                                   */
-#* export DEVICE=${DEVICE:-emulator-5554}                              */
-#* export APP_PKG=org/bigloo                                           */
-#* export APP_PKG_CLASS=`echo $APP_PKG | sed 's|/|.|'`                 */
-#* export SIG_PASSWORD=${SIG_PASSWORD:-android}                        */
-#* export AUTO_INSTALL=${AUTO_INSTALL:-false}                          */
-#*                                                                     */
-#* export APP_NAME=GPS                                                 */
-#* export APP_VERSION=1.0.0                                            */
-#*                                                                     */
-#* # bgl configuration                                                 */
-#* export BGL=${BGL:-/usr/local/bin/bigloo}                            */
-#* export BGL_BIN_DIR=`dirname $BGL`                                   */
-#* export BGL_ZIP_DIR=`$BGL -eval "(begin (print (bigloo-config 'zip-directory)) (exit 0))"` */
-#* export BGL_VERSION=`$BGL -eval "(begin (print (bigloo-config 'release-number)) (exit 0))"` */
-#*                                                                     */
+export BIGLOO_HOME=${BIGLOO_HOME:-$HOME/prgm/project/bigloo/5.0.x}
+export BIGLOO=$BIGLOO_HOME/bin/bigloo
+export BIGLOO_VERSION=`$BIGLOO -eval "(begin (print (bigloo-config 'release-number)) (exit 0))"`
+export BIGLOO_ZIP=$BIGLOO_HOME/lib/bigloo/${BIGLOO_VERSION}/bigloo_s.zip
+export BFLAGS=-g
+export JIGLOO=$BIGLOO_HOME/bin/jigloo
+export JFILE=$BIGLOO_HOME/bin/bgljfile
+
+export APP_PKG=org/bigloo
+export APP_NAME=cnt
+export APP_PKG_CLASS=`echo $APP_PKG | sed 's|/|.|'`
+
+export SIG_PASSWORD=${SIG_PASSWORD:-android}

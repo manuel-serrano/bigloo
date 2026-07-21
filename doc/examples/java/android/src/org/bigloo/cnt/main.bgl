@@ -1,0 +1,44 @@
+(module main
+
+   (extern "java")
+
+   (include "java.bgh")
+   (include "./android.bgh")
+   (include "./R.bgh")
+   
+   (import "./utils.bgl" on-click)
+   
+   (export onCreate onResume onPause onDestroy onException)
+   
+   (main init))
+
+(define (init args)
+   #unspecified)
+
+(define (onCreate self::Activity)
+   
+   ((-> self setContentView) R$layout.activity_main)
+
+   (let ((textv::TextView ((-> self findViewById) R$id.counterValue))
+         (but ((-> self findViewById) R$id.counterButton))
+         (cnt 0))
+      (on-click but
+	 (lambda (v)
+            (set! cnt (+fx cnt 1))
+            ((-> textv setText) (format "click #~a" cnt)))))
+         
+   #unspecified)
+
+(define (onDestroy self::Activity)
+   #unspecified)
+
+(define (onResume self::Activity)
+   #unspecified)
+
+(define (onPause self::Activity)
+   #unspecified)
+
+(define (onException::bool thread exn::Throwable)
+   ((-> exn printStackTrace))
+   #t)
+
