@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Fri Jul 10 09:22:33 2026 (serrano)                */
+/*    Last change :  Tue Jul 21 09:23:44 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -521,6 +521,6 @@ export function bglParseArgs(args) {
 	 
       return { client, rts, libs, argv };
    } else {
-      return { client: args[2], rts, libs, argv };
+      return { client: args[2], rts, libs, argv: args.splice(1, 2) };
    }
 }

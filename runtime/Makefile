@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Jun 26 16:27:39 2026 (serrano)                */
+#*    Last change :  Tue Jul 21 09:26:38 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -188,7 +188,6 @@ endif
 
 JDK_LIBS	= JDK JDKexit $(JDK_IMPL)
 
-
 JLIB		= callable foreign buffer configure stackwriter\
                   bbool output_string_port output_procedure_port \
 		  output_stream_port output_buffered_port bchar \
@@ -332,6 +331,7 @@ SCM_SYS_SRC	= $(SCM_READ) $(SCM_RGC) $(SCM_PP) \
 SRC_FILES	= $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_UNSAFE_SRC) \
                   $(C_CLIB) \
                   $(JAVA_JLIB:%/configure.java=) \
+                  $(W_WLIB) \
                   Mlib/mach_dep.c \
                   Mlib/sparc_sunos4_mach_dep.s Mlib/sparc_sunos5_mach_dep.s \
                   Ilib/realcallback.il
@@ -687,6 +687,12 @@ objs/wasm$(LIBSUFFIX)/dummy_runtime.wat: \
 #*---------------------------------------------------------------------*/
 Llib/make_lib.wasm.sch: .afile $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_UNSAFE_SRC) $(W_WLIB)
 	$(BIGLOO) -i ../tools/gen_make_lib_wasm.scm -- $^ > $@
+
+#*---------------------------------------------------------------------*/
+#*    touchall                                                         */
+#*---------------------------------------------------------------------*/
+touchall:
+	touch $(SRC_FILES)
 
 #*---------------------------------------------------------------------*/
 #*    Soure file distributions                                         */
