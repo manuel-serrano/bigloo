@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Wed Jun 24 10:15:27 2026 (serrano)                */
+;*    Last change :  Tue Jul 21 14:52:12 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1549,8 +1549,7 @@ if that value is non-nil."
 			 (k (if i (substring name 0 i) name)))
 		    (puthash k (cdr el) bgl-doc-table-index)))
 	      l)
-	(setq bgl-last-doc-symbol nil)
-	(setq bgl-decl-table-loaded t)))))
+	(setq bgl-last-doc-symbol nil)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-load-decl-index ...                                          */
@@ -1590,14 +1589,14 @@ if that value is non-nil."
 	     (defs (assq 'defs (cddr mod))))
 	(when (consp imports)
 	  (mapc #'(lambda (e)
-		    (message "put %s" e)
 		    (puthash (car e) (cdr e) bgl-decl-table-index))
 		(cdr imports)))
 	(when (consp defs)
 	  (mapc #'(lambda (e)
 		    (puthash (car e) (cdr e) bgl-decl-table-index))
 		(cdr defs)))
-	(setq bgl-last-decl-symbol nil)))))
+	(setq bgl-last-decl-symbol nil)
+	(setq bgl-decl-table-loaded t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-doc-entry-at-point ...                                       */
@@ -1754,7 +1753,7 @@ if that value is non-nil."
   (let ((e (bgl-decl-entry-at-point sym)))
     (when e
       (let* ((loc (cadr e))
-	     (file (cadr loc))
+	     (file (replace-regexp-in-string "flycheck_" "" (cadr loc)))
 	     (pos (caddr loc)))
 	(let ((buf (if other-frame
 		       (progn

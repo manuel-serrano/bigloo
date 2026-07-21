@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sat Jul 11 08:41:36 2026 (serrano)                */
+;*    Last change :  Tue Jul 21 17:53:52 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -402,7 +402,7 @@
 	    (others '()))
 	 (hashtable-for-each decls
 	    (lambda (k decl)
-	       (with-access::Decl decl (mod xid id alias)
+	       (with-access::Decl decl (mod xid id alias def)
 		  (with-access::Module mod ((dmid id))
 		     (with-handler
 			(lambda (e)
@@ -413,6 +413,11 @@
 			   (raise e))
 			(let* ((d (module5-get-export-def mod (or xid id)))
 			       (e (vector d dmid alias 'import)))
+			   (unless (isa? def Def)
+			      ;; Sets the decl def so that module dump contains
+			      ;; information about the imported declaration.
+			      ;; This is used by bgl-mode.el to browse the source code.
+			      (set! def d))
 			   (cond
 			      ((isa? d ADef) #unspecified)
 			      ((isa? d KDef) (set! classes (cons e classes)))
@@ -571,7 +576,7 @@
 			       (mid (vector-ref e 1))
 			       (alias (vector-ref e 2))
 			       (scope (vector-ref e 3)))
-			    (with-access::Def def (expr kind id type)
+			    (with-access::Def def (expr kind id type decl)
 			       (declare-definition! kind id type alias mid scope expr def))))
 	       others)))))
 
