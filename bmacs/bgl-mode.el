@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Tue Jul 21 14:52:12 2026 (serrano)                */
+;*    Last change :  Tue Jul 21 20:58:58 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1755,14 +1755,13 @@ if that value is non-nil."
       (let* ((loc (cadr e))
 	     (file (replace-regexp-in-string "flycheck_" "" (cadr loc)))
 	     (pos (caddr loc)))
+	(setq bgl-jump-stack
+	      (cons (list (file-name-directory (buffer-name))
+			  (current-buffer)
+			  (point))
+		    bgl-jump-stack))
 	(let ((buf (if other-frame
-		       (progn
-			 (setq bgl-jump-stack
-			       (cons (list (file-name-directory (buffer-name))
-					   (current-buffer)
-					   (point))
-				     bgl-jump-stack))
-			 (find-file-other-frame file))
+		       (find-file-other-frame file)
 		       (find-file file))))
 	  (switch-to-buffer buf)
 	  (goto-char (+ 1 pos))
