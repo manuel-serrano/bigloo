@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Tue Jul 21 20:58:58 2026 (serrano)                */
+;*    Last change :  Thu Jul 23 16:32:55 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1430,6 +1430,8 @@ if that value is non-nil."
     (setq bgl-flycheck-initializedp t)
     (when (package-installed-p 'flycheck)
       (require 'flycheck)
+      (setq flycheck-temp-prefix ".flycheck")
+      (make-variable-buffer-local 'flycheck-temp-prefix)
       (with-eval-after-load 'flycheck
 	(flycheck-define-checker bgl
 	  "A bgl syntax checker using the bgl compiler."
@@ -1444,7 +1446,6 @@ if that value is non-nil."
 		  (message) line-end))
 	  :modes bgl-mode)
 	(add-to-list 'flycheck-checkers 'bgl))
-
       (add-hook 'flycheck-status-changed-functions
 		#'(lambda (status)
 		   (when (eq status 'finished)
@@ -1566,7 +1567,7 @@ if that value is non-nil."
 ;*    compler in order to resolve global variable definition.          */
 ;*---------------------------------------------------------------------*/
 (defun bgl-load-module-index (path)
-  (let ((file (concat (file-name-directory path) "/flycheck_"
+  (let ((file (concat (file-name-directory path) "/.flycheck_"
 		      (file-name-sans-extension
 		       (file-name-nondirectory path))
 		      ".sexp")))
@@ -1753,7 +1754,7 @@ if that value is non-nil."
   (let ((e (bgl-decl-entry-at-point sym)))
     (when e
       (let* ((loc (cadr e))
-	     (file (replace-regexp-in-string "flycheck_" "" (cadr loc)))
+	     (file (replace-regexp-in-string ".flycheck_" "" (cadr loc)))
 	     (pos (caddr loc)))
 	(setq bgl-jump-stack
 	      (cons (list (file-name-directory (buffer-name))
@@ -1766,7 +1767,8 @@ if that value is non-nil."
 	  (switch-to-buffer buf)
 	  (goto-char (+ 1 pos))
 	  (unless (bgl-message-once 'pop-def "[M-,] pop definition")
-	    (message (bgl-jump-stack-message))))))))
+	    (message (bgl-jump-stack-message)))
+	  t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-pop-def ...                                                  */
@@ -1778,7 +1780,8 @@ if that value is non-nil."
       (setq bgl-jump-stack (cdr bgl-jump-stack))
       (message "buffer=%s pos=%s" (cadr e) (caddr e))
       (switch-to-buffer (cadr e))
-      (goto-char (caddr e)))))
+      (goto-char (caddr e))
+      t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bgl-goto-def ...                                                 */
@@ -1790,9 +1793,9 @@ if that value is non-nil."
 	(bgl-browse-doc-at-point sym))))
 
 ;*---------------------------------------------------------------------*/
-;*    bgl-goto-other-frame-def ...                                     */
+;*    bgl-goto-def-other-frame-def ...                                 */
 ;*---------------------------------------------------------------------*/
-(defun bgl-goto-other-frame-def ()
+(defun bgl-goto-def-other-frame-def ()
   (interactive)
   (let ((sym (thing-at-point 'symbol t)))
     (or (bgl-visit-decl-at-point sym t)

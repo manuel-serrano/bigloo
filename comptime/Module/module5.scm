@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Jul 21 17:53:52 2026 (serrano)                */
+;*    Last change :  Thu Jul 23 16:51:33 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -1019,7 +1019,7 @@
    
    (define (proto expr)
       (match-case expr
-	 (((or define define-inline define-generic define-method) ?proto ?-)
+	 (((or define define-inline define-generic define-method) ?proto . ?-)
 	  proto)
 	 (((or define-class define-abstract-class define-final-class define-wide-class) ?k . ?-)
 	  `(class ,k))
@@ -1036,11 +1036,11 @@
 	     (path ,path)
 	     (imports ,@(hashtable-filter-map imports
 			   (lambda (k d::Decl)
-			      (with-access::Decl d (id def (dmod mod))
+			      (with-access::Decl d (id def (dmod mod) alias)
 				 (when (isa? def Def)
 				    (with-access::Def def (expr)
 				       (when (epair? expr)
-					  `(,(symbol->string id) ,(proto expr) ,(loc expr)))))))))
+					  `(,(symbol->string (or alias id)) ,(proto expr) ,(loc expr)))))))))
 	     (defs ,@(hashtable-filter-map defs
 			(lambda (k d::Def)
 			   (with-access::Def d (id kind expr decl)
