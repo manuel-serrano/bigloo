@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jun 26 07:51:58 2026 (serrano)                */
+/*    Last change :  Sat Jul 25 15:51:19 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -485,7 +485,9 @@ class BglWebRuntime extends BglRuntime {
 	    return undefined;
 	 },
 
-	 close: sock => undefined
+	 close: sock => { return undefined },
+
+    	 downp: (o) => { return true }
       };
    }
 
@@ -674,8 +676,6 @@ export async function runDynamic(client, rts, libs) {
    const instanceLibs = await Promise.all(libs.map((l, i) => WasmInstantiate(l.lib, __jsLibs[i])));
 
    libs.forEach((l, i) => __jsClient[l.exports] = instanceLibs[i].exports);
-
-   __jsClient.__dom = instanceLibs[0].exports;
 
    const instanceClient = await WasmInstantiate(client, __jsClient);
    

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Thu Jul  9 15:22:51 2026 (serrano)                */
+;*    Last change :  Sat Jul 25 19:22:29 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -52,7 +52,8 @@
 	   object_coercion
 	   foreign_jtype)
 
-   (export (module5-extern-plugin-wasm ::Module ::pair)))
+   (export (module5-extern-plugin-wasm ::Module ::pair)
+	   (wasm-finalizer-exports ::Module)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-extern-plugin-wasm ...                                   */
@@ -61,6 +62,18 @@
    
    (define (parse-clause clause mod::Module)
       (match-case clause
+	 ((export . ?exports)
+	  (set! *wasm-exports*
+	     (append (map (lambda (e)
+			     (match-case e
+				((? symbol?)
+				 (list e (symbol->string e) clause))
+				(((and ?id (? symbol?)) (and ?name (? string?)))
+				 (list id name clause))
+				(else
+				 (error/loc mod "Illegal extern \"wasm\" module clause" clause expr))))
+			exports)
+		*wasm-exports*)))
 	 (((and (? string?) ?mod) (and (? symbol?) ?ident) . ?args)
 	  (multiple-value-bind (id type)
 	     (parse-ident ident)
@@ -78,7 +91,6 @@
 	 (((and (? symbol?) ?id) ?proto (and (? string?) ?cn) (and (? symbol?) ?mod))
 	  (let* ((nc `(,id ,proto ,cn))
 		 (g (extern-parser nc #f)))
-	     (tprint "c=" nc " " (typeof g))
 	     (global-module-set! g mod)
 	     g))
 	 (((and (? symbol?) ?ident) (and (? string?) ?name) . ?deps)
@@ -98,9 +110,25 @@
 		    (error/loc "mod" "Cannot find declaration" clause expr)))))
 	 
 	 (else
-	  (error/loc mod "Illegal extern \"wasm\" module clause" clause expr))))
+ 	  (error/loc mod "Illegal extern \"wasm\" module clause" clause expr))))
    
    (when (memq 'wasm (backend-foreign-clause-support (the-backend)))
       (for-each (lambda (c) (parse-clause c mod)) (cddr expr)))
    '())
+
+;*---------------------------------------------------------------------*/
+;*    *wasm-exports* ...                                               */
+;*---------------------------------------------------------------------*/
+(define *wasm-exports* '())
+
+;*---------------------------------------------------------------------*/
+;*    wasm-finalizer-exports ...                                       */
+;*---------------------------------------------------------------------*/
+(define (wasm-finalizer-exports mod::Module)
+   (for-each (lambda (e)
+		(let ((g (find-global (get-genv) (car e))))
+		   (if (global? g)
+		       (global-name-set! g (cadr e))
+		       (error/loc mod "Wasm export unbound global variable" (car e) (caddr e)))))
+      *wasm-exports*))
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jun 26 07:51:25 2026 (serrano)                */
+/*    Last change :  Sat Jul 25 15:51:01 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, Mozilla specific                 */
@@ -439,8 +439,10 @@ class BglMozRuntime extends BglRuntime {
 	    return undefined;
 	 },
 
-	 close: sock => undefined
-      };
+	 close: sock => undefined,
+	 
+    	 downp: (o) => true
+  };
    }
 
    js_process(self) {

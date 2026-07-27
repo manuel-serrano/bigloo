@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Jun 20 17:14:55 2026 (serrano)                */
+;*    Last change :  Sat Jul 25 19:30:17 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -691,6 +691,8 @@
 
 	 ;; export global variables to java
 	 (java-finalizer-exports)
+	 (wasm-finalizer-exports mod)
+	 
 ;* 	 ;; java finalizer                                             */
 ;* 	 ;; cannot be executed before module5-ast! because of jvm exports */
 ;* 	 (when (eq? *target-language* 'jvm)                            */

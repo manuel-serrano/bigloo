@@ -49,3 +49,20 @@ $ a.out
 
 Introduction
 ------------
+
+The Bigloo Wasm backend produces `.wat` files. Bigloo can also invoke
+transparently a wat-to-wasm compiler such as `wasmas` to generate directly
+binary files that can be loaded inside wasm machines.
+
+The Bigloo linker, when linking, Wasm files, produces a shell script file
+that can be used to execute the program with `nodejs`, mozjs`, and `jsc`. 
+Each of these systems uses its own implementation for primitive native
+operations, e.g., sockets API. As of July 2026, on the `nodejs` implement
+all the Bigloo Wasm features and as such is highly recommended. The other
+systems could be used to testing and performance measurements but probably
+not for production code.
+
+In addition to executing Wasm code in a server-side implementation such
+as `nodejs`, the generated Wasm code can, of course, be executed by
+Web client in collaboration to JavaScript code.
+

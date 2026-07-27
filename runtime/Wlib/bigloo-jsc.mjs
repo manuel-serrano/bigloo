@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jun 26 07:52:10 2026 (serrano)                */
+/*    Last change :  Sat Jul 25 15:50:40 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, JSC specific                    */
@@ -454,7 +454,9 @@ class BglJscRuntime extends BglRuntime {
 
 	 make_client: (hostname_addr, hostname_len, portnum, timeout) => {
 	    return undefined;
-	 }
+	 },
+
+	 downp: (o) => true;
       };
    }
 
