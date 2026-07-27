@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Fri Jul  3 13:21:15 2026 (serrano)                */
+;*    Last change :  Mon Jul 27 11:52:24 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -1139,8 +1139,7 @@
 ;*    as-vector ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (as-vector arg vtype::type)
-   (if (or (eq? (type-id vtype) 'vector)
-	   (isa? vtype tvec))
+   (if (or (eq? (type-id vtype) 'vector) (isa? vtype tvec))
        (gen-reg arg)
        (let ((vec-type (wasm-vector-type vtype)))
 	  `(ref.cast (ref ,vec-type) ,(gen-reg arg)))))
@@ -1160,9 +1159,12 @@
 	 (let ((array-code 
 		  `(array.get ,vec-type
 		      ,(as-vector (car args) vtype)
-		      
 		      ,(cast-to-i32-if-needed (cadr args)))))
-	    (with-fun-loc fun array-code)))))
+	    (if (and (eq? vtype *vector*) (not (eq? *obj* type)))
+		;; cast the vector item
+		(with-fun-loc fun
+		   `(ref.cast ,(wasm-type type) ,array-code))
+		(with-fun-loc fun array-code))))))
 
 (define-method (gen-expr fun::rtl_vset args)
   ; Bigloo generate 64-bit indices, but Wasm expect 32-bit indices, thus the i32.wrap_i64.

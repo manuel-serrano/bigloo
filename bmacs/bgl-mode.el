@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Thu Jul 23 16:32:55 2026 (serrano)                */
+;*    Last change :  Mon Jul 27 08:39:49 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1793,9 +1793,9 @@ if that value is non-nil."
 	(bgl-browse-doc-at-point sym))))
 
 ;*---------------------------------------------------------------------*/
-;*    bgl-goto-def-other-frame-def ...                                 */
+;*    bgl-goto-def-other-frame ...                                     */
 ;*---------------------------------------------------------------------*/
-(defun bgl-goto-def-other-frame-def ()
+(defun bgl-goto-def-other-frame ()
   (interactive)
   (let ((sym (thing-at-point 'symbol t)))
     (or (bgl-visit-decl-at-point sym t)

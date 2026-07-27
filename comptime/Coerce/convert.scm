@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Sat Jun 20 16:27:25 2026 (serrano)                */
+;*    Last change :  Mon Jul 27 10:38:40 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -201,68 +201,64 @@
 			  (instantiate::cast-null
 			     (c-format "")
 			     (type to)))))))
-	 ((not *warning-type-error*)
-	  (cond
-	     ((or (eq? to *int*) (eq? to *long*)
-		  (eq? to *elong*)
-		  (eq? to *llong*)
-		  (eq? to *int8*)
-		  (eq? to *uint8*)
-		  (eq? to *int16*)
-		  (eq? to *uint16*)
-		  (eq? to *int32*)
-		  (eq? to *uint32*)
-		  (eq? to *int64*)
-		  (eq? to *uint64*))
-	      (let ((node (runtime-type-error loc (type-id to) node)))
-		 (type-warning/location loc (current-function) from to)
-		 (lvtype-node! node)
-		 (instantiate::sequence
-		    (type to)
-		    (nodes (list (coerce! node #unspecified from #f)
-			      (instantiate::literal (type to) (value 0)))))))
-	     ((eq? to *bool*)
-	      (let ((node (runtime-type-error loc (type-id to) node)))
-		 (type-warning/location loc (current-function) from to)
-		 (lvtype-node! node)
-		 (instantiate::sequence
-		    (type to)
-		    (nodes (list (coerce! node #unspecified from #f)
-			      (instantiate::literal (type to) (value 0)))))))
-	     ((eq? to *real*)
-	      (let ((node (runtime-type-error loc (type-id to) node)))
-		 (type-warning/location loc (current-function) from to)
-		 (lvtype-node! node)
-		 (instantiate::sequence
-		    (type to)
-		    (nodes (list (coerce! node #unspecified from #f)
-			      (instantiate::literal (type to) (value 0.0)))))))
-	     ((eq? to *char*)
-	      (let ((node (runtime-type-error loc (type-id to) node)))
-		 (type-warning/location loc (current-function) from to)
-		 (lvtype-node! node)
-		 (instantiate::sequence
-		    (type to)
-		    (nodes (list (coerce! node #unspecified from #f)
-			      (instantiate::literal (type to) (value #a000)))))))
-	     ((eq? to *schar*)
-	      (let ((node (runtime-type-error loc (type-id to) node)))
-		 (type-warning/location loc (current-function) from to)
-		 (lvtype-node! node)
-		 (instantiate::sequence
-		    (type *char*)
-		    (nodes (list (coerce! node #unspecified from #f)
-			      (instantiate::literal (type *char*) (value #a000)))))))
-	     ((eq? to *string*)
-	      (let ((node (runtime-type-error loc (type-id to) node)))
-		 (type-warning/location loc (current-function) from to)
-		 (lvtype-node! node)
-		 (instantiate::sequence
-		    (type to)
-		    (nodes (list (coerce! node #unspecified from #f)
-			      (instantiate::literal (type to) (value "")))))))
-	     (else
-	      (type-error/location loc (current-function) from to))))
+	 ((or (eq? to *int*) (eq? to *long*)
+	      (eq? to *elong*)
+	      (eq? to *llong*)
+	      (eq? to *int8*)
+	      (eq? to *uint8*)
+	      (eq? to *int16*)
+	      (eq? to *uint16*)
+	      (eq? to *int32*)
+	      (eq? to *uint32*)
+	      (eq? to *int64*)
+	      (eq? to *uint64*))
+	  (let ((node (runtime-type-error loc (type-id to) node)))
+	     (type-warning/location loc (current-function) from to)
+	     (lvtype-node! node)
+	     (instantiate::sequence
+		(type to)
+		(nodes (list (coerce! node #unspecified from #f)
+			  (instantiate::literal (type to) (value 0)))))))
+	 ((eq? to *bool*)
+	  (let ((node (runtime-type-error loc (type-id to) node)))
+	     (type-warning/location loc (current-function) from to)
+	     (lvtype-node! node)
+	     (instantiate::sequence
+		(type to)
+		(nodes (list (coerce! node #unspecified from #f)
+			  (instantiate::literal (type to) (value 0)))))))
+	 ((eq? to *real*)
+	  (let ((node (runtime-type-error loc (type-id to) node)))
+	     (type-warning/location loc (current-function) from to)
+	     (lvtype-node! node)
+	     (instantiate::sequence
+		(type to)
+		(nodes (list (coerce! node #unspecified from #f)
+			  (instantiate::literal (type to) (value 0.0)))))))
+	 ((eq? to *char*)
+	  (let ((node (runtime-type-error loc (type-id to) node)))
+	     (type-warning/location loc (current-function) from to)
+	     (lvtype-node! node)
+	     (instantiate::sequence
+		(type to)
+		(nodes (list (coerce! node #unspecified from #f)
+			  (instantiate::literal (type to) (value #a000)))))))
+	 ((eq? to *schar*)
+	  (let ((node (runtime-type-error loc (type-id to) node)))
+	     (type-warning/location loc (current-function) from to)
+	     (lvtype-node! node)
+	     (instantiate::sequence
+		(type *char*)
+		(nodes (list (coerce! node #unspecified from #f)
+			  (instantiate::literal (type *char*) (value #a000)))))))
+	 ((eq? to *string*)
+	  (let ((node (runtime-type-error loc (type-id to) node)))
+	     (type-warning/location loc (current-function) from to)
+	     (lvtype-node! node)
+	     (instantiate::sequence
+		(type to)
+		(nodes (list (coerce! node #unspecified from #f)
+			  (instantiate::literal (type to) (value "")))))))
 	 (else
 	  (type-error/location loc (current-function) from to)))))
 

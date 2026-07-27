@@ -1,6 +1,9 @@
 (module ex15
-   (library browser)
+   (cond-expand
+      (wasm (library browser)))
    (export ex15f))
 
 (define (ex15f)
-   (typeof get-element-by-id))
+   (cond-expand
+      (wasm (typeof get-element-by-id))
+      (else (typeof ex15f))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Sat Jun 20 16:19:22 2026 (serrano)                */
+;*    Last change :  Mon Jul 27 09:16:53 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
@@ -90,8 +90,8 @@
 			   formals
 			   actuals))
 	     (bindings (let loop ((reductors reductors)
-				  (actuals   actuals)
-				  (res       '()))
+				  (actuals actuals)
+				  (res '()))
 			  (cond
 			     ((null? actuals)
 			      (reverse! res))
@@ -100,7 +100,7 @@
 				      (closure-variable (car actuals))))
 			      (loop (cdr reductors)
 				 (cdr actuals)
-				 res))
+ 				 res))
 			     ((eq? (car reductors) (car actuals))
 			      (loop (cdr reductors)
 				 (cdr actuals)
@@ -160,7 +160,7 @@
 	       ;; *obj* we use a local variable in order to ensure that the
 	       ;; type checking of the result will be implemented even after
 	       ;; inlining. This fixes a bug of the version 1.9b
-	       (if (eq? cty *_*)
+	       (if (no-inline-res-type-check? cty alpha-body)
 		   (with-access::app node (stackable)
 		      (if stackable
 			  (stackable! node ibody)
@@ -175,6 +175,15 @@
 				  (loc loc)
 				  (type cty)
 				  (variable var)))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    no-inline-res-type-check? ...                                    */
+;*---------------------------------------------------------------------*/
+(define (no-inline-res-type-check? type alpha-body)
+   (or (eq? type *_*)
+       (eq? type *obj*)
+       (eq? type (node-type alpha-body))
+       (eq? type (get-type alpha-body #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    stackable! ...                                                   */
