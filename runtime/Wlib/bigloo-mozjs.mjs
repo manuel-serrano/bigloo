@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sat Jul 25 15:51:01 2026 (serrano)                */
+/*    Last change :  Tue Jul 28 10:03:16 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, Mozilla specific                 */
@@ -519,6 +519,9 @@ class BglMozRuntime extends BglRuntime {
 	    return 0;
 	 },
 
+	 getuid: () => -1,
+	 getgid: () => -1,
+	 
 	 date: (addr) => {
 	    const d = Date();
 	    const a = Days[d.getDay()];
@@ -559,24 +562,30 @@ class BglMozRuntime extends BglRuntime {
 /*    -------------------------------------------------------------    */
 /*    Run a whole wasm program in a single self.instance.              */
 /*---------------------------------------------------------------------*/
-async function runStatic(client) {
-   const __js = new BglMozRuntime();
-   const wasmClient = await WebAssembly.compile(readFileSync(client));
-   const instanceClient = await WebAssembly.instantiate(wasmClient, __js);
-   
-   __js.link(instanceClient, instanceClient);
+async function runStatic(client, libs) {
 
-   if (!instanceClient.exports.bigloo_main) {
-      console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`);
+   try {
+      const __js = new BglMozRuntime();
+      const wasmClient = new WebAssembly.Module(readFileSync(client));
+      const instanceClient = new WebAssembly.Instance(wasmClient, __js);
+      
+      __js.link(instanceClient, instanceClient);
+
+      if (!instanceClient.exports.bigloo_main) {
+	 console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`);
+	 process.exit(1);
+      }
+
+      if (!instanceClient.exports.__bigloo_main) {
+	 console.error(`*** ERROR: missing '__bigloo_main' export in "${client}".`);
+	 process.exit(1);
+      }
+
+      instanceClient.exports.__bigloo_main(1);
+   } catch(e) {
+      print("*** ERROR: ", e.toString());
       process.exit(1);
    }
-
-   if (!instanceClient.exports.__bigloo_main) {
-      console.error(`*** ERROR: missing '__bigloo_main' export in "${client}".`);
-      process.exit(1);
-   }
-
-   instanceClient.exports.__bigloo_main(1);
 }
 
 /*---------------------------------------------------------------------*/
@@ -585,41 +594,46 @@ async function runStatic(client) {
 /*    Run a wasm in two instances, one for client, one the runtime.    */
 /*---------------------------------------------------------------------*/
 async function runDynamic(client, rts, libs) {
-   const __jsClient = new BglMozRuntime();
-   const __jsLibs = libs.map(l => new BglMozRuntime());
-   const __jsRts = new BglMozRuntime();
-   
-   const wasmRts = new WebAssembly.Module(readFileSync(rts));
-   const wasmLibs = libs.map(l => new WebAssembly.Module(readFileSync(l.lib)));
-   const wasmClient = new WebAssembly.Module(readFileSync(client));
-
-   const instanceRts = new WebAssembly.Instance(wasmRts, __jsRts);
-   __jsLibs.forEach(l => l.__bigloo = instanceRts.exports);
-   __jsClient.__bigloo = instanceRts.exports;
-
-   const instanceLibs = __jsLibs.map((l, i) => new WebAssembly.Instance(wasmLibs[i], __jsLibs[i]));
-   libs.forEach((l, i) => __jsClient[l.exports] = instanceLibs[i].exports);
-   const instanceClient = new WebAssembly.Instance(wasmClient, __jsClient);
-
-   __jsClient.link(instanceClient, instanceClient);
-   libs.forEach((l, i) => __jsLibs[i].link(instanceClient, instanceClient));
-   __jsRts.link(instanceRts, instanceClient);
-   
-   if (!instanceClient.exports.bigloo_main) {
-      console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`);
-      process.exit(1);
-   }
-
-   if (!instanceRts.exports.__bigloo_main) {
-      console.error(`*** ERROR: missing '__bigloo_main' export in "${rts}".`);
-      process.exit(1);
-   }
-
    try {
-      instanceRts.exports.__bigloo_main(1);
+      const __jsClient = new BglMozRuntime();
+      const __jsLibs = libs.map(l => new BglMozRuntime());
+      const __jsRts = new BglMozRuntime();
+      
+      const wasmRts = new WebAssembly.Module(readFileSync(rts));
+      const wasmLibs = libs.map(l => new WebAssembly.Module(readFileSync(l.lib)));
+      const wasmClient = new WebAssembly.Module(readFileSync(client));
+
+      const instanceRts = new WebAssembly.Instance(wasmRts, __jsRts);
+      __jsLibs.forEach(l => l.__bigloo = instanceRts.exports);
+      __jsClient.__bigloo = instanceRts.exports;
+
+      const instanceLibs = __jsLibs.map((l, i) => new WebAssembly.Instance(wasmLibs[i], __jsLibs[i]));
+      libs.forEach((l, i) => __jsClient[l.exports] = instanceLibs[i].exports);
+      const instanceClient = new WebAssembly.Instance(wasmClient, __jsClient);
+
+      __jsClient.link(instanceClient, instanceClient);
+      libs.forEach((l, i) => __jsLibs[i].link(instanceClient, instanceClient));
+      __jsRts.link(instanceRts, instanceClient);
+      
+      if (!instanceClient.exports.bigloo_main) {
+	 console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`);
+	 process.exit(1);
+      }
+
+      if (!instanceRts.exports.__bigloo_main) {
+	 console.error(`*** ERROR: missing '__bigloo_main' export in "${rts}".`);
+	 process.exit(1);
+      }
+
+      try {
+	 instanceRts.exports.__bigloo_main(1);
+      } catch(e) {
+	 putstr("*** WASM ");
+	 print(e.toString());
+	 process.exit(1);
+      }
    } catch(e) {
-      putstr("*** WASM ");
-      print(e.toString());
+      print("*** ERROR: ", e.toString());
       process.exit(1);
    }
 }
@@ -629,7 +643,7 @@ async function runDynamic(client, rts, libs) {
 /*---------------------------------------------------------------------*/
 const argv = process.argv;
 
-const { client, rts, libs } = bglParseArgs(argv);
+const { rts, client, libs } = bglParseArgs(argv);
 
 /*---------------------------------------------------------------------*/
 /*    top-level                                                        */
@@ -638,9 +652,8 @@ try {
    if (rts) {
       await runDynamic(client, rts, libs);
    } else {
-      await runStatic(client);
+      await runStatic(client, libs);
    }
-      
 } catch(e) {
    print("*** ERROR", e);
    print(e.stack);

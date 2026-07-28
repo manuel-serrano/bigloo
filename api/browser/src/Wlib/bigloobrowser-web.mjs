@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/wasm/api/dom/src/Wlib/bigloodom-web.mjs       */
+/*    .../bigloo/5.0.x/api/browser/src/Wlib/bigloobrowser-web.mjs      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Thu Sep 11 08:24:07 2025                          */
-/*    Last change :  Thu Sep 11 13:05:46 2025 (serrano)                */
-/*    Copyright   :  2025 manuel serrano                               */
+/*    Last change :  Tue Jul 28 08:47:51 2026 (serrano)                */
+/*    Copyright   :  2025-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm Web DOM binding                                      */
 /*=====================================================================*/
@@ -32,5 +32,5 @@ export function init(self) {
       }
    }
 
-   self.__js_dom = js_dom(self);
+   self.__browser = js_dom(self);
 }

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sat Jul 25 15:51:19 2026 (serrano)                */
+/*    Last change :  Tue Jul 28 09:24:00 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -614,41 +614,103 @@ async function WasmInstantiate(wasm, jsenv) {
    return mach.instance;
 }
 
-/*---------------------------------------------------------------------*/
-/*    runStatic ...                                                    */
-/*    -------------------------------------------------------------    */
-/*    Run a whole wasm program in a single self.instance.              */
-/*---------------------------------------------------------------------*/
-export async function runStatic(client) {
-   const __js = new BglWebRuntime();
-   const instanceClient = await WasmInstantiate(client, __js);
-   
-   __js.link(instanceClient, instanceClient);
-
-   if (!instanceClient.exports.bigloo_main) {
-      console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`);
-      process.exit(1);
-   }
-
-   if (!instanceClient.exports.__bigloo_main) {
-      console.error(`*** ERROR: missing '__bigloo_main' export in "${client}".`);
-      process.exit(1);
-   }
-
-   instanceClient.exports.__bigloo_main();
-}
+/* {*---------------------------------------------------------------------*} */
+/* {*    runStatic ...                                                    *} */
+/* {*    -------------------------------------------------------------    *} */
+/* {*    Run a whole wasm program in a single self.instance.              *} */
+/* {*---------------------------------------------------------------------*} */
+/* export async function runStatic(client) {                           */
+/*    const __js = new BglWebRuntime();                                */
+/*    const instanceClient = await WasmInstantiate(client, __js);      */
+/*                                                                     */
+/*    __js.link(instanceClient, instanceClient);                       */
+/*                                                                     */
+/*    if (!instanceClient.exports.bigloo_main) {                       */
+/*       console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`); */
+/*       process.exit(1);                                              */
+/*    }                                                                */
+/*                                                                     */
+/*    if (!instanceClient.exports.__bigloo_main) {                     */
+/*       console.error(`*** ERROR: missing '__bigloo_main' export in "${client}".`); */
+/*       process.exit(1);                                              */
+/*    }                                                                */
+/*                                                                     */
+/*    instanceClient.exports.__bigloo_main();                          */
+/* }                                                                   */
+/*                                                                     */
+/* {*---------------------------------------------------------------------*} */
+/* {*    libRuntime ...                                                   *} */
+/* {*---------------------------------------------------------------------*} */
+/* async function libRuntime(lib) {                                    */
+/*    lib.rts = new BglWebRuntime();                                   */
+/*                                                                     */
+/*    if (lib.js !== "none") {                                         */
+/*       const path = `${dirname(lib.lib)}/${lib.js}-web.mjs`;         */
+/*       try {                                                         */
+/* 	 const mod = await import(path);                               */
+/* 	 mod.init(lib.rts);                                            */
+/*       } catch(e) {                                                  */
+/* 	 console.error(`*** ERROR:${process.argv[0]}:${path}`);        */
+/* 	 console.error(e);                                             */
+/* 	 process.exit(1);                                              */
+/*       }                                                             */
+/*    }                                                                */
+/*                                                                     */
+/*    return lib.rts;                                                  */
+/* }                                                                   */
+/*                                                                     */
+/* {*---------------------------------------------------------------------*} */
+/* {*    runDynamic ...                                                   *} */
+/* {*    -------------------------------------------------------------    *} */
+/* {*    Run a wasm in several instances, one for client, and one by libs *} */
+/* {*---------------------------------------------------------------------*} */
+/* export async function runDynamic(client, rts, libs) {               */
+/*    const __jsRts = new BglWebRuntime();                             */
+/*    const __jsLibs = await Promise.all(libs.map(libRuntime));        */
+/*    const __jsClient = new BglWebRuntime();                          */
+/*                                                                     */
+/*    const instanceRts = await WasmInstantiate(rts, __jsRts);         */
+/*    __jsLibs.forEach(l => l.__bigloo = instanceRts.exports);         */
+/*    __jsClient.__bigloo = instanceRts.exports;                       */
+/*                                                                     */
+/*    const instanceLibs = await Promise.all(libs.map((l, i) => WasmInstantiate(l.lib, __jsLibs[i]))); */
+/*                                                                     */
+/*    libs.forEach((l, i) => __jsClient[l.exports] = instanceLibs[i].exports); */
+/*                                                                     */
+/*    const instanceClient = await WasmInstantiate(client, __jsClient); */
+/*                                                                     */
+/*    __jsClient.link(instanceClient);                                 */
+/*    libs.forEach((l, i) => __jsLibs[i].link(instanceRts));           */
+/*    __jsRts.link(instanceRts, instanceClient);                       */
+/*                                                                     */
+/*    if (!instanceClient.exports.bigloo_main) {                       */
+/*       console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`); */
+/*       process.exit(1);                                              */
+/*    }                                                                */
+/*                                                                     */
+/*    if (!instanceRts.exports.__bigloo_main) {                        */
+/*       console.error(`*** ERROR: missing '__bigloo_main' export in "${rts}".`); */
+/*       process.exit(1);                                              */
+/*    }                                                                */
+/*                                                                     */
+/*    instanceRts.exports.__bigloo_main();                             */
+/*                                                                     */
+/*    return instanceClient.exports;                                   */
+/* }                                                                   */
 
 /*---------------------------------------------------------------------*/
 /*    libRuntime ...                                                   */
 /*---------------------------------------------------------------------*/
-async function libRuntime(lib) {
-   lib.rts = new BglWebRuntime();
+async function libRuntime(lib, rts = null) {
+   if (rts === null) {
+      rts = lib.rts = new BglWebRuntime();
+   }
    
    if (lib.js !== "none") {
       const path = `${dirname(lib.lib)}/${lib.js}-web.mjs`;
       try {
 	 const mod = await import(path);
-	 mod.init(lib.rts);
+	 mod.init(rts);
       } catch(e) {
 	 console.error(`*** ERROR:${process.argv[0]}:${path}`);
 	 console.error(e);
@@ -656,7 +718,33 @@ async function libRuntime(lib) {
       }
    }
 
-   return lib.rts;
+   return rts;
+}
+
+/*---------------------------------------------------------------------*/
+/*    runStatic ...                                                    */
+/*    -------------------------------------------------------------    */
+/*    Run a whole wasm program in a single self.instance.              */
+/*---------------------------------------------------------------------*/
+export async function runStatic(client, libs) {
+   const __jsRtsClient = new BglWebRuntime();
+   const __jsLibs = await Promise.all(libs.map(l => libRuntime(l, __jsRtsClient)));
+   const instanceRtsClient = await WasmInstantiate(client, __jsRtsClient);
+
+   if (!instanceRtsClient.exports.bigloo_main) {
+      console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`);
+      process.exit(1);
+   }
+
+   if (!instanceRtsClient.exports.__bigloo_main) {
+      console.error(`*** ERROR: missing '__bigloo_main' export in "${rts}".`);
+      process.exit(1);
+   }
+
+   __jsRtsClient.link(instanceRtsClient, instanceRtsClient);
+   instanceRtsClient.exports.__bigloo_main();
+   
+   return instanceRtsClient.exports;
 }
 
 /*---------------------------------------------------------------------*/
@@ -666,7 +754,7 @@ async function libRuntime(lib) {
 /*---------------------------------------------------------------------*/
 export async function runDynamic(client, rts, libs) {
    const __jsRts = new BglWebRuntime();
-   const __jsLibs = await Promise.all(libs.map(libRuntime));
+   const __jsLibs = await Promise.all(libs.map(l => libRuntime(l, null)));
    const __jsClient = new BglWebRuntime();
 
    const instanceRts = await WasmInstantiate(rts, __jsRts);
@@ -678,11 +766,11 @@ export async function runDynamic(client, rts, libs) {
    libs.forEach((l, i) => __jsClient[l.exports] = instanceLibs[i].exports);
 
    const instanceClient = await WasmInstantiate(client, __jsClient);
-   
+
    __jsClient.link(instanceClient);
    libs.forEach((l, i) => __jsLibs[i].link(instanceRts));
    __jsRts.link(instanceRts, instanceClient);
-   
+
    if (!instanceClient.exports.bigloo_main) {
       console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`);
       process.exit(1);

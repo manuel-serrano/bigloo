@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Sat Jul 25 15:50:40 2026 (serrano)                */
+/*    Last change :  Tue Jul 28 09:51:45 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, JSC specific                    */
@@ -456,7 +456,7 @@ class BglJscRuntime extends BglRuntime {
 	    return undefined;
 	 },
 
-	 downp: (o) => true;
+	 downp: (o) => true
       };
    }
 
@@ -656,7 +656,7 @@ try {
    if (rts) {
       await runDynamic(client, rts, libs);
    } else {
-      await runStatic(client);
+      await runStatic(client, libs);
    }
       
 } catch(e) {
@@ -664,5 +664,3 @@ try {
    print(e.stack);
    quit(4);
 }
-
-// js128 -P wasm_gc -P wasm_exnref -P wasm_tail_calls runtime-mozjs.mjs a.out.wasm

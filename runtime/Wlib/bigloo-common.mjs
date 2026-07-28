@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Tue Jul 21 09:23:44 2026 (serrano)                */
+/*    Last change :  Mon Jul 27 17:42:51 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -490,37 +490,35 @@ export class BglRuntime {
 /*    bglParseArgs ...                                                 */
 /*---------------------------------------------------------------------*/
 export function bglParseArgs(args) {
-   let client = undefined, rts = undefined , libs = [], argv = [];
+   let client = undefined, rts = undefined , libs = [], argv = [ args[0] ];
+   let i = 2;
 
-   if (args[2] === "-s") {
-      args.splice(1, 2);
-      
-      for (let i = 0; i < args.length; i++) {
-	 if (args[i] === "-l") {
-	    const lib = { exports: args[i + 1], lib: args[i + 2], js: args[i + 3] };
-	    libs.push(lib);
-	    i += 3;
-	 } else if (/[.]wasm$/.test(args[i])) {
-	    if (!rts) {
-	       rts = args[i];
-	    } else if (!client) {
-	       client = args[i];
-	    } else {
-	       console.error("*** ERROR: duplicate wasm source", args[i]);
-	       process.exit(1)
-	    }
-	 } else {
-	    argv.push(args[i]);
-	 }
-      }
-      
-      if (!client) {
-	 console.error("*** ERROR: missing input WASM module file.");
-	 process.exit(1);
-      }
-	 
-      return { client, rts, libs, argv };
-   } else {
-      return { client: args[2], rts, libs, argv: args.splice(1, 2) };
+   if (args[2] === "--rts") {
+      rts = args[3];
+      i = 4;
    }
+   
+   for (; i < args.length; i++) {
+      if (args[i] === "-l") {
+	 const lib = { exports: args[i + 1], lib: args[i + 2], js: args[i + 3] };
+	 libs.push(lib);
+	 i += 3;
+      } else if (/[.]wasm$/.test(args[i])) {
+	 if (!client) {
+	    client = args[i];
+	 } else {
+	    console.error("*** ERROR: duplicate wasm source", args[i]);
+	    process.exit(1)
+	 }
+      } else {
+	 argv.push(args[i]);
+      }
+   }
+      
+   if (!client) {
+      console.error("*** ERROR: missing input WASM module file.");
+      process.exit(1);
+   }
+
+   return { rts, client, libs, argv };
 }

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Fri Jul 10 13:29:05 2026 (serrano)                */
+/*    Last change :  Tue Jul 28 08:20:01 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -666,41 +666,18 @@ class BglNodeRuntime extends BglRuntime {
 }
 
 /*---------------------------------------------------------------------*/
-/*    runStatic ...                                                    */
-/*    -------------------------------------------------------------    */
-/*    Run a whole wasm program in a single self.instance.              */
-/*---------------------------------------------------------------------*/
-async function runStatic(client) {
-   const __js = new BglNodeRuntime();
-   const wasmClient = await WebAssembly.compile(readFileSync(client));
-   const instanceClient = await WebAssembly.instantiate(wasmClient, __js);
-   
-   __js.link(instanceClient, instanceClient);
-
-   if (!instanceClient.exports.bigloo_main) {
-      console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`);
-      process.exit(1);
-   }
-
-   if (!instanceClient.exports.__bigloo_main) {
-      console.error(`*** ERROR: missing '__bigloo_main' export in "${client}".`);
-      process.exit(1);
-   }
-
-   instanceClient.exports.__bigloo_main();
-}
-
-/*---------------------------------------------------------------------*/
 /*    libRuntime ...                                                   */
 /*---------------------------------------------------------------------*/
-async function libRuntime(lib) {
-   lib.rts = new BglNodeRuntime();
+async function libRuntime(lib, rts = null) {
+   if (rts == null) {
+      rts = lib.rts = new BglNodeRuntime();
+   }
    
    if (lib.js !== "none") {
       const path = `${dirname(lib.lib)}/${lib.js}-node.mjs`;
       try {
 	 const mod = await import(path);
-	 mod.init(lib.rts);
+	 mod.init(rts);
       } catch(e) {
 	 console.error(`*** ERROR:${process.argv[0]}:${path}`);
 	 console.error(e);
@@ -708,7 +685,33 @@ async function libRuntime(lib) {
       }
    }
 
-   return lib.rts;
+   return rts;
+}
+
+/*---------------------------------------------------------------------*/
+/*    runStatic ...                                                    */
+/*    -------------------------------------------------------------    */
+/*    Run a whole wasm program in a single self.instance.              */
+/*---------------------------------------------------------------------*/
+async function runStatic(client, libs) {
+   const __jsRtsClient = new BglNodeRuntime();
+   const __jsLibs = await Promise.all(libs.map(l => libRuntime(l, __jsRtsClient)));
+   const wasmRtsClient = await WebAssembly.compile(readFileSync(client));
+
+   const instanceRtsClient = await WebAssembly.instantiate(wasmRtsClient, __jsRtsClient);
+
+   if (!instanceRtsClient.exports.bigloo_main) {
+      console.error(`*** ERROR: missing 'bigloo_main' export in "${client}".`);
+      process.exit(1);
+   }
+
+   if (!instanceRtsClient.exports.__bigloo_main) {
+      console.error(`*** ERROR: missing '__bigloo_main' export in "${rts}".`);
+      process.exit(1);
+   }
+
+   __jsRtsClient.link(instanceRtsClient, instanceRtsClient);
+   instanceRtsClient.exports.__bigloo_main();
 }
 
 /*---------------------------------------------------------------------*/
@@ -718,7 +721,7 @@ async function libRuntime(lib) {
 /*---------------------------------------------------------------------*/
 async function runDynamic(client, rts, libs) {
    const __jsRts = new BglNodeRuntime();
-   const __jsLibs = await Promise.all(libs.map(libRuntime));
+   const __jsLibs = await Promise.all(libs.map(l => libRuntime(l, null)));
    const __jsClient = new BglNodeRuntime();
 
    const wasmRts = await WebAssembly.compile(readFileSync(rts));
@@ -757,7 +760,7 @@ const processArgv = (globalThis.window && "Deno" in window)
    ? (await import('node:process')).argv
    : process.argv;
 
-const { client, rts, libs, argv } = bglParseArgs(processArgv);
+const { rts, client, libs, argv } = bglParseArgs(processArgv);
 
 /*---------------------------------------------------------------------*/
 /*    top-level                                                        */
@@ -766,7 +769,7 @@ try {
    if (rts) {
       await runDynamic(client, rts, libs);
    } else {
-      runStatic(client);
+      await runStatic(client, libs);
    }
 } catch(e) {
    console.error("*** ERROR", e);

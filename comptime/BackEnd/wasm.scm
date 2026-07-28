@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Jul  9 15:31:11 2026 (serrano)                */
+;*    Last change :  Tue Jul 28 08:30:26 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -170,11 +170,18 @@
 	  (load-library-init)
 	  (let* ((lib (if *unsafe-library* "bigloo_u.wat" "bigloo_s.wat"))
 		 (runtime-file (find-file-in-path lib *lib-dir*))
+		 (libs (map (lambda (l)
+			       (let* ((i (library-info l))
+				      (lib (format "~a_~a.wat"
+					      (libinfo-basename i)
+					      (if *unsafe-library* "u" "s"))))
+				  (find-file-in-path lib *lib-dir*)))
+			  (delete-duplicates *additional-bigloo-libraries*)))
 		 (objects (delete-duplicates! (append srcobj *o-files*) string=?))
 		 (wasmtgt (if (eq? *pass* 'cc)
 			      target
 			      (string-append (prefix (car srcobj)) ".wasm"))))
-	     (wat-merge (cons runtime-file objects) tmp)
+	     (wat-merge (cons runtime-file (append libs objects)) tmp)
 	     (let ((cmd (format "~a ~a -o ~a" wasmas tmp wasmtgt)))
 		(verbose 2 "      assembling [" cmd #\] #\Newline)
 		(exec cmd #t "wasmas")
@@ -188,7 +195,7 @@
 				  `(("@LIBDIR@" . ,(bigloo-config 'library-directory))
 				    ("@WASM@" . ,wasmtgt)
 				    ("@STATIC@" . "")
-				    ("@LIBS@" . ,(additional-bigloo-wasm-libraries)))))
+				    ("@LIBS@" . ,(additional-bigloo-wasm-libraries 'static)))))
 			    (newline)))
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*
@@ -216,8 +223,8 @@
 			       (sed wasm-script
 				  `(("@LIBDIR@" . ,(bigloo-config 'library-directory))
 				    ("@WASM@" . ,wasmtgt)
-				    ("@STATIC@" . ,(if *unsafe-library* "-s $BIGLOOLIBDIR/bigloo_u.wasm" "-s $BIGLOOLIBDIR/bigloo_s.wasm"))
-				    ("@LIBS@" . ,(additional-bigloo-wasm-libraries)))))
+				    ("@STATIC@" . ,(if *unsafe-library* "--rts $BIGLOOLIBDIR/bigloo_u.wasm" "--rts $BIGLOOLIBDIR/bigloo_s.wasm"))
+				    ("@LIBS@" . ,(additional-bigloo-wasm-libraries 'dynamic)))))
 			    (newline)))
 		      (chmod target 'read 'write 'execute))
 		   (when *rm-tmp-files*
@@ -281,15 +288,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    additional-bigloo-wasm-libraries ...                             */
 ;*---------------------------------------------------------------------*/
-(define (additional-bigloo-wasm-libraries)
+(define (additional-bigloo-wasm-libraries mod::symbol)
    (format "~( )"
       (map (lambda (l)
 	      (let* ((i (library-info l))
-		     (lib (format "~a_~a.wasm"
-			     (libinfo-basename i)
-			     (if *unsafe-library* "u" "s")))
+		     (lib (if (eq? mod 'dynamic)
+			      (format "$BIGLOOLIBDIR/~a_~a.wasm"
+				 (libinfo-basename i)
+				 (if *unsafe-library* "u" "s"))
+			      "none"))
 		     (js (if (libinfo-wasm-js i) (libinfo-basename i) "none")))
-		 (format "-l __~a $BIGLOOLIBDIR/~a ~a" l lib js)))
+		 (format "-l __~a ~a ~a" l lib js)))
 	 (delete-duplicates *additional-bigloo-libraries*))))
 
 ;*---------------------------------------------------------------------*/

@@ -19,9 +19,9 @@
    (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
    (import "__bigloo" "BUNSPEC" (global $BUNSPEC (ref eq)))
   
-   (import "__js_dom" "getElementById" (func $getElementById (param i32 i32) (result externref)))
-   (import "__js_dom" "innerHTMLset" (func $innerHTMLset (param externref i32 i32)))
-   (import "__js_dom" "innerHTMLget" (func $innerHTMLget (param externref i32) (result i32)))
+   (import "__browser" "getElementById" (func $getElementById (param i32 i32) (result externref)))
+   (import "__browser" "innerHTMLset" (func $innerHTMLset (param externref i32 i32)))
+   (import "__browser" "innerHTMLget" (func $innerHTMLget (param externref i32) (result i32)))
 
    ;; -----------------------------------------------------------------
    ;; Library functions 
