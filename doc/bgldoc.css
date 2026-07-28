@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0.x/doc/bgldoc.css                 */
+/*    serrano/bigloo/5.0.x/doc/bgldoc.css                              */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Wed Jul  8 09:23:29 2026 (serrano)                */
+/*    Last change :  Tue Jul 28 14:01:32 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -99,6 +99,10 @@
     --CBackend: #e6383c;
     --jvmBackend: #f6a70e;
     --wasmBackend: #4887ee;
+
+    --downloadLatest: #5cb85c;
+    --downloadUnstable: #f0ad4e;
+    --downloadGithub: #d9534f;
 }
 
 /*---------------------------------------------------------------------*/
@@ -350,13 +354,13 @@ div.nav-menu a:hover {
 }
 
 /*---------------------------------------------------------------------*/
-/*    home                                                             */
+/*    home & download                                                  */
 /*---------------------------------------------------------------------*/
-html.home body {
+html.home body, html.download body {
     margin: 0;
 }
 
-html.home .body {
+html.home .body, html.download .body {
     width: 70%;
     padding-left: 3em;
     padding-right: 3em;
@@ -364,23 +368,23 @@ html.home .body {
     font-size: 16px;
 }
 
-div.home {
+div.home, div.download {
     background: var(--homeBackgroundColor);
     opacity: 0.95;
-    padding: 2ex 3em 2ex 2em;
+    padding: 4ex 3em 4ex 2em;
     margin-top: var(--navHeight);
     color: var(--background);
     z-index: 0;
     position: relative;
 }
 
-div.home .logo {
-    width: 10em;
-    height: 10em;
+div.home .logo, div.download .logo {
+    width: 9em;
+    height: 9em;
     vertical-align: middle;
 }
 
-div.home .main {
+div.home .main, div.download .main {
     font-size: 500%;
     font-weight: bold;
     text-transform: capitalize;
@@ -418,6 +422,56 @@ div.home .main {
 
 .home h3.wasm:before {
     color: var(--wasmBackend);
+}
+
+ul.download-buttons {
+    float: left;
+    margin: 0;
+    list-style: none;
+    width: 100%;
+    margin-bottom: 3ex;
+}
+
+li.download-button {
+    float: left;
+    width: 12em;
+    padding: 1ex 1em 1ex 1em;
+    border: 1px solid #aaa;
+    border-radius: 3px;
+    font-weight: bold;
+    text-align: center;
+    display: block;
+    margin-right: 4em;
+    
+}
+
+.download-button a {
+    color: white;
+    font-size: 95%;
+}
+
+.download-latest {
+    background-color: var(--downloadLatest);
+}
+
+.download-unstable {
+    background-color: var(--downloadUnstable);
+}
+
+.download-github {
+    background-color: var(--downloadGithub);
+}
+
+.download-icon {
+    display: inline-block;
+    width: 1em;
+    text-align: center;
+    font-size: 80%;
+}
+
+.download-title {
+    display: inline-block;
+    text-align: center;
 }
 
 /*---------------------------------------------------------------------*/

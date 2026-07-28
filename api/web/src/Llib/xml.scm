@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & joe Donaldson                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Wed May 20 08:05:15 2026 (serrano)                */
+;*    Last change :  Tue Jul 28 14:31:11 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -647,9 +647,16 @@
       ((: "</" id ">")
        (update-start-position!)
        (string->symbol (the-substring 2 (-fx (the-length) 1))))
-      ((+ (out "<"))
+      ;; embedded scheme
+      (",("
+       (scheme-parse-embedded (the-port))
+       (ignore))
+      ((+ (out "<,"))
        (update-start-position!)
        (make-content (decoder (the-string)) (- pos (the-length))))
+      ((+ ",")
+       (update-start-position!)
+       (make-content (the-string) (- pos (the-length))))
       (else
        (let ((c (the-failure)))
 	  (cond
@@ -660,6 +667,33 @@
 		 (input-port-position (the-port))))
 	     (else
 	      c))))))
+
+;*---------------------------------------------------------------------*/
+;*    scheme-parse-embedded ...                                        */
+;*---------------------------------------------------------------------*/
+(define (scheme-parse-embedded ip::input-port)
+   (let ((pos (input-port-position ip)))
+      (rgc-buffer-unget-char ip (char->integer #\())
+      (with-handler
+	 (lambda (e)
+	    (if (isa? e &error)
+		(with-access::&error e (obj msg)
+		   (exception-notify e)
+		   (raise
+		      (instantiate::&io-read-error
+			 (fname (input-port-name ip))
+			 (location pos)
+			 (proc "markdown-parser")
+			 (msg msg)
+			 (obj obj))))
+		(raise e)))
+	 (let* ((e (read ip))
+		(s (eval e)))
+	    (if (string? s)
+		(rgc-buffer-insert-substring! ip s 0 (string-length s))
+		(error "markdown"
+		   (format "Expression \"~s\" does not evaluate to a string" e)
+		   s))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    char-hexnumeric? ...                                             */

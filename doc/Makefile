@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Jul 28 11:50:42 2026 (serrano)                */
+#*    Last change :  Tue Jul 28 13:55:45 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -59,7 +59,7 @@ EX = $(EX_C:%=c/%) $(EX_J:%=jvm/%) $(EX_W:%=wasm/%)
 #*---------------------------------------------------------------------*/
 all: doc
 
-doc: objs bin index.html idx.html index.json
+doc: objs bin index.html download.html idx.html index.json
 	$(MAKE) bin/bgldoc
 
 bin/bgldoc: $(C_OBJECTS:%=objs/%)
@@ -183,6 +183,9 @@ wasm.html: wasm.md bin/bgldoc
 
 index.html: index.md bin/bgldoc
 	bin/bgldoc -t home $< > $@ || rm -f $@
+
+download.html: download.md bin/bgldoc
+	bin/bgldoc -t download $< > $@ || rm -f $@
 
 idx.html: index.sexp bin/bgldoc
 	bin/bgldoc -t index $< > $@ || rm -f $@

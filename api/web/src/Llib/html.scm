@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Tue Jul  7 14:20:02 2026 (serrano)                */
+;*    Last change :  Tue Jul 28 14:28:05 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
@@ -47,18 +47,18 @@
 ;*    html-parse ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (html-parse port
-		    #!key
-		    (content-length 0)
-		    (procedure xml-element)
-		    (encoding 'UTF-8)
-		    (eoi #f))
+	   #!key
+	   (content-length 0)
+	   (procedure xml-element)
+	   (encoding 'UTF-8)
+	   (eoi #f))
    (xml-parse port
-	      :specials *html-special-elements*
-	      :strict #f
-	      :eoi eoi
-	      :content-length content-length
-	      :procedure procedure
-	      :encoding encoding))
+      :specials *html-special-elements*
+      :strict #f
+      :eoi eoi
+      :content-length content-length
+      :procedure procedure
+      :encoding encoding))
 
 ;*---------------------------------------------------------------------*/
 ;*    html-parse-script ...                                            */
