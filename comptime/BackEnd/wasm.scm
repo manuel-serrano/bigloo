@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Jul 28 08:30:26 2026 (serrano)                */
+;*    Last change :  Tue Jul 28 10:43:00 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -326,7 +326,7 @@ BIGLOOJSDIR=${BIGLOOJSDIR:-@LIBDIR@}
 WASMOPT=${WASMOPT:-}
 
 NODE=${NODE:-node}
-NODEOPT=${NODEOPT:- --stack-size=8192 --experimental-wasm-exnref --experimental-wasm-jspi}
+NODEOPT=${NODEOPT:- --stack-size=8192 --experimental-wasm-exnref --experimental-wasm-jspi --experimental-wasm-custom-descriptors}
 
 MOZJS=${MOJZ:-js128}
 MOZJSOPT=${MOZJSOPT:- -P wasm_gc -P wasm_exnref -P wasm_tail_calls --wasm-compiler=optimizing}

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Jul 21 09:26:38 2026 (serrano)                */
+#*    Last change :  Tue Jul 28 10:39:13 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -622,6 +622,8 @@ lib-wasm_s-sans-validation: includes
                 WASMDIR_SYS=wasm_u WASMDIR_USR=wasm_s \
                 LIBSUFFIX=_s
 
+lib-wasm_u: includes validate-wasm
+	$(MAKE) lib-wasm_u-sans-validation
 lib-wasm_u-sans: includes validate-wasm
 	$(MAKE) lib-wasm_u-sans-validation
 lib-wasm_u-sans-validation: includes
