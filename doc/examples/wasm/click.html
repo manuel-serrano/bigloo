@@ -1,0 +1,16 @@
+<html>
+  <head>
+    <script type="module">
+       import { runDynamic } from "BIGLOOROOT/lib/bigloo/5.0.0/bigloo-web.mjs";
+       const libs = [ { exports: "__browser", lib: "BIGLOOROOT/lib/bigloo/5.0.0/bigloobrowser_s.wasm", js: "bigloobrowser"} ];
+       const w = await runDynamic("/home/serrano/prgm/project/bigloo/work/wasm/WASM/maze.wasm", "BIGLOOROOT/lib/bigloo/5.0.0/bigloo_s.wasm", libs);
+   
+       globalThis.click = w.click;
+    </script>
+  </head>
+  <body>
+    <div id="console">&nbsp;</div>
+    <button onclick="click()">click me</button>
+  </body>
+</html>
+  

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/doc/src/bgldoc.bgl             */
+;*    serrano/bigloo/5.0.x/doc/src/bgldoc.bgl                          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sat Jul 18 08:57:18 2026 (serrano)                */
+;*    Last change :  Tue Jul 28 11:46:41 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -43,6 +43,7 @@
 ;*---------------------------------------------------------------------*/
 (define all-menus
    '(("home" . "index.html")
+     ("download" . "download.html")
      ("lang" . "condexpand.html")
      ("libs" . "bool.html")
      ("backends" . "backend.html")
@@ -56,6 +57,7 @@
    '(("command line parsing" . "argsparse.html")
      ("bigloo" . "bigloo.html")
      ("booleans" . "bool.html")
+     ("browser" . "browser.html")
      ("csv" . "csv.html")
      ("dates" . "date.html")
      ("digest & crc" . "digest.html")
@@ -310,6 +312,8 @@
    (cond
       ((string=? active-navbutton "home")
        (compile-home chapters))
+      ((string=? active-navbutton "download")
+       (compile-download chapters))
       ((string=? active-navbutton "index")
        (compile-index chapters))
       (else

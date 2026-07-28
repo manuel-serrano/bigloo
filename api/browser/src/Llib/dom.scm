@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Sep 11 08:10:30 2025                          */
-;*    Last change :  Thu Jul 23 17:49:58 2026 (serrano)                */
+;*    Last change :  Tue Jul 28 11:06:39 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo DOM binding for the wasm backend.                         */
@@ -18,14 +18,16 @@
       (type $Element void* "void *")
       ($get-element-by-id::$Element (::bstring) "bgl_get_element_by_id")
       ($inner-html-set!::obj (::$Element ::bstring) "bgl_inner_html_set")
-      ($inner-html::bstring (::$Element) "bgl_inner_html_get"))
+      ($inner-html::bstring (::$Element) "bgl_inner_html_get")
+      ($alert::obj (::bstring) "bgl_alert"))
 
    (export
       (class Element
 	 ($builtin::$Element read-only))
       (get-element-by-id::obj ::bstring)
       (generic element-inner-html ::Element)
-      (generic element-inner-html-set! ::Element html::bstring)))
+      (generic element-inner-html-set! ::Element html::bstring)
+      (alert . args)))
    
 ;*---------------------------------------------------------------------*/
 ;*    get-element-by-id ...                                            */
@@ -52,3 +54,8 @@
    (with-access::Element o ($builtin)
       ($inner-html-set! $builtin html)))
        
+;*---------------------------------------------------------------------*/
+;*    alert ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (alert . args)
+   ($alert (format "~( )" args)))

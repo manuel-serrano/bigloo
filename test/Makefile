@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0.x/test/Makefile                  */
+#*    serrano/bigloo/5.0.x/test/Makefile                               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Jul 14 06:24:41 2026 (serrano)                */
+#*    Last change :  Tue Jul 28 11:47:08 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -41,7 +41,7 @@ BJFLAGS = -jvm
 TESTS = main argsparse bigloo bignum bit bool case char closure compiler \
   condexpand core crc csv0 date digest dsssl error hash int1 int2 internet \
   lalr io match mmap module net number object os pair port process real \
-  regexp rgc search serial sqlite0 ssr string symbol tar trace thread \
+  regexp rgc search serial sqlite0 ssr string struct symbol tar trace thread \
   unicode vector weakptr zip
 
 MODULES4 = module4_ex12
@@ -57,7 +57,7 @@ BACKEND_C = ssl0 extern_c c
 
 BACKEND_J = ssl0 extern_jvm Intf Point
 
-BACKEND_W = extern_wasm
+BACKEND_W = extern_wasm browser0
 
 
 C_OBJECTS = $(COMMON:%=%.o) $(BACKEND_C:%=%.o)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Mon Jul 13 06:29:20 2026 (serrano)                */
+;*    Last change :  Tue Jul 28 13:17:29 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the compiler                                             */
@@ -13,7 +13,10 @@
 ;*    compiler                                                         */
 ;*---------------------------------------------------------------------*/
 (module compiler
-   (export test))
+   (export test)
+   (eval (export letrec-foo-loop))
+   (extern "C"
+      ($dummy::obj ::obj ... "")))
 
 ;*---------------------------------------------------------------------*/
 ;*    test machinery                                                   */
@@ -216,4 +219,863 @@
 (define-test inner (inner-print) :expected #t) 
 (define-test expand (texpand) :expected 8)
 
+;*---------------------------------------------------------------------*/
+;*    cells                                                            */
+;*---------------------------------------------------------------------*/
+(define (cell-test1 a b)
+   (labels ((foo (x) (set! x b) x))
+      foo))
 
+(define (cell-test2 a b . c)
+   (labels ((foo (x y) (set! c y) y)
+	    (bar (z)   (foo 2 1))
+	    (hux (t)   (set! a (foo t t)) c))
+      hux))
+
+(define (cell-test3 . c)
+   (let ((a 0)
+	 (b 0))
+      (labels ((foo (x) (set! a x) a)
+	       (bar (y) (set! b y) (foo b)))
+	 (bar 1)
+	 foo)))
+      
+(define-test cell
+   ((cell-test1 1 2) 3)
+   :expected 2)
+(define-test cell ((cell-test2 1 2 3 4) 2)
+   :expected 2)
+(define-test cell ((cell-test3 1 2 3 4) 2)
+   :expected 2)
+   
+;*---------------------------------------------------------------------*/
+;*    tail                                                             */
+;*---------------------------------------------------------------------*/
+(define (tail-test1)
+   (letrec ((loop (lambda (x y)
+		     (if (=fx x 0)
+			 y
+			 (loop (- x 1) x)))))
+      (loop 2 2)))
+
+(define (tail-test2 x)
+   (let* ((a tail-hux)
+	  (fun (lambda (c) c)))
+      (a (if x (fun 1) (fun 2)))))
+
+(define (tail-hux x)
+   x)
+
+(define (tail-bar::int b::bool n)
+   (define (odd2::int n)
+      (if (=fx n 0)
+	  #xABCDEF
+	  (even2 (-fx n 1)) ))
+   (define (even2::short n)
+      (if (=fx n 0)
+	  10
+	  (odd2 (-fx n 1)) ))
+   (if b
+       (even2 n)
+       (odd2 n)))
+
+(define (tail-foo::int b::bool n)
+   (define (odd::int n)
+      (if (=fx n 0)
+	  #xABCDEF
+	  (even (-fx n 1)) ))
+   (define (even::short n)
+      (if (=fx n 0)
+	  10
+	  (odd (-fx n 1)) ))
+   (if b
+       (odd n)
+       (even n)))
+
+(define-test tail (tail-test1)
+   :expected 1)
+(define-test tail (tail-test2 #f)
+   :expected 2)
+(define-test tail (tail-foo #t 10)
+   :expected (tail-bar #f 10))
+
+;*---------------------------------------------------------------------*/
+;*    closures                                                         */
+;*---------------------------------------------------------------------*/
+(define (closure-test1)
+   (labels ((fun1 () 0)
+	    (fun2 () (labels ((loop () (fun1)))
+			(loop))))
+      fun2))
+
+(define (closure-test2 x y z)
+   (labels ((hux (a1)  x)
+	    (bar (a1) (hux y))
+	    (gee ()  (bar z)))
+      gee))
+
+(define closure-test3 (labels ((lam_0 ()
+			      (labels ((ignore ()
+					       (let ((v 1))
+						  (labels ((foo () v))
+						     (foo)))))
+				 (ignore))))
+		 lam_0))
+
+(define (closure-test4 a b)
+   (labels ((foo (x) (set! x b) x))
+      foo))
+
+(define (closure-test5 a b . c)
+   (labels ((foo (x y) (set! c y) y)
+	    (bar (z) (foo 2 1))
+	    (hux (t) (set! a (foo t t)) c))
+      hux))
+
+(define (closure-test6 . c)
+   (let ((a2 0)
+	 (b 0))
+      (labels ((foo (x) (set! a2 x) a2)
+	       (bar (y) (set! b y) (foo b)))
+	 (bar 1)
+	 foo)))
+
+(define (closure-test7 x)
+   (labels ((bar (a3) (hux a3))
+	    (gee (b) bar)
+	    (hux (c) x))
+      bar
+      gee))
+
+(define (closure-plante-k2 l)
+   (labels ((l1 (x) (labels ((l2 () (bar x (l3 (g)))))
+                       (gee (l2) (l2))))
+            (l3 (y) (labels ((l4 () (zee y (l1 (g)))))
+                       (gee (l4) (l4)))))
+      (l1 (g))))
+
+(define (bar x y) (if (= x y) (+ x y) 0))
+(define (gee x y) (+ x y))
+(define (zee x y) (- x y))
+(define (g) (if (= (gee 4 2) (zee 8 2)) 2 1))
+
+(define (closure-plante-2 c_1)
+   (labels ((c1_13 () (c_1 (list 1))))
+      (lar (lambda () (hux (lambda () (c1_13)))))))
+
+(define (closure-plante-3  c_1)
+   (labels ((c1_13 (x) (c_1 (c1_13 (list 1)))))
+      (lar (lambda () (hux (lambda () (c1_13 1)))))))
+
+(define (lar x)
+   x)
+
+(define (hux x)
+   x)
+
+(define (closure-plante-4 a)
+   (labels ((hux (z) foo)
+	    (foo (x) x))
+      (hux foo)))
+
+(define (_closure-plante-4 x y)
+   (+ x y))
+
+(define (compile exp)
+  (begin
+    (print 'compile)
+    (print
+      (begin
+        ((labels
+           ((tag-101 () '(52))
+            (tag-102 () '())
+            (tag-103 (fun args) '())
+            (tag-104 (args) (compile-application)))
+           (lambda (e-105)
+             (begin
+               (if (pair? e-105)
+                 (let ((cdr-118 (cdr e-105)) (car-117 (car e-105)))
+                   (if (eq? car-117 'module)
+                     (if (eq? cdr-118 '())
+                       (tag-101)
+                       (let ((cdr-149 (cdr e-105)) (car-148 (car e-105)))
+                         (labels
+                           ((kap-152
+                              ()
+                              (let ((cdr-156 (cdr e-105))
+                                    (car-155 (car e-105)))
+                                (tag-104 cdr-156))))
+                           (if (pair? car-148)
+                             (let ((cdr-161 (cdr car-148))
+                                   (car-160 (car car-148)))
+                               (kap-152))
+                             (if (vector? car-148)
+                               (kap-152)
+                               (tag-103 car-148 cdr-149))))))
+                     (labels
+                       ((kap-121
+                          ()
+                          (let ((cdr-127 (cdr e-105)) (car-126 (car e-105)))
+                            (labels
+                              ((kap-130
+                                 ()
+                                 (let ((cdr-134 (cdr e-105))
+                                       (car-133 (car e-105)))
+                                   (tag-104 cdr-134))))
+                              (if (pair? car-126)
+                                (let ((cdr-139 (cdr car-126))
+                                      (car-138 (car car-126)))
+                                  (kap-130))
+                                (if (vector? car-126)
+                                  (kap-130)
+                                  (tag-103 car-126 cdr-127)))))))
+                       (let ((cdr-141 (cdr e-105)) (car-140 (car e-105)))
+                         (kap-121)))))
+                 (if (vector? e-105) #f (tag-102))))))
+         exp)))))
+
+(define (compile-application)
+  (begin
+    (print 'compile-application)
+    (print
+      (begin
+        (let ((aux 1))
+	   (case aux
+	      ((0) '())
+	      (else '())))))))
+
+(define closure-plante-5
+   (lambda (a4)
+      (letrec ((x3 (lambda (x4)
+		      (a4 0)
+		      (lambda (c)
+			 (labels ((foo () (lambda (x9) (x3 0))))
+			    (foo))))))
+	 x3)))
+
+(define (closure-plante-6 x e)
+   (labels ((loop ()
+		  (labels ((foo () (labels ((gee () (loop)))
+				      gee)))
+		     (foo) x)))
+      (loop)))
+
+(define (closure-plante-7)
+   (begin
+      (set-exit
+       (an-exit1013)
+       (let ()
+	  (push-exit! an-exit1013 1)
+	  (let ((exp (let ((body1018 (lambda () 9)))
+			(set-exit
+			 (an-exit1025)
+			 (let ()
+			    (push-exit! an-exit1025 0)
+			    (body1018))))))
+	     (set! exp #unspecified)
+	     (labels ((foo () (print exp)))
+		(closure-plante-7-bar foo)))))
+      9))
+
+(define (closure-plante-7-bar f)
+   (print (f)))
+
+(define (closure-test8 str)
+   (let ((g (regular-grammar ()
+	       (#\)
+		'())
+	       (#\(
+		(let* ((car (ignore))
+		       (cdr (ignore)))
+		   (cons car cdr)))
+	       ((+ (out #\( #\)))
+		(the-symbol))))
+	 (p (open-input-string str)))
+      (read/rp g p)))
+
+(define (static-application)
+   (((lambda (a b) b)
+     3
+     (lambda (x) x)) 3))
+
+(define-test closure ((closure-test1)) :expected 0)
+(define-test closure (((closure-test7 5) 6) 7) :expected 5)
+(define-test closure ((closure-test2 1 2 3)) :expected 1)
+(define-test closure (closure-test3) :expected 1)
+(define-test closure ((closure-test4 1 2) 3) :expected 2)
+(define-test closure ((closure-test5 1 2 3 4) 2) :expected 2)
+(define-test closure ((closure-test6 1 2 3 4) 2) :expected 2)
+(define-test closure (closure-test8 "(foo(bar(gee)))") :expected '(foo bar gee))
+(define-test closure (_closure-plante-4 5 6) :expected 11)
+(define-test closure (static-application) :expected 3)
+
+;*---------------------------------------------------------------------*/
+;*    letrec                                                           */
+;*---------------------------------------------------------------------*/
+(define (letrec-test1 y)
+   (letrec ((x (integer->string y))
+	    (foo (lambda (string)
+		    (string->symbol (string-append string x)))))
+      foo))
+
+(define (letrec-foo a)
+   (letrec ((letrec-foo (lambda (x) (bar 0) (set! letrec-foo 8) 'done))
+	    (bar (lambda (x) (if (= x 0)
+				 'done
+				 (letrec-foo x)))))
+      (letrec-foo a)))
+
+(define (letrec-foo-loop)
+   (let ((f -)) (let f ((n (f 1))) n)))
+
+(define (bar-loop n)
+   (let string-append ((n n))
+      (if (=fx n 0)
+	  0
+	  (+fx n (string-append (-fx n 1))))))
+
+(define (test-begin)
+   (let ((x 5))
+      (begin (begin (begin)
+		    (begin (begin (begin) (define letrec-foo (lambda (y) (bar x y)))
+				  (begin)))
+		    (begin))
+	     (begin)
+	     (begin)
+	     (begin (define bar (lambda (a b) (+ (* a b) a))))
+	     (begin))
+      (begin)
+      (begin (letrec-foo (+ x 3)))))
+
+(define (test-begin-eval)
+   (eval
+    '(let ((x 5))
+	(begin (begin (begin)
+		      (begin (begin (begin) (define letrec-foo (lambda (y) (bar x y)))
+				    (begin)))
+		      (begin))
+	       (begin)
+	       (begin)
+	       (begin (define bar (lambda (a b) (+ (* a b) a))))
+	       (begin))
+	(begin)
+	(begin (letrec-foo (+ x 3))))))
+
+(define (test-letrec*1)
+   (letrec* ((x 1)
+	     (f (lambda (y) (+ x y))))
+      (f 3)))
+
+(define (test-letrec*2)
+   (eval '(letrec* ((x 1)
+		    (f (lambda (y) (+ x y))))
+	   (f 3))))
+
+(define (test-letrec*3)
+   (letrec* ((p (lambda (x)
+		   (+ 1 (q (- x 1)))))
+	     (q (lambda (y)
+		   (if (zero? y)
+		       0
+		       (+ 1 (p (- y 1))))))
+	     (x (p 5))
+	     (y x))
+      y))
+
+(define (test-letrec*4)
+   (eval '(letrec* ((p (lambda (x)
+			  (+ 1 (q (- x 1)))))
+		    (q (lambda (y)
+			  (if (zero? y)
+			      0
+			      (+ 1 (p (- y 1))))))
+		    (x (p 5))
+		    (y x))
+	   y)))
+
+(define (test-letrec*5)
+   (define (f) (- y x))
+   (define x 1)
+   (define y x)
+   (define (g) (f))
+   (g))
+
+(define (test-letrec*6)
+   (eval '((lambda ()
+	      (define (f) (- y x))
+	      (define x 1)
+	      (define y x)
+	      (define (g) (f))
+	      (g)))))
+
+(define (test-letrec*7)
+   (let ((r 0))
+      (define (print) (begin 1 2 3 4 #t))
+      (letrec* ((x 1)
+                (y x))
+         (set! r y))
+      (print)
+      r))
+
+(define (test-letrec*8)
+   (eval '(let ((r 0))
+	   (define (print) (begin 1 2 3 4 #t))
+	   (letrec* ((x 1)
+		     (y x))
+	      (set! r y))
+	   (print)
+	   r)))
+
+(define (test-letrec*9)
+   (define bar (list '(1 . 2)))
+   (cdar bar))
+
+(define (test-letrec*10 n)
+   (letrec* ((u 1)
+	     (a 0)
+	     (letrec-foo (begin
+		     (set! a (+ 1 a))
+		     (lambda (x) (when (> x 0) (bar (- x u))))))
+	     (t 1)
+	     (bar (begin
+		     (set! a (+ 1 a))
+		     (lambda (x) (when (> x 0) (letrec-foo (- x t))))))
+	     (z 4))
+      (bar (+ n z))))
+
+(define (test-letrec*11 n)
+   (letrec* (
+	     (letrec-foo (begin
+		     (set! a 1)
+		     (lambda (x) a)))
+	     (a 10)
+	     (bar (begin
+		     (set! a (+ 1 a))
+		     (lambda (x) a)))
+	     )
+      (+ (letrec-foo 1) a)))
+
+(define (test-letrec*11b n)
+   (letrec* ((letrec-foo (begin
+		     (set! a 1)
+		     (lambda (x) a)))
+	     (a 10))
+      (+ (letrec-foo 1) a)))
+
+(define (test-letrec*11c n)
+   (letrec* ((u 1)
+	     (letrec-foo (begin
+		     (set! a 1)
+		     (lambda (x) a)))
+	     (a 10)
+	     (bar (begin
+		     (set! a (+ 1 a))
+		     (lambda (x) a)))
+	     (z 4))
+      (+ (letrec-foo 1) (bar 2))))
+
+(define (test-letrec*12)
+   (letrec* ((letrec-foo (lambda () a))
+	     (a 10))
+      (letrec-foo)))
+
+(define (test-letrec*13)
+   (define x (begin (set! v 0) 0))
+   (define y (begin (set! v 1) 1))
+   (define z y)
+   v)
+
+(define v 45)
+
+(define (test-letrec*14 a)
+   (letrec* ((u 1)
+	     (letrec-foo (begin
+		     (set! a 5)
+		     4))
+	     (bar (begin
+		     (set! a 10)
+		     (lambda (x) a)))
+	     (z 4))
+      a))
+
+(define (test-letrec*15)
+   (let ((g (regular-grammar ()
+	       ((+ #\a) 1)
+	       ((+ #\b) (ignore))
+	       (else 2))))
+      (call-with-input-string "bbbaaa"
+	 (lambda (ip)
+	    (read/rp g ip)))))
+
+(define (test-narrow)
+   (let ((x #f)
+	 (y #t))
+      (set! x (lambda () y))
+      (set! y 5)
+      (x)))
+
+;*---------------------------------------------------------------------*/
+;*    test-letrec ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-test letrec ((letrec-test1 1) "TOTO") :expected 'TOTO1)
+(define-test letrec (letrec-foo 10) :expected 'done)
+(define-test letrec (letrec-foo-loop) :expected -1)
+(define-test letrec (eval '(letrec-foo-loop)) :expected -1)
+(define-test letrec (bar-loop 10) :expected 55)
+(define-test letrec (test-begin) :expected 45)
+(define-test letrec (test-begin-eval) :expected 45)
+(define-test letrec (letrec ((letrec-foo (delay letrec-foo))) (force letrec-foo)) :expected procedure?)
+(define-test letrec (test-letrec*1) :expected 4)
+(define-test letrec (test-letrec*2) :expected 4)
+(define-test letrec (test-letrec*3) :expected 5)
+(define-test letrec (test-letrec*4) :expected 5)
+(define-test letrec (test-letrec*5) :expected 0)
+(define-test letrec (test-letrec*6) :expected 0)
+(define-test letrec (test-letrec*7) :expected 1)
+(define-test letrec (test-letrec*8) :expected 1)
+(define-test letrec (test-letrec*9) :expected 2)
+(define-test letrec (test-letrec*10 3) :expected #f)
+(define-test letrec (test-letrec*11 3) :expected 22)
+(define-test letrec (test-letrec*11b 3) :expected 20)
+(define-test letrec (test-letrec*11c 3) :expected 22)
+(define-test letrec (test-letrec*12) :expected 10)
+(define-test letrec (test-letrec*13) :expected 1)
+(define-test letrec (test-letrec*14 4) :expected 10)
+(define-test letrec (test-letrec*15) :expected 1)
+(define-test letrec (test-narrow) :expected 5)
+
+;*---------------------------------------------------------------------*/
+;*    quote                                                            */
+;*---------------------------------------------------------------------*/
+(define-test quote `(list ,(+ 1 2) 4)
+   :expected '(list 3 4))
+(define-test quote (let ((name 'a)) `(list ,name ',name))
+   :expected '(list a (quote a)))
+(define-test quote `(a ,(+ 1 2) ,@(map (lambda (x) (+ 10 x))
+				     '(4 -5 6))
+		     b)
+   :expected '(a 3 14 5 16 b))
+(define-test quote `((foo ,(- 10 3)) ,@(cdr '(c)) . ,(car '((cons))))
+   :expected '((foo 7) cons))
+(define-test quote `(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f)
+   :expected '(a `(b ,(+ 1 2) ,(foo 4 d) e) f))
+(define-test quote (let ((name1 'x)
+                         (name2 'y))
+                      `(a `(b ,,name1 ,',name2 d) e))
+   :expected '(a `(b ,x ,'y d) e))
+(define-test quote (quasiquote (list (unquote (+ 1 2)) 4))
+   :expected '(list 3 4))
+(define-test quote '(quasiquote (list (unquote (+ 1 2)) 4))
+   :expected '`(list ,(+ 1 2) 4))
+(define-test quote `#(1 2 ,(+ 1 2) ,(+ 2 2))
+   :expected '#(1 2 3 4))
+(define-test quote `#(1 2 ,(+ 1 2) ,@(map (lambda (x) (+ 1 x)) '(3 4)) 6)
+   :expected '#(1 2 3 4 5 6))
+
+;*---------------------------------------------------------------------*/
+;*    apply                                                            */
+;*---------------------------------------------------------------------*/
+(define gtest1
+   (lambda (x y)
+      (+ x y)))
+
+(define (gtest2 . x)
+   (+ (car x) (cadr x)))
+
+(define (gtest3 x . y)
+   (+ x (car y)))
+
+(define (gtest4)
+   'foo)
+
+(define (gtest4b . x)
+   'foo)
+
+(define (gtest5)
+   (lambda ()
+      'foo))
+
+(define (gtest6)
+   (lambda x
+      'foo))
+
+(define (ltest1 a b)
+   (labels ((foo (x y) (+ x y)))
+      (apply foo (list (+ 1 a) (+ 1 b)))))
+
+(define (ltest2 a b)
+   (labels ((foo (x y) (+ x (+ y (+ a b)))))
+      foo))
+
+(define (ltest3 a)
+   (labels ((foo (z . x)
+		(let loop ((x x))
+		   (if (null? x)
+		       a
+		       (+ (car x) (loop (cdr x)))))))
+      foo))
+
+(define (extern-apply x)
+   (apply foo1 x))
+
+(define (apply-dummy x y)
+   (cond-expand
+      (C (apply $dummy (cons x y)))
+      (else #f)))
+
+(define (test-apply2 x)
+   (apply x (vector->list '#(43))))
+
+(define (f33 s0 s1 s2 s3 s4 s5 s6 s7 s8 s9
+             t0 t1 t2 t3 t4 t5 t6 t7 t8 t9
+             u0 u1 u2 u3 u4 u5 u6 u7 u8 u9
+             v0 v1 v2)
+   (+ s0 s1 s2 s3 s4 s5 s6 s7 s8 s9
+      t0 t1 t2 t3 t4 t5 t6 t7 t8 t9
+      u0 u1 u2 u3 u4 u5 u6 u7 u8 u9
+      v0 v1 v2))
+
+(define-test apply (extern-apply '(1)) :expected 2)
+(define-test apply (apply gtest1 '(1 3)) :expected 4)
+(define-test apply ((begin gtest1) 1 3) :expected 4)
+(define-test apply (apply gtest2 '(1 3)) :expected 4)
+(define-test apply ((begin gtest2) 1 3) :expected 4)
+(define-test apply (apply gtest3 '(1 3)) :expected 4)
+(define-test apply ((begin gtest3) 1 3) :expected 4)
+(define-test apply (apply (begin gtest1) '(1 3)) :expected 4)
+(define-test apply (apply (begin gtest2) '(1 3)) :expected 4)
+(define-test apply (apply (begin gtest3) '(1 3)) :expected 4)
+(define-test apply (apply gtest4 '()) :expected 'foo)
+(define-test apply (apply gtest4b '()) :expected 'foo)
+(define-test apply (apply (gtest5) '()) :expected 'foo)
+(define-test apply (apply (gtest6) '()) :expected 'foo)
+(define-test apply (ltest1 1 2) :expected 5)
+(define-test apply ((ltest2 2 3) 1 2) :expected 8)
+(define-test apply (apply (ltest2 2 3) (list 1 2)) :expected 8)
+(define-test apply ((ltest3 1) 0 2 3 4) :expected 10)
+(define-test apply (apply (ltest3 1) (list 0 2 3 4)) :expected 10)
+(define-test apply (apply (lambda (x y) (list x y)) '(1 2)) :expected '(1 2))
+(define-test apply (apply cons 1 '(2)) :expected '(1 . 2))
+(define-test apply (apply cons 1 2 '()) :expected '(1 . 2))
+(define-test apply (apply apply cons (list 1 2 '())) :expected '(1 . 2))
+(define-test apply (apply (lambda (z) z) 1 '()) :expected 1)
+(define-test apply (apply (lambda (z) z) '(1)) :expected 1)
+(define-test apply (apply (lambda (a z) z) '(1 2)) :expected 2)
+(define-test apply (apply (lambda (a z) z) 1 '(2)) :expected 2)
+(define-test apply (apply (lambda (a z) z) 1 2 '()) :expected 2)
+(define-test apply (apply (lambda (a b c z) z) '(1 2 3 4)) :expected 4)
+(define-test apply (apply (lambda (a b c z) z) 1 '(2 3 4)) :expected 4)
+(define-test apply (apply (lambda (a b c z) z) 1 2 '(3 4)) :expected 4)
+(define-test apply (apply (lambda (a b c z) z) 1 2 3 '(4)) :expected 4)
+(define-test apply (apply (lambda (a b c z) z) 1 2 3 4 '()) :expected 4)
+(define-test apply (apply (lambda (a b c d z) z) 1 2 3 4 '(5)) :expected 5)
+(define-test apply (apply (lambda (a b c d z) z) 1 2 3 4 5 '()) :expected 5)
+(define-test apply (apply (lambda (a b c d e z) z) 1 2 3 4 '(5 6)) :expected 6)
+(define-test apply (apply (lambda (a b c d e f z) z) 1 2 3 4 '(5 6 7)) :expected 7)
+(define-test apply (apply (lambda (a b . z) (car z)) 1 2 3 4 5 '(6 7)) :expected 3)
+(define-test apply (apply (lambda (a . z) (car z)) 1 2 3 4 '(5 6 7)) :expected 2)
+(define-test apply (apply (lambda (a b c d . z) (car z)) 1 2 3 4 '(5 6 7)) :expected 5)
+(define-test apply (apply (lambda (a b c d e . z) (car z)) 1 '(2 3 4 5 6 7)) :expected 6)
+(define-test apply (apply (lambda (a b c d e f . z) (car z)) 1 2 3 4 '(5 6 7)) :expected 7)
+(define-test apply (apply (lambda (a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29 a30 a31 a32) (list a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29 a30 a31 a32))
+			 (list 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32)) :expected
+	 '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32))
+(define-test apply (apply (lambda (a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29 a30 a31 a32)
+			    (list a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29 a30 a31 a32))
+			 (apply (lambda (a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29 a30 a31 a32) (list a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29 a30 a31 a32))
+				(list 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32))) :expected
+	 '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32))
+(define-test apply (apply (lambda (a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29 a30 a31 . a32) (list a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20 a21 a22 a23 a24 a25 a26 a27 a28 a29 a30 a31 a32))
+			 (list 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32)) :expected
+	 '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 (32)))
+(define-test apply (test-apply2 list) :expected '(43))
+
+;*---------------------------------------------------------------------*/
+;*    higher order                                                     */
+;*---------------------------------------------------------------------*/
+(define (wrong m1 m2)
+   (error "filtre" m1 m2)
+   #f)
+
+(define (match f e)
+  ((m-g f) e r-init a-init m-init 
+		     (lambda (e r z) #t)
+		     (lambda () #f)))
+
+(define (m-g f)
+  (case (car f)
+    ((*sexp) (m-sexp-g))
+    ((*quote) (m-quote-g (cadr f)))
+    ((*or) (m-or-g (cadr f) (caddr f)))
+    ((*and) (m-and-g (cadr f) (caddr f)))
+    ((*not) (m-not-g (cadr f)))
+    ((*setq) (m-setq-g (cadr f) (caddr f)))
+    ((*eval) (m-eval-g (cadr f)))
+    ((*cons) (m-cons-g (cadr f) (caddr f)))
+    ((*ssetq-append) (m-ssetq-append-g (cadr f) (caddr f) (cadddr f)))
+    ((*eval-append) (m-eval-append-g (cadr f) (caddr f)))
+    ((*end-ssetq) (m-end-ssetq-g (cadr f)))
+    ((*times) (m-times-g (cadr f) (caddr f) (cadddr f)))
+    ((*end-times) (m-end-times-g (cadr f)))
+    (else (wrong "Unrecognized pattern" f)) ) )
+
+(define (m-sexp-g)
+  (lambda (e r a m k z) (k e r z)) )
+
+(define (m-quote-g ee)
+  (lambda (e r a m k z) 
+    (if (eq? e ee)
+        (k e r z)
+        (z) ) ) )
+
+(define (m-or-g f1 f2)
+  (lambda (e r a m k z)
+    ((m-g f1)
+     e r a m k (lambda () 
+                 ((m-g f2) 
+                  e r a m k z ) ) ) ) )
+
+(define (m-and-g f1 f2)
+  (lambda (e r a m k z)
+    ((m-g f1)
+     e r a m (lambda (ee rr zz)
+               ((m-g f2)
+                e rr a m k zz ) )
+     z ) ) )
+
+(define (m-not-g f)
+  (lambda (e r a m k z)
+    ((m-g f)
+     e r a m (lambda (ee rr zz) (z)) 
+             (lambda () (k e r z)) ) ) )
+
+(define (m-setq-g n f)
+  (lambda (e r a m k z)
+    ((m-g f)
+     e r a m (lambda (ee rr zz)
+               (if (eq? (rr n) unbound-pattern)
+                   (k e (extend rr n e) zz)
+                   (wrong "Cannot rebind pattern" n) ) )
+     z ) ) )
+
+(define (m-eval-g n)
+  (lambda (e r a m k z)
+    (if (eq? (r n) unbound-pattern)
+        (wrong "Unbound pattern" n)
+        (if (eq? (r n) e)
+            (k e r z)
+            (z) ) ) ) )
+
+(define (m-cons-g f1 f2)
+  (lambda (e r a m k z)
+    (if (pair? e)
+        ((m-g f1)
+         (car e) r a-init m-init 
+         (lambda (ee rr zz)
+           ((m-g f2)
+            (cdr e) rr a m k zz ) )
+         z )
+        (z) ) ) )
+
+(define (m-ssetq-append-g n f1 f2)
+  (lambda (e r a m k z)
+    ((m-g f1)
+     e r (extend a-init n 
+                 (lambda (ee rr zz)
+                    (if (eq? (rr n) unbound-pattern)
+                        ((m-g f2)
+                         ee (extend rr n (cut e ee)) a m k zz ) 
+                        (wrong "cannot rebind" n) ) ) )
+     m-init (lambda (ee rr zz)
+              (wrong "Ssetq not ended" f1) )
+     z ) ) )
+
+(define (m-eval-append-g n f)
+  (lambda (e r a m k z)
+    (if (eq? (r n) unbound-pattern)
+        (wrong "Unbound segment" n)
+        (check e (r n) (lambda (ee)
+                         ((m-g f)
+                          ee r a m k z ) )
+                       z ) ) ) )
+
+(define (m-end-ssetq-g n)
+  (lambda (e r a m k z)
+    ((a n) e r z) ) )
+
+(define (m-times-g n f1 f2)
+  (lambda (e r a m k z)
+     (labels ((ltry (e r z)
+		   ((m-g f2)
+		    e r a m k
+		    (lambda () 
+                       ((m-g f1)
+                        e r a-init 
+			(extend m-init n ltry)
+			(lambda (ee rr zz)
+			   (wrong "Times not ended" f1) )
+			z ) ) ) ))
+	(ltry e r z))))
+
+(define (m-end-times-g n)
+  (lambda (e r a m k z)
+    ((m n) e r z) ) )
+
+(define (a-init n)
+  (lambda (e r z)
+    (wrong "No current ssetq for" n) ) )
+
+(define (m-init n)
+  (lambda (e r z)
+    (wrong "No current repetition named" n) ) )
+
+(define (r-init n)
+  unbound-pattern )
+
+(define unbound-pattern '**unbound-pattern**)
+
+(define (check e ee fn z)
+  (if (and (pair? e)
+           (pair? ee)
+           (eq? (car e) (car ee)) )
+      (check (cdr e) (cdr ee) fn z)
+      (if (null? ee) (fn e) (z)) ) )
+
+(define (extend fn pt im)
+  (lambda (x) (if (eq? pt x) im (fn x))) )
+
+(define (cut e ee)
+  (if (eq? e ee) '()
+      (cons (car e) (cut (cdr e) ee)) ) )
+
+(define f0 '(*quote a))
+
+(define f1 '(*cons (*quote a) (*quote ())))
+
+(define f2 '(*times x 
+		    (*cons (*quote a) (*end-times x))
+		    (*quote ())))
+
+(define f3 '(*times x
+		    (*cons (*quote a) (*end-times x))
+		    (*cons (*quote b) (*quote ()))))
+
+(define f4 '(*cons (*setq y (*sexp))
+		  (*cons (*eval y) (*quote ()))))
+
+(define-test higher-order (match f0 'a) :expected #t)
+(define-test higher-order (match f0 'b) :expected #f)
+(define-test higher-order (match f1 '(a)) :expected #t)
+(define-test higher-order (match f1 '(b)) :expected #f)
+(define-test higher-order (match f2 '(a a a a)) :expected #t)
+(define-test higher-order (match f2 '(a b a a)) :expected #f)
+(define-test higher-order (match f3 '(a a a b)) :expected #t)
+(define-test higher-order (match f3 '(a a a a)) :expected #f)
+(define-test higher-order (match f4 '(e e)) :expected #t)
+(define-test higher-order (match f4 '(e f)) :expected #f)
+	 
+
+
+
+
+ 

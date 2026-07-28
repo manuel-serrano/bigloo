@@ -51,18 +51,88 @@ Introduction
 ------------
 
 The Bigloo Wasm backend produces `.wat` files. Bigloo can also invoke
-transparently a wat-to-wasm compiler such as `wasmas` to generate directly
+transparently a wat-to-wasm compiler such as `wasm-as` to generate directly
 binary files that can be loaded inside wasm machines.
 
 The Bigloo linker, when linking, Wasm files, produces a shell script file
-that can be used to execute the program with `nodejs`, mozjs`, and `jsc`. 
+that can be used to execute the program with `nodejs`, `mozjs`, and `jsc`. 
 Each of these systems uses its own implementation for primitive native
-operations, e.g., sockets API. As of July 2026, on the `nodejs` implement
+operations, e.g., sockets API. As of July 2026, only nodejs implement
 all the Bigloo Wasm features and as such is highly recommended. The other
 systems could be used to testing and performance measurements but probably
 not for production code.
 
-In addition to executing Wasm code in a server-side implementation such
-as `nodejs`, the generated Wasm code can, of course, be executed by
-Web client in collaboration to JavaScript code.
+In addition to executing Wasm code in a server-side implementations,
+the generated Wasm code can be executed by Web client in collaboration
+to JavaScript code.
+
+> [!NOTE] Whether it is a server-side implementation such as Nodejs or a web
+> client such as Firefox or Chrome, Wasm code communicates with the host
+> environment via JavaScript but the Bigloo Wasm generated code can only 
+> communicate with Wasm. 
+
+Extern "wasm" Module Clause
+---------------------------
+
+```bnf
+<MWExtern> --> ( extern "wasm" <MWClause>* )
+
+<MWClause> --> <MWImportClause>
+  | <MWExportClause>
+  
+<MWImportClause> --> ( <WModuleName> <Ident> <Ident>* )
+
+<MWExportClause> --> ( export <MWExport>+ )
+
+<MWExport> --> <Ident>
+  | ( <Ident> <String> )
+  
+<WModuleName> --> <String>
+```
+
+Web Example
+-----------
+
+Let us consider a minimal example showing how to use Bigloo wasm compiled code
+in a web application. First, let us consider a minmal Bigloo module that 
+implements function named `click` that increments a counter when called and
+that retreive the element `console` of the current web page and that inserts
+the counter value in that HTML element.
+
+```bigloo
+,(include "examples/wasm/click.bgl")
+```
+
+In order to get the HTML element and to modify it, the Bigloo code
+uses the facilities of the [`browser`](./browser.html) library. To
+make the `click` function visible from within Wasm code, the function
+is exported by Bigloo under the same name.
+
+The Bigloo source file can be compiled with:
+
+```shell
+$ bigloo -wasm click.bgl -c
+```
+
+The HTML page could be implemented as:
+
+```html
+,(include "examples/wasm/click.html")
+```
+
+The body of the page merely creates the `console` html element and the button.
+The most interesting part is the script of the head part. In this code
+`BIGLOOROOT` stands for the location where Bigloo is installed. 
+
+The JavaScript file `bigloo-web.mjs` is the Bigloo runtime system
+implementation for the web. The Bigloo code refers to the `browser`
+library, which must then be loaded on the HTML page. Firt it is
+declared (the `libs` variable) and then used to create the WebAssembly
+machine (the call to `runDynamic`). This calls returns a JavaScript
+object containing all the exports of the Wasm code. In our example, this
+contains the `click` function. It is bound the the JavaScript global 
+environment (the JavaScript `globalThis` variable) that can then use
+it in the attribute of the HTML button element.
+
+
 

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/api/dom/src/Wlib/wdom.wat       */
+;*    .../project/bigloo/5.0.x/api/browser/src/Wlib/wbrowser.wat       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Jul 29 12:54:52 2025                          */
-;*    Last change :  Thu Sep 11 12:52:40 2025 (serrano)                */
-;*    Copyright   :  2025 manuel serrano                               */
+;*    Last change :  Tue Jul 28 11:08:47 2026 (serrano)                */
+;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    DOM Wasm binding                                                 */
 ;*=====================================================================*/
@@ -22,6 +22,7 @@
    (import "__browser" "getElementById" (func $getElementById (param i32 i32) (result externref)))
    (import "__browser" "innerHTMLset" (func $innerHTMLset (param externref i32 i32)))
    (import "__browser" "innerHTMLget" (func $innerHTMLget (param externref i32) (result i32)))
+   (import "__browser" "alert" (func $alert (param i32 i32)))
 
    ;; -----------------------------------------------------------------
    ;; Library functions 
@@ -46,5 +47,12 @@
       (result (ref $bstring))
       (return_call $load_string
 	 (i32.const 128)
-	 (call $innerHTMLget (local.get $el) (i32.const 128)))))
+	 (call $innerHTMLget (local.get $el) (i32.const 128))))
+
+   (func $bgl_alert (export "bgl_alert")
+      (param $msg (ref $bstring))
+      (result (ref eq))
+      (call $store_string (local.get $msg) (i32.const 128))
+      (call $alert (i32.const 128) (array.len (local.get $msg)))
+      (return (global.get $BUNSPEC))))
    

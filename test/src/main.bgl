@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/test/src/main.bgl              */
+;*    serrano/bigloo/5.0.x/test/src/main.bgl                           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Tue Jul 14 06:25:49 2026 (serrano)                */
+;*    Last change :  Tue Jul 28 11:48:08 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -51,6 +51,7 @@
    (import "./serial.bgl" . serial)
    (import "./ssr.bgl" . ssr)
    (import "./string.bgl" . string)
+   (import "./struct.bgl" . struct)
    (import "./symbol.bgl" . symbol)
    (import "./tar.bgl" . tar)
    (import "./trace.bgl" . trace)
@@ -64,6 +65,7 @@
    (cond-expand ((library csv) (import "./csv0.bgl" . csv0)))
    (cond-expand ((library sqlite) (import "./sqlite0.bgl" . sqlite0)))
    (cond-expand ((library ssl) (import "./ssl0.bgl" . ssl0)))
+   (cond-expand ((library browser) (import "./browser0.bgl" . browser0)))
 
    ;; backend tests
    (cond-expand (C (import "./extern_c.bgl" . c)))
@@ -130,6 +132,7 @@
                        (serial.test verbose tests)
                        (ssr.test verbose tests)
                        (string.test verbose tests)
+                       (struct.test verbose tests)
                        (symbol.test verbose tests)
                        (tar.test verbose tests)
                        (trace.test verbose tests)
@@ -145,7 +148,9 @@
                           (cond-expand
                              ((library sqlite) (sqlite0.test verbose tests)))
                           (cond-expand
-                             ((library ssl) (ssl0.test verbose tests))))))
+                             ((library ssl) (ssl0.test verbose tests)))
+                          (cond-expand
+                             ((library browser) (browser0.test verbose tests))))))
           (res-extern (list
                          (cond-expand
                             (C (c.test verbose tests))

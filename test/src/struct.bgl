@@ -1,0 +1,70 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/struct.bgl            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Tue Jul 28 13:20:16 2026                          */
+;*    Last change :  Tue Jul 28 13:22:36 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    testing structs                                                  */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    struct                                                           */
+;*---------------------------------------------------------------------*/
+(module struct
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "string" tests))
+      (test-all verbose "string")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-struct structure x lambda y res)
+(define-struct point x y z)
+
+(define-test struct
+   (let ((s (make-structure '())))
+      (if (not (struct? s))
+          #f)
+      (structure-lambda-set! s (lambda (x y) (+ x y)))
+      (structure-x-set! s 1)
+      (structure-y-set! s 2)
+      (structure-res-set! s ((structure-lambda s)
+                             (structure-x s)
+                             (structure-y s)))
+      (structure-res s))
+   :expected 3)
+
+(define-test struct
+   (begin
+      (eval '(define-struct structure x lambda y res))
+      (eval '(let ((s (make-structure '())))
+              (if (not (struct? s))
+                  #f)
+              (structure-lambda-set! s (lambda (x y) (+ x y)))
+              (structure-x-set! s 1)
+              (structure-y-set! s 2)
+              (structure-res-set! s ((structure-lambda s)
+                                     (structure-x s)
+                                     (structure-y s)))
+              (structure-res s))))
+   :expected 3)
+
+(define-test struct
+   (let ((p1 (point 1 2 3))
+         (p2 (point 4 5 6)))
+      (struct-update! p1 p2)
+      (equal? p1 p2)))
+
+

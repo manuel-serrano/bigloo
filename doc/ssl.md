@@ -25,6 +25,7 @@ API is implemented in the `ssl` library.
 ```bigloo
 (module ssl-ex
   (library ssl)
+  ...)
 ```
 
 > [!WARNING] As June 2026, the Wasm backend does not support the SSL library.

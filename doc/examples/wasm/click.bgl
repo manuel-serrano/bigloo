@@ -1,0 +1,17 @@
+;; click.bgl
+(module blick
+   (library browser)
+   (extern "wasm"
+      (export click))
+   (export click)
+   (main))
+
+(define (main x)
+   (print "in main"))
+
+(define cnt 0)
+
+(define (click)
+   (let ((el (get-element-by-id "console")))
+      (set! cnt (+fx cnt 1))
+      (element-inner-html-set! el (format "click: #~a" cnt))))

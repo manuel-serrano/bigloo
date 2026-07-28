@@ -1,0 +1,49 @@
+;*=====================================================================*/
+;*    serrano/bigloo/5.0.x/test/src/browser0.bgl                       */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Fri Jun  5 08:49:59 2026                          */
+;*    Last change :  Tue Jul 28 11:59:12 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing the browser library.                                     */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    browser0                                                         */
+;*---------------------------------------------------------------------*/
+(module browser0
+   (cond-expand ((library browser) (library browser)))
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "browser" tests))
+      (test-all verbose "browser")))
+
+;*---------------------------------------------------------------------*/
+;*    tests ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-test get-element-by-id
+   get-element-by-id
+   :expected procedure?)
+
+(define-test element-inner-html
+   element-inner-html
+   :expected procedure?)
+
+(define-test element-inner-html-set!
+   element-inner-html-set!
+   :expected procedure?)
+
+(define-test alert
+   alert
+   :expected procedure?)
+

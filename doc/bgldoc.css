@@ -81,6 +81,7 @@
     --fontifierShellPrompt: #fa1a03;
     
     --lispBorderColor: #14e667;
+    --htmlBorderColor: #37809e;
     
     --chapterTocLinkColor: #777;
     --chapterTocBackground: #fff;
@@ -732,12 +733,15 @@ pre.shell span.fontifier-prog-server {
 }
 
 /*---------------------------------------------------------------------*/
-/*    Lisp ...                                                         */
+/*    Misc languages ...                                               */
 /*---------------------------------------------------------------------*/
 pre.lisp {
     border-left-color: var(--lispBorderColor);
 }
-    
+
+pre.html {
+    border-left-color: var(--htmlBorderColor);
+}
 
 /*---------------------------------------------------------------------*/
 /*    bnf                                                              */
