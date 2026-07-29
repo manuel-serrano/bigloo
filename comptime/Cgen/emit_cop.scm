@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Mon Jun  8 09:15:56 2026 (serrano)                */
+;*    Last change :  Wed Jul 29 19:06:46 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -525,9 +525,11 @@
 	     (emit-cop (capp-fun cop)))
 	    ((null? (cdr actuals))
 	     (emit-cop (car actuals))
+	     (display " " *c-port*)
 	     (emit-cop (capp-fun cop)))
 	    ((null? (cddr actuals))
 	     (emit-cop (car actuals))
+	     (display " " *c-port*)
 	     (emit-cop (capp-fun cop))
 	     (display " " *c-port*)
 	     (emit-cop (cadr actuals)))

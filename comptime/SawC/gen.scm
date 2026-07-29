@@ -369,6 +369,7 @@
 	  (begin
 	     (display "(")
 	     (gen-reg (car args))
+	     (display " ")
 	     (display name)
 	     (let loop ( (args (cdr args)) )
 		(when (pair? args)
