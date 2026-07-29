@@ -1,5 +1,5 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cdsssl.c         */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Clib/cdsssl.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  SERRANO Manuel                                    */
 /*    Creation    :  Thu Apr  3 11:37:14 1997                          */

@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/bigloo/5.0.x/doc/Makefile                                */
+#*    serrano/prgm/project/bigloo/5.0.x/doc/Makefile                   */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Jul 28 13:55:45 2026 (serrano)                */
+#*    Last change :  Wed Jul 29 12:50:55 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -41,7 +41,8 @@ MD = argsparse bigloo bool browser csv date digest graph hash error int \
  internet io mmap net number os pair parser port process real regexp \
  serial sqlite ssl string symbol tar trace thread vector weakptr zip \
  c jvm wasm \
- condexpand core match module5 module4 object trace
+ condexpand core match module5 module4 object trace \
+ bgldemangle bglmem 
 
 EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var grep untar wget trace
 EX_J = fib Point.bgh
@@ -192,6 +193,13 @@ idx.html: index.sexp bin/bgldoc
 
 index.json: index.sexp
 	bigloo -i src/bglidx.bgl $+ > $@ || rm -f $@
+
+bgldemangle.html: bgldemangle.md bin/bgldoc
+	bin/bgldoc -t dev $< > $@ || rm -f $@
+
+bglmem.html: bglmem.md bin/bgldoc
+	bin/bgldoc -t dev $< > $@ || rm -f $@
+
 
 examples/c/trace-full.txt: objs/c/trace
 	BIGLOOTRACE="foo loop liip" objs/c/trace 2> $@

@@ -8,10 +8,11 @@
                          '   \\   /  '                               
                               ^   ^                                  
                                                                      
-               Copyright (c) 1992 - 2025 Manuel Serrano
-                http://www.inria.fr/indes/fp/Bigloo                                                                                               
-     Bug descriptions, user reports, comments or suggestions are      
-     welcome. Send them to                                           
+               Copyright (c) 1992 - 2026 Manuel Serrano
+                http://www.inria.fr/indes/fp/Bigloo                             
+
+     Bug descriptions, user reports, comments, or suggestions are
+     welcome. Report them to
        https://github.com/manuel-serrano/bigloo
        
    This program is free software; you can redistribute it and/or modify
@@ -25,8 +26,6 @@
       - The Bigloo run-time system and the libraries are distributed under 
       the terms of the GNU Library General Public License. The source code
       of the Bigloo runtime system is located in the ./runtime directory.
-      The source code of the FairThreads library is located in the
-      ./fthread directory.
 
    This program is distributed in the hope that it will be useful,   
    but WITHOUT ANY WARRANTY; without even the implied warranty of    

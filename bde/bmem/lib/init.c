@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/nanh/bde/bmem/lib/init.c             */
+/*    serrano/prgm/project/bigloo/5.0.x/bde/bmem/lib/init.c            */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Fri Nov  1 19:20:39 2024 (serrano)                */
-/*    Copyright   :  2003-24 Manuel Serrano                            */
+/*    Last change :  Wed Jul 29 13:06:14 2026 (serrano)                */
+/*    Copyright   :  2003-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -390,35 +390,35 @@ bmem_init_inner() {
    char *bgllibsuffix, *bglgcsuffix = "_u";
 
    /* Hello world */
-   if (getenv("BMEMVERBOSE")) {
-      bmem_verbose = atoi(getenv("BMEMVERBOSE"));
+   if (getenv("BGLMEMVERBOSE")) {
+      bmem_verbose = atoi(getenv("BGLMEMVERBOSE"));
    }
    
    /* backtrace */
-   if (getenv("BMEMBACKTRACE")) {
-      bmem_backtrace = atoi(getenv("BMEMBACKTRACE"));
+   if (getenv("BGLMEMBACKTRACE")) {
+      bmem_backtrace = atoi(getenv("BGLMEMBACKTRACE"));
       if (bmem_backtrace < 0 && bmem_verbose >= 1) {
 	 fprintf(stderr, "Disabling stack back traces...\n");
       }
    }
    
-   if (!getenv("BMEMTHREAD")) {
-      if (bmem_verbose >= 1) {
-	 fprintf(stderr, "Bmem initialization...\n");
+   if (!getenv("BGLMEMTHREAD")) {
+      if (bmem_verbose >= 2) {
+	 fprintf(stderr, "Bglmem initialization...\n");
       }
    } else {
-      if (bmem_verbose >= 1) {
-	 fprintf(stderr, "Bmem mt initialization...\n");
+      if (bmem_verbose >= 2) {
+	 fprintf(stderr, "Bglmem mt initialization...\n");
       }
 
       bglpth_setup_bmem();
    }
    
-   if (getenv("BMEMLIBBIGLOO")) {
-      strcpy(bigloo_lib, getenv("BMEMLIBBIGLOO"));
+   if (getenv("BGLMEMLIBBIGLOO")) {
+      strcpy(bigloo_lib, getenv("BGLMEMLIBBIGLOO"));
    } else {
-      if (getenv("BMEMLIBSUFFIX")) {
-	 bgllibsuffix = getenv("BMEMLIBSUFFIX");
+      if (getenv("BGLMEMLIBSUFFIX")) {
+	 bgllibsuffix = getenv("BGLMEMLIBSUFFIX");
       } else {
 	 bgllibsuffix = "_s";
       }
@@ -429,11 +429,11 @@ bmem_init_inner() {
    }
 
 #if (BGL_GC_CUSTOM == 1)
-   if (getenv("BMEMLIBBIGLOOGC")) {
-      strcpy(gc_lib, getenv("BMEMLIBBIGLOOGC"));
+   if (getenv("BGLMEMLIBBIGLOOGC")) {
+      strcpy(gc_lib, getenv("BGLMEMLIBBIGLOOGC"));
    } else {
-      if (getenv("BMEMGCSUFFIX")) {
-	 bglgcsuffix = getenv("BMEMGCSUFFIX");
+      if (getenv("BGLMEMGCSUFFIX")) {
+	 bglgcsuffix = getenv("BGLMEMGCSUFFIX");
       } else {
 	 bglgcsuffix = "";
       }
@@ -447,8 +447,8 @@ bmem_init_inner() {
 #else
    strcpy(gc_lib, BGL_GC_LIBRARY);
 #endif
-   if (getenv("BMEMDEBUG"))
-      bmem_debug = atoi(getenv("BMEMDEBUG"));
+   if (getenv("BGLMEMDEBUG"))
+      bmem_debug = atoi(getenv("BGLMEMDEBUG"));
 
    /* The GC library */
    if (bmem_verbose >= 1) {
@@ -485,12 +485,21 @@ bmem_init_inner() {
    ____bgl_types_number =(int(*)())get_function(hdl, "bgl_types_number");
 
    /* backtrace init */
+   if (bmem_debug >= 1) {
+      fprintf(stderr, "Backtrace init...\n");
+   }
    backtrace_init();
    
    /* procedure */
+   if (bmem_debug >= 1) {
+      fprintf(stderr, "Wrapper init...\n");
+   }
    bmem_init_wrapper(hdl);
 
    /* declare types */
+   if (bmem_debug >= 1) {
+      fprintf(stderr, "Type declarations...\n");
+   }
    declare_type(NO_TYPE_NUM, "-", 0L);
    declare_type(UNKNOWN_TYPE_NUM, "?", 0L);
    declare_type(UNKNOWN_ATOMIC_TYPE_NUM, "?a", 0L);
@@ -541,6 +550,9 @@ bmem_init_inner() {
    declare_type(BIGNUM_TYPE_NUM, "bignum", 0L);
 
    /* alloc init */
+   if (bmem_debug >= 1) {
+      fprintf(stderr, "Alloc init...\n");
+   }
    alloc_init(native_allocators);
 }
 
@@ -555,6 +567,10 @@ bmem_init() {
    if (!initp) {
       initp = 1;
       bmem_init_inner();
+   }
+   
+   if (bmem_debug >= 1) {
+      fprintf(stderr, "Init completed.\n");
    }
 }
 

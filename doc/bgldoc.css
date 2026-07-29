@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/bigloo/5.0.x/doc/bgldoc.css                              */
+/*    serrano/prgm/project/bigloo/5.0.x/doc/bgldoc.css                 */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Tue Jul 28 14:01:32 2026 (serrano)                */
+/*    Last change :  Wed Jul 29 11:40:29 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -309,6 +309,12 @@ div.nav-menu#backends {
     column-count: 1;
 }
 
+div.nav-menu#dev {
+    width: 10em;
+    height: 8ex;
+    column-count: 1;
+}
+    
 ul.menu > li.navbutton > a.submenu:after {
     content: "\25be";
     font-weight: bold;
@@ -330,7 +336,7 @@ body[open="dev"] li.dev > div.nav-menu,
 body[open="backends"] li.backends > div.nav-menu,
 body[open="lang"] li.lang > div.nav-menu,
 body[open="libs"] li.libs > div.nav-menu,
-body[open="download"] li.libs > div.nav-menu {
+body[open="download"] li.download > div.nav-menu {
     visibility: visible;
     z-index: 2;
 }
@@ -467,6 +473,7 @@ li.download-button {
     width: 1em;
     text-align: center;
     font-size: 80%;
+    font-family: icons;
 }
 
 .download-title {
@@ -734,6 +741,10 @@ pre.xml {
     border-left-color: var(--xmlBorderColor);
 }
 
+pre.license {
+    border-left: 1px;
+}
+
 pre .fontifier-prog-reserved {
     font-weight: bold;
 }
@@ -899,7 +910,7 @@ pre.bnf .ebnf-comment {
     display: block;
 }
 
-.chapter .toc {
+.toc {
     overflow-y: auto;
     width: 25%;
     max-width: 25em;
@@ -912,31 +923,35 @@ pre.bnf .ebnf-comment {
     font-size: 95%;
 }
 
-.chapter .toc a {
+.download .toc {
+    top: calc(var(--navHeight) + 28ex);
+}
+
+.toc a {
     text-decoration: none;
     padding: 2px 4px 2px 4px;
 }
 
-.chapter .toc li.section a:hover,
-.chapter .toc li.def a:hover {
+.toc li.section a:hover,
+.toc li.def a:hover {
     color: var(--hoverColor);
 }
 
-.chapter .toc ul.sections li.section + li.section {
+.toc ul.sections li.section + li.section {
     margin-top: 1ex;
 }
 
-.chapter .toc li.section {
+.toc li.section {
     list-style: none;
 }
 
-.chapter .toc li.section > a {
+.toc li.section > a {
     border-bottom: 1px dashed var(--sectionBorder);
     font-weight: bold;
     color: var(--sectionColor);
 }
 
-.chapter .toc li.def {
+.toc li.def {
     white-space: nowrap;
     text-overflow: ellipsis;
     list-style-type: circle;
@@ -945,7 +960,7 @@ pre.bnf .ebnf-comment {
     margin-bottom: 2px;
 }
 
-.chapter .toc li.def a {
+.toc li.def a {
     color: var(--chapterTocLinkColor);
 }
 

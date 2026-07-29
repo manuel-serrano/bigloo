@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/bde/bmem/etc/bmemrun.in       */
+#*    serrano/prgm/project/bigloo/5.0.x/bde/bmem/etc/bmemrun.in        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:35:07 2003                          */
-#*    Last change :  Sat Mar 15 07:37:35 2025 (serrano)                */
-#*    Copyright   :  2003-25 Manuel Serrano                            */
+#*    Last change :  Wed Jul 29 13:51:29 2026 (serrano)                */
+#*    Copyright   :  2003-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The script shell to monitor memory allocations of Bigloo prgms   */
 #*=====================================================================*/
@@ -19,8 +19,9 @@ libextra=
 exe=a.out
 bmon=
 thread=
+selfdebug=false
 
-bmemdir=@FILDIR@
+bmemdir=@LIBDIR@/@FILDIR@
 
 #*---------------------------------------------------------------------*/
 #*    Argument parsing                                                 */
@@ -37,6 +38,7 @@ while : ; do
       echo "  -u|-unsafe|--unsafe  -- Preload unsafe libraries" >&2;
       echo "  -t|--thread          -- Profile multithreaded program" >&2;
       echo "  --lib-extra <lib>    -- Add an extra profiling lib" >&2;
+      echo "  --gdb                -- Debug bglmemrun itself with gdb" >&2;
       echo "" >&2;
       echo "To be profiled, programs have to be compiled with" >&2;
       echo "  -pmem" >&2;
@@ -62,6 +64,10 @@ while : ; do
     --lib-extra)
       shift;
       libextra="$libextra $1";;
+
+    --gdb)
+      shift;
+      selfdebug=true;;
 
     *)
       exe=$1;
@@ -105,11 +111,11 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Run the program                                                  */
 #*---------------------------------------------------------------------*/
-export BMEMLIBSUFFIX=$safety$thread
-export BMEMGCSUFFIX=$thread
+export BGLMEMLIBSUFFIX=$safety$thread
+export BGLMEMGCSUFFIX=$thread
 
 if [ "$thread " != " " ]; then
-  export BMEMTHREAD=$thread
+  export BGLMEMTHREAD=$thread
 fi  
 
 if [ -f $bmemdir/libbacktrace.so ]; then
@@ -118,4 +124,13 @@ else
   libbacktrace=
 fi
 
-LD_PRELOAD="$lib $libextra $libbacktrace" $exe $args
+if [ " $selfdebug" = " true" ]; then
+   if [ " $libextra" != " " ]; then 
+     echo "\"--gdb\" option cannot be use with \"--lib-extra <lib>\" option"
+     exit 1
+   else
+     gdb -ex "set env LD_PRELOAD $lib" -args $exe $args
+   fi
+else
+   LD_PRELOAD="$lib $libextra $libbacktrace" $exe $args
+fi

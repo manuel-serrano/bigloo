@@ -3682,7 +3682,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bconfigure_generic_sch, bigloo.sh
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh bglwatib.sh jigloo.sh; do
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch $bconfigure_generic_sch bigloo.sh bglafile.sh bgljfile.sh bglrun.sh bglpp.sh bgljas.sh bglwatib.sh jigloo.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`$echo $release | sed -e "s|[.]|_|g"`;
@@ -3970,8 +3970,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_object_h` $bigloo_object_h
   cp runtime/Include/`basename $bigloo_exit_h` $bigloo_exit_h
 
-  # bigloo.sh
-  for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bgljas.sh bglpp.sh bglprof.sh bglwatib.sh; do
+  # bigloo.sh and friends
+  for p in bigloo.sh bglafile.sh bgljfile.sh bglrun.sh bgljas.sh bglpp.sh bglwatib.sh; do
     mv $p $bootdir/bin/$p
     chmod $modexe $bootdir/bin/$p
   done

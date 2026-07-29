@@ -9,27 +9,27 @@
 <!--    Download page                                                 -->
 <!--==================================================================-->
 
-Bigloo Sources
---------------
+Getting Bigloo Sources
+----------------------
 
   <ul class="download-buttons">
     <li class="download-button download-latest">
       <a href="download/bigloo-latest.tar.gz" title="Latest">
-        <span class="download-icon">&#x2b07;</span>
+        <span class="download-icon">&#xe026;</span>
         <span class="download-title">bigloo-latest.tgz ,(format "(~a)" (bigloo-config 'version))</span>
       </a>
     </li>
     
     <li class="download-button download-unstable">
       <a href="download/bigloo-unstable.tar.gz" title="Unstable">
-        <span class="download-icon">&#x2b07;</span>
+        <span class="download-icon">&#xe026;</span>
         <span class="download-title">bigloo-unstable.tgz</span>
       </a>
     </li>
     
     <li class="download-button download-github">
       <a href="https://github.com/manuel-serrano/bigloo" title="Latest">
-        <span class="download-icon">&#x2442;</span>
+        <span class="download-icon">&#xe197;</span>
         <span class="download-title">github</span>
       </a>
     </li>
@@ -47,4 +47,11 @@ Debian/Ubuntu
 On Debian and Ubuntu, Bigloo can be installed similarly to the github
 [CI script](https://github.com/manuel-serrano/bigloo/blob/master/.github/workflows/bigloo.yml).
 
+
+License
+-------
+
+```license
+,(include "../LICENSE")
+```
 

@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bigloo/bde/bmem/Makefile             */
+#*    serrano/prgm/project/bigloo/5.0.x/bde/bmem/Makefile              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Sat Mar 15 07:44:07 2025 (serrano)                */
-#*    Copyright   :  2003-25 Manuel Serrano                            */
+#*    Last change :  Wed Jul 29 13:38:05 2026 (serrano)                */
+#*    Copyright   :  2003-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -28,7 +28,7 @@ LIBINCLUDE	= bmem.h
 LIBOBJECT	= $(LIBSRC:%.c=lib/%.o)
 
 POPULATION	= $(SRC:%=bmem/%) $(INCLUDE:%=bmem/%) \
-                  Makefile etc/bmemrun.in etc/bmemrun-gdb.in
+                  Makefile etc/bmemrun.in
 
 #*---------------------------------------------------------------------*/
 #*    Compilers & Flags                                                */
@@ -50,20 +50,16 @@ LDBMEMOPTS	=
 #*---------------------------------------------------------------------*/
 .PHONY: lib bmemrun 
 
-all: lib bmemrun etc/bmemrun-gdb
+all: lib bmemrun
 
 #*--- bmemrun ---------------------------------------------------------*/
 bmemrun: $(BOOTBINDIR)/$(BMEMRUN_EXE)
 $(BOOTBINDIR)/$(BMEMRUN_EXE): etc/bmemrun.in
 	cat etc/bmemrun.in | \
-            sed -e "s|@FILDIR@|$(LIBDIR)/$(FILDIR)|g" > \
+            sed -e "s|@FILDIR@|$(FILDIR)|g" \
+                -e "s|@LIBDIR@|$(LIBDIR)|g" > \
             $(BOOTBINDIR)/$(BMEMRUN_EXE)
 	chmod a+x $(BOOTBINDIR)/$(BMEMRUN_EXE)
-etc/bmemrun-gdb: etc/bmemrun-gdb.in
-	cat etc/bmemrun-gdb.in | \
-            sed -e "s|@FILDIR@|$(LIBDIR)/$(FILDIR)|g" > \
-            etc/bmemrun-gdb
-	chmod a+x etc/bmemrun-gdb
 
 #*--- lib -------------------------------------------------------------*/
 lib: $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \

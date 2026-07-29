@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/bde/Makefile                    */
+#*    serrano/prgm/project/bigloo/5.0.x/bde/Makefile                   */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Mon Apr 27 14:48:14 2026 (serrano)                */
+#*    Last change :  Wed Jul 29 14:16:45 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -53,25 +53,9 @@ JFILE_OBJ	= $(JFILE_FILE:%=jfile/%.o)
 BPP_FILE	= bpp reader
 BPP_OBJ		= $(BPP_FILE:%=bpp/%.o)
 
-#*--- btags -----------------------------------------------------------*/
-BTAGS_FILE	= btags
-BTAGS_OBJ	= $(BTAGS_FILE:%=btags/%.o)
-
-#*--- bdepend ---------------------------------------------------------*/
-BDEPEND_FILE	= bdepend
-BDEPEND_OBJ	= $(BDEPEND_FILE:%=bdepend/%.o)
-
-#*--- bmake -----------------------------------------------------------*/
-BMAKE_FILE	= bmake template
-BMAKE_OBJ	= $(BMAKE_FILE:%=bmake/%.o)
-
-#*--- bprof -----------------------------------------------------------*/
-BPROF_FILE	= bprof
-BPROF_OBJ	= $(BPROF_FILE:%=bprof/%.o)
-
-#*--- mco -------------------------------------------------------------*/
-MCO_FILE	= mco
-MCO_OBJ		= $(MCO_FILE:%=mco/%.o)
+#*--- demangle --------------------------------------------------------*/
+DEMANGLE_FILE	= demangle
+DEMANGLE_OBJ	= $(DEMANGLE_FILE:%=demangle/%.o)
 
 #*--- jas -------------------------------------------------------------*/
 JAS_LINKFILE	= lib classfile peep opcode wide labels stack produce as \
@@ -109,23 +93,16 @@ BCACHE_OBJ	= $(BCACHE_FILE:%=bcache/%.o)
 #*---------------------------------------------------------------------*/
 #*    Population                                                       */
 #*---------------------------------------------------------------------*/
-OBJECTS		= $(AFILE_OBJ) $(BPP_OBJ) $(BTAGS_OBJ) $(BDEPEND_OBJ) \
-                  $(BMAKE_OBJ) $(BPROF_OBJ) $(MCO_OBJ) $(JFILE_OBJ) \
+OBJECTS		= $(AFILE_OBJ) $(BPP_OBJ) \
+                  $(DEMANGLE_OBJ) $(JFILE_OBJ) \
                   $(JAS_OBJ) $(WATIB_OBJ) $(BCACHE_OBJ)
 SOURCES_FILES	= $(OBJECTS:%.o=%.scm)
-
-POPULATION	= $(SOURCES_FILES) \
-                  bpp/README \
-	          bmake/makefile.appli \
-	          bmake/makefile.library \
-                  jas/jas.tex \
-                  Makefile
 
 #*---------------------------------------------------------------------*/
 #*     Suffixes ...                                                    */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .scm .sch .o .el .elc
+.SUFFIXES: .scm .sch .o
 
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
@@ -140,7 +117,7 @@ all: all-common dobmem
 
 all-common: $(BOOTBINDIR)/bglafile \
      $(BOOTBINDIR)/bgldepend \
-     $(BOOTBINDIR)/bglmco \
+     $(BOOTBINDIR)/bgldemangle \
      $(BOOTBINDIR)/bglmake \
      $(BOOTBINDIR)/bglpp \
      $(BOOTBINDIR)/bgltags \
@@ -185,7 +162,7 @@ $(BOOTBINDIR)/bglmake: $(BMAKE_OBJ)
 $(BOOTBINDIR)/bglprof: $(BPROF_OBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 
-$(BOOTBINDIR)/bglmco: $(MCO_OBJ) ../comptime/Module/checksum.o
+$(BOOTBINDIR)/bgldemangle: $(DEMANGLE_OBJ)
 	$(BIGLOO) -no-hello $(BFLAGS) $(EFLAGS) -o $@ $^
 
 $(BOOTBINDIR)/bglpp: $(BPP_OBJ)
@@ -210,7 +187,7 @@ $(BOOTBINDIR)/bglcache: $(BCACHE_OBJ)
 #*---------------------------------------------------------------------*/
 install: all
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
-	  targets="bglafile bgldepend bglmake bglprof bglmco bglpp bgltags"; \
+	  targets="bglafile bgldemangle bglpp"; \
 	  if [ "$(JVMBACKEND) " != "no " ]; then \
 	     targets="$$targets bgljfile bgljas"; \
           fi; \
@@ -241,7 +218,7 @@ uninstall:
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bgldepend$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bglmake$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bglprof$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/bglmco$(EXE_SUFFIX)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bgldemangle$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bglpp$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bgltags$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bgljas$(EXE_SUFFIX)
@@ -282,12 +259,8 @@ clean:
 cleanall: clean
 	@- $(RM) -f $(BOOTBINDIR)/bglafile 
 	@- $(RM) -f $(BOOTBINDIR)/bgljfile 
-	@- $(RM) -f $(BOOTBINDIR)/bgldepend 
-	@- $(RM) -f $(BOOTBINDIR)/bglmake 
-	@- $(RM) -f $(BOOTBINDIR)/bglprof
-	@- $(RM) -f $(BOOTBINDIR)/bglmco
+	@- $(RM) -f $(BOOTBINDIR)/bgldemangle
 	@- $(RM) -f $(BOOTBINDIR)/bglpp 
-	@- $(RM) -f $(BOOTBINDIR)/bgltags
 	@- $(RM) -f $(BOOTBINDIR)/bgljas
 	@- $(RM) -f $(BOOTBINDIR)/bglwatib
 	@- $(RM) -f $(BOOTBINDIR)/bglcache
@@ -312,17 +285,6 @@ distrib:
 #*    jvm                                                              */
 #*---------------------------------------------------------------------*/
 jvm: afile.class jfile.class
-
-#*---------------------------------------------------------------------*/
-#*    pop                                                              */
-#*    -------------------------------------------------------------    */
-#*    This entry is used by the bigloo/Makefile (the main Bigloo       */
-#*    makefile) to get the list of file that populate a revision.      */
-#*---------------------------------------------------------------------*/
-.PHONY: pop
-pop:
-	@ echo $(POPULATION:%=bde/%)
-	@ (cd bmem; $(MAKE) pop)
 
 #*---------------------------------------------------------------------*/
 #*     .scm --> .o                                                     */
@@ -350,7 +312,7 @@ jas/%.class: jas/%.scm $(JAS_AFILE)
 #*---------------------------------------------------------------------*/
 ../comptime/Module/checksum.o: ../comptime/Module/checksum.scm
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -c $*.scm -o $*.o \
-          -access engine_param mco/mco.scm
+          -access engine_param demangle/demangle.scm
 
 #*---------------------------------------------------------------------*/
 #*    jas link files                                                   */

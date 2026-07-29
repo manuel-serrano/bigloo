@@ -19,11 +19,6 @@ Postscript and HTML version of the Bigloo documentation can be found at:
    
      $ unlimit
 
-   - The files `fthread/README` and `fthread/INSTALL` detail the Bigloo
-   threads support. 
-
-   - The Bee emacs environment requires GNU-Emacs 21 or Xemacs 21.
-
    - Some Bigloo APIs require extra system libraries. For instance, the 
      SSL support requires a system development kit for SSL (the name of
      the package containing such development kit varies from one platform
@@ -39,10 +34,10 @@ Postscript and HTML version of the Bigloo documentation can be found at:
     $ make compile-bee
     $ make install
     $ make install-bee
-    $ make fulltest
+    $ make test
 
 
-On an Xeon E5-1650 running Linux 5.3, this whole procedure lasts about 
+On an AMD Ryzen 7955WX running Linux 6.18, this whole procedure lasts about 
 2 to 3 minutes.
 
 Here are detailed each of these steps.
@@ -82,13 +77,8 @@ Type:
 In addition to the compiler, several tools are also compiled during
 that step:
 
-  - `BMAKE`: the Bigloo Makefile files generator.
-  - `BDEPEND`: the Bigloo Makefile file dependences generator.
-  - `AFILE`: the Bigloo Bigloo Module Association files generator.
-  - `BPP`: the Bigloo pretty printer.
-  - `BTAGS`: the Bigloo Emacs tags files generator.
-  - `BPROF`: the Bigloo profiler.
-  - `BMACS`: the Bigloo Emacs environment.
+  - `BGLAFILE`: the Bigloo Bigloo Module Association files generator.
+  - `BGLPP`: the Bigloo pretty printer.
 
 
 ### Testing Bigloo
@@ -164,28 +154,6 @@ two ways:
 
 This is _not_ required on Linux nor Digital Unix but it is _required_
 on SunOs and Solaris.
-
-
-### Installing the Bee
-
-   - To install the BEE, type:
-   
-    make install-bee
-
-   - Edit your .emacs file to add:
-
-    (if (locate-library "bmacs") (require 'bmacs))
-
-   __Note__ Xemacs21 requires the SUMO distribution otherwise important 
-   packages are missing. If you are still missing the sound file 
-   bass-snap.au, you can pick up the version in 
-   `bigloo/bmacs/etc/bass-snap.au`.
-
-
-   - You can customize which modes Bee control. The default is
-   Scheme, Lisp and C mode. The last two can be disabled using:
-   `ESC-x: customize-group bmacs` or customizations are available through
-   `ESC-x: customize-group bee` and `ESC-x: customize-group ude`.
 
 
 ### Testing Cigloo

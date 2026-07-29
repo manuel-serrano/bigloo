@@ -20,7 +20,7 @@ exe=a.out
 bmon=
 thread=
 
-bmemdir=@FILDIR@
+bmemdir=@LIBDIR@/@FILDIR@
 
 #*---------------------------------------------------------------------*/
 #*    Argument parsing                                                 */
