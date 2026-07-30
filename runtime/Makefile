@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Jul 28 10:39:13 2026 (serrano)                */
+#*    Last change :  Thu Jul 30 08:53:32 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -78,8 +78,6 @@ CSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS) $(CBUILDFLAGS)
 #*--- Bigloo JVM flags ------------------------------------------------*/
 BGLJFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jfile .jfile
 BJSAFEFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jvm-purify
-#*--- Bigloo, safe, debug ---------------------------------------------*/
-BGSAFEFLAGS	= $(BSAFEFLAGS) -g 
 #*--- Bigloo, unsafe, optimize ----------------------------------------*/
 BUNSAFEO0FLAGS	= $(BCOMMONFLAGS) \
                   -mklib -cc $(CC) -fsharing -q -no-hello \

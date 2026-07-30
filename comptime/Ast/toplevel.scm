@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct 20 15:11:28 2025                          */
-;*    Last change :  Mon Jul 13 06:55:05 2026 (serrano)                */
+;*    Last change :  Thu Jul 30 09:20:05 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST construction of the toplevel forms                           */
@@ -367,7 +367,7 @@
 			  ,(if *unsafe-arity*
 			       #unspecified
 			       `((@ error __error)
-				 ',id
+				 ,(symbol->string id)
 				 ,(string-append
 				     "wrong number of arguments: ["
 				     (integer->string arity)
@@ -465,7 +465,7 @@
 							 (,search k1 (+fx i 2))))
 					`(if (=fx i (-fx ,l 1))
 					     ((@ error __error)
-					      ',id
+					      ,(symbol->string id)
 					      ,(string-append
 						  "wrong number of arguments: ["
 						  (integer->string arity)

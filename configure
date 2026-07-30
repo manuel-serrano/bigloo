@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jul 16 08:59:35 2026 (serrano)                */
+#*    Last change :  Thu Jul 30 08:56:44 2026 (serrano)                */
 #*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -72,6 +72,7 @@ if [ "$BFLAGS " != " " ]; then
 else
   bflags="-O3 -fcfa-arithmetic -q";
 fi
+
 bootflags=""
 featureflags=
 coflags=-O3

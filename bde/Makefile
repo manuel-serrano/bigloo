@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Wed Jul 29 14:16:45 2026 (serrano)                */
+#*    Last change :  Thu Jul 30 09:02:00 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -116,12 +116,8 @@ all: all-common dobmem
 	fi
 
 all-common: $(BOOTBINDIR)/bglafile \
-     $(BOOTBINDIR)/bgldepend \
      $(BOOTBINDIR)/bgldemangle \
-     $(BOOTBINDIR)/bglmake \
      $(BOOTBINDIR)/bglpp \
-     $(BOOTBINDIR)/bgltags \
-     $(BOOTBINDIR)/bglprof \
      $(BOOTBINDIR)/bgljfile \
      $(BOOTBINDIR)/bglcache
 
@@ -153,22 +149,10 @@ jfile.class: jfile/jfile.scm
 	(cd jfile; $(BIGLOO) -c -jvm $(BFLAGS) $(EFLAGS) jfile.scm -o jfile.class; \
          mv jfile.class ..)
 
-$(BOOTBINDIR)/bgldepend: $(BDEPEND_OBJ)
-	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
-
-$(BOOTBINDIR)/bglmake: $(BMAKE_OBJ)
-	$(BIGLOO) -no-hello $(BFLAGS) $(EFLAGS) -o $@ $^
-
-$(BOOTBINDIR)/bglprof: $(BPROF_OBJ)
-	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
-
 $(BOOTBINDIR)/bgldemangle: $(DEMANGLE_OBJ)
 	$(BIGLOO) -no-hello $(BFLAGS) $(EFLAGS) -o $@ $^
 
 $(BOOTBINDIR)/bglpp: $(BPP_OBJ)
-	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
-
-$(BOOTBINDIR)/bgltags: $(BTAGS_OBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 
 jas: $(BOOTBINDIR)/bgljas
@@ -215,12 +199,8 @@ install: all
 uninstall:
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bglafile$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bgljfile$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/bgldepend$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/bglmake$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/bglprof$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bgldemangle$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bglpp$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/bgltags$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bgljas$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bglcache$(EXE_SUFFIX)
 	- (cd bmem; $(MAKE) uninstall)

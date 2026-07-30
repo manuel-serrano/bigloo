@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sat Jul 25 17:56:34 2026 (serrano)                */
+#*    Last change :  Thu Jul 30 09:24:35 2026 (serrano)                */
 #*    Copyright   :  2001-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -88,11 +88,9 @@ cleanall: distclean
 #*---------------------------------------------------------------------*/
 .PHONY: install
 
-install: api-install-init
-	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
-	    $(MAKE) api-install-c; \
-          fi
+install: 
 	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+	    $(MAKE) api-install-init; \
             $(MAKE) api-install-wasm; \
           fi
 
