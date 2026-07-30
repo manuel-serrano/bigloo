@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/option.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Module/option.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Feb 28 10:20:55 1998                          */
-;*    Last change :  Mon May 15 07:57:20 2000 (serrano)                */
-;*    Copyright   :  1998-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jul 30 09:52:15 2026 (serrano)                */
+;*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler option clause compilation                           */
 ;*=====================================================================*/
@@ -33,7 +33,15 @@
 (define (option-producer clause)
    (match-case clause
       ((?- . ?protos)
-       (for-each eval protos)
+       (for-each (lambda (e)
+		    (with-handler
+		       (lambda (exn)
+			  (fprintf (current-error-port)
+			     "*** WARNING: evaluting module option \"s\" raises an error")
+			  (error-notify exn)
+			  #unspecified)
+		       (eval e)))
+	  protos)
        '())
       (else
        (user-error "Parse error" "Illegal `option' clause" clause '()))))
