@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Jul  2 15:04:58 2026 (serrano)                */
+#*    Last change :  Thu Jul 30 09:48:22 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -166,7 +166,7 @@ cross:
 source:
 	if [ ! -x $(BGLBUILDBINDIR)/bigloo ]; then \
 	  if [ ! -x download/bin/bigloo ]; then \
-	    (cd download; tar xvfz bigloo-$(BOOTBUILDRELEASE).tar.gz); \
+	  (cd download; tar xfz bigloo-$(BOOTBUILDRELEASE).tar.gz); \
 	    (pwd=`pwd`; cd download/bigloo-$(BOOTBUILDRELEASE); ./configure --prefix=$$pwd/download --disable-libunistring --disable-pcre2 --disable-pcre --disable-libuv --disable-thread --disable-gmp --disable-libbacktrace --cc=$(CC) && make && make install); \
           fi; \
 	  $(MAKE) hostboot BGLBUILDBINDIR=$$PWD/download/bin; \

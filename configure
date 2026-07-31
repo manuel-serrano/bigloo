@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jul 30 08:56:44 2026 (serrano)                */
+#*    Last change :  Thu Jul 30 09:48:35 2026 (serrano)                */
 #*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1730,13 +1730,13 @@ if [ $bootmethod = "source" ]; then
     mkdir -p download
     if [ ! -f download/bigloo-$buildrelease.tar.gz ]; then
       echo "downloading bigloo $buildrelease from $bigloohttp"
-      wget $bigloohttp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
+      wget -q $bigloohttp/bigloo-$buildrelease.tar.gz -O download/bigloo-$buildrelease.tar.gz
     else
       echo "using downloaded image \"download/bigloo-$buildrelease.tar.gz\""
     fi
 
     if [ $? != 0 ]; then
-      echo "command failed \"wget $bigloohttp/bigloo-$buildrelease -o download/bigloo-$buildrelease.tar.gz\""
+      echo "command failed \"wget -q $bigloohttp/bigloo-$buildrelease -o download/bigloo-$buildrelease.tar.gz\""
       rm -f download/bigloo-$buildrelease.tar.gz
       wget --help > /dev/null 2> /dev/null
       
