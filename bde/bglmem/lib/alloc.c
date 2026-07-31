@@ -1,16 +1,16 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/nanh/bde/bmem/lib/alloc.c            */
+/*    serrano/prgm/project/bigloo/5.0.x/bde/bglmem/lib/alloc.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Wed Nov 27 08:05:25 2024 (serrano)                */
-/*    Copyright   :  2003-24 Manuel Serrano                            */
+/*    Last change :  Fri Jul 31 09:30:55 2026 (serrano)                */
+/*    Copyright   :  2003-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
 #define BGL_GC BGL_NO_GC
 #include <bigloo.h>
-#include <bmem.h>
+#include <bglmem.h>
 #include <stdlib.h>
 #include <string.h>
 

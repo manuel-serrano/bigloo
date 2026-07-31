@@ -1,16 +1,16 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/nanh/bde/bmem/lib/gchook.c           */
+/*    serrano/prgm/project/bigloo/5.0.x/bde/bglmem/lib/gchook.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Fri Nov  1 19:22:18 2024 (serrano)                */
-/*    Copyright   :  2003-24 Manuel Serrano                            */
+/*    Last change :  Fri Jul 31 09:31:36 2026 (serrano)                */
+/*    Copyright   :  2003-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
 /*=====================================================================*/
 #include <stdlib.h>
 #include <bigloo.h>
-#include <bmem.h>
+#include <bglmem.h>
 
 /*---------------------------------------------------------------------*/
 /*    Global variables                                                 */

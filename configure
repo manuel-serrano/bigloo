@@ -422,7 +422,6 @@ bprof=bglprof
 mco=bglmco
 jas=bgljas
 bmem=bglmem
-bmemrun=bglmemrun
 bdb=bgldb
 bglpkg=bglpkg
 
@@ -4258,7 +4257,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "MCO_EXE=$mco" >> $makefile_cfg
   $echo "JAS_EXE=$jas" >> $makefile_cfg
   $echo "BMEM_EXE=$bmem" >> $makefile_cfg
-  $echo "BMEMRUN_EXE=$bmemrun" >> $makefile_cfg
   $echo "BDB_EXE=$bdb" >> $makefile_cfg
   $echo "BGLPKG_EXE=$bglpkg" >> $makefile_cfg
   $echo >> $makefile_cfg

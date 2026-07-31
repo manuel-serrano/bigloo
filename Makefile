@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Jul  2 15:04:58 2026 (serrano)                */
+#*    Last change :  Fri Jul 31 08:29:03 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -190,6 +190,7 @@ boot: boot-c
 	  $(MAKE) boot-wasm; \
         fi
 	$(MAKE) boot-bde WASMBACKEND=yes
+	$(MAKE) -C doc
 	@ echo "\e[1;34mboot\e[0m done..."
 
 boot-c: checkgmake

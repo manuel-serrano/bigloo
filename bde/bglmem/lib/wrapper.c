@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/wrapper.c        */
+/*    serrano/prgm/project/bigloo/5.0.x/bde/bglmem/lib/wrapper.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct  7 19:30:50 2021                          */
-/*    Last change :  Tue Mar 11 07:59:23 2025 (serrano)                */
-/*    Copyright   :  2021-25 Manuel Serrano                            */
+/*    Last change :  Fri Jul 31 09:31:15 2026 (serrano)                */
+/*    Copyright   :  2021-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo standard library wrappers                                 */
 /*=====================================================================*/
@@ -14,7 +14,7 @@
 #include <pthread.h>
 
 #include <bigloo.h>
-#include <bmem.h>
+#include <bglmem.h>
 #include <wrapper.h>
 
 /* pair */

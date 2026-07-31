@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Wed Jul 29 11:27:58 2026 (serrano)                */
+;*    Last change :  Fri Jul 31 08:45:18 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -113,7 +113,8 @@
 ;*---------------------------------------------------------------------*/
 (define dev-chapters
    '(("Demangling" . "bgldemangle.html")
-     ("Memory profiling" . "bglmem.html")))
+     ("Memory profiling" . "bglmem.html")
+     ("Profiling" . "bglperf.html")))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-chapter-title ...                                           */

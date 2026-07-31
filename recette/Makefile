@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Mon May 18 11:31:20 2026 (serrano)                */
+#*    Last change :  Fri Jul 31 09:56:41 2026 (serrano)                */
 #*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -136,11 +136,11 @@ POPULATION	= $(SOURCE_FILES) \
 #*---------------------------------------------------------------------*/
 all: recette-c
 
-recette-c: .etags .afile-c objs_c objs5_c
+recette-c: .afile-c objs_c objs5_c
 	@ $(MAKE) recette4
 	@ $(MAKE) recette5
 
-recette4: .etags .afile-c objs_c
+recette4: .afile-c objs_c
 	$(MAKE) recette
 recette: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%) objs_c/main.o
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) -o $@ $^
@@ -273,7 +273,6 @@ distclean: lintclean
 	@- $(RM) -f *.obj
 	@- $(RM) -f *.escm
 	@- $(RM) -f .afile-c .afile-jvm .afile-wasm
-	@- $(RM) -f .etags
 	@- $(RM) -f Manifest*
 	@- $(RM) -f dummydir
 	@ find . \( -name '*[~%]'                   \
@@ -306,12 +305,6 @@ all.lint: $(LN_OBJECTS)
             do echo "   " $$p >> all.lint; \
             cat $$p >> all.lint;           \
             done )
-
-#*---------------------------------------------------------------------*/
-#*    .etags                                                           */
-#*---------------------------------------------------------------------*/
-.etags:
-	$(BGLTAGS) $(JVM_OBJECTS:%.class=%.scm) $(C_OBJECTS:%.$(C_OBJ_EXTENSION)=%.scm) -o .etags
 
 #*---------------------------------------------------------------------*/
 #*    .jfile-jvm                                                       */

@@ -1,16 +1,16 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/nanh/bde/bmem/lib/list.c             */
+/*    serrano/prgm/project/bigloo/5.0.x/bde/bglmem/lib/list.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:52:54 2003                          */
-/*    Last change :  Fri Nov  1 13:24:04 2024 (serrano)                */
-/*    Copyright   :  2003-24 Manuel Serrano                            */
+/*    Last change :  Fri Jul 31 09:31:25 2026 (serrano)                */
+/*    Copyright   :  2003-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Simple and naive list library                                    */
 /*=====================================================================*/
 #include <stdlib.h>
 #include <bigloo.h>
-#include <bmem.h>
+#include <bglmem.h>
 
 /*---------------------------------------------------------------------*/
 /*    pa_pair_t *                                                      */

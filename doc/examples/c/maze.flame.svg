@@ -1,0 +1,1736 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" width="1200" height="2886" onload="init(evt)" viewBox="0 0 1200 2886" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- Flame graph stack visualization. See https://github.com/brendangregg/FlameGraph for latest version, and http://www.brendangregg.com/flamegraphs.html for examples. -->
+<!-- NOTES:  -->
+<defs>
+	<linearGradient id="background" y1="0" y2="1" x1="0" x2="0" >
+		<stop stop-color="#eeeeee" offset="5%" />
+		<stop stop-color="#eeeeb0" offset="95%" />
+	</linearGradient>
+</defs>
+<style type="text/css">
+	text { font-family:Verdana; font-size:12px; fill:rgb(0,0,0); }
+	#search, #ignorecase { opacity:0.1; cursor:pointer; }
+	#search:hover, #search.show, #ignorecase:hover, #ignorecase.show { opacity:1; }
+	#subtitle { text-anchor:middle; font-color:rgb(160,160,160); }
+	#title { text-anchor:middle; font-size:17px}
+	#unzoom { cursor:pointer; }
+	#frames > *:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+	.hide { display:none; }
+	.parent { opacity:0.5; }
+</style>
+<script type="text/ecmascript">
+<![CDATA[
+	"use strict";
+	var details, searchbtn, unzoombtn, matchedtxt, svg, searching, currentSearchTerm, ignorecase, ignorecaseBtn;
+	function init(evt) {
+		details = document.getElementById("details").firstChild;
+		searchbtn = document.getElementById("search");
+		ignorecaseBtn = document.getElementById("ignorecase");
+		unzoombtn = document.getElementById("unzoom");
+		matchedtxt = document.getElementById("matched");
+		svg = document.getElementsByTagName("svg")[0];
+		searching = 0;
+		currentSearchTerm = null;
+	}
+
+	window.addEventListener("click", function(e) {
+		var target = find_group(e.target);
+		if (target) {
+			if (target.nodeName == "a") {
+				if (e.ctrlKey === false) return;
+				e.preventDefault();
+			}
+			if (target.classList.contains("parent")) unzoom();
+			zoom(target);
+		}
+		else if (e.target.id == "unzoom") unzoom();
+		else if (e.target.id == "search") search_prompt();
+		else if (e.target.id == "ignorecase") toggle_ignorecase();
+	}, false)
+
+	// mouse-over for info
+	// show
+	window.addEventListener("mouseover", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = "Function: " + g_to_text(target);
+	}, false)
+
+	// clear
+	window.addEventListener("mouseout", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = ' ';
+	}, false)
+
+	// ctrl-F for search
+	window.addEventListener("keydown",function (e) {
+		if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
+			e.preventDefault();
+			search_prompt();
+		}
+	}, false)
+
+	// ctrl-I to toggle case-sensitive search
+	window.addEventListener("keydown",function (e) {
+		if (e.ctrlKey && e.keyCode === 73) {
+			e.preventDefault();
+			toggle_ignorecase();
+		}
+	}, false)
+
+	// functions
+	function find_child(node, selector) {
+		var children = node.querySelectorAll(selector);
+		if (children.length) return children[0];
+		return;
+	}
+	function find_group(node) {
+		var parent = node.parentElement;
+		if (!parent) return;
+		if (parent.id == "frames") return node;
+		return find_group(parent);
+	}
+	function orig_save(e, attr, val) {
+		if (e.attributes["_orig_" + attr] != undefined) return;
+		if (e.attributes[attr] == undefined) return;
+		if (val == undefined) val = e.attributes[attr].value;
+		e.setAttribute("_orig_" + attr, val);
+	}
+	function orig_load(e, attr) {
+		if (e.attributes["_orig_"+attr] == undefined) return;
+		e.attributes[attr].value = e.attributes["_orig_" + attr].value;
+		e.removeAttribute("_orig_"+attr);
+	}
+	function g_to_text(e) {
+		var text = find_child(e, "title").firstChild.nodeValue;
+		return (text)
+	}
+	function g_to_func(e) {
+		var func = g_to_text(e);
+		// if there's any manipulation we want to do to the function
+		// name before it's searched, do it here before returning.
+		return (func);
+	}
+	function update_text(e) {
+		var r = find_child(e, "rect");
+		var t = find_child(e, "text");
+		var w = parseFloat(r.attributes.width.value) -3;
+		var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+		t.attributes.x.value = parseFloat(r.attributes.x.value) + 3;
+
+		// Smaller than this size won't fit anything
+		if (w < 2 * 12 * 0.59) {
+			t.textContent = "";
+			return;
+		}
+
+		t.textContent = txt;
+		// Fit in full text width
+		if (/^ *$/.test(txt) || t.getSubStringLength(0, txt.length) < w)
+			return;
+
+		for (var x = txt.length - 2; x > 0; x--) {
+			if (t.getSubStringLength(0, x + 2) <= w) {
+				t.textContent = txt.substring(0, x) + "..";
+				return;
+			}
+		}
+		t.textContent = "";
+	}
+
+	// zoom
+	function zoom_reset(e) {
+		if (e.attributes != undefined) {
+			orig_load(e, "x");
+			orig_load(e, "width");
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_reset(c[i]);
+		}
+	}
+	function zoom_child(e, x, ratio) {
+		if (e.attributes != undefined) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = (parseFloat(e.attributes.x.value) - x - 10) * ratio + 10;
+				if (e.tagName == "text")
+					e.attributes.x.value = find_child(e.parentNode, "rect[x]").attributes.x.value + 3;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseFloat(e.attributes.width.value) * ratio;
+			}
+		}
+
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_child(c[i], x - 10, ratio);
+		}
+	}
+	function zoom_parent(e) {
+		if (e.attributes) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = 10;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseInt(svg.width.baseVal.value) - (10 * 2);
+			}
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_parent(c[i]);
+		}
+	}
+	function zoom(node) {
+		var attr = find_child(node, "rect").attributes;
+		var width = parseFloat(attr.width.value);
+		var xmin = parseFloat(attr.x.value);
+		var xmax = parseFloat(xmin + width);
+		var ymin = parseFloat(attr.y.value);
+		var ratio = (svg.width.baseVal.value - 2 * 10) / width;
+
+		// XXX: Workaround for JavaScript float issues (fix me)
+		var fudge = 0.0001;
+
+		unzoombtn.classList.remove("hide");
+
+		var el = document.getElementById("frames").children;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var a = find_child(e, "rect").attributes;
+			var ex = parseFloat(a.x.value);
+			var ew = parseFloat(a.width.value);
+			var upstack;
+			// Is it an ancestor
+			if (0 == 0) {
+				upstack = parseFloat(a.y.value) > ymin;
+			} else {
+				upstack = parseFloat(a.y.value) < ymin;
+			}
+			if (upstack) {
+				// Direct ancestor
+				if (ex <= xmin && (ex+ew+fudge) >= xmax) {
+					e.classList.add("parent");
+					zoom_parent(e);
+					update_text(e);
+				}
+				// not in current path
+				else
+					e.classList.add("hide");
+			}
+			// Children maybe
+			else {
+				// no common path
+				if (ex < xmin || ex + fudge >= xmax) {
+					e.classList.add("hide");
+				}
+				else {
+					zoom_child(e, xmin, ratio);
+					update_text(e);
+				}
+			}
+		}
+		search();
+	}
+	function unzoom() {
+		unzoombtn.classList.add("hide");
+		var el = document.getElementById("frames").children;
+		for(var i = 0; i < el.length; i++) {
+			el[i].classList.remove("parent");
+			el[i].classList.remove("hide");
+			zoom_reset(el[i]);
+			update_text(el[i]);
+		}
+		search();
+	}
+
+	// search
+	function toggle_ignorecase() {
+		ignorecase = !ignorecase;
+		if (ignorecase) {
+			ignorecaseBtn.classList.add("show");
+		} else {
+			ignorecaseBtn.classList.remove("show");
+		}
+		reset_search();
+		search();
+	}
+	function reset_search() {
+		var el = document.querySelectorAll("#frames rect");
+		for (var i = 0; i < el.length; i++) {
+			orig_load(el[i], "fill")
+		}
+	}
+	function search_prompt() {
+		if (!searching) {
+			var term = prompt("Enter a search term (regexp " +
+			    "allowed, eg: ^ext4_)"
+			    + (ignorecase ? ", ignoring case" : "")
+			    + "\nPress Ctrl-i to toggle case sensitivity", "");
+			if (term != null) {
+				currentSearchTerm = term;
+				search();
+			}
+		} else {
+			reset_search();
+			searching = 0;
+			currentSearchTerm = null;
+			searchbtn.classList.remove("show");
+			searchbtn.firstChild.nodeValue = "Search"
+			matchedtxt.classList.add("hide");
+			matchedtxt.firstChild.nodeValue = ""
+		}
+	}
+	function search(term) {
+		if (currentSearchTerm === null) return;
+		var term = currentSearchTerm;
+
+		var re = new RegExp(term, ignorecase ? 'i' : '');
+		var el = document.getElementById("frames").children;
+		var matches = new Object();
+		var maxwidth = 0;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var func = g_to_func(e);
+			var rect = find_child(e, "rect");
+			if (func == null || rect == null)
+				continue;
+
+			// Save max width. Only works as we have a root frame
+			var w = parseFloat(rect.attributes.width.value);
+			if (w > maxwidth)
+				maxwidth = w;
+
+			if (func.match(re)) {
+				// highlight
+				var x = parseFloat(rect.attributes.x.value);
+				orig_save(rect, "fill");
+				rect.attributes.fill.value = "rgb(230,0,230)";
+
+				// remember matches
+				if (matches[x] == undefined) {
+					matches[x] = w;
+				} else {
+					if (w > matches[x]) {
+						// overwrite with parent
+						matches[x] = w;
+					}
+				}
+				searching = 1;
+			}
+		}
+		if (!searching)
+			return;
+
+		searchbtn.classList.add("show");
+		searchbtn.firstChild.nodeValue = "Reset Search";
+
+		// calculate percent matched, excluding vertical overlap
+		var count = 0;
+		var lastx = -1;
+		var lastw = 0;
+		var keys = Array();
+		for (k in matches) {
+			if (matches.hasOwnProperty(k))
+				keys.push(k);
+		}
+		// sort the matched frames by their x location
+		// ascending, then width descending
+		keys.sort(function(a, b){
+			return a - b;
+		});
+		// Step through frames saving only the biggest bottom-up frames
+		// thanks to the sort order. This relies on the tree property
+		// where children are always smaller than their parents.
+		var fudge = 0.0001;	// JavaScript floating point
+		for (var k in keys) {
+			var x = parseFloat(keys[k]);
+			var w = matches[keys[k]];
+			if (x >= lastx + lastw - fudge) {
+				count += w;
+				lastx = x;
+				lastw = w;
+			}
+		}
+		// display matched percent
+		matchedtxt.classList.remove("hide");
+		var pct = 100 * count / maxwidth;
+		if (pct != 100) pct = pct.toFixed(1)
+		matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+	}
+]]>
+</script>
+<rect x="0.0" y="0" width="1200.0" height="2886.0" fill="url(#background)"  />
+<text id="title" x="600.00" y="24" >Flame Graph</text>
+<text id="details" x="10.00" y="2869" > </text>
+<text id="unzoom" x="10.00" y="24" class="hide">Reset Zoom</text>
+<text id="search" x="1090.00" y="24" >Search</text>
+<text id="ignorecase" x="1174.00" y="24" >ic</text>
+<text id="matched" x="1090.00" y="2869" > </text>
+<g id="frames">
+<g >
+<title>GC_malloc_kind (3 samples, 0.28%)</title><rect x="129.9" y="2613" width="3.3" height="15.0" fill="rgb(225,87,87)" rx="2" ry="2" />
+<text  x="132.87" y="2623.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1653" width="13.2" height="15.0" fill="rgb(246,146,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1663.5" ></text>
+</g>
+<g >
+<title>GC_install_counts (1 samples, 0.09%)</title><rect x="116.7" y="2453" width="1.1" height="15.0" fill="rgb(235,102,102)" rx="2" ry="2" />
+<text  x="119.67" y="2463.5" ></text>
+</g>
+<g >
+<title>GC_new_hblk (3 samples, 0.28%)</title><rect x="121.1" y="2533" width="3.3" height="15.0" fill="rgb(201,52,52)" rx="2" ry="2" />
+<text  x="124.07" y="2543.5" ></text>
+</g>
+<g >
+<title>GC_collect_or_expand (20 samples, 1.86%)</title><rect x="93.6" y="2501" width="22.0" height="15.0" fill="rgb(233,98,98)" rx="2" ry="2" />
+<text  x="96.58" y="2511.5" >G..</text>
+</g>
+<g >
+<title>&amp;search@maze (9 samples, 0.84%)</title><rect x="1180.1" y="133" width="9.9" height="15.0" fill="rgb(198,98,0)" rx="2" ry="2" />
+<text  x="1183.10" y="143.5" ></text>
+</g>
+<g >
+<title>GC_allocobj (3 samples, 0.28%)</title><rect x="155.2" y="2565" width="3.3" height="15.0" fill="rgb(206,59,59)" rx="2" ry="2" />
+<text  x="158.16" y="2575.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="421" width="13.2" height="15.0" fill="rgb(223,123,0)" rx="2" ry="2" />
+<text  x="1179.80" y="431.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1061" width="13.2" height="15.0" fill="rgb(204,104,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1071.5" ></text>
+</g>
+<g >
+<title>maze (1,073 samples, 100.00%)</title><rect x="10.0" y="2821" width="1180.0" height="15.0" fill="rgb(85,197,197)" rx="2" ry="2" />
+<text  x="13.00" y="2831.5" >maze</text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2437" width="13.2" height="15.0" fill="rgb(209,109,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2447.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1909" width="13.2" height="15.0" fill="rgb(228,128,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1919.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1973" width="13.2" height="15.0" fill="rgb(230,130,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1983.5" ></text>
+</g>
+<g >
+<title>make_vector (18 samples, 1.68%)</title><rect x="135.4" y="2613" width="19.8" height="15.0" fill="rgb(98,209,209)" rx="2" ry="2" />
+<text  x="138.37" y="2623.5" ></text>
+</g>
+<g >
+<title>__sysvec_apic_timer_interrupt (2 samples, 0.19%)</title><rect x="1165.8" y="2581" width="2.2" height="15.0" fill="rgb(99,210,210)" rx="2" ry="2" />
+<text  x="1168.81" y="2591.5" ></text>
+</g>
+<g >
+<title>tick_nohz_handler (2 samples, 0.19%)</title><rect x="1165.8" y="2533" width="2.2" height="15.0" fill="rgb(106,216,216)" rx="2" ry="2" />
+<text  x="1168.81" y="2543.5" ></text>
+</g>
+<g >
+<title>bgl_fill_vector@plt (1 samples, 0.09%)</title><rect x="138.7" y="2597" width="1.1" height="15.0" fill="rgb(103,249,103)" rx="2" ry="2" />
+<text  x="141.67" y="2607.5" ></text>
+</g>
+<g >
+<title>GC_allocobj (3 samples, 0.28%)</title><rect x="121.1" y="2549" width="3.3" height="15.0" fill="rgb(218,76,76)" rx="2" ry="2" />
+<text  x="124.07" y="2559.5" ></text>
+</g>
+<g >
+<title>bgl_fill_vector (3 samples, 0.28%)</title><rect x="135.4" y="2597" width="3.3" height="15.0" fill="rgb(104,249,104)" rx="2" ry="2" />
+<text  x="138.37" y="2607.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (9 samples, 0.84%)</title><rect x="1180.1" y="149" width="9.9" height="15.0" fill="rgb(250,150,0)" rx="2" ry="2" />
+<text  x="1183.10" y="159.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1669" width="13.2" height="15.0" fill="rgb(238,138,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1679.5" ></text>
+</g>
+<g >
+<title>GC_clear_stack_inner (1 samples, 0.09%)</title><rect x="90.3" y="2565" width="1.1" height="15.0" fill="rgb(213,69,69)" rx="2" ry="2" />
+<text  x="93.28" y="2575.5" ></text>
+</g>
+<g >
+<title>GC_allocobj (1 samples, 0.09%)</title><rect x="1176.8" y="261" width="1.1" height="15.0" fill="rgb(240,109,109)" rx="2" ry="2" />
+<text  x="1179.80" y="271.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1893" width="13.2" height="15.0" fill="rgb(235,135,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1903.5" ></text>
+</g>
+<g >
+<title>GC_build_fl (3 samples, 0.28%)</title><rect x="121.1" y="2517" width="3.3" height="15.0" fill="rgb(203,54,54)" rx="2" ry="2" />
+<text  x="124.07" y="2527.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1733" width="13.2" height="15.0" fill="rgb(224,124,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1743.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="757" width="13.2" height="15.0" fill="rgb(209,109,0)" rx="2" ry="2" />
+<text  x="1179.80" y="767.5" ></text>
+</g>
+<g >
+<title>GC_mark_some (3 samples, 0.28%)</title><rect x="144.2" y="2469" width="3.3" height="15.0" fill="rgb(229,93,93)" rx="2" ry="2" />
+<text  x="147.17" y="2479.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc (10 samples, 0.93%)</title><rect x="144.2" y="2565" width="11.0" height="15.0" fill="rgb(205,57,57)" rx="2" ry="2" />
+<text  x="147.17" y="2575.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2677" width="13.2" height="15.0" fill="rgb(214,114,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2687.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2485" width="13.2" height="15.0" fill="rgb(248,148,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2495.5" ></text>
+</g>
+<g >
+<title>exc_page_fault (1 samples, 0.09%)</title><rect x="132.1" y="2549" width="1.1" height="15.0" fill="rgb(58,172,172)" rx="2" ry="2" />
+<text  x="135.07" y="2559.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="533" width="13.2" height="15.0" fill="rgb(240,140,0)" rx="2" ry="2" />
+<text  x="1179.80" y="543.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1557" width="13.2" height="15.0" fill="rgb(228,128,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1567.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="901" width="13.2" height="15.0" fill="rgb(240,140,0)" rx="2" ry="2" />
+<text  x="1179.80" y="911.5" ></text>
+</g>
+<g >
+<title>GC_new_hblk (1 samples, 0.09%)</title><rect x="1180.1" y="53" width="1.1" height="15.0" fill="rgb(208,61,61)" rx="2" ry="2" />
+<text  x="1183.10" y="63.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2213" width="13.2" height="15.0" fill="rgb(196,96,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2223.5" ></text>
+</g>
+<g >
+<title>__handle_mm_fault (1 samples, 0.09%)</title><rect x="132.1" y="2501" width="1.1" height="15.0" fill="rgb(86,198,198)" rx="2" ry="2" />
+<text  x="135.07" y="2511.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc_inner (1 samples, 0.09%)</title><rect x="1177.9" y="181" width="1.1" height="15.0" fill="rgb(239,107,107)" rx="2" ry="2" />
+<text  x="1180.90" y="191.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc_inner (10 samples, 0.93%)</title><rect x="144.2" y="2549" width="11.0" height="15.0" fill="rgb(254,129,129)" rx="2" ry="2" />
+<text  x="147.17" y="2559.5" ></text>
+</g>
+<g >
+<title>bigloo_main (1,046 samples, 97.48%)</title><rect x="26.5" y="2741" width="1150.3" height="15.0" fill="rgb(83,195,195)" rx="2" ry="2" />
+<text  x="29.50" y="2751.5" >bigloo_main</text>
+</g>
+<g >
+<title>make_vector (29 samples, 2.70%)</title><rect x="88.1" y="2597" width="31.9" height="15.0" fill="rgb(76,189,189)" rx="2" ry="2" />
+<text  x="91.08" y="2607.5" >ma..</text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1589" width="13.2" height="15.0" fill="rgb(218,118,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1599.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2741" width="13.2" height="15.0" fill="rgb(194,94,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2751.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc (1 samples, 0.09%)</title><rect x="1176.8" y="293" width="1.1" height="15.0" fill="rgb(230,94,94)" rx="2" ry="2" />
+<text  x="1179.80" y="303.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2789" width="13.2" height="15.0" fill="rgb(200,100,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2799.5" ></text>
+</g>
+<g >
+<title>GC_allochblk_nth (1 samples, 0.09%)</title><rect x="10.0" y="2789" width="1.1" height="15.0" fill="rgb(226,87,87)" rx="2" ry="2" />
+<text  x="13.00" y="2799.5" ></text>
+</g>
+<g >
+<title>list-&gt;vector@__r4_vectors_6_8 (8 samples, 0.75%)</title><rect x="124.4" y="2645" width="8.8" height="15.0" fill="rgb(194,94,0)" rx="2" ry="2" />
+<text  x="127.37" y="2655.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (10 samples, 0.93%)</title><rect x="1179.0" y="197" width="11.0" height="15.0" fill="rgb(243,143,0)" rx="2" ry="2" />
+<text  x="1182.00" y="207.5" ></text>
+</g>
+<g >
+<title>GC_header_cache_miss (2 samples, 0.19%)</title><rect x="113.4" y="2421" width="2.2" height="15.0" fill="rgb(244,114,114)" rx="2" ry="2" />
+<text  x="116.37" y="2431.5" ></text>
+</g>
+<g >
+<title>GC_malloc_kind (11 samples, 1.03%)</title><rect x="143.1" y="2581" width="12.1" height="15.0" fill="rgb(219,78,78)" rx="2" ry="2" />
+<text  x="146.07" y="2591.5" ></text>
+</g>
+<g >
+<title>GC_push_marked (1 samples, 0.09%)</title><rect x="146.4" y="2453" width="1.1" height="15.0" fill="rgb(234,100,100)" rx="2" ry="2" />
+<text  x="149.37" y="2463.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1029" width="13.2" height="15.0" fill="rgb(244,144,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1039.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2469" width="13.2" height="15.0" fill="rgb(245,145,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2479.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="789" width="13.2" height="15.0" fill="rgb(223,123,0)" rx="2" ry="2" />
+<text  x="1179.80" y="799.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2581" width="13.2" height="15.0" fill="rgb(238,138,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2591.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1333" width="13.2" height="15.0" fill="rgb(249,149,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1343.5" ></text>
+</g>
+<g >
+<title>permute-vec!@maze (9 samples, 0.84%)</title><rect x="158.5" y="2645" width="9.9" height="15.0" fill="rgb(228,128,0)" rx="2" ry="2" />
+<text  x="161.46" y="2655.5" ></text>
+</g>
+<g >
+<title>update_cfs_group (1 samples, 0.09%)</title><rect x="1166.9" y="2469" width="1.1" height="15.0" fill="rgb(92,203,203)" rx="2" ry="2" />
+<text  x="1169.91" y="2479.5" ></text>
+</g>
+<g >
+<title>GC_stopped_mark (1 samples, 0.09%)</title><rect x="1176.8" y="213" width="1.1" height="15.0" fill="rgb(208,62,62)" rx="2" ry="2" />
+<text  x="1179.80" y="223.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2133" width="13.2" height="15.0" fill="rgb(253,153,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2143.5" ></text>
+</g>
+<g >
+<title>GC_stopped_mark (20 samples, 1.86%)</title><rect x="93.6" y="2469" width="22.0" height="15.0" fill="rgb(219,78,78)" rx="2" ry="2" />
+<text  x="96.58" y="2479.5" >G..</text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="357" width="13.2" height="15.0" fill="rgb(237,137,0)" rx="2" ry="2" />
+<text  x="1179.80" y="367.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2421" width="13.2" height="15.0" fill="rgb(217,117,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2431.5" ></text>
+</g>
+<g >
+<title>dig-maze@maze (56 samples, 5.22%)</title><rect x="26.5" y="2645" width="61.6" height="15.0" fill="rgb(229,129,0)" rx="2" ry="2" />
+<text  x="29.50" y="2655.5" >dig-ma..</text>
+</g>
+<g >
+<title>GC_generic_malloc (1 samples, 0.09%)</title><rect x="1179.0" y="149" width="1.1" height="15.0" fill="rgb(224,86,86)" rx="2" ry="2" />
+<text  x="1182.00" y="159.5" ></text>
+</g>
+<g >
+<title>make-box@maze (29 samples, 2.70%)</title><rect x="88.1" y="2613" width="31.9" height="15.0" fill="rgb(220,120,0)" rx="2" ry="2" />
+<text  x="91.08" y="2623.5" >ma..</text>
+</g>
+<g >
+<title>GC_generic_malloc (1 samples, 0.09%)</title><rect x="1180.1" y="101" width="1.1" height="15.0" fill="rgb(208,62,62)" rx="2" ry="2" />
+<text  x="1183.10" y="111.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1413" width="13.2" height="15.0" fill="rgb(226,126,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1423.5" ></text>
+</g>
+<g >
+<title>with-output-to-file@__r4_ports_6_10_1 (1,046 samples, 97.48%)</title><rect x="26.5" y="2709" width="1150.3" height="15.0" fill="rgb(237,137,0)" rx="2" ry="2" />
+<text  x="29.50" y="2719.5" >with-output-to-file@__r4_ports_6_10_1</text>
+</g>
+<g >
+<title>asm_exc_page_fault (1 samples, 0.09%)</title><rect x="132.1" y="2565" width="1.1" height="15.0" fill="rgb(54,169,169)" rx="2" ry="2" />
+<text  x="135.07" y="2575.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1173" width="13.2" height="15.0" fill="rgb(205,105,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1183.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="469" width="13.2" height="15.0" fill="rgb(192,92,0)" rx="2" ry="2" />
+<text  x="1179.80" y="479.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1093" width="13.2" height="15.0" fill="rgb(245,145,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1103.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2357" width="13.2" height="15.0" fill="rgb(204,104,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2367.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1829" width="13.2" height="15.0" fill="rgb(207,107,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1839.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1461" width="13.2" height="15.0" fill="rgb(193,93,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1471.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1765" width="13.2" height="15.0" fill="rgb(200,100,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1775.5" ></text>
+</g>
+<g >
+<title>GC_collect_or_expand (1 samples, 0.09%)</title><rect x="155.2" y="2549" width="1.1" height="15.0" fill="rgb(237,104,104)" rx="2" ry="2" />
+<text  x="158.16" y="2559.5" ></text>
+</g>
+<g >
+<title>__memset_avx2_unaligned_erms (3 samples, 0.28%)</title><rect x="129.9" y="2581" width="3.3" height="15.0" fill="rgb(81,193,193)" rx="2" ry="2" />
+<text  x="132.87" y="2591.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="565" width="13.2" height="15.0" fill="rgb(218,118,0)" rx="2" ry="2" />
+<text  x="1179.80" y="575.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2309" width="13.2" height="15.0" fill="rgb(239,139,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2319.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="965" width="13.2" height="15.0" fill="rgb(239,139,0)" rx="2" ry="2" />
+<text  x="1179.80" y="975.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1877" width="13.2" height="15.0" fill="rgb(234,134,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1887.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1365" width="13.2" height="15.0" fill="rgb(214,114,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1375.5" ></text>
+</g>
+<g >
+<title>main@maze (1,046 samples, 97.48%)</title><rect x="26.5" y="2725" width="1150.3" height="15.0" fill="rgb(239,139,0)" rx="2" ry="2" />
+<text  x="29.50" y="2735.5" >main@maze</text>
+</g>
+<g >
+<title>GC_stopped_mark (1 samples, 0.09%)</title><rect x="155.2" y="2517" width="1.1" height="15.0" fill="rgb(212,67,67)" rx="2" ry="2" />
+<text  x="158.16" y="2527.5" ></text>
+</g>
+<g >
+<title>GC_malloc_kind (26 samples, 2.42%)</title><rect x="91.4" y="2565" width="28.6" height="15.0" fill="rgb(219,78,78)" rx="2" ry="2" />
+<text  x="94.38" y="2575.5" >GC..</text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1845" width="13.2" height="15.0" fill="rgb(251,151,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1855.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc_inner (3 samples, 0.28%)</title><rect x="155.2" y="2581" width="3.3" height="15.0" fill="rgb(221,80,80)" rx="2" ry="2" />
+<text  x="158.16" y="2591.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2389" width="13.2" height="15.0" fill="rgb(204,104,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2399.5" ></text>
+</g>
+<g >
+<title>harr-tabulate@maze (33 samples, 3.08%)</title><rect x="88.1" y="2645" width="36.3" height="15.0" fill="rgb(194,94,0)" rx="2" ry="2" />
+<text  x="91.08" y="2655.5" >har..</text>
+</g>
+<g >
+<title>GC_build_fl (1 samples, 0.09%)</title><rect x="118.9" y="2485" width="1.1" height="15.0" fill="rgb(237,105,105)" rx="2" ry="2" />
+<text  x="121.87" y="2495.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1957" width="13.2" height="15.0" fill="rgb(252,152,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1967.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (11 samples, 1.03%)</title><rect x="1177.9" y="245" width="12.1" height="15.0" fill="rgb(250,150,0)" rx="2" ry="2" />
+<text  x="1180.90" y="255.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="389" width="13.2" height="15.0" fill="rgb(197,97,0)" rx="2" ry="2" />
+<text  x="1179.80" y="399.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc_inner (1 samples, 0.09%)</title><rect x="1176.8" y="277" width="1.1" height="15.0" fill="rgb(219,78,78)" rx="2" ry="2" />
+<text  x="1179.80" y="287.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (11 samples, 1.03%)</title><rect x="1177.9" y="309" width="12.1" height="15.0" fill="rgb(219,119,0)" rx="2" ry="2" />
+<text  x="1180.90" y="319.5" ></text>
+</g>
+<g >
+<title>create_vector (14 samples, 1.30%)</title><rect x="139.8" y="2597" width="15.4" height="15.0" fill="rgb(82,194,194)" rx="2" ry="2" />
+<text  x="142.77" y="2607.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2005" width="13.2" height="15.0" fill="rgb(249,149,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2015.5" ></text>
+</g>
+<g >
+<title>GC_mark_from (1 samples, 0.09%)</title><rect x="155.2" y="2485" width="1.1" height="15.0" fill="rgb(223,84,84)" rx="2" ry="2" />
+<text  x="158.16" y="2495.5" ></text>
+</g>
+<g >
+<title>get_index (1 samples, 0.09%)</title><rect x="15.5" y="2789" width="1.1" height="15.0" fill="rgb(50,165,165)" rx="2" ry="2" />
+<text  x="18.50" y="2799.5" ></text>
+</g>
+<g >
+<title>GC_allocobj (1 samples, 0.09%)</title><rect x="1180.1" y="69" width="1.1" height="15.0" fill="rgb(239,107,107)" rx="2" ry="2" />
+<text  x="1183.10" y="79.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2565" width="13.2" height="15.0" fill="rgb(252,152,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2575.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1378&gt;@maze (33 samples, 3.08%)</title><rect x="88.1" y="2629" width="36.3" height="15.0" fill="rgb(220,120,0)" rx="2" ry="2" />
+<text  x="91.08" y="2639.5" >&amp;&lt;@..</text>
+</g>
+<g >
+<title>handle_mm_fault (1 samples, 0.09%)</title><rect x="132.1" y="2517" width="1.1" height="15.0" fill="rgb(63,177,177)" rx="2" ry="2" />
+<text  x="135.07" y="2527.5" ></text>
+</g>
+<g >
+<title>GC_install_header (1 samples, 0.09%)</title><rect x="117.8" y="2453" width="1.1" height="15.0" fill="rgb(240,108,108)" rx="2" ry="2" />
+<text  x="120.77" y="2463.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="549" width="13.2" height="15.0" fill="rgb(217,117,0)" rx="2" ry="2" />
+<text  x="1179.80" y="559.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2085" width="13.2" height="15.0" fill="rgb(253,153,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2095.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1141" width="13.2" height="15.0" fill="rgb(212,112,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1151.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2517" width="13.2" height="15.0" fill="rgb(223,123,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2527.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1605" width="13.2" height="15.0" fill="rgb(203,103,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1615.5" ></text>
+</g>
+<g >
+<title>update_process_times (2 samples, 0.19%)</title><rect x="1165.8" y="2517" width="2.2" height="15.0" fill="rgb(108,218,218)" rx="2" ry="2" />
+<text  x="1168.81" y="2527.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="501" width="13.2" height="15.0" fill="rgb(208,108,0)" rx="2" ry="2" />
+<text  x="1179.80" y="511.5" ></text>
+</g>
+<g >
+<title>GC_allochblk (3 samples, 0.28%)</title><rect x="115.6" y="2485" width="3.3" height="15.0" fill="rgb(254,128,128)" rx="2" ry="2" />
+<text  x="118.57" y="2495.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1189" width="13.2" height="15.0" fill="rgb(204,104,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1199.5" ></text>
+</g>
+<g >
+<title>alloc-wall@maze (1 samples, 0.09%)</title><rect x="24.3" y="2773" width="1.1" height="15.0" fill="rgb(210,110,0)" rx="2" ry="2" />
+<text  x="27.30" y="2783.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="869" width="13.2" height="15.0" fill="rgb(247,147,0)" rx="2" ry="2" />
+<text  x="1179.80" y="879.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1301" width="13.2" height="15.0" fill="rgb(242,142,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1311.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2149" width="13.2" height="15.0" fill="rgb(191,91,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2159.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="837" width="13.2" height="15.0" fill="rgb(242,142,0)" rx="2" ry="2" />
+<text  x="1179.80" y="847.5" ></text>
+</g>
+<g >
+<title>bgl_display_char (1 samples, 0.09%)</title><rect x="1171.3" y="2645" width="1.1" height="15.0" fill="rgb(73,221,73)" rx="2" ry="2" />
+<text  x="1174.30" y="2655.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2453" width="13.2" height="15.0" fill="rgb(240,140,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2463.5" ></text>
+</g>
+<g >
+<title>print-hexmaze@maze (8 samples, 0.75%)</title><rect x="1168.0" y="2661" width="8.8" height="15.0" fill="rgb(233,133,0)" rx="2" ry="2" />
+<text  x="1171.01" y="2671.5" ></text>
+</g>
+<g >
+<title>all (1,073 samples, 100%)</title><rect x="10.0" y="2837" width="1180.0" height="15.0" fill="rgb(100,210,210)" rx="2" ry="2" />
+<text  x="13.00" y="2847.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="693" width="13.2" height="15.0" fill="rgb(249,149,0)" rx="2" ry="2" />
+<text  x="1179.80" y="703.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2661" width="13.2" height="15.0" fill="rgb(205,105,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2671.5" ></text>
+</g>
+<g >
+<title>GC_try_to_collect_inner (20 samples, 1.86%)</title><rect x="93.6" y="2485" width="22.0" height="15.0" fill="rgb(250,122,122)" rx="2" ry="2" />
+<text  x="96.58" y="2495.5" >G..</text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="453" width="13.2" height="15.0" fill="rgb(198,98,0)" rx="2" ry="2" />
+<text  x="1179.80" y="463.5" ></text>
+</g>
+<g >
+<title>GC_allochblk (1 samples, 0.09%)</title><rect x="1177.9" y="133" width="1.1" height="15.0" fill="rgb(230,94,94)" rx="2" ry="2" />
+<text  x="1180.90" y="143.5" ></text>
+</g>
+<g >
+<title>do_user_addr_fault (1 samples, 0.09%)</title><rect x="132.1" y="2533" width="1.1" height="15.0" fill="rgb(101,211,211)" rx="2" ry="2" />
+<text  x="135.07" y="2543.5" ></text>
+</g>
+<g >
+<title>GC_clear_stack (1 samples, 0.09%)</title><rect x="89.2" y="2565" width="1.1" height="15.0" fill="rgb(245,115,115)" rx="2" ry="2" />
+<text  x="92.18" y="2575.5" ></text>
+</g>
+<g >
+<title>GC_allochblk (1 samples, 0.09%)</title><rect x="1179.0" y="85" width="1.1" height="15.0" fill="rgb(217,75,75)" rx="2" ry="2" />
+<text  x="1182.00" y="95.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="773" width="13.2" height="15.0" fill="rgb(240,140,0)" rx="2" ry="2" />
+<text  x="1179.80" y="783.5" ></text>
+</g>
+<g >
+<title>GC_malloc (1 samples, 0.09%)</title><rect x="142.0" y="2581" width="1.1" height="15.0" fill="rgb(242,111,111)" rx="2" ry="2" />
+<text  x="144.97" y="2591.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1493" width="13.2" height="15.0" fill="rgb(232,132,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1503.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1509" width="13.2" height="15.0" fill="rgb(190,90,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1519.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2229" width="13.2" height="15.0" fill="rgb(244,144,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2239.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="325" width="13.2" height="15.0" fill="rgb(195,95,0)" rx="2" ry="2" />
+<text  x="1179.80" y="335.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1861" width="13.2" height="15.0" fill="rgb(219,119,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1871.5" ></text>
+</g>
+<g >
+<title>pmaze@maze (1,046 samples, 97.48%)</title><rect x="26.5" y="2677" width="1150.3" height="15.0" fill="rgb(239,139,0)" rx="2" ry="2" />
+<text  x="29.50" y="2687.5" >pmaze@maze</text>
+</g>
+<g >
+<title>&amp;search@maze (10 samples, 0.93%)</title><rect x="1179.0" y="181" width="11.0" height="15.0" fill="rgb(239,139,0)" rx="2" ry="2" />
+<text  x="1182.00" y="191.5" ></text>
+</g>
+<g >
+<title>GC_mark_some (1 samples, 0.09%)</title><rect x="1176.8" y="197" width="1.1" height="15.0" fill="rgb(232,96,96)" rx="2" ry="2" />
+<text  x="1179.80" y="207.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc (3 samples, 0.28%)</title><rect x="121.1" y="2581" width="3.3" height="15.0" fill="rgb(242,111,111)" rx="2" ry="2" />
+<text  x="124.07" y="2591.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1125" width="13.2" height="15.0" fill="rgb(223,123,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1135.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (11 samples, 1.03%)</title><rect x="1177.9" y="229" width="12.1" height="15.0" fill="rgb(239,139,0)" rx="2" ry="2" />
+<text  x="1180.90" y="239.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1221" width="13.2" height="15.0" fill="rgb(226,126,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1231.5" ></text>
+</g>
+<g >
+<title>GC_malloc_kind (1 samples, 0.09%)</title><rect x="1188.9" y="69" width="1.1" height="15.0" fill="rgb(245,116,116)" rx="2" ry="2" />
+<text  x="1191.90" y="79.5" ></text>
+</g>
+<g >
+<title>GC_allochblk (2 samples, 0.19%)</title><rect x="156.3" y="2533" width="2.2" height="15.0" fill="rgb(220,79,79)" rx="2" ry="2" />
+<text  x="159.26" y="2543.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2293" width="13.2" height="15.0" fill="rgb(199,99,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2303.5" ></text>
+</g>
+<g >
+<title>alloc-wall@maze (18 samples, 1.68%)</title><rect x="135.4" y="2629" width="19.8" height="15.0" fill="rgb(238,138,0)" rx="2" ry="2" />
+<text  x="138.37" y="2639.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="997" width="13.2" height="15.0" fill="rgb(234,134,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1007.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1685" width="13.2" height="15.0" fill="rgb(244,144,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1695.5" ></text>
+</g>
+<g >
+<title>_bigloo_main (1,046 samples, 97.48%)</title><rect x="26.5" y="2757" width="1150.3" height="15.0" fill="rgb(70,183,183)" rx="2" ry="2" />
+<text  x="29.50" y="2767.5" >_bigloo_main</text>
+</g>
+<g >
+<title>[unknown] (5 samples, 0.47%)</title><rect x="21.0" y="2805" width="5.5" height="15.0" fill="rgb(150,150,150)" rx="2" ry="2" />
+<text  x="24.00" y="2815.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (11 samples, 1.03%)</title><rect x="1177.9" y="293" width="12.1" height="15.0" fill="rgb(223,123,0)" rx="2" ry="2" />
+<text  x="1180.90" y="303.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1701" width="13.2" height="15.0" fill="rgb(204,104,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1711.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="805" width="13.2" height="15.0" fill="rgb(210,110,0)" rx="2" ry="2" />
+<text  x="1179.80" y="815.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2373" width="13.2" height="15.0" fill="rgb(199,99,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2383.5" ></text>
+</g>
+<g >
+<title>sched_balance_trigger (1 samples, 0.09%)</title><rect x="1165.8" y="2501" width="1.1" height="15.0" fill="rgb(104,215,215)" rx="2" ry="2" />
+<text  x="1168.81" y="2511.5" ></text>
+</g>
+<g >
+<title>path-length@maze (908 samples, 84.62%)</title><rect x="169.5" y="2629" width="998.5" height="15.0" fill="rgb(231,131,0)" rx="2" ry="2" />
+<text  x="172.46" y="2639.5" >path-length@maze</text>
+</g>
+<g >
+<title>for-each-hex-child@maze (8 samples, 0.75%)</title><rect x="1181.2" y="117" width="8.8" height="15.0" fill="rgb(235,135,0)" rx="2" ry="2" />
+<text  x="1184.20" y="127.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2533" width="13.2" height="15.0" fill="rgb(231,131,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2543.5" ></text>
+</g>
+<g >
+<title>sched_use_asym_prio (1 samples, 0.09%)</title><rect x="1165.8" y="2485" width="1.1" height="15.0" fill="rgb(88,200,200)" rx="2" ry="2" />
+<text  x="1168.81" y="2495.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (3 samples, 0.28%)</title><rect x="1186.7" y="101" width="3.3" height="15.0" fill="rgb(243,143,0)" rx="2" ry="2" />
+<text  x="1189.70" y="111.5" ></text>
+</g>
+<g >
+<title>GC_try_to_collect_inner (1 samples, 0.09%)</title><rect x="1176.8" y="229" width="1.1" height="15.0" fill="rgb(218,77,77)" rx="2" ry="2" />
+<text  x="1179.80" y="239.5" ></text>
+</g>
+<g >
+<title>GC_clear_stack_inner (1 samples, 0.09%)</title><rect x="140.9" y="2581" width="1.1" height="15.0" fill="rgb(251,124,124)" rx="2" ry="2" />
+<text  x="143.87" y="2591.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1637" width="13.2" height="15.0" fill="rgb(199,99,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1647.5" ></text>
+</g>
+<g >
+<title>GC_collect_or_expand (3 samples, 0.28%)</title><rect x="144.2" y="2517" width="3.3" height="15.0" fill="rgb(219,78,78)" rx="2" ry="2" />
+<text  x="147.17" y="2527.5" ></text>
+</g>
+<g >
+<title>GC_stopped_mark (3 samples, 0.28%)</title><rect x="144.2" y="2485" width="3.3" height="15.0" fill="rgb(209,64,64)" rx="2" ry="2" />
+<text  x="147.17" y="2495.5" ></text>
+</g>
+<g >
+<title>create_vector (3 samples, 0.28%)</title><rect x="129.9" y="2629" width="3.3" height="15.0" fill="rgb(87,199,199)" rx="2" ry="2" />
+<text  x="132.87" y="2639.5" ></text>
+</g>
+<g >
+<title>GC_new_hblk (1 samples, 0.09%)</title><rect x="1179.0" y="101" width="1.1" height="15.0" fill="rgb(225,86,86)" rx="2" ry="2" />
+<text  x="1182.00" y="111.5" ></text>
+</g>
+<g >
+<title>GC_try_to_collect_inner (3 samples, 0.28%)</title><rect x="144.2" y="2501" width="3.3" height="15.0" fill="rgb(233,99,99)" rx="2" ry="2" />
+<text  x="147.17" y="2511.5" ></text>
+</g>
+<g >
+<title>make-wall-vec@maze (23 samples, 2.14%)</title><rect x="133.2" y="2645" width="25.3" height="15.0" fill="rgb(203,103,0)" rx="2" ry="2" />
+<text  x="136.17" y="2655.5" >m..</text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="709" width="13.2" height="15.0" fill="rgb(207,107,0)" rx="2" ry="2" />
+<text  x="1179.80" y="719.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="933" width="13.2" height="15.0" fill="rgb(203,103,0)" rx="2" ry="2" />
+<text  x="1179.80" y="943.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1445" width="13.2" height="15.0" fill="rgb(253,153,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1455.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2197" width="13.2" height="15.0" fill="rgb(200,100,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2207.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1253" width="13.2" height="15.0" fill="rgb(226,126,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1263.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1477" width="13.2" height="15.0" fill="rgb(232,132,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1487.5" ></text>
+</g>
+<g >
+<title>GC_try_to_collect_inner (1 samples, 0.09%)</title><rect x="155.2" y="2533" width="1.1" height="15.0" fill="rgb(245,115,115)" rx="2" ry="2" />
+<text  x="158.16" y="2543.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1013" width="13.2" height="15.0" fill="rgb(191,91,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1023.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="661" width="13.2" height="15.0" fill="rgb(236,136,0)" rx="2" ry="2" />
+<text  x="1179.80" y="671.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc (3 samples, 0.28%)</title><rect x="155.2" y="2597" width="3.3" height="15.0" fill="rgb(252,126,126)" rx="2" ry="2" />
+<text  x="158.16" y="2607.5" ></text>
+</g>
+<g >
+<title>GC_allocobj (1 samples, 0.09%)</title><rect x="1179.0" y="117" width="1.1" height="15.0" fill="rgb(212,67,67)" rx="2" ry="2" />
+<text  x="1182.00" y="127.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="437" width="13.2" height="15.0" fill="rgb(210,110,0)" rx="2" ry="2" />
+<text  x="1179.80" y="447.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1077" width="13.2" height="15.0" fill="rgb(216,116,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1087.5" ></text>
+</g>
+<g >
+<title>__alloc_pages_noprof (1 samples, 0.09%)</title><rect x="132.1" y="2421" width="1.1" height="15.0" fill="rgb(59,173,173)" rx="2" ry="2" />
+<text  x="135.07" y="2431.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1749" width="13.2" height="15.0" fill="rgb(246,146,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1759.5" ></text>
+</g>
+<g >
+<title>make-wall-vec@maze (1 samples, 0.09%)</title><rect x="24.3" y="2789" width="1.1" height="15.0" fill="rgb(240,140,0)" rx="2" ry="2" />
+<text  x="27.30" y="2799.5" ></text>
+</g>
+<g >
+<title>make_pair (4 samples, 0.37%)</title><rect x="120.0" y="2613" width="4.4" height="15.0" fill="rgb(60,174,174)" rx="2" ry="2" />
+<text  x="122.97" y="2623.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2325" width="13.2" height="15.0" fill="rgb(253,153,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2335.5" ></text>
+</g>
+<g >
+<title>get_page_from_freelist (1 samples, 0.09%)</title><rect x="132.1" y="2405" width="1.1" height="15.0" fill="rgb(50,165,165)" rx="2" ry="2" />
+<text  x="135.07" y="2415.5" ></text>
+</g>
+<g >
+<title>GC_allocobj (24 samples, 2.24%)</title><rect x="93.6" y="2517" width="26.4" height="15.0" fill="rgb(236,103,103)" rx="2" ry="2" />
+<text  x="96.58" y="2527.5" >G..</text>
+</g>
+<g >
+<title>idle_cpu (1 samples, 0.09%)</title><rect x="1165.8" y="2469" width="1.1" height="15.0" fill="rgb(96,207,207)" rx="2" ry="2" />
+<text  x="1168.81" y="2479.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc_inner (3 samples, 0.28%)</title><rect x="121.1" y="2565" width="3.3" height="15.0" fill="rgb(217,75,75)" rx="2" ry="2" />
+<text  x="124.07" y="2575.5" ></text>
+</g>
+<g >
+<title>__hrtimer_run_queues (2 samples, 0.19%)</title><rect x="1165.8" y="2549" width="2.2" height="15.0" fill="rgb(98,209,209)" rx="2" ry="2" />
+<text  x="1168.81" y="2559.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="741" width="13.2" height="15.0" fill="rgb(209,109,0)" rx="2" ry="2" />
+<text  x="1179.80" y="751.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="581" width="13.2" height="15.0" fill="rgb(231,131,0)" rx="2" ry="2" />
+<text  x="1179.80" y="591.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2037" width="13.2" height="15.0" fill="rgb(238,138,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2047.5" ></text>
+</g>
+<g >
+<title>GC_new_hblk (1 samples, 0.09%)</title><rect x="1177.9" y="149" width="1.1" height="15.0" fill="rgb(240,108,108)" rx="2" ry="2" />
+<text  x="1180.90" y="159.5" ></text>
+</g>
+<g >
+<title>GC_mark_from (2 samples, 0.19%)</title><rect x="144.2" y="2453" width="2.2" height="15.0" fill="rgb(214,71,71)" rx="2" ry="2" />
+<text  x="147.17" y="2463.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc (24 samples, 2.24%)</title><rect x="93.6" y="2549" width="26.4" height="15.0" fill="rgb(206,58,58)" rx="2" ry="2" />
+<text  x="96.58" y="2559.5" >G..</text>
+</g>
+<g >
+<title>GC_malloc_kind (1 samples, 0.09%)</title><rect x="1180.1" y="117" width="1.1" height="15.0" fill="rgb(221,80,80)" rx="2" ry="2" />
+<text  x="1183.10" y="127.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1989" width="13.2" height="15.0" fill="rgb(199,99,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1999.5" ></text>
+</g>
+<g >
+<title>GC_build_fl (1 samples, 0.09%)</title><rect x="1180.1" y="37" width="1.1" height="15.0" fill="rgb(247,119,119)" rx="2" ry="2" />
+<text  x="1183.10" y="47.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2021" width="13.2" height="15.0" fill="rgb(247,147,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2031.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="405" width="13.2" height="15.0" fill="rgb(210,110,0)" rx="2" ry="2" />
+<text  x="1179.80" y="415.5" ></text>
+</g>
+<g >
+<title>bgl_act_default (1 samples, 0.09%)</title><rect x="21.0" y="2789" width="1.1" height="15.0" fill="rgb(88,235,88)" rx="2" ry="2" />
+<text  x="24.00" y="2799.5" ></text>
+</g>
+<g >
+<title>GC_clear_stack_inner (1 samples, 0.09%)</title><rect x="120.0" y="2597" width="1.1" height="15.0" fill="rgb(251,125,125)" rx="2" ry="2" />
+<text  x="122.97" y="2607.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1525" width="13.2" height="15.0" fill="rgb(206,106,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1535.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="917" width="13.2" height="15.0" fill="rgb(198,98,0)" rx="2" ry="2" />
+<text  x="1179.80" y="927.5" ></text>
+</g>
+<g >
+<title>get_index (1 samples, 0.09%)</title><rect x="116.7" y="2437" width="1.1" height="15.0" fill="rgb(64,178,178)" rx="2" ry="2" />
+<text  x="119.67" y="2447.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="885" width="13.2" height="15.0" fill="rgb(244,144,0)" rx="2" ry="2" />
+<text  x="1179.80" y="895.5" ></text>
+</g>
+<g >
+<title>GC_approx_sp (1 samples, 0.09%)</title><rect x="89.2" y="2549" width="1.1" height="15.0" fill="rgb(200,51,51)" rx="2" ry="2" />
+<text  x="92.18" y="2559.5" ></text>
+</g>
+<g >
+<title>GC_build_fl (6 samples, 0.56%)</title><rect x="148.6" y="2501" width="6.6" height="15.0" fill="rgb(226,89,89)" rx="2" ry="2" />
+<text  x="151.56" y="2511.5" ></text>
+</g>
+<g >
+<title>get-set-root@maze (29 samples, 2.70%)</title><rect x="56.2" y="2629" width="31.9" height="15.0" fill="rgb(236,136,0)" rx="2" ry="2" />
+<text  x="59.19" y="2639.5" >ge..</text>
+</g>
+<g >
+<title>__libc_start_main_impl (1,046 samples, 97.48%)</title><rect x="26.5" y="2789" width="1150.3" height="15.0" fill="rgb(105,215,215)" rx="2" ry="2" />
+<text  x="29.50" y="2799.5" >__libc_start_main_impl</text>
+</g>
+<g >
+<title>prep_new_page (1 samples, 0.09%)</title><rect x="132.1" y="2389" width="1.1" height="15.0" fill="rgb(79,192,192)" rx="2" ry="2" />
+<text  x="135.07" y="2399.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1045" width="13.2" height="15.0" fill="rgb(190,90,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1055.5" ></text>
+</g>
+<g >
+<title>GC_allocobj (1 samples, 0.09%)</title><rect x="1177.9" y="165" width="1.1" height="15.0" fill="rgb(203,55,55)" rx="2" ry="2" />
+<text  x="1180.90" y="175.5" ></text>
+</g>
+<g >
+<title>bgl_display_char@plt (1 samples, 0.09%)</title><rect x="1175.7" y="2629" width="1.1" height="15.0" fill="rgb(101,247,101)" rx="2" ry="2" />
+<text  x="1178.70" y="2639.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc_inner (1 samples, 0.09%)</title><rect x="1180.1" y="85" width="1.1" height="15.0" fill="rgb(242,111,111)" rx="2" ry="2" />
+<text  x="1183.10" y="95.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2645" width="13.2" height="15.0" fill="rgb(237,137,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2655.5" ></text>
+</g>
+<g >
+<title>modulofx@__r4_numbers_6_5_fixnum@plt (2 samples, 0.19%)</title><rect x="166.2" y="2613" width="2.2" height="15.0" fill="rgb(195,95,0)" rx="2" ry="2" />
+<text  x="169.16" y="2623.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="645" width="13.2" height="15.0" fill="rgb(212,112,0)" rx="2" ry="2" />
+<text  x="1179.80" y="655.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1349" width="13.2" height="15.0" fill="rgb(240,140,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1359.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2245" width="13.2" height="15.0" fill="rgb(253,153,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2255.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (9 samples, 0.84%)</title><rect x="1180.1" y="165" width="9.9" height="15.0" fill="rgb(235,135,0)" rx="2" ry="2" />
+<text  x="1183.10" y="175.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1573" width="13.2" height="15.0" fill="rgb(211,111,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1583.5" ></text>
+</g>
+<g >
+<title>folio_alloc_mpol_noprof (1 samples, 0.09%)</title><rect x="132.1" y="2453" width="1.1" height="15.0" fill="rgb(90,201,201)" rx="2" ry="2" />
+<text  x="135.07" y="2463.5" ></text>
+</g>
+<g >
+<title>bgl_list_length (2 samples, 0.19%)</title><rect x="127.7" y="2629" width="2.2" height="15.0" fill="rgb(74,222,74)" rx="2" ry="2" />
+<text  x="130.67" y="2639.5" ></text>
+</g>
+<g >
+<title>display-hexbottom@maze (4 samples, 0.37%)</title><rect x="1172.4" y="2645" width="4.4" height="15.0" fill="rgb(206,106,0)" rx="2" ry="2" />
+<text  x="1175.40" y="2655.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1397" width="13.2" height="15.0" fill="rgb(190,90,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1407.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="821" width="13.2" height="15.0" fill="rgb(211,111,0)" rx="2" ry="2" />
+<text  x="1179.80" y="831.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="485" width="13.2" height="15.0" fill="rgb(219,119,0)" rx="2" ry="2" />
+<text  x="1179.80" y="495.5" ></text>
+</g>
+<g >
+<title>do_huge_pmd_anonymous_page (1 samples, 0.09%)</title><rect x="132.1" y="2485" width="1.1" height="15.0" fill="rgb(90,202,202)" rx="2" ry="2" />
+<text  x="135.07" y="2495.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="949" width="13.2" height="15.0" fill="rgb(248,148,0)" rx="2" ry="2" />
+<text  x="1179.80" y="959.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (10 samples, 0.93%)</title><rect x="1179.0" y="213" width="11.0" height="15.0" fill="rgb(206,106,0)" rx="2" ry="2" />
+<text  x="1182.00" y="223.5" ></text>
+</g>
+<g >
+<title>GC_mark_some (20 samples, 1.86%)</title><rect x="93.6" y="2453" width="22.0" height="15.0" fill="rgb(239,107,107)" rx="2" ry="2" />
+<text  x="96.58" y="2463.5" >G..</text>
+</g>
+<g >
+<title>GC_generic_malloc_inner (1 samples, 0.09%)</title><rect x="1179.0" y="133" width="1.1" height="15.0" fill="rgb(208,61,61)" rx="2" ry="2" />
+<text  x="1182.00" y="143.5" ></text>
+</g>
+<g >
+<title>GC_collect_or_expand (1 samples, 0.09%)</title><rect x="1176.8" y="245" width="1.1" height="15.0" fill="rgb(201,52,52)" rx="2" ry="2" />
+<text  x="1179.80" y="255.5" ></text>
+</g>
+<g >
+<title>[anon] (10 samples, 0.93%)</title><rect x="10.0" y="2805" width="11.0" height="15.0" fill="rgb(59,174,174)" rx="2" ry="2" />
+<text  x="13.00" y="2815.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2693" width="13.2" height="15.0" fill="rgb(244,144,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2703.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1205" width="13.2" height="15.0" fill="rgb(191,91,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1215.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1381" width="13.2" height="15.0" fill="rgb(220,120,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1391.5" ></text>
+</g>
+<g >
+<title>clear_page_erms (1 samples, 0.09%)</title><rect x="132.1" y="2373" width="1.1" height="15.0" fill="rgb(63,177,177)" rx="2" ry="2" />
+<text  x="135.07" y="2383.5" ></text>
+</g>
+<g >
+<title>create_vector (2 samples, 0.19%)</title><rect x="12.2" y="2789" width="2.2" height="15.0" fill="rgb(69,183,183)" rx="2" ry="2" />
+<text  x="15.20" y="2799.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="597" width="13.2" height="15.0" fill="rgb(222,122,0)" rx="2" ry="2" />
+<text  x="1179.80" y="607.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2709" width="13.2" height="15.0" fill="rgb(253,153,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2719.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2101" width="13.2" height="15.0" fill="rgb(235,135,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2111.5" ></text>
+</g>
+<g >
+<title>alloc_pages_mpol_noprof (1 samples, 0.09%)</title><rect x="132.1" y="2437" width="1.1" height="15.0" fill="rgb(91,203,203)" rx="2" ry="2" />
+<text  x="135.07" y="2447.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="725" width="13.2" height="15.0" fill="rgb(247,147,0)" rx="2" ry="2" />
+<text  x="1179.80" y="735.5" ></text>
+</g>
+<g >
+<title>permute-vec!@maze (1 samples, 0.09%)</title><rect x="25.4" y="2789" width="1.1" height="15.0" fill="rgb(203,103,0)" rx="2" ry="2" />
+<text  x="28.40" y="2799.5" ></text>
+</g>
+<g >
+<title>GC_mark_from (19 samples, 1.77%)</title><rect x="94.7" y="2437" width="20.9" height="15.0" fill="rgb(221,81,81)" rx="2" ry="2" />
+<text  x="97.68" y="2447.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2725" width="13.2" height="15.0" fill="rgb(239,139,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2735.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2405" width="13.2" height="15.0" fill="rgb(240,140,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2415.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2069" width="13.2" height="15.0" fill="rgb(249,149,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2079.5" ></text>
+</g>
+<g >
+<title>create_vector (28 samples, 2.61%)</title><rect x="89.2" y="2581" width="30.8" height="15.0" fill="rgb(94,205,205)" rx="2" ry="2" />
+<text  x="92.18" y="2591.5" >cr..</text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2597" width="13.2" height="15.0" fill="rgb(252,152,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2607.5" ></text>
+</g>
+<g >
+<title>GC_malloc_kind (1 samples, 0.09%)</title><rect x="1177.9" y="213" width="1.1" height="15.0" fill="rgb(203,54,54)" rx="2" ry="2" />
+<text  x="1180.90" y="223.5" ></text>
+</g>
+<g >
+<title>bgl_fill_vector (1 samples, 0.09%)</title><rect x="88.1" y="2581" width="1.1" height="15.0" fill="rgb(53,202,53)" rx="2" ry="2" />
+<text  x="91.08" y="2591.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="341" width="13.2" height="15.0" fill="rgb(239,139,0)" rx="2" ry="2" />
+<text  x="1179.80" y="351.5" ></text>
+</g>
+<g >
+<title>modulofx@__r4_numbers_6_5_fixnum (2 samples, 0.19%)</title><rect x="18.8" y="2789" width="2.2" height="15.0" fill="rgb(220,120,0)" rx="2" ry="2" />
+<text  x="21.80" y="2799.5" ></text>
+</g>
+<g >
+<title>sysvec_apic_timer_interrupt (2 samples, 0.19%)</title><rect x="1165.8" y="2597" width="2.2" height="15.0" fill="rgb(61,175,175)" rx="2" ry="2" />
+<text  x="1168.81" y="2607.5" ></text>
+</g>
+<g >
+<title>task_tick_fair (1 samples, 0.09%)</title><rect x="1166.9" y="2485" width="1.1" height="15.0" fill="rgb(83,195,195)" rx="2" ry="2" />
+<text  x="1169.91" y="2495.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc (1 samples, 0.09%)</title><rect x="1177.9" y="197" width="1.1" height="15.0" fill="rgb(235,101,101)" rx="2" ry="2" />
+<text  x="1180.90" y="207.5" ></text>
+</g>
+<g >
+<title>GC_malloc_kind (1 samples, 0.09%)</title><rect x="1179.0" y="165" width="1.1" height="15.0" fill="rgb(241,110,110)" rx="2" ry="2" />
+<text  x="1182.00" y="175.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1941" width="13.2" height="15.0" fill="rgb(190,90,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1951.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="853" width="13.2" height="15.0" fill="rgb(217,117,0)" rx="2" ry="2" />
+<text  x="1179.80" y="863.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1429" width="13.2" height="15.0" fill="rgb(196,96,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1439.5" ></text>
+</g>
+<g >
+<title>GC_clear_stack (1 samples, 0.09%)</title><rect x="139.8" y="2581" width="1.1" height="15.0" fill="rgb(230,94,94)" rx="2" ry="2" />
+<text  x="142.77" y="2591.5" ></text>
+</g>
+<g >
+<title>sched_tick (1 samples, 0.09%)</title><rect x="1166.9" y="2501" width="1.1" height="15.0" fill="rgb(109,219,219)" rx="2" ry="2" />
+<text  x="1169.91" y="2511.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1237" width="13.2" height="15.0" fill="rgb(222,122,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1247.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2629" width="13.2" height="15.0" fill="rgb(251,151,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2639.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2757" width="13.2" height="15.0" fill="rgb(247,147,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2767.5" ></text>
+</g>
+<g >
+<title>rand@maze (2 samples, 0.19%)</title><rect x="166.2" y="2629" width="2.2" height="15.0" fill="rgb(195,95,0)" rx="2" ry="2" />
+<text  x="169.16" y="2639.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1781" width="13.2" height="15.0" fill="rgb(244,144,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1791.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1717" width="13.2" height="15.0" fill="rgb(237,137,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1727.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2261" width="13.2" height="15.0" fill="rgb(215,115,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2271.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1797" width="13.2" height="15.0" fill="rgb(233,133,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1807.5" ></text>
+</g>
+<g >
+<title>GC_allochblk_nth (1 samples, 0.09%)</title><rect x="147.5" y="2485" width="1.1" height="15.0" fill="rgb(205,58,58)" rx="2" ry="2" />
+<text  x="150.47" y="2495.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc (3 samples, 0.28%)</title><rect x="129.9" y="2597" width="3.3" height="15.0" fill="rgb(223,84,84)" rx="2" ry="2" />
+<text  x="132.87" y="2607.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2501" width="13.2" height="15.0" fill="rgb(214,114,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2511.5" ></text>
+</g>
+<g >
+<title>GC_new_hblk (4 samples, 0.37%)</title><rect x="115.6" y="2501" width="4.4" height="15.0" fill="rgb(251,124,124)" rx="2" ry="2" />
+<text  x="118.57" y="2511.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1157" width="13.2" height="15.0" fill="rgb(242,142,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1167.5" ></text>
+</g>
+<g >
+<title>make_pair (3 samples, 0.28%)</title><rect x="155.2" y="2629" width="3.3" height="15.0" fill="rgb(61,175,175)" rx="2" ry="2" />
+<text  x="158.16" y="2639.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2181" width="13.2" height="15.0" fill="rgb(221,121,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2191.5" ></text>
+</g>
+<g >
+<title>GC_new_hblk (7 samples, 0.65%)</title><rect x="147.5" y="2517" width="7.7" height="15.0" fill="rgb(244,114,114)" rx="2" ry="2" />
+<text  x="150.47" y="2527.5" ></text>
+</g>
+<g >
+<title>GC_mark_some (1 samples, 0.09%)</title><rect x="155.2" y="2501" width="1.1" height="15.0" fill="rgb(216,73,73)" rx="2" ry="2" />
+<text  x="158.16" y="2511.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="677" width="13.2" height="15.0" fill="rgb(251,151,0)" rx="2" ry="2" />
+<text  x="1179.80" y="687.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="981" width="13.2" height="15.0" fill="rgb(190,90,0)" rx="2" ry="2" />
+<text  x="1179.80" y="991.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="373" width="13.2" height="15.0" fill="rgb(202,102,0)" rx="2" ry="2" />
+<text  x="1179.80" y="383.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1317" width="13.2" height="15.0" fill="rgb(224,124,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1327.5" ></text>
+</g>
+<g >
+<title>hrtimer_interrupt (2 samples, 0.19%)</title><rect x="1165.8" y="2565" width="2.2" height="15.0" fill="rgb(96,207,207)" rx="2" ry="2" />
+<text  x="1168.81" y="2575.5" ></text>
+</g>
+<g >
+<title>GC_allochblk (1 samples, 0.09%)</title><rect x="147.5" y="2501" width="1.1" height="15.0" fill="rgb(221,81,81)" rx="2" ry="2" />
+<text  x="150.47" y="2511.5" ></text>
+</g>
+<g >
+<title>make-maze@maze (1,038 samples, 96.74%)</title><rect x="26.5" y="2661" width="1141.5" height="15.0" fill="rgb(222,122,0)" rx="2" ry="2" />
+<text  x="29.50" y="2671.5" >make-maze@maze</text>
+</g>
+<g >
+<title>for-each-hex-child@maze (1 samples, 0.09%)</title><rect x="14.4" y="2789" width="1.1" height="15.0" fill="rgb(229,129,0)" rx="2" ry="2" />
+<text  x="17.40" y="2799.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1269" width="13.2" height="15.0" fill="rgb(194,94,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1279.5" ></text>
+</g>
+<g >
+<title>vma_alloc_folio_noprof (1 samples, 0.09%)</title><rect x="132.1" y="2469" width="1.1" height="15.0" fill="rgb(89,200,200)" rx="2" ry="2" />
+<text  x="135.07" y="2479.5" ></text>
+</g>
+<g >
+<title>bgl_display_char (2 samples, 0.19%)</title><rect x="22.1" y="2789" width="2.2" height="15.0" fill="rgb(99,245,99)" rx="2" ry="2" />
+<text  x="25.10" y="2799.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2613" width="13.2" height="15.0" fill="rgb(222,122,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2623.5" ></text>
+</g>
+<g >
+<title>GC_generic_malloc_inner (24 samples, 2.24%)</title><rect x="93.6" y="2533" width="26.4" height="15.0" fill="rgb(248,120,120)" rx="2" ry="2" />
+<text  x="96.58" y="2543.5" >G..</text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2053" width="13.2" height="15.0" fill="rgb(242,142,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2063.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1109" width="13.2" height="15.0" fill="rgb(222,122,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1119.5" ></text>
+</g>
+<g >
+<title>GC_malloc_kind (3 samples, 0.28%)</title><rect x="155.2" y="2613" width="3.3" height="15.0" fill="rgb(215,72,72)" rx="2" ry="2" />
+<text  x="158.16" y="2623.5" ></text>
+</g>
+<g >
+<title>GC_allochblk_nth (3 samples, 0.28%)</title><rect x="115.6" y="2469" width="3.3" height="15.0" fill="rgb(227,90,90)" rx="2" ry="2" />
+<text  x="118.57" y="2479.5" ></text>
+</g>
+<g >
+<title>__libc_start_call_main (1,046 samples, 97.48%)</title><rect x="26.5" y="2773" width="1150.3" height="15.0" fill="rgb(76,189,189)" rx="2" ry="2" />
+<text  x="29.50" y="2783.5" >__libc_start_call_main</text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2549" width="13.2" height="15.0" fill="rgb(198,98,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2559.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="629" width="13.2" height="15.0" fill="rgb(236,136,0)" rx="2" ry="2" />
+<text  x="1179.80" y="639.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2117" width="13.2" height="15.0" fill="rgb(215,115,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2127.5" ></text>
+</g>
+<g >
+<title>pick-entrances@maze (909 samples, 84.72%)</title><rect x="168.4" y="2645" width="999.6" height="15.0" fill="rgb(243,143,0)" rx="2" ry="2" />
+<text  x="171.36" y="2655.5" >pick-entrances@maze</text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2805" width="13.2" height="15.0" fill="rgb(244,144,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2815.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1925" width="13.2" height="15.0" fill="rgb(253,153,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1935.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="613" width="13.2" height="15.0" fill="rgb(245,145,0)" rx="2" ry="2" />
+<text  x="1179.80" y="623.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1285" width="13.2" height="15.0" fill="rgb(221,121,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1295.5" ></text>
+</g>
+<g >
+<title>_start (1,046 samples, 97.48%)</title><rect x="26.5" y="2805" width="1150.3" height="15.0" fill="rgb(77,190,190)" rx="2" ry="2" />
+<text  x="29.50" y="2815.5" >_start</text>
+</g>
+<g >
+<title>bgl_display_char (1 samples, 0.09%)</title><rect x="11.1" y="2789" width="1.1" height="15.0" fill="rgb(53,203,53)" rx="2" ry="2" />
+<text  x="14.10" y="2799.5" ></text>
+</g>
+<g >
+<title>GC_mark_from (1 samples, 0.09%)</title><rect x="1176.8" y="181" width="1.1" height="15.0" fill="rgb(247,119,119)" rx="2" ry="2" />
+<text  x="1179.80" y="191.5" ></text>
+</g>
+<g >
+<title>asm_sysvec_apic_timer_interrupt (2 samples, 0.19%)</title><rect x="1165.8" y="2613" width="2.2" height="15.0" fill="rgb(55,169,169)" rx="2" ry="2" />
+<text  x="1168.81" y="2623.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1541" width="13.2" height="15.0" fill="rgb(227,127,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1551.5" ></text>
+</g>
+<g >
+<title>make_pair (2 samples, 0.19%)</title><rect x="16.6" y="2789" width="2.2" height="15.0" fill="rgb(87,199,199)" rx="2" ry="2" />
+<text  x="19.60" y="2799.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2341" width="13.2" height="15.0" fill="rgb(225,125,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2351.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="517" width="13.2" height="15.0" fill="rgb(221,121,0)" rx="2" ry="2" />
+<text  x="1179.80" y="527.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2773" width="13.2" height="15.0" fill="rgb(202,102,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2783.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1920&gt;@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2165" width="13.2" height="15.0" fill="rgb(241,141,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2175.5" ></text>
+</g>
+<g >
+<title>GC_allochblk_nth (2 samples, 0.19%)</title><rect x="156.3" y="2517" width="2.2" height="15.0" fill="rgb(249,121,121)" rx="2" ry="2" />
+<text  x="159.26" y="2527.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (11 samples, 1.03%)</title><rect x="1177.9" y="277" width="12.1" height="15.0" fill="rgb(254,154,0)" rx="2" ry="2" />
+<text  x="1180.90" y="287.5" ></text>
+</g>
+<g >
+<title>GC_malloc_kind (3 samples, 0.28%)</title><rect x="121.1" y="2597" width="3.3" height="15.0" fill="rgb(218,77,77)" rx="2" ry="2" />
+<text  x="124.07" y="2607.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (11 samples, 1.03%)</title><rect x="1177.9" y="261" width="12.1" height="15.0" fill="rgb(247,147,0)" rx="2" ry="2" />
+<text  x="1180.90" y="271.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (2 samples, 0.19%)</title><rect x="1187.8" y="85" width="2.2" height="15.0" fill="rgb(201,101,0)" rx="2" ry="2" />
+<text  x="1190.80" y="95.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1621" width="13.2" height="15.0" fill="rgb(210,110,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1631.5" ></text>
+</g>
+<g >
+<title>&amp;&lt;@L:1953&gt;@maze (1,046 samples, 97.48%)</title><rect x="26.5" y="2693" width="1150.3" height="15.0" fill="rgb(224,124,0)" rx="2" ry="2" />
+<text  x="29.50" y="2703.5" >&amp;&lt;@L:1953&gt;@maze</text>
+</g>
+<g >
+<title>GC_malloc_kind (1 samples, 0.09%)</title><rect x="1176.8" y="309" width="1.1" height="15.0" fill="rgb(226,88,88)" rx="2" ry="2" />
+<text  x="1179.80" y="319.5" ></text>
+</g>
+<g >
+<title>GC_allocobj (10 samples, 0.93%)</title><rect x="144.2" y="2533" width="11.0" height="15.0" fill="rgb(231,95,95)" rx="2" ry="2" />
+<text  x="147.17" y="2543.5" ></text>
+</g>
+<g >
+<title>&amp;search@maze (12 samples, 1.12%)</title><rect x="1176.8" y="1813" width="13.2" height="15.0" fill="rgb(220,120,0)" rx="2" ry="2" />
+<text  x="1179.80" y="1823.5" ></text>
+</g>
+<g >
+<title>for-each-hex-child@maze (12 samples, 1.12%)</title><rect x="1176.8" y="2277" width="13.2" height="15.0" fill="rgb(210,110,0)" rx="2" ry="2" />
+<text  x="1179.80" y="2287.5" ></text>
+</g>
+<g >
+<title>GC_allochblk_nth (1 samples, 0.09%)</title><rect x="1177.9" y="117" width="1.1" height="15.0" fill="rgb(237,104,104)" rx="2" ry="2" />
+<text  x="1180.90" y="127.5" ></text>
+</g>
+<g >
+<title>bgl_display_char (2 samples, 0.19%)</title><rect x="1173.5" y="2629" width="2.2" height="15.0" fill="rgb(57,206,57)" rx="2" ry="2" />
+<text  x="1176.50" y="2639.5" ></text>
+</g>
+<g >
+<title>GC_new_hblk (2 samples, 0.19%)</title><rect x="156.3" y="2549" width="2.2" height="15.0" fill="rgb(248,119,119)" rx="2" ry="2" />
+<text  x="159.26" y="2559.5" ></text>
+</g>
+</g>
+</svg>

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Thu Jul 30 09:02:00 2026 (serrano)                */
+#*    Last change :  Fri Jul 31 07:39:14 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -54,8 +54,8 @@ BPP_FILE	= bpp reader
 BPP_OBJ		= $(BPP_FILE:%=bpp/%.o)
 
 #*--- demangle --------------------------------------------------------*/
-DEMANGLE_FILE	= demangle
-DEMANGLE_OBJ	= $(DEMANGLE_FILE:%=demangle/%.o)
+DEMANGLE_FILE	= bgldemangle
+DEMANGLE_OBJ	= $(DEMANGLE_FILE:%=bgldemangle/%.o)
 
 #*--- jas -------------------------------------------------------------*/
 JAS_LINKFILE	= lib classfile peep opcode wide labels stack produce as \
@@ -107,12 +107,15 @@ SOURCES_FILES	= $(OBJECTS:%.o=%.scm)
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-all: all-common dobmem 
+all: all-common dobglmem 
 	if [ "$(JVMBACKEND)" != "no" ]; then \
 	  $(MAKE) all-jvm; \
 	fi
 	if [ "$(WASMBACKEND)" != "no" ]; then \
 	  $(MAKE) all-wasm; \
+	fi
+	if [ "$(HOSTOS)" = "linux" ]; then \
+	  $(MAKE) all-linux; \
 	fi
 
 all-common: $(BOOTBINDIR)/bglafile \
@@ -125,13 +128,15 @@ all-jvm: $(BOOTBINDIR)/bgljas
 
 all-wasm: $(BOOTBINDIR)/bglwatib
 
+all-linux: bglperf
+
 boot:
 	$(MAKE) all BFLAGS="$(BFLAGS) -ld-relative" WASMBACKEND=$(WASMBACKEND)
 
-dobmem: $(BOOTBINDIR)/bglafile
+dobglmem: $(BOOTBINDIR)/bglafile
 	@ if [ "$(LDPRELOADSUPPORT)" = "yes" \
                 -a "$(PTHREADLIBS)" != "no" ]; then \
-	    (cd bmem && $(MAKE)) || exit 1; \
+	    (cd bglmem && $(MAKE)) || exit 1; \
 	  fi
 
 $(BOOTBINDIR)/bglafile: $(AFILE_OBJ)
@@ -163,6 +168,10 @@ watib: $(BOOTBINDIR)/bglwatib
 $(BOOTBINDIR)/bglwatib: $(WATIB_LINKSRC) $(WATIB_AFILE) $(WATIB_OBJ) $(WATIB_LINKOBJ)
 	(cd watib; $(BIGLOO) -cg $(BFLAGS) $(EFLAGS) -o $@ $(WATIB_OBJ:watib/%=%) $(WATIB_LINKOBJ:watib/%=%))
 
+bglperf: $(BOOTBINDIR)/bglperf
+$(BOOTBINDIR)/bglperf:
+	$(MAKE) -C bglperf
+
 $(BOOTBINDIR)/bglcache: $(BCACHE_OBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 
@@ -190,8 +199,11 @@ install: all
           done; \
         fi
 	if [ "$(LDPRELOADSUPPORT)" = "yes" -a "$(PTHREADLIBS)" != "no" ]; then \
-	  (cd bmem; $(MAKE) install) || exit 1; \
+	  (cd bglmem; $(MAKE) install) || exit 1; \
         fi
+	if [ "$(HOSTOS)" = "linux" ]; then \
+	  $(MAKE) -C bglperf install; \
+	fi
 
 #*---------------------------------------------------------------------*/
 #*    uninstall                                                        */
@@ -203,7 +215,8 @@ uninstall:
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bglpp$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bgljas$(EXE_SUFFIX)
 	- $(RM) -f $(DESTDIR)$(BINDIR)/bglcache$(EXE_SUFFIX)
-	- (cd bmem; $(MAKE) uninstall)
+	- $(MAKE) -C bglmem uninstall
+	- $(MAKE) -C bglperf uninstall
 
 #*---------------------------------------------------------------------*/
 #*    touchall                                                         */
@@ -231,7 +244,8 @@ clean:
                        -o -name '?*#' \
                        -o -name \*core \) \
                      -type f -exec rm {} \;   
-	@ (cd bmem; $(MAKE) clean)
+	@ $(MAKE) -C bglmem clean
+	@ $(MAKE) -C bglperf clean
 	@ $(BEEP)
 	@ echo "cleanup done..."
 	@ echo "-------------------------------"
@@ -258,7 +272,7 @@ distrib:
              echo "*** ERROR:Illegal dir to make a distrib `pwd`"; \
              exit 1; \
           fi
-	$(MAKE) -C bmem .afile
+	$(MAKE) -C bglmem .afile
 	$(MAKE) $(JAS_AFILE)
 
 #*---------------------------------------------------------------------*/
@@ -278,6 +292,9 @@ jas/%.o: jas/%.scm $(JAS_AFILE)
 %.o: %.scm
 	$(BIGLOO) $(BFLAGS) -g $(EFLAGS) -c $*.scm -o $*.o
 
+%.o: %.bgl
+	$(BIGLOO) $(BFLAGS) -g $(EFLAGS) -c $< -o $@
+
 #*---------------------------------------------------------------------*/
 #*     .scm --> .class                                                 */
 #*---------------------------------------------------------------------*/
@@ -286,6 +303,9 @@ jas/%.class: jas/%.scm $(JAS_AFILE)
 
 %.class: %.scm
 	$(BIGLOO) -jvm $(BFLAGS) $(EFLAGS) -c $*.scm -o $*.class
+
+%.class: %.bgl
+	$(BIGLOO) -jvm $(BFLAGS) $(EFLAGS) -c $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    checksum.o                                                       */

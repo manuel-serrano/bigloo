@@ -1,16 +1,16 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/backtrace.c      */
+/*    serrano/prgm/project/bigloo/5.0.x/bde/bglmem/lib/backtrace.c     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Oct  6 15:37:29 2021                          */
-/*    Last change :  Mon Dec  6 09:18:25 2021 (serrano)                */
-/*    Copyright   :  2021 manuel serrano                               */
+/*    Last change :  Fri Jul 31 09:31:20 2026 (serrano)                */
+/*    Copyright   :  2021-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    libbacktrace interface                                           */
 /*=====================================================================*/
 #include <strings.h>
 #include <bigloo.h>
-#include <bmem.h>
+#include <bglmem.h>
 
 /*---------------------------------------------------------------------*/
 /*    import                                                           */

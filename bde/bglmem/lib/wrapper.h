@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/bde/bmem-ng/lib/wrapper.h     */
+/*    serrano/prgm/project/bigloo/5.0.x/bde/bglmem/lib/wrapper.h       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct  7 19:30:50 2021                          */
-/*    Last change :  Thu Oct  7 19:46:20 2021 (serrano)                */
-/*    Copyright   :  2021 Manuel Serrano                               */
+/*    Last change :  Fri Jul 31 09:34:07 2026 (serrano)                */
+/*    Copyright   :  2021-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo standard library wrappers                                 */
 /*=====================================================================*/
@@ -12,7 +12,7 @@
 #define WRAPPER_H
 
 #include <bigloo.h>
-#include <bmem.h>
+#include <bglmem.h>
 
 extern void bmem_init_wrapper(void *);
 

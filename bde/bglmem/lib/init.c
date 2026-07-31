@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/5.0.x/bde/bmem/lib/init.c            */
+/*    serrano/prgm/project/bigloo/5.0.x/bde/bglmem/lib/init.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Wed Jul 29 13:06:14 2026 (serrano)                */
+/*    Last change :  Fri Jul 31 09:31:08 2026 (serrano)                */
 /*    Copyright   :  2003-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -15,7 +15,7 @@
 #include <unistd.h>
 
 #include <bigloo.h>
-#include <bmem.h>
+#include <bglmem.h>
 
 #include <dlfcn.h>
 #ifndef RTLD_LAZY

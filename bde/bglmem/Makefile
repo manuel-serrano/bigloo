@@ -1,12 +1,12 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0.x/bde/bmem/Makefile              */
+#*    serrano/prgm/project/bigloo/5.0.x/bde/bglmem/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Wed Jul 29 13:38:05 2026 (serrano)                */
+#*    Last change :  Fri Jul 31 09:36:24 2026 (serrano)                */
 #*    Copyright   :  2003-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
-#*    The makefile to build bmem                                       */
+#*    The makefile to build bglmem                                     */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -21,23 +21,20 @@ include ../../Makefile.misc
 #*---------------------------------------------------------------------*/
 SRC		= 
 INCLUDE		= 
-OBJECT		= $(SRC:%.scm=bmem/%.o)
+OBJECT		= $(SRC:%.scm=bglmem/%.o)
 LIBSRC		= init.c gchook.c trace.c alloc.c backtrace.c hash.c \
                   wrapper.c list.c
-LIBINCLUDE	= bmem.h
+LIBINCLUDE	= bglmem.h
 LIBOBJECT	= $(LIBSRC:%.c=lib/%.o)
-
-POPULATION	= $(SRC:%=bmem/%) $(INCLUDE:%=bmem/%) \
-                  Makefile etc/bmemrun.in
 
 #*---------------------------------------------------------------------*/
 #*    Compilers & Flags                                                */
 #*---------------------------------------------------------------------*/
 IFLAGS		= -Ilib -I$(BOOTLIBDIR) -I$(LIBBACKTRACEBOOTINCDIR)
-CMEMFLAGS	= -DBMEMDEBUG $(CPICFLAGS) -g
-BMEMFLAGS	= $(BFLAGS) -g -I bmem $(EFLAGS) -I /tmp/include
+CMEMFLAGS	= -DBGLMEMDEBUG $(CPICFLAGS) -g
+BGLMEMFLAGS	= $(BFLAGS) -g -I bglmem $(EFLAGS) -I /tmp/include
 
-LDBMEMOPTS	= 
+LDBGLMEMOPTS	= 
 
 #*---------------------------------------------------------------------*/
 #*    Suffixes                                                         */
@@ -48,122 +45,114 @@ LDBMEMOPTS	=
 #*---------------------------------------------------------------------*/
 #*    Targets                                                          */
 #*---------------------------------------------------------------------*/
-.PHONY: lib bmemrun 
+.PHONY: lib bglmem 
 
-all: lib bmemrun
+all: lib bglmem
 
-#*--- bmemrun ---------------------------------------------------------*/
-bmemrun: $(BOOTBINDIR)/$(BMEMRUN_EXE)
-$(BOOTBINDIR)/$(BMEMRUN_EXE): etc/bmemrun.in
-	cat etc/bmemrun.in | \
+bglmem: $(BOOTBINDIR)/bglmem
+$(BOOTBINDIR)/bglmem: etc/bglmem.in
+	cat etc/bglmem.in | \
             sed -e "s|@FILDIR@|$(FILDIR)|g" \
                 -e "s|@LIBDIR@|$(LIBDIR)|g" > \
-            $(BOOTBINDIR)/$(BMEMRUN_EXE)
-	chmod a+x $(BOOTBINDIR)/$(BMEMRUN_EXE)
+            $(BOOTBINDIR)/bglmem
+	chmod a+x $(BOOTBINDIR)/bglmem
 
 #*--- lib -------------------------------------------------------------*/
-lib: $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
-  $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
-  $(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) \
-  $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX)
+lib: $(BOOTLIBDIR)/bglmem/bglmem_s.$(SHAREDSUFFIX) \
+  $(BOOTLIBDIR)/bglmem/bglmem_u.$(SHAREDSUFFIX) \
+  $(BOOTLIBDIR)/bglmem/bglmem_s_mt.$(SHAREDSUFFIX) \
+  $(BOOTLIBDIR)/bglmem/bglmem_u_mt.$(SHAREDSUFFIX)
 
-$(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
+$(BOOTLIBDIR)/bglmem/bglmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bglmem
 	$(MAKE) bigloo-shared-lib \
            LIBSUFFIX=_u LIBSUFFIXTHREAD= \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
-           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
+           LIBDEST=$(BOOTLIBDIR)/bglmem/bglmem_u.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=bmem_u.$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
+           SONAME=bglmem_u.$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBGLMEMOPTS)" \
            EXTRALIBS=$(LIBBACKTRACELIBS)
 
-$(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
+$(BOOTLIBDIR)/bglmem/bglmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bglmem
 	$(MAKE) bigloo-shared-lib \
            LIBSUFFIX=_s LIBSUFFIXTHREAD= \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
-           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
+           LIBDEST=$(BOOTLIBDIR)/bglmem/bglmem_s.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=bmem_s.$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
+           SONAME=bglmem_s.$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBGLMEMOPTS)" \
            EXTRALIBS=$(LIBBACKTRACELIBS)
 
-$(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
+$(BOOTLIBDIR)/bglmem/bglmem_u_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bglmem
 	$(MAKE) bigloo-shared-lib \
            LIBSUFFIX=_u LIBSUFFIXTHREAD=_mt \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
-           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX) \
+           LIBDEST=$(BOOTLIBDIR)/bglmem/bglmem_u_mt.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=bmem_u_mt.$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
+           SONAME=bglmem_u_mt.$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBGLMEMOPTS)" \
            EXTRALIBS=$(LIBBACKTRACELIBS)
 
-$(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
+$(BOOTLIBDIR)/bglmem/bglmem_s_mt.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bglmem
 	$(MAKE) bigloo-shared-lib \
            LIBSUFFIX=_s LIBSUFFIXTHREAD=_mt \
 	   OBJECTS="$(LIBOBJECT)" \
            FORCELD=true \
-           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) \
+           LIBDEST=$(BOOTLIBDIR)/bglmem/bglmem_s_mt.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=bmem_s_mt.$(SHAREDSUFFIX) \
-	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBMEMOPTS)" \
+           SONAME=bglmem_s_mt.$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS) $(LDBGLMEMOPTS)" \
            EXTRALIBS=$(LIBBACKTRACELIBS)
 
-#*--- lib/bmem --------------------------------------------------------*/
-$(BOOTLIBDIR)/bmem:
-	mkdir -p $(BOOTLIBDIR)/bmem
-
-#*---------------------------------------------------------------------*/
-#*    Pop                                                              */
-#*---------------------------------------------------------------------*/
-pop:
-	@ echo $(POPULATION:%=bde/bmem/%)
-	@ (cd example; $(MAKE) pop)
+#*--- lib/bglmem --------------------------------------------------------*/
+$(BOOTLIBDIR)/bglmem:
+	mkdir -p $(BOOTLIBDIR)/bglmem
 
 #*---------------------------------------------------------------------*/
 #*    install & uninstall                                              */
 #*---------------------------------------------------------------------*/
 install:
-	mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem
+	mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglmem
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
-	  cp $(BOOTBINDIR)/$(BMEMRUN_EXE) $(DESTDIR)$(BINDIR)/$(BMEMRUN_EXE) || exit 1; \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BMEMRUN_EXE); \
+	  cp $(BOOTBINDIR)/bglmem $(DESTDIR)$(BINDIR)/bglmem || exit 1; \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglmem; \
         fi
 	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
-             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_s.$(SHAREDSUFFIX) || exit 1; \
-          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_s.$(SHAREDSUFFIX); \
-	  cp $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
-             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u.$(SHAREDSUFFIX) || exit 1; \
-          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u.$(SHAREDSUFFIX); \
-	  cp $(BOOTLIBDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) \
-             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX) || exit 1; \
-          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_s_mt.$(SHAREDSUFFIX); \
-	  cp $(BOOTLIBDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX) \
-             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX) || exit 1; \
-          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem_u_mt.$(SHAREDSUFFIX); \
+	  cp $(BOOTLIBDIR)/bglmem/bglmem_s.$(SHAREDSUFFIX) \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglmem/bglmem_s.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglmem/bglmem_s.$(SHAREDSUFFIX); \
+	  cp $(BOOTLIBDIR)/bglmem/bglmem_u.$(SHAREDSUFFIX) \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglmem/bglmem_u.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglmem/bglmem_u.$(SHAREDSUFFIX); \
+	  cp $(BOOTLIBDIR)/bglmem/bglmem_s_mt.$(SHAREDSUFFIX) \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglmem/bglmem_s_mt.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglmem/bglmem_s_mt.$(SHAREDSUFFIX); \
+	  cp $(BOOTLIBDIR)/bglmem/bglmem_u_mt.$(SHAREDSUFFIX) \
+             $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglmem/bglmem_u_mt.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglmem/bglmem_u_mt.$(SHAREDSUFFIX); \
         fi
-	cp lib/bmem.h $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.h
-	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bmem/bmem.h
+	cp lib/bglmem.h $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglmem/bglmem.h
+	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglmem/bglmem.h
 
 uninstall:
-	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BMEMRUN_EXE)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bglmem
 
 #*---------------------------------------------------------------------*/
 #*    Clean                                                            */
 #*---------------------------------------------------------------------*/
-cleanbmem:
+cleanbglmem:
 	- $(RM) -f .afile .etags
 	- $(RM) -f $(OBJECT)
 
 cleanlib:
 	- $(RM) -f $(LIBOBJECT)
-	- $(RM) -f $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX)
+	- $(RM) -f $(BOOTLIBDIR)/bglmem/bglmem.$(SHAREDSUFFIX)
 
-clean: cleanbmem cleanlib
-	- $(RM) -f $(BOOTBINDIR)/$(BMEMRUN_EXE)
+clean: cleanbglmem cleanlib
+	- $(RM) -f $(BOOTBINDIR)/bglmem
 
 #*---------------------------------------------------------------------*/
 #*    Automatic rule                                                   */
@@ -171,8 +160,8 @@ clean: cleanbmem cleanlib
 lib/%.o: lib/%.c $(LIBINCLUDE:%=lib/%)
 	$(CC) $(CEFLAGS) $(CPICFLAGS) $(CFLAGS) $(CMEMFLAGS) $(IFLAGS) $< -o $@ -c
 
-bmem/%.o: bmem/%.scm $(INCLUDE:%=bmem/%)
-	$(BIGLOO) $(EFLAGS) $(BMEMFLAGS) $< -o $@ -c
+bglmem/%.o: bglmem/%.scm $(INCLUDE:%=bglmem/%)
+	$(BIGLOO) $(EFLAGS) $(BGLMEMFLAGS) $< -o $@ -c
 
 #*---------------------------------------------------------------------*/
 #*    ude                                                              */
@@ -183,20 +172,20 @@ ude:
 	@ $(MAKE) -f Makefile .afile .etags
 
 .afile:
-	@ $(BGLAFILE) -o .afile $(SRC:%=bmem/%)
+	@ $(BGLAFILE) -o .afile $(SRC:%=bglmem/%)
 
 .etags:
-	@ $(BGLTAGS) -o .etags $(SRC:%=bmem/%)
+	@ $(BGLTAGS) -o .etags $(SRC:%=bglmem/%)
 
 dep:
 	@(num=`grep -n '^#bdepend start' Makefile | awk -F: '{ print $$1}' -`;\
           head -n `expr $$num - 1` Makefile > /tmp/Makefile.aux)
-	@ $(BGLDEPEND) -search-path . -fno-mco $(SRC:%=bmem/%) >> /tmp/Makefile.aux
+	@ $(BGLDEPEND) -search-path . -fno-mco $(SRC:%=bglmem/%) >> /tmp/Makefile.aux
 	@ mv /tmp/Makefile.aux Makefile
 
 getbinary:
 	@ echo ""
 
 getsources:
-	@ echo $(SRC:%=bmem/%)
+	@ echo $(SRC:%=bglmem/%)
 

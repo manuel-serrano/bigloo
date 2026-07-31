@@ -1,15 +1,15 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/nanh/bde/bmem/lib/hash.c             */
+/*    serrano/prgm/project/bigloo/5.0.x/bde/bglmem/lib/hash.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct  7 11:34:41 2021                          */
-/*    Last change :  Fri Nov  1 13:26:49 2024 (serrano)                */
-/*    Copyright   :  2021-24 Manuel Serrano                            */
+/*    Last change :  Fri Jul 31 09:31:03 2026 (serrano)                */
+/*    Copyright   :  2021-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    hashtables indexed by strings.                                   */
 /*=====================================================================*/
 #include <bigloo.h>
-#include <bmem.h>
+#include <bglmem.h>
 
 /*---------------------------------------------------------------------*/
 /*    static long                                                      */

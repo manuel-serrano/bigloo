@@ -22,8 +22,8 @@ multi-threaded applications.
 The memory profiler works on C generated source files and for a better
 understanding of the reports, a minimal notion of C are required.
 
-Bglmemrun
----------
+Bglmem
+------
 
 To profile memory allocations and GC activities, programs have to be
 compiled with the one of:
@@ -43,11 +43,11 @@ Example:
 $ bigloo -Ox -unsafe maze.bgl -pmem -o maze
 ```
 
-To produce a memory report, programs have to be run through the `bglmemrun`
+To produce a memory report, programs have to be run through the `bglmem`
 tool. Example
 
 ```shell
-$ bglmemrun maze
+$ bglmem maze
 ```
 
 By default this produces a report displayed on the terminal such as:
@@ -61,14 +61,14 @@ gc   2: alloc size=1.90MB, heap size=7.29MB, live size=7.12MB
 ...
 ```
 
-The two first lines enable to check that `bglmemrun` loads the correct
+The two first lines enable to check that `bglmem` loads the correct
 dynamic libraries.
 
 The following lines are gc reports. Each line correct to a triggered 
 collection. It shows the number of allocated objects since the previous
 gc, the heap size, and the memory size that survived the collection.
 
-Finally, then execution completes, `bglmemrun` produces its report about
+Finally, then execution completes, `bglmem` produces its report about
 memory allocation. For instance:
 
 ```shell
@@ -126,14 +126,14 @@ other programs, e.g., sexp or json.
 Run 
 
 ```shell
-$ bglmemrun --help
+$ bglmem --help
 ```
 
 To see all supported options.
 
-Debugging bglmemrun
+Debugging bglmem
 -------------------
 
-If for some reasons a program does not execute when running via `bglmemrun`,
-debugging using `gdb` is recommended. For that, instead of running the
-program with `bglmemrun`, run it with `bglmemrun-gdb`.
+If for some reasons a program does not execute when running via `bglmem`,
+debugging using `gdb` is recommended. For that, add the option `--gdb`
+to `bglmem`.

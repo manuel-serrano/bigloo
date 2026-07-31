@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Tue Jun  9 11:24:09 2026 (serrano)                */
+;*    Last change :  Fri Jul 31 09:16:23 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -929,24 +929,9 @@
 		   "L")))
       (if (location? loc)
 	  (let ((file (location-fname loc))
-		(line (location-lnum loc))
-		(base (symbol->string (gensym (string-append "<@" pref ":")))))
-	     (cond
-		((string-contains pref "<@")
-		 (symbol-append (string->symbol pref) (gensym 'L)))
-		((or (and (>=fx *bdb-debug* 1)
-			  (memq 'bdb (backend-debug-support (the-backend))))
-		     (>=fx *compiler-debug* 1))
-		 (let ((file (if (substring=? file "./" 2)
-				 (substring file 2 (string-length file))
-				 file)))
-		    (string->symbol
-		     (string-append base ":"
-				    (string-replace file #\. #\,)
-				    ":" (number->string line)
-				    "@>"))))
-		(else
-		 (string->symbol (string-replace (string-append base ">") #\. #\,)))))
+                (pos (location-pos loc))
+		(line (location-lnum loc)))
+             (string->symbol (format "<@~a:~a:~a>" pref line pos)))
 	  (symbol-append (gensym (string-append "<@" pref "-")) '@>))))
 	  
 ;*---------------------------------------------------------------------*/

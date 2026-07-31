@@ -32,13 +32,13 @@ while : ; do
       break;;
 
     -h|--help)
-      echo "bglmemrun: [options] exe [arg1] [arg2]..." >&2;
+      echo "bglmem: [options] exe [arg1] [arg2]..." >&2;
       echo "  -h|--help            -- This message" >&2;
       echo "  -s|-safe|--safe      -- Preload safe libraries" >&2;
       echo "  -u|-unsafe|--unsafe  -- Preload unsafe libraries" >&2;
       echo "  -t|--thread          -- Profile multithreaded program" >&2;
       echo "  --lib-extra <lib>    -- Add an extra profiling lib" >&2;
-      echo "  --gdb                -- Debug bglmemrun itself with gdb" >&2;
+      echo "  --gdb                -- Debug bglmem itself with gdb" >&2;
       echo "" >&2;
       echo "To be profiled, programs have to be compiled with" >&2;
       echo "  -pmem" >&2;
