@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/test/src/main.bgl                           */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/main.bgl              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Tue Jul 28 11:48:08 2026 (serrano)                */
+;*    Last change :  Mon Aug 24 23:47:33 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -66,6 +66,7 @@
    (cond-expand ((library sqlite) (import "./sqlite0.bgl" . sqlite0)))
    (cond-expand ((library ssl) (import "./ssl0.bgl" . ssl0)))
    (cond-expand ((library browser) (import "./browser0.bgl" . browser0)))
+   (cond-expand ((library web) (import "./web0.bgl" . web0)))
 
    ;; backend tests
    (cond-expand (C (import "./extern_c.bgl" . c)))
@@ -150,7 +151,9 @@
                           (cond-expand
                              ((library ssl) (ssl0.test verbose tests)))
                           (cond-expand
-                             ((library browser) (browser0.test verbose tests))))))
+                             ((library browser) (browser0.test verbose tests)))
+                          (cond-expand
+                             ((library web) (web0.test verbose tests))))))
           (res-extern (list
                          (cond-expand
                             (C (c.test verbose tests))

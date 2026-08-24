@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/bigloo/5.0.x/test/Makefile                               */
+#*    serrano/prgm/project/bigloo/5.0.x/test/Makefile                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Jul 28 11:47:08 2026 (serrano)                */
+#*    Last change :  Mon Aug 24 23:48:51 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -42,7 +42,7 @@ TESTS = main argsparse bigloo bignum bit bool case char closure compiler \
   condexpand core crc csv0 date digest dsssl error hash int1 int2 internet \
   lalr io match mmap module net number object os pair port process real \
   regexp rgc search serial sqlite0 ssr string struct symbol tar trace thread \
-  unicode vector weakptr zip
+  unicode vector weakptr web0 zip
 
 MODULES4 = module4_ex12
 

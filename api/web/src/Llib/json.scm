@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Tue Jul  7 14:52:34 2026 (serrano)                */
+;*    Last change :  Tue Aug 25 00:00:38 2026 (serrano)                */
 ;*    Copyright   :  2014-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -27,13 +27,13 @@
 			     (cell-set! obj
 				(cons (cons key value) (cell-ref obj)))))
               (object-return (lambda (obj)
-				(cell-ref obj)))
+				(reverse (cell-ref obj))))
               (parse-error #f)
 	      (undefined #t) reviver expr
 	      constant-alloc string-alloc propname-alloc)
            (read-json #!optional (port::input-port (current-input-port)))
 	   (obj->json ::obj ::output-port ::procedure)
-	   (json-stringify ::obj)))
+	   (json-stringify::bstring ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    return ...                                                       */
@@ -190,10 +190,11 @@
            (array-set (lambda (a i v) (cell-set! a (cons v (cell-ref a)))))
            (array-return (lambda (a i) (list->vector (reverse! (cell-ref a)))))
            (object-alloc (lambda ()  (make-cell '()))) 
-           (object-set (lambda (obj key value) (cell-set! obj 
-                                                  (cons (cons key value)
-                                                     (cell-ref obj)))))
-           (object-return (lambda (obj)  (cell-ref obj)))
+           (object-set (lambda (obj key value)
+                          (cell-set! obj 
+                             (cons (cons key value)
+                                (cell-ref obj)))))
+           (object-return (lambda (obj) (reverse (cell-ref obj))))
            (parse-error #f)
            (undefined #t) reviver expr
 	   constant-alloc string-alloc propname-alloc)
@@ -409,7 +410,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    json-stringify ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (json-stringify obj)
+(define (json-stringify::bstring obj)
    (call-with-output-string
       (lambda (p)
 	 (obj->json obj p

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Fri Jul 31 08:45:18 2026 (serrano)                */
+;*    Last change :  Mon Aug 24 23:52:31 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -85,6 +85,7 @@
      ("threads" . "thread.html")
      ("vectors" . "vector.html")
      ("weak pointers" . "weakptr.html")
+     ("web" . "web.html")
      ("zip" . "zip.html")))
 
 ;*---------------------------------------------------------------------*/
