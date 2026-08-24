@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Mon Aug 24 23:47:33 2026 (serrano)                */
+;*    Last change :  Tue Aug 25 00:24:10 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -62,10 +62,11 @@
    (import "./zip.bgl" . zip)
 
    ;; library tests
+   (cond-expand ((library browser) (import "./browser0.bgl" . browser0)))
    (cond-expand ((library csv) (import "./csv0.bgl" . csv0)))
+   (cond-expand ((library multimedia) (import "./multimedia0.bgl" . multimedia0)))
    (cond-expand ((library sqlite) (import "./sqlite0.bgl" . sqlite0)))
    (cond-expand ((library ssl) (import "./ssl0.bgl" . ssl0)))
-   (cond-expand ((library browser) (import "./browser0.bgl" . browser0)))
    (cond-expand ((library web) (import "./web0.bgl" . web0)))
 
    ;; backend tests
@@ -145,13 +146,15 @@
           (res-libs (filter pair?
                        (list
                           (cond-expand
+                             ((library browser) (browser0.test verbose tests)))
+                          (cond-expand
                              ((library csv) (csv0.test verbose tests)))
+                          (cond-expand
+                             ((library multimedia) (multimedia0.test verbose tests)))
                           (cond-expand
                              ((library sqlite) (sqlite0.test verbose tests)))
                           (cond-expand
                              ((library ssl) (ssl0.test verbose tests)))
-                          (cond-expand
-                             ((library browser) (browser0.test verbose tests)))
                           (cond-expand
                              ((library web) (web0.test verbose tests))))))
           (res-extern (list

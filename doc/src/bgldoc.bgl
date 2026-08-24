@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Mon Aug 24 23:52:31 2026 (serrano)                */
+;*    Last change :  Tue Aug 25 00:21:59 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -68,6 +68,7 @@
      ("internet" . "internet.html")
      ("i/o" . "io.html")
      ("mmap" . "mmap.html")
+     ("multimedia" . "multimedia.html")
      ("net" . "net.html")
      ("numbers" . "number.html")
      ("os" . "os.html")

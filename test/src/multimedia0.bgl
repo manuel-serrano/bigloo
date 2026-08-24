@@ -1,19 +1,19 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0.x/test/src/web0.bgl              */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/multimedia0.bgl       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug 24 23:47:58 2026                          */
-;*    Last change :  Tue Aug 25 00:23:06 2026 (serrano)                */
+;*    Last change :  Tue Aug 25 01:20:06 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    Testing the web library.                                         */
+;*    Testing the multimedia library.                                  */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
-;*    web0                                                             */
+;*    multimedia0                                                      */
 ;*---------------------------------------------------------------------*/
-(module web0
-   (cond-expand ((library web) (library web)))
+(module multimedia0
+   (cond-expand ((library multimedia) (library multimedia)))
    (export test))
 
 ;*---------------------------------------------------------------------*/
@@ -25,27 +25,29 @@
 ;*    test ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (test verbose tests::pair-nil)
-   (when (or (null? tests) (member "web" tests))
-      (test-all verbose "web")))
+   (when (or (null? tests) (member "multimedia" tests))
+      (test-all verbose "multimedia")))
 
 ;*---------------------------------------------------------------------*/
 ;*    tests ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-test read-json
-   (call-with-input-string "[{\"a\": 1, \"b\": [1, 2]}, false, null]"
-      read-json)
-   :cond-expand (library web)
-   :expected '#((("a" . 1) ("b" . #(1 2))) #f ()))
+(define-test exif
+   exif
+   :cond-expand (library multimedia)
+   :expected class?)
 
-(define-test obj->json
-   (call-with-output-string
-      (lambda (op)
-         (obj->json '#((("a" . 1) ("b" . #(1 2))) #f ()) op
-            (lambda (obj op proc) #f))))
-   :cond-expand (library web)
-   :expected "[{\"a\":1,\"b\":[1,2]},false,null]")
+(define-test jpeg-exif
+   (isa? (jpeg-exif "misc/img.jpg") exif)
+   :cond-expand (library multimedia))
 
-(define-test json-stringify
-   (json-stringify '#((("a" . 1) ("b" . #(1 2))) #f ()))
-   :cond-expand (library web)
-   :expected "[{\"a\":1,\"b\":[1,2]},false,null]")
+(define-test jpeg-exif
+   (let ((ex::exif (jpeg-exif "misc/img.jpg")))
+      (-> ex comment))
+   :cond-expand (library multimedia)
+   :expected "an exif comment")
+
+(define-test jpeg-exif
+   (let ((ex::exif (jpeg-exif "misc/img.jpg")))
+      (-> ex width))
+   :cond-expand (library multimedia)
+   :expected 64)

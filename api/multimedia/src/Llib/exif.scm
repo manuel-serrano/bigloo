@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/api/multimedia/src/Llib/exif.scm       */
+;*    .../project/bigloo/5.0.x/api/multimedia/src/Llib/exif.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Sat May 11 08:00:39 2024 (serrano)                */
-;*    Copyright   :  2004-24 Manuel Serrano                            */
+;*    Last change :  Tue Aug 25 01:17:13 2026 (serrano)                */
+;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
 ;*    -------------------------------------------------------------    */
@@ -127,7 +127,7 @@
 	      (gps-time-stamp (default #f))
 	      (gps-date-stamp (default #f)))
 	   
-	   (jpeg-exif ::bstring)
+	   (jpeg-exif::exif ::bstring)
 	   (jpeg-exif-comment-set! ::bstring ::bstring)
 	   (jpeg-exif-orientation-set! ::bstring ::symbol)
 
@@ -1660,7 +1660,7 @@
 ;*    This is the main function which reads a JPEG image a             */
 ;*    returns an EXIF structure.                                       */
 ;*---------------------------------------------------------------------*/
-(define (jpeg-exif path)
+(define (jpeg-exif::exif path)
    (if (not (file-exists? path))
        (error/errno $errno-io-file-not-found-error
 	  "jpeg-exif" "Can't find file" path)
