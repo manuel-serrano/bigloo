@@ -1,0 +1,11 @@
+(extern "java"
+   (class org.bigloo.cnt.AndroidUtils
+     (public constructor AndroidUtils)
+     (public static procedureToOnClickListener::android.view.View$OnClickListener ::procedure)
+     (public equals::bool ::obj)
+     (public toString::String)
+     (final public wait_J_V::void ::elong "wait")
+     (final public wait_JI_V::void ::elong ::int "wait")
+     (final public wait::void "wait")
+     )
+)
