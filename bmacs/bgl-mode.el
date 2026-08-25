@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Mon Jul 27 08:39:49 2026 (serrano)                */
+;*    Last change :  Tue Aug 25 17:34:22 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1590,7 +1590,9 @@ if that value is non-nil."
 	     (defs (assq 'defs (cddr mod))))
 	(when (consp imports)
 	  (mapc #'(lambda (e)
-		    (puthash (car e) (cdr e) bgl-decl-table-index))
+		    (when (consp (caddr e))
+		      (when (file-exists-p (cadr (caddr e)))
+			(puthash (car e) (cdr e) bgl-decl-table-index))))
 		(cdr imports)))
 	(when (consp defs)
 	  (mapc #'(lambda (e)
@@ -1679,7 +1681,10 @@ if that value is non-nil."
 		      '(lambda (match) (propertize match 'face 'bgl-font-lock-face-4))
 		      s2))
 		 (ls (if (and (> (length s) 57) (string-match " " s))
-			 (bgl-indent cs 57)
+			 (let ((m (bgl-indent cs 57)))
+			   (if (> (length m) 200)
+			       (concat (substring m 0 200) "...)")
+			       m))
 			 cs)))
 	    (posframe-show
 	     bgl-popup-buffer

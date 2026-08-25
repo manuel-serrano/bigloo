@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 08:32:16 2026                          */
-;*    Last change :  Fri Jun 19 18:57:15 2026 (serrano)                */
+;*    Last change :  Tue Aug 25 22:24:37 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing pair functions                                           */
@@ -49,6 +49,11 @@
 (define-test null? (null? (list))
    :expected #t)
 (define-test null? (null? '#())
+   :expected #f)
+
+(define-test pair? (pair? '(1 2)))
+(define-test pair? (pair? (econs 1 2 3)))
+(define-test pair? (pair? '())
    :expected #f)
 
 (define-test pair-or-null? (pair-or-null? (cons 1 2))

@@ -39,6 +39,12 @@ Json is parsed as follows:
   * numbers are parsed as numbers;
   * strings are parsed as string.
   
+The optional argument `input-port` defaults to the current input port.
+
+If the argument `symbol` is not provided or `#f`, the created a-lists  
+use strings as keys. If `symbol` is `#t`, the created a-lists use
+symbosl as keys.
+  
 ### obj->json ###
 
 Outputs the json representation of a Bigloo object in an output port.

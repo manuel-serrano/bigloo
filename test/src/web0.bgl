@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug 24 23:47:58 2026                          */
-;*    Last change :  Tue Aug 25 00:23:06 2026 (serrano)                */
+;*    Last change :  Tue Aug 25 17:55:15 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the web library.                                         */
@@ -37,6 +37,12 @@
    :cond-expand (library web)
    :expected '#((("a" . 1) ("b" . #(1 2))) #f ()))
 
+(define-test read-json
+   (call-with-input-string "[{\"a\": 1, \"b\": [1, 2]}, false, null]"
+      (lambda (ip) (read-json ip :symbol #t)))
+   :cond-expand (library web)
+   :expected '#(((a . 1) (b . #(1 2))) #f ()))
+
 (define-test obj->json
    (call-with-output-string
       (lambda (op)
@@ -47,5 +53,10 @@
 
 (define-test json-stringify
    (json-stringify '#((("a" . 1) ("b" . #(1 2))) #f ()))
+   :cond-expand (library web)
+   :expected "[{\"a\":1,\"b\":[1,2]},false,null]")
+
+(define-test json-stringify
+   (json-stringify '#(((a . 1) (b . #(1 2))) #f ()))
    :cond-expand (library web)
    :expected "[{\"a\":1,\"b\":[1,2]},false,null]")

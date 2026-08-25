@@ -10,6 +10,7 @@
 <!--==================================================================-->
 
 ,(implementation-path "../api/multimedia/src/Llib/exif.scm")
+,(implementation-path "../api/multimedia/src/Llib/jpeg.scm")
 ,(example-path "../test/src/multimedia0.bgl")
 
 Multimedia Library
@@ -38,5 +39,12 @@ The function `jpeg-exif` tries to extract as much information as possible
 but depending on the exif version or the tool that generated it, not all
 fields of the `exif` class are filled.
 
+Jpeg
+----
 
+### jpeg-dimensions ###
+Extracts the width and height of a jpeg image.
+
+### jpeg-parse-dimensions ###
+Parses the input port `ip` to extract the jpeg dimensions.
 

@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/api/multimedia/src/Makefile     */
+#*    .../prgm/project/bigloo/5.0.x/api/multimedia/src/Makefile        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Mar 10 10:31:43 2026 (serrano)                */
+#*    Last change :  Tue Aug 25 22:56:26 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -46,7 +46,7 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= exif id3 mp3 m3u flac \
                   music mpd mpc musicproc mplayer mpg123 \
-                  mixer soundcard color musicbuf midi
+                  mixer soundcard color musicbuf midi jpeg
 _BGL5_OBJECTS   = make_lib5
 
 _UNIX_OBJECTS	= bglmixer

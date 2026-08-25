@@ -57,8 +57,11 @@ arbitrary values.
 Predicates
 ----------
 
+### pair? ###
+Returns `#t` if `obj` is a pair. Otherwise it return `#f`.
+
 ### pair-or-null? ###
-Returns `#t` if @var{obj} is either a pair or the empty list. Otherwise
+Returns `#t` if `obj` is either a pair or the empty list. Otherwise
 it returns `#f`.
 
 ### null? ###
@@ -163,7 +166,7 @@ Behaves as `take`.
 
 ### last-pair ###
 
-Returns the last pair in the nonempty, possibly improper, @var{list}.
+Returns the last pair in the nonempty, possibly improper, `list`.
 
 ### memq ###
 Returns the first sublist of `list` whose `car` is `eq?` to `obj`.

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Llib/os.scm                         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/os.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Fri Jul  3 11:13:00 2026 (serrano)                */
+;*    Last change :  Tue Aug 25 22:14:29 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -297,8 +297,8 @@
 	    (file-name-absolute?::bool ::bstring)
 	    (make-file-name::bstring ::bstring ::bstring)
 	    (make-file-path::bstring ::bstring ::bstring . obj)
-	    (make-static-lib-name ::bstring ::symbol)
-	    (make-shared-lib-name ::bstring ::symbol)
+	    (make-static-lib-name::bstring ::bstring ::symbol)
+	    (make-shared-lib-name::bstring ::bstring ::symbol)
 	    (file-name->list::pair-nil ::bstring)
 	    (file-name-canonicalize::bstring ::bstring)
 	    (file-name-canonicalize!::bstring ::bstring)
@@ -505,7 +505,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    basename ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (basename string)
+(define (basename::bstring string::bstring)
    (if (string=? (os-class) "mingw")
        (mingw-basename string)
        (default-basename string)))
@@ -546,7 +546,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    prefix ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (prefix string)
+(define (prefix::bstring string::bstring)
    (let ((len (-fx (string-length string) 1)))
       (let loop ((e len)
                  (s len))
@@ -562,7 +562,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    dirname ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (dirname string)
+(define (dirname::bstring string::bstring)
   (if (string=? (os-class) "mingw")
       (mingw-dirname string)
       (default-dirname string)))
@@ -604,7 +604,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    suffix ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (suffix string)
+(define (suffix::bstring string::bstring)
    (let* ((len (string-length string))
           (len-1 (-fx len 1)))
       (let loop ((read len-1))
@@ -656,7 +656,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    file-name-absolute? ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (file-name-absolute? path::bstring)
+(define (file-name-absolute?::bool path::bstring)
    (when (>fx (string-length path) 0)
       (char=? (string-ref path 0) (file-separator))))
 
@@ -666,7 +666,7 @@
 ;*    This function build a file name from a path and a                */
 ;*    relative file-name.                                              */
 ;*---------------------------------------------------------------------*/
-(define (make-file-name directory::bstring file::bstring)
+(define (make-file-name::bstring directory::bstring file::bstring)
    (define (default ldir)
       (let* ((lfile (string-length file))
 	     (len (+fx ldir (+fx lfile 1)))
@@ -700,7 +700,7 @@
 ;*    This function build a absolute file name from a path and a       */
 ;*    relative file-name.                                              */
 ;*---------------------------------------------------------------------*/
-(define (make-file-path directory::bstring file::bstring . obj)
+(define (make-file-path::bstring directory::bstring file::bstring . obj)
    (if (and (=fx (string-length directory) 0) (null? obj))
        file
        (let* ((ldir  (string-length directory))
@@ -731,39 +731,35 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-static-lib-name ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (make-static-lib-name lib backend)
+(define (make-static-lib-name::bstring lib::bstring backend::symbol)
    (case backend
-      ((bigloo-c)
+      ((bigloo-c c)
        (if (string=? (os-class) "win32")
 	   (string-append lib "." runtime-static-library-suffix)
 	   (string-append "lib" lib "." runtime-static-library-suffix)))
-      ((bigloo-jvm)
+      ((bigloo-jvm jvm)
        (string-append lib ".zip"))
-      ((bigloo-.net)
-       (string-append lib ".dll"))
       (else
        (error "make-static-lib-name" "Unknown backend" backend))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-shared-lib-name ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (make-shared-lib-name lib backend)
+(define (make-shared-lib-name::bstring lib::bstring backend::symbol)
    (case backend
-      ((bigloo-c)
+      ((bigloo-c c)
        (if (string=? (os-class) "win32")
 	   (string-append lib "." runtime-static-library-suffix)
 	   (string-append "lib" lib "." runtime-shared-library-suffix)))
-      ((bigloo-jvm)
+      ((bigloo-jvm jvm)
        (string-append lib ".zip"))
-      ((bigloo-.net)
-       (string-append lib ".dll"))
       (else
        (error "make-shared-lib-name" "Unknown backend" backend))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn find-file/path@ ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (find-file/path file-name path)
+(define (find-file/path file-name::bstring path)
    (define (mingw-full-qualified-path? file-name)
       (if (string=? (os-class) "mingw")
 	  (or (char=? (string-ref file-name 0) #\/)
@@ -794,7 +790,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-name->list@ ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (file-name->list name)
+(define (file-name->list::pair-nil name::bstring)
    (let ((len (string-length name)))
       (if (and (=fx len 1) (char=? (string-ref name 0) (file-separator)))
 	  (list "")
@@ -955,13 +951,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    file-name-canonicalize ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (file-name-canonicalize name)
+(define (file-name-canonicalize::bstring name::bstring)
    (file-name-canonicalize-inner name (make-string (string-length name)) 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    file-name-canonicalize! ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (file-name-canonicalize! name)
+(define (file-name-canonicalize!::bstring name::bstring)
    (let ((len (string-length name))
 	 (sep (file-separator)))
       (let loop ((i 0)
@@ -986,7 +982,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    file-name-unix-canonicalize ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (file-name-unix-canonicalize name)
+(define (file-name-unix-canonicalize::bstring name::bstring)
    (let ((len (string-length name)))
       (cond
 	 ((=fx len 0)
@@ -1010,7 +1006,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    file-name-unix-canonicalize! ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (file-name-unix-canonicalize! name)
+(define (file-name-unix-canonicalize!::bstring name::bstring)
    (let ((len (string-length name)))
       (cond
 	 ((=fx len 0)
@@ -1023,7 +1019,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    relative-file-name ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (relative-file-name name base)
+(define (relative-file-name::bstring name::bstring base::bstring)
    
    (define (make-file f)
       (cond
@@ -1054,7 +1050,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    This function, adds the proper static library extension.         */
 ;*---------------------------------------------------------------------*/
-(define (make-static-library-name libname::bstring)
+(define (make-static-library-name::bstring libname::bstring)
    (string-append libname "." runtime-static-library-suffix))
 
 ;*---------------------------------------------------------------------*/
@@ -1062,7 +1058,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    This function, adds the proper shared library extension.         */
 ;*---------------------------------------------------------------------*/
-(define (make-shared-library-name libname::bstring)
+(define (make-shared-library-name::bstring libname::bstring)
    (string-append libname "." runtime-shared-library-suffix))
 
 ;*---------------------------------------------------------------------*/
@@ -1089,7 +1085,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    dynamic-load ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (dynamic-load lib #!optional (init %dload-init-sym) (module #f))
+(define (dynamic-load lib::bstring #!optional (init %dload-init-sym) (module #f))
    
    (define (proc-err proc msg obj)
       (error (string-append "dynamic-load:" proc) msg obj))
@@ -1137,7 +1133,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    dynamic-unload ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (dynamic-unload lib)
+(define (dynamic-unload lib::bstring)
    (let ((flib (cond-expand
 		  (bigloo-c
 		   (find-file/path lib *dynamic-load-path*))
@@ -1152,7 +1148,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    dynamic-load-symbol ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (dynamic-load-symbol lib name #!optional module)
+(define (dynamic-load-symbol lib::bstring name::bstring #!optional module)
    (let ((sym (if (string? module) (bigloo-module-mangle name module) name))
          (flib (cond-expand
 		  (bigloo-c
@@ -1178,7 +1174,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    unix-path->list ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (unix-path->list str)
+(define (unix-path->list::pair-nil str::bstring)
    (let ((stop (string-length str))
 	 (sep (path-separator)))
       (let loop ((mark 0)
@@ -1324,7 +1320,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    umask ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (umask #!optional mask)
+(define (umask::int #!optional mask)
    (if (fixnum? mask)
        ($umask mask)
        (let ((old ($umask 0)))
@@ -1363,7 +1359,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    syslog-option ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (syslog-option . opts)
+(define (syslog-option::int . opts)
    (cond-expand
       ((and bigloo-c (config have-syslog #t))
        (let loop ((opts opts)
@@ -1387,7 +1383,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    syslog-facility ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (syslog-facility facility)
+(define (syslog-facility::int facility::symbol)
    (cond-expand
       ((and bigloo-c (config have-syslog #t))
        (case facility
@@ -1488,7 +1484,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    setrlimit! ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (setrlimit! r soft hard)
+(define (setrlimit!::bool r soft hard)
    (cond-expand
       ((and bigloo-c (config have-getrlimit #t))
        ($setrlimit! (limit-resource-no r "setrlimit!")

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Tue Aug 25 00:00:38 2026 (serrano)                */
+;*    Last change :  Tue Aug 25 17:45:05 2026 (serrano)                */
 ;*    Copyright   :  2014-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -31,7 +31,7 @@
               (parse-error #f)
 	      (undefined #t) reviver expr
 	      constant-alloc string-alloc propname-alloc)
-           (read-json #!optional (port::input-port (current-input-port)))
+           (read-json #!optional (port::input-port (current-input-port)) #!key (symbol::bool #f))
 	   (obj->json ::obj ::output-port ::procedure)
 	   (json-stringify::bstring ::obj)))
 
@@ -333,8 +333,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-json ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (read-json #!optional (port::input-port (current-input-port)))
-   (json-parse port))
+(define (read-json #!optional (port::input-port (current-input-port)) #!key (symbol::bool #f))
+   (if symbol
+       (json-parse port
+          :object-set (lambda (obj key value)
+                         (cell-set! obj
+				(cons (cons (string->symbol key) value)
+                                   (cell-ref obj)))))
+       (json-parse port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    obj->json ...                                                    */

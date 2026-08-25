@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../bigloo/5.0a/api/multimedia/src/Misc/make_lib5.scm            */
+;*    .../bigloo/5.0.x/api/multimedia/src/Misc/make_lib5.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Tue Mar 10 10:47:41 2026 (serrano)                */
+;*    Last change :  Tue Aug 25 22:57:00 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -28,4 +28,5 @@
    (export :version 4 "../Llib/mixer.scm")
    (export :version 4 "../Llib/soundcard.scm")
    (export :version 4 "../Llib/color.scm")
-   (export :version 4 "../Llib/midi.scm"))
+   (export :version 4 "../Llib/midi.scm")
+   (export :version 4 "../Llib/jpeg.scm"))
