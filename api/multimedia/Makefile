@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/multimedia/Makefile              */
+#*    serrano/prgm/project/bigloo/5.0.x/api/multimedia/Makefile        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jul  9 10:13:50 2017 (serrano)                */
-#*    Copyright   :  2001-17 Manuel Serrano                            */
+#*    Last change :  Wed Aug 26 01:40:46 2026 (serrano)                */
+#*    Copyright   :  2001-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -19,22 +19,17 @@ include ../../Makefile.config
 API = multimedia
 
 #*---------------------------------------------------------------------*/
-#*    Directories where to find the files composing a revision         */
-#*---------------------------------------------------------------------*/
-POPDIR = src examples
-POPULATION = Makefile README
-
-#*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
 all: boot build
 
 boot: build
 build:
-	@ $(MAKE) build-c && $(MAKE) build-jvm
+	@ $(MAKE) build-c && $(MAKE) build-jvm && $(MAKE) build-wasm
 
 c: build-c
 jvm: build-jvm
+wasm: build-wasm
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -48,18 +43,11 @@ build-jvm:
 	    (cd src && $(MAKE) build-jvm); \
           fi
 
-#*---------------------------------------------------------------------*/
-#*    pop                                                              */
-#*    -------------------------------------------------------------    */
-#*    This entry is used by the bigloo/Makefile (the main Bigloo       */
-#*    makefile) to get the list of file that populate a revision.      */
-#*---------------------------------------------------------------------*/
-.PHONY: pop
-pop:
-	@ echo $(POPULATION:%=multimedia/%)
-	@ for d in $(POPDIR); do \
-            (cd $$d && $(MAKE) -s pop) \
-          done;
+build-wasm:
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;31m>>> WASM[0m";  \
+	    (cd src && $(MAKE) build-wasm); \
+          fi
 
 #*---------------------------------------------------------------------*/
 #*    Clean                                                            */
@@ -89,10 +77,14 @@ install: api-install-init
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-jvm; \
           fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+            $(MAKE) api-install-wasm; \
+          fi
 
 uninstall: api-uninstall-init \
            api-uninstall-c \
-           api-uninstall-jvm
+           api-uninstall-jvm \
+           api-uninstall-wasm
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

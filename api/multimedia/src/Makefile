@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Aug 25 22:56:26 2026 (serrano)                */
+#*    Last change :  Wed Aug 26 01:42:47 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -36,7 +36,7 @@ DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options
 BAPISAFE	= -unsafe -safee
-BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE)
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -srfi $(API) $(BAPISAFE)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
@@ -55,10 +55,11 @@ _OBJECTS	= $(_UNIX_OBJECTS) $(_BGL_OBJECTS) $(_BGL5_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
 EOBJECTS	= objs/make_lib.o
 
-_CLASSES	= $(_BGL_OBJECTS)
-BGL_CLASSES	= $(_CLASSES:%=$(CLASS_DIR)/%.class)
+BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class) $(_BGL5_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) $(_BGL5_OBJECTS:%=objs/%.wat)
+WEOBJECTS	= $(EOBJECTS:%.o=%.wat)
 
 _OBJS		= $(_BGL_OBJECTS)
 
@@ -69,17 +70,9 @@ _UNIX_SOURCES	= $(_UNIX_OBJECTS:%=$(C_SRC_DIR)/%.c)
 SOURCES		= $(_BGL_SOURCES) $(_UNIX_SOURCES)
  
 #*---------------------------------------------------------------------*/
-#*    Sources                                                          */
-#*---------------------------------------------------------------------*/
-POPULATION	= $(SOURCES) \
-                  $(MISC_SRC_DIR)/make_lib.scm \
-                  $(MISC_SRC_DIR)/$(API).init \
-                  Makefile
-
-#*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: c jvm build-c build-jvm
+.PHONY: c jvm build-c build-jvm build-wasm
 
 all:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -88,6 +81,9 @@ all:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
 	  fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+             $(MAKE) build-wasm; \
+	  fi
 
 c: build-c
 build-c: api-c
@@ -95,11 +91,8 @@ build-c: api-c
 jvm: build-jvm
 build-jvm: api-jvm
 
-#*---------------------------------------------------------------------*/
-#*    pop ...                                                          */
-#*---------------------------------------------------------------------*/
-pop:
-	@ echo $(POPULATION:%=$(API)/src/%)
+wasm: build-wasm
+build-wasm: api-wasm
 
 #*---------------------------------------------------------------------*/
 #*    clean                                                            */

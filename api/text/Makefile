@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun May 24 08:42:33 2026 (serrano)                */
+#*    Last change :  Wed Aug 26 01:41:28 2026 (serrano)                */
 #*    Copyright   :  2001-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -17,13 +17,6 @@ include ../../Makefile.config
 #*    The name of the API (used by Makefile.api).                      */
 #*---------------------------------------------------------------------*/
 API = text
-
-#*---------------------------------------------------------------------*/
-#*    Directories where to find the files composing a revision         */
-#*---------------------------------------------------------------------*/
-POPDIR = src
-POPULATION = Makefile README \
-  data/gb2312.sch data/en-hyphens.sch data/fr-hyphens.sch
 
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
@@ -55,19 +48,6 @@ build-wasm:
 	    echo "[0m[1;31m>>> WASM[0m";  \
 	    (cd src && $(MAKE) build-wasm); \
           fi
-
-#*---------------------------------------------------------------------*/
-#*    pop                                                              */
-#*    -------------------------------------------------------------    */
-#*    This entry is used by the bigloo/Makefile (the main Bigloo       */
-#*    makefile) to get the list of file that populate a revision.      */
-#*---------------------------------------------------------------------*/
-.PHONY: pop
-pop:
-	@ echo $(POPULATION:%=$(API)/%)
-	@ for d in $(POPDIR); do \
-            (cd $$d && $(MAKE) -s pop) \
-          done;
 
 #*---------------------------------------------------------------------*/
 #*    Clean                                                            */
