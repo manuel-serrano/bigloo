@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Aug 27 20:03:33 2026 (serrano)                */
+;*    Last change :  Thu Aug 27 20:55:01 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -992,7 +992,15 @@
       (match-case x
 	 ((case ?args . ?rules)
 	  (localize x
-             `(case ,(e args e) ,@(map (lambda (r) (e r e)) rules))))
+             `(case ,(e args e)
+                 ,@(map (lambda (r)
+                           (match-case r
+                              ((?t . ?exprs)
+                               (localize r
+                                  (list t (map (lambda (x) (e x e)) exprs))))
+                              (else
+                               (error/loc mod "Illegal form" r x))))
+                    rules))))
 	 (else
 	  (error/loc mod "Illegal form" x x))))
 
