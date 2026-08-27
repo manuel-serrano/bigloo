@@ -531,7 +531,12 @@
 ;;
 (define-method (node->rtl::area e::vref) ; ()
    (with-access::vref e (expr* ftype vtype)
-      (call* e (instantiate::rtl_vref (type ftype) (vtype vtype)) expr*) ))
+      (if (and (eq? vtype *vector*) (not (eq? ftype *obj*)))
+          ;; requires an explicit cast
+          (node->rtl (instantiate::cast
+                        (type ftype)
+                        (arg (duplicate::vref e (ftype *obj*)))))
+          (call* e (instantiate::rtl_vref (type ftype) (vtype vtype)) expr*))))
 
 ;;
 (define-method (node->rtl::area e::vset!) ; ()

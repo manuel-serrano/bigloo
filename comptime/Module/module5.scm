@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Jul 23 16:51:33 2026 (serrano)                */
+;*    Last change :  Thu Aug 27 20:03:33 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -988,6 +988,14 @@
 	 (else
 	  (error/loc mod "Illegal form" x x))))
 
+   (define (case-expand x e)
+      (match-case x
+	 ((case ?args . ?rules)
+	  (localize x
+             `(case ,(e args e) ,@(map (lambda (r) (e r e)) rules))))
+	 (else
+	  (error/loc mod "Illegal form" x x))))
+
    (define (identify-expand x e)
       x)
 
@@ -1004,6 +1012,7 @@
    (install-module5-expander xenv 'letrec* #f let+-expand)
    
    (install-module5-expander xenv 'lambda #f lambda-expand)
+   (install-module5-expander xenv 'case #f case-expand)
    
    xenv)
 

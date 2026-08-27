@@ -408,33 +408,46 @@
 (define-method (gen-fun fun::rtl_switch me);
    (with-access::rtl_switch fun (type patterns labels)
       ;; CARE do we have to make a coercion from "type" to int ??
-      (let ( (ldef #unspecified) (num2lab '()) )
+      (let ((ldef #unspecified) (num2lab '()))
 	 (define (L n)
-	    (string->symbol (string-append "L" (integer->string n))) )
+	    (string->symbol (string-append "L" (integer->string n))))
 	 (define (add n lab)
 	    (set! num2lab (cons (cons (intify n) (L lab)) num2lab)))
 	 (for-each (lambda (pat lab)
 		      (if (eq? pat 'else)
 			  (set! ldef (L lab))
-			  (for-each (lambda (n) (add n lab)) pat) ))
-		   patterns
-		   (map block-label labels) )
+			  (for-each (lambda (n) (add n lab)) pat)))
+            patterns
+            (map block-label labels))
 	 (cond
 	    ((null? (cdr num2lab))
 	     (push-int me (caar num2lab))
 	     (branch me 'if_icmpne ldef)
-	     (branch me 'goto (cdar num2lab)) )
+	     (branch me 'goto (cdar num2lab)))
 	    (else
 	     (set! num2lab (sort num2lab (lambda (x y) (<fx (car x) (car y)))))
-	     (let* ( (nums (map car num2lab))
-		     (min (car nums))
-		     (max (car (last-pair nums)))
-		     (n (length nums)) )
+             ;; make sure that all entries are unique because the JVM
+             ;; does not support duplicate entries
+             (set! num2lab
+                (let loop ((l num2lab))
+                   (cond
+                      ((null? l)
+                       '())
+                      ((null? (cdr l))
+                       l)
+                      ((=fx (caar l) (caadr l))
+                       (cons (car l) (loop (cddr l))))
+                      (else
+                       (cons (car l) (loop (cdr l)))))))
+	     (let* ((nums (map car num2lab))
+                    (min (car nums))
+                    (max (car (last-pair nums)))
+                    (n (length nums)))
 		(if (< (/ n (+fx 1 (-fx max min))) 0.75)
 		    (code! me `(lookupswitch ,ldef ,@num2lab))
 		    (code! me `(tableswitch ,ldef ,min
-					    ,@(flat num2lab ldef) ))))))
-	 'no-value )))
+                                  ,@(flat num2lab ldef)))))))
+	 'no-value)))
 
 (define (flat al ldef)
    (define (walk al i r)
@@ -587,10 +600,16 @@
             (code! me `(checkcast ,(compile-type me type))) ))))
 
 (define-method (gen-fun fun::rtl_cast_null me);
-   (let ( (type (rtl_cast_null-type fun)) ) 
-      (if (eq? (type-name type) 'float)
-	  (code! me `(fconst_0))
-	  (code! me `(aconst_null)) )))
+   (let ((type (rtl_cast_null-type fun)))
+      (case (type-name type)
+         ((float)
+	  (code! me `(fconst_0)))
+         ((int)
+          (code! me `(iconst_0)))
+         ((long)
+          (code! me `(lconst_0)))
+         (else
+	  (code! me `(aconst_null))))))
 
 ;;
 ;; Box

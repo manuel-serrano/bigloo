@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Tue Aug 25 01:17:13 2026 (serrano)                */
+;*    Last change :  Thu Aug 27 20:28:12 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -633,9 +633,6 @@
 		      'todo)
 		     ((#x208)
 		      ;; JPEGD
-		      'todo)
-		     ((#x208)
-		      ;; JPEGA
 		      'todo)
 		     ((#x211)
 		      ;; TAG_YCbCrcoef

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/api/multimedia/src/Llib/midi.scm       */
+;*    .../project/bigloo/5.0.x/api/multimedia/src/Llib/midi.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar  7 17:33:01 2019                          */
-;*    Last change :  Fri Mar 11 19:18:58 2022 (serrano)                */
-;*    Copyright   :  2019-22 Manuel Serrano                            */
+;*    Last change :  Wed Aug 26 20:43:54 2026 (serrano)                */
+;*    Copyright   :  2019-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Midi support (sequencer and tools).                              */
 ;*=====================================================================*/
@@ -29,16 +29,15 @@
 	      (%eot::bool (default #f))
 	      (%wtick::uint32 (default #u32:0))
 	      (%status::long (default 0))
-	      (len::int32 read-only (default 0))
+	      (len::int32 read-only (default #s32:0))
 	      (tempo::long (default 500000))
-	      
 	      (ip::obj read-only (default #f))
 	      (start::long read-only (default 0))
 	      (datastart::long read-only (default 0))
 	      (wtick::uint32 (default #u32:0))
 	      (status::long (default -1))
 	      (eot::bool (default #f)))
-	   
+
 	   (class midireader
 	      (midireader-init)
 	      (peek-byte::procedure read-only)

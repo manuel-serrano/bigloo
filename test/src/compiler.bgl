@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Tue Jul 28 13:17:29 2026 (serrano)                */
+;*    Last change :  Thu Aug 27 19:36:16 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the compiler                                             */
@@ -146,7 +146,7 @@
 (define-macro (mk-hwdebug-available)
    `(begin
        (define hwdebug 7)))
-   
+
 (define (texpand)
    (mk-hwdebug-available)
    8)
@@ -159,7 +159,7 @@
    (define (bar x)
       x)
    (bar x))
- 
+
 (lambda (x)
    (define (bar x)
       (define (hux x)
@@ -216,7 +216,7 @@
 (define-test inner (n-ary-define 5) :expected '(5 5))
 (define-test inner (n-ary-typed-define 5) :expected '(5 5))
 (define-test inner (vector? (set-derives)) :expected #t)
-(define-test inner (inner-print) :expected #t) 
+(define-test inner (inner-print) :expected #t)
 (define-test expand (texpand) :expected 8)
 
 ;*---------------------------------------------------------------------*/
@@ -239,7 +239,7 @@
 	       (bar (y) (set! b y) (foo b)))
 	 (bar 1)
 	 foo)))
-      
+
 (define-test cell
    ((cell-test1 1 2) 3)
    :expected 2)
@@ -247,7 +247,7 @@
    :expected 2)
 (define-test cell ((cell-test3 1 2 3 4) 2)
    :expected 2)
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    tail                                                             */
 ;*---------------------------------------------------------------------*/
@@ -898,7 +898,7 @@
    #f)
 
 (define (match f e)
-  ((m-g f) e r-init a-init m-init 
+  ((m-g f) e r-init a-init m-init
 		     (lambda (e r z) #t)
 		     (lambda () #f)))
 
@@ -923,7 +923,7 @@
   (lambda (e r a m k z) (k e r z)) )
 
 (define (m-quote-g ee)
-  (lambda (e r a m k z) 
+  (lambda (e r a m k z)
     (if (eq? e ee)
         (k e r z)
         (z) ) ) )
@@ -931,8 +931,8 @@
 (define (m-or-g f1 f2)
   (lambda (e r a m k z)
     ((m-g f1)
-     e r a m k (lambda () 
-                 ((m-g f2) 
+     e r a m k (lambda ()
+                 ((m-g f2)
                   e r a m k z ) ) ) ) )
 
 (define (m-and-g f1 f2)
@@ -946,7 +946,7 @@
 (define (m-not-g f)
   (lambda (e r a m k z)
     ((m-g f)
-     e r a m (lambda (ee rr zz) (z)) 
+     e r a m (lambda (ee rr zz) (z))
              (lambda () (k e r z)) ) ) )
 
 (define (m-setq-g n f)
@@ -970,7 +970,7 @@
   (lambda (e r a m k z)
     (if (pair? e)
         ((m-g f1)
-         (car e) r a-init m-init 
+         (car e) r a-init m-init
          (lambda (ee rr zz)
            ((m-g f2)
             (cdr e) rr a m k zz ) )
@@ -980,11 +980,11 @@
 (define (m-ssetq-append-g n f1 f2)
   (lambda (e r a m k z)
     ((m-g f1)
-     e r (extend a-init n 
+     e r (extend a-init n
                  (lambda (ee rr zz)
                     (if (eq? (rr n) unbound-pattern)
                         ((m-g f2)
-                         ee (extend rr n (cut e ee)) a m k zz ) 
+                         ee (extend rr n (cut e ee)) a m k zz )
                         (wrong "cannot rebind" n) ) ) )
      m-init (lambda (ee rr zz)
               (wrong "Ssetq not ended" f1) )
@@ -1008,9 +1008,9 @@
      (labels ((ltry (e r z)
 		   ((m-g f2)
 		    e r a m k
-		    (lambda () 
+		    (lambda ()
                        ((m-g f1)
-                        e r a-init 
+                        e r a-init
 			(extend m-init n ltry)
 			(lambda (ee rr zz)
 			   (wrong "Times not ended" f1) )
@@ -1052,7 +1052,7 @@
 
 (define f1 '(*cons (*quote a) (*quote ())))
 
-(define f2 '(*times x 
+(define f2 '(*times x
 		    (*cons (*quote a) (*end-times x))
 		    (*quote ())))
 
@@ -1073,9 +1073,16 @@
 (define-test higher-order (match f3 '(a a a a)) :expected #f)
 (define-test higher-order (match f4 '(e e)) :expected #t)
 (define-test higher-order (match f4 '(e f)) :expected #f)
-	 
 
+(define-test case-jvm-bug-cc28d8c2
+   (case (+fx 1 (car (list 4)))
+               ((1) 1)
+         ((2) 1)
+         ((7) 1000)
+         ((5) 5)
+         ((4) 4)
+         ((4) 4)
+         ((6) 10)
+         (else 11))
+   :expected 5)
 
-
-
- 

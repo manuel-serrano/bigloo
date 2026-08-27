@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/multimedia/src/Llib/id3.scm      */
+;*    .../project/bigloo/5.0.x/api/multimedia/src/Llib/id3.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Sat Aug 20 10:01:19 2016 (serrano)                */
-;*    Copyright   :  2005-16 Manuel Serrano and 2009 John G Malecki    */
+;*    Last change :  Wed Aug 26 02:03:35 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
 ;*=====================================================================*/
@@ -506,7 +506,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    tcon->genre ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (tcon->genre n)
+(define (tcon->genre::bstring n::long)
    (cond
       ((<fx n 0) "unknown")
       ((>=fx n (vector-length *id3v2-genres*)) "unknown")

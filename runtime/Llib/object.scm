@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sat May 23 08:51:57 2026 (serrano)                */
+;*    Last change :  Thu Aug 27 17:30:51 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -421,6 +421,7 @@
 
    (pragma  (%object-class-num args-safe)
 	    (%object-class-num-set! args-safe)
+            ($cond-expand-isa-arch64? nesting side-effect-free)
             (class? fail-safe side-effect-free no-cfa-top nesting (effect))
 	    (class-super side-effect-free no-cfa-top no-trace nesting)
 	    (class-subclasses side-effect-free no-cfa-top no-trace nesting)

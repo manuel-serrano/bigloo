@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Expand/case.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Expand/case.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  3 10:13:16 1992                          */
-;*    Last change :  Thu Jul 17 09:16:39 2025 (serrano)                */
-;*    Copyright   :  1992-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Aug 27 19:53:44 2026 (serrano)                */
+;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On macro-expanse ce satane `case'                                */
 ;*=====================================================================*/

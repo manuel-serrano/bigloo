@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Mon Jun 22 08:04:52 2026 (serrano)                */
+;*    Last change :  Thu Aug 27 17:48:45 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing Objects and Classes                                      */
@@ -309,3 +309,8 @@
    (isa? ((class-creator Point) 1 2) Point)
    :expected #t)
 
+(define-class class-with-int32-prop
+   x::int32)
+
+(define-test jvm-bug-cc28d8c2
+   (isa? (instantiate::class-with-int32-prop (x #s32:0)) class-with-int32-prop))
