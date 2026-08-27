@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wmmap.wat          */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/wmmap.wat         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 28 06:41:16 2024                          */
-;*    Last change :  Wed Jul 16 09:52:11 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Thu Aug 27 22:06:11 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM mmap                                                        */
 ;*=====================================================================*/
@@ -174,9 +174,9 @@
 			(i32.wrap_i64 (local.get $i)))
 		     (i32.const 1))
 		  (then
-		     (i32.load8_s (i32.const 128)))
+		     (i32.load8_u (i32.const 128)))
 		  (else
-		   (i32.const -1)))))))
+		   (i32.const 255)))))))
 
    (func $BGL_MMAP_SET (export "BGL_MMAP_SET")
       (param $o (ref $mmap))

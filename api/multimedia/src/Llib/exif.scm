@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Thu Aug 27 20:28:12 2026 (serrano)                */
+;*    Last change :  Thu Aug 27 21:45:49 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -330,9 +330,8 @@
 ;*    Returns the marker (a char) or #f on failure.                    */
 ;*---------------------------------------------------------------------*/
 (define (read-jpeg-marker p)
-   (if (not (char=? (mmap-get-char p) #a255))
-       #f
-       (char->integer (mmap-get-char p))))
+   (when (char=? (mmap-get-char p) #a255)
+      (char->integer (mmap-get-char p))))
 
 ;*---------------------------------------------------------------------*/
 ;*    remove-trailing-spaces! ...                                      */
@@ -406,6 +405,89 @@
 	  (string-strncpy o max)
 	  (mmap-strncpy o max)))
 
+   (define (exif-gps tag tag-base valptr bcount fmt)
+      (case (+fx tag tag-base)
+         ((#x10001)
+          ;; TAG_GPS_LATITUDE_REF
+          (with-access::exif exif (%gps-latitude-ref)
+             (set! %gps-latitude-ref (strncpy valptr bcount)))
+          #t)
+         ((#x10002)
+          ;; TAG_GPS_LATITUDE
+          (with-access::exif exif (gps-latitude)
+             (set! gps-latitude (getformatRat3 en bytes valptr fmt)))
+          #t)
+         ((#x10003)
+          ;; TAG_GPS_LONGITUDE_REF
+          (with-access::exif exif (%gps-longitude-ref)
+             (set! %gps-longitude-ref (strncpy valptr bcount)))
+          #t)
+         ((#x10004)
+          ;; TAG_GPS_LONGITUDE
+          (with-access::exif exif (gps-longitude)
+             (set! gps-longitude (getformatRat3 en bytes valptr fmt)))
+          #t)
+         ((#x10005)
+          ;; TAG_GPS_ALTITUDE_REF
+          (with-access::exif exif (%gps-altitude-ref)
+             (set! %gps-altitude-ref (getformat/fx en bytes valptr fmt)))
+          #t)
+         ((#x10006)
+          ;; TAG_GPS_ALTITUDE
+          (with-access::exif exif (gps-altitude)
+             (set! gps-altitude (getformat en bytes valptr fmt)))
+          #t)
+         ((#x10007)
+          ;; TAG_GPS_TIMESPTAMP
+          (with-access::exif exif (gps-time-stamp)
+             (set! gps-time-stamp (getformatRat3 en bytes valptr fmt)))
+          #t)
+         ((#x10008)
+          ;; TAG_GPS_SATELITE
+          (with-access::exif exif (gps-satelites)
+             (set! gps-satelites (strncpy valptr bcount)))
+          #t)
+         ((#x10009)
+          ;; TAG_GPS_STATUS
+          (with-access::exif exif (gps-status)
+             (set! gps-status (strncpy valptr bcount)))
+          #t)
+         ((#x1000a)
+          ;; TAG_GPS_MEASURE_EMODE
+          (with-access::exif exif (gps-measure-mode)
+             (set! gps-measure-mode (strncpy valptr bcount)))
+          #t)
+         ((#x1001b #x1001c)
+          ;; TAG_GPS_SPEED_REF
+          #unspecified)
+         ((#x1001d)
+          ;; TAG_GPS_DATE_STAMP
+          (with-access::exif exif (gps-date-stamp)
+             (set! gps-date-stamp (strncpy valptr bcount))))
+         ((#x1000b)
+          ;; TAG_GPS_DOP
+          #unspecified)
+         ((#x1000c)
+          ;; TAG_GPS_SPEED_REF
+          #unspecified)
+         ((#x1000d)
+          ;; TAG_GPS_SPEED
+          #unspecified)
+         ((#x1000e)
+          ;; TAG_GPS_TRACK_REF
+          #unspecified)
+         ((#x1000f)
+          ;; TAG_GPS_TRACK
+          #unspecified)
+         ((#x10010)
+          ;; TAG_GPS_IMG_DIRECTION_REF
+          #unspecified)
+         ((#x10011)
+          ;; TAG_GPS_IMG_DIRECTION
+          #unspecified)
+         (else
+          #f)))
+
    (let ((dnum (elong->fixnum (get16u en bytes start))))
       (let loop ((de 0))
 	 (when (<fx de dnum)
@@ -431,74 +513,6 @@
 		      ;; INTEROPINDEX
 		      (let ((o (strncpy valptr bcount)))
 			 #unspecified))
-		     ((#x10001)
-		      ;; TAG_GPS_LATITUDE_REF
-		      (with-access::exif exif (%gps-latitude-ref)
-			 (set! %gps-latitude-ref (strncpy valptr bcount))))
-		     ((#x10002)
-		      ;; TAG_GPS_LATITUDE
-		      (with-access::exif exif (gps-latitude)
-			 (set! gps-latitude (getformatRat3 en bytes valptr fmt))))
-		     ((#x10003)
-		      ;; TAG_GPS_LONGITUDE_REF
-		      (with-access::exif exif (%gps-longitude-ref)
-			 (set! %gps-longitude-ref (strncpy valptr bcount))))
-		     ((#x10004)
-		      ;; TAG_GPS_LONGITUDE
-		      (with-access::exif exif (gps-longitude)
-			 (set! gps-longitude (getformatRat3 en bytes valptr fmt))))
-		     ((#x10005)
-		      ;; TAG_GPS_ALTITUDE_REF
-		      (with-access::exif exif (%gps-altitude-ref)
-			 (set! %gps-altitude-ref (getformat/fx en bytes valptr fmt))))
-		     ((#x10006)
-		      ;; TAG_GPS_ALTITUDE
-		      (with-access::exif exif (gps-altitude)
-			 (set! gps-altitude (getformat en bytes valptr fmt))))
-		     ((#x10007)
-		      ;; TAG_GPS_TIMESPTAMP
-		      (with-access::exif exif (gps-time-stamp)
-			 (set! gps-time-stamp (getformatRat3 en bytes valptr fmt))))
-		     ((#x10008)
-		      ;; TAG_GPS_SATELITE
-		      (with-access::exif exif (gps-satelites)
-			 (set! gps-satelites (strncpy valptr bcount))))
-		     ((#x10009)
-		      ;; TAG_GPS_STATUS
-		      (with-access::exif exif (gps-status)
-			 (set! gps-status (strncpy valptr bcount))))
-		     ((#x1000a)
-		      ;; TAG_GPS_MEASURE_EMODE
-		      (with-access::exif exif (gps-measure-mode)
-			 (set! gps-measure-mode (strncpy valptr bcount))))
-		     ((#x1001b #x1001c)
-		      ;; TAG_GPS_SPEED_REF
-		      #unspecified)
-		     ((#x1001d)
-		      ;; TAG_GPS_DATE_STAMP
-		      (with-access::exif exif (gps-date-stamp)
-			 (set! gps-date-stamp (strncpy valptr bcount))))
-		     ((#x1000b)
-		      ;; TAG_GPS_DOP
-		      #unspecified)
-		     ((#x1000c)
-		      ;; TAG_GPS_SPEED_REF
-		      #unspecified)
-		     ((#x1000d)
-		      ;; TAG_GPS_SPEED
-		      #unspecified)
-		     ((#x1000e)
-		      ;; TAG_GPS_TRACK_REF
-		      #unspecified)
-		     ((#x1000f)
-		      ;; TAG_GPS_TRACK
-		      #unspecified)
-		     ((#x10010)
-		      ;; TAG_GPS_IMG_DIRECTION_REF
-		      #unspecified)
-		     ((#x10011)
-		      ;; TAG_GPS_IMG_DIRECTION
-		      #unspecified)
 		     ((#xfe)
 		      ;; NEW SUBFILE TYPE
 		      (let ((s (getformat/fx en bytes valptr fmt)))
@@ -1091,7 +1105,8 @@
 		      'ignored)
 		     (else
 		      ;; TAG_UNKNOWN
-		      (extension exif tag en bytes fmt bcount valptr)))
+                      (or (exif-gps tag tag-base valptr bcount fmt)
+                          (extension exif tag en bytes fmt bcount valptr))))
 		  (loop (+fx de 1))))))
       (when (and read-next
 		 (< (+ start 2 4 (*fx 12 dnum)) (if (string? bytes) (string-length bytes) (mmap-length bytes))))
