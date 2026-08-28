@@ -289,6 +289,10 @@ of the necessary parent directories.
 Deletes the directory named `path`. The directory must be empty
 in order to be deleted. The result of this procedure is unspecified.
 
+### delete-directories ###
+Deletes recursively the directory named `path` and all the files and
+subdirectories it contains.
+
 ### directory-length ###
 If file `path` exists and is a directory, the function 
 `directory-length` returns the number of entries contained in `string`.

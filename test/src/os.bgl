@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Fri Jun 26 07:55:27 2026 (serrano)                */
+;*    Last change :  Fri Aug 28 14:07:01 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing OS api                                                   */
@@ -795,6 +795,22 @@
                 (when (directory? f)
                    (delete-directory f)
                    #t))))))
+
+(define-test delete-directories
+   (let loop ()
+      (let ((f (make-file-name (os-tmp)
+                  (format "bigloo-test-~a" (current-microseconds)))))
+         (if (file-exists? f)
+             (begin
+                (sleep 1)
+                (loop))
+             (when (make-directory f)
+                (when (directory? f)
+                   (let ((sub (make-file-name f "tmp")))
+                      (make-directory sub)
+                      (when (directory? sub)
+                         (delete-directories f)
+                         #t))))))))
 
 (define-test directory-length
    (> (directory-length (dirname os.filename)) 0))

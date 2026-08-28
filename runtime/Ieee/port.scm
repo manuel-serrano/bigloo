@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed Jul  8 11:49:56 2026 (serrano)                */
+;*    Last change :  Fri Aug 28 14:04:47 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -558,6 +558,7 @@
 	    (inline make-directory::bool ::bstring)
 	    (make-directories::bool ::bstring)
 	    (inline delete-directory ::bstring)
+	    (delete-directories ::bstring)
 	    (inline rename-file::bool ::bstring ::bstring)
 	    (inline truncate-file::bool ::bstring ::long)
 	    (inline output-port-truncate::bool ::output-port ::long)
@@ -1609,6 +1610,16 @@
 (define-inline (delete-directory path::bstring)
    (not ($delete-directory path)))
 
+;*---------------------------------------------------------------------*/
+;*    delete-directories ...                                           */
+;*---------------------------------------------------------------------*/
+(define (delete-directories path::bstring)
+   (if (directory? path)
+       (let ((files (directory->path-list path)))
+          (for-each delete-directories files)
+          (delete-directory path))
+       (delete-file path)))
+       
 ;*---------------------------------------------------------------------*/
 ;*    rename-file ...                                                  */
 ;*---------------------------------------------------------------------*/
