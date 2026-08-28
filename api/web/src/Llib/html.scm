@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Tue Jul 28 14:28:05 2026 (serrano)                */
+;*    Last change :  Fri Aug 28 17:05:18 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
@@ -361,12 +361,12 @@
       (memq (-> el tag) '(text em strong)))
    
    (define (inline->html el::XmlElement m)
-      (display "<")
+      (display "<" op)
       (display (-> el tag) op)
       (disp-attrs (-> el attrs))
       (display ">" op)
       (for-each (lambda (el) (el->html el m)) (xml-element-children el))
-      (display "</")
+      (display "</" op)
       (display (-> el tag) op)
       (display ">" op))
       

@@ -25,7 +25,7 @@ Multimedia Library
   ...)
 ```
 
-Exif
+Jpeg
 ----
 
 ### exif ###

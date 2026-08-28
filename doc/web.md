@@ -10,6 +10,8 @@
 <!--==================================================================-->
 
 ,(implementation-path "../api/web/src/Llib/json.scm")
+,(implementation-path "../api/web/src/Llib/xml.scm")
+,(implementation-path "../api/web/src/Llib/html.scm")
 ,(example-path "../test/src/web0.bgl")
 
 Web Library
@@ -60,7 +62,39 @@ returns a string. This procedure accepts three arguments:
 
 Returns a string, which is the json representation of the object passed
 as argument.
-  
+
+
+XML
+---
+
+### XmlElement ###
+The class describing xml elements.
+
+### xml-element ###
+The `XmlElement` constructor.
+
+### xml-element-children ###
+Returns the children of the xml element.
+
+
+HTML
+----
+
+### html-parse ###
+Parses HTML read from the input port `port` and returns the list of
+parsed elements. THe keyword arguments are:
+
+  * `content-length`: an integer, the character length of the HTML document. 
+  This is useful when parsing documents from a socket, for instance, in order 
+  to respond to an HTTP request that lacks length information.
+  * `encoding`: a symbol, the character encoding, which defaults to UTF-8.
+  * `eoi`: a boolean, when true, the document should ends of the end of input.
+  * `procedure`: a procedure of 3 or 4 arguments that constructrs the HTML
+  elements. The `procedure` argument default to `xml-element`.
+
+### write-html ###
+Displays an html element to the optional output port `op` or to the default
+output port.
 
 
 

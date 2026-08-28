@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug 24 23:47:58 2026                          */
-;*    Last change :  Tue Aug 25 17:55:15 2026 (serrano)                */
+;*    Last change :  Fri Aug 28 15:54:25 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the web library.                                         */
@@ -60,3 +60,51 @@
    (json-stringify '#(((a . 1) (b . #(1 2))) #f ()))
    :cond-expand (library web)
    :expected "[{\"a\":1,\"b\":[1,2]},false,null]")
+
+;*---------------------------------------------------------------------*/
+;*    xml                                                              */
+;*---------------------------------------------------------------------*/
+(define-test XmlElement
+   XmlElement
+   :cond-expand (library web)
+   :expected class?)
+
+(define-test xml-element
+   (isa? (xml-element 'div '() '()) XmlElement)
+   :cond-expand (library web))
+
+(define-test xml-element
+   (isa? (xml-element 'div '((class . "cont")) (list "foo" "bar")) XmlElement)
+   :cond-expand (library web))
+
+(define-test xml-element-children
+   (length (xml-element-children (xml-element 'div '() (list "foo" "bar"))))
+   :cond-expand (library web)
+   :expected 2)
+
+;*---------------------------------------------------------------------*/
+;*    html                                                             */
+;*---------------------------------------------------------------------*/
+(define-test html-parse
+   (isa? (car (call-with-input-string "<html><div>foo</div></html>" html-parse))
+      XmlElement))
+
+(define-test html-parse
+   (length
+      (xml-element-children
+         (car
+            (call-with-input-string "<tr><td>1</td><td>2</td></tr>" html-parse))))
+   :expected 2)
+
+(define-test write-html
+   (pregexp-replace* "\n"
+      (call-with-output-string 
+         (lambda (op)
+            (write-html
+               (car
+                  (call-with-input-string
+                        "<div class=\"C\"><span>bar</span></div>"
+                     html-parse))
+               op)))
+      "")
+   :expected "<div class=\"C\"><span>bar</span></div>")
