@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Aug 27 21:40:06 2026 (serrano)                */
+;*    Last change :  Thu Sep  3 00:54:46 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -35,6 +35,7 @@
 	   module_extern5
 	   heap_restore
 	   expand_eps
+           expand_lambda
 	   expand_object
 	   expand_assert
 	   ast_node
@@ -933,23 +934,6 @@
 	 (else
 	  (error/loc mod "Illegal form" x x))))
 
-   (define (define-macro-expander x e)
-      ;; macro expander cannot use regular module5 initial env because
-      ;; the inner define expanders of that environment are incompatible
-      ;; with eval
-      (let ((envx *module5-env*))
-	 (set! *module5-env* #f)
-	 (let ((nx (expand-define-macro x e)))
-	    (set! *module5-env* envx)
-	    #unspecified)))
-
-   (define (define-macro-expander-new x e)
-      ;; macro expander cannot use regular module5 initial env because
-      ;; the inner define expanders of that environment are incompatible
-      ;; with eval
-      (expand-define-macro x e)
-      #unspecified)
-
    (define (let+-expand x e)
       (match-case x
 	 ((?klet (and ?bs (? list?)) . ?body)
@@ -980,13 +964,7 @@
 	  (error/loc mod "Illegal form" x x))))
 
    (define (lambda-expand x e)
-      (match-case x
-	 ((lambda ?args . ?body)
-	  (localize x
-	     `(lambda ,(expand-args args e)
-		 ,@(map (lambda (b) (e b e)) body))))
-	 (else
-	  (error/loc mod "Illegal form" x x))))
+      (expand-lambda x e))
 
    (define (case-expand x e)
       (match-case x

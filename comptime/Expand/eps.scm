@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Fri Mar 13 08:06:17 2026 (serrano)                */
+;*    Last change :  Sat Sep  5 17:00:40 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
@@ -59,6 +59,14 @@
 		    (if (eq? eid id)
 			form
 			`(define-expander ,id ,expr)))
+                   ((define-expander ?eid . ?exprs)
+                    (let loop ((exprs exprs))
+                       (if (null? (cdr exprs))
+                           (add-macro-definition!
+                              `(define-expander eid (car exprs)) id)
+                           (begin
+                              (eval (car exprs))
+                              (loop (cdr exprs))))))
 		   (else
 		    (error "add-macro-definition!"
 		       (format "Illegal form \"~a\"" id)

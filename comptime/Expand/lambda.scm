@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/lambda.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Expand/lambda.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:44:53 1994                          */
-;*    Last change :  Mon Oct 18 08:37:41 2010 (serrano)                */
-;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Sep  3 01:29:59 2026 (serrano)                */
+;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The lambda macro-expansion.                                      */
 ;*=====================================================================*/
@@ -137,6 +137,11 @@
       (if (pair? oldforms)
 	  (let ((form (car oldforms)))
 	     (match-case form
+                ((define (?var . ?args) . ?body)
+                 (loop (cdr oldforms)
+		       newforms
+		       (cons var vars)
+		       (cons `(,var (lambda ,args ,@body)) decls)))
 		((define ?var ?val)
 		 (loop (cdr oldforms)
 		       newforms

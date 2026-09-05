@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Jul  3 13:55:28 2026 (serrano)                */
+;*    Last change :  Thu Sep  3 00:59:41 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -596,7 +596,7 @@
 	       (else
 		(with-handler expander-exception-handler
 		   (expd-eval x e)))))))
-   
+
    (match-case x
       ((?- (and (? symbol?) ?name) :eval! ?macro)
        (let* ((expd-lam macro)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 25 10:44:39 2026                          */
-;*    Last change :  Fri Jun 26 07:26:47 2026 (serrano)                */
+;*    Last change :  Mon Aug 31 18:32:37 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing Bigloo specifics                                         */
@@ -102,4 +102,32 @@
 (define-test bigloo-class-demangle
    (bigloo-class-demangle (string-append (bigloo-mangle "Point") "_bglt"))
    :expected "Point_bglt")
+
+;*---------------------------------------------------------------------*/
+;*    procedure                                                        */
+;*---------------------------------------------------------------------*/
+(define-test procedure-arity (procedure-arity +fx)
+   :expected 2)
+
+(define-test procedure-arity (procedure-arity list)
+   :expected -1)
+
+(define-test procedure-arity (procedure-arity (lambda (a . b) a))
+   :expected -2)
+
+(define-test procedure-correct-arity? (procedure-correct-arity? +fx 2)
+   :expected #t)
+
+(define-test procedure-correct-arity? (procedure-correct-arity? +fx 3)
+   :expected #f)
+   
+(define-test procedure-correct-arity? (procedure-correct-arity? list 0)
+   :expected #t)
+   
+(define-test procedure-correct-arity? (procedure-correct-arity? list 5)
+   :expected #t)
+   
+(define-test procedure-correct-arity? (procedure-correct-arity? (lambda (a . b) a) 0)
+   :expected #f)
+
 

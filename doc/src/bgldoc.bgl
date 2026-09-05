@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Tue Aug 25 00:21:59 2026 (serrano)                */
+;*    Last change :  Sat Sep  5 17:08:19 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -104,6 +104,7 @@
    '(("conditional execution" . "condexpand.html")
      ("core langage" . "core.html")
      ("lexers & parsers" . "parser.html")
+     ("macro" . "macro.html")
      ("module 5" . "module5.html")
      ("module 4" . "module4.html")
      ("objects" . "object.html")

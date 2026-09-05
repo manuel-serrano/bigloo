@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Thu Jun 25 17:54:24 2026 (serrano)                */
+;*    Last change :  Mon Aug 31 18:33:55 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -308,6 +308,7 @@
 	    (inline opaque?::bool ::obj)
 	    (inline opaque-nil::obj)
 	    (inline procedure-arity::int ::procedure)
+            (inline procedure-correct-arity?::bool ::procedure ::int)
 	    (inline procedure-length::int ::procedure)
 	    (inline procedure-attr::obj ::procedure)
 	    (inline procedure-attr-set!::obj ::procedure ::obj)
@@ -416,8 +417,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    procedure-arity ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (procedure-arity proc)
+(define-inline (procedure-arity::int proc::procedure)
    ($procedure-arity proc))
+
+;*---------------------------------------------------------------------*/
+;*    procedure-correct-arity? ...                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (procedure-correct-arity? proc::procedure n::int)
+   (correct-arity? proc n))
 
 ;*---------------------------------------------------------------------*/
 ;*    procedure-length ...                                             */

@@ -1,0 +1,181 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/macro.bgl             */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Sat Sep  5 16:48:41 2026                          */
+;*    Last change :  Sat Sep  5 17:05:27 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing macros                                                   */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    macro                                                            */
+;*---------------------------------------------------------------------*/
+(module macro
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "macro" tests))
+      (test-all verbose "macro")))
+
+;*---------------------------------------------------------------------*/
+;*    defun ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-expander defun 
+   (lambda (f e)
+      (e `(define ,(cadr f) 
+	     (begin
+		,@(cddr f)
+		1))
+	 e)))
+
+;*---------------------------------------------------------------------*/
+;*    foo ...                                                          */
+;*---------------------------------------------------------------------*/
+(defun (foo x y)
+   (+ x y))
+
+;*---------------------------------------------------------------------*/
+;*    integer->char ...                                                */
+;*---------------------------------------------------------------------*/
+(define (integer->char)
+   1)
+
+;*---------------------------------------------------------------------*/
+;*    bar ...                                                          */
+;*    -------------------------------------------------------------    */
+;*    On verifie que les O-macros sont ecrasables par des variables    */
+;*    locales                                                          */
+;*---------------------------------------------------------------------*/
+(define (bar read)
+   (read))
+
+;*---------------------------------------------------------------------*/
+;*    Les formes interpretees                                          */
+;*---------------------------------------------------------------------*/
+(define-expander put
+   (define a 4)
+   (define b 6)
+   (lambda (x e) ''dummy))
+
+(put)
+
+(define-macro (get)
+   (+ a b))
+
+(define eval-macro (get))
+
+;*---------------------------------------------------------------------*/
+;*    Une macro dans un case sur des integers (ca plantait jusqu'a     */
+;*    la premiere version 1.6)                                         */
+;*---------------------------------------------------------------------*/
+(define-macro (case-test-macro x)
+   x)
+
+(define (case-macro x)
+   (case (case-test-macro x)
+      ((1) 1)
+      ((2) 2)
+      (else 3)))
+
+;*---------------------------------------------------------------------*/
+;*    Nested defines                                                   */
+;*---------------------------------------------------------------------*/
+(define-macro (define-glop a v)
+   `(begin
+       (current-date)
+       (define ,a ,v)))
+
+(define-macro (define-node sig v)
+      `(define ,sig ,v))
+
+(define (nested-define)
+   (define x 1)
+   (current-seconds)
+   (define-node t 10)
+   (define-glop y 20)
+   (current-seconds)
+   (+ x t y))
+
+;*---------------------------------------------------------------------*/
+;*    nested define 2                                                  */
+;*---------------------------------------------------------------------*/
+(define-macro (insert-code)
+   '(begin (define tag3 (list 'foo))))
+
+(define nested-define2 #f)
+
+(insert-code)
+   
+(let ((x tag3))
+   (begin
+      (insert-code)
+      (set! nested-define2 (eq? x tag3))))
+
+;*---------------------------------------------------------------------*/
+;*    nested define 3                                                  */
+;*---------------------------------------------------------------------*/
+(begin
+   (define tag2 (list 'foo)))
+
+(define nested-define3 #f)
+
+(let ((x tag2))
+   (begin
+     (define tag2 (list 'foo)))
+   (set! nested-define3 (eq? x tag2)))
+
+;*---------------------------------------------------------------------*/
+;*    nested define 4 ...                                              */
+;*---------------------------------------------------------------------*/
+(define tag1 (list 'foo))
+
+(define nested-define4 #f)
+
+(let ((x tag1))
+
+   (define tag1 (list 'foo))
+
+   (set! nested-define4 (eq? x tag1)))
+
+(define-expander cond-expandi
+   (lambda (x e)
+      (match-case x
+         ((?- ?- ((kwote else) . ?body))
+          (e `(begin ,@body) e)))))
+
+(define (nested-define5 x)
+   (cond-expandi
+      (toto '(print 'coucou))
+      (else (define (foo x) (not x)) (foo x))))
+
+(define-expander inner-define
+   (lambda (x e)
+      (define (id x) x)
+      (e `',x e)))
+         
+;*---------------------------------------------------------------------*/
+;*    test-macro ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-test expander (foo 1 2) :expected 1)
+(define-test O-macro (integer->char) :expected 1)
+(define-test O-macro (bar (lambda () 1)) :expected 1)
+(define-test eval eval-macro :expected 10)
+(define-test case-macro (case-macro 2) :expected 2)
+(define-test nested-define (nested-define) :expected 31)
+(define-test nested-define nested-define2 :expected #f)
+(define-test nested-define nested-define3 :expected #f)
+(define-test nested-define nested-define4 :expected #f)
+(define-test nested-define (nested-define5 #t) :expected #f)
+(define-test inner-define (inner-define 4) :expected '(inner-define 4))
+
+

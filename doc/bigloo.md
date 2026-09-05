@@ -70,4 +70,15 @@ Returns `#t` if `string` is a mangled name of a Bigloo class.
 Demangles previously mangled class identifier.
 
 
+Procedure
+---------
 
+### procedure-arity ###
+Returns the arity of a procedure. A positive or null integer indicates a
+fix arity procedure. A negative integer indicates a variable number of 
+arguments. For a negative arity `a`, the number of requires arguments is 
+`-a - 1`.
+
+### procedure-correct-arity? ###
+Returns `#t` if the procedure `p` accepting `n` arguments. Returns `#f`
+otherwise.

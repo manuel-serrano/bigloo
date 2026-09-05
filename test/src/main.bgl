@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Tue Aug 25 00:24:10 2026 (serrano)                */
+;*    Last change :  Sat Sep  5 16:49:27 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -34,6 +34,7 @@
    (import "./internet.bgl" . internet)
    (import "./io.bgl" . io)
    (import "./lalr.bgl" . lalr)
+   (import "./macro.bgl" . macro)
    (import "./match.bgl" . match)
    (import "./module.bgl" . module)
    (import "./mmap.bgl" . mmap)
@@ -117,6 +118,7 @@
                        (internet.test verbose tests)
                        (io.test verbose tests)
                        (lalr.test verbose tests)
+                       (macro.test verbose tests)
                        (match.test verbose tests)
                        (module.test verbose tests)
                        (mmap.test verbose tests)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Eval/evcompile.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/evcompile.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Tue Nov 19 13:10:00 2019 (serrano)                */
+;*    Last change :  Sat Sep  5 16:28:08 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -293,6 +293,11 @@
 	  lkp))
       ((letrec ?bindings ?body)
        (evcompile-letrec bindings body env
+	  genv where tail
+	  (get-location exp loc)
+	  lkp))
+      ((letrec* ?bindings ?body)
+       (evcompile-letrec* bindings body env
 	  genv where tail
 	  (get-location exp loc)
 	  lkp))
@@ -732,6 +737,20 @@
        (evcompile-letrec-generic bindings body env genv where tail loc lkp)))
 
 ;*---------------------------------------------------------------------*/
+;*    evcompile-letrec* ...                                            */
+;*---------------------------------------------------------------------*/
+(define (evcompile-letrec* bindings body env genv where tail loc lkp)
+   (if (every (lambda (x)
+		 (and (pair? x)
+		      (pair? (cadr x))
+		      (eq? (car (cadr x)) 'lambda)))
+	       bindings)
+       ;; this letrec only binds functions, compile it efficiently
+       (evcompile-letrec-lambda bindings body env genv where tail loc lkp)
+       ;; a generic letrec with the intermediate variables
+       (evcompile-letrec*-generic bindings body env genv where tail loc lkp)))
+
+;*---------------------------------------------------------------------*/
 ;*    evcompile-letrec-lambda ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (evcompile-letrec-lambda bindings body env genv where tail loc lkp)
@@ -762,6 +781,19 @@
 				   `(set! ,(car b) ,n))
 				aux bindings)
 			 ,body)))))
+      (evcompile exp env genv where tail loc lkp #f)))
+
+;*---------------------------------------------------------------------*/
+;*    evcompile-letrec*-generic ...                                    */
+;*---------------------------------------------------------------------*/
+(define (evcompile-letrec*-generic bindings body env genv where tail loc lkp)
+   (let* ((exp `(let ,(map (lambda (b)
+			      (list (car b) #unspecified))
+                         bindings)
+                   ,@(map (lambda (b)
+                             `(set! ,(car b) ,@(cdr b)))
+                        bindings)
+                   ,body)))
       (evcompile exp env genv where tail loc lkp #f)))
 
 ;*---------------------------------------------------------------------*/

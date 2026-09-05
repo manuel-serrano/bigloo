@@ -229,8 +229,8 @@ the result of `any` is the first non-false value returned by `pred`.
 
 ### find ###
 
-Return the first element of `list that satisfies predicate
-`pred`; false if no element does.
+Return the first element of `list` that satisfies predicate
+`pred`; `#f` if no element does.
 
 Note that `find` has an ambiguity in its lookup semantics -- if
 find returns `#f`, you cannot tell (in general) if it found a

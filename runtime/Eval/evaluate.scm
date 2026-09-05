@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/evaluate.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/evaluate.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Tue Mar 10 13:00:56 2026 (serrano)                */
+;*    Last change :  Sat Sep  5 16:34:39 2026 (serrano)                */
 ;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -529,6 +529,15 @@
 	     (vals (map (lambda (b)
 			   (conv (cadr b) locals globals #f (symbol-append (car b) '| | where) (get-location b bloc) #f)) binds) )
 	     (body (conv tbody locals globals tail? where loc #f) ))))
+      ((letrec* ?binds . ?body)
+       (let ((ne `(let ,(map (lambda (b)
+                               (list (car b) #unspecified))
+                          binds)
+                    ,@(map (lambda (b)
+                              `(set! ,(car b) ,@(cdr b)))
+                         binds)
+                    ,@body)))
+          (conv ne locals globals tail? where loc top?)))
       ((set! (@ (and ?id (? symbol?)) (and ?modname (? symbol?))) ?e)
        (instantiate::ev_setglobal
 	  (loc loc)
