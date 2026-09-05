@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:44:53 1994                          */
-;*    Last change :  Thu Sep  3 01:29:59 2026 (serrano)                */
+;*    Last change :  Sat Sep  5 17:49:03 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The lambda macro-expansion.                                      */
@@ -127,6 +127,24 @@
 	  vars)))
 
 ;*---------------------------------------------------------------------*/
+;*    parse-ident ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (parse-ident id)
+   (let* ((s (symbol->string id))
+	  (l (string-length s)))
+      (let loop ((i 0))
+	 (cond
+	    ((>=fx i (-fx l 2))
+	     (values id #f))
+	    ((char=? (string-ref s i) #\:)
+	     (if (char=? (string-ref s (+fx i 1)) #\:)
+		 (values (string->symbol (substring s 0 i))
+		    (string->symbol (substring s (+fx i 2))))
+		 (loop (+fx i 1))))
+	    (else
+	     (loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
 ;*    lambda-defines ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (lambda-defines body::pair-nil)
@@ -138,10 +156,15 @@
 	  (let ((form (car oldforms)))
 	     (match-case form
                 ((define (?var . ?args) . ?body)
-                 (loop (cdr oldforms)
-		       newforms
-		       (cons var vars)
-		       (cons `(,var (lambda ,args ,@body)) decls)))
+                 (multiple-value-bind (id type)
+                    (parse-ident var)
+                    (let ((lam (if type
+                                   (symbol-append 'lambda:: type)
+                                   'lambda)))
+                       (loop (cdr oldforms)
+                          newforms
+                          (cons id vars)
+                          (cons `(,id (,lam ,args ,@body)) decls)))))
 		((define ?var ?val)
 		 (loop (cdr oldforms)
 		       newforms
