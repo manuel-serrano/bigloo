@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Fri Jun 19 08:09:22 2026 (serrano)                */
+;*    Last change :  Sat Sep  5 18:52:55 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -286,7 +286,7 @@
       ((eq? ty 'symbol) ''_)
       ((eq? ty 'keyword) ':_)
       ((eq? ty 'vector) ''#())
-      ((eq? ty 'procedure) 'cons)
+      ((eq? ty 'procedure) 'list) ;; any that could be called with no argument
       ((eq? ty 'input-port) '(current-input-port))
       ((eq? ty 'output-port) '(current-output-port))
       ((eq? ty 'error-port) '(current-error-port))
@@ -400,7 +400,7 @@
      ,(nil-creator-expand ci mod)
      ;; shrink
      ,(when (eq? (class-info-kind ci) 'define-wide-class)
-	'(lambda (o) (shrink! o)))
+         '(lambda (o) (shrink! o)))
      ;; plain
      ,(properties-expand ci #f)
      ;; virtual

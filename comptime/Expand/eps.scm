@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Sat Sep  5 17:00:40 2026 (serrano)                */
+;*    Last change :  Sat Sep  5 21:55:17 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
@@ -392,7 +392,7 @@
 	 ((#unspecified)
 	  x)
 	 ((? private-sexp?)
-	  (expand* x s))
+          (expand* x s))
 	 (else
 	  (if (and (symbol? (car x)) (eq? (id-of-id (car x)) 'lambda))
 	      (expand-lambda x s)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Fri May 22 14:12:59 2026 (serrano)                */
+;*    Last change :  Sat Sep  5 21:50:32 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -190,7 +190,7 @@
       (($class-allocate ?clazz)
        (e (make-private-sexp 'new clazz) e))
       (($class-allocate ?clazz . ?args)
-       (e (make-private-sexp 'new/args clazz args) e))
+       (make-private-sexp 'new/args clazz args))
       (else
        (error "$class-allocate" "Illegal form" x))))
 
