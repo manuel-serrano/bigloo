@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Jul 30 08:53:32 2026 (serrano)                */
+#*    Last change :  Mon Sep  7 21:51:18 2026 (serrano)                */
 #*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -130,7 +130,7 @@ W_WLIB		= $(WLIB:%=Wlib/%.wat)
 #*---------------------------------------------------------------------*/
 #*    Java objects                                                     */
 #*---------------------------------------------------------------------*/
-JDK_IMPL	= JDK2x
+JDK_IMPL	= JDK2x JDKAndroid
 
 ifeq ($(JAVA_VERSION), 19)
   JDK_IMPL = JDK16

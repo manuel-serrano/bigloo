@@ -10,6 +10,7 @@
 <!--==================================================================-->
 
 ,(implementation-path "../runtime/Eval/expdsrfi0.scm")
+,(implementation-path "../runtime/Ieee/control5.scm")
 ,(example-path "../test/src/core.bgl")
 
 
@@ -301,18 +302,40 @@ referring to the value of the corresponding &lt;variable&gt; or the
 Sequence of expression. It returns the evaluation value of the last
 expression.
 
-### quasiquote template ###
+### (quasiquote template) ###
 <!-- [:quasiquote@NoDef] -->
 Syntactic form for creating lists and vectors. Similar to `quote` except
 that a `quasiquote` evaluates un `unquote` and `unquote-splicing` expression
 it contains.
 
-### define variable expression ###
+### (define variable expression) ###
 <!-- [:define@NoDef] -->
 Defines a variable.
 
-### define (variable args) expression) ###
+### (define (variable args) expression) ###
 <!-- [:definefun@NoDef] -->
 Defines a function.
 
+### values ###
+Delivers all of its arguments to its continuation.
+Except for continuations created by the `call-with-values`
+procedure, all continuations take exactly one value.
+values might be defined as follows:
 
+```bigloo
+(define (values . things)
+  (call/cc
+    (lambda (cont) (apply cont things))))
+```
+
+<span></span>
+
+### call-with-values ###
+Calls its `producer` argument with no values and
+a continuation that, when passed some values, calls the
+`consumer` procedure with those values as arguments.
+The continuation for the call to `consumer` is the
+continuation of the call to `call-with-values`.
+
+> [!NOTE] It is not an error to bind less values than produced
+> by the executed `values` call.

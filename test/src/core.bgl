@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Tue Jul 14 09:00:16 2026 (serrano)                */
+;*    Last change :  Sun Sep  6 21:40:10 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the core constructs                                      */
@@ -285,8 +285,28 @@
          (lambda (x) (+ x 3)))
       (add3 3))
    :expected 6)
+
 (define-test definefun
    (let ()
       (define first car)
       (first '(1 2)))
    :expected 1)
+
+(define-test values
+   (call-with-values
+      (lambda () (values 1 2 3 4))
+      (lambda (a b c d) (+ a b c d)))
+   :expected 10)
+
+(define-test values
+   (values 59 45)
+   :expected 59)
+
+(define-test call-with-values
+   (call-with-values (lambda () (values 4 5))
+                     (lambda (a b) b))
+   :expected 5)
+
+(define-test call-with-values
+   (call-with-values * -)
+   :expected -1)

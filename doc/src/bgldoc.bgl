@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sat Sep  5 17:08:19 2026 (serrano)                */
+;*    Last change :  Sun Sep  6 14:00:05 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -242,7 +242,8 @@
 				   (xml-element-children chapter))
                                 (xml-search-input)
                                 (xml-search-results)
-				(xml-toc toc)))))))
+				(xml-toc toc)
+                                (xml-footer)))))))
 	    (write-html doc))))
 
    (define (compile-tab tab sources toc)
@@ -287,7 +288,8 @@
                               (xml-element 'img '((class . "logo") (src . "bgl.svg")) '())
                               main-title))
                         body
-                        (if toc (xml-toc (body-sections body)) #unspecified)))))
+                        (if toc (xml-toc (body-sections body)) "")
+                        (xml-footer)))))
          (write-html doc)))
    
    (define (compile-index indexes)
@@ -313,7 +315,8 @@
                                          (reverse! elements))))
                                 (xml-search-input)
                                 (xml-search-results)
-                                (xml-toc sections))))))))
+                                (xml-toc sections))))
+                       (xml-footer)))))
          (write-html doc)))
       
    
@@ -448,14 +451,16 @@
 (define (xml-toc toc::pair-nil)
    
    (define (xml-toc-defs defs::pair-nil)
-      (xml-element 'ul '((class . "defs"))
-	 (map (lambda (def::XmlElement)
-		 (xml-element 'li '((class . "def"))
-		    (list (xml-element 'a
-			     `((href . ,(string-append "#" (xml-element-attribute def 'id))))
-			     (map xml-element-dup
-				(xml-element-children def))))))
-	    defs)))
+      (if (null? defs)
+          ""
+          (xml-element 'ul '((class . "defs"))
+             (map (lambda (def::XmlElement)
+                     (xml-element 'li '((class . "def"))
+                        (list (xml-element 'a
+                                 `((href . ,(string-append "#" (xml-element-attribute def 'id))))
+                                 (map xml-element-dup
+                                    (xml-element-children def))))))
+                defs))))
    
    (define (xml-toc-sections toc::pair-nil)
       (xml-element 'ul '((class . "sections"))
@@ -470,12 +475,23 @@
 				(xml-element-children title)))
 			  (xml-toc-defs defs)))))
 	    toc)))
-   
+
    (xml-element 'div '((class . "toc"))
       (list
 	 (xml-element 'nav '()
 	    (list
 	       (xml-toc-sections toc))))))
+
+;*---------------------------------------------------------------------*/
+;*    xml-footer ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (xml-footer)
+   (xml-element 'div '((class . "foot"))
+      (list
+         (xml-element 'div '((class . "date"))
+            (list
+               "Generated "
+               (date))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    chapter ...                                                      */

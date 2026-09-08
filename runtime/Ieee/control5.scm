@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Ieee/control5.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Ieee/control5.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb 27 14:11:26 1998                          */
-;*    Last change :  Tue Dec 17 10:22:16 2024 (serrano)                */
+;*    Last change :  Sun Sep  6 21:43:36 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    An implementation of the R5RS multiple values.                   */
 ;*=====================================================================*/
@@ -116,7 +116,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    call-with-values ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (call-with-values producer consumer)
+(define (call-with-values producer::procedure consumer::procedure)
    (%set-mvalues-number! 1)
    (let* ((res0 (producer))
           (num-values (%get-mvalues-number)))

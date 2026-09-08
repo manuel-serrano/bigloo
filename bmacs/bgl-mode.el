@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Tue Aug 25 17:34:22 2026 (serrano)                */
+;*    Last change :  Mon Sep  7 15:49:30 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1699,7 +1699,9 @@ if that value is non-nil."
 		(unless (bgl-message-once
 			 'jump-def
 			 "[M-.] to jump to definition")
-		  (message (bgl-jump-stack-message)))
+		  (let ((msg (bgl-jump-stack-message)))
+		    (when (> (length msg) 0)
+		      (message (bgl-jump-stack-message)))))
 		(bgl-message-once
 		 'open-doc
 		 "[M-.] to browse the definition")))
@@ -1783,7 +1785,6 @@ if that value is non-nil."
   (when (consp bgl-jump-stack)
     (let* ((e (car bgl-jump-stack)))
       (setq bgl-jump-stack (cdr bgl-jump-stack))
-      (message "buffer=%s pos=%s" (cadr e) (caddr e))
       (switch-to-buffer (cadr e))
       (goto-char (caddr e))
       t)))
