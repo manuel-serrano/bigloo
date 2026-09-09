@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Mon Jul 13 06:46:56 2026 (serrano)                */
+;*    Last change :  Wed Sep  9 08:39:51 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -32,6 +32,7 @@
 	    type_env
 	    (module-initialization-id module_module)
 	    module_module
+            object_class
 	    ast_local)
    (export  (declare-global-sfun!::global env::obj id::symbol alias::obj
 	       args::obj module::symbol import::symbol class::symbol
@@ -259,16 +260,14 @@
 			;; we check that global exported variable are defined
 			;; without type or with the obj type.
 			(cond
-			   ((not (eq? (type-class type) 'bigloo))
+			   ((and (not (eq? (type-class type) 'bigloo))
+                                 (not (isa? type jclass)))
 			    (user-error id
 					"Illegal type for global variable"
 					(shape type)
 					*_*))
 			   ((and (eq? type *_*)
-				 (or (memq scope '(export import))
-				     (and (memq 'bdb
-						(backend-debug-support (the-backend)))
-					  (>fx *bdb-debug* 0))))
+                                 (or (memq scope '(export import))))
 			    *obj*)
 			   (else
 			    type))))

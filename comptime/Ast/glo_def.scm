@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Mon Jul 13 06:38:12 2026 (serrano)                */
+;*    Last change :  Wed Sep  9 12:44:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the functions used to def (define) a      */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -254,7 +254,8 @@
 	  (type (let ((type (cdr id-type)))
 		   ;; we check that global exported variable are defined
 		   ;; without type or with the obj type.
-		   (if (not (eq? (type-class type) 'bigloo))
+		   (if (and (not (eq? (type-class type) 'bigloo))
+                            (not (isa? type jclass)))
 		       (user-error id-id
 			  "Illegal type for global variable"
 			  (shape type))

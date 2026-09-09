@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Tue Jun 30 08:01:39 2026 (serrano)                */
+;*    Last change :  Tue Sep  8 16:36:29 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -92,7 +92,7 @@
 		(declare-jklass-methods! jklass mod clause)
 		(declare-jklass-fields! jklass mod clause))))
 	 (else
-	  (error/loc mod "Illegal extern \"C\" module clause" clause x))))
+	  (error/loc mod "Illegal extern \"java\" module clause" clause x))))
    
    (when (memq 'java (backend-foreign-clause-support (the-backend)))
       (for-each parse-clause (cdr x)))
@@ -412,6 +412,8 @@
 	 (unless (isa? m jconstructor)
 	    (multiple-value-bind (mid mty)
 	       (parse-ident (-> m id))
+               (unless (string? mty)
+                  (error/loc mod "Illegal Java method returnd type" mid clause))
 	       (let* ((id (-> class idd))
 		      (types (map (lambda (t)
 				     (multiple-value-bind (_ ty)
