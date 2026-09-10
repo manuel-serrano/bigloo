@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Sep 10 09:06:58 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 11:32:06 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -680,7 +680,8 @@
 		      (else
 		       (sexp->node val stack val-loc 'value genv)))))
 	  (let ((ast (sexp->node var stack cdloc 'set! genv)))
-	     (if (var? ast)
+	     (cond
+		((var? ast)
 		 (with-access::var ast (variable)
 		    (if (and (global? variable)
 			     (global-read-only? variable))
@@ -690,9 +691,12 @@
 			   (loc loc)
 			   (type *unspec*)
 			   (var ast)
-			   (value val))))
+			   (value val)))))
+		((getfield? ast)
+		 (dot-set->node ast val stack loc site genv))
+		(else
 		 (error-sexp->node
-		    "illegal `set!' expression" exp loc genv)))))
+		    "illegal `set!' expression" exp loc genv))))))
       (else
        (error-sexp->node
 	  "Illegal `set!' form" exp (find-location/loc exp loc) genv))))

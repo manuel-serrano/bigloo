@@ -460,6 +460,7 @@
 				     (type *obj*)
 				     (ftype (slot-type s))
 				     (otype type)
+				     (fid (slot-id s))
 				     (fname (slot-name s))
 				     (side-effect #t)
 				     (expr* (list v e))

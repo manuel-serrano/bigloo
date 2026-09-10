@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Sun Jun 21 08:26:07 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 11:48:19 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -152,6 +152,7 @@
 		(loc loc)
 		(type ftype)
 		(otype otype)
+		(fid '???)
 		(fname field-name)
 		(ftype ftype)
 		(side-effect #f)
@@ -169,6 +170,7 @@
 		(loc loc)
 		(type *obj*)
 		(otype otype)
+		(fid '???)
 		(fname field-name)
 		(ftype ftype)
 		(side-effect #t)

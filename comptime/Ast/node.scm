@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/node.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/node.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Wed Apr  8 08:13:11 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 11:46:34 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -126,6 +126,8 @@
 	   
 	   ;; the object field read and write
 	   (final-class getfield::private
+	      ;; the ident of the field
+	      (fid::symbol read-only)
 	      ;; the name of the field
 	      (fname::bstring read-only)
 	      ;; the type of the field
@@ -135,6 +137,8 @@
 
 	   ;; the object field read and write
 	   (final-class setfield::private
+	      ;; the ident of the field
+	      (fid::symbol read-only)
 	      ;; the name of the field
 	      (fname::bstring read-only)
 	      ;; the type of the field

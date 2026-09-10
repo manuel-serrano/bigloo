@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Thu Sep 10 11:12:58 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 11:34:40 2026 (serrano)                */
 ;*    Last change :  Sun Apr 12 18:55:04 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
@@ -50,6 +50,7 @@
    
    (export (field-access::pair ::symbol ::symbol #!optional write-allow)
 	   (dot-ref->node::node ::variable ::obj ::pair ::pair-nil ::obj ::symbol ::obj)
+	   (dot-set->node::node ::getfield ::obj stack loc site genv)
 	   (field-ref->node::node ::obj ::pair stack ::obj ::symbol ::obj)
 	   (field-set->node::node ::obj ::obj ::pair stack ::obj ::symbol ::obj)
 	   (field-call->node::obj ::obj ::symbol ::pair-nil ::pair stack ::obj ::symbol ::obj)))
@@ -122,6 +123,18 @@
 		  (type (strict-node-type *_* (variable-type v)))
 		  (variable v))))
       (field-ref (variable-id v) node ty slots stack loc site genv)))
+
+;*---------------------------------------------------------------------*/
+;*    dot-set->node ...                                                */
+;*---------------------------------------------------------------------*/
+(define (dot-set->node::node get::getfield val stack loc site genv)
+   (with-access::getfield get (expr* fid ftype otype)
+      (let ((slot (find-class-slot otype fid)))
+	 (if (slot-read-only? slot)
+	     (error-sexp->node
+		(format "Field read-only \"~a\"" slot)
+		exp loc genv)
+	     (make-field-set! slot expr* val stack loc site genv)))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    field-ref->node ...                                              */
