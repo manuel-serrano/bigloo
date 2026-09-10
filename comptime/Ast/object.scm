@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Thu Sep 10 09:14:47 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 11:12:58 2026 (serrano)                */
 ;*    Last change :  Sun Apr 12 18:55:04 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
@@ -77,6 +77,14 @@
        l))
 
 ;*---------------------------------------------------------------------*/
+;*    pp-type-name ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (pp-type-name ty::symbol)
+   (if (eq? ty '_)
+       'obj
+       ty))
+
+;*---------------------------------------------------------------------*/
 ;*    field-ref ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (field-ref::node id node::node type::type slots::pair stack loc site genv)
@@ -87,7 +95,10 @@
 	 ((null? slots)
 	  node)
 	 ((not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-	  (error-sexp->node "Variable static type is not a class" id
+	  (error-sexp->node
+	     (format "Static type \"::~a\" is not a class"
+		(pp-type-name (type-id klass)))
+	     id
 	     (or (node-loc node) loc) genv))
 	 (else
 	  (let ((slot (find-class-slot klass (car slots))))
@@ -125,7 +136,10 @@
 	    ((null? slots)
 	     node)
 	    ((not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-	     (error-sexp->node "Variable static type is not a class" exp
+	     (error-sexp->node
+		(format "Static type (~a) is not a class"
+		   (pp-type-name (type-id klass)))
+		exp
 		(or (node-loc node) loc) genv))
 	    (else
 	     (let ((slot (find-class-slot klass (car slots))))
@@ -178,7 +192,10 @@
 		 (klass type)
 		 (slots slots))
 	 (if (not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-	     (error-sexp->node "Variable static type is not a class" exp
+	     (error-sexp->node
+		(format "Static type \"::~a\" is not a class"
+		   (pp-type-name (type-id klass)))
+		exp
 		(or (node-loc node) loc) genv)
 	     (let ((slot (find-class-slot klass (car slots))))
 		(cond
@@ -274,7 +291,10 @@
 	  (ty (get-type ne #t)))
       (cond
 	 ((not (or (tclass? ty) (jclass? ty) (wclass? ty)))
-	  (error-sexp->node "Variable static type is not a class" x loc genv))
+	  (error-sexp->node
+	     (format "Static type \"::~a\" is not a class"
+		(pp-type-name (type-id ty)))
+	     x loc genv))
 	 ((jclass? ty)
 	  (with-access::jclass ty (id)
 	     (let ((m (find-method ty field)))
