@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Ast/app.scm            */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/app.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Thu Feb 12 09:16:20 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 10:17:24 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -164,7 +164,7 @@
 			(bindings '()))
 		(cond
 		   ((null? old-args)
-		    (let ((old-fun      (car exp))
+		    (let ((old-fun (car exp))
 			  (make-the-app (lambda (fun)
 					   (if (pair? bindings)
 					       `(,(let-sym) ,(reverse! bindings)
@@ -265,8 +265,8 @@
 			     (let ((a   (car args))
 				   (loc (find-location/loc args loc)))
 				(loop (cdr args)
-				      (cons (sexp->node a stack loc 'value genv)
-					    res)))))))
+				   (cons (sexp->node a stack loc 'value genv)
+				      res)))))))
 	     (make-optionals-app-node stack loc site var args genv)))
 	 ((and (sfun? fun) (pair? (sfun-keys fun)))
 	  (let ((args (let loop ((args args)
@@ -276,19 +276,19 @@
 			     (let ((a   (car args))
 				   (loc (find-location/loc args loc)))
 				(loop (cdr args)
-				      (cons (sexp->node a stack loc 'value genv)
-					    res)))))))
+				   (cons (sexp->node a stack loc 'value genv)
+				      res)))))))
 	     (make-keys-app-node stack loc site var args genv)))
 	 ((or (not (fun? fun)) (>=fx (fun-arity fun) 0) (cfun? fun))
 	  (let ((args (let loop ((args args)
-				 (res  '()))
+				 (res '()))
 			 (if (null? args)
 			     (reverse! res)
-			     (let ((a   (car args))
+			     (let ((a (car args))
 				   (loc (find-location/loc args loc)))
 				(loop (cdr args)
-				      (cons (sexp->node a stack loc 'value genv)
-					    res)))))))
+				   (cons (sexp->node a stack loc 'value genv)
+				      res)))))))
 	     (make-fx-app-node loc var args)))
 	 (else
 	  (make-va-app-node (fun-arity fun) stack loc var args genv)))))
@@ -495,13 +495,16 @@
 ;*    make-va-app-node ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-va-app-node arity stack loc var args genv)
+   
    (define (make-args-list args)
       (if (null? args)
 	  ''()
-	  `((@ $cons foreign) ,(car args) ,(make-args-list (cdr args)))))
+	  (localize args
+	     `((@ $cons foreign) ,(car args) ,(make-args-list (cdr args))))))
+   
    (let loop ((old-args args)
-	      (arity    arity)
-	      (f-args   '()))
+	      (arity arity)
+	      (f-args '()))
       (if (=fx arity -1)
 	  (let* ((l-arg (mark-symbol-non-user! (gensym 'list)))
 		 (l-exp  `(,(let-sym) ((,l-arg ,(make-args-list old-args)))
@@ -514,9 +517,10 @@
 		(set! body app)
 		(set! type *_*))
 	     (clean-user-node! l-node))
-	  (loop (cdr old-args)
-	     (+fx arity 1)
-	     (cons (sexp->node (car old-args) stack loc 'value genv) f-args)))))
+	  (let ((loc (find-location/loc old-args loc)))
+	     (loop (cdr old-args)
+		(+fx arity 1)
+		(cons (sexp->node (car old-args) stack loc 'value genv) f-args))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    special-cfun? ...                                                */

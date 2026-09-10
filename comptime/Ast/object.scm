@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Sun Jun 28 14:46:22 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 09:14:47 2026 (serrano)                */
 ;*    Last change :  Sun Apr 12 18:55:04 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
@@ -49,6 +49,7 @@
 	    ast_sexp)
    
    (export (field-access::pair ::symbol ::symbol #!optional write-allow)
+	   (dot-ref->node::node ::variable ::obj ::pair ::pair-nil ::obj ::symbol ::obj)
 	   (field-ref->node::node ::obj ::pair stack ::obj ::symbol ::obj)
 	   (field-set->node::node ::obj ::obj ::pair stack ::obj ::symbol ::obj)
 	   (field-call->node::obj ::obj ::symbol ::pair-nil ::pair stack ::obj ::symbol ::obj)))
@@ -76,6 +77,42 @@
        l))
 
 ;*---------------------------------------------------------------------*/
+;*    field-ref ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (field-ref::node id node::node type::type slots::pair stack loc site genv)
+   (let loop ((node node)
+	      (klass type)
+	      (slots slots))
+      (cond
+	 ((null? slots)
+	  node)
+	 ((not (or (tclass? klass) (jclass? klass) (wclass? klass)))
+	  (error-sexp->node "Variable static type is not a class" id
+	     (or (node-loc node) loc) genv))
+	 (else
+	  (let ((slot (find-class-slot klass (car slots))))
+	     (if (not slot)
+		 (error-sexp->node
+		    (format "Class \"~a\" has no field named \"~a\""
+		       (type-id klass) (car slots) genv)
+		    exp loc genv)
+		 (let ((node (make-field-ref slot node stack loc site genv)))
+		    (loop node (slot-type slot) (cdr slots)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    dot-ref->node ...                                                */
+;*---------------------------------------------------------------------*/
+(define (dot-ref->node::node v::variable tname slots::pair stack loc site genv)
+   (let ((ty (if (eq? tname #unspecified)
+		 (variable-type v)
+		 (use-type! (string->symbol tname) loc)))
+	 (node (instantiate::ref
+		  (loc loc)
+		  (type (strict-node-type *_* (variable-type v)))
+		  (variable v))))
+      (field-ref (variable-id v) node ty slots stack loc site genv)))
+	  
+;*---------------------------------------------------------------------*/
 ;*    field-ref->node ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (field-ref->node l exp stack loc site genv)
@@ -88,7 +125,7 @@
 	    ((null? slots)
 	     node)
 	    ((not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-	     (error-sexp->node "Static type is not a class" exp
+	     (error-sexp->node "Variable static type is not a class" exp
 		(or (node-loc node) loc) genv))
 	    (else
 	     (let ((slot (find-class-slot klass (car slots))))
@@ -141,7 +178,7 @@
 		 (klass type)
 		 (slots slots))
 	 (if (not (or (tclass? klass) (jclass? klass) (wclass? klass)))
-	     (error-sexp->node "Static type is not a class" exp
+	     (error-sexp->node "Variable static type is not a class" exp
 		(or (node-loc node) loc) genv)
 	     (let ((slot (find-class-slot klass (car slots))))
 		(cond
@@ -237,7 +274,7 @@
 	  (ty (get-type ne #t)))
       (cond
 	 ((not (or (tclass? ty) (jclass? ty) (wclass? ty)))
-	  (error-sexp->node "Static type is not a class" x loc genv))
+	  (error-sexp->node "Variable static type is not a class" x loc genv))
 	 ((jclass? ty)
 	  (with-access::jclass ty (id)
 	     (let ((m (find-method ty field)))

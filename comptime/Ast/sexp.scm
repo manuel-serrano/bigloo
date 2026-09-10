@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Fri Jul 31 09:16:23 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 09:06:58 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -147,24 +147,49 @@
 		 (value atom)))
 	     ((find-local atom stack)
 	      =>
-	      (lambda (i) (variable->node i loc site genv)))
-	     (else
-	      (let ((global (find-global genv atom))
-		    (loc (find-location/loc atom loc)))
+	      (lambda (i)
+		 (variable->node i loc site genv)))
+	     ((dot-ident atom)
+	      =>
+	      (lambda (l)
 		 (cond
-		    ((or (not (global? global)) (global-hidden? global))
-		     (trace-item  "*** UNBOUND VARIALBLE " exp " " loc)
-		     (error-sexp->node "Unbound variable" exp loc genv))
-		    ((eq? (global-import global) 'eval)
-		     (sexp->node `(eval ',atom) stack loc site genv))
+		    ((find-local (car l) stack)
+		     =>
+		     (lambda (i)
+			(dot-ref->node i #unspecified (cdr l) stack loc site genv)))
 		    (else
-		     (variable->node global loc site genv)))))))
+		     (global->node atom atom stack loc site genv)))))
+	     (else
+	      (global->node atom atom stack loc site genv))))
 	 ;; special form or call
 	 (((? symbol?) . ?-)
 	  (special-form->node exp stack loc site genv))
 	 ;; optimization or call
 	 (else
 	  (optimization->node exp stack loc site genv)))))
+
+;*---------------------------------------------------------------------*/
+;*    dot-ident ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (dot-ident sym::symbol)
+   (let ((s (symbol->string! sym)))
+      (when (string-index s #\.)
+	 (map! string->symbol (string-split s #\.)))))
+			     
+;*---------------------------------------------------------------------*/
+;*    global->node ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (global->node expr atom::symbol stack::pair-nil loc site genv)
+   (let ((global (find-global genv atom))
+	 (loc (find-location/loc atom loc)))
+      (cond
+	 ((or (not (global? global)) (global-hidden? global))
+	  (trace-item  "*** UNBOUND VARIALBLE " expr " " loc)
+	  (error-sexp->node "Unbound variable" expr loc genv))
+	 ((eq? (global-import global) 'eval)
+	  (sexp->node `(eval ',atom) stack loc site genv))
+	 (else
+	  (variable->node global loc site genv)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    special-form->node ...                                           */

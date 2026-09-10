@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Sep  3 00:54:46 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 10:57:30 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -920,10 +920,16 @@
 	    ((not (and (pair? (car as))
 		       (pair? (cdr (car as)))
 		       (null? (cddr (car as)))))
-	     (cons (car as) (loop (cdr as))))
+	     (if (epair? as)
+		 (econs (car as) (loop (cdr as)) (cer as))
+		 (cons (car as) (loop (cdr as)))))
 	    (else
-	     (cons (list (car (car as)) (e (cadr (car as)) e))
-		(loop (cdr as)))))))
+	     (if (epair? as)
+		 (cons (list (car (car as)) (e (cadr (car as)) e))
+		    (loop (cdr as)))
+		 (econs (list (car (car as)) (e (cadr (car as)) e))
+		    (loop (cdr as))
+		    (cer as)))))))
        
    (define (define-expander x e)
       (match-case x

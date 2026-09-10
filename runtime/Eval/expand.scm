@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/expand.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/expand.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:57:39 1994                          */
-;*    Last change :  Fri Apr 24 08:01:20 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 10:58:48 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La macro expansion de l'interprete                               */
 ;*=====================================================================*/
@@ -190,7 +190,7 @@
 	 ((null? (car y))
 	  (expand-error/reason "application" "Illegal form" x y))
 	 ((epair? y)
-	  (econs (e (car y) e) (loop (cdr y)) (cer x)))
+	  (econs (e (car y) e) (loop (cdr y)) (cer y)))
 	 (else
 	  (cons (e (car y) e) (loop (cdr y)))))))
 

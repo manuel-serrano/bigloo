@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 25 10:44:39 2026                          */
-;*    Last change :  Mon Aug 31 18:32:37 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 08:55:27 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing Bigloo specifics                                         */
@@ -129,5 +129,3 @@
    
 (define-test procedure-correct-arity? (procedure-correct-arity? (lambda (a . b) a) 0)
    :expected #f)
-
-

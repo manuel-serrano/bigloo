@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Mon Aug 31 18:33:55 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 08:48:48 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -314,6 +314,7 @@
 	    (inline procedure-attr-set!::obj ::procedure ::obj)
 	    (inline unspecified::unspecified)
 	    (inline null-or-unspecified?::bool ::obj)
+	    
 	    (bigloo-mangled?::bool ::bstring)
 	    (bigloo-need-mangling?::bool ::bstring)
 	    (bigloo-class-mangled?::bool ::bstring)
@@ -805,3 +806,5 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (cell-set! cell val)
    ($cell-set! cell val))
+
+      
