@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Object/tools.scm                    */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Object/tools.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:52:24 1996                          */
-;*    Last change :  Wed Feb 18 09:11:18 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 11:59:53 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for builing the class accessors                       */
@@ -92,30 +92,28 @@
 ;*    make-direct-ref ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (make-direct-ref type slot obj)
-   (let* ((fname (slot-name slot))
+   (let* ((fid (slot-id slot))
+	  (fname (slot-name slot))
 	  (tname (type-name type))
 	  (fmt (format "(((~a)COBJECT($1))->~a)" tname fname)))
       (make-private-sexp 'getfield
 			 (type-id (slot-type slot))
 			 (type-id type)
-			 fname
-			 fmt
-			 obj)))
+			 fid fname fmt obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-direct-set! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-direct-set! type slot obj val)
-   (let* ((fname (slot-name slot))
+   (let* ((fid (slot-id slot))
+	  (fname (slot-name slot))
 	  (tname (type-name type))
 	  (fmt (format "((((~a)COBJECT($1))->~a)=((~a)$2),BUNSPEC)" tname fname
 		       (type-name (slot-type slot)))))
       (make-private-sexp 'setfield
 			 (type-id (slot-type slot))
 			 (type-id type)
-			 (slot-name slot)
-			 fmt
-			 obj val)))
+			 fid fname fmt obj val)))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-class-slot ...                                              */

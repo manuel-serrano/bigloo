@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Thu Sep 10 11:48:19 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 11:59:49 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
@@ -142,7 +142,7 @@
    (with-trace 'ast_private "private-node"
       (trace-item "sexp=" sexp)
       (match-case sexp
-	 ((?- getfield ?ftype ?otype ?field-name ?c-fmt ?obj)
+	 ((?- getfield ?ftype ?otype ?field-ident ?field-name ?c-fmt ?obj)
 	  (let ((tid (symbol-append otype '-
 			(string->symbol
 			   (bigloodemangle field-name))))
@@ -152,7 +152,7 @@
 		(loc loc)
 		(type ftype)
 		(otype otype)
-		(fid '???)
+		(fid field-ident)
 		(fname field-name)
 		(ftype ftype)
 		(side-effect #f)
@@ -160,7 +160,7 @@
 		(effect (instantiate::feffect
 			   (read (list tid))))
 		(c-format c-fmt))))
-	 ((?- setfield ?ftype ?otype ?field-name ?c-fmt . ?rest)
+	 ((?- setfield ?ftype ?otype ?field-ident ?field-name ?c-fmt . ?rest)
 	  (let ((tid (symbol-append otype '-
 			(string->symbol
 			   (bigloodemangle field-name))))
@@ -170,7 +170,7 @@
 		(loc loc)
 		(type *obj*)
 		(otype otype)
-		(fid '???)
+		(fid field-ident)
 		(fname field-name)
 		(ftype ftype)
 		(side-effect #t)
