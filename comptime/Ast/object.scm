@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Thu Sep 10 12:01:19 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 16:49:57 2026 (serrano)                */
 ;*    Last change :  Sun Apr 12 18:55:04 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
@@ -130,7 +130,6 @@
 (define (dot-set->node::node get::getfield val stack loc site genv)
    (with-access::getfield get (expr* fid ftype otype)
       (let ((slot (find-class-slot otype fid)))
-	 (tprint "GET=" (shape get) " expr*=" (shape expr*) " slot=" (shape slot))
 	 (if (slot-read-only? slot)
 	     (error-sexp->node
 		(format "Field read-only \"~a\"" slot)

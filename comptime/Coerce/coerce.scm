@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Sat Jun 13 05:44:58 2026 (serrano)                */
+;*    Last change :  Thu Sep 10 16:07:07 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce implicity type coercions                               */
@@ -409,6 +409,9 @@
 	  (test-static-app node))
 	 ((let-var? node)
 	  (test-static-let-var node))
+         ((literal? node)
+          (with-access::literal node (value)
+             (if (eq? value #f) 'false 'true)))
 	 (else
 	  #f)))
    
