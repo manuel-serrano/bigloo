@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Fri Sep 11 11:06:49 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 15:10:06 2026 (serrano)                */
 ;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -217,7 +217,7 @@
 			   (let ((node (make-class-field-ref
 					   field node loc tail?)))
 			      (loop node
-				 (class-field-type field)
+				 (class-exists (class-field-type field))
 				 (cdr fields)))
 			   (error/source-location type
 			      (format "Class \"~a\" has no field \"~a\"" type (car fields))
@@ -255,7 +255,7 @@
 			       (let ((node (make-class-field-ref
 					       field node loc tail?)))
 				  (loop node
-				     (class-field-type field)
+				     (class-exists (class-field-type field))
 				     (cdr fields))))
 			   (error/source-location type
 			      (format "Class \"~a\" has no field \"~a\"" type (car fields))
@@ -566,19 +566,32 @@
 	   (error/source-location "eval" "Illegal form" e loc)))
       ((set! ?v ?e)
        (let* ((cv (conv-var v locals))
-	       (e (uconv e)))
-	  (when (isa? e ev_abs)
-	     (with-access::ev_abs e (where)
+	      (ce (uconv e)))
+	  (when (isa? ce ev_abs)
+	     (with-access::ev_abs ce (where)
 		(set! where (symbol-append v where))))
-	  (if cv
+	  (cond
+	     (cv
 	      (instantiate::ev_setlocal
 		 (v cv)
-		 (e e))
+		 (e ce)))
+	     ((dot-ident v)
+	      =>
+	      (lambda (l)
+		 (if (conv-var (car l) locals)
+		     (let ((ne `(set! (-> ,@l) ,e)))
+			(conv ne locals globals tail? where loc top?))
+		     (instantiate::ev_setglobal
+			 (loc loc)
+			 (name v)
+			 (mod (if (evmodule? globals) globals ($eval-module)))
+			 (e ce)))))
+	     (else
 	      (instantiate::ev_setglobal
 		 (loc loc)
 		 (name v)
 		 (mod (if (evmodule? globals) globals ($eval-module)))
-		 (e e)))))
+		 (e ce))))))
       ((set! . ?-)
        (error/source-location "eval" "Illegal form" e loc))
       ((define ?gv (lambda ?formals ?body))

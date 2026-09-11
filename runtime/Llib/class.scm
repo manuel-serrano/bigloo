@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Fri Sep 11 08:16:22 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 15:38:01 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -439,8 +439,6 @@
 				  ;; concrete properties
 				  ,@(map (lambda (p)
 					    (cond
-					       ((prop-info-virtual? p)
-						#f)
 					       ((assq (prop-info-id p) args)
 						=>
 						(lambda (arg)

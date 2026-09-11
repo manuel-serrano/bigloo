@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Sep 11 10:42:07 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 11:54:32 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __evobject
 
-   (include "Llib/object.sch")
+   (include "Llib/object.sch"
+	    "Llib/class.sch")
    
    (import  __type
 	    __error
@@ -62,7 +63,8 @@
 	  (eval-expand-duplicate ::class)
 	  (eval-expand-with-access ::class)
 	  (eval-co-instantiate-expander::pair-nil ::pair-nil ::procedure)
-	  (eval-parse-class loc clauses)))
+	  (eval-parse-class loc clauses)
+	  (eval-register-class id module super hash ctor slots)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-error ...                                                 */
@@ -204,7 +206,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    eval-register-class ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (eval-register-class id module super abstract slots hash constr)
+(define (eval-register-class id module super hash ctor slots)
    (let* ((size (length (filter (lambda (s) (not (slot-virtual? s))) slots)))
 	  (offset (if (eval-class? super) (class-evdata super) 0))
 	  (native (let loop ((super super))
@@ -231,7 +233,7 @@
 		    ;; allocate
 		    (eval-allocator native length classnum)
 		    ;; constructor
-		    (or constr (find-class-constructor super))
+		    (or ctor (find-class-constructor super))
 		    ;; nil
 		    (eval-nil native length classnum)
 		    ;; shrink
@@ -281,9 +283,26 @@
 	     (bigloo-type-error (slot-id s) (class-name class) o)))))
 
 ;*---------------------------------------------------------------------*/
+;*    classgen-slot-anonymous-from-prop ...                            */
+;*    -------------------------------------------------------------    */
+;*    Kept in a separate function for the sake of the symmetry with    */
+;*    the compiler code.                                               */
+;*---------------------------------------------------------------------*/
+(define (classgen-slot-anonymous-from-prop index s class)
+   (list
+      (lambda (o)
+	 (if (isa? o class)
+	     (vector-ref-ur (%object-widening o) index)
+	     (bigloo-type-error (prop-info-id s) (class-name class) o)))
+      (lambda (o v)
+	 (if (isa? o class)
+	     (vector-set-ur! (%object-widening o) index v)
+	     (bigloo-type-error (prop-info-id s) (class-name class) o)))))
+
+;*---------------------------------------------------------------------*/
 ;*    make-class-fields ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (make-class-fields id class slots size offset)
+(define (make-class-fields id class slots-or-props size offset)
    
    (define (make-class-field-virtual s)
       ((@ make-class-field __object)
@@ -293,6 +312,17 @@
        (eval! (slot-user-info s))
        (slot-default-value s)
        (slot-type s)))
+
+   (define (make-class-field-virtual-from-prop s)
+      ((@ make-class-field __object)
+       (prop-info-id s)
+       (eval! (prop-info-get s))
+       (eval! (prop-info-set s))
+       (prop-info-ronly? s)
+       #t
+       (eval! (prop-info-info s))
+       (prop-info-value s)
+       (prop-info-type s)))
    
    (define (make-class-field-plain s i class)
       (let ((defs (classgen-slot-anonymous i s class)))
@@ -304,29 +334,87 @@
 	  (slot-default-value s)
 	  (slot-type s))))
 
-   (list->vector
-      (append
-	 ;; cannot combine map and filter otherwise the slot list
-	 ;; and the iota list dont have the same length
-	 (map (lambda (slot index)
-		 (make-class-field-plain slot index class))
-	    (filter (lambda (slot) (not (slot-virtual? slot))) slots)
-	    (iota size offset))
-	 (filter-map (lambda (slot)
-			(when (slot-virtual? slot)
-			   (make-class-field-virtual slot)))
-	    slots))))
+   (define (make-class-field-plain-from-prop s i class)
+      (let ((defs (classgen-slot-anonymous-from-prop i s class)))
+	 ((@ make-class-field __object)
+	  (prop-info-id s)
+	  (car defs) (cadr defs) (prop-info-ronly? s)
+	  #f
+	  (eval! (prop-info-info s))
+	  (prop-info-value s)
+	  (prop-info-type s))))
+
+   (define (module4-make-class-fields slots::pair-nil)
+      (list->vector
+	 (append
+	    ;; cannot combine map and filter otherwise the slot list
+	    ;; and the iota list dont have the same length
+	    (map (lambda (slot index)
+		    (make-class-field-plain slot index class))
+	       (filter (lambda (slot) (not (slot-virtual? slot))) slots)
+	       (iota size offset))
+	    (filter-map (lambda (slot)
+			   (when (slot-virtual? slot)
+			      (make-class-field-virtual slot)))
+	       slots))))
+
+   (define (module5-make-class-fields props::vector)
+      (list->vector
+	 (append
+	    ;; cannot combine map and filter otherwise the slot list
+	    ;; and the iota list dont have the same length
+	    (map (lambda (prop index)
+		    (make-class-field-plain-from-prop prop index class))
+	       (filter (lambda (prop) (not (prop-info-virtual? prop))) props)
+	       (iota size offset))
+	    (filter-map (lambda (prop)
+			   (when (prop-info-virtual? prop)
+			      (make-class-field-virtual-from-prop prop)))
+	       props))))
+   
+   (cond
+      ((null? slots-or-props)
+       '#())
+      ((slot? (car slots-or-props))
+       (module4-make-class-fields slots-or-props))
+      ((prop-info? (car slots-or-props))
+       (module5-make-class-fields slots-or-props))
+      (else
+       (error "make-class-fields"
+	  "wrong field descriptor" slots-or-props))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-virtual-fields ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (make-class-virtual-fields slots)
-   (list->vector
-      (filter-map (lambda (slot)
-		     (when (slot-virtual? slot)
-			(cons (slot-virtual-num slot)
-			   (cons (slot-getter slot) (slot-setter slot)))))
-	 slots)))
+(define (make-class-virtual-fields slots-or-props)
+   
+   (define (module4-make-class-virtual-fields slots::pair-nil)
+      (list->vector
+	 (filter-map (lambda (slot)
+			(when (slot-virtual? slot)
+			   (cons (slot-virtual-num slot)
+			      (cons (slot-getter slot) (slot-setter slot)))))
+	    slots)))
+   
+   (define (module5-make-class-virtual-fields props::vector)
+      (list->vector
+	 (filter-map (lambda (prop)
+			(when (prop-info-virtual? prop)
+			   (cons (prop-info-vindex prop)
+			      (cons (prop-info-get prop)
+				 (prop-info-set prop)))))
+	    props)))
+   
+   (cond
+      ((null? slots-or-props)
+       '#())
+      ((slot? (car slots-or-props))
+       (module4-make-class-virtual-fields slots-or-props))
+      ((prop-info? (car slots-or-props))
+       (module5-make-class-virtual-fields slots-or-props))
+      (else
+       (error "make-class-virtual-fields"
+	  "wrong field descriptor" slots-or-props))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-expand-instantiate ...                                      */
@@ -738,10 +826,9 @@
 		(eval-parse-class loc clauses)
 		;; make the class and bind it to its global variable
 		(let* ((clazz (eval-register-class
-				 cid mod super abstract
-				 slots 
-				 (get-class-hash src)
-				 (eval! constructor mod))))
+				 cid mod super (get-class-hash src)
+				 (eval! constructor mod)
+				 slots )))
 		   (eval! `(define ,cid ,clazz))
 		   ;; with-access
 		   (eval-expand-with-access clazz)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Sep 11 08:36:20 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 14:48:42 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1172,7 +1172,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-class-virtual-slots-vector ...                              */
 ;*---------------------------------------------------------------------*/
-(define (make-class-virtual-slots-vector::vector super virtuals)
+(define (make-class-virtual-slots-vector::vector super virtuals::vector)
    
    (define (fill-vector-with-virtuals!::vector vec::vector)
       (vector-for-each (lambda (virtual)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Fri Sep 11 10:52:59 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 11:16:50 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -945,7 +945,7 @@
 					 "Cannot find variable" id  loc)))
 			       (error/source-location "eval" "Cannot find module" mid  loc))))))))))
 
-      
+
    (with-trace 'module5 "evmodule-module5"
       (trace-item "path=" path)
       (trace-item "expr=" expr)
@@ -962,13 +962,25 @@
 	 (module5-inits! mod loc)
 	 (module5-imports! mod loc evmod)
 	 (with-access::Module mod (body main classes)
-	    (tprint "KEYS=" (hashtable-key-list classes))
-	    (hashtable-for-each classes
-	       (lambda (k ci)
-		  (tprint "R=" (class-info-registration ci))
-		  (eval/module
-		     `((define ,(class-info-id ci) ,(class-info-registration ci)))
-		     evmod)))
+	    (for-each (lambda (ci)
+			 (match-case (class-info-registration ci)
+			    ((?register (quote ?name) ?module
+				?super ?hash
+				?creator ?allocator ?ctor ?nil
+				?shrink ?props ?virtual)
+			     (eval/module
+				(list `(define ,(class-info-id ci)
+					  ,(eval-register-class name module
+					      (when super (find-class super))
+					      hash ctor
+					      (append (class-info-properties ci)
+						 (class-info-vproperties ci)))))
+				evmod))
+			    (?x
+			     (error "patch-calss-eval-registration" "bad form" x))))
+	       (sort (lambda (k1 k2)
+			(<=fx (class-info-depth k1) (class-info-depth k2)))
+		  (hashtable->list classes)))
 	    (eval/module body evmod)
 	    (when main
 	       (eval/module (list `(,main (command-line))) evmod))))))

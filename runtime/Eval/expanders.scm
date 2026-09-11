@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Sep 11 09:16:05 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 15:51:44 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -513,9 +513,13 @@
       (lambda (x e)
 	 (match-case x
 	    ((?- ?klass . ?args)
-	     (let* ((a (gensym 'klass))
-		    (n (gensym 'new))
-		    (nx `(let ((,n ((class-allocator ,klass))))
+	     (let* ((n (gensym 'new))
+		    (f (gensym 'fields))
+		    (nx `(let* ((,n ((class-allocator ,klass)))
+				(,f (class-all-fields ,klass)))
+			    ,@(map (lambda (a i)
+				      `((class-field-mutator (vector-ref ,f ,i)) ,n ,a))
+				 args (iota (length args)))
 			    ,n)))
 		(e nx e)))
 	    (else
