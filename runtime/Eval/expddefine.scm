@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
 ;*    Last change :  Tue Feb  4 10:37:15 2025 (serrano)                */
-;*    Copyright   :  2001-25 Manuel Serrano                            */
+;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
 ;*=====================================================================*/

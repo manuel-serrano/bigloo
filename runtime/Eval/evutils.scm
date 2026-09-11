@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Eval/evutils.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/evutils.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 30 08:07:53 2010                          */
-;*    Last change :  Tue Jul 22 07:42:40 2025 (serrano)                */
-;*    Copyright   :  2010-25 Manuel Serrano                            */
+;*    Last change :  Fri Sep 11 11:03:41 2026 (serrano)                */
+;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Utility functions for eval                                       */
 ;*=====================================================================*/
@@ -48,8 +48,7 @@
 	    __bit)
    
    (export  (parse-formal-ident ::obj ::obj)
-	    (args->list ::obj)
-	    (bindings->list ::obj)))
+	    (args->list ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-formal-ident ...                                           */
@@ -106,20 +105,4 @@
        (cons (car args) (args->list (cdr args))))
       (else
        (error/source 'args->list "Illegal args list" args args))))
-
-;*---------------------------------------------------------------------*/
-;*    bindings->list ...                                               */
-;*---------------------------------------------------------------------*/
-(define (bindings->list bindings)
-   (cond
-      ((null? bindings)
-       '())
-      ((not (pair? bindings))
-       (error/source 'bindings->list "Illegal bindings list" bindings bindings))
-      ((symbol? (car bindings))
-       (cons bindings (bindings->list (cdr bindings))))
-      ((not (pair? (car bindings)))
-       (error/source 'bindings->list "Illegal bindings list" bindings bindings))
-      (else
-       (cons (car bindings) (bindings->list (cdr bindings))))))
 

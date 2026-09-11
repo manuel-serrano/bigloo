@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Fri Sep 11 10:31:40 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 11:02:15 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
@@ -43,8 +43,7 @@
 	    __progn
 
 	    __expander_define
-	    __expand
-	    __evutils)
+	    __expand)
    
    (use     __type
 	    __evenv
@@ -298,3 +297,20 @@
 		 (else
 		  (expand-error "expand-labels" "Illegal form" x)))))
       (evepairify res x)))
+
+;*---------------------------------------------------------------------*/
+;*    bindings->list ...                                               */
+;*---------------------------------------------------------------------*/
+(define (bindings->list bindings)
+   (cond
+      ((null? bindings)
+       '())
+      ((not (pair? bindings))
+       (error/source 'bindings->list "Illegal bindings list" bindings bindings))
+      ((symbol? (car bindings))
+       (cons bindings (bindings->list (cdr bindings))))
+      ((not (pair? (car bindings)))
+       (error/source 'bindings->list "Illegal bindings list" bindings bindings))
+      (else
+       (cons (car bindings) (bindings->list (cdr bindings))))))
+
