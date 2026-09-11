@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:46:26 2011                          */
-;*    Last change :  Fri Sep 11 10:31:18 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:41:54 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST back to list                                                 */
@@ -51,7 +51,6 @@
 	    __progn
 	    __expand
 	    __evenv
-	    __everror
 	    __evmodule
 	    
 	    __evaluate_types)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/make_lib.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/make_lib.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Tue Feb 10 09:06:38 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:42:30 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -82,7 +82,6 @@
 	    __progn
             __eval
             __evenv
-	    __everror
             __expand
 	    __expander_quote
 	    (eval-begin-expander __expander_define)

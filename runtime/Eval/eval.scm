@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Sep 11 10:15:10 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:41:17 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -67,7 +67,6 @@
 	    __progn
 	    __expand
 	    __evaluate
-	    __everror
 	    __evprimop
 	    __evenv
 	    __evmodule
@@ -147,8 +146,8 @@
 			   (with-handler
 			      (lambda (e)
 				 (eval-exception-handler e loc))
-			      (evaluate2 (expand sexp) env loc))
-			   (evaluate2 (expand sexp) env loc))))
+			      (evaluate (expand sexp) env loc))
+			   (evaluate (expand sexp) env loc))))
 	       ($env-pop-trace denv)
 	       tmp)))))
 
@@ -498,7 +497,7 @@
 ;*---------------------------------------------------------------------*/
 (define (evexpand-error proc mes obj)
    (if (epair? obj)
-       (everror (cer obj) proc mes obj)
+       (error/source-location proc mes obj  (cer obj))
        (error proc mes obj)))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Fri Sep 11 07:47:32 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:41:46 2026 (serrano)                */
 ;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -51,7 +51,6 @@
 	    __progn
 	    __expand
 	    __evenv
-	    __everror
 	    __evmodule
 	    
 	    __evaluate_types
@@ -60,11 +59,11 @@
 	    __evaluate_uncomp
 	    __evaluate_comp)
    
-   (export  (evaluate2 sexp env loc)
+   (export  (evaluate sexp env loc)
 	    (get-evaluation-context)
 	    (set-evaluation-context! v)
-	    (evaluate2-restore-bp! ::int)
-	    (evaluate2-restore-state! ::vector)))
+	    (evaluate-restore-bp! ::int)
+	    (evaluate-restore-state! ::vector)))
 
 ;*---------------------------------------------------------------------*/
 ;*    untype-ident ...                                                 */
@@ -111,23 +110,23 @@
 	       (rec (+fx i 1)) )))))
 
 ;*---------------------------------------------------------------------*/
-;*    evaluate2-restore-bp! ...                                        */
+;*    evaluate-restore-bp! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (evaluate2-restore-bp! bp)
+(define (evaluate-restore-bp! bp)
    (let ((s ($evmeaning-evstate (current-dynamic-env))))
       (vector-set! s 0 bp)))
 
 ;*---------------------------------------------------------------------*/
-;*    evaluate2-restore-state! ...                                     */
+;*    evaluate-restore-state! ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (evaluate2-restore-state! state)
+(define (evaluate-restore-state! state)
    (let ((env (current-dynamic-env)))
       ($evmeaning-evstate-set! env state)))
 
 ;*---------------------------------------------------------------------*/
-;*    evaluate2 ...                                                    */
+;*    evaluate ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (evaluate2 sexp env loc)
+(define (evaluate sexp env loc)
    (let ( (ast (extract-loops (convert sexp env loc))) )
       (analyse-vars ast)
       (let ( (n (frame-size ast)) )

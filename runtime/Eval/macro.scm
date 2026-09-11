@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/macro.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/macro.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 08:59:04 1994                          */
-;*    Last change :  Mon Apr 27 10:45:54 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:42:23 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation des macros (de l'interprete et du compilateur).  */
 ;*=====================================================================*/
@@ -28,7 +28,6 @@
 
    (import  __error
 	    __hash
-	    __everror
 	    __object
 	    __thread)
    
@@ -94,9 +93,12 @@
 (define (put-macro! table key expander where)
    (hashtable-update! table key
       (lambda (x)
-	 (evwarning #f "install-expander"
-	    (format "Redefinition of ~a expander -- " where)
-	    key)
+	 (warning-notify
+	    (instantiate::&eval-warning
+	       (fname "install-expander")
+	       (stack (get-trace-stack))
+	       (args (list (format "Redefinition of ~a expander -- " where)
+			key))))
 	 expander)
       expander))
 

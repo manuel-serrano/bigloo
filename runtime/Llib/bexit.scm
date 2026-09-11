@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/bexit.scm          */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/bexit.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Tue Jul 22 12:51:37 2025 (serrano)                */
+;*    Last change :  Fri Sep 11 10:55:12 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -233,8 +233,8 @@
       ((mutex? p) (mutex-unlock! p))
       ((procedure? p) (p))
       ((pair? p) ($set-error-handler! p))
-      ((integer? p) (evaluate2-restore-bp! p))
-      ((vector? p) (evaluate2-restore-state! p))))
+      ((integer? p) (evaluate-restore-bp! p))
+      ((vector? p) (evaluate-restore-state! p))))
       
 ;*---------------------------------------------------------------------*/
 ;*    exitd-protect-set! ...                                           */

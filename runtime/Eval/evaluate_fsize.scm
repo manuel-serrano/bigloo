@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:42:27 2011                          */
-;*    Last change :  Fri Sep 11 10:31:09 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:41:40 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the size of stack needed for an abstraction              */
@@ -52,7 +52,6 @@
 	    __progn
 	    __expand
 	    __evenv
-	    __everror
 	    __evmodule
 	    
 	    __evaluate_uncomp

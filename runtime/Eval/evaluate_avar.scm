@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:40:08 2011                          */
-;*    Last change :  Fri Sep 11 10:30:52 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:41:26 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute free/closed variable for the lambda-based evaluator      */
@@ -51,7 +51,6 @@
 	    __progn
 	    __expand
 	    __evenv
-	    __everror
 	    __evmodule
 	    
 	    __evaluate_types)

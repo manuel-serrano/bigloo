@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Sep 11 10:22:50 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:42:07 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -51,7 +51,6 @@
 	    
 	    __progn
 	    __evenv
-	    __everror
 	    __eval
 	    __evmodule
 	    __expander_define

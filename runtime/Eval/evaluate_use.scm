@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:47:50 2011                          */
-;*    Last change :  Fri Sep 11 10:31:25 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:42:01 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the vars used by an expression                           */
@@ -51,7 +51,6 @@
 	    __progn
 	    __expand
 	    __evenv
-	    __everror
 	    __evmodule
 	    
 	    __evaluate_types)

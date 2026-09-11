@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Fri Sep 11 09:31:44 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:52:59 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -57,7 +57,6 @@
 	    
 	    __eval
 	    __evenv
-	    __everror
 	    __evobject)
 
    (use     __macro)
@@ -266,9 +265,12 @@
 ;*---------------------------------------------------------------------*/
 (define (evmodule-bind-global! mod id var loc)
    (when (get-eval-expander id)
-      (let ((msg (string-append "Variable `" (symbol->string id)
-				"' hidden by an expander.")))
-	 (evwarning loc msg)))
+      (warning-notify
+	 (instantiate::&eval-warning
+	    (fname id)
+	    (stack (get-trace-stack))
+	    (args (list (string-append "Variable `" (symbol->string id)
+			   "' hidden by an expander."))))))
    (if (evmodule? mod)
        (hashtable-put! (%evmodule-env mod) id var)
        (bind-eval-global! id var)))

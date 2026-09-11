@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Fri Sep 11 10:30:58 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:41:34 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -63,7 +63,6 @@
 	    __progn
 	    __expand
 	    __evenv
-	    __everror
 	    __evmodule
 	    
 	    __evaluate_types
@@ -72,6 +71,24 @@
 
    (export (find-state)
 	   (compile ::ev_expr)))
+
+;*---------------------------------------------------------------------*/
+;*    evtype-error ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (evtype-error loc proc mes obj)
+   (match-case loc
+      ((at ?fname ?loc)
+       (bigloo-type-error/location proc mes obj fname loc))
+      (else
+       (bigloo-type-error proc mes obj))))
+   
+;*---------------------------------------------------------------------*/
+;*    evarity-error ...                                                */
+;*---------------------------------------------------------------------*/
+(define (evarity-error loc name provide expect)
+   (let ((msg (format "Wrong number of arguments: ~a expected, ~a provided "
+		      expect provide)))
+      (error/source-location "eval" msg name loc)))
 
 ;;
 ;; Macros
@@ -356,7 +373,8 @@
 			   (let ( (id (if (evmodule? mod)
 					  `(@ ,name ,(evmodule-name mod))
 					  name)) )
-			      (everror loc "eval" "Unbound variable" id) )))
+			      (error/source-location "eval"
+				 "Unbound variable" id loc) )))
 		     (let ( (v (eval-global-value slot)) )
 			(if (eq? v #unspecified)
 			    (let ( (t (eval-global-tag slot)) )
@@ -364,7 +382,8 @@
 				   (let ( (id (if (evmodule? mod)
 						  `(@ ,name ,(evmodule-name mod))
 						  name)) )
-				      (everror loc "eval" "Uninitialized variable" id) )
+				      (error/source-location "eval"
+					 "Uninitialized variable" id loc) )
 				   v ))
 			    v ))))))))
 
@@ -377,7 +396,7 @@
 		 (EVA '(global write cell) (name)
 		    (__evmeaning_address-set! (eval-global-value g) (EVC e)) ))
 		((0 4 5)
-		 (everror loc "set!" "read-only variable" name) )
+		 (error/source-location "set!" "read-only variable" name loc) )
 		(else
 		 (EVA '(global write direct) (name) (set-eval-global-value! g (EVC e))) ))
 	     (let ( (slot #f) )
@@ -388,7 +407,8 @@
 		(EVA '(global write check) (name)
 		     (unless slot
 			(set! slot (evmodule-find-global mod name))
-			(unless slot (everror loc "eval" "Unbound variable" name)) )
+			(unless slot (error/source-location "eval"
+					"Unbound variable" name loc)) )
 		     (set-eval-global-value! slot (EVC e)) ))))))
 
 (define-method (comp e::ev_defglobal stk);
@@ -401,10 +421,15 @@
 		   (begin
 		      (case (eval-global-tag g)
 			 ((0)
-			  (everror loc "set!" "read-only variable" name) )
+			  (error/source-location "set!"
+			     "read-only variable" name loc) )
 			 ((1)
-			  (evwarning loc "eval" "\nRedefinition of compiled variable -- "
-				     name)
+			  (warning-notify
+			     (instantiate::&eval-warning
+				(fname "eval")
+				(stack (get-trace-stack))
+				(args (list "Redefinition of compiled variable -- "
+					 name))))
 			  (__evmeaning_address-set! (eval-global-value g) (EVC e)) )
 			 ((2)
 			  (set-eval-global-value! g (EVC e)) )
@@ -415,7 +440,8 @@
 			  (set-eval-global-value! g (EVC e))
 			  (eval-global-tag-set! g 5))
 			 (else
-			  (everror loc "set!" "read-only variable" name) ))
+			  (error/source-location "set!"
+			     "read-only variable" name loc) ))
 		      name )
 		   (let ( (g (make-eval-global name mod loc)) )
 		      (set-eval-global-value! g (EVC e))
@@ -623,13 +649,17 @@
    (let rec ( (l args) (bs boxes) (sp sp) )
       (if (null? l)
 	  (unless (null? bs)
-	     (everror loc "eval" "wrong number of argument"
+	     (error/source-location "eval"
+		"wrong number of argument"
 		(format "expecting ~a, got ~a"
-		   (length boxes) (length args))))
+		   (length boxes) (length args))
+		 loc))
 	  (if (null? bs)
-	      (everror loc "eval" "wrong number of argument"
+	      (error/source-location "eval"
+		 "wrong number of argument"
 		 (format "expecting ~a, got ~a"
-		    (length boxes) (length args)))
+		    (length boxes) (length args))
+		  loc)
 	      (begin
 		 (vector-set! s sp
 		    (let ( (v (EVC (car l))) )

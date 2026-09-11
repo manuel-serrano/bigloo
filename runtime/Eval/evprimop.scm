@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/evprimop.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/evprimop.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Tue Feb 10 09:06:49 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:42:12 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -83,7 +83,6 @@
 	    
             __eval
 	    __macro
-	    __everror
 	    __expand
 	    __progn
 	    (eval-begin-expander __expander_define)

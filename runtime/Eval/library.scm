@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Mon May 25 18:47:20 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:42:18 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -23,7 +23,6 @@
 	   __param
 	   __eval
 	   __r5_control_features_6_4
-	   __everror
 	   __expander_srfi0)
    
    (use     __tvector
@@ -384,12 +383,13 @@
 		   ((not (string? libe))
 		    (cond-expand
 		       ((not bigloo-jvm)
-			(evwarning
-			   #f
-			   "library-load"
-			   (format "Can't find _e library `~a' (`~a') in path "
-			      lib ne)
-			   path)))
+			(warning-notify
+			   (instantiate::&eval-warning
+			      (fname "library-load")
+			      (stack (get-trace-stack))
+			      (args (list (format "Can't find _e library `~a' (`~a') in path "
+					     lib ne)
+				       path))))))
 		    (if (string? libs)
 			(dynamic-load libs init_s module_s)
 			(dynamic-load rsc init_s module_s)))
@@ -484,18 +484,20 @@
 					 (else (libinfo-class_e info))))))
 		   (cond
 		      ((not (string? rsc))
-		       (error 'library-load
+		       (error "library-load"
 			  (format "Can't find library `~a' (`~a')" lib ns)
 			  path))
 		      ((not (string? libe))
 		       (cond-expand
 			  ((not bigloo-jvm)
-			   (evwarning
-			      #f
-			      "library-load"
-			      (format "Can't find _e library `~a' (`~a') in path "
-				 lib ne)
-			      path))))
+			   (warning-notify
+			      (instantiate::&eval-warning
+				 (fname "library-load")
+				 (stack (get-trace-stack))
+				 (args (list
+					  (format "Can't find _e library `~a' (`~a') in path "
+					     lib ne)
+					  path)))))))
 		      (else
 		       (dynamic-load libe init_e module_e)))
 		   (when (and info (libinfo-init info))
