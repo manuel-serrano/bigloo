@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/evmodule.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/evmodule.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Mon Apr 27 10:45:57 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 09:31:44 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -13,6 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __evmodule
+
+   (include "Llib/class.sch")
    
    (import  __type
 	    __error
@@ -56,7 +58,6 @@
 	    __eval
 	    __evenv
 	    __everror
-	    __evcompile
 	    __evobject)
 
    (use     __macro)
@@ -287,7 +288,7 @@
 ;*---------------------------------------------------------------------*/
 (define (evmodule-library clause loc)
    (if (not (and (list? clause) (every symbol? clause)))
-       (evcompile-error loc "eval" "Illegal `library' clause" clause)
+       (error/source-location "eval" "Illegal `library' clause" clause  loc)
        (for-each/loc loc
 		     (lambda (loc s)
 			(eval/loc loc `(library-load ',s)))
@@ -302,7 +303,7 @@
        (let ((loc (or (get-source-location clause) loc)))
 	  (for-each (lambda (e) (eval/loc loc e)) exp)))
       (else
-       (evcompile-error loc "eval" "Illegal `option' clause" clause))))
+       (error/source-location "eval" "Illegal `option' clause" clause  loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mark-global! ...                                                 */
@@ -313,7 +314,7 @@
 	  (begin
 	     (eval-global-tag-set! v tag)
 	     id)
-	  (evcompile-error loc "eval" "variable unbound" id))))
+	  (error/source-location "eval" "variable unbound" id  loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mark-global-uninitialized! ...                                   */
@@ -357,11 +358,11 @@
 	     (eval-class cla #t clauses s mod)))
 	 ((wide-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (evcompile-error
-	      loc
+	     (error/source-location
 	      "eval"
 	      "Wide classes are not supported within eval"
-	      clause)))
+	      clause 
+	      loc)))
 	 (((or inline generic) (and (? symbol?) ?s) . ?-)
 	  (unless classp
 	     (let ((id (untype-ident s)))
@@ -373,11 +374,11 @@
 		(bind-global! id mod loc)
 		(mark-global-readonly! id mod loc))))
 	 (else
-	  (evcompile-error
-	   loc
-	   "eval" "Illegal `static' clause" clause))))
+	  (error/source-location
+	   "eval" "Illegal `static' clause" clause 
+	   loc))))
    (if (not (list? clause))
-       (evcompile-error loc "eval" "Illegal `static' clause" clause)
+       (error/source-location "eval" "Illegal `static' clause" clause  loc)
        (for-each/loc loc evmodule-static-clause (cdr clause))))
 
 ;*---------------------------------------------------------------------*/
@@ -421,11 +422,11 @@
 		(for-each (lambda (i) (evmodule-export! mod i mod)) idents))))
 	 ((wide-class (and ?cla (? symbol?)) . ?clauses)
 	  (when classp
-	     (evcompile-error
-	      loc
+	     (error/source-location
 	      "eval"
 	      "Wide classes are not supported within eval"
-	      clause)))
+	      clause 
+	      loc)))
 	 (((or inline generic) (and (? symbol?) ?s) . ?-)
 	  (unless classp
 	     (let ((id (untype-ident s)))
@@ -445,11 +446,11 @@
 		(evmodule-export! mod id mod)
 		(mark-global-readonly! id mod loc))))
 	 (else
-	  (evcompile-error
-	   loc
-	   "eval" "Illegal `export' clause" clause))))
+	  (error/source-location
+	   "eval" "Illegal `export' clause" clause 
+	   loc))))
    (if (not (list? clause))
-       (evcompile-error loc "eval" "Illegal `export' clause" clause)
+       (error/source-location "eval" "Illegal `export' clause" clause  loc)
        (for-each/loc loc evmodule-export-clause (cdr clause))))
 
 ;*---------------------------------------------------------------------*/
@@ -460,12 +461,12 @@
       (if (not var)
 	  (begin
 	     (tprint "ERROR: " (hashtable-key-list (%evmodule-env from-mod)))
-	     (evcompile-error loc "eval"
+	     (error/source-location "eval"
 		(string-append
 		   "Cannot find imported variable from module `"
 		   (symbol->string (evmodule-name to-mod))
 		   "'")
-		`(@ ,from-ident ,(evmodule-name from-mod))))
+		`(@ ,from-ident ,(evmodule-name from-mod))  loc))
 	  (evmodule-bind-global! to-mod to-ident var loc))))
 
 ;*---------------------------------------------------------------------*/
@@ -476,9 +477,9 @@
 (define (evmodule-check-unbound mod loc)
    
    (define (unbound-error v)
-      (evcompile-error (or (eval-global-loc v) loc)
+      (error/source-location
 	 (evmodule-name mod)
-	 "Unbound variable" (eval-global-name v)))
+	 "Unbound variable" (eval-global-name v)  (or (eval-global-loc v) loc)))
    
    (let ((l '()))
       
@@ -500,10 +501,10 @@
 			 (unbound-error v)))
 	    l)
 	 (let ((len (length l)))
-	    (evcompile-error #f
+	    (error/source-location
 	       (evmodule-name mod)
 	       (format "~a unbound variable~a" len (if (> len 1) "s" ""))
-	       (format "~l" (map eval-global-name l)))))))
+	       (format "~l" (map eval-global-name l))  #f)))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-load ...                                                */
@@ -533,12 +534,12 @@
 	     (begin
 		(evmodule-check-unbound m loc)
 		m)
-	     (evcompile-error loc "eval"
+	     (error/source-location "eval"
 		(format "~a:cannot find module \"~a\""
 		   (evmodule-name mod) ident)
 		(if (pair? (cdr paths))
 		    paths
-		    (car paths)))))))
+		    (car paths))  loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *loading-list* ...                                               */
@@ -576,7 +577,7 @@
 (define (evmodule-import! mod ident path set abase loc)
    
    (define (import-error mod msg obj)
-      (evcompile-error loc (format "eval:~a" (evmodule-name mod)) msg obj))
+      (error/source-location (format "eval:~a" (evmodule-name mod)) msg obj  loc))
    
    (define (import-module mod2)
       ;; bind imported the macros
@@ -625,7 +626,7 @@
 (define (evmodule-import mod clause loc)
    
    (define (import-error arg)
-      (evcompile-error loc "eval" "Illegal `import' clause" arg))
+      (error/source-location "eval" "Illegal `import' clause" arg  loc))
    
    (define (find-module-files clause)
       (cond
@@ -705,7 +706,7 @@
 ;*---------------------------------------------------------------------*/
 (define (evmodule-from! mod ident path set loc)
    (define (from-error msg obj)
-      (evcompile-error loc "eval" msg obj))
+      (error/source-location "eval" msg obj  loc))
    (define (from-module mod2)
       (let* ((ex (if (pair? set)
 		     (filter (lambda (b) (memq (car b) set))
@@ -736,7 +737,7 @@
 (define (evmodule-from mod clause loc)
    
    (define (from-error arg)
-      (evcompile-error loc "eval" "Illegal `from' clause" arg))
+      (error/source-location "eval" "Illegal `from' clause" arg  loc))
    
    (define (from-clause s)
       (let ((loc (or (get-source-location s) loc))
@@ -769,9 +770,9 @@
 		      (if (and (pair? e0) (eq? (car e0) 'directives))
 			  (values (cdr e0) (port->list read p))
 			  (values '() (cons e0 (port->list read p)))))))
-	     (evcompile-error loc "eval"
+	     (error/source-location "eval"
 			      (format "Cannot find include file ~s" file)
-			      path))))
+			      path  loc))))
    
    (define (evmodule-include-files! files path)
       (let loop ((files files)
@@ -793,7 +794,7 @@
 	    ((null? clauses)
 	     (values iclauses iexprs))
 	    ((not (pair? (car clauses)))
-	     (evcompile-error loc "eval" "Illegal module clause" (car clauses)))
+	     (error/source-location "eval" "Illegal module clause" (car clauses)  loc))
 	    ((eq? (caar clauses) 'include)
 	     (multiple-value-bind (ic ie)
 		(evmodule-include-files! (cdar clauses) path)
@@ -865,7 +866,7 @@
 	 (cond
 	    ((not (and (pair? c) (list? c) (symbol? (car c))))
 	     (let ((loc (or (get-source-location c) loc)))
-		(evcompile-error loc "eval" "Illegal module clause" c0)))
+		(error/source-location "eval" "Illegal module clause" c0  loc)))
 	    ((eq? (car c) 'cond-expand)
 	     (let ((nc (expand-once c)))
 		(cond
@@ -938,9 +939,9 @@
 				  (trace-item "import alias=" alias " id=" id " mid=" mid " " (hashtable-key-list (%evmodule-env ievmod)))
 				  (if var
 				      (evmodule-bind-global! evmod alias var loc)
-				      (evcompile-error loc "eval"
-					 "Cannot find variable" id)))
-			       (evcompile-error loc "eval" "Cannot find module" mid))))))))))
+				      (error/source-location "eval"
+					 "Cannot find variable" id  loc)))
+			       (error/source-location "eval" "Cannot find module" mid  loc))))))))))
 
       
    (with-trace 'module5 "evmodule-module5"
@@ -958,7 +959,14 @@
 	 (module5-expand-and-resolve! mod (lambda (xenv mod) xenv))
 	 (module5-inits! mod loc)
 	 (module5-imports! mod loc evmod)
-	 (with-access::Module mod (body main)
+	 (with-access::Module mod (body main classes)
+	    (tprint "KEYS=" (hashtable-key-list classes))
+	    (hashtable-for-each classes
+	       (lambda (k ci)
+		  (tprint "R=" (class-info-registration ci))
+		  (eval/module
+		     `((define ,(class-info-id ci) ,(class-info-registration ci)))
+		     evmod)))
 	    (eval/module body evmod)
 	    (when main
 	       (eval/module (list `(,main (command-line))) evmod))))))
@@ -993,7 +1001,8 @@
       (match-case exp
 	 ((module (and (? symbol?) ?name) . ?clauses)
 	  (if (not (list? clauses))
-	      (evcompile-error loc "eval" "Illegal module clauses" clauses)
+	      (error/source-location "eval"
+		 "Illegal module clauses" clauses loc)
 	      (let* ((path (or (evcompile-loc-filename loc) "."))
 		     (evmod (make-evmodule name path loc)))
 		 (when (procedure? hdl)
@@ -1002,7 +1011,7 @@
 		    (evmodule-module5 evmod (cons exp body) path loc)
 		    ($eval-module-set! evmod)))))
 	 (else
-	  (evcompile-error loc "eval" "Illegal module expression" exp)))))
+	  (error/source-location "eval" "Illegal module expression" exp  loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule ...                                                     */
@@ -1017,7 +1026,8 @@
 	  (error "evmodule" "should not be here" exp))
 	 ((module (and (? symbol?) ?name) . ?clauses)
 	  (if (not (list? clauses))
-	      (evcompile-error loc "eval" "Illegal module clauses" clauses)
+	      (error/source-location "eval"
+		 "Illegal module clauses" clauses loc)
 	      (let* ((path (or (evcompile-loc-filename loc) "."))
 		     (mod (make-evmodule name path loc)))
 		 (module-load-access-file (dirname path))
@@ -1027,7 +1037,15 @@
 		    (evmodule-module4 mod clauses loc)
 		    ($eval-module-set! mod)))))
 	 (else
-	  (evcompile-error loc "eval" "Illegal module expression" exp)))))
+	  (error/source-location "eval" "Illegal module expression" exp  loc)))))
+
+;*---------------------------------------------------------------------*/
+;*    evcompile-loc-filename ...                                       */
+;*---------------------------------------------------------------------*/
+(define (evcompile-loc-filename loc)
+   (match-case loc
+      ((at ?fname ?loc) fname)
+      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-comp! ...                                               */

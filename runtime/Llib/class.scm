@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 23 09:51:35 2025                          */
-;*    Last change :  Sat Sep  5 18:52:55 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 08:16:22 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for parsing and expanding classes                          */
@@ -91,14 +91,22 @@
 		(else (values id super))))))
 
    (define (class-depth-and-virtual-properties k)
-      (if (not k)
-	  (values 0 '())
-	  (let ((ci (module5-get-class mod k)))
-	     (if (not ci)
-		 (error/loc (-> mod id)
-		    (format "Cannot find super class \"~a\"" k) x x)
-		 (values (+fx 1 (class-info-depth ci))
-		    (class-info-vproperties ci))))))
+      (cond
+	 ((not k)
+	  (values 0 '()))
+	 ((module5-get-class mod k)
+	  =>
+	  (lambda (ci)
+	     (values (+fx 1 (class-info-depth ci))
+		(class-info-vproperties ci))))
+	 ((module5-get-native-class mod k)
+	  =>
+	  (lambda (ci)
+	     (values (+fx 1 (class-info-depth ci))
+		(class-info-vproperties ci))))
+	 (else
+	  (error/loc (-> mod id)
+	     (format "Cannot find super class \"~a\"" k) x x))))
    
    (match-case x
       (((and (? class-kind?) ?kind)  ?ident (?ctor) . ?props)

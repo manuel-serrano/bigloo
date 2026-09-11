@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/wasm/runtime/Eval/evaluate_comp.scm      */
+;*    .../prgm/project/bigloo/5.0.x/runtime/Eval/evaluate_comp.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Mon Feb  3 18:25:30 2025 (serrano)                */
-;*    Copyright   :  2011-25 Manuel Serrano                            */
+;*    Last change :  Fri Sep 11 10:30:58 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
 ;*=====================================================================*/
@@ -63,7 +63,6 @@
 	    __progn
 	    __expand
 	    __evenv
-	    __evcompile
 	    __everror
 	    __evmodule
 	    

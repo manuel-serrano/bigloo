@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Thu Sep  3 00:59:41 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:15:10 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -66,8 +66,6 @@
 	    __install_expanders
 	    __progn
 	    __expand
-	    __evcompile
-	    __evmeaning
 	    __evaluate
 	    __everror
 	    __evprimop
@@ -82,9 +80,6 @@
 
    (export  (eval ::obj #!optional (env (default-environment)))
 	    (eval! ::obj #!optional (env (default-environment)))
-	    (eval-evaluate-set! ::obj)
-	    (byte-code-compile::bstring ::obj #!optional (env (default-environment)))
-	    (byte-code-run::obj ::bstring)
 	    (scheme-report-environment <version>)
 	    (null-environment <version>)
 	    (interaction-environment)
@@ -118,44 +113,6 @@
    (option  (set! *unsafe-type* #f)))
 
 ;*---------------------------------------------------------------------*/
-;*    byte-code-evaluate ...                                           */
-;*---------------------------------------------------------------------*/
-(define (byte-code-evaluate eexp env loc)
-   (let ((cexp (evcompile eexp '() env '_ #f loc #t #t))
-	 (denv::dynamic-env (current-dynamic-env)))
-      (let ()
-	 ;; it is needed to protect the stack trace frame of the caller
-	 ($env-push-trace denv #unspecified #unspecified)
-	 (let ((tmp (evmeaning cexp '() denv)))
-	    ($env-pop-trace denv)
-	    tmp))))
-
-;*---------------------------------------------------------------------*/
-;*    default-evaluate ...                                             */
-;*    -------------------------------------------------------------    */
-;*    DEFAULT-EVALUATE is very special. It must be explicitly typed    */
-;*    as obj because since eval in called by evprimop before the eval  */
-;*    module is initialized, the type of the variable must not         */
-;*    allow the compiler to remove the test from EVAL!.                */
-;*---------------------------------------------------------------------*/
-;;(define default-evaluate::obj byte-code-evaluate)
-(define default-evaluate::obj evaluate2)
-
-;*---------------------------------------------------------------------*/
-;*    eval-evaluate-set! ...                                           */
-;*---------------------------------------------------------------------*/
-(define (eval-evaluate-set! comp)
-   (case comp
-      ((classic)
-       (set! default-evaluate byte-code-evaluate))
-      ((new)
-       (set! default-evaluate evaluate2))
-      (else
-       (if (procedure? comp)
-	   (set! default-evaluate comp)
-	   (error "eval-evaluate-set!" "Illegal compiler" comp)))))
-
-;*---------------------------------------------------------------------*/
 ;*    Expanders setup.                                                 */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders are initialized by the initialization of the       */
@@ -169,21 +126,18 @@
 ;*    eval ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (eval exp #!optional (env (default-environment)))
-   (eval/expander exp env expand default-evaluate))
+   (eval/expander exp env expand))
  
 ;*---------------------------------------------------------------------*/
 ;*    eval! ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (eval! exp #!optional (env (default-environment)))
-   (let ((evaluate (if (procedure? default-evaluate)
-		       default-evaluate
-		       byte-code-evaluate)))
-      (eval/expander exp env expand! evaluate)))
+   (eval/expander exp env expand!))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval/expander ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (eval/expander exp::obj env expand::procedure evaluate::procedure)
+(define (eval/expander exp::obj env expand::procedure)
    (let ((denv::dynamic-env (current-dynamic-env)))
       (let ()
 	 (let ((loc (get-source-location exp))
@@ -193,8 +147,8 @@
 			   (with-handler
 			      (lambda (e)
 				 (eval-exception-handler e loc))
-			      (evaluate (expand sexp) env loc))
-			   (evaluate (expand sexp) env loc))))
+			      (evaluate2 (expand sexp) env loc))
+			   (evaluate2 (expand sexp) env loc))))
 	       ($env-pop-trace denv)
 	       tmp)))))
 
@@ -210,21 +164,6 @@
 	     (set! fname name)
 	     (set! location loc)))))
    (raise e))
-
-;*---------------------------------------------------------------------*/
-;*    byte-code-compile ...                                            */
-;*---------------------------------------------------------------------*/
-(define (byte-code-compile exp #!optional (env (default-environment)))
-   (let* ((loc (get-source-location exp))
-	  (sexp  (if (procedure? *user-pass*) (*user-pass* exp) exp)))
-      (obj->string
-       (evcompile (expand sexp) '() env '_ #t loc #f #t))))
-
-;*---------------------------------------------------------------------*/
-;*    byte-code-run ...                                                */
-;*---------------------------------------------------------------------*/
-(define (byte-code-run byte-code::bstring)
-   (evmeaning (string->obj byte-code) '() (current-dynamic-env)))
 
 ;*---------------------------------------------------------------------*/
 ;*    scheme-report-environment ...                                    */
@@ -521,10 +460,10 @@
 					   (null? (cddr clause))
 					   (symbol? (cadr clause)))
 				      (set! mainsym (cadr clause))
-				      (evcompile-error (get-source-location sexp)
-					 "load"
+				      (error/source-location "load"
 					 "Illegal main clause"
-					 clause)))
+					 clause
+					 (get-source-location sexp))))
 			      ;; evaluate for the module
 			      (evalv! sexp env)
 			      (set! env ($eval-module)))))

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/expdlet.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/expdlet.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Thu Apr 16 17:53:59 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:31:40 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
@@ -43,7 +43,6 @@
 	    __progn
 
 	    __expander_define
-	    __evcompile
 	    __expand
 	    __evutils)
    

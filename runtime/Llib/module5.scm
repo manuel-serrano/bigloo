@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sun Jul 12 06:27:44 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 08:39:27 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -176,7 +176,8 @@
 	   (module5-get-decl*::Decl ::Module ::symbol ::obj)
 	   (module5-get-def::Def ::Module ::symbol ::obj)
 	   (module5-get-export-def ::Module ::symbol #!optional src)
-	   (module5-get-class ::Module ::symbol)))
+	   (module5-get-class ::Module ::symbol)
+	   (module5-get-native-class ::Module ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *module-version* ...                                             */
@@ -243,6 +244,7 @@
 (define *modules-by-path* (create-hashtable :weak 'open-string))
 (define *modules-by-id* (create-hashtable :weak 'open-string))
 (define *heaps-by-path* (create-hashtable :weak 'open-string))
+(define *native-class-table* (create-hashtable :weak 'open-string))
 (define *plugins* '())
 (define *plugins4* '())
 (define *extern-plugins* '())
@@ -2753,7 +2755,8 @@
 		(module5-bind-class! mod (class-info-id ci) ci)))
 	 ;; check the super class
 	 (when (class-info-super ci)
-	    (let ((si (module5-get-class mod (class-info-super ci))))
+	    (let ((si (or (module5-get-class mod (class-info-super ci))
+			  (module5-get-native-class mod (class-info-super ci)))))
 	       (if si
 		   ;; update the super class info and add additional props
 		   (begin
@@ -2840,6 +2843,80 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-get-class mod::Module id::symbol)
    (hashtable-get (-> mod classes) (symbol->string! id)))
+
+;*---------------------------------------------------------------------*/
+;*    module5-get-native-class ...                                     */
+;*    -------------------------------------------------------------    */
+;*    Native classes are those already defined in the runtime system   */
+;*    and that are never explicitly imported by the module. For        */
+;*    instance there are the "object" or "&execption" classes.         */
+;*---------------------------------------------------------------------*/
+(define (module5-get-native-class mod::Module id::symbol)
+   
+   (define (native-prop-info f)
+      (prop-info (class-field-name f)
+	 ;; type
+	 (class-field-type f)
+	 ;; class
+	 id
+	 ;; defv?
+	 (class-field-default-value? f)
+	 ;; ronly?
+	 (not (class-field-mutable? f))
+	 ;; virtual?
+	 (class-field-virtual? f)
+	 ;; get
+	 (class-field-accessor f)
+	 ;; set
+	 (class-field-mutator f)
+	 ;; value
+	 (class-field-default-value f)
+	 ;; expr
+	 #unspecified
+	 ;; vindex
+	 (class-field-index f)
+	 ;; info
+	 (class-field-info f)))
+   
+   (define (native-class-info id)
+      (when (class-exists id)
+	 (let ((k (find-class id)))
+	    (when (class? k)
+	       (let* ((super (class-super k))
+		      (props (vector->list (class-all-fields k)))
+		      (ci (class-info id
+			     ;; depth
+			     (class-depth k)
+			     ;; super
+			     (when super (class-name super))
+			     ;; kind
+			     'define-class
+			     ;; ctor
+			     #f
+			     ;; properties
+			     (filter-map (lambda (f)
+					    (unless (class-field-virtual? f)
+					       (native-prop-info f)))
+				props)
+			     ;; registration
+			     #unspecified
+			     ;; expr
+			     #unspecified
+			     ;; register-ctor
+			     #f
+			     ;; vproperties
+			     (filter-map (lambda (f)
+					    (when (class-field-virtual? f)
+					       (native-prop-info f)))
+				props))))
+		  ci)))))
+   
+   (synchronize module-mutex
+      (or (hashtable-get *native-class-table* (symbol->string! id))
+	  (let ((k (native-class-info id)))
+	     (when k
+		(hashtable-put! *native-class-table* (symbol->string! id) k)
+		k)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-bind-class! ...                                          */

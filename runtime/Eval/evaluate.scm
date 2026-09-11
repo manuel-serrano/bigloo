@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Sat Sep  5 16:34:39 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 07:47:32 2026 (serrano)                */
 ;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -51,7 +51,6 @@
 	    __progn
 	    __expand
 	    __evenv
-	    __evcompile
 	    __everror
 	    __evmodule
 	    
@@ -85,7 +84,7 @@
 		    (string->symbol (substring string (+fx walker 2)))))
 		(else
 		 (loop (+fx walker 1))))))
-       (evcompile-error loc "eval" "Illegal identifier" id)))
+       (error/source-location "eval" "Illegal identifier" id  loc)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-evaluation-context ...                                       */
@@ -188,7 +187,7 @@
 	     (e1 (conv e1 locals globals #f where (get-location e1 loc) top?))
 	     (e2 (conv-begin r locals globals tail? where loc top?)) ))
 	 (else
-	  (evcompile-error loc "eval" "Bad syntax" l)) )))
+	  (error/source-location "eval" "Bad syntax" l loc)) )))
 
 ;*---------------------------------------------------------------------*/
 ;*    conv-global ...                                                  */
@@ -221,50 +220,61 @@
 			      (loop node
 				 (class-field-type field)
 				 (cdr fields)) )
-			   (evcompile-error loc type
+			   (error/source-location type
 			      (format "Class \"~a\" has no field \"~a\"" type (car fields))
-			      e) )))
+			      e
+			       loc) )))
 		   (else
-		    (evcompile-error loc (or type name)
-		       "Static type not a class" e) ))))
-	  (evcompile-error loc (cadr e) "Variable unbound" e) )))
+		    (let ((nx `(let ((k (find-class ',type))
+				     (f (find-class-field k ',(car fields))))
+				  ((class-field-accessor f) ,(car l)))))
+		       (tprint "NX1=" nx)
+		       '(error/source-location (or type name)
+			 "Static type not a class" e  loc)
+		       (conv nx locals globals tail? where loc top?))))))
+	  (error/source-location (cadr e) "Variable unbound" e  loc) )))
 
 ;*---------------------------------------------------------------------*/
 ;*    conv-field-set ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (conv-field-set l e2 e locals globals tail? where loc top?)
-   (let* ( (v (conv-var (car l) locals))
-	   (e2 (conv e2 locals globals #f where loc #f)) )
+   (let ((v (conv-var (car l) locals)))
       (if (isa? v ev_var)
 	  (with-access::ev_var v (type name)
-	     (let loop ( (node v)
-			 (klass (class-exists type))
-			 (fields (cdr l)) )
+	     (let loop ((node v)
+			(klass (class-exists type))
+			(fields (cdr l)))
 		(cond
 		   ((null? fields)
 		    node)
 		   ((class? klass)
-		    (let ( (field (find-class-field klass (car fields))) )
+		    (let ( (field (find-class-field klass (car fields))))
 		       (if (class-field? field)
 			   (if (null? (cdr fields))
 			       (if (class-field-mutable? field)
-				   (make-class-field-set
-				      field (list node e2) loc tail?)
-				   (evcompile-error loc (car fields)
+				   (let ((e2 (conv e2 locals globals #f where loc #f)))
+				      (make-class-field-set
+					 field (list node e2) loc tail?))
+				   (error/source-location (car fields)
 				      "Field read-only"
-				      e))
+				      e  loc))
 			       (let ( (node (make-class-field-ref
-					       field node loc tail?)) )
+					       field node loc tail?)))
 				  (loop node
 				     (class-field-type field)
-				     (cdr fields)) ))
-			   (evcompile-error loc type
+				     (cdr fields))))
+			   (error/source-location type
 			      (format "Class \"~a\" has no field \"~a\"" type (car fields))
-			      e) )))
+			      e  loc))))
 		   (else
-		    (evcompile-error loc
-		       (or type name) "Static type not a class" e) ))))
-	  (evcompile-error loc (car l) "Variable unbound" e) )))
+		    (let ((nx `(let ((k (find-class ',type))
+				     (f (find-class-field k ',(car fields))))
+				  ((class-field-mutator f) ,(car l) ,e2))))
+		       (tprint "NX2=" nx)
+		       '(error/source-location
+			  (or type name) "Static type not a class" e  loc)
+		       (conv nx locals globals tail? where loc top?))))))
+	  (error/source-location (car l) "Variable unbound" e loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-field-ref ...                                         */
@@ -423,18 +433,35 @@
 	       (vars vars)
 	       (body (conv body (append vars locals) globals #t where nloc #f)) ))))
 
+   (define (dot-ident sym)
+      (let ((s (symbol->string! sym)))
+	 (when (string-index s #\.)
+	    (map! string->symbol (string-split s #\.)))))
+   
    (match-case e
       ((atom ?x)
-       (if (symbol? x)
-	   (or (conv-var x locals) (conv-global loc x globals))
+       (cond
+	  ((not (symbol? x))
 	   (instantiate::ev_litt
-	      (value x)) ))
+	      (value x)))
+	  ((conv-var x locals)
+	   =>
+	   (lambda (v) v))
+	  ((dot-ident x)
+	   =>
+	   (lambda (l)
+	      (if (conv-var (car l) locals)
+		  (let ((ne `(-> ,@l)))
+		     (conv ne locals globals tail? where loc top?))
+		  (conv-global loc x globals))))
+	  (else
+	   (conv-global loc x globals))))
       ((module . ?bah)
        (if top?
 	   (let ((forms (evmodule e (get-location e loc))))
 	      (conv (expand forms) locals
 		 ($eval-module) where #f loc #t))
-	   (evcompile-error loc "eval" "Illegal non toplevel module declaration" e) ))
+	   (error/source-location "eval" "Illegal non toplevel module declaration" e loc) ))
       ((@ (and ?id (? symbol?)) (and ?modname (? symbol?)))
        (instantiate::ev_global
 	  (loc loc)
@@ -443,7 +470,7 @@
       ((-> . ?l)
        (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	   (conv-field-ref e locals globals tail? where loc top?)
-	   (evcompile-error loc "eval" "Illegal form" e) ))
+	   (error/source-location "eval" "Illegal form" e loc) ))
       (((and (? symbol?)
 	     (? (lambda (x) (conv-var x locals)))
 	     ?fun)
@@ -547,7 +574,7 @@
       ((set! (-> . ?l) ?e2)
        (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	   (conv-field-set l e2 e locals globals tail? where loc top?)
-	   (evcompile-error loc "eval" "Illegal form" e) ))
+	   (error/source-location "eval" "Illegal form" e loc) ))
       ((set! ?v ?e)
        (let* ( (cv (conv-var v locals))
 	       (e (uconv e)) )
@@ -564,7 +591,7 @@
 		 (mod (if (evmodule? globals) globals ($eval-module)))
 		 (e e)) )))
       ((set! . ?-)
-       (evcompile-error loc "eval" "Illegal form" e))
+       (error/source-location "eval" "Illegal form" e loc))
       ((define ?gv (lambda ?formals ?body))
        (let ((tid (untype-ident gv loc)))
 	  (instantiate::ev_defglobal
@@ -617,5 +644,5 @@
 	     (fun fun)
 	     (args args)
 	     (tail? tail?)) ))
-      (else (evcompile-error loc "eval" "Bad syntax" e)) ))
+      (else (error/source-location "eval" "Bad syntax" e loc)) ))
 

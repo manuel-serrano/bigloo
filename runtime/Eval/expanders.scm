@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/expanders.scm      */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/expanders.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Thu Feb 19 08:54:56 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 09:16:05 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -507,6 +507,19 @@
 	 (match-case x
 	    ((?id . ?-)
 	     (expand-error id "Unknown class" x)))))
+
+   ;; $class-allocate
+   (install-eval-expander '$class-allocate
+      (lambda (x e)
+	 (match-case x
+	    ((?- ?klass . ?args)
+	     (let* ((a (gensym 'klass))
+		    (n (gensym 'new))
+		    (nx `(let ((,n ((class-allocator ,klass))))
+			    ,n)))
+		(e nx e)))
+	    (else
+	     (expand-error '$class-allocate "not implemented" x)))))
    
    ;; with-access
    (install-eval-expander 'with-access

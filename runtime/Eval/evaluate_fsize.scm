@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evaluate_fsize.scm      */
+;*    .../project/bigloo/5.0.x/runtime/Eval/evaluate_fsize.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:42:27 2011                          */
-;*    Last change :  Wed May 11 18:31:40 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Fri Sep 11 10:31:09 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the size of stack needed for an abstraction              */
 ;*    of the space for free variables is not included.                 */
@@ -52,7 +52,6 @@
 	    __progn
 	    __expand
 	    __evenv
-	    __evcompile
 	    __everror
 	    __evmodule
 	    

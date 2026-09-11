@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Thu Aug 27 17:30:51 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 08:36:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -337,6 +337,7 @@
 	    (class-abstract?::bool ::class)
 	    (class-wide?::bool ::class)
 	    (class-super ::class)
+	    (class-depth::long ::class)
 	    (class-subclasses::pair-nil ::class)
 	    (inline class-index::long ::class)
 	    (inline class-num::long ::class)

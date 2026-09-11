@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evaluate_use.scm        */
+;*    .../prgm/project/bigloo/5.0.x/runtime/Eval/evaluate_use.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:47:50 2011                          */
-;*    Last change :  Fri Nov 30 09:28:40 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Fri Sep 11 10:31:25 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the vars used by an expression                           */
 ;*=====================================================================*/
@@ -51,7 +51,6 @@
 	    __progn
 	    __expand
 	    __evenv
-	    __evcompile
 	    __everror
 	    __evmodule
 	    

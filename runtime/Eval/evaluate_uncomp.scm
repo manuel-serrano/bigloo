@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evaluate_uncomp.scm     */
+;*    .../project/bigloo/5.0.x/runtime/Eval/evaluate_uncomp.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:46:26 2011                          */
-;*    Last change :  Fri Nov 30 09:28:19 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Fri Sep 11 10:31:18 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST back to list                                                 */
 ;*=====================================================================*/
@@ -51,7 +51,6 @@
 	    __progn
 	    __expand
 	    __evenv
-	    __evcompile
 	    __everror
 	    __evmodule
 	    

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Eval/evobject.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Eval/evobject.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Tue Mar 10 11:11:23 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 10:22:50 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -52,7 +52,6 @@
 	    __progn
 	    __evenv
 	    __everror
-	    __evcompile
 	    __eval
 	    __evmodule
 	    __expander_define
@@ -634,8 +633,8 @@
 	  (list (slot id (if type (or (class-exists type) type) 'obj)
 		   #f #f 0 #f #f #f))))
       ((not (and (list? f) (symbol? (car f))))
-       (evcompile-error (or (get-source-location f) loc)
-	  "eval" "Illegal slot declaration" f))
+       (error/source-location "eval"
+	  "Illegal slot declaration" f (or (get-source-location f) loc)))
       (else
        (let ((id (car f))
 	     (attrs (cdr f)))
@@ -670,19 +669,19 @@
 				    ((default ?expr)
 				     (set! def expr))
 				    (else
-				     (evcompile-error
-					(or (get-source-location f) loc)
-					"eval" "Illegal slot declaration" f))))))
+				     (error/source-location "eval"
+					"Illegal slot declaration" f
+					(or (get-source-location f) loc)))))))
 		   attrs)
 		(cond
 		   ((and get (not ronly) (not set))
-		    (evcompile-error
-		       (or (get-source-location f) loc)
-		       "eval" "Missing virtual set" f))
+		    (error/source-location "eval"
+		       "Missing virtual set" f
+		       (or (get-source-location f) loc)))
 		   ((and set (not get))
-		    (evcompile-error
-		       (or (get-source-location f) loc)
-		       "eval" "Missing virtual get" f))
+		    (error/source-location "eval"
+		       "Missing virtual get" f
+		       (or (get-source-location f) loc)))
 		   (else
 		    (let ((s (slot id
 				(if type (or (class-exists type) type) 'obj)
@@ -701,8 +700,9 @@
 	 ((null? clauses)
 	  (values #f '()))
 	 ((not (list? clauses))
-	  (evcompile-error (or (get-source-location clauses) loc)
-	     "eval" "Illegal class declaration" clauses))
+	  (error/source-location "eval"
+	     "Illegal class declaration" clauses
+	      (or (get-source-location clauses) loc)))
 	 ((match-case (car clauses) (((? symbol?)) #t) (else #f))
 	  ;; the constructor must be protected under a lambda because
 	  ;; may be still uninitialized
@@ -733,7 +733,8 @@
 	     (sid (or sid 'object))
 	     (super (find-class sid)))
 	 (if (not (class? super))
-	     (evcompile-error loc "eval" "Cannot find super class" sid)
+	     (error/source-location "eval"
+		"Cannot find super class" sid  loc)
 	     (multiple-value-bind (constructor slots)
 		(eval-parse-class loc clauses)
 		;; make the class and bind it to its global variable
