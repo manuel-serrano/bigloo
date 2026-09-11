@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:36:07 2026                          */
-;*    Last change :  Sat Sep  5 16:49:27 2026 (serrano)                */
+;*    Last change :  Fri Sep 11 16:34:54 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bgl regression tests                                             */
@@ -28,6 +28,7 @@
    (import "./date.bgl" . date)
    (import "./digest.bgl" . digest)
    (import "./dsssl.bgl" . dsssl)
+   (import "./eval.bgl" . eval)
    (import "./hash.bgl" . hash)
    (import "./int1.bgl" . int1)
    (import "./int2.bgl" . int2)
@@ -112,6 +113,7 @@
                        (date.test verbose tests)
                        (digest.test verbose tests)
                        (dsssl.test verbose tests)
+                       (eval.test verbose tests)
                        (hash.test verbose tests)
                        (int1.test verbose tests)
                        (int2.test verbose tests)
