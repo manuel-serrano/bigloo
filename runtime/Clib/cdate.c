@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Wed Jun  3 07:13:24 2026 (serrano)                */
+/*    Last change :  Sat Sep 12 17:52:42 2026 (serrano)                */
 /*    Copyright   :  2003-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -304,7 +304,7 @@ bgl_make_date(BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int ye
    obj_t date;
       
    date = GC_MALLOC_ATOMIC(BGL_DATE_SIZE);
-   date->date.header = BGL_MAKE_HEADER(DATE_TYPE, !tz);
+   date->date.header = BGL_MAKE_HEADER(DATE_TYPE, !istz);
 
    return bgl_update_date(BREF(date), ns, s, m, hr, mday, mon, year, tz, istz, isdst);
 }

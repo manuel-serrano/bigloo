@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:38:54 1996                          */
 ;*    Last change :  Tue Jul  9 09:39:12 2024 (serrano)                */
-;*    Copyright   :  1996-2024 Manuel Serrano, see LICENSE file        */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type class definition                                        */
 ;*=====================================================================*/

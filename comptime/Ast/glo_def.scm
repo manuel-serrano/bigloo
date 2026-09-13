@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Wed Sep  9 12:44:20 2026 (serrano)                */
+;*    Last change :  Sun Sep 13 05:59:59 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the functions used to def (define) a      */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -255,8 +255,9 @@
 		   ;; we check that global exported variable are defined
 		   ;; without type or with the obj type.
 		   (if (and (not (eq? (type-class type) 'bigloo))
-                            (not (isa? type jclass)))
-		       (user-error id-id
+                            (not (isa? type jclass))
+                            (not (literal-type? type)))
+		       (user-error/location loc id-id
 			  "Illegal type for global variable"
 			  (shape type))
 		       type)))

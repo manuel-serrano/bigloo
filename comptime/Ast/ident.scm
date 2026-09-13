@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:33:09 1996                          */
-;*    Last change :  Mon Jun 22 08:29:30 2026 (serrano)                */
+;*    Last change :  Sat Sep 12 12:39:57 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The identifier managment                                         */
 ;*=====================================================================*/
@@ -72,7 +72,7 @@
 ;*---------------------------------------------------------------------*/
 (define (type-of-id::type id loc)
    (if (not (symbol? id))
-       (user-error "Illegal identifier" "`'" id)
+       (user-error/location loc "Illegal identifier" "`'" id)
        (cdr (parse-id id loc))))
 
 ;*---------------------------------------------------------------------*/
@@ -80,7 +80,7 @@
 ;*---------------------------------------------------------------------*/
 (define (type-of-id/import-location::type id loc loci)
    (if (not (symbol? id))
-       (user-error "Illegal identifier" "`'" id)
+       (user-error/location (or loci loc) "Illegal identifier" "`'" id)
        (cdr (parse-id/import-location id loc loci))))
 
 ;*---------------------------------------------------------------------*/
@@ -88,7 +88,7 @@
 ;*---------------------------------------------------------------------*/
 (define (id-of-id::symbol id loc)
    (if (not (symbol? id))
-       (user-error "parse" "Illegal identifier" id)
+       (user-error/location loc "parse" "Illegal identifier" id)
        (car (parse-id id loc))))
 
 ;*---------------------------------------------------------------------*/
@@ -114,7 +114,7 @@
       ((and (pair? id) (symbol? (car id)))
        (untype-ident (car id)))
       ((not (symbol? id))
-       (user-error "parse" "Illegal identifier" id))
+       (user-error/location loc "parse" "Illegal identifier" id))
       (else
        (untype-ident id))))
 
@@ -123,7 +123,7 @@
 ;*---------------------------------------------------------------------*/
 (define (parse-id/use::pair id loc use-type::procedure)
    (if (not (symbol? id))
-       (user-error "parse" "Illegal identifier" id)
+       (user-error/location loc "parse" "Illegal identifier" id)
        (let* ((string (symbol->string id))
 	      (len    (string-length string)))
 	  (let loop ((walker     0)

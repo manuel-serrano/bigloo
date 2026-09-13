@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Wed Sep  9 08:39:51 2026 (serrano)                */
+;*    Last change :  Sun Sep 13 06:01:48 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -202,7 +202,7 @@
 					 ((eq? type *_*)
 					  (reverse! (cons *obj* (cdr res))))
 					 (else
-					  (user-error id
+					  (user-error/location loc id
 					     "Illegal nary argument type"
 					     (shape type)))))))
 			      ((dsssl-named-constant? (car args))
@@ -261,11 +261,12 @@
 			;; without type or with the obj type.
 			(cond
 			   ((and (not (eq? (type-class type) 'bigloo))
-                                 (not (isa? type jclass)))
-			    (user-error id
-					"Illegal type for global variable"
-					(shape type)
-					*_*))
+                                 (not (isa? type jclass))
+                                 (not (literal-type? type)))
+			    (user-error/location loc id
+                               "Illegal type for global variable"
+                               (shape type)
+                               *_*))
 			   ((and (eq? type *_*)
                                  (or (memq scope '(export import))))
 			    *obj*)

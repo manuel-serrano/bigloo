@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Tue Jul 28 10:43:00 2026 (serrano)                */
+;*    Last change :  Sun Sep 13 06:22:57 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -176,8 +176,10 @@
 					      (libinfo-basename i)
 					      (if *unsafe-library* "u" "s"))))
 				  (find-file-in-path lib *lib-dir*)))
-			  (delete-duplicates *additional-bigloo-libraries*)))
-		 (objects (delete-duplicates! (append srcobj *o-files*) string=?))
+			  (delete-duplicates
+                             *additional-bigloo-libraries*)))
+		 (objects (delete-duplicates!
+                             (append srcobj *o-files*) string=?))
 		 (wasmtgt (if (eq? *pass* 'cc)
 			      target
 			      (string-append (prefix (car srcobj)) ".wasm"))))
@@ -1651,9 +1653,6 @@ esac")
 	      (param $o (ref $BgL_objectz00_bglt))
 	      (param $c (ref $class))
 	      (result (ref eq))))
-
-;* 	(import ,($bigloo) "BGL_DYNAMIC_ENV_DEFAULT_VALUE"             */
-;* 	   (global $BGL_DYNAMIC_ENV_DEFAULT_VALUE (ref $dynamic-env))) */
 	(import ,($bigloo) "BGL_STORE_TRACE"
 	   (func $BGL_STORE_TRACE))
 	(import ,($bigloo) "BGL_RESTORE_TRACE_WITH_VALUE"
@@ -1672,7 +1671,15 @@ esac")
    ;; so it needs to be marked as used
    (let ((g (find-global/module (get-genv) '__unspec__ 'foreign)))
       (global-occurrence-set! g (+fx (global-occurrence g) 1)))
+   
+   ;; auto imports
+   (for-each (lambda (import)
+                (hashtable-put! *defined-ids* (caddr import) #t))
+      imports)
+
+   ;; user defined imports
    (for-each-global! (get-genv) import-global)
+   
    imports)
 
 ;*---------------------------------------------------------------------*/

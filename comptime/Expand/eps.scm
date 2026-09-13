@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Sat Sep  5 21:55:17 2026 (serrano)                */
+;*    Last change :  Sat Sep 12 12:22:06 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
@@ -264,7 +264,7 @@
                 ((symbol? x)
                  identifier-expander)
                 ((null? x)
-                 (error #f "Illegal form" '()))
+                 (error #f "xxx Illegal form" '()))
                 ((not (pair? x))
                  (lambda (x e) x))
                 ((symbol? (car x))
@@ -431,7 +431,9 @@
    (let loop ((x* x))
       (cond
 	 ((pair? x*)
-	  (set-car! x* (e (car x*) e))
+          (if (null? (car x*))
+              (error #f "Illegal form" x)
+              (set-car! x* (e (car x*) e)))
 	  (set-cdr! x* (loop (cdr x*)))
 	  x*)
 	 ((null? x*)

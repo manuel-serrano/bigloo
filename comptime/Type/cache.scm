@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Type/cache.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Type/cache.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 18 11:28:43 1995                          */
-;*    Last change :  Sun Dec 22 08:00:40 2024 (serrano)                */
-;*    Copyright   :  1995-2024 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Sep 13 06:12:41 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A small type cache to avoid to many lookup in Tenv.              */
 ;*=====================================================================*/
@@ -92,7 +92,8 @@
 	   (get-class-type)
 	   (get-default-c-type::type)
 	   (get-bigloo-type::type ::type)
-	   (get-bigloo-defined-type::type ::type)))
+	   (get-bigloo-defined-type::type ::type)
+           (literal-type?::bool ::type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-type-cache! ...                                          */
@@ -336,3 +337,13 @@
        *obj*
        (get-bigloo-type t)))
       
+;*---------------------------------------------------------------------*/
+;*    literal-type? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (literal-type?::bool t::type)
+   (or (eq? t *real*)
+       (eq? t *long*)
+       (eq? t *int*)
+       (eq? t *elong*)
+       (eq? t *char*)))
+       

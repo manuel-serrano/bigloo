@@ -35,7 +35,9 @@ by `make-date`, `current-date`, `seconds->date`, or
 
 ### make-date ###
 Creates a `date` object from the integer values passed as argument.
-The argument `timezone`, if provided, is expressed in minute.
+If `timezone` is not provided, the parameter values are all evaluated
+against the local time zone, rather than UTC.  If the argument
+`timezone` is provided, it is expressed in minutes.
 
 The argument `dst` is either `-1` when the information is not
 available, `0` when daylight saving is disabled, `1` when daylight
