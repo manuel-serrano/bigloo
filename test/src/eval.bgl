@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Fri Sep 11 16:42:01 2026 (serrano)                */
+;*    Last change :  Mon Sep 14 13:32:51 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the eval                                                 */
@@ -81,53 +81,94 @@
 (define-test eval
    (eval '(begin (define *v* #f) *v*)) :expected #f)
 
+(define-test eval-class
+   (eval '(define-class EvPoint (ctor) x y))
+   :expected #f)
+(define-test eval-class
+   (eval '(define-class EvWrapPoint p::EvPoint))
+   :expected #f)
+(define-test eval-class-ctor
+   (eval
+      '(define (ctor o::EvPoint)
+        (set! o.x (+fx 1 o.x))
+        o))
+   :expected 'ctor)
+(define-test eval-instantiate
+   (eval '(instantiate::EvPoint (x 34) (y 10)))
+   :expected object?)
+(define-test eval-instantiate
+   (eval '(instantiate::EvWrapPoint (p (instantiate::EvPoint (x 34) (y 10)))))
+   :expected object?)
+(define-test eval-get
+   (eval '(let ((o::EvPoint (instantiate::EvPoint (x 34) (y 10)))) o.x))
+   :expected 35)
+(define-test eval-get
+   (eval '(let ((o::EvPoint (instantiate::EvPoint (x 34) (y 10)))) (-> o x)))
+   :expected 35)
+(define-test eval-get
+   (eval '(let ((o::EvPoint (instantiate::EvPoint (x 34) (y 10))))
+           (let ((o.x 100))
+              o.x)))
+   :expected 100)
+(define-test eval-get
+   (eval '(let* ((o (instantiate::EvWrapPoint (p (instantiate::EvPoint (x 44) (y 10)))))
+                 (w::EvWrapPoint o))
+           w.p.x))
+   :expected 45)
 
-(define-test '|fib| (eval '(letrec ((fib (lambda (x)
-				       (if (<fx x 2)
-					   1
-					   (+fx (fib (-fx x 1))
-					      (fib (-fx x 2)))))))
-		       (fib 20))) :expected
-      10946)
-(define-test '|args.1| ((eval '(lambda (a b c d e f g h)
+(define-test eval-set
+   (eval '(let ((o::EvPoint (instantiate::EvPoint (x 34) (y 10))))
+           (set! o.y (+fx o.x 10))
+           o.y))
+   :expected 45)
+
+(define-test eval-fun
+   (eval '(letrec ((fib (lambda (x)
+                           (if (<fx x 2)
+                               1
+                               (+fx (fib (-fx x 1))
+                                  (fib (-fx x 2)))))))
+           (fib 20))) :expected
+   10946)
+(define-test eval-args ((eval '(lambda (a b c d e f g h)
 			   (+ a b c d e f g h)))
 		   1 2 3 4 5 6 7 8) :expected
       
       36)
-(define-test '|args.2| ((eval '(lambda (a b c d e f g . h)
+(define-test eval-args ((eval '(lambda (a b c d e f g . h)
 			   (+ a b c d e f g (apply + h))))
 		   1 2 3 4 5 6 7 8 9) :expected
       45)
-(define-test '|args.3| (let ((foo (lambda (a b c d e f g h)
+(define-test eval-args (let ((foo (lambda (a b c d e f g h)
 				(+ a b c d e f g h))))
 		     (eval `(,foo 1 2 3 4 5 6 7 8))) :expected
       36)
-(define-test '|args.4| (let ((foo (lambda (a b c d e f g . h)
+(define-test eval-args (let ((foo (lambda (a b c d e f g . h)
 				(+ a b c d e f g (apply + h)))))
 		     (eval `(,foo 1 2 3 4 5 6 7 8 9))) :expected
       45)
-(define-test '|if.1| (eval '(if #t #t #f)) :expected #t)
-(define-test '|if.2| (eval '(let ((if (lambda (x y z) z))) (if #t #t #f))) :expected #f)
-(define-test '|set!.2| (eval '(begin (bar) *f*)) :expected 7)
-(define-test '|set!.3| (begin (eval '(define (foo1 x) (set! bar1 x) bar1))
+(define-test eval-if (eval '(if #t #t #f)) :expected #t)
+(define-test eval-if  (eval '(let ((if (lambda (x y z) z))) (if #t #t #f))) :expected #f)
+(define-test eval-set (eval '(begin (bar) *f*)) :expected 7)
+(define-test eval-set (begin (eval '(define (foo1 x) (set! bar1 x) bar1))
 			 (eval '(define bar1 6))
 			 (eval '(foo1 1))) :expected
       1)
-(define-test '|variable| (eval '(procedure? read)) :expected #t)
-(define-test '|-4 args| (eval '(let ((foo  (lambda  (a b c . d) d)))
+(define-test eval-var (eval '(procedure? read)) :expected #t)
+(define-test eval-varargs (eval '(let ((foo  (lambda  (a b c . d) d)))
 			   (car (list (foo 1 2 3 4))))) :expected
       '(4))
-(define-test '|4 args| (eval '(let ((foo  (lambda  (a b c d) (+ a b c d))))
+(define-test eval-varargs (eval '(let ((foo  (lambda  (a b c d) (+ a b c d))))
 			  (+ 0 (foo 1 2 3 4)))) :expected
       10)
-(define-test '|5 args| (eval '(let ((foo (lambda (a b c d e) (+ a b c d e))))
+(define-test eval-fxargs (eval '(let ((foo (lambda (a b c d e) (+ a b c d e))))
 			  (+ (foo 1 2 3 4 5) 0))) :expected
       15)
-(define-test '|-5 args| (eval '(let ((foo (lambda (a b c d . e)
+(define-test eval-varargs (eval '(let ((foo (lambda (a b c d . e)
 					(+ a b c d (car e)))))
 			   (+ 0 (foo 1 2 3 4 5)))) :expected
       15)
-(define-test '|with-exception-handler.1|
+(define-test eval-with-exception-handler
       (eval '(bind-exit (exit)
 	      (with-exception-handler
 		 (lambda (e)
@@ -135,7 +176,7 @@
 		 (lambda ()
 		    (car 1))))) :expected
       1)
-(define-test '|with-exception-handler.1b|
+(define-test eval-with-exception-handler
       (eval '(bind-exit (exit)
 	      (with-exception-handler
 		 (lambda (e)
@@ -143,7 +184,7 @@
 		 (lambda ()
 		    (car 1))))) :expected
       1)
-(define-test '|with-exception-handler.2|
+(define-test eval-with-exception-handler
       (eval '(bind-exit (exit)
 	      (with-exception-handler
 		 (lambda (e)
@@ -152,70 +193,70 @@
 		 (lambda ()
 		    (car 1))))) :expected
       1)
-(define-test '|try.1| (eval '(try (car 1) (lambda (escape proc mes obj) (escape 1)))) :expected
+(define-test eval-try (eval '(try (car 1) (lambda (escape proc mes obj) (escape 1)))) :expected
       1)
-(define-test '|try.1b| (eval '(try (car 1) (lambda (escape proc mes obj) (escape 1)))) :expected
+(define-test eval-try (eval '(try (car 1) (lambda (escape proc mes obj) (escape 1)))) :expected
       1)
-(define-test '|try.2| (eval '(try (car 1) (lambda (escape proc mes obj) (escape 1) (print "foo")))) :expected
+(define-test eval-try (eval '(try (car 1) (lambda (escape proc mes obj) (escape 1) (print "foo")))) :expected
       1)
-(define-test '|funcall.0| (eval '(let ((f (lambda () 0))) (f))) :expected 0)
-(define-test '|funcall.1| (eval '(let ((f (lambda (a) a))) (f 1))) :expected 1)
-(define-test '|funcall.2| (eval '(let ((f (lambda (a b) (+ a b)))) (f 1 1))) :expected 2)
-(define-test '|funcall.3| (eval '(let ((f (lambda (a b c) (+ a b c))))
+(define-test eval-funcall (eval '(let ((f (lambda () 0))) (f))) :expected 0)
+(define-test eval-funcall (eval '(let ((f (lambda (a) a))) (f 1))) :expected 1)
+(define-test eval-funcall (eval '(let ((f (lambda (a b) (+ a b)))) (f 1 1))) :expected 2)
+(define-test eval-funcall (eval '(let ((f (lambda (a b c) (+ a b c))))
 			     (f 0 1 2))) :expected
       3)
-(define-test '|funcall.4| (eval '(let ((f (lambda (a b c d) (+ a b c d))))
+(define-test eval-funcall (eval '(let ((f (lambda (a b c d) (+ a b c d))))
 			     (f 0 1 2 1))) :expected
       4)
-(define-test '|funcall.5| (eval '(let ((f (lambda (a b c d e) (+ a b c d e))))
+(define-test eval-funcall (eval '(let ((f (lambda (a b c d e) (+ a b c d e))))
 			     (f 1 -1 2 3 0))) :expected
       5)
-(define-test '|funcall.-1| (eval '(let ((f (lambda f f))) (f))) :expected '())
-(define-test '|funcall.-1| (eval '(let ((f (lambda f f))) (f 1 2 3))) :expected '(1 2 3))
-(define-test '|cnst.1| (eval '(cons 1 2)) :expected (cons 1 2))
-(define-test '|cnst.2| (eval '(vector 1 2)) :expected '#(1 2))
-(define-test '|global variable.1| (eval '(begin (define (foo11 x) bar11)
+(define-test eval-funcall  (eval '(let ((f (lambda f f))) (f))) :expected '())
+(define-test eval-funcall  (eval '(let ((f (lambda f f))) (f 1 2 3))) :expected '(1 2 3))
+(define-test eval-cnst (eval '(cons 1 2)) :expected (cons 1 2))
+(define-test eval-cnst (eval '(vector 1 2)) :expected '#(1 2))
+(define-test eval-global (eval '(begin (define (foo11 x) bar11)
 				     (define bar11 4)
 				     (foo11 5))) :expected
       4)
-(define-test '|global variable.2| (eval '(begin (define (foo22 x) (set! bar22 x))
+(define-test eval-global (eval '(begin (define (foo22 x) (set! bar22 x))
 				     (define bar22 5)
 				     (foo22 4)
 				     bar22)) :expected
       4)
-(define-test '|inline| (collect-to zero? (genum 10) '()) :expected '(9 8 7 6 5 4 3 2 1))
-(define-test '|export-export| (eval 'gee) :expected gee)
-(define-test '|eval.cnst| (eval 4) :expected 4)
-(define-test '|eval.cnst| (eval ''foo) :expected 'foo)
-(define-test '|eval.cnst| (eval '(quote (foo bar))) :expected '(foo bar))
-(define-test '|eval.cnst| (eval '(quote #(foo bar))) :expected '#(foo bar))
-(define-test '|eval.begin| (eval '(begin)) :expected #unspecified)
-(define-test '|eval.begin| (eval '(begin 1)) :expected 1)
-(define-test '|eval.begin| (eval '(begin 1 2)) :expected 2)
-(define-test '|eval.var0| (eval '((lambda (x) x) 1)) :expected 1)
-(define-test '|eval.var1| (eval '((lambda (x y) y) 1 2)) :expected 2)
-(define-test '|eval.var2| (eval '((lambda (x y z) z) 1 2 3)) :expected 3)
-(define-test '|eval.var3| (eval '((lambda (x y z t) t) 1 2 3 4)) :expected 4)
-(define-test '|eval.var4| (eval '((lambda (x y z t u) u) 1 2 3 4 5)) :expected 5)
-(define-test '|eval.var5| (eval '((lambda (x y z t u v) v) 1 2 3 4 5 6)) :expected 6)
-(define-test '|eval.set0| (eval '((lambda (x) (set! x (- x)) x) 1)) :expected -1)
-(define-test '|eval.set1| (eval '((lambda (x y) (set! y (- y)) y) 1 2)) :expected -2)
-(define-test '|eval.set2| (eval '((lambda (x y z) (set! z (- z)) z) 1 2 3)) :expected -3)
-(define-test '|eval.set3| (eval '((lambda (x y z t) (set! t (- t)) t) 1 2 3 4)) :expected -4)
-(define-test '|eval.set4| (eval '((lambda (x y z t u) (set! u (- u)) u) 1 2 3 4 5)) :expected -5)
-(define-test '|eval.set5| (eval '((lambda (x y z t u v) (set! v (- v)) v) 1 2 3 4 5 6)) :expected -6)
-(define-test '|eval.global| (eval '(begin (define *eval-glo* 0)
+(define-test eval-inline (collect-to zero? (genum 10) '()) :expected '(9 8 7 6 5 4 3 2 1))
+(define-test eval-export (eval 'gee) :expected gee)
+(define-test eval.cnst (eval 4) :expected 4)
+(define-test eval.cnst (eval ''foo) :expected 'foo)
+(define-test eval.cnst (eval '(quote (foo bar))) :expected '(foo bar))
+(define-test eval.cnst (eval '(quote #(foo bar))) :expected '#(foo bar))
+(define-test eval.begin (eval '(begin)) :expected #unspecified)
+(define-test eval.begin (eval '(begin 1)) :expected 1)
+(define-test eval.begin (eval '(begin 1 2)) :expected 2)
+(define-test eval.var0 (eval '((lambda (x) x) 1)) :expected 1)
+(define-test eval.var1 (eval '((lambda (x y) y) 1 2)) :expected 2)
+(define-test eval.var2 (eval '((lambda (x y z) z) 1 2 3)) :expected 3)
+(define-test eval.var3 (eval '((lambda (x y z t) t) 1 2 3 4)) :expected 4)
+(define-test eval.var4 (eval '((lambda (x y z t u) u) 1 2 3 4 5)) :expected 5)
+(define-test eval.var5 (eval '((lambda (x y z t u v) v) 1 2 3 4 5 6)) :expected 6)
+(define-test eval.set0 (eval '((lambda (x) (set! x (- x)) x) 1)) :expected -1)
+(define-test eval.set1 (eval '((lambda (x y) (set! y (- y)) y) 1 2)) :expected -2)
+(define-test eval.set2 (eval '((lambda (x y z) (set! z (- z)) z) 1 2 3)) :expected -3)
+(define-test eval.set3 (eval '((lambda (x y z t) (set! t (- t)) t) 1 2 3 4)) :expected -4)
+(define-test eval.set4 (eval '((lambda (x y z t u) (set! u (- u)) u) 1 2 3 4 5)) :expected -5)
+(define-test eval.set5 (eval '((lambda (x y z t u v) (set! v (- v)) v) 1 2 3 4 5 6)) :expected -6)
+(define-test eval.global (eval '(begin (define *eval-glo* 0)
 			       (set! *eval-glo* 1)
 			       *eval-glo*)) :expected
       1)
-(define-test '|eval.global| (procedure? (eval 'cos)) :expected #t)
-(define-test '|eval.cond| (eval '((lambda (x) (if (< x 1) 5 6)) 1)) :expected 6)
-(define-test '|eval.cond| (eval '((lambda (x) (if (< x 1) 5 6)) 0)) :expected 5)
-(define-test '|eval.cond| (eval '((lambda (x) (begin (set! x 4) (set! x 5) x)) 1)) :expected 5)
-(define-test '|eval.define| (eval '(begin (define (ffoo x) x) (ffoo 3))) :expected 3)
-(define-test '|eval.define| (eval '(begin (define vvar (ffoo 4)) vvar)) :expected 4)
-(define-test '|eval.bind-exit1| (eval '(+ 1 (bind-exit (exit) (exit 3) 14))) :expected 4)
-(define-test '|eval bind-exit.2| (eval
+(define-test eval.global (procedure? (eval 'cos)) :expected #t)
+(define-test eval.cond (eval '((lambda (x) (if (< x 1) 5 6)) 1)) :expected 6)
+(define-test eval.cond (eval '((lambda (x) (if (< x 1) 5 6)) 0)) :expected 5)
+(define-test eval.cond (eval '((lambda (x) (begin (set! x 4) (set! x 5) x)) 1)) :expected 5)
+(define-test eval.define (eval '(begin (define (ffoo x) x) (ffoo 3))) :expected 3)
+(define-test eval.define (eval '(begin (define vvar (ffoo 4)) vvar)) :expected 4)
+(define-test eval.bind-exit (eval '(+ 1 (bind-exit (exit) (exit 3) 14))) :expected 4)
+(define-test eval.bind-exit (eval
 			       '(let ((str #u"foo")
 				      (ht (cons 1 2)))
 				 (bind-exit (break)
@@ -225,81 +266,82 @@
 				       (loop)))
 				 (car ht))) :expected
       2)
-(define-test '|eval.unwind-protext| (eval '(let ((x 0))
+(define-test eval.unwind-protext (eval '(let ((x 0))
 				       (unwind-protect
 					  (set! x 10)
 					  (set! x 1))
 				       x)) :expected
       1)
-(define-test '|funcall.a| (eval '((lambda x x) 1)) :expected '(1))
-(define-test '|funcall.b| (eval '((lambda x x) 1 2)) :expected '(1 2))
-(define-test '|funcall.c| (eval '((lambda (x . y) (cons x y)) 1)) :expected '(1))
-(define-test '|funcall.d| (eval '((lambda (x . y) (cons x y)) 1 2)) :expected '(1 2))
-(define-test '|funcall.e| (eval '((lambda (x y . z) (cons* x y z)) 1 2)) :expected '(1 2))
-(define-test '|funcall.f| (eval '((lambda (x y . z) (cons* x y z)) 1 2 3)) :expected '(1 2 3))
-(define-test '|funcall.g| (eval '((lambda (x y z . t) (cons* x y z t)) 1 2 3)) :expected
+(define-test funcall (eval '((lambda x x) 1)) :expected '(1))
+(define-test funcall (eval '((lambda x x) 1 2)) :expected '(1 2))
+(define-test funcall (eval '((lambda (x . y) (cons x y)) 1)) :expected '(1))
+(define-test funcall (eval '((lambda (x . y) (cons x y)) 1 2)) :expected '(1 2))
+(define-test funcall (eval '((lambda (x y . z) (cons* x y z)) 1 2)) :expected '(1 2))
+(define-test funcall (eval '((lambda (x y . z) (cons* x y z)) 1 2 3)) :expected '(1 2 3))
+(define-test funcall (eval '((lambda (x y z . t) (cons* x y z t)) 1 2 3)) :expected
       '(1 2 3))
-(define-test '|funcall.h| (eval '((lambda (x y z . t) (cons* x y z t)) 21 22 23 24)) :expected
+(define-test funcall (eval '((lambda (x y z . t) (cons* x y z t)) 21 22 23 24)) :expected
       '(21 22 23 24))
-(define-test '|funcall.i| (eval '((lambda (x y z t . u)
+(define-test funcall (eval '((lambda (x y z t . u)
 				(cons* x y z t u)) 11 12 13 14)) :expected
       '(11 12 13 14))
-(define-test '|funcall.j| (eval '((lambda (x y z t . u) (cons* x y z t u)) 'a 'b 'c 'd 'e)) :expected
+(define-test funcall (eval '((lambda (x y z t . u) (cons* x y z t u)) 'a 'b 'c 'd 'e)) :expected
       '(a b c d e))
-(define-test '|funcall.k| (eval '((lambda (x y z t u . v) (cons* x y z t u v)) 1 2 3 4 5)) :expected
+(define-test funcall (eval '((lambda (x y z t u . v) (cons* x y z t u v)) 1 2 3 4 5)) :expected
       '(1 2 3 4 5))
-(define-test '|funcall.l| (eval '((lambda (x y z t u . v) (cons* x y z t u v)) 1 2 3 4 5 6)) :expected
+(define-test funcall (eval '((lambda (x y z t u . v) (cons* x y z t u v)) 1 2 3 4 5 6)) :expected
       '(1 2 3 4 5 6))
-(define-test '|let.1| (eval '(let () (+ 1 2))) :expected 3)
-(define-test '|let.2| (eval '(let ((x 3)) x)) :expected 3)
-(define-test '|let.3| (eval '(let ((x 3) (y 6)) (+ y x))) :expected 9)
-(define-test '|let.4| (eval '(let ((x 3) y) y)) :expected #unspecified)
-(define-test '|let.5| (eval '(let ((x 5)) (let ((x 3) (y x)) y))) :expected 5)
-(define-test '|let.6| (eval '(let ((a 0)) (let ((x a)) (let ((x x) (y x)) y)))) :expected 0)
-(define-test '|let.7| (eval '(let ((a 0)) (let ((x a)) (let ((x a) (y x)) y)))) :expected 0)
-(define-test '|let.8| (eval '(let ((a 0)) (let ((x 4)) (let ((x a) (y x)) y)))) :expected 4)
-(define-test '|let.9| (eval '(let ((a 0)) (let ((x a)) (let ((x a) (y x)) y)))) :expected 0)
-(define-test '|let.10| (eval '(let ((a 0)) (let ((x a)) (let ((x a) (y a)) y)))) :expected 0)
-(define-test '|let.11| (eval '(let loop ((x 3) (y 6)) (+ y x))) :expected 9)
-(define-test '|let.11| (eval '(let ((x (lambda (y) (+ 1 y)))) (x 10))) :expected 11)
-(define-test '|let.12| (eval '(let ((x 0)) (define (inner-foo) x) (inner-foo))) :expected 0)
-(define-test '|let*.1| (eval '(let* ((x 3)) x)) :expected 3)
-(define-test '|let*.2| (eval '(let* ((x 3) (y 6)) (+ y x))) :expected 9)
-(define-test '|let*.3| (eval '(let* ((x 3) y) y)) :expected #unspecified)
-(define-test '|let*.4| (eval '(let* ((x 5)) (let* ((x 3) (y x)) y))) :expected 3)
-(define-test '|let*.5| (eval '(let ((a 0)) (let ((x a)) (let* ((x x) (y x)) y)))) :expected 0)
-(define-test '|let*.6| (eval '(let ((a 0)) (let ((x 3)) (let* ((x a) (y x)) y)))) :expected 0)
-(define-test '|let*.7| (eval '(let ((a 0)) (let ((x 4)) (let* ((x a) (y x)) y)))) :expected 0)
-(define-test '|let*.8| (eval '(let ((a 0)) (let ((x a)) (let* ((x a) (y x)) y)))) :expected 0)
-(define-test '|let*.9| (eval '(let ((a 0)) (let ((x a)) (let* ((x a) (y a)) y)))) :expected 0)
-(define-test '|let*.10| (eval '(let* ((x (lambda (y) (+ 1 y)))) (x 10))) :expected 11)
-(define-test '|let*.11| (eval '(let* ((bar 3)
+(define-test let (eval '(let () (+ 1 2))) :expected 3)
+(define-test let (eval '(let ((x 3)) x)) :expected 3)
+(define-test let (eval '(let ((x 3) (y 6)) (+ y x))) :expected 9)
+(define-test let (eval '(let ((x 3) y) y)) :expected #unspecified)
+(define-test let (eval '(let ((x 5)) (let ((x 3) (y x)) y))) :expected 5)
+(define-test let (eval '(let ((a 0)) (let ((x a)) (let ((x x) (y x)) y)))) :expected 0)
+(define-test let (eval '(let ((a 0)) (let ((x a)) (let ((x a) (y x)) y)))) :expected 0)
+(define-test let (eval '(let ((a 0)) (let ((x 4)) (let ((x a) (y x)) y)))) :expected 4)
+(define-test let (eval '(let ((a 0)) (let ((x a)) (let ((x a) (y x)) y)))) :expected 0)
+(define-test let0 (eval '(let ((a 0)) (let ((x a)) (let ((x a) (y a)) y)))) :expected 0)
+(define-test let (eval '(let loop ((x 3) (y 6)) (+ y x))) :expected 9)
+(define-test let (eval '(let ((x (lambda (y) (+ 1 y)))) (x 10))) :expected 11)
+(define-test let (eval '(let ((x 0)) (define (inner-foo) x) (inner-foo))) :expected 0)
+(define-test let* (eval '(let* ((x 3)) x)) :expected 3)
+(define-test let* (eval '(let* ((x 3) (y 6)) (+ y x))) :expected 9)
+(define-test let* (eval '(let* ((x 3) y) y)) :expected #unspecified)
+(define-test let* (eval '(let* ((x 5)) (let* ((x 3) (y x)) y))) :expected 3)
+(define-test let* (eval '(let ((a 0)) (let ((x a)) (let* ((x x) (y x)) y)))) :expected 0)
+(define-test let* (eval '(let ((a 0)) (let ((x 3)) (let* ((x a) (y x)) y)))) :expected 0)
+(define-test let* (eval '(let ((a 0)) (let ((x 4)) (let* ((x a) (y x)) y)))) :expected 0)
+(define-test let* (eval '(let ((a 0)) (let ((x a)) (let* ((x a) (y x)) y)))) :expected 0)
+(define-test let* (eval '(let ((a 0)) (let ((x a)) (let* ((x a) (y a)) y)))) :expected 0)
+(define-test let*0 (eval '(let* ((x (lambda (y) (+ 1 y)))) (x 10))) :expected 11)
+(define-test let*1 (eval '(let* ((bar 3)
 				 (foo (let loop ((x 1) (y 2))
 					 (+ (- y x) bar)))
 				 (hux (- foo bar)))
 			   hux)) :expected
       1)
-(define-test '|letrec.1| (eval '(letrec ((x 3)) x)) :expected 3)
-(define-test '|letrec.2| (eval '(letrec ((x 3) (y 6)) y)) :expected 6)
-(define-test '|letrec.3| (eval '(letrec ((x 3) (y 6)) (+ y x))) :expected 9)
-(define-test '|letrec.4| (eval '(letrec ((x 3) y) y)) :expected #unspecified)
-(define-test '|letrec.5| (eval '(letrec ((x 5)) (letrec ((x 3) (y x)) y))) :expected #unspecified)
-(define-test '|letrec.6| (eval '(letrec ((x (lambda (y) (+ 1 y)))) (x 10))) :expected 11)
-(define-test '|letrec.7| (eval '(letrec ((f1 (lambda (x)
+
+(define-test letrec (eval '(letrec ((x 3)) x)) :expected 3)
+(define-test letrec (eval '(letrec ((x 3) (y 6)) y)) :expected 6)
+(define-test letrec (eval '(letrec ((x 3) (y 6)) (+ y x))) :expected 9)
+(define-test letrec (eval '(letrec ((x 3) y) y)) :expected #unspecified)
+(define-test letrec (eval '(letrec ((x 5)) (letrec ((x 3) (y x)) y))) :expected #unspecified)
+(define-test letrec (eval '(letrec ((x (lambda (y) (+ 1 y)))) (x 10))) :expected 11)
+(define-test letrec (eval '(letrec ((f1 (lambda (x)
 					   (if (> x 1) (f2 (- x 1)) x)))
 				    (f2 (lambda (x)
 					   (if (> x 1) (f1 (- x 1)) x))))
 			    (- (f1 10) (f2 10)))) :expected
       0)
-(define-test '|letrec.8| (eval '(letrec ((f (lambda (x) (+ 1 x)))
+(define-test letrec (eval '(letrec ((f (lambda (x) (+ 1 x)))
 				    (g (lambda (x) (+ 2 x))))
 			    (f 3))) :expected
       4)
-(define-test '|letrec.9| (eval '(letrec ((f (lambda (x) (+ 1 x)))
+(define-test letrec (eval '(letrec ((f (lambda (x) (+ 1 x)))
 				    (g (lambda (x) (+ 2 x))))
 			    (g 3))) :expected
       5)
-(define-test '|letrec.10| (eval '(let* ((g 0)
+(define-test let* (eval '(let* ((g 0)
 				   (foo (lambda (a) (set! g (* 2 a)))))
 			     (let loop ((i 0))
 				(if (=fx i 10)
@@ -307,9 +349,10 @@
 				    (loop (+fx i 1))))
 			     g)) :expected
       20)
-(define-test '|letrec*.1| (eval '(letrec* ((x 1)) x)) :expected 1)
-(define-test '|letrec*.2| (eval '(letrec* ((x 1) (y 2)) (+ x y))) :expected 3)
-(define-test '|tail.0| (eval '(let ((x 100000))
+(define-test letrec* (eval '(letrec* ((x 1)) x)) :expected 1)
+(define-test letrec* (eval '(letrec* ((x 1) (y 2)) (+ x y))) :expected 3)
+
+(define-test tail.0 (eval '(let ((x 100000))
 			  (letrec ((loop (lambda ()
 					    (if (= x 0)
 						(list x)
@@ -318,155 +361,155 @@
 						   (loop))))))
 			     (loop)))) :expected
       '(0))
-(define-test '|tail.1| (eval '(letrec ((loop (lambda (x)
+(define-test tail.1 (eval '(letrec ((loop (lambda (x)
 					   (if (= x 0)
 					       (list x)
 					       (loop (- x 1))))))
 			  (loop 10000))) :expected
       '(0))
-(define-test '|tail.2| (eval '(letrec ((loop (lambda (x y)
+(define-test tail.2 (eval '(letrec ((loop (lambda (x y)
 					   (if (= x 0)
 					       (list y)
 					       (loop (- x 1) (+ y 1))))))
 			  (loop 10000 0))) :expected
       '(10000))
-(define-test '|tail.3| (eval '(letrec ((loop (lambda (x y z)
+(define-test tail.3 (eval '(letrec ((loop (lambda (x y z)
 					   (if (= x 0)
 					       (list y z)
 					       (loop (- x 1) (+ y 1) (+ z 1))))))
 			  (loop 10000 0 0))) :expected
       '(10000 10000))
-(define-test '|tail.4| (eval '(letrec ((loop (lambda (x y z t)
+(define-test tail.4 (eval '(letrec ((loop (lambda (x y z t)
 					   (if (= x 0)
 					       (list y z t)
 					       (loop (- x 1) (+ y 1) (+ z 1) (+ t 1))))))
 			  (loop 10000 0 0 0))) :expected
       '(10000 10000 10000))
-(define-test '|tail.5| (eval '(letrec ((loop (lambda (x y z t u)
+(define-test tail.5 (eval '(letrec ((loop (lambda (x y z t u)
 					   (if (= x 0)
 					       (list y z t u)
 					       (loop (- x 1) (+ y 1) (+ z 1) (+ t 1) (+ u 1))))))
 			  (loop 10000 0 0 0 0))) :expected
       '(10000 10000 10000 10000))
-(define-test '|tail.-1| (eval '(letrec ((loop (lambda x
+(define-test tail.-1 (eval '(letrec ((loop (lambda x
 					    (if (= (car x) 0)
 						x
 						(loop (- (car x) 1))))))
 			   (loop 10000))) :expected
       '(0))
-(define-test '|tail.-2| (eval '(letrec ((loop (lambda (x . y)
+(define-test tail.-2 (eval '(letrec ((loop (lambda (x . y)
 					    (if (= x 0)
 						y
 						(loop (- x 1) (+ (car y) 1))))))
 			   (loop 10000 0))) :expected
       '(10000))
-(define-test '|tail.-3| (eval '(letrec ((loop (lambda (x y . z)
+(define-test tail.-3 (eval '(letrec ((loop (lambda (x y . z)
 					    (if (= x 0)
 						(cons y z)
 						(loop (- x 1) (+ y 1) (+ (car z) 1))))))
 			   (loop 10000 0 0))) :expected
       '(10000 10000))
-(define-test '|tail.-4| (eval '(letrec ((loop (lambda (x y z . t)
+(define-test tail.-4 (eval '(letrec ((loop (lambda (x y z . t)
 					    (if (= x 0)
 						(cons* y z t)
 						(loop (- x 1) (+ y 1) (+ z 1) (+ (car t) 1))))))
 			   (loop 10000 0 0 0))) :expected
       '(10000 10000 10000))
-(define-test '|tail.1b| (eval '(letrec ((loop (lambda (x)
+(define-test tail.1b (eval '(letrec ((loop (lambda (x)
 					    (list x))))
 			   (loop 1))) :expected
       '(1))
-(define-test '|tail.2b| (eval '(letrec ((loop (lambda (x y)
+(define-test tail.2b (eval '(letrec ((loop (lambda (x y)
 					    (list x y))))
 			   (loop 1 2))) :expected
       '(1 2))
-(define-test '|tail.3b| (eval '(letrec ((loop (lambda (x y z)
+(define-test tail.3b (eval '(letrec ((loop (lambda (x y z)
 					    (list x y z))))
 			   (loop 1 2 3))) :expected
       '(1 2 3))
-(define-test '|tail.4b| (eval '(letrec ((loop (lambda (x y z t)
+(define-test tail.4b (eval '(letrec ((loop (lambda (x y z t)
 					    (list x y z t))))
 			   (loop 1 2 3 4))) :expected '(1 2 3 4))
-(define-test '|tail.5b| (eval '(letrec ((loop (lambda (x y z t u)
+(define-test tail.5b (eval '(letrec ((loop (lambda (x y z t u)
 					    (list x y z t u))))
 			   (loop 1 2 3 4 5))) :expected
       '(1 2 3 4 5))
-(define-test '|tail.-1b| (eval '(letrec ((loop (lambda x x)))
+(define-test tail.-1b (eval '(letrec ((loop (lambda x x)))
 			    (loop 1))) :expected
       '(1))
-(define-test '|tail.-1c| (eval '(letrec ((loop (lambda x x)))
+(define-test tail.-1c (eval '(letrec ((loop (lambda x x)))
 			    (loop 1 2))) :expected
       '(1 2))
-(define-test '|tail.-2b| (eval '(letrec ((loop (lambda (x . y)
+(define-test tail.-2b (eval '(letrec ((loop (lambda (x . y)
 					     (cons x y))))
 			    (loop 1))) :expected
       '(1))
-(define-test '|tail.-2c| (eval '(letrec ((loop (lambda (x . y)
+(define-test tail.-2c (eval '(letrec ((loop (lambda (x . y)
 					     (cons x y))))
 			    (loop 1 2))) :expected
       '(1 2))
-(define-test '|tail.-2d| (eval '(letrec ((loop (lambda (x . y)
+(define-test tail.-2d (eval '(letrec ((loop (lambda (x . y)
 					     (cons x y))))
 			    (loop 1 2 3))) :expected
       '(1 2 3))
-(define-test '|tail.-3b| (eval '(letrec ((loop (lambda (x y . z)
+(define-test tail.-3b (eval '(letrec ((loop (lambda (x y . z)
 					     (cons* x y z))))
 			    (loop 1 2))) :expected
       '(1 2))
-(define-test '|tail.-3c| (eval '(letrec ((loop (lambda (x y . z)
+(define-test tail.-3c (eval '(letrec ((loop (lambda (x y . z)
 					     (cons* x y z))))
 			    (loop 1 2 3))) :expected
       '(1 2 3))
-(define-test '|tail.-3d| (eval '(letrec ((loop (lambda (x y . z)
+(define-test tail.-3d (eval '(letrec ((loop (lambda (x y . z)
 					     (cons* x y z))))
 			    (loop 1 2 3 4))) :expected
       '(1 2 3 4))
-(define-test '|tail.-4b| (eval '(letrec ((loop (lambda (x y z . t)
+(define-test tail.-4b (eval '(letrec ((loop (lambda (x y z . t)
 					     (cons* x y z t))))
 			    (loop 1 2 3))) :expected
       '(1 2 3))
-(define-test '|tail.-4c| (eval '(letrec ((loop (lambda (x y z . t)
+(define-test tail.-4c (eval '(letrec ((loop (lambda (x y z . t)
 					     (cons* x y z t))))
 			    (loop 1 2 3 4))) :expected
       '(1 2 3 4))
-(define-test '|tail.-4d| (eval '(letrec ((loop (lambda (x y z . t)
+(define-test tail.-4d (eval '(letrec ((loop (lambda (x y z . t)
 					     (cons* x y z t))))
 			    (loop 1 2 3 4 5))) :expected
       '(1 2 3 4 5))
-(define-test '|tail.-5b| (eval '(letrec ((loop (lambda (x y z t . u)
+(define-test tail.-5b (eval '(letrec ((loop (lambda (x y z t . u)
 					     (cons* x y z t u))))
 			    (loop 1 2 3 4))) :expected
       '(1 2 3 4))
-(define-test '|tail.-5c| (eval '(letrec ((loop (lambda (x y z t . u)
+(define-test tail.-5c (eval '(letrec ((loop (lambda (x y z t . u)
 					     (cons* x y z t u))))
 			    (loop 1 2 3 4 5))) :expected
       '(1 2 3 4 5))
-(define-test '|tail.-5d| (eval '(letrec ((loop (lambda (x y z t . u)
+(define-test tail.-5d (eval '(letrec ((loop (lambda (x y z t . u)
 					     (cons* x y z t u))))
 			    (loop 1 2 3 4 5 6))) :expected
       '(1 2 3 4 5 6))
-(define-test '|tail.error| (bind-exit (esc)
+(define-test tail.error (bind-exit (esc)
 			 (with-exception-handler
 			    (lambda (e)
 			       (esc #t))
 			    (lambda ()
 			       (eval '((begin (define (fooo x))) (fooo 3)))))) :expected
       #t)
-(define-test '|do| (eval '(do ((i 1 2) (j 0 i)) ((positive? j) j))) :expected 1)
-(define-test '|typed-indent.1| (eval '((lambda (x::int) x) 3)) :expected 3)
-(define-test '|typed-indent.2| (eval '(let ((x::int 3)) x)) :expected 3)
-(define-test '|typed-indent.3| (eval '(let* ((x::int 3) (y x)) y)) :expected 3)
-(define-test '|typed-indent.4| (eval '(letrec ((x::int 3)) x)) :expected 3)
-(define-test '|eval class.1| (eval '(evpt? (instantiate::evpt (x 20)))) :expected #t)
-(define-test '|eval class.3| (eval '(evpt? (instantiate::evpt (x 10)))) :expected #t)
-(define-test '|eval class.4| (eval '(evpt? (instantiate::evpt (x 10) (y 10)))) :expected #t)
-(define-test '|eval class.5| (eval '(evpt? #f)) :expected #f)
-(define-test '|eval class.7| (eval '(let ((p (instantiate::evpt (x 10) (y 40))))
+(define-test do (eval '(do ((i 1 2) (j 0 i)) ((positive? j) j))) :expected 1)
+(define-test typed-indent.1 (eval '((lambda (x::int) x) 3)) :expected 3)
+(define-test typed-indent.2 (eval '(let ((x::int 3)) x)) :expected 3)
+(define-test typed-indent.3 (eval '(let* ((x::int 3) (y x)) y)) :expected 3)
+(define-test typed-indent.4 (eval '(letrec ((x::int 3)) x)) :expected 3)
+(define-test evalclass.1 (eval '(evpt? (instantiate::evpt (x 20)))) :expected #t)
+(define-test evalclass.3 (eval '(evpt? (instantiate::evpt (x 10)))) :expected #t)
+(define-test evalclass.4 (eval '(evpt? (instantiate::evpt (x 10) (y 10)))) :expected #t)
+(define-test evalclass.5 (eval '(evpt? #f)) :expected #f)
+(define-test evalclass.7 (eval '(let ((p (instantiate::evpt (x 10) (y 40))))
 				(with-access::evpt p (x y)
 				   (set! x (+ x y))
 				   x))) :expected
       50)
-(define-test '|eval class.8| (eval '(let ((p (instantiate::evpt (x 10) (y 40))))
+(define-test evalclass.8 (eval '(let ((p (instantiate::evpt (x 10) (y 40))))
 				(with-access::evpt p (x y)
 				   (cond
 				      ((and (eq? x 10))
@@ -474,7 +517,7 @@
 				      (else
 				       20))))) :expected
       10)
-(define-test '|eval class.9| (eval '(let ((p (instantiate::evpt (x 10) (y 40))))
+(define-test evalclass.9 (eval '(let ((p (instantiate::evpt (x 10) (y 40))))
 				(with-access::evpt p (x y)
 				   (cond
 				      ((and (eq? y 40))
@@ -482,71 +525,71 @@
 				      (else
 				       20))))) :expected
       10)
-(define-test '|eval class.10|  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
+(define-test evalclass.10  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
 				  (with-access::evpt i (y)
 				     (let ((x 100))
 					x)))) :expected
       100)
-(define-test '|eval class.11|  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
+(define-test evalclass.11  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
 				  (with-access::evpt i (x)
 				     (let ((x 100))
 					x)))) :expected
       100)
-(define-test '|eval class.12|  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
+(define-test evalclass.12  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
 				  (with-access::evpt i (x)
 				     (let ((x 100))
 					x)
 				     x))) :expected
       10)
-(define-test '|eval class.13|  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
+(define-test evalclass.13  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
 				  (with-access::evpt i (x)
 				     (list x (let ((x 100)) x) x)))) :expected
       '(10 100 10))
-(define-test '|eval class.14|  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
+(define-test evalclass.14  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
 				  (let ((x 20))
 				     (with-access::evpt i (y)
 					x)))) :expected
       '20)
-(define-test '|eval class.15|  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
+(define-test evalclass.15  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
 				  (let ((x 20))
 				     (with-access::evpt i (x)
 					x)))) :expected
       '10)
-(define-test '|eval class.16|  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
+(define-test evalclass.16  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
 				  (with-access::evpt i (x y)
 				     (let ((x 20))
 					(set! x y)
 					x)))) :expected
       '40)
-(define-test '|eval class.17|  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
+(define-test evalclass.17  (eval '(let ((i (instantiate::evpt (x 10) (y 40))))
 				  (with-access::evpt i (x y)
 				     (set! x y)
 				     x))) :expected
       '40)
-(define-test '|eval duplicate| (eval '(let* ((i (instantiate::evpt (x 10) (y 40)))
+(define-test evalduplicate (eval '(let* ((i (instantiate::evpt (x 10) (y 40)))
 					(j (duplicate::evpt i (x 11))))
 				  (with-access::evpt j (x y)
 				     (+ x y)))) :expected
       51)
-(define-test '|eval define.1| (eval '(begin
+(define-test eval-define (eval '(begin
 				 (define (inner.1 x)
 				    (define (%inner.1 x) x)
 				    (%inner.1 x))
 				 (inner.1 34))) :expected
       34)
-(define-test '|eval define.2| (eval '(begin
+(define-test eval-define (eval '(begin
 				 (define (inner.2 x)
 				    (define (%inner.2) x)
 				    (%inner.2))
 				 (inner.2 35))) :expected
       35)
-(define-test '|eval define.3| (eval '(begin
+(define-test eval-define (eval '(begin
 				 (define (inner.3 x)
 				    (define (%inner.3) x)
 				    (%inner.3))
 				 (+ (inner.3 35) (inner.3 15)))) :expected
       50)
-(define-test '|eval define.4| (let ((p (open-output-string)))
+(define-test eval-define (let ((p (open-output-string)))
 			    (with-error-to-port p
   			       (lambda ()
 				  (eval `(begin
@@ -558,7 +601,7 @@
 							 (glop))
 						      1)))
 					    (barev)))))) :expected 1)
-(define-test '|eval define.5|
+(define-test eval-define
       (eval '(define <HOPIMPRESS:ROW>
 	      (lambda args3633
 		 (let ((id #f)
@@ -582,13 +625,95 @@
 				       '()))))
 		       (loop3634 args3633)))))) :expected
       '<HOPIMPRESS:ROW>)
-(define-test '|eval flonum|
+(define-test eval-flonum
       (eval '(let  ((add 1.3))
 	      (let ((toadd  (*fl add 1e-4)))
 		 (lambda (dum) (set! add 1.0))
 		 (>fl toadd 0.0)))) :expected
       #t)
 
+
+(define-test repl
+   (let ((res #f))
+      (with-output-to-string
+         (lambda ()
+            (with-input-from-string "(+ 3 4)"
+               (lambda ()
+                  (set! res (repl))))))
+      res)
+   :expected 7)
+
+(define-test quit
+   (let ((res #f))
+      (with-output-to-string
+         (lambda ()
+            (with-input-from-string "(+ 1 2) (quit 30) (car '(1 2))"
+               (lambda ()
+                  (set! res (repl))))))
+      res)
+   :expected 30)
+
+(define-test get-repl-error-notifier
+   (get-repl-error-notifier)
+   :expected #f)
+
+(define-test set-repl-error-notifier!
+   (begin
+      (set-repl-error-notifier! exception-notify)
+      (get-repl-error-notifier))
+   :expected procedure?)
+
+(define-test get-prompter
+   (get-prompter)
+   :expected procedure?)
+
+(define-test set-prompter!
+   (begin
+      (set-prompter! (lambda (level) (format "~a>" level)))
+      (get-prompter))
+   :expected procedure?)
+
+(define-test set-repl-printer!
+   (with-output-to-string
+      (lambda ()
+         (set-repl-printer!
+            (lambda (v::obj p::output-port) (fprintf p "=> ~a" v)))
+         (with-input-from-string "(car '(foo))"
+            (lambda ()
+               (repl)))))
+   :expected "\n=> foo\n\n")
+
+(define-test native-repl-printer
+   (native-repl-printer)
+   :expected procedure?)
+
+(define-test expand
+   (expand '(cond ((> x 1) 24) (else 26)))
+   :expected '(if (> x 1) 24 26))
+
+(define-test expand-once
+   (expand-once '(cond ((> x 1) (cond (z 24) (else 32))) (else 26)))
+   :expected '(if (> x 1) (cond (z 24) (else 32)) (cond (else 26))))
+
+(define-test load
+   (with-output-to-string
+      (lambda ()
+         (load "misc/load.bgl")))
+   :expected "x\nz\n35\n11\n")
+
+(define-test loadq
+   (loadq "misc/load.bgl")
+   :expected "misc/load.bgl")
+
+(define-test loadq
+   (with-output-to-string
+      (lambda ()
+         (loadq "misc/load.bgl")))
+   :expected "")
+
+(define-test *load-path*
+   *load-path*
+   :expected list?)
 
 ;* (define-test '|set!.1| (begin (eval '(set! *g* #t)) (foo)) :expected #t) */
 ;* (define-test '|apply import| (begin (eval '(define eval-fun (lambda () #t))) */

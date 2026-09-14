@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Sat Jul  4 10:12:30 2026 (serrano)                */
+/*    Last change :  Mon Sep 14 08:29:09 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -1736,7 +1736,7 @@ public final class foreign {
    public static double RANDOMFL() {
       return (double) randg.nextDouble();
    }
-   
+
    // Open functions
    public static boolean EQ_FL(double n1, double n2) {
       return (n1 == n2);
@@ -4262,6 +4262,15 @@ public final class foreign {
       bgldynamic.abgldynamic.get().uncaught_exception_handler = hdl;
    }
 
+   public static Object BGL_ERROR_NOTIFIERS_GET() {
+      return bgldynamic.abgldynamic.get().error_notifiers;
+   }
+
+   public static Object BGL_ERROR_NOTIFIERS_SET(Object hdl) {
+      bgldynamic.abgldynamic.get().error_notifiers = hdl;
+      return BUNSPEC;
+   }
+
    public static Object BGL_INTERRUPT_NOTIFIER_GET() {
       return bgldynamic.abgldynamic.get().interrupt_notifier;
    }
@@ -6406,11 +6415,6 @@ public final class foreign {
 
    public static Object display_fixnum(bint n, output_port p) {
       p.write(Integer.toString(n.value));
-      return p;
-   }
-
-   public static Object display_flonum(real n, output_port p) {
-      p.write(Double.toString(n.value));
       return p;
    }
 

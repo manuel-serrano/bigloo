@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Ieee/flonum.scm                     */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Ieee/flonum.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Tue Jun  9 07:48:11 2026 (serrano)                */
+;*    Last change :  Mon Sep 14 08:23:25 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -735,3 +735,4 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (randomfl::double)
    ($randomfl))
+

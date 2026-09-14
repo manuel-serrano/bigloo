@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Fri Sep 11 15:10:06 2026 (serrano)                */
+;*    Last change :  Mon Sep 14 13:48:39 2026 (serrano)                */
 ;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -215,15 +215,19 @@
 		    (let ((field (find-class-field klass (car fields))))
 		       (if (class-field? field)
 			   (let ((node (make-class-field-ref
-					   field node loc tail?)))
+					   field node loc tail?))
+				 (ty (class-field-type field)))
 			      (loop node
-				 (class-exists (class-field-type field))
+				 (cond
+				    ((class? ty) ty)
+				    ((symbol? ty) (class-exists ty)))
 				 (cdr fields)))
 			   (error/source-location type
 			      (format "Class \"~a\" has no field \"~a\"" type (car fields))
 			      e
 			      loc))))
 		   (else
+		    (tprint "e=" e " fields=" fields " klass=" klass)
 		    (error/source-location (or type name)
 		       "Static type not a class" e  loc)))))
 	  (error/source-location (cadr e) "Variable unbound" e  loc))))
@@ -253,9 +257,12 @@
 				      "Field read-only"
 				      e  loc))
 			       (let ((node (make-class-field-ref
-					       field node loc tail?)))
+					       field node loc tail?))
+				     (ty (class-field-type field)))
 				  (loop node
-				     (class-exists (class-field-type field))
+				     (cond
+					((class? ty) ty)
+					((symbol? ty) (class-field-type field)))
 				     (cdr fields))))
 			   (error/source-location type
 			      (format "Class \"~a\" has no field \"~a\"" type (car fields))

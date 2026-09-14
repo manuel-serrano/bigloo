@@ -404,7 +404,6 @@ Gives the OS class (e.g. `unix`).
 
 ### os-name ###
 Gives the OS name (e.g. `Linux`).
-@end deffn
 
 ### os-arch ###
 Gives the host architecture (e.g. `i386`).
@@ -549,3 +548,151 @@ As `system` but returns a string made of the output of the
 command.
 
 
+Dynamic Load
+------------
+
+### dynamic-load ###
+<!-- [:@NoTest-C-jvm-wasm] -->
+
+Loads a shared library named `filename`. Returns the value of the
+last top-level expression.
+
+> [!IMPORTANT] The function `dynamic-load` can only be
+> used from compiled modules linked against dynamic libraries. In particular,
+> the `dynamic-load` function can be issued from the `bigloo`
+> command if and only if the option `--sharedcompiler=yes` has been
+> used when configuring Bigloo. If the `bigloo` command is not linked
+> against dynamic libraries and if `dynamic-load` is
+> required inside a read-eval-print loop (REPL) it exists a simple workaround.
+> It consists in implementing a new REPL and linking it against dynamic 
+> libraries. This can be done as:
+
+```shell
+$ cat > new-repl.scm <<EOF
+(module new-repl)
+(repl)
+EOF
+$ bigloo new-repl.scm -o new-repl
+$ new-repl
+1:=> (dynamic-load ...)
+```
+
+If `init-point` is specified and if it is a string and if the library
+defines a function named `init-point`, this function is called when
+the library is loaded. `Init-point` is a C identifier, not a Scheme
+identifier. In order to set the C name a Scheme function, use the
+extern `export` clause (see [Module 5](./module5.html). If the
+`init-point` is provided and is not a string, no initialization
+function is called after the library is loaded. If the `init-point`
+value is not provided, once the library is loaded, `dynamic-load` uses
+the Bigloo default entry point. Normally you should _not_ provide
+an `init-point` to `dynamic-load` unless you known what you are
+doing. When producing C code, to force the Bigloo compiler to emit
+such a default entry point, use the `-dload-sym` compilation option
+(see Section [Compiler Description](compiler.html)). This option is
+useless when using the JVM code generator. Let's assume a Linux system
+and two Bigloo modules. The first:
+
+```bigloo
+;; mod1.bgl
+(module mod1
+   (eval (export foo))
+   (export foo))
+
+(define (foo x)
+   (print "foo: " x))
+
+(foo 4)
+```
+
+The second:
+
+```bigloo
+;; mod2.bgl
+(module mod2
+   (import "./mod1.bgl" foo)
+   (eval (export bar))
+   (export bar))
+
+(define (bar x)
+   (print "bar: " x))
+
+(bar 5)
+```
+
+If these modules are compiled as:
+
+```shell
+$ bigloo mod1.bgl -c -o mod1.o 
+$ bigloo mod2.bgl -c -o mod2.o -dload-sym
+```
+
+Then, if a shared library is built using these two modules (note that on
+non Linux systems, a different command line is required):
+
+```shell
+$ ld -G -o lib.so mod1.o mod2.o
+```
+
+Then, `lib.so` cant be dynamically loaded and the variables it defines
+used such as :
+
+```shell
+$ bigloo -i
+(dynamic-load "lib.so")
+     => foo: 4
+       bar: 5
+1:=> (foo 6)
+     => foo: 7
+```
+
+As the example illustrates, when Bigloo modules are dynamically loaded,
+they are initialized. This initialization is ensure _only_ if
+`dynamic-load` is called with exactly one parameter. If
+`dynamic-load` is called with two parameters, it is of the
+responsibility of the program to initialize the dynamically loaded
+module before using any Scheme reference.
+
+> [!NOTE] In order to let the loaded module accesses the variables
+> defined by the loader application, special compilation flags must be
+> used (e.g., `-rdynamic` under the Linux operating
+> system). `Dynamic-load` is implemented on the top of the
+> `dlopen` facility. For more information read the `dlopen` and
+> `ld` manuals.
+
+### dynamic-unload ###
+<!-- [:@NoTest-C-jvm-wasm] -->
+On the operating system that supports this facility, unloads a shared library.
+Returns `#t` on success. Returns `#f` otherwise.
+
+### *dynamic-load-path* ###
+<!-- [:@NoTest-C-jvm-wasm] -->
+
+A list of search paths for the `dynamic-load` functions.
+
+### dynamic-load-symbol ###
+<!-- [:@NoTest-C-jvm-wasm] -->
+The function `dynamic-load-symbol` looks up for a variable in the
+dynamic library `filename`. If found, it returns a `custom`
+Bigloo object denoting that variable. Otherwise it returns `#f`.
+This function assumes that `filename` has previously been successfully
+loaded with `dynamic-load`. If not, an error is raised. The argument
+`filename` must be equal (in the sense of `string=?` to the argument
+used to load the library.
+
+The C name of the looked up variable is `name` is `module` is
+not provided. Otherwise, it is the result of calling `bigloo-module-mangle`
+with `name` and `module` as arguments.
+
+### dynamic-load-symbol-get ###
+<!-- [:@NoTest-C-jvm-wasm] -->
+The function `dynamic-load-symbol-get` returns the value of a
+dynamically loaded variable.
+
+
+### dynamic-load-symbol-set ###
+<!-- [:@NoTest-C-jvm-wasm] -->
+
+The function `dynamic-load-symbol-set` sets the value of a dynamic
+loaded variable. It assumes that the variable is writable, i.e., that
+it has not been compiled as a C constant.

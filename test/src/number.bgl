@@ -3,7 +3,7 @@
 ;*    ------------------------------------------------------------     */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Mon Jun 22 07:00:07 2026 (serrano)                */
+;*    Last change :  Mon Sep 14 13:17:34 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing numbers                                                  */
@@ -325,6 +325,7 @@
 (define-test string->number (string->number "-00000000000000000123") :expected -123)
 (define-test string->number (string->number "+00000000000000000123") :expected +123)
 (define-test string->number (string->number "-9000000000000000000123") :expected #z-9000000000000000000123)
+
 (define-test number->string (number->string 0 16) :expected "0")
 (define-test number->string (number->string 7 2) :expected "111")
 (define-test number->string (number->string -7 2) :expected "-111")
@@ -338,6 +339,7 @@
 (define-test number->string (number->string -127 8) :expected "-177")
 (define-test number->string (number->string #s32:-1732584194) :expected "-1732584194")
 (define-test number->string (number->string #u32:1732584194) :expected "1732584194")
+
 (define-test elong (find-runtime-type #e1) :expected "elong")
 (define-test elong #e1 :expected #e1)
 (define-test elong (elong? #exfeedabee) :expected #t)

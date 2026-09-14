@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Wlib/wreal.wat                      */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/wreal.wat         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  1 09:40:49 2024                          */
-;*    Last change :  Thu Jun  4 10:05:43 2026 (serrano)                */
+;*    Last change :  Mon Sep 14 08:30:19 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM reals                                                       */
@@ -116,4 +116,5 @@
          (call $js_float_to_ieee_string
 	    (local.get $n) 
 	    (i32.const 128))))
+
    )

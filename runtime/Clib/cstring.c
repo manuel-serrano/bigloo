@@ -1,5 +1,5 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/cstring.c          */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Clib/cstring.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Sep 11 10:41:17 2026 (serrano)                */
+;*    Last change :  Mon Sep 14 14:15:46 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -90,7 +90,7 @@
 	    (set-repl-error-notifier! ::obj)
 	    (get-repl-error-notifier)
 	    (c-debug-repl ::obj)
-	    (quit)
+	    (quit ::obj)
 	    (expand-define-macro <expression> <expander>)
 	    (expand-define-hygiene-macro <expression> <expander>)
 	    (expand-define-expander <expression> <expander>)
@@ -104,8 +104,6 @@
 	    (identifier-syntax-set! ::symbol)
 	    (notify-assert-fail vars body loc)
 	    *nil*
-	    (transcript-on ::bstring)
-	    (transcript-off)
 	    (set-repl-printer! ::procedure)
 	    (native-repl-printer::procedure))
 
@@ -170,7 +168,7 @@
 (define (scheme-report-environment version)
    (if (=fx version 5)
        'scheme-report-environment
-       (error 'scheme-report-environment
+       (error "scheme-report-environment"
 	      "Version not supported"
 	      version)))
    
@@ -180,7 +178,7 @@
 (define (null-environment version)
    (if (=fx version 5)
        'null-environment
-       (error 'scheme-report-environment
+       (error "scheme-report-environment"
 	      "Version not supported"
 	      version)))
    
@@ -212,7 +210,7 @@
 ;*---------------------------------------------------------------------*/
 (define (set-prompter! proc)
    (if (not (correct-arity? proc 1))
-       (error 'set-prompter!
+       (error "set-prompter!"
 	      "argument has to be a procedure of 1 argument"
 	      proc)
        (set! *prompt* proc)))
@@ -235,16 +233,17 @@
 (define (repl)
    (let ((repl-quit *repl-quit*)
 	 (repl-num  *repl-num*))
-      (bind-exit (quit)
-	 (set! *repl-quit* quit)
-	 (set! *repl-num* (+fx 1 *repl-num*))
-	 (unwind-protect
-	    (internal-repl)
-	    (begin
-	       (set! *repl-num* repl-num)
-	       (set! *repl-quit* repl-quit))))
-      (newline)
-      (flush-output-port (current-output-port))))
+      (let ((v (bind-exit (quit)
+                  (set! *repl-quit* quit)
+                  (set! *repl-num* (+fx 1 *repl-num*))
+                  (unwind-protect
+                     (internal-repl)
+                     (begin
+                        (set! *repl-num* repl-num)
+                        (set! *repl-quit* repl-quit))))))
+         (newline)
+         (flush-output-port (current-output-port))
+         v)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-eval-reader ...                                              */
@@ -300,21 +299,20 @@
 			      (reset-eof (current-input-port))))
 			(sigsetmask 0)
 			(luup mod))
-		     (let liip ((mod mod))
+		     (let liip ((mod mod)
+                                (val #unspecified))
 			(*prompt* *repl-num*)
 			(let ((exp (evread)))
 			   (if (eof-object? exp)
-			       (quit)
+			       (quit val)
 			       (let* ((v (eval exp))
 				      (nmod (eval-module)))
 				  (when (and (not (eq? nmod mod))
 					     (evmodule? mod))
 				     (evmodule-check-unbound mod #f))
-				  (if (not (eq? *transcript* (current-output-port)))
-				      (fprint *transcript* ";; " exp))
-				  (*repl-printer* v *transcript*)
-				  (newline *transcript*)
-				  (liip (or nmod mod)))))))))
+				  (*repl-printer* v (current-output-port))
+				  (newline (current-output-port))
+				  (liip (or nmod mod) v))))))))
 	    (loop mod))
 	 (if (procedure? old-intrhdl)
 	     (signal sigint old-intrhdl)
@@ -335,8 +333,8 @@
 ;*    set-repl-printer! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (set-repl-printer! disp)
-   (if (not (correct-arity? disp -2))
-       (error 'set-repl-printer! "Illegal repl-printer (wrong arity)" disp)
+   (if (not (correct-arity? disp 2))
+       (error "set-repl-printer!" "Illegal repl-printer (wrong arity)" disp)
        (let ((old *repl-printer*))
 	  (set! *repl-printer* disp)
 	  old)))
@@ -367,8 +365,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    quit ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (quit)
-   (*repl-quit* 0))
+(define (quit v::obj)
+   (*repl-quit* v))
 
 ;*---------------------------------------------------------------------*/
 ;*    *load-path*                                                      */
@@ -380,7 +378,7 @@
 ;*---------------------------------------------------------------------*/
 (define (find-file name)
    (if (not (string? name))
-       (error 'find-file "Illegal file name" name)
+       (error "find-file" "Illegal file name" name)
        (if (file-exists? name)
 	   name
 	   (let loop ((path *load-path*))
@@ -604,7 +602,7 @@
 				   fail-body
 				   (car loc)
 				   (cdr loc))
-		   (error 'assert "assertion failed" fail-body)))))
+		   (error "assert" "assertion failed" fail-body)))))
       (fprint port "-----------------------")
       (fprint port "Variables' value are : ")
       (for-each (lambda (f)
@@ -642,33 +640,3 @@
 
 (define (identifier-syntax) *identifier-syntax*)
 (define (identifier-syntax-set! v) (set! *identifier-syntax* v))
-
-;*---------------------------------------------------------------------*/
-;*    *transcript* ...                                                 */
-;*---------------------------------------------------------------------*/
-(define *transcript* (current-output-port))
-
-;*---------------------------------------------------------------------*/
-;*    transcript-on ...                                                */
-;*---------------------------------------------------------------------*/
-(define (transcript-on file::bstring)
-   (if (not (eq? *transcript* (current-output-port)))
-       (error 'transcript-on "A transcript is already in use" *transcript*)
-       (begin
-	  (set! *transcript* (append-output-file file))
-	  (fprint *transcript* ";; session started on " (date))
-	  #unspecified)))
-
-;*---------------------------------------------------------------------*/
-;*    transcript-off ...                                               */
-;*---------------------------------------------------------------------*/
-(define (transcript-off)
-   (if (eq? *transcript* (current-output-port))
-       (error 'transcript-off
-	      "No transcript is currently in use"
-	      *transcript*)
-       (begin
-	  (close-output-port *transcript*)
-	  (set! *transcript* (current-output-port))))
-   #unspecified)
-   

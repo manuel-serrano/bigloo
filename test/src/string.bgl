@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Sat Jul 11 06:40:22 2026 (serrano)                */
+;*    Last change :  Mon Sep 14 13:18:00 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing strings                                                  */
@@ -243,6 +243,8 @@
    :expected 1234.25)
 (define-test real->string (real->string 1234.25)
    :expected "1234.25")
+(define-test real->string (real->string (atanfl 1.0))
+   :expected "0.7853981633974483")
 (define-test substring (substring "0123456789" 1 5)
    :expected "1234")
 

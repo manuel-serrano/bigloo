@@ -1,0 +1,4 @@
+(define x 1)
+(define z 10)
+(+ x 34)
+(+ x z)

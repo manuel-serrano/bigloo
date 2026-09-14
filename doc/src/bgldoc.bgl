@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Sun Sep  6 14:00:05 2026 (serrano)                */
+;*    Last change :  Mon Sep 14 14:06:12 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -63,6 +63,7 @@
      ("digest & crc" . "digest.html")
      ("hash" . "hash.html")
      ("errors" . "error.html")
+     ("eval" . "eval.html")
      ("graphs" . "graph.html")
      ("integers" . "int.html")
      ("internet" . "internet.html")
