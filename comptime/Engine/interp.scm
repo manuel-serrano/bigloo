@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Engine/interp.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Engine/interp.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:03:39 1996                          */
-;*    Last change :  Thu Mar 26 07:06:59 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Sep 14 16:22:49 2026 (serrano)                */
+;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inner interpreter.                                           */
 ;*=====================================================================*/
@@ -21,6 +21,7 @@
 ;*    interp ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (interp version verb files startup path args)
+   (bigloo-debug-set! (max (bigloo-debug) *compiler-debug*))
    (set! *bigloo-interpreter* #t)
    (if (and (>=fx verb 0) (not (pair? files)))
        (begin
