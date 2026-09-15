@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sat Jun 20 18:57:56 2026 (serrano)                */
+/*    Last change :  Tue Sep 15 10:08:18 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -2869,10 +2869,8 @@ datagram_socket_write(obj_t port, void *buf, size_t len) {
 			sock);
    }
 
-   if ((n = sendto(fd, buf, len, 0,
-		    server,
-		    address_len)) == -1) {
-      char buffer[ 512 ];
+   if ((n = sendto(fd, buf, len, 0, server, address_len)) == -1) {
+      char buffer[512];
       
       BGL_MUTEX_LOCK(socket_mutex);
       sprintf(buffer, "%s (%d)", strerror(errno), errno);
@@ -2930,12 +2928,12 @@ bgl_make_datagram_client_socket(obj_t hostname, int port, bool_t broadcast, obj_
       }
    }
    
-   a_socket = GC_MALLOC(BGL_DATAGRAM_SOCKET_SIZE + sizeof(struct sockaddr_storage));
-   a_socket->datagram_socket.server = (void*)(a_socket + BGL_DATAGRAM_SOCKET_SIZE);
-   server = (struct sockaddr *)(a_socket->datagram_socket.server);
+   a_socket = GC_MALLOC(BGL_DATAGRAM_SOCKET_SIZE);
+   a_socket->datagram_socket.server = GC_MALLOC(sizeof(struct sockaddr_storage));
    
+   server = (struct sockaddr *)(a_socket->datagram_socket.server);
+	   
    /* setup a connect address */
-   memset(server, 0, sizeof(struct sockaddr_storage));
    if (fam == AF_INET) {
      struct sockaddr_in* ipv4_server = (struct sockaddr_in*)server;
      memcpy((char *)&(ipv4_server->sin_addr), hp->h_addr, hp->h_length);
