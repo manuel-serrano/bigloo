@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/mail/Makefile                    */
+#*    serrano/prgm/project/bigloo/5.0.x/api/mail/Makefile              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jul  9 10:13:22 2017 (serrano)                */
-#*    Copyright   :  2001-17 Manuel Serrano                            */
+#*    Last change :  Tue Sep 15 16:40:59 2026 (serrano)                */
+#*    Copyright   :  2001-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -19,23 +19,17 @@ include ../../Makefile.config
 API = mail
 
 #*---------------------------------------------------------------------*/
-#*    Directories where to find the files composing a revision         */
-#*---------------------------------------------------------------------*/
-POPDIR = src
-POPULATION = Makefile README
-PACKAGES = quoted-printable
-
-#*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
 all: boot build
 
 boot: build
 build:
-	@ $(MAKE) build-c && $(MAKE) build-jvm
+	@ $(MAKE) build-c && $(MAKE) build-jvm && $(MAKE) build-wasm
 
 c: build-c
 jvm: build-jvm
+wasm: build-wasm
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -49,29 +43,11 @@ build-jvm:
 	    (cd src && $(MAKE) build-jvm); \
           fi
 
-#*---------------------------------------------------------------------*/
-#*    pkgs                                                             */
-#*---------------------------------------------------------------------*/
-pkgs: src/Pkgs
-
-src/Pkgs:
-	$(BGLPKG_EXE) -C $@ -x $(PACKAGES) --flat
-
-update-pkgs:
-	$(BGLPKG_EXE) -Y -C $@ -x $(PACKAGES) --flat
-
-#*---------------------------------------------------------------------*/
-#*    pop                                                              */
-#*    -------------------------------------------------------------    */
-#*    This entry is used by the bigloo/Makefile (the main Bigloo       */
-#*    makefile) to get the list of file that populate a revision.      */
-#*---------------------------------------------------------------------*/
-.PHONY: pop
-pop:
-	@ echo $(POPULATION:%=mail/%)
-	@ for d in $(POPDIR); do \
-            (cd $$d && $(MAKE) -s pop) \
-          done;
+build-wasm:
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;31m>>> WASM[0m";  \
+	    (cd src && $(MAKE) build-wasm); \
+          fi
 
 #*---------------------------------------------------------------------*/
 #*    Clean                                                            */
@@ -99,10 +75,14 @@ install: api-install-init
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
             $(MAKE) api-install-jvm; \
           fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+            $(MAKE) api-install-wasm; \
+          fi
 
 uninstall: api-uninstall-init \
            api-uninstall-c \
-           api-uninstall-jvm
+           api-uninstall-jvm \
+           api-uninstall-wasm
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

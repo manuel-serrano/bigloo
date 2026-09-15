@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Tue May 12 17:15:59 2026 (serrano)                */
+#*    Last change :  Tue Sep 15 16:50:28 2026 (serrano)                */
 #*    Copyright   :  2010-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -410,13 +410,13 @@ $(CLASS_EDIR)/%.class: $(MISC_SRC_DIR)/%.scm
 	$(BIGLOO) -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
 
 objs/%.wat: $(BIGLOO_SRC_DIR)/%.scm
-	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
+	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) $< -o $@ -c
 
 objs/%.wat: $(MISC_SRC_DIR)/%.scm
-	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
+	$(BIGLOO) -wasm $(EFLAGS) $(BAPIFLAGS) $< -o $@ -c
 
 objs/make_lib5.wat: $(MISC_SRC_DIR)/make_lib5.scm
-	$(BIGLOO) -module5 -wasm $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) $< -o $@ -c
+	$(BIGLOO) -module5 -wasm $(EFLAGS) $(BAPIFLAGS) $< -o $@ -c
 
 
 #*---------------------------------------------------------------------*/

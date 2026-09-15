@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/5.0a/api/mail/src/Makefile           */
+#*    serrano/prgm/project/bigloo/5.0.x/api/mail/src/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Mar 10 13:57:45 2026 (serrano)                */
+#*    Last change :  Tue Sep 15 16:43:08 2026 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -56,20 +56,15 @@ EOBJECTS	= objs/make_lib.o
 BGL_CLASSES	= $(_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
 
+WOBJECTS	= $(_BGL_OBJECTS:%=objs/%.wat) $(_STK_OBJECTS:%=objs/%.wat) $(_BGL5_OBJECTS:%=objs/%.wat)
+WEOBJECTS	= $(EOBJECTS:%.o=%.wat)
+
 _BGL_SOURCES	= $(_BGL_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.scm) \
                   $(_STK_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.bgl) \
                   $(_STK_OBJECTS:%=$(BIGLOO_SRC_DIR)/%.stk)
 
 SOURCES		= $(_BGL_SOURCES)
  
-#*---------------------------------------------------------------------*/
-#*    Sources                                                          */
-#*---------------------------------------------------------------------*/
-POPULATION	= $(SOURCES) \
-                  $(MISC_SRC_DIR)/make_lib.scm \
-                  $(MISC_SRC_DIR)/$(API).init \
-                  Makefile
-
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
@@ -82,6 +77,9 @@ all:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) build-jvm; \
 	  fi
+	@ if [ "$(WASMBACKEND)" = "yes" ]; then \
+             $(MAKE) build-wasm; \
+	  fi
 
 c: build-c
 build-c: api-c
@@ -89,11 +87,8 @@ build-c: api-c
 jvm: build-jvm
 build-jvm: api-jvm
 
-#*---------------------------------------------------------------------*/
-#*    pop ...                                                          */
-#*---------------------------------------------------------------------*/
-pop:
-	@ echo $(POPULATION:%=$(API)/src/%)
+wasm: build-wasm
+build-wasm: api-wasm
 
 #*---------------------------------------------------------------------*/
 #*    clean                                                            */
@@ -113,7 +108,7 @@ include ../../Makefile.api
 #*    Suffixes                                                         */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .stk .spi
+.SUFFIXES: .stk
 
 #*---------------------------------------------------------------------*/
 #*    The implicit rules                                               */
@@ -135,3 +130,7 @@ $(CLASS_DIR)/%.class: $(PKG_SRC_DIR)/%.scm
 
 $(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.stk
 	$(BIGLOO) -suffix stk -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@ -module4
+
+objs/%.wat: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.stk
+	$(BIGLOO) -wasm -suffix stk $(EFLAGS) $(BAPIFLAGS) $^ -o $@ -c -module4
+

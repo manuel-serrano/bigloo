@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/mail/src/Llib/rfc2822.scm        */
+;*    .../prgm/project/bigloo/5.0.x/api/mail/src/Llib/rfc2822.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Fri Nov 17 08:44:31 2017 (serrano)                */
-;*    Copyright   :  2007-21 Manuel Serrano                            */
+;*    Last change :  Tue Sep 15 17:04:23 2026 (serrano)                */
+;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC2822              */
 ;*    (Internet Message Format) specification.                         */
@@ -19,7 +19,6 @@
 
    (export (mail-header->list::pair-nil ::obj)
 	   (email-normalize::bstring ::bstring)
-
 	   (rfc2822-address-display-name::bstring ::bstring)))
  
 ;*---------------------------------------------------------------------*/
@@ -127,7 +126,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    email-normalize ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (email-normalize from)
+(define (email-normalize::bstring from::bstring)
    (let ((len (string-length from)))
       (cond
 	 ((<=fx len 1)
@@ -192,7 +191,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rfc2822-address-display-name ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (rfc2822-address-display-name address)
+(define (rfc2822-address-display-name::bstring address::bstring)
    (let ((i (string-index address "<")))
       (if (or (not i) (=fx i 0))
 	  (let ((j (string-index address "(")))

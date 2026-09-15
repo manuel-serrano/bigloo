@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/api/mail/src/Llib/rfc2045.scm       */
+;*    .../prgm/project/bigloo/5.0.x/api/mail/src/Llib/rfc2045.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Tue Apr 21 08:42:39 2026 (serrano)                */
+;*    Last change :  Tue Sep 15 13:55:52 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -42,7 +42,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    quoted-printable-encode-port ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (quoted-printable-encode-port in out)
+(define (quoted-printable-encode-port in::input-port out::output-port)
    (let loop ((c (read-byte in))
 	      (count 0))
       (cond
@@ -155,13 +155,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    quoted-printable-decode-port ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (quoted-printable-decode-port in out #!optional rfc2047)
+(define (quoted-printable-decode-port in::input-port out::output-port #!optional rfc2047)
    (read/rp quoted-printable-grammar in out rfc2047))
 
 ;*---------------------------------------------------------------------*/
 ;*    quoted-printable-encode ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (quoted-printable-encode str)
+(define (quoted-printable-encode::bstring str::bstring)
    (let ((pout (open-output-string))
 	 (pin (open-input-string str)))
       (quoted-printable-encode-port pin pout)
@@ -171,7 +171,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    quoted-printable-decode ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (quoted-printable-decode str)
+(define (quoted-printable-decode::bstring str::bstring)
    (let ((pout (open-output-string))
 	 (pin (open-input-string str)))
       (quoted-printable-decode-port pin pout)
@@ -283,13 +283,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    mime-content-type-decode-port ...                                */
 ;*---------------------------------------------------------------------*/
-(define (mime-content-type-decode-port in)
+(define (mime-content-type-decode-port::pair-nil in::input-port)
    (read/rp content-type-grammar in))
 
 ;*---------------------------------------------------------------------*/
 ;*    mime-content-type-decode ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (mime-content-type-decode str)
+(define (mime-content-type-decode::pair-nil str::bstring)
    (let ((p (open-input-string str)))
       (unwind-protect
 	 (read/rp content-type-grammar p)
@@ -318,13 +318,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    mime-content-disposition-decode-port ...                         */
 ;*---------------------------------------------------------------------*/
-(define (mime-content-disposition-decode-port in)
+(define (mime-content-disposition-decode-port::pair-nil in::input-port)
    (read/rp content-disposition-grammar in))
 
 ;*---------------------------------------------------------------------*/
 ;*    mime-content-disposition-decode ...                              */
 ;*---------------------------------------------------------------------*/
-(define (mime-content-disposition-decode str)
+(define (mime-content-disposition-decode::pair-nil str::bstring)
    (let ((p (open-input-string str)))
       (unwind-protect
 	 (read/rp content-disposition-grammar p)

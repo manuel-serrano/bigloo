@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Mon Sep 14 13:56:42 2026 (serrano)                */
+#*    Last change :  Tue Sep 15 13:48:41 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -38,7 +38,7 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*    Documentation                                                    */
 #*---------------------------------------------------------------------*/
 MD = argsparse bigloo bool browser csv date digest graph hash error \
- eval int internet io mmap multimedia net number os pair parser port \
+ eval int internet io mail mmap multimedia net number os pair parser port \
  process real regexp serial sqlite ssl string symbol tar trace thread \
  vector weakptr web zip \
  c jvm wasm \

@@ -1,0 +1,95 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/mail0.bgl             */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Sat Sep  5 16:48:41 2026                          */
+;*    Last change :  Tue Sep 15 17:19:30 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing the mail functions                                       */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    mail                                                             */
+;*---------------------------------------------------------------------*/
+(module mail0
+   (library mail)
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "mail" tests))
+      (test-all verbose "mail")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test quoted-printable-encode
+   (quoted-printable-encode "foo bar")
+   :expected "foo=20bar")
+
+(define-test quoted-printable-encode
+   (quoted-printable-encode "foo=bar & x=45\ngee hux")
+   :expected "foo=3Dbar=20&=20x=3D45\r\ngee=20hux")
+
+(define-test quoted-printable-decode
+   (quoted-printable-decode "foo=20bar")
+   :expected "foo bar")
+
+(define-test quoted-printable-decode
+   (quoted-printable-decode (quoted-printable-encode "foo=20bar x=54 @28"))
+   :expected "foo=20bar x=54 @28")
+
+(define-test quoted-printable-encode-port
+   (call-with-output-string
+      (lambda (op)
+         (call-with-input-string "foo bar"
+            (lambda (ip) (quoted-printable-encode-port ip op)))))
+   :expected "foo=20bar")
+
+(define-test quoted-printable-decode-port
+   (call-with-output-string
+      (lambda (op)
+         (call-with-input-string "foo=20bar"
+            (lambda (ip) (quoted-printable-decode-port ip op)))))
+   :expected "foo bar")
+
+(define-test mime-content-type-decode
+   (mime-content-type-decode "text/plain; boundary=Apple-Mail-11")
+   :expected '(text plain ((boundary . "Apple-Mail-11"))))
+
+(define-test mime-content-type-decode-port
+   (call-with-input-string "text/plain; boundary=Apple-Mail-11"
+      mime-content-type-decode-port)
+   :expected '(text plain ((boundary . "Apple-Mail-11"))))
+
+(define-test mime-content-disposition-decode
+   (mime-content-disposition-decode "attachment; filename=\"smine.p7s\"")
+   :expected '(attachment ((filename . "smine.p7s"))))
+
+(define-test mime-content-disposition-decode-port
+   (call-with-input-string "attachment; filename=\"smine.p7s\""
+      mime-content-disposition-decode-port)
+   :expected '(attachment ((filename . "smine.p7s"))))
+
+;*---------------------------------------------------------------------*/
+;*    rfc2822                                                          */
+;*---------------------------------------------------------------------*/
+(define-test email-normalize
+   (email-normalize "foo bar <foo.bar@@inria.fr>")
+   :expected "foo.bar@@inria.fr")
+
+(define-test rfc2822-address-display-name
+   (rfc2822-address-display-name "Foo Bar <foo.bar@@inria.fr>")
+   :expected "Foo Bar")
+
+(define-test rfc2822-address-display-name
+   (rfc2822-address-display-name "<foo.bar@@inria.fr>")
+   :expected "foo bar")
