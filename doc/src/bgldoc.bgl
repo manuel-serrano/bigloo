@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Mon Sep 14 14:06:12 2026 (serrano)                */
+;*    Last change :  Tue Sep 15 08:41:24 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -499,15 +499,42 @@
 ;*---------------------------------------------------------------------*/
 (define (chapter source::bstring target::bstring)
 
-   (define (class-nodef? e)
-      (let ((klass (xml-element-attribute e 'class)))
-         (or (equal? klass "NoDef")
-             (equal? klass "NoDef-C")
-             (equal? klass "NoDef-jvm")
-             (equal? klass "NoDef-wasm")
-             (equal? klass "NoDef-C-jvm")
-             (equal? klass "NoDef-C-wasm")
-             (equal? klass "NoDef-jvm-wasm"))))
+   (define (class-nodef? klass)
+      (when (string? klass)
+         (or (string=? klass "NoDef")
+             (string=? klass "NoDef-C")
+             (string=? klass "NoDef-jvm")
+             (string=? klass "NoDef-wasm")
+             (string=? klass "NoDef-C-jvm")
+             (string=? klass "NoDef-C-wasm")
+             (string=? klass "NoDef-jvm-wasm")
+             (string=? klass "NoDefNoTest")
+             (string=? klass "NoDefNoTest-C")
+             (string=? klass "NoDefNoTest-jvm")
+             (string=? klass "NoDefNoTest-wasm")
+             (string=? klass "NoDefNoTest-C-jvm")
+             (string=? klass "NoDefNoTest-C-wasm")
+             (string=? klass "NoDefNoTest-jvm-wasm")
+             (string=? klass "NoDefNoTest-C-jvm-wasm"))))
+
+   (define (class-notest? klass)
+      (when (string? klass)
+         (or (string=? klass "NoTest")
+             (string=? klass "NoTest-C")
+             (string=? klass "NoTest-jvm")
+             (string=? klass "NoTest-wasm")
+             (string=? klass "NoTest-C-jvm")
+             (string=? klass "NoTest-C-wasm")
+             (string=? klass "NoTest-jvm-wasm")
+             (string=? klass "NoTest-C-jvm-wasm")
+             (string=? klass "NoDefNoTest")
+             (string=? klass "NoDefNoTest-C")
+             (string=? klass "NoDefNoTest-jvm")
+             (string=? klass "NoDefNoTest-wasm")
+             (string=? klass "NoDefNoTest-C-jvm")
+             (string=? klass "NoDefNoTest-C-wasm")
+             (string=? klass "NoDefNoTest-jvm-wasm")
+             (string=? klass "NoDefNoTest-C-jvm-wasm"))))
    
    (define (chapter-toc::pair-nil doc::XmlElement)
       (map (lambda (e::XmlElement)
@@ -544,9 +571,11 @@
    (define (class-backend klass)
       (if (string? klass)
           (let ((s (string-split klass #\-)))
-             (backends
-                (map (lambda (c) (list c (if (member c s) "&#x25cf;" "&#x25cb;")))
-                   '("C" "jvm" "wasm"))))
+             (if (any (lambda (c) (member c s)) '("C" "jvm" "wasm"))
+                 (backends
+                    (map (lambda (c) (list c (if (member c s) "&#x25cf;" "&#x25cb;")))
+                       '("C" "jvm" "wasm")))
+                 (backends '(("C" "&#x25cf;") ("jvm" "&#x25cf;") ("wasm" "&#x25cf;")))))
           (backends '(("C" "&#x25cf;") ("jvm" "&#x25cf;") ("wasm" "&#x25cf;")))))
 
    (call-with-input-file source
@@ -583,7 +612,7 @@
                                ((=fx (hashtable-size definitions-table) 0)
                                 e)
                                ((not def)
-                                (if (class-nodef? e)
+                                (if (class-nodef? klass)
                                     (let* ((pseudodef (call-with-input-string name read))
                                            (md (definition->markdown pseudodef)))
                                        (xml-element-children-set! e
@@ -592,7 +621,8 @@
                                                       (substring klass 6)))
                                              md))
                                        (xml-element-attribute-set! e 'class (definition-class def))
-                                       (if (pair? tests)
+                                       (cond
+                                          ((pair? tests)
                                            (let loop ((next (xml-element-next-sibling e))
                                                       (prev e))
                                               (cond
@@ -603,8 +633,9 @@
                                                                (xml-element-append-child! prev el))
                                                      (test->markdown (reverse tests))))
                                                  (else
-                                                  (loop (xml-element-next-sibling next) next))))
-                                           (error "doc" "Cannot find test" name))
+                                                  (loop (xml-element-next-sibling next) next)))))
+                                          ((not (class-notest? klass))
+                                           (error "doc" "Cannot find test" name)))
                                        (set! index
                                           (cons (list id pseudodef (xml-element-attribute e 'id) target)
                                              index)))
@@ -626,14 +657,7 @@
                                                  (test->markdown (reverse tests))))
                                              (else
                                               (loop (xml-element-next-sibling next) next)))))
-                                      ((or (equal? klass "NoTest")
-                                           (equal? klass "NoTest-C")
-                                           (equal? klass "NoTest-jvm")
-                                           (equal? klass "NoTest-wasm")
-                                           (equal? klass "NoTest-C-jvm")
-                                           (equal? klass "NoTest-C-wasm")
-                                           (equal? klass "NoTest-jvm-wasm")
-                                           (equal? klass "NoTest-C-jvm-wasm"))
+                                      ((class-notest? klass)
                                        e)
                                       (else
                                        (error "doc" "Cannot find test" name)))
@@ -668,12 +692,14 @@
 (define (definition->markdown::pair def)
 
    (define (markdown-ident::pair sym class)
-      (multiple-value-bind (id ty)
-	 (parse-ident2 sym)
-	 (if ty
-	     (list (xml-element 'span `((class . ,class)) (list id))
-		(xml-element 'span '((class . "type")) (list "::" ty)))
-	     (list (xml-element 'span `((class . ,class)) (list id))))))
+      (if (eq? sym '|...|)
+          (list (xml-element 'span `((class . ,class)) (list "...")))
+          (multiple-value-bind (id ty)
+             (parse-ident2 sym)
+             (if ty
+                 (list (xml-element 'span `((class . ,class)) (list id))
+                    (xml-element 'span '((class . "type")) (list "::" ty)))
+                 (list (xml-element 'span `((class . ,class)) (list id)))))))
 
    (define (markdown-argument::pair arg)
       (cond
@@ -686,10 +712,12 @@
 	 ((eq? arg #!rest)
 	  (list (xml-element 'span '((class . "dsssl")) (list "#!rest"))))
 	 ((pair? arg)
-	  `("(" ,@(markdown-ident (car arg) "argument")
-	      " "
-	      ,(xml-element 'span '((class . "expression")) (list (format "~s" (cadr arg))))
-	      ")"))
+          (if (pair? (cdr arg))
+              `("(" ,@(markdown-ident (car arg) "argument")
+                  " "
+                  ,(xml-element 'span '((class . "expression")) (list (format "~s" (cadr arg))))
+                  ")")
+              `("(" ,@(markdown-ident (car arg) "argument") ")")))
 	 (else
 	  (error "definition->markdown" "Illegal argument" arg))))
 

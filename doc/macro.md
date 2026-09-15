@@ -9,18 +9,22 @@
 <!--    Macros                                                        -->
 <!--==================================================================-->
 
+,(include "head.html")
+,(implementation-path "../runtime/Eval/expanders.scm")
+,(example-path "../test/src/macro.bgl")
+
 Macro
 =====
 
 Bigloo makes use of two macro expansion systems. The one based on the
-[expansion passing style][Dybvig et al. 86] and the one advocated by the 
-[R5RS][Scheme R5RS].
+[expansion passing style](Dybvig et al. 86) and the one advocated by the 
+[R5RS](Scheme R5RS).
 
 Expansion passing style macros
 ------------------------------
 
 ### (define-expander name proc) ###
-<!-- [:define-expander@NoDef] -->
+<!-- [:define-expander@NoDefNoTest] -->
 
 This form defines an expander, `name`, where `proc`
 is a procedure of two arguments: a form to macro-expand,
@@ -42,7 +46,7 @@ Example:
 ```
 
 ### define-macro (name ...) body) ###
-<!-- [:define-macro@NoDef] -->
+<!-- [:define-macro@NoDefNoTest] -->
 
 This form is itself macro-expanded into a `define-expander` form.
 
@@ -64,17 +68,17 @@ Revised(5) macro expansion
 
 Bigloo support the Revised(5) Report on the Scheme programming language.
 
-### (let-syntax (...) body ###
-<!-- [:let-syntax@NoDef] -->
+### (let-syntax (...) body) ###
+<!-- [:let-syntax@NoDefNoTest] -->
 
-### (letrec-syntax (...) body ###
-<!-- [:letrec-syntax@NoDef] -->
+### (letrec-syntax (...) body) ###
+<!-- [:letrec-syntax@NoDefNoTest] -->
 
-### (define-syntax keyword transformer ###
-<!-- [:define-syntax@NoDef] -->
+### (define-syntax keyword transformer) ###
+<!-- [:define-syntax@NoDefNoTest] -->
 
 ### (syntax-rules literals rule...) ###
-<!-- [:syntax-rules@NoDef] -->
+<!-- [:syntax-rules@NoDefNoTest] -->
 
 These three forms are compatible with the description of the
 Revised(5) Report on the Algorithmic Language Scheme.
