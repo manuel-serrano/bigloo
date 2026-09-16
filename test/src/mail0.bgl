@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep  5 16:48:41 2026                          */
-;*    Last change :  Tue Sep 15 17:19:30 2026 (serrano)                */
+;*    Last change :  Tue Sep 15 17:52:58 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the mail functions                                       */
@@ -79,17 +79,386 @@
       mime-content-disposition-decode-port)
    :expected '(attachment ((filename . "smine.p7s"))))
 
+(define-test mime-multipart-decode
+   (let ((str "--000000000000750217065b7a1bc3
+Content-Type: text/plain; charset=\"UTF-8\"
+Content-Transfer-Encoding: quoted-printable
+
+foo bar
+--000000000000750217065b7a1bc3
+Content-Type: text/html; charset=\"UTF-8\"
+Content-Transfer-Encoding: quoted-printable
+
+gee hux
+--000000000000750217065b7a1bc3--
+")
+         (boundary "000000000000750217065b7a1bc3"))
+      (mime-multipart-decode str boundary))
+   :expected '(((text plain ((charset . "UTF-8"))) quoted-printable (inline) "foo bar\n" ((content-type . "text/plain; charset=\"UTF-8\"") (content-transfer-encoding . "quoted-printable"))) ((text html ((charset . "UTF-8"))) quoted-printable (inline) "gee hux\n" ((content-type . "text/html; charset=\"UTF-8\"") (content-transfer-encoding . "quoted-printable")))))
+
+(define-test mime-multipart-decode-port
+   (call-with-input-string "--0750217065b7a1bc3
+Content-Type: text/plain; charset=\"UTF-8\"
+Content-Transfer-Encoding: quoted-printable
+
+foo bar
+--0750217065b7a1bc3
+Content-Type: text/html; charset=\"UTF-8\"
+Content-Transfer-Encoding: quoted-printable
+
+gee hux
+--0750217065b7a1bc3--
+"
+      (lambda (ip)
+         (mime-multipart-decode-port ip "0750217065b7a1bc3")))
+   :expected '(((text plain ((charset . "UTF-8"))) quoted-printable (inline) "foo bar\n" ((content-type . "text/plain; charset=\"UTF-8\"") (content-transfer-encoding . "quoted-printable"))) ((text html ((charset . "UTF-8"))) quoted-printable (inline) "gee hux\n" ((content-type . "text/html; charset=\"UTF-8\"") (content-transfer-encoding . "quoted-printable")))))
+
+;*---------------------------------------------------------------------*/
+;*    rfc2047 ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-test rfc2047-decode
+   (map char->integer
+      (string->list (rfc2047-decode "Poste =?ISO-8859-1?Q?t=E9l=E9phonique?=")))
+   :expected '(80 111 115 116 101 32 116 233 108 233 112 104 111 110 105 113 117 101))
+
+(define-test rfc2047-decode
+   (string-for-read (rfc2047-decode "Poste =?ISO-8859-1?Q?t=E9l=E9phonique?=" :charset 'utf-8))
+   :expected "Poste t\303\251l\303\251phonique")
+
+(define-test rfc2047-decode-port
+   (string-for-read
+      (call-with-output-string
+         (lambda (op)
+            (call-with-input-string "Poste =?ISO-8859-1?Q?t=E9l=E9phonique?="
+               (lambda (ip)
+                  (rfc2047-decode-port ip op :charset 'utf-8))))))
+   :expected "Poste t\303\251l\303\251phonique")
+
 ;*---------------------------------------------------------------------*/
 ;*    rfc2822                                                          */
 ;*---------------------------------------------------------------------*/
 (define-test email-normalize
-   (email-normalize "foo bar <foo.bar@@inria.fr>")
-   :expected "foo.bar@@inria.fr")
+   (email-normalize "foo bar <foo.bar@inria.fr>")
+   :expected "foo.bar@inria.fr")
 
 (define-test rfc2822-address-display-name
-   (rfc2822-address-display-name "Foo Bar <foo.bar@@inria.fr>")
+   (rfc2822-address-display-name "Foo Bar <foo.bar@inria.fr>")
    :expected "Foo Bar")
 
 (define-test rfc2822-address-display-name
-   (rfc2822-address-display-name "<foo.bar@@inria.fr>")
+   (rfc2822-address-display-name "<foo.bar@inria.fr>")
    :expected "foo bar")
+
+(define-test mail-header->list
+   (mail-header->list "Return-Path: <foo.bar@inria.fr>
+Received: from eurus.inria.fr ([unix socket])")
+   :expected '((return-path . "<foo.bar@inria.fr>") (received . "from eurus.inria.fr ([unix socket])")))
+
+;*---------------------------------------------------------------------*/
+;*    RFC2426                                                          */
+;*---------------------------------------------------------------------*/
+(define-test vcard
+   vcard
+   :expected class?)
+
+(define-test read-vcard
+   (isa? (call-with-input-string "BEGIN:VCARD
+VERSION:3.0
+N:Doe;John;;Mr.;
+FN:John Doe
+ORG:Example Corporation
+TITLE:Software Engineer
+TEL;TYPE=WORK,VOICE:+1-555-123-4567
+TEL;TYPE=CELL:+1-555-987-6543
+EMAIL;TYPE=INTERNET:john.doe@example.com
+ADR;TYPE=WORK:;;123 Main Street;New York;NY;10001;USA
+URL:https://www.example.com
+NOTE:Example vCard using RFC 2426
+END:VCARD"
+            read-vcard)
+      vcard)
+   :expected #t)
+
+(define-test read-vcard
+   (eof-object?
+      (call-with-input-string ""
+         read-vcard)))
+
+(define-test port->vcard
+   (call-with-input-string ""
+      port->vcard)
+   :expected #f)
+
+(define-test string->vcard
+   (isa? (string->vcard "BEGIN:VCARD
+VERSION:2.0
+N:Doe;John;;Mr.;
+FN:John Doe
+ORG:Example Corporation
+EMAIL;TYPE=INTERNET:john.doe@example.com
+ADR;TYPE=WORK:;;123 Main Street;New York;NY;10001;USA
+URL:https://www.example.com
+END:VCARD")
+      vcard))
+
+;*---------------------------------------------------------------------*/
+;*    RFC3501 ...                                                      */
+;*---------------------------------------------------------------------*/
+(define dir (make-file-name (dirname (dirname mail0.filename)) "misc/maildir"))
+
+(define-test create-maildir
+   (begin
+      (delete-directories dir)
+      (register-exit-function!
+         (lambda (x)
+            (when (and (file-exists? dir) (directory? dir))
+               (delete-directories dir))))
+      (for-each (lambda (f)
+                   (make-directories f)
+                   (for-each (lambda (d)
+                                (make-directory (make-file-name f d)))
+                      '("cur" "tmp" "new")))
+         (list dir
+            (make-file-name dir ".Foo")
+            (make-file-name dir ".Foo.Bar")))
+      (call-with-output-file (make-file-name dir ".Foo.Bar/cur/150.34,SF")
+         (lambda (op)
+            (display "Return-Path: foo@nowhere.org\r\n" op)
+            (display "Received: from foo@nowhere.org\r\n" op)
+            (display "From: foo@nowhere.org\r\n" op)
+            (display "Subject: bigloo\r\n" op)
+            (display "To: you@nowhere.org\r\n" op)
+            (display "Message-ID: <242.354.34>\r\n" op)
+            (display "Date: Mon, 21 Jul 2025 02:26:51 +0000\r\n" op)
+            (display "\r\n" op)
+            (display "foo\n" op)))
+      #t))
+
+(define-test mailbox
+   mailbox
+   :expected class?)
+
+(define-test maildir
+   (isa? (instantiate::maildir (path "/dev/null")) maildir)
+   :expected #t)
+
+(define-test imap
+   imap
+   :expected class?)
+
+(define-test &mailbox-error
+   &mailbox-error
+   :expected class?)
+
+(define-test &maildir-error
+   &maildir-error
+   :expected class?)
+
+(define-test &imap-parse-error
+   &imap-parse-error
+   :expected class?)
+
+(define-test &imap-error
+   &imap-error
+   :expected class?)
+
+(define-test mailbox-close
+   (mailbox-close (instantiate::maildir (path "/dev/null")))
+   :expected #unspecified)
+   
+(define-test mailbox-separator
+   (mailbox-separator (instantiate::maildir (path "/dev/null")))
+   :expected ".")
+
+(define-test mailbox-prefix
+   (mailbox-prefix (instantiate::maildir (path "/dev/null")))
+   :expected "INBOX")
+
+(define-test mailbox-hostname
+   (mailbox-hostname (instantiate::maildir (path "/dev/null")))
+   :expected string?)
+
+(define-test mailbox-folders
+   (mailbox-folders (instantiate::maildir (path dir)))
+   :expected '("INBOX" "INBOX.Foo" "INBOX.Foo.Bar"))
+
+(define-test mailbox-folder-exists?
+   (mailbox-folder-exists? (instantiate::maildir (path dir)) "INBOX.Foo"))
+
+(define-test mailbox-folder-exists?
+   (mailbox-folder-exists? (instantiate::maildir (path dir)) "INBOX.Hux")
+   :expected #f)
+
+(define-test mailbox-folder-select!
+   (mailbox-folder-select! (instantiate::maildir (path dir)) "INBOX.Foo")
+   :expected '((count . 0) (recent . 0)))
+   
+(define-test mailbox-folder-unselect!
+   (mailbox-folder-unselect! (instantiate::maildir (path dir)))
+   :expected #unspecified)
+
+(define-test mailbox-folder-create!
+   (with-handler
+      (lambda (e) 'error)
+      (let ((m (instantiate::maildir (path dir))))
+         (mailbox-folder-create! m "INBOX.Foo.Gee")
+         (mailbox-folders m)))
+   :expected '("INBOX" "INBOX.Foo" "INBOX.Foo.Bar" "INBOX.Foo.Gee"))
+
+(define-test mailbox-folder-delete!
+   (with-handler
+      (lambda (e) 'error)
+      (let ((m (instantiate::maildir (path dir))))
+         (mailbox-folder-delete! m "INBOX.Foo.Gee")
+         (mailbox-folders m)))
+   :expected '("INBOX" "INBOX.Foo" "INBOX.Foo.Bar"))
+
+(define-test mailbox-folder-rename!
+   (with-handler
+      (lambda (e) 'error)
+      (let ((m (instantiate::maildir (path dir))))
+         (unwind-protect
+            (begin
+               (mailbox-folder-rename! m "INBOX.Foo.Bar" "INBOX.Foo.Hux")
+               (mailbox-folders m))
+            (mailbox-folder-rename! m "INBOX.Foo.Hux" "INBOX.Foo.Bar"))))
+   :expected '("INBOX" "INBOX.Foo" "INBOX.Foo.Hux"))
+
+(define-test mailbox-folder-move!
+   (with-handler
+      (lambda (e) (exception-notify e) 'error)
+      (let ((m (instantiate::maildir (path dir))))
+         (unwind-protect
+            (begin
+               (mailbox-folder-create! m "INBOX.Gee")
+               (mailbox-folder-move! m "INBOX.Gee" "INBOX.Foo")
+               (mailbox-folders m))
+            (mailbox-folder-delete! m "INBOX.Foo.Gee"))))
+   :expected '("INBOX" "INBOX.Foo" "INBOX.Foo.Bar" "INBOX.Foo.Gee"))
+      
+(define-test mailbox-folder-subscribe!
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-subscribe! m "INBOX.Foo")
+      #t))
+
+(define-test mailbox-folder-unsubscribe!
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-subscribe! m "INBOX.Foo")
+      (mailbox-folder-unsubscribe! m "INBOX.Foo")
+      #t))
+
+(define-test mailbox-folder-status
+   (let ((m (instantiate::maildir (path dir))))
+      (assq 'unseen (mailbox-folder-status m "INBOX.Foo")))
+   :expected '(unseen . 0))
+
+(define-test mailbox-folder-uids
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-folder-uids m))
+   :expected '(2))
+
+(define-test mailbox-folder-dates
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-folder-dates m))
+   :expected `((2 . ,(make-date :year 2025 :day 21 :month 7 :hour 2 :min 26 :sec 51 :timezone 0))))
+
+(define-test mailbox-folder-header-fields
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-folder-header-fields m "subject"))
+   :expected '((2 . "bigloo")))
+
+(define-test mailbox-message
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-message m 2))
+   :expected string?)
+
+(define-test mailbox-message-path
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-message-path m 2))
+   :expected (make-file-path dir ".Foo.Bar/cur" "150.34,SF"))
+
+(define-test mailbox-message-body
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-message-body m 2))
+   :expected "foo\n")
+
+(define-test mailbox-message-header
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-message-header m 2))
+   :expected string?)
+
+(define-test mailbox-message-header-list
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (length (mailbox-message-header-list m 2)))
+   :expected 7)
+
+(define-test mailbox-message-header-field
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-message-header-field m 2 "subject"))
+   :expected "bigloo")
+
+(define-test mailbox-message-size
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-message-size m 2))
+   :expected 194)
+
+(define-test mailbox-message-info
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-message-info m 2))
+   :expected list?)
+
+(define-test mailbox-message-flags
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-message-flags m 2))
+   :expected '("\\Flagged" "\\Seen"))
+
+(define-test mailbox-message-flags-set! 
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-message-flags-set! m 2 '("\\Answered"))
+      (mailbox-message-flags m 2))
+   :expected '("\\Answered"))
+
+(define-test mailbox-message-move! 
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (mailbox-message-move! m 2 "INBOX.Foo")
+      (mailbox-folder-uids m))
+   :expected '())
+
+
+(define-test mailbox-message-delete!
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo")
+      (mailbox-message-delete! m 2)
+      #unspecified)
+   :expected #unspecified)
+
+(define-test mailbox-folder-delete-messages!
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo")
+      (mailbox-folder-delete-messages! m)
+      (mailbox-folder-uids m))
+   :expected '())
+
+(define-test mailbox-message-create!
+   (let ((m (instantiate::maildir (path dir))))
+      (mailbox-folder-select! m "INBOX.Foo.Bar")
+      (let ((l0 (length (mailbox-folder-uids m))))
+         (mailbox-message-create! m "INBOX.Foo.Bar"
+            "Subject: none\r\nFrom: nobody\r\nfoo")
+         (-fx (length (mailbox-folder-uids m)) l0)))
+   :expected 1)
+

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/mail/src/Llib/vcard.scm          */
+;*    .../prgm/project/bigloo/5.0.x/api/mail/src/Llib/vcard.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 11 16:34:38 2008                          */
-;*    Last change :  Tue Nov 15 20:21:59 2011 (serrano)                */
-;*    Copyright   :  2008-21 Manuel Serrano                            */
+;*    Last change :  Wed Sep 16 07:54:16 2026 (serrano)                */
+;*    Copyright   :  2008-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    vCard, rfc2646 - http://tools.ietf.org/html/rfc2426.             */
 ;*=====================================================================*/
@@ -46,7 +46,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    port->vcard ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (port->vcard iport #!key charset-encoder)
+(define (port->vcard iport::input-port #!key charset-encoder)
    (let ((line (read-line iport)))
       (unless (eof-object? line)
 	 (if (and (string? line) (string-ci=? line "begin:vcard"))
@@ -58,7 +58,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-vcard ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (read-vcard iport #!key charset-encoder)
+(define (read-vcard iport::input-port #!key charset-encoder)
    (let ((line (read-line iport)))
       (if (eof-object? line)
 	  line
@@ -70,7 +70,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string->vcard ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (string->vcard str #!key charset-encoder)
+(define (string->vcard::vcard str::bstring #!key charset-encoder)
    (let* ((p (open-input-string str))
 	  (r (port->vcard p :charset-encoder charset-encoder)))
       (close-input-port p)
@@ -234,6 +234,20 @@
 (define vcard-line-grammar
    (regular-grammar ((IDENT (+ (uncase (or #\- (in ("az"))))))
 		     vcard cset)
+
+      (define (decode-options options)
+       (if (pair? options)
+           (cond
+              ((symbol? (car options))
+               (string-downcase (symbol->string (car options))))
+              ((string? (car options))
+               (string-downcase (car options)))
+              ((pair? (car options))
+               (string-append (symbol->string! (caar options)) "="
+                  (string-downcase (cdar options))))
+              (else
+               "default"))
+           "default"))
       
       (define (parse-content-line keyword options)
        (case keyword
@@ -275,17 +289,13 @@
 	  ((tel:)
 	   (with-access::vcard vcard (phones)
 	      (let ((num (read-values (the-port) options cset))
-		    (lbl (if (pair? options)
-			     (string-downcase (symbol->string (car options)))
-			     "default")))
+		    (lbl (decode-options options)))
 		 (when (pair? num)
 		    (set! phones (cons (list lbl (car num)) phones))))))
 	  ((adr:)
 	   (with-access::vcard vcard (addresses)
 	      (let ((vals (read-values (the-port) options cset))
-		    (lbl (if (pair? options)
-			     (string-downcase (symbol->string (car options)))
-			     "home")))
+		    (lbl (decode-options options)))
 		 (match-case vals
 		    ((?po ?ext ?street ?city ?region ?zip ?country)
 		     (set! addresses
@@ -350,7 +360,7 @@
 	   (let ((vals (read-values (the-port) options cset)))
 	      (when (pair? vals)
 		 (with-access::vcard vcard (notes)
-		    (set! notes (car notes))))))
+		    (set! notes (append notes vals))))))
 	  ((x-color:)
 	   (let ((vals (read-values (the-port) options cset)))
 	      (when (pair? vals)

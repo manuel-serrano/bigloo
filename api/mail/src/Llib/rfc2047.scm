@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/mail/src/Llib/rfc2047.scm        */
+;*    .../prgm/project/bigloo/5.0.x/api/mail/src/Llib/rfc2047.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Thu Dec  1 09:11:29 2016 (serrano)                */
-;*    Copyright   :  2007-21 Manuel Serrano                            */
+;*    Last change :  Wed Sep 16 07:38:15 2026 (serrano)                */
+;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC 2047             */
 ;*    MIME (Multipurpose Internet Mail Extensions) Part Three:         */
@@ -23,8 +23,9 @@
    (import __mail_rfc2045)
    
    (export (rfc2047-decode-port ::input-port ::output-port
-				#!key (charset 'iso-latin-1))
-	   (rfc2047-decode::bstring ::bstring #!key (charset 'iso-latin-1))))
+              #!key (charset::symbol 'iso-latin-1))
+	   (rfc2047-decode::bstring ::bstring
+              #!key (charset::symbol 'iso-latin-1))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-error ...                                                  */
@@ -164,7 +165,7 @@
 ;*    rfc2047-decode-port ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (rfc2047-decode-port in::input-port out::output-port
-			     #!key (charset 'iso-latin-1))
+			     #!key (charset::symbol 'iso-latin-1))
    (let ((cs (if (procedure? charset)
 		 charset
 		 (case charset
@@ -181,7 +182,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rfc2047-decode ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (rfc2047-decode str #!key (charset 'iso-latin-1))
+(define (rfc2047-decode::bstring str::bstring #!key (charset::symbol 'iso-latin-1))
    (if (<=fx (string-length str) 6)
        str
        (let ((i (string-contains str "=?")))

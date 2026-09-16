@@ -784,7 +784,7 @@
       (struct.set $rgc $matchstop (local.get $rgc) (i32.const 0))
       (struct.set $rgc $forward (local.get $rgc) (i32.const 0))
       (struct.set $rgc $bufpos (local.get $rgc) (i32.const 0))
-      (struct.set $rgc $lastchar (local.get $rgc) (i32.const 13))
+      (struct.set $rgc $lastchar (local.get $rgc) (i32.const 0xa))
       (struct.set $rgc $buf (local.get $rgc) (local.get $buffer)))
 
    (func $BGL_INPUT_GZIP_PORT_INPUT_PORT (export "BGL_INPUT_GZIP_PORT_INPUT_PORT")
@@ -859,7 +859,7 @@
       (struct.set $rgc $matchstop (local.get $rgc) (i32.const 0))
       (struct.set $rgc $forward (local.get $rgc) (i32.const 0))
       (struct.set $rgc $bufpos (local.get $rgc) (i32.const 0))
-      (struct.set $rgc $lastchar (local.get $rgc) (i32.const 13))
+      (struct.set $rgc $lastchar (local.get $rgc) (i32.const 0xa))
 
       (struct.set $file-input-port $position (local.get $ip) (local.get $pos)))
       
@@ -1961,7 +1961,7 @@
 	    ;; matchstop
 	    (i32.wrap_i64 (local.get $offset))
 	    ;; lastchar
-	    (i32.const 13)
+	    (i32.const 0xa)
 	    ;; buffer
 	    (local.get $buffer)))
       
@@ -2048,7 +2048,7 @@
       (struct.set $rgc $bufpos (local.get $rgc) (array.len (local.get $str)))
       (struct.set $rgc $matchstart (local.get $rgc) (i32.const 0))
       (struct.set $rgc $matchstop (local.get $rgc) (i32.const 0))
-      (struct.set $rgc $lastchar (local.get $rgc) (i32.const 13))
+      (struct.set $rgc $lastchar (local.get $rgc) (i32.const 0xa))
       
       (array.copy $bstring $bstring
 	 (struct.get $rgc $buf (local.get $rgc)) (i32.const 0)
@@ -2082,7 +2082,7 @@
 	    ;; matchstop
 	    (i32.const 0)
 	    ;; lastchar
-	    (i32.const 13)
+	    (i32.const 0xa)
 	    ;; buffer
 	    (local.get $buffer)))
       
@@ -2139,7 +2139,7 @@
 	    ;; matchstop
 	    (i32.const 0)
 	    ;; lastchar
-	    (i32.const 13)
+	    (i32.const 0xa)
 	    ;; buffer
 	    (local.get $buffer)))
       
@@ -2196,7 +2196,7 @@
 	    ;; matchstop
 	    (i32.const 0)
 	    ;; lastchar
-	    (i32.const 13)
+	    (i32.const 0xa)
 	    ;; buffer
 	    (local.get $buffer)))
       
@@ -2248,7 +2248,7 @@
 	    ;; matchstop
 	    (i32.const 0)
 	    ;; lastchar
-	    (i32.const 13)
+	    (i32.const 0xa)
 	    ;; buffer
 	    (local.get $buffer)))
       
@@ -2518,7 +2518,7 @@
       (struct.set $rgc $matchstop (local.get $rgc) (i32.const 0))
       (struct.set $rgc $forward (local.get $rgc) (i32.const 0))
       (struct.set $rgc $bufpos (local.get $rgc) (i32.const 0))
-      (struct.set $rgc $lastchar (local.get $rgc) (i32.const 13))
+      (struct.set $rgc $lastchar (local.get $rgc) (i32.const 0xa))
       
       (return (global.get $BTRUE)))
  

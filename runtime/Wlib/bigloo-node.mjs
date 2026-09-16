@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Sep  4 06:42:43 2024                          */
-/*    Last change :  Tue Jul 28 08:20:01 2026 (serrano)                */
+/*    Last change :  Wed Sep 16 15:31:16 2026 (serrano)                */
 /*    Copyright   :  2024-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo-wasm JavaScript binding, node specific                    */
@@ -18,6 +18,7 @@ import { dirname, extname, sep as file_sep, delimiter } from "node:path";
 import { format } from "node:util";
 import { execSync, spawnSync, spawn } from "node:child_process";
 import { createServer, createConnection, Socket } from "node:net";
+import { hostname } from "node:os";
 
 import { BglRuntime, bglParseArgs, Days, Months } from "./bigloo-common.mjs";
 
@@ -441,7 +442,13 @@ class BglNodeRuntime extends BglRuntime {
 	    } else {
 	       return o.down; 
 	    }
-	 }
+	 },
+
+         gethostname: (addr) => {
+            const s = hostname();
+            self.storeString(s, addr);
+            return s.length;
+         }
       };
    }
 

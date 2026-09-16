@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Wlib/wrgc.wat           */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Wlib/wrgc.wat          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 08:51:40 2024                          */
-;*    Last change :  Fri Jul 25 10:17:38 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Wed Sep 16 15:43:15 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM rgc                                                         */
 ;*=====================================================================*/
@@ -285,6 +285,7 @@
       (param $forward i64)
       (param $bufpos i64)
       (result i32)
+      
       (local $rgc (ref $rgc))
       (local.set $rgc (struct.get $input-port $rgc (local.get $port)))
       
@@ -930,7 +931,7 @@
 	   (struct.set $rgc $bufpos (local.get $rgc) (i32.const 0))
 	   (struct.set $rgc $matchstart (local.get $rgc) (i32.const 0))
 	   (struct.set $rgc $matchstop (local.get $rgc) (i32.const 0))
-	   (struct.set $rgc $lastchar (local.get $rgc) (i32.const 13))
+	   (struct.set $rgc $lastchar (local.get $rgc) (i32.const 0x0a))
 	   (struct.set $rgc $filepos (local.get $rgc)
 	      (i32.add (struct.get $rgc $filepos (local.get $rgc))
 		 (i32.wrap_i64 (i64.sub (local.get $o) (local.get $o0)))))

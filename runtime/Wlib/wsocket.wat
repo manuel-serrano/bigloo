@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 30 10:49:20 2024                          */
-;*    Last change :  Sun Jun 21 19:26:27 2026 (serrano)                */
+;*    Last change :  Wed Sep 16 15:27:59 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM sockets                                                     */
@@ -123,6 +123,7 @@
    (import "__js_socket" "accept" (func $js_accept (param externref) (result i32)))
    (import "__js_socket" "close" (func $js_close (param externref)))
    (import "__js_socket" "downp" (func $js_downp (param externref) (result i32)))
+   (import "__js_socket" "gethostname" (func $js_gethostname (param i32) (result i32)))
    
    ;; -----------------------------------------------------------------
    ;; Global variables 
@@ -345,5 +346,12 @@
       (param $s (ref $socket))
       (result i32)
       (return_call $js_downp (struct.get $socket $sock (local.get $s))))
-      
+
+   (func $bgl_gethostname
+      (result (ref $bstring))
+      (return_call $load_string
+	 (i32.const 128)
+	 (call $js_gethostname
+	    (i32.const 128))))
+   
    )

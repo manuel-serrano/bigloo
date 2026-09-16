@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Tue Sep 15 13:55:52 2026 (serrano)                */
+;*    Last change :  Tue Sep 15 17:54:13 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -35,9 +35,9 @@
 	   (mime-content-disposition-decode::pair-nil ::bstring)
 
 	   (mime-multipart-decode-port::pair-nil ::input-port ::bstring
-						 #!optional recursive quiet)
+						 #!optional (recursive::bool #f) (quiet::bool #f))
 	   (mime-multipart-decode::pair-nil ::bstring ::bstring
-					    #!optional recursive quiet)))
+					    #!optional (recursive::bool #f) (quiet::bool #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    quoted-printable-encode-port ...                                 */
@@ -495,14 +495,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    mime-multipart-decode-port ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (mime-multipart-decode-port in boundary #!optional recursive quiet)
+(define (mime-multipart-decode-port::pair-nil in::input-port boundary::bstring #!optional (recursive::bool #f) (quiet::bool #f))
    (let ((buffer (make-string (+fx (string-length boundary) 256))))
       (multipart-parse-entry buffer in boundary recursive quiet)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mime-multipart-decode ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (mime-multipart-decode str boundary #!optional recursive quiet)
+(define (mime-multipart-decode::pair-nil str::bstring boundary::bstring #!optional (recursive::bool #f) (quiet::bool #f))
    (let ((in (open-input-string str)))
       (unwind-protect
 	 (mime-multipart-decode-port in boundary recursive quiet)
