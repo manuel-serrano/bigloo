@@ -13,11 +13,14 @@
 ,(implementation-path "../runtime/Llib/object.scm")
 ,(example-path "../test/src/error.bgl")
 
-Errors and Warnings
-===================
+Exceptions, Errors and Warnings
+===============================
 Bigloo permits to signal an error via the error functions. Errors are
 implemented by the means of exceptions (see `try` and `raise` forms).
-Assertions allow the checking of predicates at certain points in programs.  
+Assertions allow the checking of predicates at certain points in programs.
+
+Exceptions can be intercepted with the [`with-handler`](./core.html) form.
+See also [`unwind-protect`](./core.html) for protecting stack blocks.
 
 
 Classes

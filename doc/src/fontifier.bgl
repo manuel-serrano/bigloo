@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano, Florian Loitsch                   */
 ;*    Creation    :  Thu Sep  7 17:29:41 2006                          */
-;*    Last change :  Sun Jul 12 09:17:09 2026 (serrano)                */
+;*    Last change :  Thu Sep 17 09:27:47 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    fontifiers                                                       */
@@ -112,7 +112,7 @@
 					(format "wrong anchor tag [~s]" anchor)
 					tag))))))
 		  <SPAN>)))
-      (multiple-value-bind (id class prop)
+      (bind-values (id class prop)
 	 (fontifier-parse-ident anchor)
 	 (cond
 	    ((and prop class id)
@@ -452,7 +452,7 @@
            "if" "when" "unless"
 	   "begin" "cond" "case" "instantiate" "duplicate" "co-instantiate"
            "set!" "else" "with-access" "widen!" "shrink!" "call-next-method"
-	   "multiple-value-bind" "values" "match-case" "match-lambda"
+	   "bind-values" "values" "match-case" "match-lambda"
            "regular-grammar" "lalr-grammar"))
       (for-each (lambda (k)
 		   (hashtable-put! t k "important"))
@@ -1487,7 +1487,7 @@
 	 (else #f)))
    
    (define (split-lines prog num)
-      (multiple-value-bind (num line next)
+      (bind-values (num line next)
 	 (next-line num prog)
 	 (if (null? next)
 	     (if (empty-line? line)

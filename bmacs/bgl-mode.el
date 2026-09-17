@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Mon Sep  7 15:49:30 2026 (serrano)                */
+;*    Last change :  Thu Sep 17 09:20:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -163,7 +163,7 @@
 		 "\\|let-syntax\\|letrec-syntax"
 		 "\\|regular-grammar\\|lalr-grammar"
 		 "\\|if\\|when\\|unless\\|begin\\|case\\|cond\\|else"
-		 "\\|args-parse\\|multiple-value-bind\\|values"
+		 "\\|args-parse\\|bind-values\\|values"
 		 "\\|match-case\\|match-lambda\\|event-case\\|on-event"
 		 "\\|string-case\\|syntax-rules\\)[ :\n\t]")
 	 1

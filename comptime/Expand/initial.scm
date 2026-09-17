@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue Jun 23 06:24:41 2026 (serrano)                */
+;*    Last change :  Thu Sep 17 09:17:55 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -129,6 +129,7 @@
    
    ;; multiple-value-bind
    (install-compiler-expander 'multiple-value-bind expand-mvalue-bind)
+   (install-compiler-expander 'bind-values expand-mvalue-bind)
 
    ;; private
    (install-compiler-expander (private-stamp)

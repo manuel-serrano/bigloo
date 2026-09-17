@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/mvalue.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Expand/mvalue.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 22 10:35:52 2005                          */
-;*    Last change :  Sun Nov 10 09:42:28 2013 (serrano)                */
-;*    Copyright   :  2005-13 Manuel Serrano                            */
+;*    Last change :  Thu Sep 17 09:18:53 2026 (serrano)                */
+;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of multiple values                           */
 ;*=====================================================================*/
@@ -34,7 +34,7 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-mvalue-bind x e)
    (match-case x
-      ((?- ?vars ?call . ?exprs)
+      ((?key ?vars ?call . ?exprs)
        (expand-O-call-with-values
 	  (evepairify-deep
 	     `(call-with-values
@@ -43,7 +43,7 @@
 	     x)
 	  e))
       (else
-       (error "multiple-value-bind" "Illegal form" x))))
+       (error (car x) "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-O-call-with-values ...                                    */

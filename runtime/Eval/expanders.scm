@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Sep 11 15:51:44 2026 (serrano)                */
+;*    Last change :  Thu Sep 17 08:43:23 2026 (serrano)                */
 ;*    Copyright   :  2002-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -244,7 +244,7 @@
       (lambda (x e)
 	 (match-case x
 	    ((?- ?vars ?call . ?exprs)
-	     (e `(multiple-value-bind  ,vars ,call ,@exprs) e))
+	     (e `(bind-values  ,vars ,call ,@exprs) e))
 	    (else
 	     (expand-error "receive" "Illegal form" x)))))
    
@@ -413,22 +413,28 @@
    (install-eval-expander 'multiple-value-bind
       (lambda (x e)
 	 (match-case x
-	    ((?- (and ??- (? (lambda (x) (every symbol? x))) ?vars)
-		?producer . ?exprs)
-	     (let* ((tmps (map gensym vars))
-		    (tmps2 (map gensym vars))
-		    (nx `(let (,@(map (lambda (v) `(,v #unspecified)) tmps))
-			    (call-with-values
-			       (lambda () ,producer)
-			       (lambda ,tmps2
-				  ,@(map (lambda (v t) `(set! ,v ,t))
-				       tmps tmps2)))
-			    (let (,@(map (lambda (v t) `(,v ,t))
-				       vars tmps))
-			       ,@exprs))))
-		(evepairify (e nx e) x)))
+	    ((?- ?vars ?call . ?exprs)
+	     (when (epair? x)
+		(warning/loc (cer x)
+		   "\"multiple-value-bind\" as been renamed \"bind-values\" in version 5."))
+	     (let ((nx `(call-with-values
+			   (lambda () ,call)
+			   (lambda ,vars ,@exprs))))
+		(e (evepairify nx x) e)))
 	    (else
 	     (expand-error "multiple-value-bind" "Illegal form" x)))))
+
+   ;; bind-values
+   (install-eval-expander 'bind-values
+      (lambda (x e)
+	 (match-case x
+	    ((?- ?vars ?call . ?exprs)
+	     (let ((nx `(call-with-values
+			   (lambda () ,call)
+			   (lambda ,vars ,@exprs))))
+		(e (evepairify nx x) e)))
+	    (else
+	     (expand-error "bind-values" "Illegal form" x)))))
    ;; if
    (install-eval-expander 'if expand-if)
    

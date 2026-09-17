@@ -11,6 +11,7 @@
 
 ,(implementation-path "../runtime/Eval/expdsrfi0.scm")
 ,(implementation-path "../runtime/Ieee/control5.scm")
+,(implementation-path "../runtime/Llib/error.scm")
 ,(example-path "../test/src/core.bgl")
 
 
@@ -108,6 +109,23 @@ are introduced with the `#; syntax:
         (* n (fact (- n 1))))))
 ```
 
+Definitions
+-----------
+
+The keyword `define`, when used at the top-level defines global bindings.
+When used locally, it expands into a `letrec*` expression.
+
+See also [define-class](./object.html),
+[define-generic](./object.html), [define-macro](./macro.html),
+[define-expander](./macro.html).
+
+### (define variable expression) ###
+<!-- [:define@NoDef] -->
+Defines a variable.
+
+### (define (variable args) expression) ###
+<!-- [:definefun@NoDef] -->
+Defines a function.
 
 Expressions
 -----------
@@ -308,13 +326,8 @@ Syntactic form for creating lists and vectors. Similar to `quote` except
 that a `quasiquote` evaluates un `unquote` and `unquote-splicing` expression
 it contains.
 
-### (define variable expression) ###
-<!-- [:define@NoDef] -->
-Defines a variable.
-
-### (define (variable args) expression) ###
-<!-- [:definefun@NoDef] -->
-Defines a function.
+Multiple Values
+---------------
 
 ### values ###
 Delivers all of its arguments to its continuation.
@@ -339,3 +352,75 @@ continuation of the call to `call-with-values`.
 
 > [!NOTE] It is not an error to bind less values than produced
 > by the executed `values` call.
+
+### (bind-values (var ...) producer expr ...) ###
+<!-- [:bind-values@NoDef] -->
+Evaluates `expr`... in a environment where `var`... are bound 
+from the evaluation of `producer`. The result of `producer` must 
+be a call to `values` where the number of argument is the number of 
+bound variables.
+
+The form `(bind-values (a b) producer expr)` is equivalent to
+`(call-with-values (lambda () producer) (lambda (a b) expr))`.
+
+<span></span>
+
+
+Control Flow
+------------
+
+### (bind-exit (escape) body) ###
+<!-- [:bind-exit@NoDef] -->
+This form provides an escape operator facility. A `bind-exit` form
+evaluates the `body`, which may refer to the variable 
+`escape` which will denote an "escape function" of one
+argument: when called, this escape function will return from
+the `bind-exit` form with the given argument as the value of
+the `bind-exit` form. The `escape` can only be used
+while in the dynamic extent of the form. Bindings introduced by
+`bind-exit` are immutable.
+
+### (unwind-protect expr protect) ###
+<!-- [:unwind-protect@NoDef] -->
+This form provides protections. Expression `expr` is evaluated. If
+this evaluation requires the invocation of an escape procedure (a
+procedure bounded by the `bind-exit` special form) or raises an
+exception, `protect` is evaluated before the control jump to the exit
+procedure. If `expr` does not raise any exit procedure,
+`unwind-protect` has the same behaviour as the `begin`
+special form except that the value of the form is always the value of
+`expr`.
+
+### (with-exception-handler handler::procedure thunk::procedure) ###
+<!-- [:with-exception-handler@NoDef] -->
+
+See also [`raise`](./error.html).
+
+Returns the result(s) of calling `thunk` with no arguments. The
+`handler`, which must be a procedure accepting one argument, is
+installed as the current exception handler in the dynamic environment
+in effect during the call to `thunk`. When possible, prefer
+`with-handler` to `with-exception-handler` because the
+former provides better debugging support and because its semantics is
+more intuitive. 
+
+### (with-handler handler::procedure body) ###
+<!-- [:with-handler@NoDef] -->
+
+See also [`raise`](./error.html).
+
+Returns the result(s) of evaluating `body`. The `handler`, which must
+be a procedure accepting one argument, is installed as the current
+exception handler in the dynamic environment in effect during the
+evaluation of `body`. Contrarily to `with-exception-handler`,
+if an exception is raised, the `handler` is invoked and the value
+of the `with-handler` form is the value produced by invoking the
+`handler`.  The handler is executed in the continuation of the
+`with-handler` form.
+
+> [!NOTE] JVM note: When executed within a JVM, the form `with-handler`
+> also catches Java exceptions.
+
+> [!IMPORTANT] Important note: error handlers are executed
+> _after_ the execution stack is unwound. Hence, error handlers are
+> executed _after_ protected blocks.
