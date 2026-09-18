@@ -56,7 +56,37 @@
 	    (macro $mmap-rp-set!::void (::mmap ::elong) "BGL_MMAP_RP_SET")
 	    (macro $mmap-wp::elong (::mmap) "BGL_MMAP_WP_GET")
 	    (macro $mmap-wp-set!::void (::mmap ::elong) "BGL_MMAP_WP_SET")
-	    (macro $mmap-bound-check?::bool (::elong ::elong) "BOUND_CHECK"))
+	    (macro $mmap-bound-check?::bool (::elong ::elong) "BOUND_CHECK")
+	    
+	    ;; Numeric mmap access - 8-bit
+	    (macro $mmap-s8-ref::int8 (::mmap ::elong) "BGL_MMAP_S8_REF")
+	    (macro $mmap-u8-ref::uint8 (::mmap ::elong) "BGL_MMAP_U8_REF")
+	    (macro $mmap-s8-set!::obj (::mmap ::elong ::int8) "BGL_MMAP_S8_SET")
+	    (macro $mmap-u8-set!::obj (::mmap ::elong ::uint8) "BGL_MMAP_U8_SET")
+	    
+	    ;; Numeric mmap access - 16-bit
+	    (macro $mmap-s16-ref::int16 (::mmap ::elong) "BGL_MMAP_S16_REF")
+	    (macro $mmap-u16-ref::uint16 (::mmap ::elong) "BGL_MMAP_U16_REF")
+	    (macro $mmap-s16-set!::obj (::mmap ::elong ::int16) "BGL_MMAP_S16_SET")
+	    (macro $mmap-u16-set!::obj (::mmap ::elong ::uint16) "BGL_MMAP_U16_SET")
+	    
+	    ;; Numeric mmap access - 32-bit
+	    (macro $mmap-s32-ref::int32 (::mmap ::elong) "BGL_MMAP_S32_REF")
+	    (macro $mmap-u32-ref::uint32 (::mmap ::elong) "BGL_MMAP_U32_REF")
+	    (macro $mmap-s32-set!::obj (::mmap ::elong ::int32) "BGL_MMAP_S32_SET")
+	    (macro $mmap-u32-set!::obj (::mmap ::elong ::uint32) "BGL_MMAP_U32_SET")
+	    
+	    ;; Numeric mmap access - 64-bit
+	    (macro $mmap-s64-ref::int64 (::mmap ::elong) "BGL_MMAP_S64_REF")
+	    (macro $mmap-u64-ref::uint64 (::mmap ::elong) "BGL_MMAP_U64_REF")
+	    (macro $mmap-s64-set!::obj (::mmap ::elong ::int64) "BGL_MMAP_S64_SET")
+	    (macro $mmap-u64-set!::obj (::mmap ::elong ::uint64) "BGL_MMAP_U64_SET")
+	    
+	    ;; Numeric mmap access - floats
+	    (macro $mmap-f32-ref::float (::mmap ::elong) "BGL_MMAP_F32_REF")
+	    (macro $mmap-f64-ref::double (::mmap ::elong) "BGL_MMAP_F64_REF")
+	    (macro $mmap-f32-set!::obj (::mmap ::elong ::float) "BGL_MMAP_F32_SET")
+	    (macro $mmap-f64-set!::obj (::mmap ::elong ::double) "BGL_MMAP_F64_SET"))
    
    (java    (class foreign
 	       (method static $mmap?::bool (::obj)
@@ -86,7 +116,57 @@
 	       (method static $mmap-wp-set!::void (::mmap ::elong)
 		  "BGL_MMAP_WP_SET")	
 	       (method static $mmap-bound-check?::bool (::elong ::elong)
-		  "BOUND_CHECK")))
+		  "BOUND_CHECK")
+	       
+	       ;; Numeric mmap access - 8-bit
+	       (method static $mmap-s8-ref::int8 (::mmap ::elong)
+		  "BGL_MMAP_S8_REF")
+	       (method static $mmap-u8-ref::uint8 (::mmap ::elong)
+		  "BGL_MMAP_U8_REF")
+	       (method static $mmap-s8-set!::obj (::mmap ::elong ::int8)
+		  "BGL_MMAP_S8_SET")
+	       (method static $mmap-u8-set!::obj (::mmap ::elong ::uint8)
+		  "BGL_MMAP_U8_SET")
+	       
+	       ;; Numeric mmap access - 16-bit
+	       (method static $mmap-s16-ref::int16 (::mmap ::elong)
+		  "BGL_MMAP_S16_REF")
+	       (method static $mmap-u16-ref::uint16 (::mmap ::elong)
+		  "BGL_MMAP_U16_REF")
+	       (method static $mmap-s16-set!::obj (::mmap ::elong ::int16)
+		  "BGL_MMAP_S16_SET")
+	       (method static $mmap-u16-set!::obj (::mmap ::elong ::uint16)
+		  "BGL_MMAP_U16_SET")
+	       
+	       ;; Numeric mmap access - 32-bit
+	       (method static $mmap-s32-ref::int32 (::mmap ::elong)
+		  "BGL_MMAP_S32_REF")
+	       (method static $mmap-u32-ref::uint32 (::mmap ::elong)
+		  "BGL_MMAP_U32_REF")
+	       (method static $mmap-s32-set!::obj (::mmap ::elong ::int32)
+		  "BGL_MMAP_S32_SET")
+	       (method static $mmap-u32-set!::obj (::mmap ::elong ::uint32)
+		  "BGL_MMAP_U32_SET")
+	       
+	       ;; Numeric mmap access - 64-bit
+	       (method static $mmap-s64-ref::int64 (::mmap ::elong)
+		  "BGL_MMAP_S64_REF")
+	       (method static $mmap-u64-ref::uint64 (::mmap ::elong)
+		  "BGL_MMAP_U64_REF")
+	       (method static $mmap-s64-set!::obj (::mmap ::elong ::int64)
+		  "BGL_MMAP_S64_SET")
+	       (method static $mmap-u64-set!::obj (::mmap ::elong ::uint64)
+		  "BGL_MMAP_U64_SET")
+	       
+	       ;; Numeric mmap access - floats
+	       (method static $mmap-f32-ref::float (::mmap ::elong)
+		  "BGL_MMAP_F32_REF")
+	       (method static $mmap-f64-ref::double (::mmap ::elong)
+		  "BGL_MMAP_F64_REF")
+	       (method static $mmap-f32-set!::obj (::mmap ::elong ::float)
+		  "BGL_MMAP_F32_SET")
+	       (method static $mmap-f64-set!::obj (::mmap ::elong ::double)
+		  "BGL_MMAP_F64_SET")))
    
    (export  (inline mmap?::bool ::obj)
 	    (open-mmap::mmap ::bstring #!key (read #t) (write #t))
@@ -109,7 +189,37 @@
 	    (inline mmap-get-char::uchar ::mmap)
 	    (inline mmap-put-char! ::mmap ::uchar)
 	    (inline mmap-get-string::bstring ::mmap ::elong)
-	    (inline mmap-put-string! ::mmap ::bstring)))
+	    (inline mmap-put-string! ::mmap ::bstring)
+	    
+	    ;; Numeric access - 8-bit
+	    (inline mmap-s8-ref::int8 ::mmap ::elong)
+	    (inline mmap-u8-ref::uint8 ::mmap ::elong)
+	    (inline mmap-s8-set!::obj ::mmap ::elong ::int8)
+	    (inline mmap-u8-set!::obj ::mmap ::elong ::uint8)
+	    
+	    ;; Numeric access - 16-bit
+	    (inline mmap-s16-ref::int16 ::mmap ::elong)
+	    (inline mmap-u16-ref::uint16 ::mmap ::elong)
+	    (inline mmap-s16-set!::obj ::mmap ::elong ::int16)
+	    (inline mmap-u16-set!::obj ::mmap ::elong ::uint16)
+	    
+	    ;; Numeric access - 32-bit
+	    (inline mmap-s32-ref::int32 ::mmap ::elong)
+	    (inline mmap-u32-ref::uint32 ::mmap ::elong)
+	    (inline mmap-s32-set!::obj ::mmap ::elong ::int32)
+	    (inline mmap-u32-set!::obj ::mmap ::elong ::uint32)
+	    
+	    ;; Numeric access - 64-bit
+	    (inline mmap-s64-ref::int64 ::mmap ::elong)
+	    (inline mmap-u64-ref::uint64 ::mmap ::elong)
+	    (inline mmap-s64-set!::obj ::mmap ::elong ::int64)
+	    (inline mmap-u64-set!::obj ::mmap ::elong ::uint64)
+	    
+	    ;; Numeric access - floats
+	    (inline mmap-f32-ref::float ::mmap ::elong)
+	    (inline mmap-f64-ref::double ::mmap ::elong)
+	    (inline mmap-f32-set!::obj ::mmap ::elong ::float)
+	    (inline mmap-f64-set!::obj ::mmap ::elong ::double)))
  
 ;*---------------------------------------------------------------------*/
 ;*    mmap? ...                                                        */
@@ -306,3 +416,248 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (mmap-put-string! mm::mmap s)
    (mmap-substring-set! mm ($mmap-wp mm) s))
+
+;*---------------------------------------------------------------------*/
+;*    Numeric mmap access - 8-bit                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (mmap-s8-ref mm::mmap i::elong)
+   (if ($mmap-bound-check? i (mmap-length mm))
+       (let ((val ($mmap-s8-ref mm i)))
+	  (mmap-read-position-set! mm (+elong i #e1))
+	  val)
+       (error 'mmap-s8-ref
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e1))
+			     "]")
+	      i)))
+
+(define-inline (mmap-u8-ref mm::mmap i::elong)
+   (if ($mmap-bound-check? i (mmap-length mm))
+       (let ((val ($mmap-u8-ref mm i)))
+	  (mmap-read-position-set! mm (+elong i #e1))
+	  val)
+       (error 'mmap-u8-ref
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e1))
+			     "]")
+	      i)))
+
+(define-inline (mmap-s8-set! mm::mmap i::elong val::int8)
+   (if ($mmap-bound-check? i (mmap-length mm))
+       (begin
+	  ($mmap-s8-set! mm i val)
+	  (mmap-write-position-set! mm (+elong i #e1))
+	  mm)
+       (error 'mmap-s8-set!
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e1))
+			     "]")
+	      i)))
+
+(define-inline (mmap-u8-set! mm::mmap i::elong val::uint8)
+   (if ($mmap-bound-check? i (mmap-length mm))
+       (begin
+	  ($mmap-u8-set! mm i val)
+	  (mmap-write-position-set! mm (+elong i #e1))
+	  mm)
+       (error 'mmap-u8-set!
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e1))
+			     "]")
+	      i)))
+
+;*---------------------------------------------------------------------*/
+;*    Numeric mmap access - 16-bit                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (mmap-s16-ref mm::mmap i::elong)
+   (if ($mmap-bound-check? (+elong i #e1) (mmap-length mm))
+       (let ((val ($mmap-s16-ref mm i)))
+	  (mmap-read-position-set! mm (+elong i #e2))
+	  val)
+       (error 'mmap-s16-ref
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e2))
+			     "]")
+	      i)))
+
+(define-inline (mmap-u16-ref mm::mmap i::elong)
+   (if ($mmap-bound-check? (+elong i #e1) (mmap-length mm))
+       (let ((val ($mmap-u16-ref mm i)))
+	  (mmap-read-position-set! mm (+elong i #e2))
+	  val)
+       (error 'mmap-u16-ref
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e2))
+			     "]")
+	      i)))
+
+(define-inline (mmap-s16-set! mm::mmap i::elong val::int16)
+   (if ($mmap-bound-check? (+elong i #e1) (mmap-length mm))
+       (begin
+	  ($mmap-s16-set! mm i val)
+	  (mmap-write-position-set! mm (+elong i #e2))
+	  mm)
+       (error 'mmap-s16-set!
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e2))
+			     "]")
+	      i)))
+
+(define-inline (mmap-u16-set! mm::mmap i::elong val::uint16)
+   (if ($mmap-bound-check? (+elong i #e1) (mmap-length mm))
+       (begin
+	  ($mmap-u16-set! mm i val)
+	  (mmap-write-position-set! mm (+elong i #e2))
+	  mm)
+       (error 'mmap-u16-set!
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e2))
+			     "]")
+	      i)))
+
+;*---------------------------------------------------------------------*/
+;*    Numeric mmap access - 32-bit                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (mmap-s32-ref mm::mmap i::elong)
+   (if ($mmap-bound-check? (+elong i #e3) (mmap-length mm))
+       (let ((val ($mmap-s32-ref mm i)))
+	  (mmap-read-position-set! mm (+elong i #e4))
+	  val)
+       (error 'mmap-s32-ref
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e4))
+			     "]")
+	      i)))
+
+(define-inline (mmap-u32-ref mm::mmap i::elong)
+   (if ($mmap-bound-check? (+elong i #e3) (mmap-length mm))
+       (let ((val ($mmap-u32-ref mm i)))
+	  (mmap-read-position-set! mm (+elong i #e4))
+	  val)
+       (error 'mmap-u32-ref
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e4))
+			     "]")
+	      i)))
+
+(define-inline (mmap-s32-set! mm::mmap i::elong val::int32)
+   (if ($mmap-bound-check? (+elong i #e3) (mmap-length mm))
+       (begin
+	  ($mmap-s32-set! mm i val)
+	  (mmap-write-position-set! mm (+elong i #e4))
+	  mm)
+       (error 'mmap-s32-set!
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e4))
+			     "]")
+	      i)))
+
+(define-inline (mmap-u32-set! mm::mmap i::elong val::uint32)
+   (if ($mmap-bound-check? (+elong i #e3) (mmap-length mm))
+       (begin
+	  ($mmap-u32-set! mm i val)
+	  (mmap-write-position-set! mm (+elong i #e4))
+	  mm)
+       (error 'mmap-u32-set!
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e4))
+			     "]")
+	      i)))
+
+;*---------------------------------------------------------------------*/
+;*    Numeric mmap access - 64-bit                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (mmap-s64-ref mm::mmap i::elong)
+   (if ($mmap-bound-check? (+elong i #e7) (mmap-length mm))
+       (let ((val ($mmap-s64-ref mm i)))
+	  (mmap-read-position-set! mm (+elong i #e8))
+	  val)
+       (error 'mmap-s64-ref
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e8))
+			     "]")
+	      i)))
+
+(define-inline (mmap-u64-ref mm::mmap i::elong)
+   (if ($mmap-bound-check? (+elong i #e7) (mmap-length mm))
+       (let ((val ($mmap-u64-ref mm i)))
+	  (mmap-read-position-set! mm (+elong i #e8))
+	  val)
+       (error 'mmap-u64-ref
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e8))
+			     "]")
+	      i)))
+
+(define-inline (mmap-s64-set! mm::mmap i::elong val::int64)
+   (if ($mmap-bound-check? (+elong i #e7) (mmap-length mm))
+       (begin
+	  ($mmap-s64-set! mm i val)
+	  (mmap-write-position-set! mm (+elong i #e8))
+	  mm)
+       (error 'mmap-s64-set!
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e8))
+			     "]")
+	      i)))
+
+(define-inline (mmap-u64-set! mm::mmap i::elong val::uint64)
+   (if ($mmap-bound-check? (+elong i #e7) (mmap-length mm))
+       (begin
+	  ($mmap-u64-set! mm i val)
+	  (mmap-write-position-set! mm (+elong i #e8))
+	  mm)
+       (error 'mmap-u64-set!
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e8))
+			     "]")
+	      i)))
+
+;*---------------------------------------------------------------------*/
+;*    Numeric mmap access - floats                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (mmap-f32-ref mm::mmap i::elong)
+   (if ($mmap-bound-check? (+elong i #e3) (mmap-length mm))
+       (let ((val ($mmap-f32-ref mm i)))
+	  (mmap-read-position-set! mm (+elong i #e4))
+	  val)
+       (error 'mmap-f32-ref
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e4))
+			     "]")
+	      i)))
+
+(define-inline (mmap-f64-ref mm::mmap i::elong)
+   (if ($mmap-bound-check? (+elong i #e7) (mmap-length mm))
+       (let ((val ($mmap-f64-ref mm i)))
+	  (mmap-read-position-set! mm (+elong i #e8))
+	  val)
+       (error 'mmap-f64-ref
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e8))
+			     "]")
+	      i)))
+
+(define-inline (mmap-f32-set! mm::mmap i::elong val::float)
+   (if ($mmap-bound-check? (+elong i #e3) (mmap-length mm))
+       (begin
+	  ($mmap-f32-set! mm i val)
+	  (mmap-write-position-set! mm (+elong i #e4))
+	  mm)
+       (error 'mmap-f32-set!
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e4))
+			     "]")
+	      i)))
+
+(define-inline (mmap-f64-set! mm::mmap i::elong val::double)
+   (if ($mmap-bound-check? (+elong i #e7) (mmap-length mm))
+       (begin
+	  ($mmap-f64-set! mm i val)
+	  (mmap-write-position-set! mm (+elong i #e8))
+	  mm)
+       (error 'mmap-f64-set!
+	      (string-append "index out of range [0.."
+			     (number->string (-elong (mmap-length mm) #e8))
+			     "]")
+	      i)))

@@ -58,7 +58,7 @@ ICOMMON		= vital bps bool list vector srfi4 struct print \
                   rgc_eval rgc hash module import1 import2 \
                   cfa2 cell hygiene wind dsssl sua peek callcc fringe \
                   unicode optim pregexp lalr system date process \
-                  mmap input_mmap_port weakptr crypto crc ssr
+                  mmap mmap_numeric input_mmap_port weakptr crypto crc ssr
 
 OCOMMON		= object object_sans \
                   object1 object1_sans \

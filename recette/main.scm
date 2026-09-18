@@ -45,6 +45,7 @@
 	   input-port
            input-mmap-port
 	   mmap
+	   mmap-numeric
 	   read
 	   callcc
 	   fringe
@@ -305,6 +306,7 @@
 	  (if-module 'input-port test-input-port)
           (if-module 'input-mmap-port test-input-mmap-port)
 	  (if-module 'mmap test-mmap)
+	  (if-module 'mmap-numeric test-mmap-numeric)
 	  (if-module 'read test-read)
 	  (if *callcc?*
 	      (begin
