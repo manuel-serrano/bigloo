@@ -212,7 +212,7 @@
 ;*    md5sum-mmap ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (md5sum-mmap::bstring mm::mmap)
-   (multiple-value-bind (len padding)
+   (bind-values (len padding)
       (step1-2-mmap mm)
       (step3-4-5-mmap mm len padding)))
 
@@ -220,7 +220,7 @@
 ;*    md5sum-string ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (md5sum-string::bstring str::bstring)
-   (multiple-value-bind (len padding)
+   (bind-values (len padding)
       (step1-2-string str (fixnum->elong (string-length str)))
       (step3-4-5-string str len padding)))
 
@@ -532,7 +532,7 @@
 		(begin
 		   (step3-string R buf 0)
 		   (loop (+fx i 64)))
-		(multiple-value-bind (_ padding)
+		(bind-values (_ padding)
 		   (step1-2-string (string-shrink! buf len)
 				   (fixnum->elong (+fx i len)))
 		   (step4-5 R padding)))))))

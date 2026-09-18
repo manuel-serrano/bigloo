@@ -65,7 +65,7 @@
 	      (use use))
       (if (null? nodes)
 	  (values def use)
-	  (multiple-value-bind (d u)
+	  (bind-values (d u)
 	     (defuse (car nodes))
 	     (loop (cdr nodes) (union d def) (union u use))))))
 
@@ -78,7 +78,7 @@
 	      (use '()))
       (if (null? nodes)
 	  (values def use)
-	  (multiple-value-bind (d u)
+	  (bind-values (d u)
 	     (defuse (car nodes))
 	     (loop (cdr nodes)
 		(union def d)
@@ -89,7 +89,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::sequence)
    (with-access::sequence n (nodes)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse-sequence nodes)
 	 (defuse
 	    (widen!::sequence/defuse n
@@ -105,9 +105,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::app)
    (with-access::app n (fun args)
-      (multiple-value-bind (d u)
+      (bind-values (d u)
 	 (defuse fun)
-	 (multiple-value-bind (def use)
+	 (bind-values (def use)
 	    (defuse* args d u)
 	    (defuse 
 	       (widen!::app/defuse n
@@ -123,9 +123,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::app-ly)
    (with-access::app-ly n (fun arg)
-      (multiple-value-bind (deffun usefun)
+      (bind-values (deffun usefun)
 	 (defuse fun)
-	 (multiple-value-bind (defarg usearg)
+	 (bind-values (defarg usearg)
 	    (defuse arg)
 	    (defuse 
 	       (widen!::app-ly/defuse n
@@ -141,9 +141,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::funcall)
    (with-access::funcall n (fun args)
-      (multiple-value-bind (d u)
+      (bind-values (d u)
 	 (defuse fun)
-	 (multiple-value-bind (def use)
+	 (bind-values (def use)
 	    (defuse* args d u)
 	    (defuse 
 	       (widen!::funcall/defuse n
@@ -173,7 +173,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::setq)
    (with-access::setq n (var value)
-      (multiple-value-bind (defvalue usevalue)
+      (bind-values (defvalue usevalue)
 	 (defuse value)
 	 (with-access::var var ((v variable))
 	    (when (isa? v local/defuse)
@@ -192,11 +192,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::conditional)
    (with-access::conditional n (test true false)
-      (multiple-value-bind (deftest usetest)
+      (bind-values (deftest usetest)
 	 (defuse test)
-	 (multiple-value-bind (deftrue usetrue)
+	 (bind-values (deftrue usetrue)
 	    (defuse true)
-	    (multiple-value-bind (deffalse usefalse)
+	    (bind-values (deffalse usefalse)
 	       (defuse false)
 	       (defuse
 		  (widen!::conditional/defuse n
@@ -212,11 +212,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::fail)
    (with-access::fail n (proc msg obj)
-      (multiple-value-bind (defproc useproc)
+      (bind-values (defproc useproc)
 	 (defuse proc)
-	 (multiple-value-bind (defmsg usemsg)
+	 (bind-values (defmsg usemsg)
 	    (defuse msg)
-	    (multiple-value-bind (defobj useobj)
+	    (bind-values (defobj useobj)
 	       (defuse obj)
 	       (defuse
 		  (widen!::fail/defuse n
@@ -232,13 +232,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::switch)
    (with-access::switch n (test clauses)
-      (multiple-value-bind (deftest usetest)
+      (bind-values (deftest usetest)
 	 (defuse test)
 	 ;; compute separatly the def use props of all clauses
 	 (let ((defs '())
 	       (uses '()))
 	    (for-each (lambda (clause)
-			 (multiple-value-bind (def use)
+			 (bind-values (def use)
 			    (defuse (cdr clause))
 			    (set! defs (cons def defs))
 			    (set! uses (cons use uses))))
@@ -257,11 +257,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::set-ex-it)
    (with-access::set-ex-it n (var body onexit)
-      (multiple-value-bind (defvar usevar)
+      (bind-values (defvar usevar)
 	 (defuse var)
-	 (multiple-value-bind (defbody usebody)
+	 (bind-values (defbody usebody)
 	    (defuse body)
-	    (multiple-value-bind (defonx useonx)
+	    (bind-values (defonx useonx)
 	       (defuse onexit)
 	       (defuse
 		  (widen!::set-ex-it/defuse n
@@ -277,9 +277,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::jump-ex-it)
    (with-access::jump-ex-it n (exit value)
-      (multiple-value-bind (defexit useexit)
+      (bind-values (defexit useexit)
 	 (defuse exit)
-	 (multiple-value-bind (defvalue usevalue)
+	 (bind-values (defvalue usevalue)
 	    (defuse value)
 	    (defuse
 	       (widen!::jump-ex-it/defuse n
@@ -309,9 +309,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::box-set!)
    (with-access::box-set! n (var value)
-      (multiple-value-bind (defvalue usevalue)
+      (bind-values (defvalue usevalue)
 	 (defuse value)
-	 (multiple-value-bind (defvar usevar)
+	 (bind-values (defvar usevar)
 	    (defuse var)
 	    (defuse
 	       (widen!::box-set!/defuse n
@@ -327,7 +327,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::sync)
    (with-access::sync n (mutex prelock body)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse-sequence (list prelock mutex body))
 	 (defuse
 	    (widen!::sync/defuse n
@@ -349,12 +349,12 @@
 	    (usebindings '()))
 	 (for-each (lambda (b)
 		      (widen!::local/defuse (car b))
-		      (multiple-value-bind (def use)
+		      (bind-values (def use)
 			 (defuse (cdr b))
 			 (set! defbindings (union def defbindings))
 			 (set! usebindings (union use usebindings))))
 	    bindings)
-	 (multiple-value-bind (defbody usebody)
+	 (bind-values (defbody usebody)
 	    (defuse body)
 	    (defuse
 	       (widen!::let-var/defuse n
@@ -375,13 +375,13 @@
       (let ((defbindings '())
 	    (usebindings '()))
 	 (for-each (lambda (fun)
-		      (multiple-value-bind (def use)
+		      (bind-values (def use)
 			 (with-access::local fun (value)
 			    (defuse-sfun! value))
 			 (set! defbindings (union def defbindings))
 			 (set! usebindings (union use usebindings))))
 	    locals)
-	 (multiple-value-bind (defbody usebody)
+	 (bind-values (defbody usebody)
 	    (defuse body)
 	    (defuse
 	       (widen!::let-fun/defuse n

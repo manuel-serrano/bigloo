@@ -972,7 +972,7 @@
       (set! %db-update (- (current-seconds) (date->seconds (make-date))))
       (set! %uptime (- (current-seconds) (date->seconds (make-date))))
       ;; prepare for DB stats
-      (multiple-value-bind (artists albums genres nsong)
+      (bind-values (artists albums genres nsong)
 	 (mpd-database-directories-scan o directories)
 	 (set! %artists artists)
 	 (set! %nartists (length artists))

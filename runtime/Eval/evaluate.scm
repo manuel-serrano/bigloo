@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Mon Sep 14 13:48:39 2026 (serrano)                */
+;*    Last change :  Thu Sep 17 10:46:34 2026 (serrano)                */
 ;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -411,7 +411,7 @@
 		(rec (cdr r)
 		     (cons (untype-ident (car r) loc) flat) (+fx arity 1))))))
       
-      (multiple-value-bind (args arity)
+      (bind-values (args arity)
 	 (split-formals (dsssl-formals->scheme-typed-formals formals error #t))
 	 (let ((vars (map (lambda (v)
 			      (instantiate::ev_var

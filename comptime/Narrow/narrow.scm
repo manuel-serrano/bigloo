@@ -65,7 +65,7 @@
 (define (kill-used::pair-nil locals::pair-nil node-or-nodes)
    
    (define (kill-used-in-node n)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse n)
 	 (set! locals (disjonction locals use))
 	 (set! locals (disjonction locals def))))
@@ -192,7 +192,7 @@
 		(set-cdr! nodes '())
 		ns))
 	    (else 
-	     (multiple-value-bind (def use)
+	     (bind-values (def use)
 		(defuse (car nodes))
 		(let ((defs (kill-used locals (cdr nodes))))
 		   (with-trace 3 "narrow-scope! ::sequence, node"
@@ -216,7 +216,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (narrow-scope! n::conditional locals::pair-nil)
    (with-access::conditional n (test true false)
-      (multiple-value-bind (deftest usetest)
+      (bind-values (deftest usetest)
 	 (defuse test)
 	 (let ((defs (kill-used locals (list true false))))
 	    (set! test (narrow-scope! test defs))
@@ -230,7 +230,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (narrow-scope! n::switch locals::pair-nil)
    (with-access::switch n (test clauses)
-      (multiple-value-bind (deftest usetest)
+      (bind-values (deftest usetest)
 	 (defuse test)
 	 (let ((defs (kill-used locals (map cdr clauses))))
 	    (set! test (narrow-scope! test defs))
@@ -246,11 +246,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (narrow-scope! n::sync locals::pair-nil)
    (with-access::sync n (mutex prelock body)
-      (multiple-value-bind (defprelock useprelock)
+      (bind-values (defprelock useprelock)
 	 (defuse prelock)
-	 (multiple-value-bind (defmutex usemutex)
+	 (bind-values (defmutex usemutex)
 	    (defuse mutex)
-	    (multiple-value-bind (defbody usebody)
+	    (bind-values (defbody usebody)
 	       (defuse body)
 	       (let ((pdefs (kill-used locals (list mutex body))))
 		  (set! prelock (narrow-scope! prelock pdefs))
@@ -272,7 +272,7 @@
 	 (with-trace 4 "narrow-scope! ::let-var, binding.1"
 	    (for-each (lambda (b)
 			 (trace-item "b=" (shape b))
-			 (multiple-value-bind (def use)
+			 (bind-values (def use)
 			    (defuse (cdr b))
 			    (let ((bdefs (kill-used locals
 					    (cons body
@@ -286,7 +286,7 @@
 	    (with-trace 4 "narrow-scope! ::let-var, binding.2"
 	       (for-each (lambda (b)
 			    (trace-item "b=" (shape b))
-			    (multiple-value-bind (def use)
+			    (bind-values (def use)
 			       (defuse (cdr b))
 			       (trace-item "def=" (shape def))
 			       (trace-item "use=" (shape use)))
@@ -318,7 +318,7 @@
 			  funs)))
 	    (with-access::local fun (value)
 	       (with-access::sfun value ((fbody body) args)
-		  (multiple-value-bind (def use)
+		  (bind-values (def use)
 		     (defuse fbody)
 		     (let* ((locals (append args locals))
 			    (fdef (kill-used locals (cons body others))))

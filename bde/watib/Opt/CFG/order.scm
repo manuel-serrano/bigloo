@@ -16,7 +16,7 @@
           (begin
              (set! (-> n idx) i)
              (values (-fx i 1) (cons n l)))
-          (multiple-value-bind (i l) (dfs! (car succs) i l)
+          (bind-values (i l) (dfs! (car succs) i l)
              (with-access::cfg-node (car succs) (preds)
                 (set! preds (cons n preds)))
              (loop! (cdr succs) i l))))

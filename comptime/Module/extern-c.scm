@@ -68,7 +68,7 @@
 	 (set! *include-foreign* (cons string *include-foreign*))))
    
    (define (parse-function macro infix ident args name clause mod::Module)
-      (multiple-value-bind (id type)
+      (bind-values (id type)
 	 (parse-ident ident)
 	 (cond
 	    ((not (string? type))
@@ -101,7 +101,7 @@
 		   (hashtable-put! defs (symbol->string! id) def)))))))
    
    (define (parse-variable macro ident name clause mod::Module)
-      (multiple-value-bind (id type)
+      (bind-values (id type)
 	 (parse-ident ident)
 	 (cond
 	    ((not (string? type))
@@ -207,13 +207,13 @@
 	    (()
 	     '())
 	    (((and (? symbol?) ?arg) (kwote ...))
-	     (multiple-value-bind (id type)
+	     (bind-values (id type)
 		(parse-ident arg)
 		(if (string? type)
 		    arg
 		    (error/loc mod "Illegal C args" arg clause))))
 	    (((and (? symbol?) ?arg) . ?-)
-	     (multiple-value-bind (id type)
+	     (bind-values (id type)
 		(parse-ident arg)
 		(if (string? type)
 		    (cons arg (loop (cdr args)))
@@ -234,7 +234,7 @@
 	  (values (build-args args mod clause) (symbol->name id clause mod)))))
 
    (define (symbol->name ident::symbol src mod)
-      (multiple-value-bind (id type)
+      (bind-values (id type)
 	 (parse-ident ident)
 	 (symbol->string id)))
 
@@ -257,11 +257,11 @@
 	    ((type (and (? symbol?) ?id) :affinity ?aff (and (? string?) ?name))
 	     (parse-type id aff name clause mod))
 	    ((macro (and (? symbol?) ?ident) . ?args)
-	     (multiple-value-bind (args name)
+	     (bind-values (args name)
 		(parse-args ident args mod clause x)
 		(parse-function #t #f ident args name clause mod)))
 	    ((infix macro (and (? symbol?) ?ident) . ?args)
-	     (multiple-value-bind (args name)
+	     (bind-values (args name)
 		(parse-args ident args mod clause x)
 		(parse-function #t #t ident args name clause mod)))
 	    ((cnst macro (and (? symbol?) ?ident))
@@ -273,7 +273,7 @@
 	    ((variable (and (? symbol?) ?ident) (and (? string?) ?name))
 	     (parse-variable #f ident name clause mod))
 	    (((and (? symbol?) ?ident) . ?args)
-	     (multiple-value-bind (args name)
+	     (bind-values (args name)
 		(parse-args ident args mod clause x)
 		(parse-function #f #f ident args name clause mod)))
 	    ((and (? symbol?) ?ident)

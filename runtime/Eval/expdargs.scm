@@ -112,7 +112,7 @@
 	      (let loop ((a* a*)
 			 (v #f))
 		 (let liip ((p* p*))
-		    (multiple-value-bind (action na* nv)
+		    (bind-values (action na* nv)
 		       ((car p*) a* v)
 		       (case action
 			  ((next)
@@ -163,7 +163,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-synopsis-name clause)
    (define (make-simple-synopsis-name opt o args)
-      (multiple-value-bind (oid aid)
+      (bind-values (oid aid)
 	 (fetch-option-embed-argument o)
 	 (cond
 	    ((and aid (pair? args))
@@ -189,13 +189,13 @@
 	     (string-append (car l)
 			    ","
 			    (concat (cdr l)))))
-      (multiple-value-bind (oid+ aid+)
+      (bind-values (oid+ aid+)
 	 (let loop ((o+ o+)
 		    (oid+ '())
 		    (aid+ '()))
 	    (if (null? o+)
 		(values (reverse! oid+) (reverse! aid+))
-		(multiple-value-bind (oid aid)
+		(bind-values (oid aid)
 		   (fetch-option-embed-argument (car o+))
 		   (loop (cdr o+) (cons oid oid+) (cons aid aid+)))))
 	 (cond
@@ -291,7 +291,7 @@
 	  (o (car opt))
 	  (args (fetch-option-arguments opt))
 	  (expr* (cdr clause)))
-      (multiple-value-bind (oid aid)
+      (bind-values (oid aid)
 	 (fetch-option-embed-argument o)
 	 (cond
 	    ((and aid (pair? args))
@@ -332,13 +332,13 @@
 	  (o+ (car opt))
 	  (args (fetch-option-arguments opt))
 	  (expr* (cdr clause)))
-      (multiple-value-bind (oid+ aid+)
+      (bind-values (oid+ aid+)
 	 (let loop ((o+ o+)
 		    (oid+ '())
 		    (aid+ '()))
 	    (if (null? o+)
 		(values (reverse! oid+) (reverse! aid+))
-		(multiple-value-bind (oid aid)
+		(bind-values (oid aid)
 		   (fetch-option-embed-argument (car o+))
 		   (loop (cdr o+) (cons oid oid+) (cons aid aid+)))))
 	 (cond

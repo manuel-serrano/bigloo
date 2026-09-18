@@ -83,7 +83,7 @@
    (define (parse-class-ident ident x)
       (if (not (symbol? ident))
 	  (error/loc "parse" "Illegal class definition" x x)  
-	  (multiple-value-bind (id super)
+	  (bind-values (id super)
 	     (parse-ident ident x)
 	     (cond
 		((not super) (values id 'object))
@@ -110,20 +110,20 @@
    
    (match-case x
       (((and (? class-kind?) ?kind)  ?ident (?ctor) . ?props)
-       (multiple-value-bind (id super)
+       (bind-values (id super)
 	  (parse-class-ident ident x)
-	  (multiple-value-bind (depth vproperties)
+	  (bind-values (depth vproperties)
 	     (class-depth-and-virtual-properties super)
-	     (multiple-value-bind (props vprops)
+	     (bind-values (props vprops)
 		(parse-properties props id vproperties)
 		(class-info id depth super kind ctor
 		   props #unspecified x #f vprops)))))
       (((and (? class-kind?) ?kind) ?ident . ?props)
-       (multiple-value-bind (id super)
+       (bind-values (id super)
 	  (parse-class-ident ident x)
-	  (multiple-value-bind (depth vproperties)
+	  (bind-values (depth vproperties)
 	     (class-depth-and-virtual-properties super)
-	     (multiple-value-bind (props vprops)
+	     (bind-values (props vprops)
 		(parse-properties props id vproperties)
 		(class-info id depth super kind #f
 		   props #unspecified x #f vprops)))))
@@ -214,7 +214,7 @@
    (define (parse-property p x)
       (match-case p
 	 ((?ident . ?attrs)
-	  (multiple-value-bind (id type)
+	  (bind-values (id type)
 	     (parse-ident ident p)
 	     (let ((pi (prop-info id (or type 'obj) klass #f #f #f
 			  #unspecified #unspecified #unspecified
@@ -224,7 +224,7 @@
 		   attrs)
 		pi)))
 	 ((? symbol?)
-	  (multiple-value-bind (id type)
+	  (bind-values (id type)
 	     (parse-ident p x)
 	     (prop-info id (or type 'obj) klass #f #f #f
 		#unspecified #unspecified #unspecified
@@ -672,7 +672,7 @@
 (define (co-instantiate-expander mod::Module)
 
    (define (instantiate-class op bdg)
-      (multiple-value-bind (key klass)
+      (bind-values (key klass)
 	 (parse-ident op bdg)
 	 (cond
 	    ((not (eq? key 'instantiate))

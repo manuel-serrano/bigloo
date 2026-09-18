@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Wed Jun  3 06:57:15 2026 (serrano)                */
+;*    Last change :  Fri Sep 18 14:05:11 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -89,7 +89,9 @@
 	    ($date-current-nanoseconds::llong () "bgl_current_nanoseconds")
 	    ($date-from-seconds::date (::elong) "bgl_seconds_to_date")
 	    ($date-from-seconds-gmt::date (::elong) "bgl_seconds_to_gmtdate")
+	    ($date-from-seconds-utc::date (::elong) "bgl_seconds_to_gmtdate")
 	    ($date-from-milliseconds-gmt::date (::llong) "bgl_milliseconds_to_gmtdate")
+	    ($date-from-milliseconds-utc::date (::llong) "bgl_milliseconds_to_gmtdate")
 	    ($date-from-nanoseconds::date (::llong) "bgl_nanoseconds_to_date")
 	    ($date-from-milliseconds::date (::llong) "bgl_milliseconds_to_date")
 	    ($date-to-seconds::elong (::date) "bgl_date_to_seconds")
@@ -150,6 +152,7 @@
 	    (date-copy::date date::date #!key nsec sec min hour day month year timezone isdst)
 	    (date-update!::date date::date #!key nsec sec min hour day month year)
 	    (inline date->gmtdate!::date ::date)
+	    (inline date->utcdate!::date ::date)
 	    (date-update-millisecond! ::date ::long)
 	    (date-update-second! ::date ::long)
 	    (date-update-minute! ::date ::long)
@@ -180,7 +183,9 @@
 
 	    (inline seconds->date::date ::elong)
 	    (inline seconds->gmtdate::date ::elong)
+	    (inline seconds->utcdate::date ::elong)
 	    (inline milliseconds->gmtdate::date ::llong)
+	    (inline milliseconds->utcdate::date ::llong)
 	    (inline nanoseconds->date::date ::llong)
 	    (inline milliseconds->date::date ::llong)
 	    (inline date->seconds::elong ::date)
@@ -286,6 +291,12 @@
 ;*    date->gmtdate! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (date->gmtdate!::date d::date)
+   ($date->gmtdate! d))
+
+;*---------------------------------------------------------------------*/
+;*    date->utcdate! ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (date->utcdate!::date d::date)
    ($date->gmtdate! d))
 
 ;*---------------------------------------------------------------------*/
@@ -478,6 +489,18 @@
    ($date-from-milliseconds-gmt ms))
 
 ;*---------------------------------------------------------------------*/
+;*    seconds->utcdate ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (seconds->utcdate::date sec::elong)
+   ($date-from-seconds-gmt sec))
+
+;*---------------------------------------------------------------------*/
+;*    milliseconds->utcdate ...                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (milliseconds->utcdate::date ms::llong)
+   ($date-from-milliseconds-gmt ms))
+
+;*---------------------------------------------------------------------*/
 ;*    nanoseconds->date ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (nanoseconds->date::date ns::llong)
@@ -615,7 +638,7 @@
    (let ((tz (date-timezone d)))
       (if (=fx tz 0)
 	  (utc-string d)
-	  (utc-string (seconds->gmtdate (date->seconds d))))))
+	  (utc-string (seconds->utcdate (date->seconds d))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    seconds->string ...                                              */
@@ -985,7 +1008,7 @@
        (let* ((day (read/rp the-fixnum-grammar (the-port)))
 	      (month (read/rp month-grammar (the-port)))
 	      (year (read/rp the-fixnum-grammar (the-port))))
-	  (multiple-value-bind (hour minute second)
+	  (bind-values (hour minute second)
 	     (read/rp time-grammar (the-port))
 	     (let ((zone (read/rp zone-grammar (the-port))))
 		(make-date :sec second
@@ -1000,7 +1023,7 @@
        (let* ((day (the-fixnum))
 	      (month (read/rp month-grammar (the-port)))
 	      (year (read/rp the-fixnum-grammar (the-port))))
-	  (multiple-value-bind (hour minute second)
+	  (bind-values (hour minute second)
 	     (read/rp time-grammar (the-port))
 	     (let ((zone (read/rp zone-grammar (the-port))))
 		(make-date :sec second
@@ -1114,6 +1137,7 @@
      (CEST . +2)
      (UT . 0)
      (GMT . 0)
+     (UTC . 0)
      (BST . +1)))
 
 ;*---------------------------------------------------------------------*/

@@ -511,7 +511,7 @@
 	  (let* ((k (the-downcase-keyword)))
 	     (case k
 		((host:)
-		 (multiple-value-bind (h p)
+		 (bind-values (h p)
 		    (read/rp hostname-grammar (the-port))
 		    (set! hostname h)
 		    (set! port p)
@@ -619,9 +619,9 @@
 ;*    http-parse-response ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (http-parse-response ip::input-port op proc::procedure)
-   (multiple-value-bind (_1 status _2)
+   (bind-values (_1 status _2)
       (http-parse-status-line ip)
-      (multiple-value-bind (header _host _port clen tenc _aut _paut _conn)
+      (bind-values (header _host _port clen tenc _aut _paut _conn)
 	 (http-parse-header ip op)
 	 (case status
 	    ((200 207)

@@ -1061,7 +1061,7 @@
 	    (else
 	     ip))))
    
-   (multiple-value-bind (protocol login host port abspath)
+   (bind-values (protocol login host port abspath)
       (url-sans-protocol-parse string "http")
       (let loop ((ip #f)
 		 (header '((user-agent: "Mozilla/5.0") (Connection: close))))

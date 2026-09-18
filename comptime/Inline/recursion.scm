@@ -206,7 +206,7 @@
       ;; need anymore variant/invariant property.
       (shrink-args! variable)
       ;; and we nest the local function
-      (multiple-value-bind (_ node)
+      (bind-values (_ node)
 	 (node-cse! (nest-loop! new-body
 				local
 				(lambda (node)

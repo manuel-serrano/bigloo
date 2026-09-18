@@ -64,7 +64,7 @@
 ;*    liveness-live ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (liveness-live node)
-   (multiple-value-bind (in out)
+   (bind-values (in out)
       (inout node)
       (debug "in=" (shape in))
       (debug "out=" (shape out))
@@ -79,7 +79,7 @@
 	      (use use))
       (if (null? nodes)
 	  (values def use)
-	  (multiple-value-bind (d u)
+	  (bind-values (d u)
 	     (defuse (car nodes))
 	     (loop (cdr nodes) (union d def) (union u use))))))
 
@@ -92,7 +92,7 @@
 	      (use '()))
       (if (null? nodes)
 	  (values def use)
-	  (multiple-value-bind (d u)
+	  (bind-values (d u)
 	     (defuse (car nodes))
 	     (loop (cdr nodes)
 		(union def d)
@@ -105,7 +105,7 @@
    (let loop ((sedon (reverse nodes))
 	      (out out))
       (when (pair? sedon)
-	 (multiple-value-bind (nin nout)
+	 (bind-values (nin nout)
 	    (inout! (car sedon) out)
 	    (loop (cdr sedon) nin)))))
 
@@ -223,7 +223,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::sequence)
    (with-access::sequence n (nodes)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse-seq nodes)
 	 (defuse 
 	    (widen!::sequence/liveness n
@@ -252,7 +252,7 @@
 (define-method (defuse n::app)
    (with-access::app n (fun args)
       ;; don't scan the function has it is pure code
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* args '() '())
 	 (defuse
 	    (widen!::app/liveness n
@@ -281,9 +281,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::app-ly)
    (with-access::app-ly n (fun arg)
-      (multiple-value-bind (deffun usefun)
+      (bind-values (deffun usefun)
 	 (defuse fun)
-	 (multiple-value-bind (defarg usearg)
+	 (bind-values (defarg usearg)
 	    (defuse arg)
 	    (defuse
 	       (widen!::app-ly/liveness n
@@ -311,9 +311,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::funcall)
    (with-access::funcall n (fun args)
-      (multiple-value-bind (d u)
+      (bind-values (d u)
 	 (defuse fun)
-	 (multiple-value-bind (def use)
+	 (bind-values (def use)
 	    (defuse* args d u)
 	    (defuse
 	       (widen!::funcall/liveness n
@@ -348,7 +348,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::pragma)
    (with-access::pragma n (expr*)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* expr* '() '())
 	 (defuse
 	    (widen!::pragma/liveness n
@@ -375,7 +375,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::getfield)
    (with-access::getfield n (expr*)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* expr* '() '())
 	 (defuse
 	    (widen!::getfield/liveness n
@@ -402,7 +402,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::setfield)
    (with-access::setfield n (expr*)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* expr* '() '())
 	 (defuse
 	    (widen!::setfield/liveness n
@@ -429,7 +429,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::widening)
    (with-access::widening n (expr*)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* expr* '() '())
 	 (defuse
 	    (widen!::widening/liveness n
@@ -456,7 +456,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::new)
    (with-access::new n (expr*)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* expr* '() '())
 	 (defuse
 	    (widen!::new/liveness n
@@ -483,7 +483,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::valloc)
    (with-access::valloc n (expr*)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* expr* '() '())
 	 (defuse
 	    (widen!::valloc/liveness n
@@ -510,7 +510,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::vref)
    (with-access::vref n (expr*)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* expr* '() '())
 	 (defuse
 	    (widen!::vref/liveness n
@@ -537,7 +537,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::vset!)
    (with-access::vset! n (expr*)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* expr* '() '())
 	 (defuse
 	    (widen!::vset!/liveness n
@@ -564,7 +564,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::vlength)
    (with-access::vlength n (expr*)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* expr* '() '())
 	 (defuse
 	    (widen!::vlength/liveness n
@@ -591,7 +591,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::instanceof)
    (with-access::instanceof n (expr*)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* expr* '() '())
 	 (defuse
 	    (widen!::instanceof/liveness n
@@ -618,7 +618,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::cast-null)
    (with-access::cast-null n (expr*)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse* expr* '() '())
 	 (defuse
 	    (widen!::cast-null/liveness n
@@ -645,7 +645,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::cast)
    (with-access::cast n (arg)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse arg)
 	 (defuse
 	    (widen!::cast/liveness n
@@ -672,7 +672,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::setq)
    (with-access::setq n (var value)
-      (multiple-value-bind (defvalue usevalue)
+      (bind-values (defvalue usevalue)
 	 (defuse value)
 	 (with-access::var var ((v variable))
 	    (when (isa? v local/liveness)
@@ -701,11 +701,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::conditional)
    (with-access::conditional n (test true false)
-      (multiple-value-bind (deftest usetest)
+      (bind-values (deftest usetest)
 	 (defuse test)
-	 (multiple-value-bind (deftrue usetrue)
+	 (bind-values (deftrue usetrue)
 	    (defuse true)
-	    (multiple-value-bind (deffalse usefalse)
+	    (bind-values (deffalse usefalse)
 	       (defuse false)
 	       (defuse
 		  (widen!::conditional/liveness n
@@ -722,9 +722,9 @@
 	 (set! out o)
 	 (inout! true o)
 	 (inout! false o)
-	 (multiple-value-bind (tdef tuse)
+	 (bind-values (tdef tuse)
 	    (defuse true)
-	    (multiple-value-bind (fdef fuse)
+	    (bind-values (fdef fuse)
 	       (defuse false)
 	       (inout! test (disjonction out (intersection tdef fdef)))))
 	 (set! in (union use (disjonction out def)))
@@ -739,11 +739,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::fail)
    (with-access::fail n (proc msg obj)
-      (multiple-value-bind (defproc useproc)
+      (bind-values (defproc useproc)
 	 (defuse proc)
-	 (multiple-value-bind (defmsg usemsg)
+	 (bind-values (defmsg usemsg)
 	    (defuse msg)
-	    (multiple-value-bind (defobj useobj)
+	    (bind-values (defobj useobj)
 	       (defuse obj)
 	       (defuse
 		  (widen!::fail/liveness n
@@ -773,13 +773,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::switch)
    (with-access::switch n (test clauses)
-      (multiple-value-bind (deftest usetest)
+      (bind-values (deftest usetest)
 	 (defuse test)
 	 ;; compute separatly the def use props of all clauses
 	 (let ((defs '())
 	       (uses '()))
 	    (for-each (lambda (clause)
-			 (multiple-value-bind (def use)
+			 (bind-values (def use)
 			    (defuse (cdr clause))
 			    (set! defs (cons def defs))
 			    (set! uses (cons use uses))))
@@ -821,13 +821,13 @@
 		      (widen!::local/liveness fun))
 	    locals)
 	 (for-each (lambda (fun)
-		      (multiple-value-bind (def use)
+		      (bind-values (def use)
 			 (with-access::local fun (value)
 			    (liveness-sfun! value))
 			 (set! defbindings (union def defbindings))
 			 (set! usebindings (union use usebindings))))
 	    locals)
-	 (multiple-value-bind (defbody usebody)
+	 (bind-values (defbody usebody)
 	    (defuse body)
 	    (defuse
 	       (widen!::let-fun/liveness n
@@ -868,12 +868,12 @@
 		      (widen!::local/liveness (car b)))
 	    bindings)
 	 (for-each (lambda (b)
-		      (multiple-value-bind (def use)
+		      (bind-values (def use)
 			 (defuse (cdr b))
 			 (set! defbindings (union def defbindings))
 			 (set! usebindings (union use usebindings))))
 	    bindings)
-	 (multiple-value-bind (defbody usebody)
+	 (bind-values (defbody usebody)
 	    (defuse body)
 	    (defuse
 	       (widen!::let-var/liveness n
@@ -890,9 +890,9 @@
 	 (trace-item "loc=" loc)
 	 (set! out o)
 	 (set! in (union use (disjonction out def)))
-	 (multiple-value-bind (def use)
+	 (bind-values (def use)
 	    (defuse body)
-	    (multiple-value-bind (in out)
+	    (bind-values (in out)
 	       (inout! body out)
 	       (for-each (lambda (b)
 			    (inout! (cdr b) in))
@@ -910,11 +910,11 @@
    (with-access::set-ex-it n (var body onexit)
       (with-access::var var (variable)
 	 (widen!::local/liveness variable))
-      (multiple-value-bind (defvar usevar)
+      (bind-values (defvar usevar)
 	 (defuse var)
-	 (multiple-value-bind (defbody usebody)
+	 (bind-values (defbody usebody)
 	    (defuse body)
-	    (multiple-value-bind (defonx useonx)
+	    (bind-values (defonx useonx)
 	       (defuse onexit)
 	       (defuse
 		  (widen!::set-ex-it/liveness n
@@ -942,9 +942,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::jump-ex-it)
    (with-access::jump-ex-it n (exit value)
-      (multiple-value-bind (defexit useexit)
+      (bind-values (defexit useexit)
 	 (defuse exit)
-	 (multiple-value-bind (defvalue usevalue)
+	 (bind-values (defvalue usevalue)
 	    (defuse value)
 	    (defuse
 	       (widen!::jump-ex-it/liveness n
@@ -972,7 +972,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::retblock)
    (with-access::retblock n (body)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse body)
 	 (defuse
 	    (widen!::retblock/liveness n
@@ -999,7 +999,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::return)
    (with-access::return n (value)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse value)
 	 (defuse
 	    (widen!::return/liveness n
@@ -1026,7 +1026,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::make-box)
    (with-access::make-box n (value)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse value)
 	 (defuse
 	    (widen!::make-box/liveness n
@@ -1053,7 +1053,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::box-ref)
    (with-access::box-ref n (var)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse var)
 	 (defuse
 	    (widen!::box-ref/liveness n
@@ -1080,9 +1080,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::box-set!)
    (with-access::box-set! n (var value)
-      (multiple-value-bind (defvalue usevalue)
+      (bind-values (defvalue usevalue)
 	 (defuse value)
-	 (multiple-value-bind (defvar usevar)
+	 (bind-values (defvar usevar)
 	    (defuse var)
 	    (defuse
 	       (widen!::box-set!/liveness n
@@ -1109,7 +1109,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::sync)
    (with-access::sync n (mutex prelock body)
-      (multiple-value-bind (def use)
+      (bind-values (def use)
 	 (defuse-seq (list prelock mutex body))
 	 (defuse
 	    (widen!::sync/liveness n

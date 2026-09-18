@@ -674,7 +674,7 @@
 	 ((null? ebindings)
 	  (sexp->node body stack loc site genv))
 	 (else
-	  (multiple-value-bind (rec-bindings rec*-bindings)
+	  (bind-values (rec-bindings rec*-bindings)
 	     (split ebindings)
 	     (trace-item "split-head-letrec, rec="
 		(map (lambda (x) (shape (ebinding-var x))) rec-bindings))
@@ -694,7 +694,7 @@
 	 ((null? ebindings)
 	  (sexp->node body stack loc site genv))
 	 (else
-	  (multiple-value-bind (let-bindings rec*-bindings)
+	  (bind-values (let-bindings rec*-bindings)
 	     (split ebindings)
 	     (trace-item "split-head-let*, let*="
 		(map (lambda (x) (shape (ebinding-var x))) let-bindings))
@@ -722,7 +722,7 @@
 	 ((null? ebindings)
 	  (sexp->node body stack loc site genv))
 	 (else
-	  (multiple-value-bind (rec*-bindings tail-bindings)
+	  (bind-values (rec*-bindings tail-bindings)
 	     (split ebindings)
 	     (trace-item "split-tail-letrec, rec*="
 		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
@@ -741,7 +741,7 @@
 	 ((null? ebindings)
 	  (sexp->node body stack loc site genv))
 	 (else
-	  (multiple-value-bind (rec*-bindings tail-bindings)
+	  (bind-values (rec*-bindings tail-bindings)
 	     (split ebindings)
 	     (trace-item "split-tail-let*, rec*="
 		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
@@ -999,7 +999,7 @@
 	    ((null? ebindings)
 	     (sexp->node body stack loc site genv))
 	    (else
-	     (multiple-value-bind (vbindings fbindings)
+	     (bind-values (vbindings fbindings)
 		;; split values/functions
 		(split ebindings)
 		(trace-item "vals="

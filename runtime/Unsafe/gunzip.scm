@@ -747,13 +747,13 @@
 	 (step 256 280 (lambda (i) (vector-set! l i 7)))
 	 (step 280 288 (lambda (i) (vector-set! l i 8)))
 	 
-	 (multiple-value-bind (tl bl ok?)
+	 (bind-values (tl bl ok?)
 	    (huft-build l 288 257 (cplens) (cplext) 7 #f)
 	    
 	    (and ok?
 		 (begin
 		    (step 0 30 (lambda (i) (vector-set! l i 5)))
-		    (multiple-value-bind (td bd ok?)
+		    (bind-values (td bd ok?)
 		       (huft-build l 30 0 (cpdist) (cpdext) 5 #t)
 		       (and ok?
 			    ;; decompress until an end-of-block code
@@ -787,7 +787,7 @@
 		    ll (vector-ref (border) j) 0)))
 	  
 	  ;; build decoding table for trees--single level, 7 bit lookup
-	  (multiple-value-bind (tl bl ok?)
+	  (bind-values (tl bl ok?)
 	     (huft-build ll 19 19 '#() '#() 7 #f)
 	     (and ok?
 		  (begin
@@ -840,13 +840,13 @@
 			
 			;; build the decoding tables for
 			;; literal/length and distance codes
-			(multiple-value-bind (tl bl ok?)
+			(bind-values (tl bl ok?)
 			   (huft-build ll nl 257 (cplens) (cplext) (lbits) #f)
 			   (if (not ok?)
 			       (gunzip-error "inflate"
 					     "incomplete code set"
 					     input-port)
-			       (multiple-value-bind (td bd ok?)
+			       (bind-values (td bd ok?)
 				  (huft-build (subvector ll nl) nd 0 (cpdist) (cpdext) (dbits) #f)
 				  (if (not ok?)
 				      (gunzip-error "inflate"
@@ -860,7 +860,7 @@
       (let ((e (bit-and (GETBITS 1) 1)))
 	 ;; read in block type
 	 (let ((t (bit-and (GETBITS 2) 3)))
-	    (multiple-value-bind (state val kont)
+	    (bind-values (state val kont)
 	       (case t
 		  ((2) (inflate-dynamic))
 		  ((0) (inflate-stored))
@@ -878,7 +878,7 @@
 		      (values 'flush
 			      val
 			      (lambda ()
-				 (multiple-value-bind (state2 val2 kont2)
+				 (bind-values (state2 val2 kont2)
 				    (kont)
 				    (loop state2 val2 kont2)))))
 		     (else
@@ -892,7 +892,7 @@
    ;; decompress until the last block
    (let loop ((h 0))
       (let ((hufts 0))
-	 (multiple-value-bind (state e r)
+	 (bind-values (state e r)
 	    (inflate-block)
 	    (let laap ((state state)
 		       (e e)
@@ -909,7 +909,7 @@
 		   (values 'step
 			   e
 			   (lambda ()
-			      (multiple-value-bind (state2 e2 r2)
+			      (bind-values (state2 e2 r2)
 				 (r)
 				 (laap state2 e2 r2)))))
 		  (else
@@ -1001,7 +1001,7 @@
 ;*---------------------------------------------------------------------*/
 (define (inflate in::input-port out::output-port)
    (define buffer (make-string (inflate-buffer-size)))
-   (multiple-value-bind (state val kont)
+   (bind-values (state val kont)
       (inflate-entry in buffer)
       (let loop ((state state)
 		 (val val)
@@ -1014,7 +1014,7 @@
 	     (+fx size val))
 	    ((step)
 	     (display-substring buffer 0 val out)
-	     (multiple-value-bind (state2 val2 kont2)
+	     (bind-values (state2 val2 kont2)
 		(kont)
 		(loop state2 val2 kont2 (+fx val size))))))))
 
@@ -1076,7 +1076,7 @@
 		 (set! state 'resume)
 		 (subbuffer buffer val bufsize in))
 		((resume)
-		 (multiple-value-bind (state2 val2 kont2)
+		 (bind-values (state2 val2 kont2)
 		    (kont)
 		    (set! state state2)
 		    (set! kont kont2)
@@ -1086,7 +1086,7 @@
 		 (set! state 'port->inflate-port)
 		 (loop val))
 		((port->inflate-port)
-		 (multiple-value-bind (state0 val0 kont0)
+		 (bind-values (state0 val0 kont0)
 		    (inflate-entry in buffer)
 		    (set! state state0)
 		    (set! kont kont0)

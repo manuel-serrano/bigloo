@@ -76,7 +76,7 @@
    (define (walk-zipper::pair-nil left::pair-nil right::pair-nil)
       (if (null? right)
           (map cdr (reverse left))
-          (multiple-value-bind (pre suf) (span isa-drop? right)
+          (bind-values (pre suf) (span isa-drop? right)
              (if (null? pre)
                  (let ((se (side-effect!? (car right))))
                     (set! side-effect? (or se side-effect?))

@@ -99,7 +99,7 @@
 	      (positions (state-positions state)))
 	   (if (null? transitions)
 	       'last-match
-	       (multiple-value-bind (special-trans regular-trans)
+	       (bind-values (special-trans regular-trans)
 		  (split-transitions transitions)
 		  (let ((match-body (compile-match special-trans)))
 		     (if match-body
@@ -191,7 +191,7 @@
    (define (compile-cond-transition state-trans prev-test-len)
       (let ((set   (cdr state-trans))
 	    (state (car state-trans)))
-	 (multiple-value-bind (cond-test cond-cost)
+	 (bind-values (cond-test cond-cost)
 	    (compile-cond-test set 'cur prev-test-len)
 	    (values `(,cond-test
 			,(compile-jump-to-state state match
@@ -212,7 +212,7 @@
 		     ,@(if elsep
 			'()
 			`((else ,match))))))
-	  (multiple-value-bind (test c)
+	  (bind-values (test c)
 	     (compile-cond-transition (car trans) prev-len)
 	     (loop (cdr trans)
 		(cons test tests)
@@ -269,7 +269,7 @@
 	 (if (=fx start -1)
 	     (values `(or ,@(reverse! tests)) cost)
 	     (let ((stop (find-next-non-member start set)))
-		(multiple-value-bind (test c)
+		(bind-values (test c)
 		   (compile-test start stop set)
 		   (loop (find-next-member stop set)
 			 (cons test tests)
@@ -285,7 +285,7 @@
 	  (values 'else 0))
 	 ((>fx len (+fx 2 (/fx max 2)))
 	  ;; its better to compute the negation of the test
-	  (multiple-value-bind (test cost)
+	  (bind-values (test cost)
 	     (compile-range-test (rgcset-not set))
 	     (values `(not ,test) (+fx 1 cost))))
 	 (else

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug 24 23:47:58 2026                          */
-;*    Last change :  Tue Aug 25 22:59:05 2026 (serrano)                */
+;*    Last change :  Fri Sep 18 07:40:20 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the multimedia library.                                  */
@@ -53,15 +53,51 @@
    :expected 64)
 
 (define-test jpeg-parse-dimensions
-   (multiple-value-bind (width height)
+   (bind-values (width height)
       (call-with-input-file "misc/img.jpg" jpeg-parse-dimensions)
       (cons width height))
    :cond-expand (library multimedia)
    :expected '(64 . 64))
 
 (define-test jpeg-dimensions
-   (multiple-value-bind (width height)
+   (bind-values (width height)
       (jpeg-dimensions "misc/img.jpg")
       (cons width height))
    :cond-expand (library multimedia)
    :expected '(64 . 64))
+
+(define-test make-hex-color
+   (make-hex-color 127 255 10)
+   :expected "#7fff0a")
+
+(define-test parse-hex-color
+   (call-with-values (lambda () (parse-hex-color "#7fff0a")) list)
+   :expected '(127 255 10))
+
+(define-test parse-web-color
+   (call-with-values (lambda () (parse-web-color "#7fff0a")) list)
+   :expected '(127 255 10))
+
+(define-test parse-web-color
+   (call-with-values (lambda () (parse-web-color "rgb(234,43,25)")) list)
+   :expected '(234 43 25))
+
+(define-test parse-web-color
+   (call-with-values (lambda () (parse-web-color "rgb(100%,0%,51%)")) list)
+   :expected '(255 0 130))
+
+(define-test parse-web-color
+   (call-with-values (lambda () (parse-web-color "hsl(23,50%,74%)")) list)
+   :expected '(222 181 156))
+
+(define-test hsv->rgb
+   (call-with-values (lambda () (hsv->rgb 34 43 19)) list)
+   :expected '(48 39 27))
+
+(define-test hsl->rgb
+   (call-with-values (lambda () (hsl->rgb 23 50 74)) list)
+   :expected '(222 181 156))
+
+(define-test rgb->hsl
+   (call-with-values (lambda () (rgb->hsl 222 181 156)) list)
+   :expected '(23 50 74))

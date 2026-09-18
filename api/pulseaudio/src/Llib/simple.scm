@@ -45,7 +45,7 @@
       (with-access::pulseaudio-simple o (srvname name stream rate channels format bps)
 	 (let ((fmt (if (>fx bps 0)
 			(bps-format bps)
-			(multiple-value-bind (format fbps)
+			(bind-values (format fbps)
 			   (pa-format format)
 			   (set! bps fbps)
 			   format))))

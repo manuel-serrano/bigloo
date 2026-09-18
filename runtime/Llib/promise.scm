@@ -106,7 +106,7 @@
 	 (set! state 'pending)
 	 (set! thens '())
 	 (set! catches '())
-	 (multiple-value-bind (resolve reject)
+	 (bind-values (resolve reject)
 	    (create-resolving-functions o)
 	    (set! resolver resolve)
 	    (set! rejecter reject)
@@ -158,7 +158,7 @@
 (define (promise-resolve o::promise resolution)
    
    (define (promise-resolve-thenable o::promise thenable::promise)
-      (multiple-value-bind (resolve reject)
+      (bind-values (resolve reject)
 	 (create-resolving-functions o)
 	 (with-handler
 	    (lambda (e)

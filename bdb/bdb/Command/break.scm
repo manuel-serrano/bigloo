@@ -114,7 +114,7 @@
 		((=fx i (-fx len 1))
 		 ;; this is the WHAT value, the one that has to be demangled
 		 (let ((tab (if (pair? tabbing) (car tabbing) 0)))
-		    (multiple-value-bind (value loc)
+		    (bind-values (value loc)
 		       (what-value (car record))
 		       (if loc
 			   (display-breakpoint-record-value/edit value loc tab)

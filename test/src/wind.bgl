@@ -1,0 +1,197 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/wind.bgl              */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Fri Sep 18 07:41:58 2026                          */
+;*    Last change :  Fri Sep 18 07:53:27 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    unwind-protect and dynamic-wind                                  */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    wind                                                             */
+;*---------------------------------------------------------------------*/
+(module wind
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "wind" tests))
+      (test-all verbose "wind")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test unwind-protect
+   (let ((port (open-output-string)))
+      (when (output-port? port)
+         (unwind-protect
+            (begin
+               (write "foo" port)
+               'done)
+            (close-output-port port))))
+   :expected 'done)
+
+(define-test unwind-protect
+   (unwind-protect 10 10)
+   :expected 10)
+
+(define-test unwind-protect
+   (bind-exit (exit) (unwind-protect (exit 10) 9))
+   :expected 10)
+
+(define-test unwind-protect
+   (call-with-output-string
+      (lambda (op)
+         (bind-exit (exit)
+            (unwind-protect (exit 10) (display "here" op)))))
+   :expected "here")
+
+(define-test unwind-protect
+   (let ((res 0))
+      (with-handler
+         (lambda (e) (set! res (*fx res 10)))
+         (unwind-protect
+            (raise 'an-error)
+            (set! res 1)))
+      res)
+   :expected 10)
+
+(define-test unwind-protect
+   (eval '(unwind-protect 10 10))
+   :expected 10)
+
+(define-test unwind-protect
+   (eval '(bind-exit (exit) (unwind-protect (exit 10) 9)))
+   :expected 10)
+
+(define-test unwind-protect
+    (eval '(bind-exit (exit) (unwind-protect 10 9)))
+    :expected 10)
+
+(define-test unwind-protect
+   (let ((r #f))
+      (bind-exit (exit)
+	 (unwind-protect
+	    (exit 0)
+	    (set! r #t)))
+      r))
+
+(define-test unwind-protect
+   (let ((x 0))
+      (with-handler
+	 (lambda (e)
+	    x)
+	 (unwind-protect
+	    (set! x 2)
+	    (set! x 1)))
+      x)
+   :expected 1)
+
+(define-test unwind-protect
+   (let ((x 0))
+      (with-handler
+	 (lambda (e)
+	    x)
+	 (unwind-protect
+	    (raise 1)
+	    (set! x 1)))
+      x)
+   :expected 1)
+
+(define-test unwind-protect
+   (let ((x 0))
+      (with-exception-handler
+	 (lambda (e)
+	    x)
+	 (lambda ()
+	    (unwind-protect
+	       (raise 1)
+	       (set! x 1))))
+      x)
+   :expected 1)
+
+(define-test unwind-protect
+   (let ((x 0))
+      (bind-exit (ext)
+	 (with-exception-handler
+	    (lambda (e)
+	       (ext x))
+	    (lambda ()
+	       (unwind-protect
+		  (raise 1)
+		  (set! x 1)))))
+      x)
+   :expected 1)
+
+(define-test unwind-protect
+   (let ((x 0))
+      (with-handler
+	 (lambda (e)
+	    x)
+	 (begin
+	    (unwind-protect
+	       (raise 1)
+	       (set! x 1))
+	    (set! x 2)))
+      x)
+   :expected 1)
+
+(define-test unwind-protect
+   (let ((x 0))
+      (with-handler
+	 (lambda (e)
+	    x)
+	 (begin
+	    (unwind-protect
+	       (raise 1)
+	       (set! x 1))
+	 (set! x 2)))
+      x)
+   :expected 1)
+
+(define-test unwind-protect
+   (let ()
+      (define (unwind-nesting init)
+         (set! unwind-nesting-l init)
+         (with-handler
+            (lambda (e)
+               #f)
+            (unwind-nesting-foo))
+         unwind-nesting-l)
+      
+      (define unwind-nesting-l '())
+      
+      (define (unwind-nesting-foo)
+         (unwind-protect
+            (unwind-nesting-bar)
+            (set! unwind-nesting-l (cons 'foo unwind-nesting-l))))
+      
+      (define (unwind-nesting-bar)
+         (unwind-protect
+            (unwind-nesting-gee)
+            (set! unwind-nesting-l (cons 'bar unwind-nesting-l))))
+      
+      (define (unwind-nesting-gee)
+         (unwind-protect
+            (unwind-nesting-hux)
+            (set! unwind-nesting-l (cons 'gee unwind-nesting-l))))
+      
+      (define (unwind-nesting-hux)
+         (unwind-protect
+            (unwind-nesting-mee)
+            (set! unwind-nesting-l (cons 'hux unwind-nesting-l))))
+      
+      (define (unwind-nesting-mee)
+         (error 1 2 3))
+      
+      (unwind-nesting '()))
+   :expected '(foo bar gee hux))

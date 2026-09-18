@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/api/mqtt/src/Llib/common.scm      */
+;*    .../prgm/project/bigloo/5.0.x/api/mqtt/src/Llib/common.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Mon Nov  7 09:37:07 2022 (serrano)                */
-;*    Copyright   :  2001-22 Manuel Serrano                            */
+;*    Last change :  Thu Sep 17 10:20:41 2026 (serrano)                */
+;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MQTT protocol                                                    */
 ;*    -------------------------------------------------------------    */
@@ -632,7 +632,7 @@
 	       pk))))
    
    (with-trace 'mqtt "mqtt-read-packet"
-      (multiple-value-bind (ptype pflags length)
+      (bind-values (ptype pflags length)
 	 (read-fixed-header ip)
 	 (if (eof-object? ptype)
 	     ptype
@@ -659,7 +659,7 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-read-connack-packet ip::input-port version)
    (with-trace 'mqtt "mqtt-read-connack-packet"
-      (multiple-value-bind (ptype pflags length)
+      (bind-values (ptype pflags length)
 	 (read-fixed-header ip)
 	 (unless (eq? ptype (MQTT-CPT-CONNACK))
 	    (error "mqtt" "CONNACK packet expected"
@@ -716,7 +716,7 @@
 	       pk))))
    
    (with-trace 'mqtt "mqtt-read-publish-packet"
-      (multiple-value-bind (ptype pflags length)
+      (bind-values (ptype pflags length)
 	 (read-fixed-header ip)
 	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
 	    " flags=" pflags)
@@ -767,7 +767,7 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-read-puback-packet ip::input-port version::long)
    (with-trace 'mqtt "mqtt-read-puback-packet"
-      (multiple-value-bind (ptype pflags length)
+      (bind-values (ptype pflags length)
 	 (read-fixed-header ip)
 	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
 	    " flags=" pflags)
@@ -819,7 +819,7 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-read-pubrec-packet ip::input-port version::long)
    (with-trace 'mqtt "mqtt-read-pubrec-packet"
-      (multiple-value-bind (ptype pflags length)
+      (bind-values (ptype pflags length)
 	 (read-fixed-header ip)
 	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
 	    " flags=" pflags)
@@ -892,7 +892,7 @@
 			 (loop (cons (cons str options) filters)))))))))
    
    (with-trace 'mqtt "mqtt-read-subscribe-packet"
-      (multiple-value-bind (ptype pflags length)
+      (bind-values (ptype pflags length)
 	 (read-fixed-header ip)
 	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
 	    " flags=" pflags)
@@ -939,7 +939,7 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-read-suback-packet ip::input-port version::long)
    (with-trace 'mqtt "mqtt-read-suback-packet"
-      (multiple-value-bind (ptype pflags length)
+      (bind-values (ptype pflags length)
 	 (read-fixed-header ip)
 	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
 	    " flags=" pflags)
@@ -1002,7 +1002,7 @@
 			 (loop (cons str filters)))))))))
    
    (with-trace 'mqtt "mqtt-read-unsubscribe-packet"
-      (multiple-value-bind (ptype pflags length)
+      (bind-values (ptype pflags length)
 	 (read-fixed-header ip)
 	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
 	    " flags=" pflags)
@@ -1040,7 +1040,7 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-read-unsuback-packet ip::input-port version::long)
    (with-trace 'mqtt "mqtt-read-unsuback-packet"
-      (multiple-value-bind (ptype pflags length)
+      (bind-values (ptype pflags length)
 	 (read-fixed-header ip)
 	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
 	    " flags=" pflags)
@@ -1060,7 +1060,7 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-read-pingreq-packet ip::input-port version::long)
    (with-trace 'mqtt "mqtt-read-pingreq-packet"
-      (multiple-value-bind (ptype pflags length)
+      (bind-values (ptype pflags length)
 	 (read-fixed-header ip)
 	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
 	    " flags=" pflags)
@@ -1106,7 +1106,7 @@
 ;*---------------------------------------------------------------------*/
 (define (mqtt-read-disconnect-packet ip::input-port version::long)
    (with-trace 'mqtt "mqtt-read-disconnect-packet"
-      (multiple-value-bind (ptype pflags length)
+      (bind-values (ptype pflags length)
 	 (read-fixed-header ip)
 	 (trace-item "header=" (mqtt-control-packet-type-name ptype)
 	    " flags=" pflags)

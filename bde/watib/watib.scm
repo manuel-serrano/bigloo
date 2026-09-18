@@ -170,7 +170,7 @@
     (cfg-file
      (call-with-input-file cfg-file
         (lambda (ip)
-           (multiple-value-bind (g::cfg p) (read-cfg/prog ip)
+           (bind-values (g::cfg p) (read-cfg/prog ip)
               (print-cfg-as-dot g)
               (call-with-output-file "out.wat"
                  (lambda (op)

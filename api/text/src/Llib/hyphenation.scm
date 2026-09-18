@@ -71,11 +71,11 @@
 	 ((null? exns)
 	  t)
 	 ((null? pats)
-	  (multiple-value-bind (cs ns)
+	  (bind-values (cs ns)
 	     (split-exn (car exns))
 	     (loop pats (cdr exns) (t-bind cs ns t))))
 	 (else
-	  (multiple-value-bind (cs ns)
+	  (bind-values (cs ns)
 	     (split-pat (car pats))
 	     (loop (cdr pats) exns (t-bind cs ns t)))))))
 

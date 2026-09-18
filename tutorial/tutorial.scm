@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/tutorial/tutorial.scm                */
+;*    serrano/prgm/project/bigloo/5.0.x/tutorial/tutorial.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 28 22:23:35 1997                          */
-;*    Last change :  Thu Oct 10 14:34:48 2002 (serrano)                */
+;*    Last change :  Thu Sep 17 10:46:04 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The CD cover drawer                                              */
 ;*=====================================================================*/
@@ -99,7 +99,7 @@
    (start-io!)
    (unwind-protect
       ;; we parse the input file
-      (multiple-value-bind (title author editor notes musicians songs id kind)
+      (bind-values (title author editor notes musicians songs id kind)
 	 (parse-file *in*)
 	 (case *action*
 	    ((cover)

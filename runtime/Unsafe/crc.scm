@@ -380,7 +380,7 @@
 ;*    crc-fast-port ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (crc-fast-port name p::input-port init final-xor big-endian?)
-   (multiple-value-bind (len poly lsb-poly)
+   (bind-values (len poly lsb-poly)
       (get-crc name)
       (cond
 	 ((fixnum? poly)
@@ -406,7 +406,7 @@
 ;*    crc-fast-mmap ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (crc-fast-mmap name m::mmap init final-xor big-endian?)
-   (multiple-value-bind (len poly lsb-poly)
+   (bind-values (len poly lsb-poly)
       (get-crc name)
       (cond
 	 ((fixnum? poly)

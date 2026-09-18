@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:44:53 1994                          */
-;*    Last change :  Sat Sep  5 17:49:03 2026 (serrano)                */
+;*    Last change :  Thu Sep 17 10:46:16 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The lambda macro-expansion.                                      */
@@ -156,7 +156,7 @@
 	  (let ((form (car oldforms)))
 	     (match-case form
                 ((define (?var . ?args) . ?body)
-                 (multiple-value-bind (id type)
+                 (bind-values (id type)
                     (parse-ident var)
                     (let ((lam (if type
                                    (symbol-append 'lambda:: type)

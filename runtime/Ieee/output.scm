@@ -889,7 +889,7 @@
    (if (bigloo-strict-r5rs-strings)
        (cond-expand
 	  (bigloo-c
-	   (multiple-value-bind (str esc)
+	   (bind-values (str esc)
 	      (string-for-read obj)
 	      ($write-string str esc port)))
 	  (else
@@ -1078,7 +1078,7 @@
 ;*    write/display-hvector ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (write/display-hvector svec port disp)
-   (multiple-value-bind (id _ vref _ _)
+   (bind-values (id _ vref _ _)
       (homogeneous-vector-info svec)
       ($display-char #\# port)
       (display-symbol id port)

@@ -139,7 +139,7 @@
 (define (bglpkg-add-package db p::pair-nil)
    (with-trace 3 'bglpkg-add-package
       (trace-item "p=" p)
-      (multiple-value-bind (name version release tuning)
+      (bind-values (name version release tuning)
 	 (package-name-parse (car p))
 	 (if (string? tuning)
 	     (for-each (lambda (p) (bglpkg-add-tuning db p)) p)
@@ -171,7 +171,7 @@
 ;*    bglpkg-add-tuning ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (bglpkg-add-tuning db p)
-   (multiple-value-bind (name version release tuning)
+   (bind-values (name version release tuning)
       (package-name-parse p)
       (let ((base (make-file-path (bglpkg-pkg-directory) name version)))
 	 (if (not (directory? base))
@@ -208,7 +208,7 @@
    (let ((lst (filter package-filename? lst)))
       (if (null? lst)
 	  '()
-	  (multiple-value-bind (base version _ tuning)
+	  (bind-values (base version _ tuning)
 	     (package-name-parse (car lst))
 	     (let loop ((lst (cdr lst))
 			(cur (list (car lst)))
@@ -216,7 +216,7 @@
 			(pkgs '()))
 		(if (null? lst)
 		    (reverse! (cons (reverse! cur) pkgs))
-		    (multiple-value-bind (base version _ tuning)
+		    (bind-values (base version _ tuning)
 		       (package-name-parse (car lst))
 		       (if (string=? base pref)
 			   (loop (cdr lst)
@@ -441,7 +441,7 @@
 	       (unless (string=? (file-name-canonicalize file)
 				 (file-name-canonicalize dest))
 		  (copy-file file dest)))
-	    (multiple-value-bind (imps exps)
+	    (bind-values (imps exps)
 	       (bigloo-parse-module file)
 	       (set! exports exps)
 	       (set! imports imps)))
@@ -700,7 +700,7 @@
 ;*---------------------------------------------------------------------*/
 (define (bglpkg-with-package db package proc)
    (when (>fx (pkglib-verbose) 0) (print "with packages:"))
-   (multiple-value-bind (name version release _)
+   (bind-values (name version release _)
       (package-name-parse package)
       (let ((old (sqlite-eval db
 		    (lambda (x) x)
@@ -723,7 +723,7 @@
 ;*---------------------------------------------------------------------*/
 (define (bglpkg-with-tuning db package tuning proc)
    (when (>fx (pkglib-verbose) 0) (print "with tunings:"))
-   (multiple-value-bind (name version release _)
+   (bind-values (name version release _)
       (package-name-parse package)
       (let ((old (sqlite-eval db
 		    (lambda (x) x)

@@ -31,7 +31,7 @@ Predicates
 ### date? ###
 Returns `#t` if and only if `obj` is a _date_ as returned
 by `make-date`, `current-date`, `seconds->date`, or
-`seconds->gmtdate`. It returns `#f` otherwise.
+`seconds->utcdate`. It returns `#f` otherwise.
 
 ### make-date ###
 Creates a `date` object from the integer values passed as argument.
@@ -49,7 +49,7 @@ Copies a `date` with optional modifications.
 ### date-update! ###
 Updates an existing date.
 
-### date->gmtdate! ###
+### date->utcdate! ###
 Updates the date to switch to an UTC representation. Returns the modified
 date object.
 
@@ -94,11 +94,11 @@ the current timezone.
 Converts a number of nanoseconds since eopch into a `date` object
 in the current timezone.
 
-### seconds->gmtdate ###
-Converts a number of seconds since eopch into a gmt `date` object.
+### seconds->utcdate ###
+Converts a number of seconds since eopch into a utc `date` object.
 
-### milliseconds->gmtdate ###
-Converts a number of milliseconds since eopch into a gmt `date` object.
+### milliseconds->utcdate ###
+Converts a number of milliseconds since eopch into a utc `date` object.
 
 ### date-second ###
 Returns the number of seconds of a date, in the range `0`...`59`.

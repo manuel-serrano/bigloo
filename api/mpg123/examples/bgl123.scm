@@ -41,7 +41,7 @@
 ;*    new-format ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (new-format dec pcm)
-   (multiple-value-bind (rate channels encoding)
+   (bind-values (rate channels encoding)
       (mpg123-get-format dec)
       (tprint "near=" rate " channels=" channels " encoding=" encoding " size-near-ratio=" 2 " period-size-near-ratio=" 8)
       (alsa-snd-pcm-hw-set-params! pcm
@@ -69,7 +69,7 @@
 	       (when (output-port? debug-port)
 		  (display-substring inbuf 0 sz debug-port))
 	       (let liip ((sz sz))
-		  (multiple-value-bind (status size)
+		  (bind-values (status size)
 		     (mpg123-decode m inbuf 0 sz outbuf (string-length outbuf))
 		     (tprint "status=" status)
 		     (when (eq? status 'new-format)

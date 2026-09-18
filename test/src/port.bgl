@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Wed Jul  8 15:40:27 2026 (serrano)                */
+;*    Last change :  Fri Sep 18 07:40:27 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing ports                                                    */
@@ -598,7 +598,7 @@
    (cond-expand
       (wasm #t)
       (else
-       (multiple-value-bind (in out)
+       (bind-values (in out)
           (open-pipes)
           (write-char #\z out)
           (flush-output-port out)
@@ -612,7 +612,7 @@
       (c
        (call-with-input-file "misc/input.txt"
           (lambda (ip)
-             (multiple-value-bind (readfs _ _)
+             (bind-values (readfs _ _)
                 (select :read (list (current-input-port) ip))
                 (>fx (length readfs) 0)))))
       (else #t))

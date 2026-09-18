@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Fri Aug 28 14:07:01 2026 (serrano)                */
+;*    Last change :  Fri Sep 18 07:40:10 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing OS api                                                   */
@@ -43,7 +43,7 @@
    :expected string?)
 
 (define-test time
-   (multiple-value-bind (res real user sys)
+   (bind-values (res real user sys)
       (time (lambda () (begin (sleep 10) 30)))
       (cons res (and (>= real 0) (>= real (+ user sys)))))
    :expected '(30 . #t))
@@ -429,7 +429,7 @@
    :expected pair?)
 
 (define-test getrlimit
-   (multiple-value-bind (soft hard)
+   (bind-values (soft hard)
       (getrlimit 'NOFILE)
       (and (elong? soft) (elong? hard)))
    :cond-expand C)

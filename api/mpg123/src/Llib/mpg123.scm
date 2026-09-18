@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/mpg123/src/Llib/mpg123.scm       */
+;*    .../prgm/project/bigloo/5.0.x/api/mpg123/src/Llib/mpg123.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Sun Apr 19 09:19:29 2015 (serrano)                */
-;*    Copyright   :  2011-15 Manuel Serrano                            */
+;*    Last change :  Thu Sep 17 10:20:30 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the mpg123 library                        */
 ;*=====================================================================*/
@@ -98,7 +98,7 @@
 ;*---------------------------------------------------------------------*/
 (define (mpg123-get-format m::mpg123-handle)
    (with-access::mpg123-handle m ($builtin)
-      (multiple-value-bind (rate channels encoding)
+      (bind-values (rate channels encoding)
 	 ($bgl-mpg123-get-format $builtin)
 	 (values rate channels (mpg123-format->symbol encoding)))))
 

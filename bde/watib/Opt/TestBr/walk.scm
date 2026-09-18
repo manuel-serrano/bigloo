@@ -154,10 +154,10 @@
    (define (append-length l::pair-nil i::long)
       (if (null? l)
           (values (list t) i)
-          (multiple-value-bind (tl n) (append-length (cdr l) (+fx 1 i))
+          (bind-values (tl n) (append-length (cdr l) (+fx 1 i))
              (values (cons (car l) tl) n))))
 
-   (multiple-value-bind (l n) (append-length (-> f locals) 0)
+   (bind-values (l n) (append-length (-> f locals) 0)
       (set! (-> f locals) l)
       ; todo - avoid calculating the length each time
       (+ n (length (-> f formals)))))

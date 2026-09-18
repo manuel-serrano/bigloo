@@ -40,7 +40,7 @@
    (with-access::backend (the-backend) ((backend-dump-heap dump-heap))
       (let ((dump-heap (or backend-dump-heap generic-dump-heap)))
 	 (for-each (lambda (heap)
-		      (multiple-value-bind (heap includes Genv Tenv)
+		      (bind-values (heap includes Genv Tenv)
 			 (read-heap heap)
 			 (dump-heap heap includes Genv Tenv)))
 	    names))))

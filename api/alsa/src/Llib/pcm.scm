@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/alsa/src/Llib/pcm.scm            */
+;*    serrano/prgm/project/bigloo/5.0.x/api/alsa/src/Llib/pcm.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Thu Jan 28 15:43:01 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Thu Sep 17 10:13:52 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
 ;*=====================================================================*/
@@ -711,7 +711,7 @@
 		   (obj pcm)))))
    
    (with-access::alsa-snd-pcm pcm ($builtin)
-      (multiple-value-bind (cur min max)
+      (bind-values (cur min max)
 	 ($bgl-snd-pcm-hw-params-get-rates $builtin)
 	 (check-error min)
 	 (values cur min max))))

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/test/src/serial.bgl                         */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/serial.bgl            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Fri Jul  3 07:55:05 2026 (serrano)                */
+;*    Last change :  Fri Sep 18 07:40:34 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing serials                                                  */
@@ -104,7 +104,7 @@
 ;*    custom serializers                                               */
 ;*---------------------------------------------------------------------*/
 (define-test register-procedure-serialization!
-   (multiple-value-bind (serializer unserializer)
+   (bind-values (serializer unserializer)
       (get-procedure-serialization)
       (let ((env '()))
          (register-procedure-serialization!
@@ -120,7 +120,7 @@
    :expected procedure?)
 
 (define-test get-procedure-serialization
-   (multiple-value-bind (serializer unserializer)
+   (bind-values (serializer unserializer)
       (get-procedure-serialization)
       (and (procedure? serializer) (procedure? unserializer))))
 
@@ -170,7 +170,7 @@
    :expected 101)
 
 (define-test get-class-serialization
-   (multiple-value-bind (serializer unserializer)
+   (bind-values (serializer unserializer)
       (get-class-serialization SPoint)
       (and (procedure? serializer) (procedure? unserializer))))
 

@@ -803,7 +803,7 @@
 		  (/llong lx y)
 		  (/fl ($fixnum->flonum x) ($llong->flonum y)))))
 	  ((bignum? y)
-	   (multiple-value-bind (q r)
+	   (bind-values (q r)
 	      ($divrembx (fixnum->bignum x) y)
 	      (if (zerobx? r)
 		  q
@@ -844,7 +844,7 @@
 		  (/llong lx y)
 		  (/fl fx ($llong->flonum y)))))
 	  ((bignum? y)
-	   (multiple-value-bind (q r)
+	   (bind-values (q r)
 	      ($divrembx (elong->bignum x) y)
 	      (if (zerobx? r)
 		  q
@@ -871,7 +871,7 @@
 	       (/llong x y)
 	       (/fl ($llong->flonum x) ($llong->flonum y))))
 	  ((bignum? y)
-	   (multiple-value-bind (q r)
+	   (bind-values (q r)
 	      ($divrembx (llong->bignum x) y)
 	      (if (zerobx? r)
 		  q
@@ -881,7 +881,7 @@
       ((bignum? x)
        (cond
  	  ((fixnum? y)
-	   (multiple-value-bind (q r)
+	   (bind-values (q r)
 	      ($divrembx x (fixnum->bignum y))
  	      (if (zerobx? r)
  		  q
@@ -889,19 +889,19 @@
  	  ((flonum? y)
  	   (/fl (bignum->flonum x) y))
  	  ((elong? y)
-	   (multiple-value-bind (q r)
+	   (bind-values (q r)
 	      ($divrembx x (elong->bignum y))
  	      (if (zerobx? r)
  		  q
  		  (/fl (bignum->flonum x) ($elong->flonum y)))))
  	  ((llong? y)
-	   (multiple-value-bind (q r)
+	   (bind-values (q r)
 	      ($divrembx x (llong->bignum y))
  	      (if (zerobx? r)
  		  q
  		  (/fl (bignum->flonum x) ($llong->flonum y)))))
  	  ((bignum? y)
-	   (multiple-value-bind (q r)
+	   (bind-values (q r)
 	      ($divrembx x y)
  	      (if (zerobx? r)
  		  q

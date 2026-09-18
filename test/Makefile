@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Sep 15 13:50:04 2026 (serrano)                */
+#*    Last change :  Fri Sep 18 07:39:12 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -38,11 +38,12 @@ BJFLAGS = -jvm
 #*---------------------------------------------------------------------*/
 #*    objects                                                          */
 #*---------------------------------------------------------------------*/
-TESTS = main argsparse bigloo bignum bit bool case char closure compiler \
-  condexpand core crc csv0 date digest dsssl error eval hash int1 int2 \
-  internet lalr io macro mail0 match mmap module multimedia0 net number \
-  object os pair port process real regexp rgc search serial sqlite0 ssr \
-  string struct symbol tar trace thread unicode vector weakptr web0 zip
+TESTS = main argsparse bigloo bignum bit bool callcc case char closure \
+  compiler condexpand core crc csv0 date digest dsssl error eval exn hash \
+  int1 int2 internet lalr io macro mail0 match mmap module multimedia0 \
+  net number object os pair port process real regexp rgc search serial \
+  sqlite0 ssr string struct symbol tar trace thread unicode vector weakptr \
+  web0 wind zip
 
 MODULES4 = module4_ex12
 
@@ -58,7 +59,6 @@ BACKEND_C = ssl0 extern_c c
 BACKEND_J = ssl0 extern_jvm Intf Point
 
 BACKEND_W = extern_wasm browser0
-
 
 C_OBJECTS = $(COMMON:%=%.o) $(BACKEND_C:%=%.o)
 J_OBJECTS = $(COMMON:%=%.class) $(BACKEND_J:%=%.class)

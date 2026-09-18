@@ -53,7 +53,7 @@
 		    (format "#~a~a" (block-label b)
 		       (if (block-live? b) "+" "-")))
 	       bs))
-      (multiple-value-bind (bs1 bs2)
+      (bind-values (bs1 bs2)
 	 (bbv-block-merge-select bs)
 	 (with-access::blockS bs1 ((ctx1 ctx))
 	    (with-access::blockS bs2 ((ctx2 ctx))

@@ -159,7 +159,7 @@
 
    (let ((tid   (type-id   class))
 	 (tname (type-name class)))
-      (multiple-value-bind (prag coercers)
+      (bind-values (prag coercers)
 	 (make-one-coercion tid tname 'obj "obj_t")
 	 (let loop ((super super)
 		    (coercers coercers)
@@ -170,7 +170,7 @@
 		   (for-each produce-module-clause! pragmas))
 		(let ((sid   (type-id super))
 		      (sname (type-name super)))
-		   (multiple-value-bind (prag coercs)
+		   (bind-values (prag coercs)
 		      (make-one-coercion tid tname sid sname)
 		      (loop (tclass-its-super super)
 			    (append coercs coercers)

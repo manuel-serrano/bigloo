@@ -11,6 +11,7 @@
 
 ,(implementation-path "../api/multimedia/src/Llib/exif.scm")
 ,(implementation-path "../api/multimedia/src/Llib/jpeg.scm")
+,(implementation-path "../api/multimedia/src/Llib/color.scm")
 ,(example-path "../test/src/multimedia0.bgl")
 
 Multimedia Library
@@ -47,4 +48,31 @@ Extracts the width and height of a jpeg image.
 
 ### jpeg-parse-dimensions ###
 Parses the input port `ip` to extract the jpeg dimensions.
+
+
+Color Parsing and Manipulation
+------------------------------
+
+### make-hex-color ###
+Constructs a web string for the RGB color.
+
+### parse-hex-color ###
+Decomposes a hex color (as returned by `make-hex-color`) and returns
+the three RGB components.
+
+### parse-web-color ###
+Decomposes a a color that can be in either format:
+
+  * #xRGB
+  * rgb(R, G, B), rgb(R%, G%, B%)
+  * HSL(H, S, V)
+
+### hsv->rgb ###
+Transposes an Hue-Saturation-Value color into RGB.
+
+### hsl->rgb ###
+Transposes an Hue-Saturation-Luminance color into RGB.
+
+### rgb->hsl ###
+Transposes an Reb-Green-Blue color into HSL.
 

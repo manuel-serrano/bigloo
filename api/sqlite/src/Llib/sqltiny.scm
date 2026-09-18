@@ -108,7 +108,7 @@
 	    (if (null? actions)
 		(proc res cols)
 		(let ((act (car actions)))
-		   (multiple-value-bind (r c)
+		   (bind-values (r c)
 		      (act obj builtin)
 		      (loop (cdr actions) (or r res) (or c cols)))))))))
 

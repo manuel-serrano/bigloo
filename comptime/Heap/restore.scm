@@ -128,7 +128,7 @@
    (let ((cache (assoc fname *heap-cache*)))
       (if (pair? cache)
 	  (values (cadr cache) (cddr cache))
-	  (multiple-value-bind (genv tenv)
+	  (bind-values (genv tenv)
 	     (read-heap fname)
 	     (set! *heap-cache*
 		(cons (cons fname (cons genv tenv)) *heap-cache*))
@@ -144,7 +144,7 @@
 	 (pass-prelude "Heap")
 	 (let ((fname (find-file/path *heap-name* *lib-dir*)))
 	    (if (string? fname)
-		(multiple-value-bind (genv tenv)
+		(bind-values (genv tenv)
 		   (read-cache-heap fname)
 		   (let ((ge (create-hashtable))
 			 (te (create-hashtable)))

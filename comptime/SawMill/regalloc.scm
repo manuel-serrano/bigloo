@@ -269,7 +269,7 @@
 ;*---------------------------------------------------------------------*/
 (define (hardware-interference! back::backend o::obj)
    (define (ins-hardware-interference! o::rtl_ins/ra in out)
-      (multiple-value-bind (reset spill rdest a0 a1)
+      (bind-values (reset spill rdest a0 a1)
 	 (backend-instr-reset-registers back o)
 	 (when (pair? reset)
 	    (regset-for-each (lambda (r1)
@@ -492,7 +492,7 @@
 		(verbose 3 "          stack coloring... " n
 			 " (of " (+ (length pregs) (length cregs)) ")"
 			 " registers\n"))
-	     (multiple-value-bind (reg nsize regs)
+	     (bind-values (reg nsize regs)
 		(select-register! regs size)
 		(simplify-reg! reg)
 		(loop regs (cons reg stack) nsize))))))
@@ -814,7 +814,7 @@
 		    (lambda (r) (display " " p) (dump r p 0)) out)
 		   (display "]" p))
 		(when *user-shape?*
-		   (multiple-value-bind (reset spill rdest a0 a1)
+		   (bind-values (reset spill rdest a0 a1)
 		      (backend-instr-reset-registers (the-backend) o)
 		      (display "\n      [reset:" p)
 		      (for-each (lambda (r) (display " " p) (dump r p 0))

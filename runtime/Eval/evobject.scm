@@ -715,7 +715,7 @@
 (define (eval-parse-class-slot loc f)
    (cond
       ((symbol? f)
-       (multiple-value-bind (id type)
+       (bind-values (id type)
 	  (decompose-ident f)
 	  (list (slot id (if type (or (class-exists type) type) 'obj)
 		   #f #f 0 #f #f #f))))
@@ -725,7 +725,7 @@
       (else
        (let ((id (car f))
 	     (attrs (cdr f)))
-	  (multiple-value-bind (id type)
+	  (bind-values (id type)
 	     (decompose-ident id)
 	     (let ((def #f)
 		   (get #f)
@@ -814,7 +814,7 @@
 ;*    eval-class ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (eval-class id abstract clauses src mod)
-   (multiple-value-bind (cid sid)
+   (bind-values (cid sid)
       (decompose-ident id)
       (let* ((loc (get-source-location src))
 	     (sid (or sid 'object))
@@ -822,7 +822,7 @@
 	 (if (not (class? super))
 	     (error/source-location "eval"
 		"Cannot find super class" sid  loc)
-	     (multiple-value-bind (constructor slots)
+	     (bind-values (constructor slots)
 		(eval-parse-class loc clauses)
 		;; make the class and bind it to its global variable
 		(let* ((clazz (eval-register-class
@@ -867,7 +867,7 @@
 (define (co-instantiate->let bindings body x e)
 
    (define (parse-id id)
-      (multiple-value-bind (id type)
+      (bind-values (id type)
 	 (decompose-ident id)
 	 (cons id type)))
    

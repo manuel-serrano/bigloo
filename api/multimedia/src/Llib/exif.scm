@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Thu Aug 27 21:45:49 2026 (serrano)                */
+;*    Last change :  Thu Sep 17 10:20:51 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -1245,7 +1245,7 @@
 	  (exif-error "read-jpeg-sections" "Illegal section marker"
 	     (-elong (mmap-read-position mm) 1))
 	  (let loop ()
-	     (multiple-value-bind (m bytes offset)
+	     (bind-values (m bytes offset)
 		(read-jpeg-section mm)
 		(case m
 		   ((#xda) ;; M_SOS

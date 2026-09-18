@@ -100,10 +100,10 @@
 	 (else (error mid (format "Illegal procedure expression \"~a\"" id) src))))
 
    (define (type-arg farg::symbol carg::symbol def::Def)
-      (multiple-value-bind (_ ctype)
+      (bind-values (_ ctype)
 	 (parse-ident carg)
 	 (if (string? ctype)
-	     (multiple-value-bind (fid _)
+	     (bind-values (fid _)
 		(parse-ident farg)
 		(string->symbol (format "~a::~a" fid ctype)))
 	     farg)))
@@ -428,9 +428,9 @@
    
    (define (split-definitions mid defs decls)
       (with-trace 'module_module5 "module5-ast!.split-definitions"
-	 (multiple-value-bind (deft defc defo)
+	 (bind-values (deft defc defo)
 	    (split-local-definitions mid defs)
-	    (multiple-value-bind (declt declc declo)
+	    (bind-values (declt declc declo)
 	       (split-imported-declarations mid decls)
 	       (values (append declt deft)
 		  (append declc defc)
@@ -527,7 +527,7 @@
       (with-access::Module mod (defs imports (mid id))
 	 (trace-item "mid=" mid)
 
-	 (multiple-value-bind (types classes others)
+	 (bind-values (types classes others)
 	    (split-definitions mid defs imports)
 
 	    ;; declare extern types
@@ -702,7 +702,7 @@
       (let ((e (assq mod *module5-envs*)))
 	 (if (pair? e)
 	     (values (cadr e) (cddr e))
-	     (multiple-value-bind (env tenv)
+	     (bind-values (env tenv)
 		(restore-heap)
 		(let ((allow *allow-type-redefinition*))
 		   (set! *allow-type-redefinition* #t)
@@ -736,7 +736,7 @@
 			      (trace-item "inline def=" id)
 			      (with-access::Decl decl ((imod mod))
 				 (with-access::Module imod ((mid id))
-				    (multiple-value-bind (genv tenv)
+				    (bind-values (genv tenv)
 				       (module5-env imod)
 				       (trace-item "inline id=" id "@" mid)
 				       (trace-item "module=" (-> imod id)

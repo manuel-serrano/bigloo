@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/multimedia/src/Llib/color.scm        */
+;*    .../project/bigloo/5.0.x/api/multimedia/src/Llib/color.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 19 07:15:05 2009                          */
-;*    Last change :  Thu Jan 27 10:26:52 2011 (serrano)                */
-;*    Copyright   :  2009-11 Manuel Serrano                            */
+;*    Last change :  Fri Sep 18 07:57:21 2026 (serrano)                */
+;*    Copyright   :  2009-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Color operations.                                                */
 ;*=====================================================================*/
@@ -61,7 +61,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-hex-color ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (make-hex-color r g b)
+(define (make-hex-color::bstring r::int g::int b::int)
    (let ((res (make-string 7 #\0)))
       (string-set! res 0 #\#)
       (integer->string-2 res 1 r)
@@ -81,7 +81,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    parse-hex-color ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (parse-hex-color color)
+(define (parse-hex-color color::bstring)
    
    (define (char->int c)
       (cond
@@ -114,18 +114,18 @@
 ;*---------------------------------------------------------------------*/
 (define (parse-rgb-color c)
    (cond
-      ((pregexp-match "rgb([ ]*([0-9]+)[ ]*,[ ]*([0-9]+)[ ]*,[ ]*([0-9]+)[ ]*)" c)
+      ((pregexp-match "rgb[(][ ]*([0-9]+)[ ]*,[ ]*([0-9]+)[ ]*,[ ]*([0-9]+)[ ]*[)]" c)
        =>
        (lambda (m)
 	  (values (string->number (cadr m))
 		  (string->number (caddr m))
 		  (string->number (cadddr m)))))
-      ((pregexp-match "rgb([ ]*([0-9]+)%[ ]*,[ ]*([0-9]+)%[ ]*,[ ]*([0-9]+)%[ ]*)" c)
+      ((pregexp-match "rgb[(][ ]*([0-9]+)%[ ]*,[ ]*([0-9]+)%[ ]*,[ ]*([0-9]+)%[ ]*[)]" c)
        =>
        (lambda (m)
-	  (values (* 255 (/ (string->number (cadr m)) 100))
-		  (* 255 (/ (string->number (caddr m)) 100))
-		  (* 255 (/ (string->number (cadddr m)) 100)))))
+	  (values (inexact->exact (round (* 255 (/ (string->number (cadr m)) 100))))
+		  (inexact->exact (round (* 255 (/ (string->number (caddr m)) 100))))
+		  (inexact->exact (round (* 255 (/ (string->number (cadddr m)) 100)))))))
       (else
        (raise-color-error c))))
 			 
@@ -134,7 +134,7 @@
 ;*---------------------------------------------------------------------*/
 (define (parse-hsl-color c)
    (cond
-      ((pregexp-match "hsl([ ]*([0-9]+)[ ]*,[ ]*([0-9]+)%[ ]*,[ ]*([0-9]+)%[ ]*)" c)
+      ((pregexp-match "hsl[(][ ]*([0-9]+)[ ]*,[ ]*([0-9]+)%[ ]*,[ ]*([0-9]+)%[ ]*[)]" c)
        =>
        (lambda (m)
 	  (hsl->rgb (string->integer (cadr m))
@@ -146,7 +146,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    parse-web-color ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (parse-web-color color)
+(define (parse-web-color color::bstring)
    (cond
       ((=fx (string-length color) 0)
        (raise-color-error color))
@@ -165,7 +165,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hsv->rgb ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (hsv->rgb h s v)
+(define (hsv->rgb h::int s::int v::int)
    (let ((r 0)
 	 (g 0)
 	 (b 0))
@@ -237,7 +237,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    hsl->rgb ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (hsl->rgb h s l)
+(define (hsl->rgb h::int s::int l::int)
    (define (tc t)
       (cond
 	 ((<fl t .0) (+ t 1.))
@@ -272,7 +272,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    rgb->hsl ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (rgb->hsl r g b)
+(define (rgb->hsl r::int g::int b::int)
    (define (s max::double min::double r::double g::double b::double l::double)
       (cond
 	 ((= max min)

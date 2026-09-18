@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Mon Jul  6 07:40:06 2026 (serrano)                */
+;*    Last change :  Fri Sep 18 07:41:03 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing internet faclities                                       */
@@ -41,49 +41,49 @@
    :expected #f)
    
 (define-test url-parse
-   (multiple-value-bind (protocol uinfo host port abspath)
+   (bind-values (protocol uinfo host port abspath)
       (url-parse "http://www.inria.fr/sophia/teams/indes/index.html")
       (list protocol uinfo host port abspath))
    :expected '("http" #f "www.inria.fr" 80 "/sophia/teams/indes/index.html"))
 
 (define-test url-parse
-   (multiple-value-bind (protocol uinfo host port abspath)
+   (bind-values (protocol uinfo host port abspath)
       (url-parse "https://foo:bar@www.inria.fr/sophia/teams/indes/index.html")
       (list protocol uinfo))
    :expected '("https" "foo:bar"))
 
 (define-test url-sans-protocol-parse
-   (multiple-value-bind (protocol uinfo host port abspath)
+   (bind-values (protocol uinfo host port abspath)
       (url-sans-protocol-parse "www.inria.fr/sophia/teams/indes/index.html" "http")
       (list "http" uinfo host port abspath))
    :expected '("http" #f "www.inria.fr" 80 "/sophia/teams/indes/index.html"))
 
 (define-test url-sans-protocol-parse
-   (multiple-value-bind (protocol uinfo host port abspath)
+   (bind-values (protocol uinfo host port abspath)
       (url-sans-protocol-parse "foo:bar@www.inria.fr/sophia/teams/indes/index.html" "https")
       (list protocol uinfo))
    :expected '("https" "foo:bar"))
    
 (define-test http-url-parse
-   (multiple-value-bind (protocol uinfo host port abspath)
+   (bind-values (protocol uinfo host port abspath)
       (http-url-parse "*")
       (list protocol uinfo host port abspath))
    :expected '("*" #f #f #f "*"))
 
 (define-test http-url-parse
-   (multiple-value-bind (protocol uinfo host port abspath)
+   (bind-values (protocol uinfo host port abspath)
       (http-url-parse "/tmp/foo")
       (list protocol uinfo host port abspath))
    :expected '("*" #f #f #f "/tmp/foo"))
 
 (define-test http-url-parse
-   (multiple-value-bind (protocol uinfo host port abspath)
+   (bind-values (protocol uinfo host port abspath)
       (http-url-parse "http://www.inria.fr:8080/tmp/foo")
       (list protocol uinfo host port abspath))
    :expected '("http"  #f "www.inria.fr" 8080 "/tmp/foo"))
 
 (define-test http-url-parse
-   (multiple-value-bind (protocol uinfo host port abspath)
+   (bind-values (protocol uinfo host port abspath)
       (http-url-parse "http://foo:bar@www.inria.fr:8080/tmp/foo")
       (list protocol uinfo host port abspath))
    :expected '("http"  "foo:bar" "www.inria.fr" 8080 "/tmp/foo"))
@@ -242,21 +242,21 @@
          http-read-crlf)))
 
 (define-test http-parse-status-line
-   (multiple-value-bind (http code reason)
+   (bind-values (http code reason)
       (call-with-input-string "http/1.1 100 Continue"
          http-parse-status-line)
       (list http code reason))
    :expected '("http/1.1" 100 "Continue"))
 
 (define-test http-parse-status-line
-   (multiple-value-bind (http code reason)
+   (bind-values (http code reason)
       (call-with-input-string "HTTPS/1.1 200 Ok"
          http-parse-status-line)
       (list http code reason))
    :expected '("HTTPS/1.1" 200 "Ok"))
 
 (define-test http-parse-status-line
-   (multiple-value-bind (http code reason)
+   (bind-values (http code reason)
       (call-with-input-string "HTTPS/1.1 200 Ok\r\nfoo"
          http-parse-status-line)
       (list http code reason))
@@ -266,13 +266,13 @@
    (with-handler
       (lambda (e)
          (isa? e &io-parse-error))
-      (multiple-value-bind (http code reason)
+      (bind-values (http code reason)
          (call-with-input-string "https 200 Ok\r\nfoo"
             http-parse-status-line)
          (list http code reason))))
 
 (define-test http-parse-header
-   (multiple-value-bind (header host port len enc auth pauth conn)
+   (bind-values (header host port len enc auth pauth conn)
       (call-with-input-string "Content-Type: application/json\r
 Content-Length: 62\r
 X-Foo: 23\r\n"

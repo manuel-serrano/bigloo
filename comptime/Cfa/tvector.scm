@@ -78,7 +78,7 @@
 	     #\Newline)
 	  (install-module-clauses-compiler!)
 	  (inline-setup! 'all)
-	  (multiple-value-bind (vectors tvectors)
+	  (bind-values (vectors tvectors)
 	     (collect-tvectors)
 	     (for-each (lambda (v)
 			  (when (eq? (node-type v) *_*)

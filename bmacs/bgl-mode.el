@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Thu Sep 17 09:20:20 2026 (serrano)                */
+;*    Last change :  Thu Sep 17 10:16:18 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1265,6 +1265,7 @@ of the start of the containing expression."
 (put 'dynamic-wind              'bgl-indent-hook 0)
 
 ;; multiple values
+(put 'bind-values               'bgl-indent-hook 1)
 (put 'multiple-value-bind       'bgl-indent-hook 1)
 (put 'receive                   'bgl-indent-hook 1)
 (put 'call-with-values          'bgl-indent-hook 0)

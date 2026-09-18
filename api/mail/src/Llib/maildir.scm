@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/5.0a/api/mail/src/Llib/maildir.scm       */
+;*    .../prgm/project/bigloo/5.0.x/api/mail/src/Llib/maildir.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Mon Apr 27 10:49:52 2026 (serrano)                */
+;*    Last change :  Thu Sep 17 10:14:53 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
@@ -461,7 +461,7 @@
 	     (let ((pcur (make-file-name folder "cur"))
 		   (pnew (make-file-name folder "new")))
 		(when (directory? pcur)
-		   (multiple-value-bind (uids nextuid)
+		   (bind-values (uids nextuid)
 		      (make-folder-uidtable folder pcur)
 		      (let* ((newc (length (directory->list pnew)))
 			     (curc (length (directory->list pcur)))

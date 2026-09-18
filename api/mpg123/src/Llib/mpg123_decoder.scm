@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/api/mpg123/src/Llib/mpg123_decoder.scm        */
+;*    .../bigloo/5.0.x/api/mpg123/src/Llib/mpg123_decoder.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Fri Apr  1 08:28:19 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Thu Sep 17 10:20:24 2026 (serrano)                */
+;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 decoder                                                   */
 ;*=====================================================================*/
@@ -302,7 +302,7 @@
 ;*---------------------------------------------------------------------*/
 (define (new-format dec::mpg123-decoder am buffer)
    (with-access::mpg123-decoder dec (%rate %channels %encoding %mpg123)
-      (multiple-value-bind (rate channels encoding)
+      (bind-values (rate channels encoding)
 	 (mpg123-get-format %mpg123)
 	 (set! %rate rate)
 	 (set! %channels channels)
@@ -311,7 +311,7 @@
    (with-access::music am (%status)
       (with-access::musicstatus %status (songpos songlength bitrate khz)
 	 (set! songpos (musicdecoder-position dec buffer))
-	 (multiple-value-bind (brate rate)
+	 (bind-values (brate rate)
 	    (musicdecoder-info dec)
 	    (set! bitrate brate)
 	    (set! khz rate)))))

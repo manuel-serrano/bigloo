@@ -55,7 +55,7 @@
                                  (dst-false (hashtable-get nodes f))))
 
       ((terminal ?i)
-       (multiple-value-bind (i st)
+       (bind-values (i st)
           (valid-instrs env (econs i '() (cer j)) src-outtype)
           (unless (and (null? (cdr i)) (equal? st '(poly)))
              (error/location "watib" "invalid return" j
@@ -91,7 +91,7 @@
          (body . ?instrs)
          (end ?j))
        (let ((intype (map (lambda (t) (valid-vt env t)) vts)))
-          (multiple-value-bind (i outtype) (valid-instrs env instrs intype)
+          (bind-values (i outtype) (valid-instrs env instrs intype)
              (let ((end (read-jump j nodes env outtype)))
                 (instantiate::cfg-node
                  (intype intype)
@@ -109,8 +109,8 @@
           (f #f))
       (match-case (read ip #t)
          ((cfg . ?l)
-          (multiple-value-bind (formals tu tl) (valid-tu/get-tl env l)
-             (multiple-value-bind (lnames lts entry)
+          (bind-values (formals tu tl) (valid-tu/get-tl env l)
+             (bind-values (lnames lts entry)
                 (valid-names/local/get-tl env tl)
                 (match-case entry
                    (((entry ?name))
@@ -156,7 +156,7 @@
                    (map (lambda (n) (read-node n nodes env)) nodes-list))
 
          (let ((entry (hashtable-get nodes entry-name)))
-            (multiple-value-bind (-size rpostorder) (reverse-postorder! entry)
+            (bind-values (-size rpostorder) (reverse-postorder! entry)
                (let ((g::cfg (instantiate::cfg
                               (entry entry)
                               (size (-fx 0 -size))

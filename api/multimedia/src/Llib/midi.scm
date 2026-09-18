@@ -181,7 +181,7 @@
 ;*---------------------------------------------------------------------*/
 (define (midiscore-file filename)
    (let ((ip (open-input-file filename)))
-      (multiple-value-bind (sz fmt tck tempo ppq)
+      (bind-values (sz fmt tck tempo ppq)
 	 (midi-read-mthd ip)
 	 (let ((tracks (case fmt
 			  ((0) (vector (miditrack-input-port ip tempo)))
@@ -1148,10 +1148,10 @@
 ;* {*    midiplayer-play ...                                              *} */
 ;* {*---------------------------------------------------------------------*} */
 ;* (define (midiplayer-play player::midiplayer ip op)                  */
-;*    (multiple-value-bind (sz fmt tck tempo ppq)                      */
+;*    (bind-values (sz fmt tck tempo ppq)                      */
 ;*       (midi-read-mthd ip)                                           */
 ;*       (with-access::midiplayer player (mthd)                        */
-;* 	 (multiple-value-bind (sz fmt tck tempo ppq)                   */
+;* 	 (bind-values (sz fmt tck tempo ppq)                   */
 ;* 	    (mthd sz fmt tck tempo ppq)                                */
 ;* 	    (case (int32->fixnum fmt)                                  */
 ;* 	       ((0) (read-track player ip op tempo ppq))               */

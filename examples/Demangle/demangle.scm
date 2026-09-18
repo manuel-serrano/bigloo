@@ -40,7 +40,7 @@
        (let ((str (the-string)))
 	  (cond
 	     ((bigloo-mangled? str)
-	      (multiple-value-bind (id module)
+	      (bind-values (id module)
 		 (bigloo-demangle str)
 		 (display id)
 		 (if (string? module)

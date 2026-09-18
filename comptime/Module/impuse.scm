@@ -393,7 +393,7 @@
 (define (import-module! import)
    (with-access::import import (module vars aliases decl access code)
       ;; the regular variables
-      (multiple-value-bind (inline macro syntax expander)
+      (bind-values (inline macro syntax expander)
 	 (if (pair? vars)
 	     (import-wanted import vars)
 	     (import-everything import))
@@ -402,7 +402,7 @@
 	    code (progn-tail-expressions decl) access module))
       ;; the aliases
       (when (pair? aliases)
-	 (multiple-value-bind (inline macro syntax expander)
+	 (bind-values (inline macro syntax expander)
 	    (import-wanted import aliases)
 	    (look-for-inlines-and-macros inline
 	       macro syntax expander

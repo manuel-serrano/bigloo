@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 30 06:36:23 2026                          */
-;*    Last change :  Mon Jun  1 08:20:57 2026 (serrano)                */
+;*    Last change :  Fri Sep 18 14:06:33 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing date functions                                           */
@@ -74,16 +74,16 @@
       (date-month d))
    :expected 3)
 
-(define-test date->gmtdate!
-   (date? (date->gmtdate! (make-date :hour 1 :year 2001)))
+(define-test date->utcdate!
+   (date? (date->utcdate! (make-date :hour 1 :year 2001)))
    :expected #t)
    
-(define-test date->gmtdate!
-   (date-year (date->gmtdate! (make-date :day 1 :month 1 :year 2001 :timezone 0)))
+(define-test date->utcdate!
+   (date-year (date->utcdate! (make-date :day 1 :month 1 :year 2001 :timezone 0)))
    :expected 2001)
    
-(define-test date->gmtdate!
-   (date-year (date->gmtdate! (make-date :day 1 :month 1 :year 2001 :timezone 7200)))
+(define-test date->utcdate!
+   (date-year (date->utcdate! (make-date :day 1 :month 1 :year 2001 :timezone 7200)))
    :expected 2000)
    
 (define-test current-date (>= (date-year (current-date)) 1970)
@@ -134,16 +134,16 @@
 	  (s1 (date->nanoseconds d1)))
       (equal? (nanoseconds->date s1) d1)))
 
-(define-test seconds->gmtdate
-   (let* ((d1 (date->gmtdate! (current-date)))
+(define-test seconds->utcdate
+   (let* ((d1 (date->utcdate! (current-date)))
 	  (s1 (date->seconds d1)))
-      (equal? (seconds->gmtdate s1) d1))
+      (equal? (seconds->utcdate s1) d1))
    :expected #t)
 
-(define-test milliseconds->gmtdate
-   (let* ((d1 (date->gmtdate! (current-date)))
+(define-test milliseconds->utcdate
+   (let* ((d1 (date->utcdate! (current-date)))
 	  (s1 (date->milliseconds d1)))
-      (equal? (milliseconds->gmtdate s1) d1))
+      (equal? (milliseconds->utcdate s1) d1))
    :expected #t)
 
 (define-test date->seconds (>elong (date->seconds (current-date)) #e0)

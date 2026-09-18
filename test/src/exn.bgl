@@ -1,0 +1,374 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/exn.bgl               */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Fri Sep 18 07:38:29 2026                          */
+;*    Last change :  Fri Sep 18 07:41:35 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Exceptions                                                       */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    exn                                                              */
+;*---------------------------------------------------------------------*/
+(module exn
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "exn" tests))
+      (test-all verbose "exn")))
+
+;*---------------------------------------------------------------------*/
+;*    tests                                                            */
+;*---------------------------------------------------------------------*/
+(define-test with-exception-handler
+   (with-exception-handler
+      (lambda (e) e)
+      (lambda () 1))
+   :expected 1)
+(define-test with-exception-handler
+   (bind-exit (exit)
+      (with-exception-handler
+         (lambda (e) (exit e))
+         (lambda () (raise 1))))
+   
+   :expected 1)
+(define-test with-exception-handler
+   (bind-exit (exit)
+      (with-exception-handler
+         (lambda (e)
+            (with-exception-handler
+               (lambda (e)
+                  (exit e))
+               (lambda ()
+                  (raise (+ 1 e)))))
+         (lambda () (raise 1))))
+   :expected 2)
+(define-test with-exception-handler
+   (bind-exit (exit)
+      (with-exception-handler
+         (lambda (e)
+            (with-exception-handler
+               (lambda (e)
+                  (exit e))
+               (lambda ()
+                  (raise (+ 1 e)))))
+         (lambda () (exit 1))))
+   :expected 1)
+(define-test with-exception-handler
+   (begin
+      (bind-exit (exit)
+         (with-exception-handler
+            (lambda (e)
+               (with-exception-handler
+                  (lambda (e)
+                     (exit e))
+                  (lambda ()
+                     (raise (+ 1 e)))))
+            (lambda () (exit 1))))
+      (bind-exit (exit)
+         (with-exception-handler
+            (lambda (e)
+               (exit 1))
+            (lambda ()
+               (raise 1)))))
+   :expected 1)
+(define-test with-exception-handler
+	 (bind-exit (exit)
+	    (with-exception-handler
+	       (lambda (e)
+		  (exit (+ 1 e)))
+	       (lambda ()
+		  (raise (bind-exit (exit2)
+			    (with-exception-handler
+			       (lambda (e) 23)
+			       (lambda () (exit2 1))))))))
+	 :expected 2)
+(define-test with-exception-handler
+   (eval '(with-exception-handler
+           (lambda (e) e)
+           (lambda () 1)))
+   :expected 1)
+(define-test with-exception-handle
+   (eval '(bind-exit (exit)
+           (with-exception-handler
+              (lambda (e) (exit e))
+              (lambda () (raise 1)))))
+   :expected 1)
+(define-test with-exception-handler
+   (eval '(bind-exit (exit)
+           (with-exception-handler
+              (lambda (e)
+                 (with-exception-handler
+                    (lambda (e)
+                       (exit e))
+                    (lambda ()
+                       (raise (+ 1 e)))))
+              (lambda () (raise 1)))))
+   :expected 2)
+(define-test with-exception-handler
+   (eval '(bind-exit (exit)
+           (with-exception-handler
+              (lambda (e)
+                 (with-exception-handler
+                    (lambda (e)
+                       (exit e))
+                    (lambda ()
+                       (raise (+ 1 e)))))
+              (lambda () (exit 1)))))
+   :expected 1)
+(define-test with-exception-handler
+   (eval '(begin
+           (bind-exit (exit)
+              (with-exception-handler
+                 (lambda (e)
+                    (with-exception-handler
+                       (lambda (e)
+                          (exit e))
+                       (lambda ()
+                          (raise (+ 1 e)))))
+                 (lambda () (exit 1))))
+           (bind-exit (exit)
+              (with-exception-handler
+                 (lambda (e)
+                    (exit 1))
+                 (lambda ()
+                    (raise 1))))))
+   :expected 1)
+(define-test with-exception-handler
+   (eval '(bind-exit (exit)
+           (with-exception-handler
+              (lambda (e)
+                 (exit (+ 1 e)))
+              (lambda ()
+                 (raise (bind-exit (exit2)
+                           (with-exception-handler
+                              (lambda (e) 23)
+                              (lambda () (exit2 1)))))))))
+   :expected 2)
+
+(define-test with-handler
+   (with-handler
+      (lambda (e) e)
+      1)
+   :expected 1)
+(define-test with-handler
+   (with-handler
+      (lambda (e) 2)
+      (raise 1))
+   :expected 2)
+(define-test with-handler
+   (bind-exit (exit)
+      (with-handler
+         (lambda (e) (exit e))
+         (raise 1)))
+   :expected 1)
+(define-test with-handler
+   (bind-exit (exit)
+      (with-handler
+         (lambda (e)
+            (with-handler
+               (lambda (e)
+                  (exit e))
+               (raise (+ 1 e))))
+         (raise 1)))
+   :expected 2)
+(define-test with-handler
+   (bind-exit (exit)
+      (with-handler
+         (lambda (e)
+            (with-handler (lambda (e) (exit e))
+                          (raise (+ 1 e))))
+         (exit 1)))
+   :expected 1)
+(define-test with-handler
+   (begin
+      (bind-exit (exit)
+         (with-handler
+            (lambda (e)
+               (with-handler (lambda (e) (exit e))
+                             (raise (+ 1 e))))
+            (exit 1)))
+      (bind-exit (exit)
+         (with-handler
+            (lambda (e) (exit 1))
+            (raise 1))))
+   :expected 1)
+(define-test with-handler
+   (bind-exit (exit)
+      (with-handler
+         (lambda (e) (exit (+ 1 e)))
+         (raise (bind-exit (exit2)
+                   (with-handler (lambda (e) 23) (exit2 1))))))
+   :expected 2)
+(define-test with-handler
+   (with-handler
+      (lambda (e)
+         (+ 1 e))
+      (with-handler
+         (lambda (e)
+            (raise (+ 1 e)))
+         (raise 1)))
+   :expected 3)
+(define-test with-handler
+   (with-handler
+      (lambda (e)
+         (+ 1 e))
+      (with-handler
+         (lambda (e)
+            (with-handler
+               (lambda (e)
+                  (raise (+ 1 e)))
+               (raise (+ 1 e))))
+         (raise 1)))
+   :expected 4)
+(define-test with-handler
+   (let loop ((i 10))
+      (if (>fx i 0)
+          (let ((x (make-string i)))
+             (let ((v (with-handler (lambda (e) #f) (string-ref x i))))
+                (loop (-fx i 1))))
+          i))
+   :expected 0)
+(define-test with-handler
+   (let loop ((i 10))
+      (if (>fx i 0)
+          (let ((v (with-handler (lambda (e) #f) (/ 1 0))))
+             (loop (-fx i 1)))
+          i))
+   :expected 0)
+(define-test with-handler
+   (cons
+      (bind-exit (exit)
+         (with-handler
+            (lambda (e) (exit 'a))
+            (error #f #f #f)))
+      (with-handler
+         (lambda (e) 'b)
+         (error #f #f #f)))
+   :expected '(a . b))
+(define-test with-handler
+   (eval '(with-handler
+           (lambda (e) e)
+           1))
+   :expected 1)
+(define-test with-handler
+   (eval '(bind-exit (exit)
+           (with-handler
+              (lambda (e) (exit e))
+              (raise 1))))
+   :expected 1)
+(define-test with-handler
+   (eval '(bind-exit (exit)
+           (with-handler
+              (lambda (e)
+                 (with-handler
+                    (lambda (e)
+                       (exit e))
+                    (raise (+ 1 e))))
+              (raise 1))))
+   :expected 2)
+(define-test with-handler
+   (eval '(bind-exit (exit)
+           (with-handler
+              (lambda (e)
+                 (with-handler (lambda (e) (exit e))
+                               (raise (+ 1 e))))
+              (exit 1))))
+   :expected 1)
+(define-test with-handler
+   (eval '(begin
+           (bind-exit (exit)
+              (with-handler
+                 (lambda (e)
+                    (with-handler (lambda (e) (exit e))
+                                  (raise (+ 1 e))))
+                 (exit 1)))
+           (bind-exit (exit)
+              (with-handler
+                 (lambda (e) (exit 1))
+                 (raise 1)))))
+   :expected 1)
+(define-test with-handler
+   (eval '(bind-exit (exit)
+           (with-handler
+              (lambda (e) (exit (+ 1 e)))
+              (raise (bind-exit (exit2)
+                        (with-handler
+                           (lambda (e) 23) (exit2 1)))))))
+   :expected 2)
+(define-test with-handler
+   (let ((x '()))
+      (with-handler
+         (lambda (e)
+            (set! x (cons 1 x)))
+         (unwind-protect
+            (raise 'foo)
+            (set! x (cons 2 x))))
+      x)
+   :expected '(1 2))
+(define-test with-handler
+   (let ((x '()))
+      (with-handler
+         (lambda (e)
+            x)
+         (with-handler
+            (lambda (e)
+               (set! x (cons 1 x))
+               (raise e))
+            (unwind-protect
+               (raise 'foo)
+               (set! x (cons 2 x))))))
+   :expected '(1 2))
+(define-test with-handler
+   (let ((x '()))
+      (with-handler
+         (lambda (e)
+            (set! x (cons 1 x)))
+         (unwind-protect
+            (with-handler
+               (lambda (e)
+                  (set! x (cons 2 x))
+                  (raise e)
+                  (set! x (cons 23 x)))
+               (unwind-protect
+                  (raise 'glop)
+                  (set! x (cons 3 x))))
+            (set! x (cons 4 x))))
+      x)
+   :expected '(1 4 2 3))
+(define-test with-handler
+   (let ((x '()))
+      (unwind-protect
+         (with-handler
+            (lambda (e)
+               (set! x (cons 1 x)))
+            (unwind-protect
+               (with-handler
+                  (lambda (e)
+                     (set! x (cons 2 x))
+                     (raise e)
+                     (set! x (cons 18 x)))
+                  (unwind-protect
+                     (raise 'glop)
+                     (set! x (cons 3 x))))
+               (set! x (cons 4 x))))
+         (set! x (cons 5 x)))
+      x)
+   :expected '(5 1 4 2 3))
+(define-test with-handler
+   (with-handler
+      (lambda (e) e)
+      (unwind-protect
+         (raise 1)
+         (raise 2)))
+   :expected 2)

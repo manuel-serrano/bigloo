@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 25 10:44:39 2026                          */
-;*    Last change :  Thu Sep 10 08:55:27 2026 (serrano)                */
+;*    Last change :  Fri Sep 18 07:40:46 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing Bigloo specifics                                         */
@@ -79,7 +79,7 @@
    :expected "fib")
    
 (define-test bigloo-demangle
-   (multiple-value-bind (id mod)
+   (bind-values (id mod)
       (bigloo-demangle "BGl_stringzd2ze3numberz31zzlibz00")
       (cons id mod))
    :expected '("string->number" . "lib"))

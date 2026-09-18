@@ -280,7 +280,7 @@
 		(let ((s (car clauses)))
 		   (match-case s
 		      (((id ?id) . ?attr)
-		       (multiple-value-bind (vget vset)
+		       (bind-values (vget vset)
 			  (find-virtual-attr attr)
 			  (cond
 			     ((and vget (slot-member? (car id) nslots))

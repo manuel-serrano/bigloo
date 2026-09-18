@@ -1038,7 +1038,7 @@
 ;*---------------------------------------------------------------------*/
 (define (cnst-alloc-homogenous-vector vec loc)
 
-   (let* ((vec-tag (multiple-value-bind (tag _ _ _)
+   (let* ((vec-tag (bind-values (tag _ _ _)
 		      (homogeneous-vector-info vec)
 		      tag))
 	  (vec-type-id (symbol-append vec-tag 'vector))

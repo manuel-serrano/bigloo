@@ -107,13 +107,13 @@
 	     (loop (cdr os) (cons (car os) vars) args)))))
    (match-case x
       ((?- ?opts . ?clauses)
-       (multiple-value-bind (uenv args)
+       (bind-values (uenv args)
 	  (split-regular-grammar-options opts)
-	  (multiple-value-bind (tree actions else-num submatch? defs)
+	  (bind-values (tree actions else-num submatch? defs)
 	     ;; we normalize the grammar. that is we build one uniq
 	     ;; regular expression from the grammar
 	     (rules->regular-tree uenv clauses)
-	     (multiple-value-bind (node followpos positions submatches)
+	     (bind-values (node followpos positions submatches)
 		;; we build the tree, that is we translate a list into
 		;; a data structure that suits the algorithm for building
 		;; the dfa
@@ -313,7 +313,7 @@
 		      '((define (the-submatch num)
 			   (if (=fx num 0)
 			       (the-string)
-			       (multiple-value-bind (start stop)
+			       (bind-values (start stop)
 				  (rgc-the-submatch rgc-submatches
 				     (rgc-buffer-position iport
 					(rgc-buffer-forward iport))

@@ -169,7 +169,7 @@
                         (if (and (reachable? state specialization) (not version))
                             (walk state specialization)))
                      (loop))))
-            (multiple-value-bind (-size rpostorder) (reverse-postorder! entry)
+            (bind-values (-size rpostorder) (reverse-postorder! entry)
                (let ((new-cfg (instantiate::cfg
                                  (entry (with-access::specialization (get-most-recent-merge state new-entry) (origin) origin))
                                  (size (-fx 0 -size))

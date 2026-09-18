@@ -98,7 +98,7 @@
 ;*---------------------------------------------------------------------*/
 (define (webdav-propfind url timeout proxy #!optional (header (webdav-header)))
    (let loop ((url url))
-      (multiple-value-bind (proto login host port abspath)
+      (bind-values (proto login host port abspath)
 	 (url-parse url)
 	 (unless (string? host)
 	    (raise
@@ -150,7 +150,7 @@
 ;*    files can be obtained with regular HTTP GET commands.            */
 ;*---------------------------------------------------------------------*/
 (define (webdav-directory->path-list url #!key (timeout 0) (proxy #f))
-   (multiple-value-bind (protocol userinfo host port _)
+   (bind-values (protocol userinfo host port _)
       (url-parse url)
       (map (lambda (x)
 	      (if userinfo
@@ -167,7 +167,7 @@
 ;*    files can be obtained with regular HTTP GET commands.            */
 ;*---------------------------------------------------------------------*/
 (define (webdav-directory->prop-list url #!key (timeout 0) (proxy #f))
-   (multiple-value-bind (protocol userinfo host port _)
+   (bind-values (protocol userinfo host port _)
       (url-parse url)
       (map (lambda (x)
 	      (let ((href (if userinfo
@@ -225,7 +225,7 @@
 ;*---------------------------------------------------------------------*/
 (define (webdav-request method return url timeout proxy header body)
    (let loop ((url url))
-      (multiple-value-bind (proto login host port abspath)
+      (bind-values (proto login host port abspath)
 	 (url-parse url)
 	 (unless (string? host)
 	    (raise
@@ -301,7 +301,7 @@
 ;*---------------------------------------------------------------------*/
 (define (webdav-make-directories url #!key (timeout 0) (proxy #f))
    (or (webdav-make-directory url)
-       (multiple-value-bind (proto login host port abspath)
+       (bind-values (proto login host port abspath)
 	  (url-parse url)
 	  (let ((dpath (dirname abspath))
 		(dname (dirname url)))
@@ -417,35 +417,35 @@
 ;*    stopping at a DAV:response markup.                               */
 ;*---------------------------------------------------------------------*/
 (define (webdav-response xml xmlns)
-   (multiple-value-bind (body xmlns)
+   (bind-values (body xmlns)
       (webdav-find-node xml xmlns 'DAV:response #f)
-      (let ((href (multiple-value-bind (href _)
+      (let ((href (bind-values (href _)
 		     (webdav-find-node body xmlns 'DAV:href #f)
 		     (car href))))
-	 (multiple-value-bind (prop xmlns2)
+	 (bind-values (prop xmlns2)
 	    (webdav-find-node body xmlns 'DAV:propstat #f)
-	    (let ((status (multiple-value-bind (status _)
+	    (let ((status (bind-values (status _)
 			     (webdav-find-node prop xmlns2 'DAV:status #f)
 			     (car status))))
-	       (multiple-value-bind (_ code _)
+	       (bind-values (_ code _)
 		  (http-parse-status-line (open-input-string status))
 		  (case code
 		     ((200)
-		      (let ((lm (multiple-value-bind (lastmodified _)
+		      (let ((lm (bind-values (lastmodified _)
 				   (webdav-find-node
 				    prop xmlns2 'DAV:getlastmodified #f)
 				   (car lastmodified)))
-			    (clen (multiple-value-bind (clength _)
+			    (clen (bind-values (clength _)
 				     (webdav-find-node
 				      prop xmlns2 'DAV:getcontentlength #f)
 				     (car clength)))
-			    (ty (multiple-value-bind (ty xmlns3)
+			    (ty (bind-values (ty xmlns3)
 				   (webdav-find-node
 				    prop xmlns2 'DAV:resourcetype #f)
 				   (cond
 				      ((not ty)
 				       'file)
-				      ((multiple-value-bind (d _)
+				      ((bind-values (d _)
 					  (webdav-find-node
 					   ty xmlns3 'DAV:collection #t)
 					  (not (eq? d #t)))
@@ -465,6 +465,6 @@
 ;*    webdav-responses ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (webdav-responses xml)
-   (multiple-value-bind (n xmlns)
+   (bind-values (n xmlns)
       (webdav-find-node xml '() 'DAV:multistatus #f)
       (filter-map (lambda (n) (webdav-response n xmlns)) n)))

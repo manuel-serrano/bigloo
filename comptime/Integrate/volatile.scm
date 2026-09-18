@@ -41,7 +41,7 @@
       (with-access::global global (value id)
 	 (with-access::sfun value (body)
 	    (when (use-set-exit? body)
-	       (multiple-value-bind (def use)
+	       (bind-values (def use)
 		  (liveness-sfun! value)
 		  (volatile body '())
 		  (shrink-node! body)))))

@@ -1090,7 +1090,7 @@
 ;*    emit-binary-search ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (emit-binary-search gen-go type args else-bb patterns blocks)
-   (multiple-value-bind (lt gt const)
+   (bind-values (lt gt const)
       (cmp-ops-for-type type)
       (let helper ((low 0)
 		   (high (-fx (vector-length patterns) 1)))

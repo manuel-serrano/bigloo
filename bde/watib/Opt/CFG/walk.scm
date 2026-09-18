@@ -370,7 +370,7 @@
                  ret-node
                  (list ret-node))))
 
-     (multiple-value-bind (-size rpostorder) (reverse-postorder! entry)
+     (bind-values (-size rpostorder) (reverse-postorder! entry)
         (instantiate::cfg
          (entry entry)
          (size (-fx 0 -size))

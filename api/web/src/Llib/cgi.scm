@@ -236,7 +236,7 @@
 		       (msg "Can't open file for output")
 		       (obj path)))
 	     (unwind-protect
-		(multiple-value-bind (last data)
+		(bind-values (last data)
 		   (read/rp cgi-multipart-data-grammar port boundary '())
 		   (display data op)
 		   (values last (list name :file path :header header)))
@@ -350,7 +350,7 @@
 ;*    cgi-read-data ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (cgi-read-data name header port boundary)
-   (multiple-value-bind (last data)
+   (bind-values (last data)
       (read/rp cgi-multipart-data-grammar port boundary '())
       (values last (list name :data data :header header))))
 
@@ -358,7 +358,7 @@
 ;*    cgi-parse-entry ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (cgi-parse-entry port tmp boundary)
-   (multiple-value-bind (name file)
+   (bind-values (name file)
       (cgi-parse-content-disposition port)
       (let ((header (cgi-parse-header port)))
 	 (if (string? file)
@@ -379,7 +379,7 @@
 		 (string-length cgi-content-disposition))))
        (if (read/rp cgi-multipart-boundary-grammar port boundary)
 	   (let loop ((res '()))
-	      (multiple-value-bind (last entry)
+	      (bind-values (last entry)
 		 (cgi-parse-entry port tmp boundary)
 		 (if last
 		     (reverse! (cons entry res))

@@ -153,7 +153,7 @@
 				  (format "#~a~a" (block-label b)
 				     (if (block-live? b) "+" "-")))
 			     (blockV-versions bv)))
-	 (multiple-value-bind (bs1 bs2 mctx)
+	 (bind-values (bs1 bs2 mctx)
 	    (bbv-block-merge lvs)
 	    ;; Find an already existing block for mctx, if such a block
 	    ;; exists, get its representant (i.e., the block it might had
@@ -237,7 +237,7 @@
 	     =>
 	     (lambda (specialize)
 		;; instruction specialization
-		(multiple-value-bind (ins nctx)
+		(bind-values (ins nctx)
 		   (specialize (car oins) nins bs ctx queue)
 		   (trace-item "nins: " (shape ins))
 		   (with-access::rtl_ins ins (args)
@@ -667,7 +667,7 @@
 	    (values s ctx))))
 
    (with-trace 'bbv-ins "rtl_ins-specialize-typecheck"
-      (multiple-value-bind (reg type polarity value)
+      (bind-values (reg type polarity value)
 	 (rtl_ins-typecheck i)
 	 (let ((e (bbv-ctx-get ctx reg)))
 	    (with-access::bbv-ctxentry e ((epolarity polarity))
@@ -933,7 +933,7 @@
 			 ((or (rtl_ins-vlen? (car args)) (rtl_ins-strlen? (car args)))
 			  (trace-item "new-value-call.long->bint.vlen")
 			  (with-access::rtl_ins (car args) (dest)
-			     (multiple-value-bind (i vctx)
+			     (bind-values (i vctx)
 				(rtl_ins-specialize-vlen (car args) ins bs ctx queue)
 				(let ((e (bbv-ctx-get vctx dest)))
 				   (if (bbv-ctxentry? e)
@@ -946,7 +946,7 @@
 			 ((rtl_ins-call? (car args))
 			  (trace-item "new-value-call.long->bint.call")
 			  (with-access::rtl_ins (car args) (dest)
-			     (multiple-value-bind (i cctx)
+			     (bind-values (i cctx)
 				;; don't invoke directly rtl_ins-specialize-call
 				;; as the call might be a fixnum op or a vlength
 				((rtl_ins-specializer (car args))
@@ -1310,11 +1310,11 @@
 	     ;; two registers comparison
 	     (let ((lreg (reg lhs))
 		   (rreg (reg rhs)))
-		(multiple-value-bind (lctx+ lctx-)
+		(bind-values (lctx+ lctx-)
 		   (narrowing lreg intl intr op ctx)
 		   (trace-item "lctx+: " (shape lctx+))
 		   (trace-item "lctx-: " (shape lctx-))
-		   (multiple-value-bind (rctx+ rctx-)
+		   (bind-values (rctx+ rctx-)
 		      (narrowing rreg intr intl (commute-op op) ctx)
 		      (trace-item "rctx+: " (shape rctx+))
 		      (trace-item "rctx-: " (shape rctx-))
@@ -1372,7 +1372,7 @@
 			     ctx ctx))
 			 (else
 			  (trace-item "resolve/op.unknown")
-			  (multiple-value-bind (ctx+ ctx-)
+			  (bind-values (ctx+ ctx-)
 			     (specialize/op op lhs rhs intl intr ctx)
 			     (trace-item "resolve/op.unspec+: " (shape ctx+))
 			     (trace-item "resolve/op.unspec-: " (shape ctx-))
@@ -1429,7 +1429,7 @@
 	 (cond
 	    ((isa? fun rtl_ifne)
 	     (with-access::rtl_ifne fun (then)
-		(multiple-value-bind (ins ctx+ ctx-)
+		(bind-values (ins ctx+ ctx-)
 		   (specialize-fxcmp/call (car args) ctx)
 		   (trace-item "ctx+: " (shape ctx+))
 		   (trace-item "ctx-: " (shape ctx-))
@@ -1448,7 +1448,7 @@
 				     (fun fun))
 			     ctx-)))))))
 	    ((isa? fun rtl_call)
-	     (multiple-value-bind (ins ctx+ ctx-)
+	     (bind-values (ins ctx+ ctx-)
 		(specialize-fxcmp/call i ctx)
 		(cond
 		   ((rtl_ins-true? ins) (values ins ctx+))

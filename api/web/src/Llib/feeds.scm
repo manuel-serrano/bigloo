@@ -88,7 +88,7 @@
 		      :encoding encoding))
 	 (parser #f)
 	 (prefix #f))
-      (multiple-value-bind (ver enc lang root rver ns)
+      (bind-values (ver enc lang root rver ns)
 	 (xml-metadata xml-tree)
 	 ;; Here we convert namespaces URL to symbols
 	 (for-each (lambda (e)

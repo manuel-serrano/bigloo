@@ -629,7 +629,7 @@
       (let* ((separator-string (gdb-read-line 0))
 	     (arg-value (gdb-read-line 0)))
 	 (check-line arg-begin-parser: "arg-value" arg-value)
-	 (multiple-value-bind (value next-line)
+	 (bind-values (value next-line)
 	    (value-parser (gdb-read-line 0)
 			  (string-char-after arg-value #\space))
 	    (begin
@@ -764,7 +764,7 @@
 ;*    value-begin-parser ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (value-begin-parser line)
-   (multiple-value-bind (the-value next-line)
+   (bind-values (the-value next-line)
       (value-parser (gdb-read-line 0) (string-char-after line #\space))
       (begin
 	 (check-line value-begin-parser: #"value-end" next-line)
@@ -796,7 +796,7 @@
 	  (hist-num (gdb-read-line 0)))
       (check-line 'value-history-begin-parser:
 		  #"value-history-value\n" (gdb-read-line 1))
-      (multiple-value-bind (value next-line)
+      (bind-values (value next-line)
 	 (value-parser (gdb-read-line 0) flag)
 	 (begin
 	    (check-line 'value-history-begin-parser:
@@ -862,7 +862,7 @@
       (let ((separator-string (gdb-read-line 1)))
 	 (check-line 'field-begin-parser:
 		     #"field-value\n" (gdb-read-line 1))
-	 (multiple-value-bind (value next-line)
+	 (bind-values (value next-line)
 	    (value-parser (gdb-read-line 0) flag)
 	    (begin
 	       (check-line 'field-begin-parser: #"field-end" next-line)
@@ -878,7 +878,7 @@
 	 ((string-prefix? #"array-section-end" first)
 	  "")
 	 (else
-	  (multiple-value-bind (value next-line)
+	  (bind-values (value next-line)
 	     (value-parser first flag)
 	     (let loop ((line next-line)
 			(lst (list value)))
@@ -891,7 +891,7 @@
 			   (loop (cdr lst)
 				 (string-append (car lst) res)))))
 		   ((string=? line ", ")
-		    (multiple-value-bind (value next-line)
+		    (bind-values (value next-line)
 		       (value-parser (gdb-read-line 0) flag)
 		       (begin
 			  (check-line array-section-begin-parser:
@@ -899,7 +899,7 @@
 			  (loop (gdb-read-line 0)
 				(cons* line value lst)))))
 		   ((substring=? line ", " 2)
-		    (multiple-value-bind (value next-line)
+		    (bind-values (value next-line)
 		       (value-parser (substring line 2 (string-length line))
 				     flag)
 		       (begin
@@ -1007,7 +1007,7 @@
 	    (cond
 	       ((substring=? record-markup line record-markup-len)
 		(gdb-read-line 1)
-		(multiple-value-bind (record next-line)
+		(bind-values (record next-line)
 		   (read-record field-len)
 		   (loop next-line
 			 (cons record res))))

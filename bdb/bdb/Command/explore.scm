@@ -217,7 +217,7 @@
       ;; to find the correct stack frame. Then, inside that frame,
       ;; the variable.
       (let loop ((i 0))
-	 (multiple-value-bind (fp sp fun)
+	 (bind-values (fp sp fun)
 	    (get-frame-addresses i)
 	    (cond
 	       ((not (and (string? fp) (string? sp)))
@@ -273,7 +273,7 @@
       ;; to find the correct stack frame. Then, inside that frame,
       ;; the variable.
       (let loop ((i 0))
-	 (multiple-value-bind (fp sp fun)
+	 (bind-values (fp sp fun)
 	    (get-frame-addresses i)
 	    (cond
 	       ((not (and (string? fp) (string? sp)))

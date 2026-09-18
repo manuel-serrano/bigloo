@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Sun Sep 13 06:22:57 2026 (serrano)                */
+;*    Last change :  Thu Sep 17 10:45:28 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1162,7 +1162,7 @@ esac")
 	 (if (and found-index
 		  found-low-link
 		  (=fx (cdr found-index) (cdr found-low-link)))
-	     (multiple-value-bind (scc* stack*)
+	     (bind-values (scc* stack*)
 		(splitf-at stack (lambda (w) (not (eq? w class))))
 		(set! stack (cdr stack*))
 		(let ((scc (cons (car stack*) scc*)))

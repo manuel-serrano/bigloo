@@ -132,7 +132,7 @@
       
       (define (field5->field4 field clazz)
 	 (if (symbol? field)
-	     (multiple-value-bind (id type)
+	     (bind-values (id type)
 		(parse-ident field)
 		`(field ,field ,(symbol->string id)))
 	     (let loop ((f field)
@@ -148,14 +148,14 @@
 		    (match-case f
 		       ;; field
 		       ((field (and (? symbol?) ?ident))
-			(multiple-value-bind (id type)
+			(bind-values (id type)
 			   (parse-ident ident)
 			   `(field ,@(reverse! m)
 			       ,ident ,(symbol->string id))))
 		       ((field ?modf . ?rest)
 			(let ((ident (car (last-pair rest))))
 			   (if (symbol? ident)
-			       (multiple-value-bind (id type)
+			       (bind-values (id type)
 				  (parse-ident ident)
 				  `(field ,@(append (reverse! m) (list modf) (drop-last rest 1))
 				      ,ident ,(symbol->string id)))
@@ -166,7 +166,7 @@
 			    ,id ,rest))
 		       ((?ident . (and (? list?) ?args))
 			;; method
-			(multiple-value-bind (id type)
+			(bind-values (id type)
 			   (parse-ident ident)
 			   (if (and (pair? args) (string? (car (last-pair args))))
 			       ;; the last argument is the actual method java name
@@ -207,7 +207,7 @@
 	     (-> mod id) '|.|))
 	 ((or (class ?ident . ?rest)
 	      (abstract-class ?ident . ?rest))
-	  (multiple-value-bind (cpkg name id super)
+	  (bind-values (cpkg name id super)
 	     (parse-class5-ident ident)
 	     ;;(unless (java-type-exists? (symbol->string! id) mod)
 	     (begin
@@ -268,7 +268,7 @@
 	 (trace-item "jklass=" id)
 	 (trace-item "mod=" (-> mod id))
 	 (trace-item "pkg=" package)
-	 (multiple-value-bind (clazz super)
+	 (bind-values (clazz super)
 	    (parse-ident id)
 	    (co-instantiate
 		  ((def (instantiate::JDef
@@ -365,11 +365,11 @@
 
       (define (declare-ctor! m::jmethod)
 	 (when (isa? m jconstructor)
-	    (multiple-value-bind (mid _)
+	    (bind-values (mid _)
 	       (parse-ident (-> m id))
 	       (let* ((id (-> class idd))
 		      (types (map (lambda (t)
-				     (multiple-value-bind (_ ty)
+				     (bind-values (_ ty)
 					(parse-ident t)
 					(string->symbol ty)))
 				(-> m args)))
@@ -410,13 +410,13 @@
       
       (define (declare-method! m::jmethod)
 	 (unless (isa? m jconstructor)
-	    (multiple-value-bind (mid mty)
+	    (bind-values (mid mty)
 	       (parse-ident (-> m id))
                (unless (string? mty)
                   (error/loc mod "Illegal Java method returnd type" mid clause))
 	       (let* ((id (-> class idd))
 		      (types (map (lambda (t)
-				     (multiple-value-bind (_ ty)
+				     (bind-values (_ ty)
 					(parse-ident t)
 					(string->symbol ty)))
 				(-> m args)))
@@ -463,7 +463,7 @@
       
       (define (declare-field! f::jfield)
 	 (when (memq 'static (-> f modifiers))
-	    (multiple-value-bind (fid mty)
+	    (bind-values (fid mty)
 	       (parse-ident (-> f id))
 	       (if (eq? mty #unspecified)
 		   (error/loc mod "Missing field type" (-> f id) clause)
@@ -505,7 +505,7 @@
 (define (declare-jarray-ctor id::symbol of::symbol mod::Module clause::pair)
    (with-trace 'module_extern-java "declare-jarray-constructor"
       (trace-item "array=" id)
-      (multiple-value-bind (_ iname)
+      (bind-values (_ iname)
 	 (parse-ident of)
 	 (let* ((iid (string->symbol iname))
 		(lid (make-typed-ident 'len 'int))
@@ -535,7 +535,7 @@
 (define (declare-jarray-length id::symbol of::symbol mod::Module clause::pair)
    (with-trace 'module_extern-java "declare-jarray-length"
       (trace-item "array=" id)
-      (multiple-value-bind (_ iname)
+      (bind-values (_ iname)
 	 (parse-ident of)
 	 (let* ((iid (string->symbol iname))
 		(oid (make-typed-ident 'o id))
@@ -563,7 +563,7 @@
 (define (declare-jarray-accessors id::symbol of::symbol mod::Module clause::pair)
    (with-trace 'module_extern-java "declare-jarray-accessors"
       (trace-item "array=" id)
-      (multiple-value-bind (_ iname)
+      (bind-values (_ iname)
 	 (parse-ident of)
 	 (let* ((iid (string->symbol iname))
 		(oid (make-typed-ident 'o 'int))

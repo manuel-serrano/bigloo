@@ -195,7 +195,7 @@
       (unless (socket? ftpcmd)
 	 (error "ftp" "Socket not connected" cmd)))
    (when cmd (apply %ftp-send-cmd ftp cmd cmds))
-   (multiple-value-bind (code mesg)
+   (bind-values (code mesg)
       (%ftp-read-cmd ftp)
       (bind-exit (escape)
 	 (define (close x)
@@ -273,7 +273,7 @@
 		   (%ftp-dtp-pasv-setup ftp)))
 	       ((227)
 		;; Entering Passive Mode (h1,h2,h3,h4,p1,p2).
-		(multiple-value-bind (host port)
+		(bind-values (host port)
 		   (ftpport->hostport
                     (map string->number
                          (string-split
@@ -437,7 +437,7 @@
 (define (%ftp-dtp-pasv-setup ftp)
    (with-access::%ftp ftp (dtp)
       (bind-exit (escape)
-	 (multiple-value-bind (host port)
+	 (bind-values (host port)
 	    (cond
 	       ((socket? dtp)
 		(values (socket-host-address dtp)
@@ -699,7 +699,7 @@
 	     (else
 	      ip))))
 
-   (multiple-value-bind (protocol login host port abspath)
+   (bind-values (protocol login host port abspath)
       (url-sans-protocol-parse string "ftp")
       (let* ((i (when (string? login) (string-index login #\:)))
 	     (ftp (instantiate::ftp

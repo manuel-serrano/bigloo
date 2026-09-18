@@ -176,7 +176,7 @@
 		(initialize-genv!)
 		(initialize-tenv!)))
 	  (profile heap
-	     (multiple-value-bind (genv tenv)
+	     (bind-values (genv tenv)
 		(restore-heap)
 		(set-genv! genv)
 		(set-tenv! tenv))))

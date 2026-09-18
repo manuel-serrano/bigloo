@@ -1108,7 +1108,7 @@
       (if (not (string? flib))
 	  (err "Can't find library" lib)
 	  (let ((ini (if (not init) "" init)))
-	     (multiple-value-bind (val mod)
+	     (bind-values (val mod)
 		(%dload flib ini mod)
 		(case val
 		   ((__dload_noarch)

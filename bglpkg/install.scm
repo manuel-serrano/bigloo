@@ -225,7 +225,7 @@
 	 (lambda ()
 	    (let ((intf (interface-read-interface (current-input-port))))
 	       (when intf
-		  (multiple-value-bind (name version)
+		  (bind-values (name version)
 		     (interface-name-version intf)
 		     (trace-item "name=" name)
 		     name)))))))

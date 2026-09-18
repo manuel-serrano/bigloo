@@ -1252,7 +1252,7 @@
    
    (define (homogeneous-vector-hashnumber::long key)
       (let ((len ($hvector-length key)))
-	 (multiple-value-bind (tag _ get _ _)
+	 (bind-values (tag _ get _ _)
 	    (homogeneous-vector-info key)
 	    (let loop ((i (-fx len 1))
 		       (acc (hash (bit-xor 98723

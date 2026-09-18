@@ -207,7 +207,7 @@
 		minfo)
 	     (match-case (parse-etags-entry-line line)
 		((define (?name ?line))
-		 (multiple-value-bind (name rtype)
+		 (bind-values (name rtype)
 		    (parse-string-id name "obj")
 		    ;; a function definition
 		    (loop (read-line port)
@@ -223,7 +223,7 @@
 		       externdef
 		       macrodef)))
 		((define ?name ?line)
-		 (multiple-value-bind (name type)
+		 (bind-values (name type)
 		    (parse-string-id name "obj")
 		    ;; a variable definition
 		    (loop (read-line port)
@@ -254,9 +254,9 @@
 		    macrodef))
 		((define-method (?id ?arg ?line))
 		 ;; a method function definition
-		 (multiple-value-bind (name rtype)
+		 (bind-values (name rtype)
 		    (parse-string-id id "obj")
-		    (multiple-value-bind (- type)
+		    (bind-values (- type)
 		       (parse-string-id arg "obj")
 		       (let ((met (new-method prgm
 				     name
@@ -273,7 +273,7 @@
 			     externdef
 			     macrodef)))))
 		((class ?id ?line)
-		 (multiple-value-bind (name type)
+		 (bind-values (name type)
 		    (parse-string-id id "object")
 		    ;; a class definition
 		    (loop (read-line port)
@@ -291,7 +291,7 @@
 		       externdef
 		       macrodef)))
 		((wide-class ?id ?line)
-		 (multiple-value-bind (name type)
+		 (bind-values (name type)
 		    (parse-string-id id "object")
 		    ;; a class definition
 		    (loop (read-line port)
@@ -309,7 +309,7 @@
 		       externdef
 		       macrodef)))
 		((final-class ?id ?line)
-		 (multiple-value-bind (name type)
+		 (bind-values (name type)
 		    (parse-string-id id "object")
 		    ;; a class definition
 		    (loop (read-line port)

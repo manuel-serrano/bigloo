@@ -392,7 +392,7 @@
 	     (begin
 		(mmap-read-position-set! mm (+elong i0 end))
 		frames)
-	     (multiple-value-bind (id sz flag)
+	     (bind-values (id sz flag)
 		(id3v2.2-frame mm i)
 		(if (or (=elong sz #e0) (>elong (+elong i sz) end))
 		    (begin
@@ -441,7 +441,7 @@
 		 (begin
 		    (mmap-read-position-set! mm (+elong i0 size))
 		    frames)
-		 (multiple-value-bind (id sz flag)
+		 (bind-values (id sz flag)
 		    (id3v2.3-frame mm i)
 		    (if (or (= sz 0) (> (+ i sz) end))
 			(begin

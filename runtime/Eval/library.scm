@@ -258,7 +258,7 @@
 	 (else
 	  (error 'library-file-name "Illegal version" version))))
    
-   (multiple-value-bind (base version)
+   (bind-values (base version)
       (untranslate-library-name library)
       (case backend
 	 ((bigloo-c)

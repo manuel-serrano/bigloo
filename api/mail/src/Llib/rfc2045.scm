@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Tue Sep 15 17:54:13 2026 (serrano)                */
+;*    Last change :  Thu Sep 17 10:20:06 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -396,7 +396,7 @@
 (define (multipart-read-up-to-boundary buffer in boundary)
    (let loop ((lines '())
 	      (first #t))
-      (multiple-value-bind (len crlf eof)
+      (bind-values (len crlf eof)
 	 (fill-line! buffer in)
 	 (if (or (is-boundary? buffer boundary) eof)
 	     (begin
@@ -412,7 +412,7 @@
 ;*---------------------------------------------------------------------*/
 (define (multipart-parse-entry buffer in boundary recursive quiet)
    (let loop ((entries '()))
-      (multiple-value-bind (len crlf eof)
+      (bind-values (len crlf eof)
 	 (fill-line! buffer in)
 	 (if (is-boundary? buffer boundary)
 	     (let laap ((entries entries))
@@ -463,7 +463,7 @@
 		       ;; a recursive multipart
 		       (let ((nboundary (assq 'boundary (caddr ctype))))
 			  (if (not nboundary)
-			      (multiple-value-bind (last content)
+			      (bind-values (last content)
 				 (multipart-read-up-to-boundary buffer in boundary)
 				 (let* ((b `((boundary . ,boundary)))
 					(a (append (caddr ctype) b))
@@ -475,13 +475,13 @@
 			      (let* ((b (cdr nboundary))
 				     (p (mime-multipart-decode-port in b))
 				     (e (list ctype enc dispo p)))
-				 (multiple-value-bind (last _)
+				 (bind-values (last _)
 				    (multipart-read-up-to-boundary buffer in boundary)
 				    (if last
 					(reverse! (cons e entries))
 					(laap (cons e entries))))))))
 		      (else
-		       (multiple-value-bind (last content)
+		       (bind-values (last content)
 			  (multipart-read-up-to-boundary buffer in boundary)
 			  (let ((entry (list ctype enc dispo content header)))
 			     (if last

@@ -13,7 +13,8 @@
 ,(implementation-path "../runtime/Ieee/control5.scm")
 ,(implementation-path "../runtime/Llib/error.scm")
 ,(example-path "../test/src/core.bgl")
-
+,(example-path "../test/src/exn.bgl")
+,(example-path "../test/src/wind.bgl")
 
 Core Language
 =============

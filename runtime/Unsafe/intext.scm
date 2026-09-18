@@ -983,7 +983,7 @@
    
    ;; print-hvector
    (define (print-hvector item mark)
-      (multiple-value-bind (tag bsize ref _ _)
+      (bind-values (tag bsize ref _ _)
 	 (homogeneous-vector-info item)
 	 (let ((len ($hvector-length item)))
 	    (!print-markup #\h)

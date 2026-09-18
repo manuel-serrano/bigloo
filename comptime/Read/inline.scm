@@ -72,7 +72,7 @@
 	      (exp (cons 'begin (append exps code)))
 	      (fnames fnames)
 	      (port port))
-      (multiple-value-bind (inlines macros syntaxes expanders)
+      (bind-values (inlines macros syntaxes expanders)
 	 (look-for/exp inlines macros syntaxes expanders exp module)
 	 (cond
 	    ((and (null? inlines) (null? macros)
@@ -173,7 +173,7 @@
 		      (exp* exp*))
 	      (if (null? exp*)
 		  (values inlines macros syntaxes expanders)
-		  (multiple-value-bind (inlines macros syntaxes expanders)
+		  (bind-values (inlines macros syntaxes expanders)
 		     (look-for/exp inlines macros syntaxes expanders (car exp*) module)
 		     (loop inlines macros syntaxes expanders (cdr exp*))))))
 	  ((cond-expand . ?exp*)
@@ -199,7 +199,7 @@
 				       (loop (cdr exp*))))))))
 	      (if (null? exp*)
 		  (values inlines macros syntaxes expanders)
-		  (multiple-value-bind (inlines macros syntaxes expanders)
+		  (bind-values (inlines macros syntaxes expanders)
 		     (look-for/exp inlines macros syntaxes expanders (car exp*) module)
 		     (loop inlines macros syntaxes expanders (cdr exp*))))))
 	  (else

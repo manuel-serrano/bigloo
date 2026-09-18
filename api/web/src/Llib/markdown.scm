@@ -692,7 +692,7 @@
       (let ((sstate::MDState (instantiate::MDState
 				(tag 'span)
 				(wrapper wrapper))))
-	 (multiple-value-bind (retcode val)
+	 (bind-values (retcode val)
 	    (parse-span-elements sstate ctor end bra-as-text o-as-text)
 	    (case retcode
 	       ((span)
@@ -781,7 +781,7 @@
 			(tag (car token))
 			(value (car (token-value token)))
 			(parent #f))))
-	     (multiple-value-bind (recode val)
+	     (bind-values (recode val)
 		(li ul token)
 		(values 'blocks (list (end-blocks state) val))))))
    
@@ -832,7 +832,7 @@
 	      (values lang-id #f #f)))))
 	 
    (define (prog state::MDState lang-id)
-      (multiple-value-bind (lang id class)
+      (bind-values (lang id class)
 	 (parse-prog-lang lang-id)
 	 (let* ((lines (read/rp *quote-code-block-grammar* ip '() conv #f eval))
 		(body (cond
@@ -1015,7 +1015,7 @@
 		   (case (peek-token-type)
 		      ((OPAR)
 		       (consume-any!)
-		       (multiple-value-bind (url title)
+		       (bind-values (url title)
 			  (href)
 			  (consume-token! 'CPAR)
 			  (state-add! state
@@ -1191,7 +1191,7 @@
 	     ((and (eq? (-> state tag) 'li)
 		   (eq? (peek-token-type) 'pre)
 		   (string-prefix? "        " (token-value (peek-token))))
-	      (multiple-value-bind (retcode val)
+	      (bind-values (retcode val)
 		 (pre state (consume-any!) 8)
 		 (state-add! state val)
 		 (block state #f)))
@@ -1257,7 +1257,7 @@
       (let loop ((els '()))
 	 (let ((state (instantiate::MDState
 			 (tag 'p))))
-	    (multiple-value-bind (retcode val)
+	    (bind-values (retcode val)
 	       (block state #t)
 	       (case retcode
 		  ((eof)

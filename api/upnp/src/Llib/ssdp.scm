@@ -128,7 +128,7 @@
    (define (ssdp-parse-notify port)
       ;; response (Section 1.2.2)
       (read-line port)
-      (multiple-value-bind (header actual-host actual-port cl te auth pauth co)
+      (bind-values (header actual-host actual-port cl te auth pauth co)
 	 (http-parse-header port #f)
 	 (instantiate::ssdp-notify
 	    (header header)
@@ -143,7 +143,7 @@
    (define (ssdp-parse-m-search port)
       ;; skip the request line
       (read-line port)
-      (multiple-value-bind (header actual-host actual-port cl te auth pauth co)
+      (bind-values (header actual-host actual-port cl te auth pauth co)
 	 (http-parse-header port #f)
 	 (instantiate::ssdp-m-search
 	    (header header)

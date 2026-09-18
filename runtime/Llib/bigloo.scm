@@ -635,13 +635,13 @@
 				   (+fx w 1)
 				   checksum))))))))
       (define (bigloo-demangle-simple)
-	 (multiple-value-bind (str offset)
+	 (bind-values (str offset)
 	    (bigloo-demangle-at 4)
 	    (values str #unspecified)))
       (define (bigloo-demangle-module)
-	 (multiple-value-bind (id offset)
+	 (bind-values (id offset)
 	    (bigloo-demangle-at 4)
-	    (multiple-value-bind (module offset)
+	    (bind-values (module offset)
 	       (bigloo-demangle-at offset)
 	       (values id module))))
       (cond
@@ -658,7 +658,7 @@
 ;*    bigloo-module-demangle ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (bigloo-module-demangle string)
-   (multiple-value-bind (id module)
+   (bind-values (id module)
       (bigloo-demangle string)
       (if (string? module)
 	  (string-append id "@" module)

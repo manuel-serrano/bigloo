@@ -34,7 +34,7 @@
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main args)
-   (multiple-value-bind (actions arguments)
+   (bind-values (actions arguments)
       (parse-args args)
       (when (and (pair? actions) (eq? (car actions) 'setup))
 	 (sqlite-close (bglpkg-setup!))

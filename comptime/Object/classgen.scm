@@ -66,7 +66,7 @@
 	    (defs '()))
 	 (for-each (lambda (c)
 		      (when (bigloo-domestic-class? c)
-			 (multiple-value-bind (p d)
+			 (bind-values (p d)
 			    (classgen c)
 			    (set! protos (cons (cons c p) protos))
 			    (set! defs (cons (cons c d) defs)))))
@@ -117,17 +117,17 @@
 ;*    classgen ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (classgen c)
-   (multiple-value-bind (pred-p pred-d)
+   (bind-values (pred-p pred-d)
       (classgen-predicate c)
-	 (multiple-value-bind (nil-p nil-d)
+	 (bind-values (nil-p nil-d)
 	    (classgen-nil c)
-	    (multiple-value-bind (access-p access-d)
+	    (bind-values (access-p access-d)
 	       (classgen-accessors c)
 	       (let ((p (cons* pred-p nil-p access-p))
 		     (d (cons* pred-d nil-d access-d)))
 	       (if (tclass-abstract? c)
 		   (values (cons (class-import c) p) d)
-		   (multiple-value-bind (make-p make-d)
+		   (bind-values (make-p make-d)
 		      (classgen-make c)
 		      (values (cons* (class-import c) make-p p)
 			 (cons make-d d)))))))))
@@ -158,7 +158,7 @@
 ;*    classgen-predicate-anonymous ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (classgen-predicate-anonymous c)
-   (multiple-value-bind (proto def)
+   (bind-values (proto def)
       (classgen-predicate c)
       (match-case def
 	 ((?- (?id . ?formals) ?body)
@@ -234,7 +234,7 @@
 	   (error ,(symbol->string (type-id c))
 	      "Can't allocate instance of abstract classes"
 	      #f))
-       (multiple-value-bind (proto def)
+       (bind-values (proto def)
 	  (classgen-make c)
 	  (match-case def
 	     ((?- (?id . ?formals) ?body)
@@ -321,7 +321,7 @@
 ;*    classgen-allocate-expr ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (classgen-allocate-expr c)
-   (multiple-value-bind (proto def)
+   (bind-values (proto def)
       (classgen-allocate c)
       (match-case def
 	 ((?- ?- ?body)
@@ -410,7 +410,7 @@
    (let ((protos '())
 	 (defs '()))
       (for-each (lambda (s)
-		   (multiple-value-bind (p d)
+		   (bind-values (p d)
 		      (classgen-slot c s)
 		      (if (slot-read-only? s)
 			  (begin
@@ -470,7 +470,7 @@
 ;*    classgen-slot-anonymous ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (classgen-slot-anonymous class s)
-   (multiple-value-bind (_ d)
+   (bind-values (_ d)
       (classgen-slot class s)
       (map (match-lambda
 	      ((?- (?id . ?args) ?body)

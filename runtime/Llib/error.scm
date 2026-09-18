@@ -729,7 +729,7 @@
 (define (notify-&error/loc err fname loc)
    (if (or (not (string? fname)) (not (fixnum? loc)))
        (notify-&error err)
-       (multiple-value-bind (file lnum lpoint lstring)
+       (bind-values (file lnum lpoint lstring)
 	  (location-line-num `(at ,fname ,loc))
 	  (if (not lnum)
 	      (notify-&error/location-no-loc err)
@@ -924,7 +924,7 @@
 	  ;; standard warning
 	  (apply warning args)
 	  ;; we readlines until we reach location
-	  (multiple-value-bind (file lnum lpoint lstring)
+	  (bind-values (file lnum lpoint lstring)
 	     (location-line-num `(at ,fname ,loc))
 	     (if (not lnum)
 		 (apply warning args)
@@ -1010,7 +1010,7 @@
 		 (display num port)
 		 (display ")" port))
 		(loc
-		 (multiple-value-bind (file lnum lpoint lstring)
+		 (bind-values (file lnum lpoint lstring)
 		    (location-line-num loc)
 		    ;; file name
 		    (when (and (string? file) (not (string=? file ".")))
@@ -1092,7 +1092,7 @@
 	 (match-case (car stack)
 	    ((?name ?loc . (and (? alist?) ?rest))
 	     ;; got a localized stack frame
-	     (multiple-value-bind (file lnum lpoint lstring)
+	     (bind-values (file lnum lpoint lstring)
 		(location-line-num loc)
 		(cond
 		   ((and (string? file) (string? lstring))
@@ -1322,7 +1322,7 @@
       ((date? obj)
        "date")
       (($hvector? obj)
-       (multiple-value-bind (tag _ _ _)
+       (bind-values (tag _ _ _)
 	  (homogeneous-vector-info obj)
 	  (string-append (symbol->string tag) "vector")))
       ((bignum? obj)

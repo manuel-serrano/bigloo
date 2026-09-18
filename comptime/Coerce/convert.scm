@@ -436,7 +436,7 @@
 		     (loc loc)
 		     (variable o)
 		     (type from))))
-	 (multiple-value-bind (lnode cnode rnode)
+	 (bind-values (lnode cnode rnode)
 	    (ref-check from to check-op ref)
 	    (values (instantiate::let-var
 		       (loc loc)
@@ -453,7 +453,7 @@
 
       (if (and (tclass? to) (type-subclass? from to))
 	  (do-convert coerce-op node from to)
-	  (multiple-value-bind (lnode cnode rnode)
+	  (bind-values (lnode cnode rnode)
 	     (if (isa? node ref)
 		 (ref-check from to check-op node)
 		 (node-check from to check-op node))

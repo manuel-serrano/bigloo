@@ -111,14 +111,14 @@
       (let ((content-tag-byte (bit-and #x0F (bit-rsh packet-tag 2))))
 	 (when (zerofx? content-tag-byte)
 	    (openpgp-error "decode-content-tag" "invalid tag" 0))
-	 (multiple-value-bind (len partial?)
+	 (bind-values (len partial?)
 	    (decode-packet-length-v3 p packet-tag)
 	    (values (byte->content-tag content-tag-byte) len partial?))))
    
    (define (decode-packet-v4 packet-tag p)
       (trace-item "new package format")
       (let ((content-tag-byte (bit-and packet-tag #x3F)))
-	 (multiple-value-bind (len partial?)
+	 (bind-values (len partial?)
 	    (decode-packet-length-v4 p)
 	    (values (byte->content-tag content-tag-byte) len partial?))))
    
@@ -132,7 +132,7 @@
 		   "/" (input-port-length p))
 		(trace-item "packet-tag=" packet-tag " (0x"
 		   (integer->string packet-tag 16) ")")
-		(multiple-value-bind (content-tag len partial?)
+		(bind-values (content-tag len partial?)
 		   (if (zerofx? (bit-and #x40 packet-tag))
 		       ;; old packet format
 		       (decode-packet-v3 packet-tag p)

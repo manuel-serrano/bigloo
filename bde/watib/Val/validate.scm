@@ -133,35 +133,35 @@
 
    (match-case l
       (((param (and (? ident?) ?id) ?vt) . ?tl)
-       (multiple-value-bind (n p r tl) (valid-names/param/result/get-tl env tl)
+       (bind-values (n p r tl) (valid-names/param/result/get-tl env tl)
           (values (cons id n) (cons (valid-vt-at (car l) vt) p) r tl)))
       (((param . ?vts) . ?tl)
-       (multiple-value-bind (n p r tl) (valid-names/param/result/get-tl env tl)
+       (bind-values (n p r tl) (valid-names/param/result/get-tl env tl)
           (values (append (make-list (length vts) #f))
                   (append (map-env valid-vt-at (car l) vts) p) r tl)))
       (((result . ?-) . ?-)
        (define (get-results/tl l)
           (match-case l
              (((result . ?vts) . ?tl)
-              (multiple-value-bind (r tl) (get-results/tl tl)
+              (bind-values (r tl) (get-results/tl tl)
                  (values (append (map-env valid-vt-at (car l) vts) r) tl)))
              (else (values '() l))))
-       (multiple-value-bind (r tl) (get-results/tl l)
+       (bind-values (r tl) (get-results/tl l)
           (values '() '() r tl)))
       (else (values '() '() '() l))))
 
 (define (valid-param/result env::env l::pair-nil)
-   (multiple-value-bind (n p r tl) (valid-names/param/result/get-tl env l)
+   (bind-values (n p r tl) (valid-names/param/result/get-tl env l)
       (unless (null? tl)
          (raise `(expected-functiontype ,tl)))
       (values p r)))
 
 (define (valid-tu/get-tl env::env l::pair-nil)
-   (multiple-value-bind (n p r tl) (valid-names/param/result/get-tl env l)
+   (bind-values (n p r tl) (valid-names/param/result/get-tl env l)
       (values n (list p r) tl)))
 
 (define (valid-blocktype/get-tl env::env l::pair-nil)
-   (multiple-value-bind (args f tl) (valid-tu/get-tl env l)
+   (bind-values (args f tl) (valid-tu/get-tl env l)
       (unless (every not args)
          (raise `(named-param-blocktype ,args)))
       (values f tl)))
@@ -184,10 +184,10 @@
    (match-case l
       (() (values '() '()))
       (((field (and (? ident?) ?name) ?fldt) . ?tl)
-       (multiple-value-bind (fields names) (valid-fields/names env tl)
+       (bind-values (fields names) (valid-fields/names env tl)
           (values (cons (valid-fldt env fldt) fields) (cons name names))))
       (((field . ?fldts) . ?tl)
-       (multiple-value-bind (fields names) (valid-fields/names env tl)
+       (bind-values (fields names) (valid-fields/names env tl)
           (values (append (map-env valid-fldt env fldts) fields)
                   (append (map (lambda (-) (gensym "$unnamedfield")) fldts)
                           names))))
@@ -197,11 +197,11 @@
 (define (valid-ct env::env t x::long)
    (match-case t
       ((func . ?p/r)
-       (multiple-value-bind (p r) (valid-param/result env p/r)
+       (bind-values (p r) (valid-param/result env p/r)
           `(func ,p ,r)))
       ((array ?fldt) `(array ,(valid-fldt env fldt)))
       ((struct . ?fldts)
-       (multiple-value-bind (fields names) (valid-fields/names env fldts)
+       (bind-values (fields names) (valid-fields/names env fldts)
           (vector-set! (-> env field-names) x names)
           `(struct ,@fields)))
       (else (raise `(expected-comptype ,t)))))
@@ -366,7 +366,7 @@
    (let ((t'* (-> l type)))
       (when (null? t'*)
          (raise 'expected-non-empty-result))
-      (multiple-value-bind (t* tl) (split-at t'* (- (length t'*) 1))
+      (bind-values (t* tl) (split-at t'* (- (length t'*) 1))
          (values t* (car tl)))))
 
 (read-table *instruction-types* "Val/instruction-types.sch")
@@ -390,7 +390,7 @@
                                bt::pair #!optional (l #f))
    (let ((loc-init (-> env local-types)))
       (push-label! env l t)
-      (multiple-value-bind (i st) (valid-instrs env body (car bt))
+      (bind-values (i st) (valid-instrs env body (car bt))
          (let ((st-rst (check-stack env st (cadr bt))))
             (unless (or (null? st-rst) (eq? 'poly (car st-rst)))
                (raise `(value-left-stack ,st-rst))))
@@ -407,7 +407,7 @@
    (match-case i
       ; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsubsection*.183
       ((block (and (? ident?) ?l) . ?body)
-       (multiple-value-bind (bt tl) (valid-blocktype/get-tl env body)
+       (bind-values (bt tl) (valid-blocktype/get-tl env body)
           (values bt
                   (duplicate::block (check-block env tl (cadr bt) bt l)
                                     (opcode 'block))
@@ -417,7 +417,7 @@
 
       ; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsubsection*.184
       ((loop (and (? ident?) ?l) . ?body)
-       (multiple-value-bind (bt tl) (valid-blocktype/get-tl env body)
+       (bind-values (bt tl) (valid-blocktype/get-tl env body)
           (values bt
                   (duplicate::loop (check-block env tl (car bt) bt l)
                                    (opcode 'loop))
@@ -432,12 +432,12 @@
              (((then . ?then) ((kwote else) . ?else)) (values '() then else))
              (((then . ?then)) (values '() then '()))
              ((?hd . ?tl)
-              (multiple-value-bind (tl then else) (get-tl/then/else tl)
+              (bind-values (tl then else) (get-tl/then/else tl)
                  (values (cons hd tl) then else)))
              (else (raise `(expected-then/else ,l)))))
 
-       (multiple-value-bind (bt tl) (valid-blocktype/get-tl env body)
-          (multiple-value-bind (tl then else) (get-tl/then/else tl)
+       (bind-values (bt tl) (valid-blocktype/get-tl env body)
+          (bind-values (tl then else) (get-tl/then/else tl)
              (let ((i::if-then (instantiate::if-then
                                 (intype `(,@(car bt) i32))
                                 (outtype (cadr bt))
@@ -465,7 +465,7 @@
                      (lt (-> l type)))
                  (unless (<res= env t* lt)
                     (raise `(non-matching-catch ,x ,l ,t* ,lt)))
-                 (multiple-value-bind (c tl) (valid-catch/get-body tl)
+                 (bind-values (c tl) (valid-catch/get-body tl)
                     (values (cons (instantiate::catch (label l) (tag x)) c)
                             tl))))
 
@@ -477,7 +477,7 @@
                      (lt (-> l type)))
                  (unless (<res= env (append t* '((ref exn))) lt)
                     (raise `(non-matching-catch-ref ,x ,l ,t* ,lt)))
-                 (multiple-value-bind (c tl) (valid-catch/get-body tl)
+                 (bind-values (c tl) (valid-catch/get-body tl)
                     (values (cons (instantiate::catch_ref (label l) (tag x)) c)
                             tl))))
 
@@ -487,7 +487,7 @@
                      (lt (-> l type)))
                  (unless (null? lt)
                     (raise `(non-empty-label-catch-all ,l ,lt)))
-                 (multiple-value-bind (c tl) (valid-catch/get-body tl)
+                 (bind-values (c tl) (valid-catch/get-body tl)
                     (values (cons (instantiate::catch_all (label l)) c) tl))))
 
              ; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsubsection*.190
@@ -496,14 +496,14 @@
                      (lt (-> l type)))
                  (unless (<res= env '((ref exn)) lt)
                     (raise `(non-matching-catch-all-ref ,l ,lt)))
-                 (multiple-value-bind (c tl) (valid-catch/get-body tl)
+                 (bind-values (c tl) (valid-catch/get-body tl)
                     (values (cons (instantiate::catch_all_ref (label l)) c)
                             tl))))
 
              (?tl (values '() tl))))
 
-       (multiple-value-bind (bt tl) (valid-blocktype/get-tl env body)
-          (multiple-value-bind (c tl) (valid-catch/get-body tl)
+       (bind-values (bt tl) (valid-blocktype/get-tl env body)
+          (bind-values (c tl) (valid-catch/get-body tl)
              (values bt
                      (duplicate::try_table (check-block env tl (cadr bt) bt l)
                       (parent (-> env parent))
@@ -528,7 +528,7 @@
               (k (length exp-args)))
           (when (< (length (cdr i)) k)
              (raise `(not-enough arguments ,i ,exp-args)))
-          (multiple-value-bind (giv-args tl) (split-at (cdr i) k)
+          (bind-values (giv-args tl) (split-at (cdr i) k)
              (let* ((args (map (lambda (f x) (f env x)) exp-args giv-args))
                     (t (if (procedure? t) (apply t env args) t))
                     (i::instruction (instantiate::instruction
@@ -566,12 +566,12 @@
           (define (get-label/tl l::pair-nil)
              (match-case l
                 (((and (? idx?) ?lab) . ?tl)
-                    (multiple-value-bind (ls tl) (get-label/tl tl)
+                    (bind-values (ls tl) (get-label/tl tl)
                        (values (cons (labelidx env lab) ls) tl)))
                 (else (values '() l))))
 
-          (multiple-value-bind (ls tl) (get-label/tl (cdr i))
-             (multiple-value-bind (i st) (valid-instrs env tl st)
+          (bind-values (ls tl) (get-label/tl (cdr i))
+             (bind-values (i st) (valid-instrs env tl st)
                 (let* ((st (check-stack env st '(i32)))
                        (lower-bound (stack-take st n)))
                    (define (valid-label l::labelidxp)
@@ -592,8 +592,8 @@
       ((br_on_null ?lab . ?tl)
        (let* ((l::labelidxp (labelidx env lab))
               (t* (-> l type)))
-          (multiple-value-bind (i st) (valid-instrs env tl st)
-             (multiple-value-bind (ht st) (stack-drop-reftype st)
+          (bind-values (i st) (valid-instrs env tl st)
+             (bind-values (ht st) (stack-drop-reftype st)
                (values (append i `(,(instantiate::one-arg
                                      (intype `(,@(reverse t*) (ref null ,ht)))
                                      (outtype `(,@(reverse t*) (ref ,ht)))
@@ -607,8 +607,8 @@
       ((br_on_cast ?lab ?t1 ?t2 . ?tl)
        (let* ((l::labelidxp (labelidx env lab))
               (t* (-> l type)))
-	  (multiple-value-bind (i st) (valid-instrs env tl st)
-             (multiple-value-bind (ht st) (stack-drop-reftype st)
+	  (bind-values (i st) (valid-instrs env tl st)
+             (bind-values (ht st) (stack-drop-reftype st)
                 (values (append i `(,(instantiate::three-args
 					(intype `(,@(reverse t*) ,t1))
 					(outtype `(,@(reverse t*) ,t2))
@@ -625,8 +625,8 @@
       
       ; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsubsection*.99
       ((ref.is_null . ?tl)
-       (multiple-value-bind (i st) (valid-instrs env tl st)
-          (multiple-value-bind (ht st) (stack-drop-reftype st)
+       (bind-values (i st) (valid-instrs env tl st)
+          (bind-values (ht st) (stack-drop-reftype st)
              (values (append i `(,(instantiate::instruction
                                    (intype `((ref null ,ht)))
                                    (outtype '(i32))
@@ -635,8 +635,8 @@
 
       ; https://webassembly.github.io/spec/versions/core/WebAssembly-3.0-draft.pdf#subsubsection*.100
       ((ref.as_non_null . ?tl)
-       (multiple-value-bind (i st) (valid-instrs env tl st)
-          (multiple-value-bind (ht st) (stack-drop-reftype st)
+       (bind-values (i st) (valid-instrs env tl st)
+          (bind-values (ht st) (stack-drop-reftype st)
              (values (append i `(,(instantiate::instruction
                                    (intype `((ref null ,ht)))
                                    (outtype `((ref ,ht)))
@@ -656,8 +656,8 @@
                                       '(poly)) `(at-instruction ,i)
             (if (adhoc-instr? (car i))
                 (adhoc-instr env i st)
-                (multiple-value-bind (t i tl) (typeof-instr/instr/tl env i st)
-                   (multiple-value-bind (tl st) (valid-instrs env tl st)
+                (bind-values (t i tl) (typeof-instr/instr/tl env i st)
+                   (bind-values (tl st) (valid-instrs env tl st)
                       (for-each (lambda (x) (local-init! env x)) (cddr t))
                       (let ((st (check-stack env st (car t))))
                              ; t : ... -> (poly) ?
@@ -669,12 +669,12 @@
    (cond
     ((null? l) (values '() st))
     ((pair? (car l))
-     (multiple-value-bind (is st) (valid-instr (car l) st)
-        (multiple-value-bind (tl st) (valid-instrs env (cdr l) st)
+     (bind-values (is st) (valid-instr (car l) st)
+        (bind-values (tl st) (valid-instrs env (cdr l) st)
            (values (append is tl) st))))
     ((symbol? (car l))
-     (multiple-value-bind (is st) (valid-instr (econs (car l) '() (cer l)) st)
-        (multiple-value-bind (tl st) (valid-instrs env (cdr l) st)
+     (bind-values (is st) (valid-instr (econs (car l) '() (cer l)) st)
+        (bind-values (tl st) (valid-instrs env (cdr l) st)
            (values (append is tl) st))))
     (else (raise `(at-pos ,(cer l) expected-instruction ,(car l))))))
 
@@ -690,10 +690,10 @@
 (define (valid-names/local/get-tl env::env l::pair-nil)
    (match-case l
       (((local (and (? ident?) ?id) ?vt) . ?tl)
-       (multiple-value-bind (n l tl) (valid-names/local/get-tl env tl)
+       (bind-values (n l tl) (valid-names/local/get-tl env tl)
           (values (cons id n) (cons (valid-loct env vt) l) tl)))
       (((local . ?vts) . ?tl)
-       (multiple-value-bind (n l tl) (valid-names/local/get-tl env tl)
+       (bind-values (n l tl) (valid-names/local/get-tl env tl)
           (values (append (make-list (length vts) #f) n)
                   (append (map-env valid-loct env vts) l) tl)))
       (else (values '() '() l))))
@@ -715,7 +715,7 @@
        (valid-importdesc env `(tag ,@rst) imp))
 
       ((func . ?ft)
-       (multiple-value-bind (p r) (valid-param/result env ft)
+       (bind-values (p r) (valid-param/result env ft)
           (vector-set! *funcs* (-> env nfunc) #f)
           (let ((t (econs 'deftype (list `((sub final (func ,p ,r))) 0) -1)))
              (func-add! env t)
@@ -730,7 +730,7 @@
           (mem-add! env mt)
           (duplicate::import-mem imp (memtype mt))))
       ((tag . ?tt)
-       (multiple-value-bind (p r) (valid-param/result env tt)
+       (bind-values (p r) (valid-param/result env tt)
           (let ((t (econs 'deftype (list `((sub final (func ,p ,r))) 0) -1)))
              (tag-add! env t)
              (duplicate::import-tag imp (tagtype t)))))
@@ -796,7 +796,7 @@
           (func-add-name! env id)
           (env-pass-mf env (decorate (cdr m) `(func ,@rst))))
          ((func . ?rst)
-          (multiple-value-bind (args f tl) (valid-tu/get-tl env rst)
+          (bind-values (args f tl) (valid-tu/get-tl env rst)
              (vector-set! *funcs* (-> env nfunc)
                           (instantiate::func
                            (type f)
@@ -864,7 +864,7 @@
           (tag-add-name! env id)
           (env-pass-mf env (decorate (cdr m) `(tag ,@rst))))
          ((tag . ?tu)
-          (multiple-value-bind (p r) (valid-param/result env tu)
+          (bind-values (p r) (valid-param/result env tu)
              (unless (null? r)
                 (tag-add! env (econs 'deftype (list '((sub final (error))) 0)
                                      -1))
@@ -898,7 +898,7 @@
    (let ((old-nglobal (-> env nglobal)))
       ; global can only refer to the previous ones
      (set! (-> env nglobal) x)
-     (multiple-value-bind (e t') (valid-expr env (-> g body))
+     (bind-values (e t') (valid-expr env (-> g body))
         (when (and (length>=? t' 2) (not (eq? 'poly (cadr t'))))
            (raise `(too-much-value-stack ,t')))
         (when (or (null? t') (eq? 'poly (car t')))
@@ -911,7 +911,7 @@
         (set! (-> g body) e))))
 
 (define (valid-function env::env f::func x::long)
-   (multiple-value-bind (n lts body)
+   (bind-values (n lts body)
       (valid-names/local/get-tl env (-> f body))
       (set! (-> env local-names) (append (-> f formals) n))
       (set! (-> env parent) f)

@@ -66,12 +66,12 @@
 		(loop (+fx walker 1)))))))
 
    (define (id-without-type id)
-      (multiple-value-bind (id type)
+      (bind-values (id type)
 	 (parse-ident id)
 	 id))
 
    (define (id-type id)
-      (multiple-value-bind (id type)
+      (bind-values (id type)
 	 (parse-ident id)
 	 type))
 

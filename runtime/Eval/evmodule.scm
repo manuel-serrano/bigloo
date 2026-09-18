@@ -782,7 +782,7 @@
 		 (iexprs '()))
 	 (if (null? files)
 	     (values iclauses iexprs)
-	     (multiple-value-bind (ic ie)
+	     (bind-values (ic ie)
 		(evmodule-include-file! (car files) path)
 		(loop (cdr files) (append iclauses ic) (append iexprs ie))))))
    
@@ -798,9 +798,9 @@
 	    ((not (pair? (car clauses)))
 	     (error/source-location "eval" "Illegal module clause" (car clauses)  loc))
 	    ((eq? (caar clauses) 'include)
-	     (multiple-value-bind (ic ie)
+	     (bind-values (ic ie)
 		(evmodule-include-files! (cdar clauses) path)
-		(multiple-value-bind (ic2 ie2)
+		(bind-values (ic2 ie2)
 		   (evmodule-include mod ic loc)
 		   (loop (cdr clauses)
 			 (append iclauses ic2)
@@ -991,7 +991,7 @@
 (define (evmodule-module4 mod clauses loc)
    ;; check the syntax and resolve the cond-expand clauses
    (let ((mclauses (evmodule-cond-expand mod clauses loc)))
-      (multiple-value-bind (iclauses iexprs)
+      (bind-values (iclauses iexprs)
 	 (evmodule-include mod mclauses loc)
 	 ;; Step1: evaluate export clauses (and static for coherency).
 	 ;; During that step, classes are not evaluated.

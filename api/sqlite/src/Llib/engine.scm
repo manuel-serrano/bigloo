@@ -448,7 +448,7 @@
 			    (lambda (rows)
 			       (let ((gs (select-group-by rows group-c)))
 				  (map (lambda (g) (sort g order-c)) gs)))))))
-      (multiple-value-bind (print-c aggregation cols)
+      (bind-values (print-c aggregation cols)
 	 (compile-select-results result nenv obj builtin)
 	 (let ((grps->res (cond
 			     (aggregation
@@ -659,7 +659,7 @@
 	      (cols '()))
       (if (null? results)
 	  (values (reverse! compilers) aggreg (reverse! cols))
-	  (multiple-value-bind (c a s)
+	  (bind-values (c a s)
 	     (compile-select-result (car results) env obj builtin)
 	     (loop (cdr results) (cons c compilers) (or a aggreg) (cons s cols))))))
 
@@ -695,7 +695,7 @@
 	   #f
 	   (list name))))
       ((colref ?table-name ?name)
-       (multiple-value-bind (i j)
+       (bind-values (i j)
 	  (find-column-offset obj env table-name name)
 	  (values 
 	   (lambda (row rows)
@@ -703,7 +703,7 @@
 	   #f
 	   (list name))))
       ((funcall ?aggregator (colref ?table-name ?name))
-       (multiple-value-bind (i j)
+       (bind-values (i j)
 	  (find-column-offset obj env table-name name)
 	  (let ((op (case aggregator
 		       ((max)
@@ -743,7 +743,7 @@
       ((or (? integer?) (? string?))
        (lambda (rows) expr))
       ((colref ?table-name ?col-name)
-       (multiple-value-bind (i j)
+       (bind-values (i j)
 	  (find-column-offset obj env table-name col-name)
 	  (lambda (rows)
 	     (vector-ref (list-ref rows i) j))))

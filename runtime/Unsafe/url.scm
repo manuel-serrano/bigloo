@@ -334,7 +334,7 @@
 ;*    url-encode ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (url-encode::bstring str::bstring)
-   (multiple-value-bind (scheme uinfo host port abspath)
+   (bind-values (scheme uinfo host port abspath)
       (url-parse str)
       (if (string=? scheme "file")
 	  str
