@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Thu Sep 10 10:57:30 2026 (serrano)                */
+;*    Last change :  Sun Sep 20 15:22:21 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -1000,6 +1000,7 @@
    (install-module5-expander xenv 'assert #f expand-assert)
 
    (install-module5-expander xenv 'let #f let+-expand)
+   (install-module5-expander xenv 'let* #f let+-expand)
    (install-module5-expander xenv 'letrec #f let+-expand)
    (install-module5-expander xenv 'letrec* #f let+-expand)
    

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/bigloo/comptime/Init/pass-args-parse.sch      */
+;*    .../project/bigloo/5.0.x/comptime/Init/pass-args-parse.sch       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep 17 22:15:24 2009                          */
-;*    Last change :  Tue Jul  2 09:27:39 2024 (serrano)                */
-;*    Copyright   :  2009-24 Manuel Serrano                            */
+;*    Last change :  Sun Sep 20 15:26:24 2026 (serrano)                */
+;*    Copyright   :  2009-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Runs parse-args several times over the arguments.                */
 ;*    each time only the 'selected' clauses are evaluated.             */
@@ -95,7 +95,7 @@
 			      (car clauses) default-pass)
 			     else-clauses)))
 		((pass ?pass . ?nested-clauses)
-		 (multiple-value-bind (rev-trs elses)
+		 (bind-values (rev-trs elses)
 		    (pass-clauses->transformed-clauses
 		     nested-clauses pass)
 		    (loop (cdr clauses)
