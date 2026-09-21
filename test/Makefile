@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Sep 18 07:39:12 2026 (serrano)                */
+#*    Last change :  Mon Sep 21 07:50:04 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -27,8 +27,8 @@ SHELL = /bin/sh
 #*  The recette can't be compiled in `-unsafe' mode (due to try forms) */
 #*---------------------------------------------------------------------*/
 EFLAGS = 
-BFLAGS = -cg -O3 -q -Wall -g -lib-dir $(BOOTLIBDIR) -no-auto-link-main
-BM$FLAGS = -module4
+BFLAGS = -cg -O3 -q -Wall -g -lib-dir $(BOOTLIBDIR) -bin-dir $(BOOTBINDIR) -no-auto-link-main
+BMFLAGS = -module4
 
 BLFLAGS = -I src -I src/modules
 BCFLAGS =
@@ -142,7 +142,7 @@ objs_jvm/%.class: src/%.java
 	$(JAVAC) $< -d objs_jvm -cp objs_jvm:$(BOOTLIBDIR)/bigloo_s.zip
 
 objs_c/%.o: src/%.scm src/test.bgh
-	$(BIGLOO) -c $(BFLAGS) $(BM$FLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
+	$(BIGLOO) -c $(BFLAGS) $(BMFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
 
 objs_wasm/%.wat: src/%.scm src/test.bgh
 	$(BIGLOO) -c $(BFLAGS) $(BM4FLAGS) $(BWFLAGS) $(EFLAGS) $< -o $@

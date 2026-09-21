@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Sat Jun 20 15:51:27 2026 (serrano)                */
+;*    Last change :  Mon Sep 21 07:49:26 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -123,7 +123,7 @@
 				  (<elong (file-modification-time cache)
 				     (file-modification-time path))))
 			 (let ((cmd (format "~a/~a -cp ~a -s --module5 ~a -o ~a"
-				       (bigloo-config 'binary-directory)
+				       *bin-dir*
 				       cmd
 				       (dirname (-> mod path))
 				       (if (file-exists? path) path file)

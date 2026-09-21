@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri Jul 31 08:29:03 2026 (serrano)                */
+#*    Last change :  Mon Sep 21 07:53:28 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -472,7 +472,7 @@ fullbootstrap-wasm:
 	  $(MAKE) -C runtime heap-wasm libs-wasm-sans-validation; \
         fi
 
-# only used for continuous integration, as of 4may2021, fullboostrap
+# only used for continuous integration, as of 4may2021, fullbootstrap
 # is became too long and travis stops the job before it completes!
 cibootstrap:
 	(cd comptime && $(MAKE) -i touchall; $(MAKE))

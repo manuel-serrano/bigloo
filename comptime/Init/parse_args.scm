@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Jul 10 14:02:40 2026 (serrano)                */
+;*    Last change :  Mon Sep 21 07:49:13 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -341,6 +341,9 @@
       ;; load path
       (("-I" ?dir (help "Add DIR to the load path"))
        (set! *user-load-path* (cons dir *user-load-path*)))
+      ;; bin path
+      (("-bin-dir" ?dir (help "Binary directory for plugin tools"))
+       (set! *bin-dir* dir))
       ;; library path
       (pass lib-dir
 	 (("-lib-dir" ?dir (help "Set lib-path to DIR"))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue May 19 08:09:13 2026 (serrano)                */
+;*    Last change :  Mon Sep 21 07:49:07 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -181,6 +181,7 @@
 	    *additional-bigloo-zips*
 	    *lib-dir*
 	    *default-lib-dir*
+	    *bin-dir*
 	    *lib-src-dir*
 	    *include-multiple*
 	    *include-foreign*
@@ -498,6 +499,9 @@
 (param-define *default-lib-dir*
    "Deprecated, don't use"
    (bigloo-config 'library-directory))
+(param-define *bin-dir*
+   "The bin dir path"
+   (bigloo-config 'binary-directory))
 (param-define *ld-library-dir*
    "Deprecated, don't use"
    (bigloo-config 'library-directory))
