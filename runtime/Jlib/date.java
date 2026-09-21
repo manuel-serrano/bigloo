@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Jun  1 10:20:45 2026                          */
-/*    Last change :  Wed Jun  3 07:39:20 2026 (serrano)                */
+/*    Last change :  Mon Sep 21 13:52:22 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java Dates implementation                                        */
@@ -23,11 +23,13 @@ public class date extends obj {
    public Calendar calendar; // an UTC calendar
    public int timezone;      // the timezone offset
    public long nsec = 0;
+   public Object tzname;
 
    static TimeZone tmzUTC = new SimpleTimeZone(0, "UTC");
 
    public date() {
       calendar = new GregorianCalendar(tmzUTC);
+      tzname = "UTC".getBytes();
    }
       
    public date(final long ns,
@@ -54,6 +56,7 @@ public class date extends obj {
 	 calendar.setTime(dt);
 	 c.set(Calendar.MILLISECOND, 0); 
 	 timezone = tmz.getOffset(c.getTimeInMillis()) / 1000;
+         tzname = TimeZone.getDefault().getID().getBytes();
       } else {
 	 // build an utc+timezone date
 	 calendar = new GregorianCalendar(tmzUTC);
@@ -61,6 +64,7 @@ public class date extends obj {
 	 calendar.set(Calendar.MILLISECOND, 0); 
 	 calendar.add(Calendar.MILLISECOND, (int)tz * -1000);
 	 timezone = (int)tz;
+         tzname = "UTC".getBytes();
       }
    }
 
@@ -73,6 +77,7 @@ public class date extends obj {
       Calendar c = new GregorianCalendar();
       final TimeZone tmz = c.getTimeZone();   
       timezone = tmz.getOffset(c.getTimeInMillis()) / 1000;
+      tzname = TimeZone.getDefault().getID().getBytes();
    }
    
    public date(final long n, final long q) {
@@ -85,6 +90,7 @@ public class date extends obj {
       Calendar c = new GregorianCalendar();
       final TimeZone tmz = c.getTimeZone();   
       timezone = tmz.getOffset(c.getTimeInMillis()) / 1000;
+      tzname = TimeZone.getDefault().getID().getBytes();
    }
 
    public static date bgl_milliseconds_to_gmtdate(long ms) {

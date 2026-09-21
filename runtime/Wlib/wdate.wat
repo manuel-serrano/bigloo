@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Oct 21 17:43:39 2024                          */
-;*    Last change :  Wed Jun  3 07:04:31 2026 (serrano)                */
+;*    Last change :  Mon Sep 21 14:05:03 2026 (serrano)                */
 ;*    Copyright   :  2024-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dates                                                       */
@@ -37,6 +37,7 @@
    (import "__js_date" "getYear" (func $js_date_year (param externref) (result i32)))
    (import "__js_date" "setYear" (func $js_date_set_year (param externref) (param i32)))
    (import "__js_date" "getTimezone" (func $js_date_timezone (param externref) (result f64)))
+   (import "__js_date" "getTzname" (func $js_date_tzname (param externref) (param i32) (result i32)))
    (import "__js_date" "isDst" (func $js_date_isdst (param externref) (result i32)))
    (import "__js_date" "isGmt" (func $js_date_isgmt (param externref) (result i32)))
    (import "__js_date" "getTime" (func $js_date_time (param externref) (result f64)))
@@ -245,6 +246,20 @@
       (i64.trunc_f64_s
 	 (call $js_date_timezone
 	    (struct.get $date $dt (local.get $dt)))))
+
+   (func $BGL_DATE_TZNAME (export "BGL_DATE_TZNAME")
+      (param $dt (ref $date))
+      (result (ref eq))
+      (local $size i32)
+
+      (local.set $size
+	 (call $js_date_tzname
+	    (struct.get $date $dt (local.get $dt))
+            (i32.const 128)))
+
+      (if (i32.gt_s (local.get $size) (i32.const 0))
+          (then (return_call $load_string (i32.const 128) (local.get $size)))
+          (else (return (global.get $BUNSPEC)))))
 
    (func $BGL_DATE_ISDST (export "BGL_DATE_ISDST")
       (param $dt (ref $date))

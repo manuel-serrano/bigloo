@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Mon Sep 14 08:29:09 2026 (serrano)                */
+/*    Last change :  Mon Sep 21 13:51:00 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -3115,6 +3115,10 @@ public final class foreign {
 
    public static int BGL_DATE_TIMEZONE(date d) {
       return d.timezone;
+   }
+
+   public static Object BGL_DATE_TZNAME(date d) {
+      return d.tzname;
    }
 
    public static int BGL_DATE_ISDST(date d) {

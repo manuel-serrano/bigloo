@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Mon Jul 27 17:42:51 2026 (serrano)                */
+/*    Last change :  Mon Sep 21 14:01:56 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -386,17 +386,19 @@ export class BglRuntime {
 	 current_milliseconds: () => Date.now(),
 	 mkDate: (ms) => {
 	    const date = new Date(ms);
-            return { date, timezone: date.getTimezoneOffset() * -60 };
+            const tzname = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            return { date, timezone: date.getTimezoneOffset() * -60, tzname };
          },
 	 mktime: (year, month, day, hour, minute, second, millisecond, timezone, istz) => {
 	    if (!istz) {
 	       // build a locale date
 	       const date = new Date(year, month - 1, day, hour, minute, second, millisecond);
-	       return { date, timezone: date.getTimezoneOffset() * -60 };
+               const tzname = Intl.DateTimeFormat().resolvedOptions().timeZone;
+	       return { date, timezone: date.getTimezoneOffset() * -60, tzname };
 	    } else {
 	       // build an utc+timezone date
 	       const ms = Date.UTC(year, month - 1, day, hour, minute, second, millisecond) + (timezone * -1000);
-	       return { date: new Date(ms), timezone };
+	       return { date: new Date(ms), timezone, tzname: "UTC" };
 	    }
 	 },
 	 dateToGmtdate: (dt) => {
@@ -438,6 +440,14 @@ export class BglRuntime {
 	 getYear: (dt) => dt.date.getFullYear(),
 	 setYear: (dt, y) => dt.date.setFullYear(y),
 	 getTimezone: (dt) => dt.timezone,
+         getTzname: (dt, addr) => {
+            if (typeof dt.tzname === "string") {
+               self.storeString(dt.tzname, addr);
+               return dt.tzname.length;
+            } else {
+               return 0;
+            }
+         },
 	 isDst: (dt) => {
             const year = dt.date.getFullYear();
             const month = dt.date.getMonth();

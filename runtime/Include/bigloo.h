@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Jun  3 07:16:29 2026 (serrano)                */
+/*    Last change :  Mon Sep 21 13:40:32 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1058,6 +1058,8 @@ union scmobj {
 #if (!BGL_HAVE_GMTOFF)
       long timezone;
 #endif
+      /* timezone name */
+      obj_t tzname;
    } date;
 
    /* mutexes */
@@ -2192,6 +2194,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #else
 #  define BGL_DATE_TIMEZONE(f) (BGL_DATE(f).timezone)
 #endif
+#define BGL_DATE_TZNAME(f) (BGL_DATE(f).tzname)
    
 #define BGL_DATE_ISGMT(f) (BGL_HEADER_SIZE(CREF(f)->header) > 0)
 #define BGL_DATE_SETGMT(f) (CREF(f)->header = BGL_MAKE_HEADER(DATE_TYPE, 1))

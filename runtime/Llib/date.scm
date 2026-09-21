@@ -69,6 +69,7 @@
 	    (macro $date-month::int (::date) "BGL_DATE_MONTH")
 	    (macro $date-year::int (::date) "BGL_DATE_YEAR")
 	    (macro $date-timezone::long (::date) "BGL_DATE_TIMEZONE")
+	    (macro $date-tzname::obj (::date) "BGL_DATE_TZNAME")
 	    (macro $date-is-dst::int (::date) "BGL_DATE_ISDST")
 	    (macro $date-is-gmt::bool (::date) "BGL_DATE_ISGMT")
 	    (macro $date-time::long (::date) "BGL_DATE_TIME")
@@ -135,6 +136,7 @@
 	       (method static $date-month::int (::date) "BGL_DATE_MONTH")
 	       (method static $date-year::int (::date) "BGL_DATE_YEAR")
 	       (method static $date-timezone::long (::date) "BGL_DATE_TIMEZONE")
+               (method static $date-tzname::obj (::date) "BGL_DATE_TZNAME")
 	       (method static $date-is-dst::int (::date) "BGL_DATE_ISDST")
 	       (method static $date-is-gmt::bool (::date) "BGL_DATE_ISGMT")
 	       
@@ -172,6 +174,7 @@
 	    (inline date-month::int ::date)
 	    (inline date-year::int ::date)
 	    (inline date-timezone::long ::date)
+            (inline date-tzname::obj d::date)
 	    (inline date-is-dst::int ::date)
 	    
 	    (inline current-seconds::elong)
@@ -180,6 +183,7 @@
 	    (inline current-nanoseconds::llong)
 	    (inline current-date::date)
             (inline current-timezone::long)
+            (inline current-tzname::obj)
 
 	    (inline seconds->date::date ::elong)
 	    (inline seconds->gmtdate::date ::elong)
@@ -225,7 +229,8 @@
 	    ($date-yday args-safe)
 	    ($date-month args-safe)
 	    ($date-year args-safe)
-	    ($date-timezone args-safe)))
+	    ($date-timezone args-safe)
+            ($date-tzname args-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    date ...                                                         */
@@ -429,6 +434,12 @@
    ($date-timezone d))
 
 ;*---------------------------------------------------------------------*/
+;*    date-tzname ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (date-tzname::obj d::date)
+   ($date-tzname d))
+
+;*---------------------------------------------------------------------*/
 ;*    date-is-dst ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (date-is-dst::int d::date)
@@ -469,6 +480,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (current-timezone::long)
    (date-timezone (current-date)))
+
+;*---------------------------------------------------------------------*/
+;*    current-tzname ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (current-tzname)
+   (date-tzname (current-date)))
 
 ;*---------------------------------------------------------------------*/
 ;*    seconds->date ...                                                */

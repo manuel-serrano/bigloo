@@ -59,6 +59,10 @@ Returns the current date as a `date` object.
 ### current-timezone ###
 Returns the current timezone of the host.
 
+### current-tzname ###
+Returns the current timezone name the host, or `#unspecified` if this
+information is not available.
+
 ### current-seconds ###
 Returns an `elong` integer representing the current epoch (i.e., the
 date since 0:00:00 UTC on the morning of 1 January 1970, expressed
@@ -132,6 +136,10 @@ Returns the year of a date.
 
 ### date-timezone ###
 Returns the timezone (in seconds) of a date.
+
+### date-tzname ###
+Returns the timezone name (in seconds) of a date if that information
+is available. Returns `#unspecified` otherwise.
 
 ### date-is-dst ###
 Returns `-1` if the information is not available, `0` is the

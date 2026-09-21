@@ -50,6 +50,11 @@
       (and (<=fx tz (* 13 60 60)) (>=fx tz (* -13 60 60))))
    :expected #t)
 
+(define-test current-tzname
+   (let ((tz (current-tzname)))
+      (or (string? tz) (eq? tz #unspecified)))
+   :expected #t)
+
 (define-test make-date
    (date? (make-date :sec 1 :min 1 :hour 1 :day 19 :month 2 :year 2000))
    :expected #t)
@@ -537,6 +542,15 @@
    (date-timezone (make-date :sec 10 :hour 2 :day 1 :month 2 :timezone 3600))
    :expected 3600)
 
+(define-test date-tzname
+   (date-tzname (make-date :timezone 0))
+   :expected "UTC")
+
+(define-test date-tzname
+   (let ((tz (date-tzname (make-date))))
+      (or (string? tz) (eq? tz #unspecified)))
+   :expected #t)
+
 (define-test date-is-dst
    (date-is-dst (make-date :sec 10 :hour 2 :day 1 :month 8 :year 2020))
    :expected 1)
@@ -604,6 +618,5 @@
          (lambda (ip)
             (equal? d (iso8601-parse-date ip)))))
    :expected #t)
-
 
 

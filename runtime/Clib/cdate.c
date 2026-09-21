@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Sat Sep 12 17:52:42 2026 (serrano)                */
+/*    Last change :  Mon Sep 21 13:54:42 2026 (serrano)                */
 /*    Copyright   :  2003-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -85,7 +85,36 @@ bgl_timezone() {
 
    return timezone;
 }
-       
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_tzname ...                                                   */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_tzname() {
+   if (access("/etc/localtime", F_OK) == 0) {
+      // linux time
+      char path[64];
+      ssize_t n = readlink("/etc/localtime", path, sizeof(path) - 1);
+
+      if (n < 0) {
+	 return BUNSPEC;
+      } else {
+	 path[n] = '\0';
+
+	 const char *prefix = "/usr/share/zoneinfo/";
+
+	 if (strncmp(path, prefix, strlen(prefix)) == 0) {
+	    return string_to_bstring(path + strlen(prefix));
+	 } else {
+	    return string_to_bstring(path);
+	 }
+      }
+   } else {
+      return BUNSPEC;
+   }
+}
+
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    tm_date ...                                                      */
@@ -127,12 +156,10 @@ bgl_seconds_to_date(long s) {
    tm_date(localtime(&sec), date);
    BGL_MUTEX_UNLOCK(date_mutex);
 #endif
+   date->date.tzname = bgl_tzname();
    
    date->date.time = sec;
    date->date.nsec = 0;
-#if (!BGL_HAVE_GMTOFF)
-   date->date.timezone = bgl_timezone();   
-#endif
    
    return BREF(date);
 }
@@ -162,6 +189,8 @@ bgl_seconds_to_gmtdate(long s) {
    date->date.timezone = bgl_timezone();   
 #endif
    
+   date->date.tzname = BUNSPEC;
+   
    return BREF(date);
 }
 
@@ -189,6 +218,7 @@ bgl_milliseconds_to_gmtdate(BGL_LONGLONG_T msec) {
 #if (!BGL_HAVE_GMTOFF)
    date->date.timezone = 0;
 #endif
+   date->date.tzname = BUNSPEC;
    
    return BREF(date);
 }
@@ -211,6 +241,7 @@ bgl_nanoseconds_to_date(BGL_LONGLONG_T nsec) {
    tm_date(localtime(&sec), date);
    BGL_MUTEX_UNLOCK(date_mutex);
 #endif
+   date->date.tzname = bgl_tzname();
 
    date->date.nsec = (nsec - ((BGL_LONGLONG_T) sec * NANOBASE));
    date->date.time = nsec / NANOBASE;
@@ -236,6 +267,7 @@ bgl_milliseconds_to_date(BGL_LONGLONG_T msec) {
    tm_date(localtime(&sec), date);
    BGL_MUTEX_UNLOCK(date_mutex);
 #endif
+   date->date.tzname = bgl_tzname();
 
    date->date.nsec = (msec - ((BGL_LONGLONG_T) sec * MILLIBASE)) * 1000000;
    date->date.time = msec / MILLIBASE;
@@ -253,7 +285,7 @@ bgl_update_date(obj_t obj, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, in
 #if (!BGL_HAVE_GMTIME_R)   
    struct tm *tm;
 #endif
-      
+
    date->date.tm.tm_sec = s + (long)(ns / (BGL_LONGLONG_T)1000000000);
    date->date.tm.tm_min = m; 
    date->date.tm.tm_hour = hr;
@@ -280,6 +312,7 @@ bgl_update_date(obj_t obj, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, in
       }
 #endif      
       date->date.time -= tz;
+      date->date.tzname = string_to_bstring("UTC");
 #if (BGL_HAVE_GMTOFF)
       date->date.tm.tm_gmtoff = tz;
 #else      
@@ -290,6 +323,7 @@ bgl_update_date(obj_t obj, BGL_LONGLONG_T ns, int s, int m, int hr, int mday, in
 #if (!BGL_HAVE_GMTOFF)
       date->date.timezone = bgl_get_timezone(date->date.time);
 #endif
+      date->date.tzname = bgl_tzname();
    }
 
    return obj;
