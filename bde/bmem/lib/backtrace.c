@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Wed Oct  6 15:37:29 2021                          */
-/*    Last change :  Mon Dec  6 09:18:25 2021 (serrano)                */
-/*    Copyright   :  2021 manuel serrano                               */
+/*    Last change :  Fri Sep 18 14:43:47 2026 (serrano)                */
+/*    Copyright   :  2021-26 manuel serrano                            */
 /*    -------------------------------------------------------------    */
 /*    libbacktrace interface                                           */
 /*=====================================================================*/
@@ -110,7 +110,7 @@ libbacktrace_get_state(obj_t env) {
 /*---------------------------------------------------------------------*/
 #if !BGL_HAVE_BACKTRACE   
 static void
-backtrace_full(obj_t env, int start, int (*cb)(void *state, int, void *cb, int, void *data)), void (*ce)(), void *data) {
+backtrace_full(obj_t env, int start, backtrace_full_callback cb, void (*ce)(), void *data) {
    struct bgl_dframe *runner = BGL_ENV_GET_TOP_OF_FRAME(env);
 							   
    while (start-- > 0) {
@@ -138,7 +138,7 @@ backtrace_full(obj_t env, int start, int (*cb)(void *state, int, void *cb, int, 
 	    at = CINT(CAR(CDR(CDR(runner->location))));
 	 }
       
-	 if (cb(data, 0L, filename, at, function)) {
+	 if (((int (*)(void *state, int, void *cb, int, void *data))cb)(data, 0L, filename, at, function)) {
 	    return;
 	 } else {
 	    runner = runner->link;
