@@ -16,7 +16,7 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=4.7b
+release=4.7c
 buildrelease=unstable
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
