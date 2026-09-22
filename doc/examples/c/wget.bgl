@@ -33,7 +33,7 @@
 	     (else
 	      ip))))
    
-   (multiple-value-bind (protocol login host port abspath)
+   (bind-values (protocol login host port abspath)
       (url-parse url)
       (let* ((sock (http :host host :port port :login login :path abspath))
 	     (ip (socket-input sock))

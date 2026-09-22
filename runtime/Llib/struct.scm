@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/struct.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/struct.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 30 13:02:29 1992                          */
-;*    Last change :  Thu Jul 17 14:18:54 2025 (serrano)                */
+;*    Last change :  Tue Sep 22 16:46:37 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Non R4Rs structure and SRFI-9 records.                           */
 ;*    -------------------------------------------------------------    */
@@ -131,13 +131,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-struct ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-struct key len init)
+(define-inline (make-struct::struct key::symbol len::int init)
    ($make-struct key len init))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (struct? o)
+(define-inline (struct?::bool o)
    ($struct? o))
 
 ;*---------------------------------------------------------------------*/
@@ -149,37 +149,37 @@
 ;*---------------------------------------------------------------------*/
 ;*    struct-key ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (struct-key s)
+(define-inline (struct-key::symbol s::struct)
    ($struct-key s))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct-key-set! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (struct-key-set! s k)
+(define-inline (struct-key-set! s::struct k::symbol)
    ($struct-key-set! s k))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct-length ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline  (struct-length s)
+(define-inline  (struct-length::int s::struct)
    ($struct-length s))
    
 ;*---------------------------------------------------------------------*/
 ;*    struct-ref ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline  (struct-ref s k)
+(define-inline  (struct-ref s::struct k::int)
    ($struct-ref s k))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct-set! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline  (struct-set! s k o)
+(define-inline  (struct-set! s::struct k::int o)
    ($struct-set! s k o))
 
 ;*---------------------------------------------------------------------*/
 ;*    struct-update! ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (struct-update! dst src)
+(define (struct-update! dst::struct src::struct)
    (if (and (eq? (struct-key dst) (struct-key src))
 	    (=fx (struct-length dst) (struct-length src)))
        (let loop ((i (-fx (struct-length dst) 1)))
@@ -193,7 +193,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    struct->list ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (struct->list struct)
+(define (struct->list::pair struct::struct)
    (let loop ((i (-fx (struct-length struct) 1))
 	      (r '()))
       (if (=fx i -1)
@@ -203,7 +203,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    list->struct ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (list->struct lst)
+(define (list->struct::struct lst::pair)
    (cond
       ((null? lst)
        (error 'list->struct "Illegal empty list" lst))

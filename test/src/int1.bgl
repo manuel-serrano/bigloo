@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Mon Jul  6 09:29:34 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 10:54:01 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing bit functions                                            */
@@ -470,7 +470,7 @@
 
 (define-test elong
    (typeof (-elong #e3 (fixnum->elong 3)))
-   :expected "elong")
+   :expected "belong")
 
 (define-test llong
    (let* ((octet 116)

@@ -3,7 +3,7 @@
 ;*    ------------------------------------------------------------     */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Mon Sep 14 13:17:34 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 10:54:13 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing numbers                                                  */
@@ -340,7 +340,7 @@
 (define-test number->string (number->string #s32:-1732584194) :expected "-1732584194")
 (define-test number->string (number->string #u32:1732584194) :expected "1732584194")
 
-(define-test elong (find-runtime-type #e1) :expected "elong")
+(define-test elong (typeof #e1) :expected "belong")
 (define-test elong #e1 :expected #e1)
 (define-test elong (elong? #exfeedabee) :expected #t)
 (define-test elong? (elong? #e1) :expected #t) 
@@ -351,7 +351,7 @@
 (define-test fixnum->elong (fixnum->elong 123456) :expected #e123456)
 (define-test elong->flonum (elong->flonum #e123456) :expected 123456.)
 (define-test flonum->elong (flonum->elong 123456.) :expected #e123456)
-(define-test llong (find-runtime-type #l1) :expected "llong")
+(define-test llong (typeof #l1) :expected "bllong")
 (define-test llong #l1 :expected #l1)
 (define-test llong  (> #lxfeedabee #lxfeedabe0) :expected #t)
 (define-test llong? (llong? #l1) :expected #t)

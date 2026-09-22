@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Jul 28 13:20:16 2026                          */
-;*    Last change :  Tue Jul 28 13:22:36 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 16:44:43 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    testing structs                                                  */
@@ -33,6 +33,9 @@
 (define-struct structure x lambda y res)
 (define-struct point x y z)
 
+(define-test struct?
+   (struct? (make-struct 'point 2 1)))
+
 (define-test struct
    (let ((s (make-structure '())))
       (if (not (struct? s))
@@ -46,7 +49,7 @@
       (structure-res s))
    :expected 3)
 
-(define-test struct
+(define-test define-struct
    (begin
       (eval '(define-struct structure x lambda y res))
       (eval '(let ((s (make-structure '())))
@@ -61,10 +64,39 @@
               (structure-res s))))
    :expected 3)
 
-(define-test struct
+(define-test make-struct
+   (struct? (make-struct 'point 2 2)))
+
+(define-test struct-key
+   (struct-key (make-struct 'key 2 2))
+   :expected 'key)
+
+(define-test struct-key-set!
+   (let ((o (make-struct 'key 2 2)))
+      (struct-key-set! o 'key2)
+      (struct-key o))
+   :expected 'key2)
+
+(define-test struct-ref
+   (struct-ref (make-struct 'key 2 3) 1)
+   :expected 3)
+
+(define-test struct-set!
+   (let ((o (make-struct 'key 2 2)))
+      (struct-set! o 0 55)
+      (struct-ref o 0))
+   :expected 55)
+
+(define-test struct-update!
    (let ((p1 (point 1 2 3))
          (p2 (point 4 5 6)))
       (struct-update! p1 p2)
       (equal? p1 p2)))
 
+(define-test struct->list
+   (struct->list (make-struct 'point 1 2))
+   :expected '(point 2))
 
+(define-test list->struct
+   (list->struct '(point 1 2))
+   :expected '#{point 1 2})

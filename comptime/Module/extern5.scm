@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Mon Sep 21 07:49:26 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 17:42:27 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -67,7 +67,8 @@
 
 	   (class JDef::TDef
 	      (super::obj read-only)
-	      (package::bstring read-only))
+	      (package::bstring read-only)
+              (abstract?::bool read-only))
 
 	   (class ADef::Def)
 

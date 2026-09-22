@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Sun Sep 20 15:22:21 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 17:41:06 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -494,7 +494,7 @@
       
    (define (declare-jdef! t::JDef mod::Module types::pair-nil)
       (with-trace 'module_module5 "module5-ast!.declar-jdef!"
-	 (with-access::JDef t (id name super package expr decl scope)
+	 (with-access::JDef t (id name super package expr decl scope abstract?)
 	    (with-access::Decl decl ((dmod mod) scope)
 	       ;; Java class have already been associated to Bigloo types
 	       ;; in the Java finalization stage (see Engine/compiler.scm)
@@ -511,7 +511,7 @@
 			   (when e
 			      (declare-jdef! (vector-ref e 0) mod types))))
 		     (declare-java-class-type! id
-			(find-type super) name package expr)))))))
+			(find-type super) name package abstract? expr)))))))
    
    (define (declare-tdef! t::TDef)
       (with-trace 'module_module5 "module5-ast!.declar-tdef!"

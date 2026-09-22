@@ -71,6 +71,24 @@ to JavaScript code.
 > environment via JavaScript but the Bigloo Wasm generated code can only 
 > communicate with Wasm. 
 
+Type Conversions
+----------------
+
+<table class="tyconv">
+<tr> <th>Bigloo</th><th>Host</th><th>wasm</th><th>&rarr;</th><th>&larr;</th></tr>
+<tr> <td><code>bstring</code></td><td><code>string</code></td> <td><code>(array (mut i8))</code></td><td>id</td><td>id</td></tr>
+<tr> <td><code>bint</code></td><td><code>int</code></td> <td><code>i31ref</code></td><td>id</td><td>id</td></tr>
+<tr> <td><code>bint</code></td><td><code>long</code></td> <td><code>i31ref</code></td><td>id</td><td>id</td></tr>
+<tr> <td><code>bint</code></td><td><code>elong</code></td> <td><code>i31ref</code></td><td>id</td><td>id</td></tr>
+<tr> <td><code>belong</code></td><td><code>elong</code></td> <td><code>i64</code></td><td>unbox</td><td>box</td></tr>
+<tr> <td><code>long</code></td><td><code>elong</code></td> <td><code>i64</code></td><td>unbox</td><td>box</td></tr>
+<tr> <td><code>bbool</code></td><td><code>bool</code></td> <td><code>i32</code></td><td>test</td><td>test</td></tr>
+<tr> <td><code>bchar</code></td><td><code>char</code></td> <td><code>i8</code></td><td>unbox</td><td>box</td></tr>
+<tr> <td><code>real</code></td><td><code>float</code></td> <td><code>f32</code></td><td>unbox</td><td>box</td></tr>
+<tr> <td><code>real</code></td><td><code>double</code></td> <td><code>f64</code></td><td>unbox</td><td>box</td></tr>
+</table>
+
+
 Extern "wasm" Module Clause
 ---------------------------
 

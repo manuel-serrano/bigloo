@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Sep 15 13:48:41 2026 (serrano)                */
+#*    Last change :  Tue Sep 22 06:39:08 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -39,10 +39,10 @@ C_OBJECTS = $(COMMON:%=%.o)
 #*---------------------------------------------------------------------*/
 MD = argsparse bigloo bool browser csv date digest graph hash error \
  eval int internet io mail mmap multimedia net number os pair parser port \
- process real regexp serial sqlite ssl string symbol tar trace thread \
+ process real regexp serial sqlite ssl string struct symbol tar thread \
  vector weakptr web zip \
  c jvm wasm \
- condexpand core macro match module5 module4 object trace \
+ condexpand core macro match module5 module4 object trace types \
  bgldemangle bglmem bglperf
 
 EX_C = fib sock1 sock2 sock3 sock4 wrap function infix var grep untar wget trace
@@ -175,6 +175,9 @@ module4.html: module4.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
 object.html: object.md bin/bgldoc
+	bin/bgldoc -t lang $< > $@ || rm -f $@
+
+types.html: types.md bin/bgldoc
 	bin/bgldoc -t lang $< > $@ || rm -f $@
 
 c.html: c.md bin/bgldoc

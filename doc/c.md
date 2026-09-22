@@ -81,6 +81,23 @@ The connection between Bigloo and C is made particularly easy
 because the programmer is free from inserting conversion between Bigloo values
 and C values. When needed, these are automatically inserted by the compiler.
 
+Type Conversions
+----------------
+
+<table class="tyconv">
+<tr> <th>Bigloo</th><th>Host</th><th>C</th><th>&rarr;</th><th>&larr;</th></tr>
+<tr> <td><code>bstring</code></td><td><code>string</code></td> <td><code>char *</code></td><td>offset</td><td>alloc</td></tr>
+<tr> <td><code>bint</code></td><td><code>int</code></td> <td><code>int</code></td><td>untag</td><td>tag</td></tr>
+<tr> <td><code>bint</code></td><td><code>long</code></td> <td><code>long</code></td><td>untag</td><td>tag</td></tr>
+<tr> <td><code>bint</code></td><td><code>elong</code></td> <td><code>long</code></td><td>untag</td><td>tag</td></tr>
+<tr> <td><code>belong</code></td><td><code>elong</code></td> <td><code>long</code></td><td>unbox</td><td>box</td></tr>
+<tr> <td><code>long</code></td><td><code>elong</code></td> <td><code>long</code></td><td>id</td><td>id</td></tr>
+<tr> <td><code>bbool</code></td><td><code>bool</code></td> <td><code>char</code></td><td>test</td><td>test</td></tr>
+<tr> <td><code>bchar</code></td><td><code>char</code></td> <td><code>char</code></td><td>shift</td><td>shift</td></tr>
+<tr> <td><code>real</code></td><td><code>float</code></td> <td><code>float</code></td><td>untag</td><td>tag</td></tr>
+<tr> <td><code>real</code></td><td><code>double</code></td> <td><code>double</code></td><td>untag</td><td>tag</td></tr>
+</table>
+
 
 Extern "C" Module Clause
 ------------------------

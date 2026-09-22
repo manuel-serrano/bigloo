@@ -89,6 +89,24 @@ Note that in this example, the Java class `Point` and the Java interface
 `Intf` are _imported_ from Java and the Bigloo definition `callback`
 is _exported_ to Java.
 
+Type Conversions
+----------------
+
+<table class="tyconv">
+<tr> <th>Bigloo</th><th>Host</th><th>java</th><th>&rarr;</th><th>&larr;</th></tr>
+<tr> <td><code>bstring</code></td><td><code>string</code></td> <td><code>byte []</code></td><td>id</td><td>id</td></tr>
+<tr> <td><code>bint</code></td><td><code>int</code></td> <td><code>int</code></td><td>unbox</td><td>box</td></tr>
+<tr> <td><code>bint</code></td><td><code>long</code></td> <td><code>long</code></td><td>unbox</td><td>box</td></tr>
+<tr> <td><code>bint</code></td><td><code>elong</code></td> <td><code>long</code></td><td>unbox</td><td>box</td></tr>
+<tr> <td><code>belong</code></td><td><code>elong</code></td> <td><code>long</code></td><td>unbox</td><td>box</td></tr>
+<tr> <td><code>long</code></td><td><code>elong</code></td> <td><code>long</code></td><td>id</td><td>id</td></tr>
+<tr> <td><code>bbool</code></td><td><code>bool</code></td> <td><code>char</code></td><td>test</td><td>test</td></tr>
+<tr> <td><code>bchar</code></td><td><code>char</code></td> <td><code>char</code></td><td>unbox</td><td>box</td></tr>
+<tr> <td><code>real</code></td><td><code>float</code></td> <td><code>float</code></td><td>unbox</td><td>box</td></tr>
+<tr> <td><code>real</code></td><td><code>double</code></td> <td><code>double</code></td><td>unbox</td><td>box</td></tr>
+</table>
+
+
 Extern "java" Module Clause
 ---------------------------
 

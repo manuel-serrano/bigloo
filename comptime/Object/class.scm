@@ -1,9 +1,10 @@
+
 ;*=====================================================================*/
 ;*    serrano/prgm/project/bigloo/5.0.x/comptime/Object/class.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Sat Jun 13 07:09:55 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 17:38:37 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -67,7 +68,9 @@
 	       ;; package
 	       (package::bstring read-only (default ""))
 	       ;; the list of methods name (for implementing ((-> v m) ...)
-	       (methods::pair-nil (default '())))
+	       (methods::pair-nil (default '()))
+	       ;; abstract class
+	       (abstract?::bool read-only (default #f)))
 
 	    (wide-class wclass::type
 	       ;; the plain class that uses this wide chunk
@@ -79,7 +82,7 @@
 	    (wide-chunk-class-id::symbol ::symbol)
 	    (type-class-name::bstring ::type)
 	    (declare-class-type!::type ::symbol ::obj ::obj ::global ::obj ::bool ::bool ::obj)
-	    (declare-java-class-type!::type ::symbol ::obj ::bstring ::bstring ::pair)
+	    (declare-java-class-type!::type ::symbol ::obj ::bstring ::bstring ::bool ::pair)
 	    (final-class?::bool ::obj)
 	    (wide-class?::bool ::obj)
 	    (find-class-constructor ::tclass)
@@ -201,7 +204,7 @@
 ;*    declare-class-type! is said to be returning a type and not       */
 ;*    a class in order to help the error management.                   */
 ;*---------------------------------------------------------------------*/
-(define (declare-java-class-type!::type class-id super jname package src)
+(define (declare-java-class-type!::type class-id super jname package abstract src)
    
    (define (previously-declared-type class-id super)
       (when (type-exists? class-id)
@@ -218,6 +221,7 @@
 	 ;; (see module object_access).
 	 (widen!::jclass ty
 	    (its-super super)
+            (abstract? abstract)
 	    (package package))
 	 ;; add implicit coercion ty->obj and obj->ty
 	 (let ((pred (symbol-append class-id '?)))

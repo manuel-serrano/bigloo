@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Tue Sep 15 13:48:54 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 06:38:07 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -83,6 +83,7 @@
      ("sqlite" . "sqlite.html")
      ("ssl" . "ssl.html")
      ("strings" . "string.html")
+     ("structures" . "struct.html")
      ("symbols & keywords" . "symbol.html")
      ("tar" . "tar.html")
      ("threads" . "thread.html")
@@ -111,7 +112,8 @@
      ("module 4" . "module4.html")
      ("objects" . "object.html")
      ("pattern matching" . "match.html")
-     ("traces (debugging)" . "trace.html")))
+     ("traces (debugging)" . "trace.html")
+     ("types" . "types.html")))
 
 ;*---------------------------------------------------------------------*/
 ;*    dev-chapters ...                                                 */
@@ -140,17 +142,6 @@
       (if (pair? c)
           (cdr c)
           (error "find-menu-href" "Cannot find href for label" label))))
-
-;*---------------------------------------------------------------------*/
-;*    let+ :: ...                                                      */
-;*---------------------------------------------------------------------*/
-(define-expander let+
-   (lambda (x e)
-       (match-case x
-	 ((let+ (?vars ?expr) . ?body)
-	  `(multiple-value-bind ,vars ,expr ,@body))
-	 (else
-	  (error "let+" "bad syntax" x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    main ...                                                         */
@@ -213,7 +204,8 @@
                               (list (bigloo-config 'release-number))))))))))
       
    (define (compile-chapter source)
-      (let+ ((chapter toc new-index) (chapter source (or target (string-append (prefix source) ".html"))))
+      (bind-values (chapter toc new-index)
+         (chapter source (or target (string-append (prefix source) ".html")))
 
 	 (let ((index (if (or reset-index (not (file-exists? index-name)))
 			  new-index
@@ -308,7 +300,8 @@
                           :dev (xml-chapter-toc 'dev dev-chapters)
                           :lang (xml-chapter-toc 'lang lang-chapters))
                        (xml-element 'div '((class . "chapter"))
-                          (let+ ((elements sections) (index-entries indexes))
+                          (bind-values (elements sections)
+                             (index-entries indexes)
                              (list
                                 (xml-element 'div '((class . "body")
                                                     (onclick . "hideSearch()"))
@@ -695,7 +688,7 @@
    (define (markdown-ident::pair sym class)
       (if (eq? sym '|...|)
           (list (xml-element 'span `((class . ,class)) (list "...")))
-          (multiple-value-bind (id ty)
+          (bind-values (id ty)
              (parse-ident2 sym)
              (if ty
                  (list (xml-element 'span `((class . ,class)) (list id))

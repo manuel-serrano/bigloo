@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Sat Jun 20 10:59:00 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 17:40:43 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -717,7 +717,7 @@
 	    ;; create the class holder
 	    ;; and create a type for this class
 	    (let ((jclass (declare-java-class-type! jid super jname
-			     package src)))
+			     package abstract? src)))
 	       ;; bind the method names for the expansion of the
 	       ;; ((-> v f) ...) method call syntax (see Ast/object.scm)
 	       (with-access::jclass jclass (methods)

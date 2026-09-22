@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/bigloo/recette/number.scm            */
+;*    serrano/prgm/project/bigloo/5.0.x/recette/number.scm             */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Fri Jan 30 07:18:03 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 18:10:01 2026 (serrano)                */
 ;*                                                                     */
 ;*    On test les operateurs generiques sur les nombres                */
 ;*---------------------------------------------------------------------*/
@@ -298,7 +298,7 @@
    (test "number->string.14" (number->string -127 8) "-177")
    (test "number->string.15" (number->string #s32:-1732584194) "-1732584194")
    (test "number->string.16" (number->string #u32:1732584194) "1732584194")
-   (test "elong.1" (find-runtime-type #e1) "elong")
+   (test "elong.1" (find-runtime-type #e1) "belong")
    (test "elong.2" #e1 #e1)
    (test "elong.3" (elong? #exfeedabee) #t)
    (test "elong?.1" (elong? #e1) #t) 
@@ -309,7 +309,7 @@
    (test "fixnum->elong" (fixnum->elong 123456) #e123456)
    (test "elong->flonum" (elong->flonum #e123456) 123456.)
    (test "flonum->elong" (flonum->elong 123456.) #e123456)
-   (test "llong.1" (find-runtime-type #l1) "llong")
+   (test "llong.1" (find-runtime-type #l1) "bllong")
    (test "llong.2" #l1 #l1)
    (test "llong.3"  (> #lxfeedabee #lxfeedabe0) #t)
    (test "llong?.1" (llong? #l1) #t)

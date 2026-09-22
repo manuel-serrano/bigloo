@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Mon Jul 27 10:38:40 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 17:55:06 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -263,6 +263,14 @@
 	  (type-error/location loc (current-function) from to)))))
 
 ;*---------------------------------------------------------------------*/
+;*    jvm-safe-cast? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (jvm-safe-cast? from::type to::type)
+   (when (and (jclass? from) (jclass? to))
+      (with-access::jclass to (abstract?)
+         abstract?)))
+   
+;*---------------------------------------------------------------------*/
 ;*    convert! ...                                                     */
 ;*    -------------------------------------------------------------    */
 ;*    If the parameter `safe' is set to false it means that type       */
@@ -296,7 +304,9 @@
 		    (if (not (coercer? coercer))
 			;; There is no convertion between these types. 
 			;; Thus, it is a type error.
-			(convert-error fro to loc node safe)
+                        (if (jvm-safe-cast? fro to)
+                            node
+                            (convert-error fro to loc node safe))
 			(let loop ((checks (coercer-check-op coercer))
 				   (coerces (coercer-coerce-op coercer))
 				   (node node))

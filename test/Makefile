@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Mon Sep 21 07:50:04 2026 (serrano)                */
+#*    Last change :  Tue Sep 22 06:41:53 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -42,8 +42,8 @@ TESTS = main argsparse bigloo bignum bit bool callcc case char closure \
   compiler condexpand core crc csv0 date digest dsssl error eval exn hash \
   int1 int2 internet lalr io macro mail0 match mmap module multimedia0 \
   net number object os pair port process real regexp rgc search serial \
-  sqlite0 ssr string struct symbol tar trace thread unicode vector weakptr \
-  web0 wind zip
+  sqlite0 ssr string struct symbol tar thread trace types unicode vector \
+  weakptr web0 wind zip
 
 MODULES4 = module4_ex12
 

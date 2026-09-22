@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  manuel serrano                                    */
 /*    Creation    :  Mon Apr 20 16:07:37 2026                          */
-/*    Last change :  Sun Sep  6 14:02:44 2026 (serrano)                */
+/*    Last change :  Tue Sep 22 06:44:54 2026 (serrano)                */
 /*    Copyright   :  2026 manuel serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo documentation style                                       */
@@ -315,7 +315,7 @@ div.nav-menu {
 div.nav-menu#lang {
     width: 12em;
     column-count: 1;
-    height: 20ex;
+    height: 24ex;
 }
     
 div.nav-menu#backends {
@@ -1073,3 +1073,25 @@ html#jvm h4:after {
     content: "";
 }
 
+/*---------------------------------------------------------------------*/
+/*    type conversions                                                 */
+/*---------------------------------------------------------------------*/
+table.tyconv {
+    border-collapse: collapse;
+    border: 1px solid var(--bodyColor);
+    font-family: "Helvetica Neue", "Hevetica", Arial, sans-serif;
+    font-size: 14px;
+    cell-spacing: 4px;
+}
+
+table.tyconv th {
+    background: var(--bodyColor);
+    color: var(--background);
+    padding: 4px;
+}
+
+table.tyconv td {
+    width: 6em;
+    text-align: center;
+    padding: 2px;
+}

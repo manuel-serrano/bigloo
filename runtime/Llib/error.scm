@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Llib/error.scm                      */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/error.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Jul  3 11:15:12 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 06:48:05 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -1242,7 +1242,7 @@
 ;*    This function tries to determine the type of an object in        */
 ;*    order to produce better type error messages.                     */
 ;*---------------------------------------------------------------------*/
-(define (typeof obj)
+(define (typeof::bstring obj::obj)
    (cond
       ((fixnum? obj)
        "bint")
@@ -1310,11 +1310,11 @@
       ((ucs2-string? obj)
        "ucs2string")
       ((ucs2? obj)
-       "ucs2")
+       "bucs2")
       ((elong? obj)
-       "elong")
+       "belong")
       ((llong? obj)
-       "llong")
+       "bllong")
       ((mutex? obj)
        "mutex")
       ((condition-variable? obj)
@@ -1332,21 +1332,21 @@
       ((regexp? obj)
        "regexp")
       ((int8? obj)
-       "int8")
+       "bint8")
       ((uint8? obj)
-       "uint8")
+       "buint8")
       ((int16? obj)
-       "int16")
+       "bint16")
       ((uint16? obj)
-       "uint16")
+       "buint16")
       ((int32? obj)
-       "int32")
+       "bint32")
       ((uint32? obj)
-       "uint32")
+       "buint32")
       ((int64? obj)
-       "int64")
+       "bint64")
       ((uint64? obj)
-       "uint64")
+       "buint64")
       ((cnst? obj)
        "bcnst")
       ((weakptr? obj)

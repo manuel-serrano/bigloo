@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Tue Sep  8 16:36:29 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 17:43:43 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -264,7 +264,7 @@
 ;*---------------------------------------------------------------------*/
 (define (declare-java-jklass! j::jklass mod::Module clause)
    (with-trace 'module_extern-java "declare-java-jklass!"
-      (with-access::jklass j (id jname package src)
+      (with-access::jklass j (id jname package src abstract?)
 	 (trace-item "jklass=" id)
 	 (trace-item "mod=" (-> mod id))
 	 (trace-item "pkg=" package)
@@ -279,7 +279,8 @@
 			   (decl decl)
 			   (name jname)
 			   (package (if (string? package) package (jname-package jname ".")))
-			   (super (if (string? super) (string->symbol super) '_))))
+			   (super (if (string? super) (string->symbol super) '_))
+                           (abstract? abstract?)))
 		   (decl (instantiate::Decl
 			    (id clazz)
 			    (alias clazz)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 30 06:36:23 2026                          */
-;*    Last change :  Fri Sep 18 14:06:33 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 10:53:51 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing date functions                                           */
@@ -561,7 +561,7 @@
 
 (define-test integer->second
    (typeof (integer->second 39483))
-   :expected "elong")
+   :expected "belong")
 
 (define-test day-seconds
    (day-seconds)

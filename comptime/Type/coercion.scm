@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/comptime/Type/coercion.scm                   */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Type/coercion.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 18:43:04 1994                          */
-;*    Last change :  Tue Feb 10 16:27:31 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 17:34:22 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The coercion management                                          */
@@ -18,6 +18,8 @@
    (import  tools_error
 	    tools_shape
 	    type_type
+            ast_var
+            object_class
 	    engine_param)
    (export  (add-coercion! ::type ::type ::obj ::obj)
 	    (find-coercer::obj ::type ::type)
@@ -33,12 +35,9 @@
 	 (to (get-aliased-type to)))
       (let loop ((coercer (type-coerce-to from)))
 	 (cond
-	    ((null? coercer)
-	     #f)
-	    ((eq? (coercer-to (car coercer)) to)
-	     (car coercer))
-	    (else
-	     (loop (cdr coercer)))))))
+	    ((null? coercer) #f)
+	    ((eq? (coercer-to (car coercer)) to) (car coercer))
+	    (else (loop (cdr coercer)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    add-coercion! ...                                                */
