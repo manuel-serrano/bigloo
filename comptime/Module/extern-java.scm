@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Thu Jun 11 08:51:54 2026                          */
-;*    Last change :  Tue Sep 22 17:43:43 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 18:40:20 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Module5 extern plugins                                           */
@@ -82,7 +82,8 @@
 	 ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
 	  (java-parser clause (-> mod id) '-))
 	 ((or (class ?ident . ?rest)
-	      (abstract-class ?ident . ?rest))
+	      (abstract-class ?ident . ?rest)
+              (interface ?ident . ?rest))
 	  (let ((jklass (java-parser clause (-> mod id) '-)))
 	     (declare-java-jklass! jklass mod clause)
 	     (with-access::jklass jklass (delayed-accessors? idd)
@@ -206,7 +207,8 @@
 			  `(export ,id ,(symbol->string id)))
 	     (-> mod id) '|.|))
 	 ((or (class ?ident . ?rest)
-	      (abstract-class ?ident . ?rest))
+	      (abstract-class ?ident . ?rest)
+              (interface ?ident . ?rest))
 	  (bind-values (cpkg name id super)
 	     (parse-class5-ident ident)
 	     ;;(unless (java-type-exists? (symbol->string! id) mod)

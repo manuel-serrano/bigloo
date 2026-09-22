@@ -122,6 +122,7 @@ Extern "java" Module Clause
   
 <MJImport> --> ( class <TypedIdent> <MJCtor>* <MJProperty>* )
   | ( abstract-class <TypeIdent> <MJMethod>* )
+  | ( interface <TypeIdent> <MJMethod>* )
 
 <MJCtor> --> ( constructor <TypedIdent> <TypedIdent>* )
   | ( constructor <TypedIdent> <TypedIdent>* <String> )

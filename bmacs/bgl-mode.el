@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Thu Sep 17 10:16:18 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 18:43:39 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -130,7 +130,7 @@
 		 "\\)[ ]\(?\\([^ \t\n]+\\)")
 	 1
 	 'font-lock-function-name-face)
-   (list "\(\\(\\(?:module\\|interface\\)[ ]+[^ \n]+\\)[ \t\n]"
+   (list "\(\\(\\(?:module\\)[ ]+[^ \n]+\\)[ \t\n]"
          1
 	 'bgl-font-lock-face-1)
    (list "\(\\(directives\\)"
@@ -149,7 +149,7 @@
 		 "\\|require:\\|provide:\\)[ \t\n]")
 	 1
 	 'font-lock-type-face)
-   (list (concat "\(\\(class\\|wide-class\\|final-class\\|abstract-class"
+   (list (concat "\(\\(class\\|wide-class\\|final-class\\|abstract-class\\|interface"
 		 "\\|generic\\|inline\\|macro\\|expander\\|syntax"
 		 "\\|infix[ ]macro\\|cnst[ ]macro\\)[ \t\n]")
 	 1

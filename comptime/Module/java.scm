@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Tue Sep 22 17:40:43 2026 (serrano)                */
+;*    Last change :  Tue Sep 22 18:42:07 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -134,6 +134,8 @@
 	  (java-parse-class java ident rest #f module separator))
 	 ;; an abstract java class
 	 ((abstract-class ?ident . ?rest)
+	  (java-parse-class java ident rest #t module separator))
+	 ((interface ?ident . ?rest)
 	  (java-parse-class java ident rest #t module separator))
 	 ((array (and (? symbol?) ?ident) (and (? symbol?) ?of))
 	  (java-declare-array java ident of module #t))
