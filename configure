@@ -3598,6 +3598,17 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       cpsep=":";
      fi
 
+    # recent JDKs drop old options (-noverify was removed in JDK 27)
+    jvflagsok=
+    for jvflag in $jvflags; do
+      if $java $jvflag -version 2> /dev/null > /dev/null; then
+        jvflagsok="$jvflagsok $jvflag"
+      else
+        $echo "Java option $jvflag not supported by $java, ignored" >> $configurelog
+      fi
+    done
+    jvflags=`$echo $jvflagsok`
+
     jtest=`$autoconf javatest --java=$java \
                               --jflags=$jflags \
                               --jvflags=$jvflags \
