@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Wed Sep 23 08:19:36 2026 (serrano)                */
+;*    Last change :  Wed Sep 23 08:52:14 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -441,7 +441,7 @@
 		     (idsans      (: (* digit)
 				     (or letter specialsans)
 				     (* (or letter specialsans digit (in ",'`")))))
-		     (letterid    (: (or letter special)
+		     (letterid    (: letter
 				     (* (or letter special digit (in ",'`")))))
 		     (kid         (or digit letter kspecial "."))
 		     (blank       (in #\Space #\Tab #a011 #a012 #a013))
