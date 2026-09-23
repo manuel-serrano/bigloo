@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Jun  8 08:45:19 2026                          */
-;*    Last change :  Tue Jun 30 07:43:52 2026 (serrano)                */
+;*    Last change :  Wed Sep 23 07:43:41 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the JVM extern interface                                 */
@@ -31,6 +31,8 @@
          (static statistics::int))
 
       (array Point* ::Point)
+      (array float* ::float)
+      (array double* ::double)
       
       (export callback))
 
@@ -104,3 +106,17 @@
       (Point*.set! a 1 (Point.new))
       (Point? (Point*.ref a 1))))
 ;; tag-end doc3
+
+(define-test array-float*
+   (let ((a (float*.new 4)))
+      (float*.set! a 0 4.5)
+      (float*.set! a 1 .5)
+      (+fl (float*.ref a 0) (float*.ref a 1)))
+   :expected 5.)
+
+(define-test array-double*
+   (let ((a (double*.new 4)))
+      (double*.set! a 0 4.5)
+      (double*.set! a 1 .5)
+      (+fl (double*.ref a 0) (double*.ref a 1)))
+   :expected 5.)

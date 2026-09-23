@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Jul  1 09:14:24 2026 (serrano)                */
+;*    Last change :  Wed Sep 23 08:06:29 2026 (serrano)                */
 ;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
@@ -20,6 +20,8 @@
 	    tools_shape
 	    tools_location
 	    type_cache
+            type_type
+            foreign_jtype
 	    ast_ident
 	    ast_local
 	    ast_env
@@ -313,6 +315,12 @@
 			 `($vector-length ,v))
 			((memq vtype *hvectors*)
 			 `(,(symbol-append '$ (type-id vtype) '-length) ,v))
+                        ((isa? vtype jarray)
+                         (make-private-sexp 'vlength
+                            (type-id vtype)
+                            (type-id (jarray-item-type vtype))
+                            'int
+                            "" v))
 			(else
 			 `($tvector-length ,v)))))
 		(if ($vector-bound-check? ,i ,l)
@@ -365,6 +373,12 @@
 			 `($vector-length ,v))
 			((memq vtype *hvectors*)
 			 `($hvector-length ,v))
+                        ((isa? vtype jarray)
+                         (make-private-sexp 'vlength
+                            (type-id vtype)
+                            (type-id (jarray-item-type vtype))
+                            'int
+                            "" v))
 			(else
 			 `($tvector-length ,v)))))
 		(if ($vector-bound-check? ,i ,l)

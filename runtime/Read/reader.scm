@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Wed Jun  3 18:38:26 2026 (serrano)                */
+;*    Last change :  Wed Sep 23 08:19:36 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -93,6 +93,7 @@
 	    (port->list::pair-nil ::procedure ::input-port)
 	    (port->sexp-list::pair-nil ::input-port #!optional location)
 	    (set-read-syntax!::unspecified ::bchar ::procedure)
+            (register-sharp-reader-syntax! ::bchar ::procedure)
 	    (define-reader-ctor::unspecified ::symbol ::procedure)))
 
 ;*---------------------------------------------------------------------*/
@@ -404,6 +405,18 @@
 		     (read-error "Unknown SRFI-10 extension" (car f) (the-port))))
 	      (read-error "Bad SRFI-10 form" f (the-port)))))
 
+      ;; sharp extension
+      ((: (out #\, #\newline #\space #\tab) #\()
+       (let ((id (string-ref (the-substring 0 -1) 0)))
+          (let ((sharp-reader (get-sharp-reader-extension id)))
+             (if (procedure? sharp-reader)
+                 (begin
+                    (rgc-buffer-insert-char! (the-port) (char->integer #\())
+                    (sharp-reader (the-port)))
+                 (begin
+                    (rgc-buffer-insert-substring! (the-port) (the-string) 0 2)
+                    (read-error "Illegal token" id (the-port)))))))
+      
       (else
        (let ((c (the-failure)))
 	  (if (char? c)
@@ -947,3 +960,26 @@
    (let ((c (assq sym *reader-extensions*)))
       (when (pair? c)
 	 (cdr c))))
+
+;*---------------------------------------------------------------------*/
+;*    *reader-sharp-syntaxes* ...                                      */
+;*---------------------------------------------------------------------*/
+(define *reader-sharp-syntaxes* '())
+
+;*---------------------------------------------------------------------*/
+;*    register-sharp-reader-syntax! ...                                */
+;*---------------------------------------------------------------------*/
+(define (register-sharp-reader-syntax! char::bchar proc::procedure)
+   (let ((c (assq char *reader-sharp-syntaxes*)))
+      (if (pair? c)
+	  (set-cdr! c proc)
+	  (set! *reader-sharp-syntaxes*
+	     (cons `(,char . ,proc) *reader-sharp-syntaxes*)))))
+ 
+;*---------------------------------------------------------------------*/
+;*    get-sharp-reader-syntax ...                                      */
+;*---------------------------------------------------------------------*/
+(define (get-sharp-reader-extension id::bchar)
+   (let ((c (assq id *reader-sharp-syntaxes*)))
+      (when (pair? c)
+         (cdr c))))
