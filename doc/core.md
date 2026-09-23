@@ -84,6 +84,13 @@ sequences of 3 digits. Examples:
 89_223
 ```
 
+In addition to Scheme real, Bigloo supports the following syntax for
+NaN, positive and negative infinity:
+
+```bnf
+<real> --> <r5rs-real> | -inf.0 | +inf.0 | +nan.0
+```
+
 Comments and whitespaces are the same as in [Scheme R5RS](https://conservatory.scheme.org/schemers/Documents/Standards/R5RS).
 
 ```biglloo

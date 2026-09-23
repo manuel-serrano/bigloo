@@ -25,6 +25,7 @@ which is described in this chapter.
 > it is recommended to use specific operators instead of generic operators
 > (i.e., use `+fx` or `+fl` instead of `+` as much as possible).
 
+The syntax for numbers is described in the [core](./core.html) chapter.
 
 Predicates
 ----------
