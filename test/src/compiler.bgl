@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Thu Aug 27 19:36:16 2026 (serrano)                */
+;*    Last change :  Thu Sep 24 18:05:03 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the compiler                                             */
@@ -1086,3 +1086,14 @@
          (else 11))
    :expected 5)
 
+(define-test globalize-cast-bug-3b42a91c7
+   (let ((x 3))
+      (letrec ((f1 (lambda ()
+                      (set! x (+ x 1))
+                      (cast::bint x)))
+               (f2 (lambda ()
+                      (set! x (* x 10))
+                      (f1))))
+         ((car (list f2 f1)))))
+   :expected 31)
+                   

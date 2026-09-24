@@ -294,10 +294,21 @@
    (pool-class classfile (declared-class classfile name)) )
 
 (define (pool-class-by-reftype classfile reftype)
-   (if (vect? reftype)
+   (cond
+      ((vect? reftype)
        (let ( (pname (pool-name classfile (JasType-code reftype))) )
-	  (pool-get! classfile 7 (list pname)) )
-       (pool-class classfile reftype) ))
+	  (pool-get! classfile 7 (list pname))))
+      ((classe? reftype)
+       ;; MS 24sep2026
+       (pool-class classfile reftype))
+      (else
+       (error "pool-class-by-reftype"
+          "Cannot cast obj type into"
+          (let ((c (find (lambda (t) (eq? (cdr t) reftype))
+                      basic-encoded-type)))
+             (if (pair? c)
+                 (car c)
+                 (basic-code reftype)))))))
 
 (define (pool-string classfile str)
    (pool-get! classfile 8 (list (pool-name classfile str))) )

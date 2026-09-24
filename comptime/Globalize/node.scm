@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Globalize/node.scm     */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Globalize/node.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Mon Oct 20 08:56:46 2025 (serrano)                */
-;*    Copyright   :  1995-2025 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Sep 24 18:00:11 2026 (serrano)                */
+;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
 ;*    remove the useless local functions (globalized or integrated     */
@@ -298,7 +298,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::cast integrator)
    (with-access::cast node (arg)
-      (glo! arg integrator)
+      (set! arg (glo! arg integrator))
       node))
 
 ;*---------------------------------------------------------------------*/
