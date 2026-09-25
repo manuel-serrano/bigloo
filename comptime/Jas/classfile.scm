@@ -302,8 +302,8 @@
        ;; MS 24sep2026
        (pool-class classfile reftype))
       (else
-       (error "pool-class-by-reftype"
-          "Cannot cast obj type into"
+       (error "jas"
+          "Cannot cast \"obj\" type into non class type"
           (let ((c (find (lambda (t) (eq? (cdr t) reftype))
                       basic-encoded-type)))
              (if (pair? c)

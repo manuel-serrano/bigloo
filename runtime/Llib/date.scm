@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Fri Sep 18 14:05:11 2026 (serrano)                */
+;*    Last change :  Fri Sep 25 07:58:28 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -54,6 +54,7 @@
    (extern  ($date::string () "c_date")
             (macro c-date?::bool (::obj) "BGL_DATEP")
 	    ($date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
+            ($date-tzname-new::date (::llong ::int ::int ::int ::int ::int ::int ::string ::int) "bgl_make_tzname_date")
 	    ($date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
 	    ($date->gmtdate!::date (::date) "bgl_date_to_gmtdate")
 
@@ -107,6 +108,7 @@
 	       (method static $date::string () "c_date")
 	       (method static c-date?::bool (::obj) "DATEP")
 	       (method static $date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
+               (method static $date-tzname-new::date (::llong ::int ::int ::int ::int ::int ::int ::string ::int) "bgl_make_tzname_date")
 	       (method static $date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
 	       (method static $date->gmtdate!::date (::date) "bgl_date_to_gmtdate")
 	       (method static $date-from-seconds::date (::elong) "bgl_seconds_to_date")
@@ -151,7 +153,7 @@
                (nsec::llong #l0) (sec::long 0) (min::long 0)
                (hour::long 0) (day::long 1) (month::long 1)
                (year::long 1970) timezone (dst::long -1))
-	    (date-copy::date date::date #!key nsec sec min hour day month year timezone isdst)
+	    (date-copy::date date::date #!key nsec sec min hour day month year)
 	    (date-update!::date date::date #!key nsec sec min hour day month year)
 	    (inline date->gmtdate!::date ::date)
 	    (inline date->utcdate!::date ::date)
@@ -256,14 +258,18 @@
 	   (sec::long 0) (min::long 0) (hour::long 0)
 	   (day::long 1) (month::long 1) (year::long 1970)
 	   timezone (dst::long -1))
-   (if (fixnum? timezone)
-       ($date-new nsec sec min hour day month year timezone #t dst)
-       ($date-new nsec sec min hour day month year 0 #f dst)))
+   (cond
+      ((string? timezone)
+       ($date-tzname-new nsec sec min hour day month year timezone dst))
+      ((fixnum? timezone)
+       ($date-new nsec sec min hour day month year timezone #t dst))
+      (else
+       ($date-new nsec sec min hour day month year 0 #f dst))))
 
 ;*---------------------------------------------------------------------*/
 ;*    date-copy ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (date-copy::date date::date #!key nsec sec min hour day month year timezone isdst)
+(define (date-copy::date date::date #!key nsec sec min hour day month year)
    ($date-new
       (or nsec (date-nanosecond date))
       (or sec (date-second date))
@@ -274,7 +280,7 @@
       (or year (date-year date))
       (date-timezone date)
       ($date-is-gmt date)
-      (or isdst -1)))
+      ($date-is-dst date)))
 
 ;*---------------------------------------------------------------------*/
 ;*    date-update! ...                                                 */

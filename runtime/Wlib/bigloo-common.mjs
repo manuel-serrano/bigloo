@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Sep  5 09:06:38 2025                          */
-/*    Last change :  Mon Sep 21 14:01:56 2026 (serrano)                */
+/*    Last change :  Fri Sep 25 10:43:20 2026 (serrano)                */
 /*    Copyright   :  2025-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo WASM/JS runtime system, common to all JS engines.         */
@@ -401,8 +401,31 @@ export class BglRuntime {
 	       return { date: new Date(ms), timezone, tzname: "UTC" };
 	    }
 	 },
+	 mktimeTzname: (year, month, day, hour, minute, second, millisecond, addr, len) => {
+            const tz = self.loadString(addr, len);
+            const dt = new Date(year, month - 1, day, 0, 0, 0);
+            const parts = new Intl.DateTimeFormat(
+               "en-US",
+               { timeZone: tz, timeZoneName: "longOffset" }).formatToParts(dt);
+            const offset = parts.find(p => p.type === "timeZoneName").value;
+            let timezone = 0;
+            
+            if (offset !== "GMT") {
+               const match = offset.match(/GMT([+-])(\d{2}):(\d{2})/);
+
+               if (!match) {
+                  throw new Error(`Unexpected timezone offset: ${offset}`);
+               }
+               
+               const sign = match[1] === "+" ? 1 : -1;
+               timezone = sign * (Number(match[2]) * 3600 + Number(match[3]) * 60);
+            }
+            
+	    const ms = Date.UTC(year, month - 1, day, hour, minute, second, millisecond) + (timezone * -1000);
+	    return { date: new Date(ms), timezone, tzname: tz };
+         },
 	 dateToGmtdate: (dt) => {
-	    dt.date = new Date(dt.date.getTime());
+	    dt.date = new Date(dt.date.getTime() + (dt.date.getTimezoneOffset()* 60));
 	    dt.timezone = 0;
 	    return dt;
 	 },

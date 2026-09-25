@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Mon Sep 21 13:51:00 2026 (serrano)                */
+/*    Last change :  Fri Sep 25 07:58:57 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -23,6 +23,7 @@ import java.net.*;
 import java.util.regex.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.time.*;
 
 /*---------------------------------------------------------------------*/
 /*    foreign ...                                                      */
@@ -2985,11 +2986,21 @@ public final class foreign {
       return new bigloo.date(ns, s, min, h, d, mon - 1, y, tz, istz);
    }
 
+   public static date bgl_make_tzname_date(long ns, int s,
+                                           int min, int h, int d, int mon,
+                                           int y, byte[] tzname, int dst) {
+      LocalDate date = LocalDate.of(y, mon - 1, d);
+      ZoneId zone = ZoneId.of(new String(tzname));
+      long tz = date.atStartOfDay(zone).getOffset().getTotalSeconds();
+         
+      return new bigloo.date(ns, s, min, h, d, mon - 1, y, tz, true);
+   }
+
    public static date bgl_update_date(date date, long ns, int s,
 				      int min, int h, int d, int mon,
 				      int y, int tz, boolean istz, int dst) {
       date tmp = bgl_make_date(ns, s, min, h, d, mon,
-				y, tz, istz, dst);
+                               y, tz, istz, dst);
 
       date.nsec = tmp.nsec;
       date.calendar = tmp.calendar;

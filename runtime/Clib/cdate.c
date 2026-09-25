@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Mon Sep 21 13:54:42 2026 (serrano)                */
+/*    Last change :  Fri Sep 25 08:06:23 2026 (serrano)                */
 /*    Copyright   :  2003-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -341,6 +341,49 @@ bgl_make_date(BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int ye
    date->date.header = BGL_MAKE_HEADER(DATE_TYPE, !istz);
 
    return bgl_update_date(BREF(date), ns, s, m, hr, mday, mon, year, tz, istz, isdst);
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_make_tzname_date ...                                         */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_make_tzname_date(BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int year, char *tz, int isdst) {
+#if (BGL_HAVE_GMTOFF)
+   static char *tze = 0;
+
+   if (!tze) tze = getenv("TZ");
+   setenv("TZ", tz, 1);
+   tzset();
+
+   struct tm local = {0};
+
+   local.tm_year = year - 1900;
+   local.tm_mon  = mon - 1;
+   local.tm_mday = mday;
+   local.tm_hour = 0;
+   local.tm_min  = 0;
+   local.tm_sec  = 0;
+
+   time_t t = mktime(&local);
+
+   if (tze) {
+      setenv("TZ", tze, 1) ;
+   } else {
+      unsetenv("TZ");
+   }
+   tzset();
+   
+   if (t == (time_t)-1) {
+      C_SYSTEM_FAILURE(BGL_ERROR, "date", strerror(errno), BUNSPEC);
+      return BUNSPEC;
+    }
+
+   return bgl_make_date(ns, s, m, hr, mday, mon, year, (long)local.tm_gmtoff, 1, isdst);
+#else
+   C_SYSTEM_FAILURE(BGL_ERROR, "date", "gmtoff not supported", BUNSPEC);
+   return BUNSPEC;
+#endif
 }
 
 /*---------------------------------------------------------------------*/

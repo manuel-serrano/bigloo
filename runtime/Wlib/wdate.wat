@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Oct 21 17:43:39 2024                          */
-;*    Last change :  Mon Sep 21 14:05:03 2026 (serrano)                */
+;*    Last change :  Fri Sep 25 08:46:18 2026 (serrano)                */
 ;*    Copyright   :  2024-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WASM dates                                                       */
@@ -19,6 +19,7 @@
    (import "__js_date" "current_milliseconds" (func $js_current_milliseconds (result f64)))
    (import "__js_date" "mkDate" (func $js_mkdate (param f64) (result externref)))
    (import "__js_date" "mktime" (func $js_mktime (param i32 i32 i32 i32 i32 i32 f64 i32 i32) (result externref)))
+   (import "__js_date" "mktimeTzname" (func $js_mktime_tzname (param i32 i32 i32 i32 i32 i32 f64 i32 i32) (result externref)))
    (import "__js_date" "dateToGmtdate" (func $js_date_to_gmtdate (param externref) (result externref)))
    (import "__js_date" "getMilliseconds" (func $js_date_milliseconds (param externref) (result f64)))
    (import "__js_date" "setMilliseconds" (func $js_date_set_milliseconds (param externref) (param f64)))
@@ -46,6 +47,7 @@
    (import "__js_date" "day_name" (func $js_date_day_name (param i32 i32 i32) (result i32)))
    (import "__js_date" "month_name" (func $js_date_month_name (param i32 i32 i32) (result i32)))
    
+   (import "__bigloo" "bgl_store_string" (func $store_string (param (ref $bstring)) (param i32)))
    (import "__bigloo" "bgl_load_string" (func $load_string (param i32) (param i32) (result (ref $bstring))))
 
 
@@ -139,6 +141,31 @@
 	    (f64.convert_i64_s (i64.div_s (local.get $nsec) (i64.const 1000000)))
             (i32.wrap_i64 (local.get $timezone))
 	    (local.get $istz))
+	 (i64.rem_s (local.get $nsec) (i64.const 1000000000))))
+
+   (func $bgl_make_tzname_date (export "bgl_make_tzname_date")
+      (param $nsec i64)
+      (param $sec i32)
+      (param $min i32)
+      (param $hour i32)
+      (param $day i32)
+      (param $month i32)
+      (param $year i32)
+      (param $timezone (ref $bstring))
+      (param $dst i32)
+      (result (ref $date))
+      (call $store_string (local.get $timezone) (i32.const 128))
+      (struct.new $date
+	 (call $js_mktime_tzname
+	    (local.get $year)
+	    (local.get $month)
+	    (local.get $day)
+	    (local.get $hour)
+	    (local.get $min)
+	    (local.get $sec)
+            (f64.convert_i64_s (i64.div_s (local.get $nsec) (i64.const 1000000)))
+            (i32.const 128)
+            (array.len (local.get $timezone)))
 	 (i64.rem_s (local.get $nsec) (i64.const 1000000000))))
 
    (func $bgl_update_date (export "bgl_update_date")

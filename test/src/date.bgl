@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 30 06:36:23 2026                          */
-;*    Last change :  Tue Sep 22 10:53:51 2026 (serrano)                */
+;*    Last change :  Fri Sep 25 08:20:57 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing date functions                                           */
@@ -37,14 +37,6 @@
 (define-test date? (date? (seconds->date (current-seconds)))
    :expected #t)
 
-(define-test date-equal?
-   (make-date :hour 8 :day 15 :month 1 :year 2015 :timezone 0)
-   :expected (make-date :hour 10 :day 15 :month 1 :year 2015 :timezone 7200))
-   
-(define-test date-equal?
-   (make-date :hour 8 :day 15 :month 8 :year 2015 :timezone 0)
-   :expected (make-date :hour 10 :day 15 :month 8 :year 2015 :timezone 7200))
-   
 (define-test current-timezone
    (let ((tz (current-timezone)))
       (and (<=fx tz (* 13 60 60)) (>=fx tz (* -13 60 60))))
@@ -61,6 +53,24 @@
 (define-test make-date
    (date-year (make-date :sec 1 :min 1 :hour 1 :day 19 :month 2 :year 2000))
    :expected 2000)
+(define-test make-date
+   (date-timezone (make-date :sec 1 :min 1 :hour 1 :day 19 :month 2 :year 2000 :timezone 7200))
+   :expected 7200)
+(define-test make-date
+   (date-timezone (make-date :sec 1 :min 1 :hour 1 :day 1 :month 2 :year 1999 :timezone "Europe/Paris"))
+   :expected 3600)
+(define-test make-date
+   (date-timezone (make-date :sec 1 :min 1 :hour 1 :day 1 :month 7 :year 1999 :timezone "Europe/Paris"))
+   :expected 7200)
+
+(define-test date-equal?
+   (make-date :hour 8 :day 15 :month 1 :year 2015 :timezone 0)
+   :expected (make-date :hour 9 :day 15 :month 1 :year 2015 :timezone 3600))
+   
+(define-test date-equal?
+   (make-date :hour 8 :day 15 :month 8 :year 2015 :timezone 0)
+   :expected (make-date :hour 10 :day 15 :month 8 :year 2015 :timezone 7200))
+   
 (define-test date-copy
    (let* ((d1 (make-date :year 2000))
           (d2 (date-copy d1)))
@@ -88,7 +98,7 @@
    :expected 2001)
    
 (define-test date->utcdate!
-   (date-year (date->utcdate! (make-date :day 1 :month 1 :year 2001 :timezone 7200)))
+   (date-year (date->utcdate! (make-date :day 1 :month 1 :year 2001 :timezone 3600)))
    :expected 2000)
    
 (define-test current-date (>= (date-year (current-date)) 1970)
@@ -250,7 +260,7 @@
    :expected 23)
 (define-test date-hour
    (date-hour (make-date :hour 8 :day 15 :month 1
-                 :year 2015 :timezone 7200))
+                 :year 2015 :timezone 3600))
    :expected 8)
 (define-test date-hour
    (date-hour (make-date :hour 8 :day 15 :month 1
@@ -263,7 +273,7 @@
    :expected 6)
 (define-test date-day
    (date-day (make-date :sec 0 :min 30 :hour 1
-                :day 6 :month 7 :year 2003 :timezone 7200))
+                :day 6 :month 7 :year 2003 :timezone 3600))
    :expected 6)
 
 (define-test date->seconds
