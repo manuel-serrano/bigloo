@@ -3,7 +3,7 @@
 ;*    ------------------------------------------------------------     */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Tue Sep 22 10:54:13 2026 (serrano)                */
+;*    Last change :  Fri Sep 25 05:36:43 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing numbers                                                  */
@@ -375,6 +375,7 @@
 (define-test fixnum? (fixnum? (- (car (list 1)) 1)) :expected #t)
 (define-test fixnum? (fixnum? (+ (car (list -1)) 1)) :expected #t)
 (define-test Infinity (flonum? (/fl 1.0 0.0)) :expected #t)
+(define-test Infinity (flonum? (/fl 1.0 -0.0)) :expected #t)
 (define-test bit-or (bit-or 1 2) :expected 3)
 (define-test bit-orelong (bit-orelong #e1 #e2) :expected #e3)
 (define-test bit-orllong (bit-orllong #l1 #l2) :expected #l3)

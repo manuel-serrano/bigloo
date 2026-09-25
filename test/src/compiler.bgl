@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Thu Sep 24 18:05:03 2026 (serrano)                */
+;*    Last change :  Fri Sep 25 05:33:32 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the compiler                                             */
@@ -1087,6 +1087,8 @@
    :expected 5)
 
 (define-test globalize-cast-bug-3b42a91c7
+   ;; the globalizer was not correctly propagating cell-ref
+   ;; inside cast nodes (see compiler/Globalize/node.scm)
    (let ((x 3))
       (letrec ((f1 (lambda ()
                       (set! x (+ x 1))

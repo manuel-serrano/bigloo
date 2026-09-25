@@ -3,7 +3,7 @@
 ;*    ------------------------------------------------------------     */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Thu Jun  4 07:57:09 2026 (serrano)                */
+;*    Last change :  Fri Sep 25 05:37:29 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing reals                                                    */
@@ -162,6 +162,9 @@
 (define-test -fl (-fl 23.0 0.56) :eq ~equal? :expected 22.44)
 (define-test *fl (*fl 23.0 0.56) :eq ~equal? :expected 12.88)
 (define-test /fl (/fl 23.0 0.56) :eq ~equal? :expected 41.07142857142857)
+(define-test /fl (/fl 23.0 0.0) :eq ~equal? :expected +inf.0)
+(define-test /fl (/fl 23.0 -0.0) :eq ~equal? :expected -inf.0)
+(define-test /fl (/fl 0.0 0.0) :eq ~equal? :expected +nan.0)
 
 (define-test read (let ((p (open-input-string "3.14"))) (read p))
    :expected 3.14)

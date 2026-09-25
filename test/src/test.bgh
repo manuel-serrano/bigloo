@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:22:05 2026                          */
-;*    Last change :  Mon Jun 22 07:17:24 2026 (serrano)                */
+;*    Last change :  Fri Sep 25 05:43:19 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing macros                                                   */
@@ -75,7 +75,8 @@
 (define (~equal? x y)
    (define epsilon 0.00001)
    (if (and (flonum? x) (flonum? y))
-       (or (<fl (absfl (-fl x y)) epsilon)
+       (or (=fl x y)
+           (<fl (absfl (-fl x y)) epsilon)
            (and (nanfl? x) (nanfl? y)))
        (equal? x y)))
 
