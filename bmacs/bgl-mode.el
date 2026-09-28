@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Tue Sep 22 18:43:39 2026 (serrano)                */
+;*    Last change :  Mon Sep 28 14:06:51 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -1643,6 +1643,20 @@ if that value is non-nil."
     (cons x y)))
 
 ;*---------------------------------------------------------------------*/
+;*    posframe-bottom-right-above-cursor ...                           */
+;*---------------------------------------------------------------------*/
+(defun posframe-bottom-right-above-cursor (info)
+  (let* ((win (plist-get info :parent-window))
+         (win-edges (window-inside-pixel-edges win))
+         (x (- (nth 2 win-edges)
+               (plist-get info :posframe-width)
+	       4))
+	 (y (- (nth 3 win-edges)
+               (plist-get info :posframe-height)
+               (* 6 (frame-char-height)))))
+    (cons x y)))
+
+;*---------------------------------------------------------------------*/
 ;*    bgl-indent ...                                                   */
 ;*---------------------------------------------------------------------*/
 (defun bgl-indent (str max-len)
@@ -1695,7 +1709,12 @@ if that value is non-nil."
 	     :border-width 1
 	     :border-color "#cccccc"
 	     :internal-border-width 4
-	     :poshandler #'posframe-bottom-right-above-modeline)
+	     :poshandler (if (or (< (current-column) 40)
+				 (> (- (frame-pixel-height)
+				       (cdr (posn-x-y (posn-at-point))))
+				    (* 6 (frame-char-height))))
+			     #'posframe-bottom-right-above-modeline
+			     #'posframe-bottom-right-above-cursor))
 	    (if d
 		(unless (bgl-message-once
 			 'jump-def
