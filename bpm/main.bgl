@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Wed Jul  8 15:13:40 2026 (serrano)                */
+;*    Last change :  Tue Sep 29 07:31:50 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -15,53 +15,68 @@
 (module bpm
    (library bpmlib)
    (import "./config.bgl" . config)
-   (import "./database.bgl" . database)
+   (import "./database.bgl" . db)
+   (import "./project.bgl" . proj)
    (main))
 
 ;*---------------------------------------------------------------------*/
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main cmdline)
-   (multiple-value-bind (actions)
-      (parse-cmdline cmdline)
-      (for-each (lambda (a) (a)) actions)))
+   (let ((a (parse-cmdline cmdline)))
+      (cond
+         ((procedure? a) (a))
+         ((pair? a) (apply (car a) (cdr a))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-cmdline ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (parse-cmdline cmdline)
-   (let ((actions '()))
-      
-      (args-parse (cdr cmdline)
-         
-         ;; Misc
-         (section "Misc")
-         ((("-h" "--help") (help "This message (use -v -h for long help)"))
-          (usage args-parse-usage)
-          (exit 0))
-         
-         ;; Query
-         (section "Query")
-         ((("-l" "--list") (help "List available packages"))
-          (set! actions (cons database.list-packages actions)))
-         
-	 ;; Admin
-	 (section "Admin")
-         ((("-u" "--update") (help "Update or create the local database"))
-          (set! actions (cons database.update actions)))
+   (let ((action '())
+         (force #f)
+         (usage-action #f)
+         (help #f))
 
-         ;; Verbosity and logs
-         (section "Verbosity")
-         (("-v?<level>" (help "Increase/set verbosity level (-v0 silence)"))
-          (if (string=? <level> "")
-              (config.verbose-level-set! (+fx (config.verbose-level) 1))
-              (config.verbose-level-set! (string->integer <level>))))
-         (("--no-color" (help "Disable colored traces"))
-          (bigloo-trace-color-set! #f))
-         (("--config" (help "Show configuration"))
-          (set! actions (cons config.show actions))))
-      
-      (values actions)))
+      (bind-exit (break)
+         (args-parse (cdr cmdline)
+
+            ;; common options
+            (section "Common options")
+            ((("-h" "--help") (help "This message (use -v -h for long help)"))
+             (set! usage-action args-parse-usage)
+             (set! help #t))
+            (("-v?<level>" (help "Increase/set verbosity level (-v0 silence)"))
+             (if (string=? <level> "")
+                 (config.verbose-level-set! (+fx (config.verbose-level) 1))
+                 (config.verbose-level-set! (string->integer <level>))))
+            (("--no-color" (help "Disable colored traces"))
+             (bigloo-trace-color-set! #f))
+            (("--force" (help "Force execution action"))
+             (set! force #t))
+            (("--rc-dir" ?dir (help "Uses an alternate RC directory (see \"BMP_RC_DIRECTORY\")"))
+             (config.set-rc-directory dir))
+            
+            ;; sub commands
+            (section "Sub commands")
+            (("config" (help "config commands"))
+             (set! action (config.parse-config (cddr cmdline)))
+             (break #t))
+            (("db" (help "database commands"))
+             (set! action (db.parse-cmdline (cddr cmdline)))
+             (break #t))
+            (("pkg" (help "package commands"))
+             (set! action (parse-pkg-cmdline (cddr cmdline)))
+             (break #t))
+            (("proj" (help "project commands"))
+             (set! action (proj.parse-cmdline (cdr cmdline) force))
+             (break #t))
+            
+            (else
+             (usage args-parse-usage))))
+
+      (if (and (not action) usage-action)
+          (lambda () (usage usage-action))
+          action)))
 
 ;*---------------------------------------------------------------------*/
 ;*    usage ...                                                        */
@@ -70,32 +85,20 @@
    (when (string? msg)
       (print msg)
       (newline))
-   (printf "bpm v~a" (bpmlib-version))
-   (print "usage: bpm [options] arg0 arg1 ...")
+   (printf "~a v~a" (config.name) (bpmlib-version))
+   (print "usage: " (config.name) " [options] command arg0 arg1 ...")
    (when (procedure? args-parse-usage)
       (args-parse-usage #f))
-   '(when (>fx (pkglib-verbose) 0)
-      (newline)
-      (print "Examples:")
-      (print "  initiate the system:")
-      (print "    bglpkg --setup\n")
-      (print "  synchronize with a remote host:")
-      (print "    bglpkg -s -S http://hop.inria.fr/hop/scmpkg/sync\n")
-      (print "  install a package in the current directory:")
-      (print "    bglpkg kishi\n")
-      (print "  install a package in another directory:")
-      (print "    bglpkg kishi -C /tmp/KISHI\n")
-      (print "  install a tarball in another directory:")
-      (print "    bglpkg kishi-1.0.0.tar.gz -C /tmp/KISHI\n")
-      (print "  install and tuning a tarball:")
-      (print "    bglpkg kishi-1.0.0.tar.gz kishi_bigloo-1.0.0.tar.gz\n")
-      (print "  install and tuning a tarball:")
-      (print "    bglpkg 'http://hop.inria.fr/hop/scmpkg/download?tarball=calend-1.0.0.tar.gz&dir=quarantine'\n")
-      (print "  test a package in another directory:")
-      (print "    bglpkg -t modeline -C /tmp/FOO\n")
-      (print "  test a package:")
-      (print "    bglpkg -t 'http://hop.inria.fr/hop/scmpkg/download?tarball=calend-1.0.0.tar.gz&dir=quarantine'\n")
-      (print "  create a package:")
-      (print "    bglpkg -w newpkg"))
    (exit exitval))
 
+;*---------------------------------------------------------------------*/
+;*    parse-config-cmdline ...                                         */
+;*---------------------------------------------------------------------*/
+(define (parse-config-cmdline cmdline)
+   #f)
+
+;*---------------------------------------------------------------------*/
+;*    parse-pkg-cmdline ...                                            */
+;*---------------------------------------------------------------------*/
+(define (parse-pkg-cmdline cmdline)
+   #f)

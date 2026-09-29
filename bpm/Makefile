@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 13 10:04:17 2006                          */
-#*    Last change :  Wed Jul  8 14:39:59 2026 (serrano)                */
+#*    Last change :  Tue Sep 29 08:33:29 2026 (serrano)                */
 #*    Copyright   :  2006-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the Bigloo bglbpm command.                 */
@@ -25,7 +25,6 @@ BACKEND		= auto
 # the executable used to compile
 EFLAGS		= 
 
-AFILE_BIN	= $(BGLBUILDBINDIR)/bglafile.sh
 JFILE_BIN	= $(BGLBUILDBINDIR)/bgljfile.sh
 BTAGS_BIN	= $(BGLBUILDBINDIR)/bgltags.sh
 DEPEND_BIN	= $(BGLBUILDBINDIR)/bgldepend.sh
@@ -41,7 +40,7 @@ JVMZIPLIBS	= $(BOOTLIBDIR)/bigloo_s.zip \
 #*---------------------------------------------------------------------*/
 #*    Sources    					               */
 #*---------------------------------------------------------------------*/
-SOURCES		= main config database utils
+SOURCES		= main config database utils project
 FILES		= $(SOURCES:%=%.bgl)
 
 MODULES		= $(SOURCES)

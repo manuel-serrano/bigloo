@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr  1 06:28:06 2000                          */
-;*    Last change :  Mon Jun 22 07:37:12 2026 (serrano)                */
+;*    Last change :  Tue Sep 29 08:52:25 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    args-parse expansion.                                            */
@@ -402,17 +402,29 @@
 ;*    bind-option-arguments ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (bind-option-arguments args a+ na clause)
+   
+   (define (clause-msg clause)
+      (match-case clause
+         (((?- ??- (help ?msg)) . ?-)
+          msg)
+         (else
+          (call-with-output-string
+             (lambda (op)
+                (write clause op))))))
+   
    (cons `(,na (cdr ,a+))
-	 (let loop ((args args))
-	    (if (pair? args)
-		(let ((id (fetch-argument-name (car args) clause)))
-		   (cons* `(,(string->symbol id)
-			    (if (pair? ,na)
-				(car ,na)
-				(error ',(car args) "missing argument" ',clause)))
-			  `(,na (cdr ,na))
-			  (loop (cdr args))))
-		'()))))
+      (let loop ((args args))
+         (if (pair? args)
+             (let ((id (fetch-argument-name (car args) clause)))
+                (cons* `(,(string->symbol id)
+                         (if (pair? ,na)
+                             (car ,na)
+                             (error ',(car args) "missing argument"
+                                (format "~a ~a - ~a"
+                                   (car ,a+) ',(car args) ,(clause-msg clause)))))
+                   `(,na (cdr ,na))
+                   (loop (cdr args))))
+             '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    fetch-argument-name ...                                          */

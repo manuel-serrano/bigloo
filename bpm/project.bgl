@@ -1,0 +1,71 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/bpm/project.bgl                */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
+;*    Last change :  Tue Sep 29 13:51:08 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Project commands                                                 */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    project                                                          */
+;*---------------------------------------------------------------------*/
+(module project
+   (import "./config.bgl" . config)
+   (import "./utils.bgl" . utils)
+   (export parse-cmdline init))
+
+;*---------------------------------------------------------------------*/
+;*    template ...                                                     */
+;*---------------------------------------------------------------------*/
+(define-macro (template)
+   (call-with-input-file (make-file-name project.dirname "package.sexp")
+      read-string))
+
+;*---------------------------------------------------------------------*/
+;*    parse-cmdline ...                                                */
+;*---------------------------------------------------------------------*/
+(define (parse-cmdline::pair-nil cmdline::pair force::bool)
+   (args-parse (cdr cmdline)
+      (("init" ?dir (help "Create a new project in directory"))
+       (list init dir force))
+      (else
+       (list args-parse-usage #f))))
+
+;*---------------------------------------------------------------------*/
+;*    init ...                                                         */
+;*    -------------------------------------------------------------    */
+;*    Create a new project in dir                                      */
+;*---------------------------------------------------------------------*/
+(define (init path::bstring force::bool)
+   
+   (define (err msg obj)
+      (utils.error "project init" msg obj))
+   
+   (define qpath (file-name-unix-canonicalize path))
+   
+   (when (file-exists? qpath)
+      (if force
+          (if (directory? qpath)
+              (delete-directories qpath)
+              (delete-file qpath))
+          (err "File exists" qpath)))
+   
+   (make-directories qpath)
+   (unless (directory? qpath)
+      (err "Cannot create directory" path))
+   
+   (let ((pkgdir (make-file-name qpath "pkg")))
+      (make-directory pkgdir)
+      (unless (directory? pkgdir)
+         (err "Cannot create directory" pkgdir)))
+   
+   (let ((pkgsexp (make-file-name qpath "package.sexp")))
+      (call-with-output-file pkgsexp
+         (lambda (op)
+            (display (template) op)))
+      
+      (unless (file-exists? pkgsexp)
+         (err "Cannot create package.sexp file" pkgsexp))))

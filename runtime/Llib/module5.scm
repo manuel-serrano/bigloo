@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Sep 11 08:39:27 2026 (serrano)                */
+;*    Last change :  Tue Sep 29 08:29:49 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -82,7 +82,7 @@
 	      (imports read-only (default (create-hashtable :size 32 :weak 'open-string)))
 	      ;; the local definitions
 	      (defs read-only (default (create-hashtable :size 32 :weak 'open-string)))
-	      ;; the visibile classes
+	      ;; the visible classes
 	      (classes read-only (default (create-hashtable :size 16 :weak 'open-string)))
 	      ;; the optional program entry point
 	      (main (default #f))
@@ -1467,16 +1467,25 @@
 				  (with-access::KDef idef (ci decl)
 				     (module5-bind-class! mod id ci)
 				     (install-class-expanders ci xenv mod))))))))))
-	    ;; static binding of the module filename
+	    ;; static binding of the module filename and dirname
 	    (set! (-> mod body)
-	       (let ((id (string->symbol (format "~a.filename" (-> mod id)))))
-		  (cons (localize `(define ,id ,(-> mod path)) (-> mod expr))
-		     (-> mod body))))
+	       (let* ((id (string->symbol (format "~a.filename" (-> mod id))))
+                      (x `(define ,id ,(-> mod path))))
+                  ;; bind for macro expansion
+                  (eval x)
+		  (cons (localize x (-> mod expr)) (-> mod body))))
+            (set! (-> mod body)
+	       (let* ((id (string->symbol (format "~a.dirname" (-> mod id))))
+                      (x `(define ,id ,(dirname (-> mod path)))))
+                  ;; bind for macro expansion
+                  (eval x)
+		  (cons (localize x (-> mod expr)) (-> mod body))))
 	    
 	    (when (pair? (-> mod body))
 	       (with-trace '__module5 "module-expand-and-resolve!, expand-body"
 		  (trace-item "mod=" (-> mod id))
 		  (trace-item "body=" (-> mod body))
+
 		  (set! (-> mod body)
 		     (map (lambda (x) (expand/env x xenv)) (-> mod body)))))
 
@@ -2801,9 +2810,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    install-class-expanders ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (install-class-expanders ci xenv mod)
+(define (install-class-expanders ci xenv mod::Module)
    (with-trace '__module5 "install-class-expanders"
       (trace-item "ci=" (class-info-id ci))
+      #;(let ((d (hashtable-get (-> mod imports)
+                  (symbol->string! (class-info-id ci)))))
+         (when (isa? d Decl)
+            (let ((d::Decl d))
+               (tprint "MO=" (-> mod id) " " 
+                  (-> d id) " " (-> d xid) " " (-> d alias)
+                  " " (-> d scope)))))
       (install-module5-lazy-expander xenv
 	 (string->symbol (format "instantiate::~a" (class-info-id ci)))
 	 #f (lambda () (instantiate-expander ci mod)))

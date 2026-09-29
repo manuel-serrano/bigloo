@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:42:40 2026                          */
-;*    Last change :  Wed Jul  8 15:25:18 2026 (serrano)                */
+;*    Last change :  Tue Sep 29 13:34:17 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Utilities                                                        */
@@ -14,13 +14,41 @@
 ;*---------------------------------------------------------------------*/
 (module utils
    (import "./config.bgl" . config)
-   (export rm-rf cp* cp-r
+   (export
+      (error bmp-error)
+      (error/loc bmp-error/loc)
+      version<=?
+      rm-rf cp* cp-r
       download download-package
       read-file
       tarball-untar tarball-untar-gz
       url?
       yes-or-no?
       color))
+
+;*---------------------------------------------------------------------*/
+;*    bmp-error ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (bmp-error cmd msg obj)
+   (error (format "~a ~a" config.name cmd) msg obj))
+
+;*---------------------------------------------------------------------*/
+;*    bmp-error/loc ...                                                */
+;*---------------------------------------------------------------------*/
+(define (bmp-error/loc cmd msg obj)
+   (if (epair? obj)
+       (match-case (cer obj)
+          ((at ?fname ?loc)
+           (error/location (format "~a ~a" config.name cmd) msg obj fname loc))
+          (else
+           (error (format "~a ~a" config.name cmd) msg obj)))
+       (error (format "~a ~a" config.name cmd) msg obj)))
+
+;*---------------------------------------------------------------------*/
+;*    version<=? ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (version<=?::bool v1::bstring b2::bstring)
+   (<=fx (string-natural-compare3 v1 v2)) 0)
 
 ;*---------------------------------------------------------------------*/
 ;*    rm-rf ...                                                        */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:38:54 2026                          */
-;*    Last change :  Wed Jul  8 15:00:28 2026 (serrano)                */
+;*    Last change :  Tue Sep 29 08:10:05 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm configuration                                                */
@@ -13,8 +13,25 @@
 ;*    config                                                           */
 ;*---------------------------------------------------------------------*/
 (module config
-   (export verbose? verbose-level verbose-level-set!
-      show repository rc-directory tmp-directory))
+   (export parse-cmdline name verbose? verbose-level verbose-level-set!
+      show repository rc-directory tmp-directory
+      database-filename))
+
+;*---------------------------------------------------------------------*/
+;*    parse-cmdline ...                                                */
+;*---------------------------------------------------------------------*/
+(define (parse-cmdline cmdline::pair)
+   (args-parse (cdr cmdline)
+      (("show" (help "Show configuration"))
+       (list show))
+      (else
+       (list args-parse-usage #f))))
+
+;*---------------------------------------------------------------------*/
+;*    name ...                                                         */
+;*---------------------------------------------------------------------*/
+(define name
+   "bpm")
 
 ;*---------------------------------------------------------------------*/
 ;*    verbose ...                                                      */
@@ -67,3 +84,9 @@
 (define tmp-directory
    (or (getenv "BPM_TMP_DIRECTORY")
        (make-file-path (os-tmp) "bpm")))
+
+;*---------------------------------------------------------------------*/
+;*    database-filename ...                                            */
+;*---------------------------------------------------------------------*/
+(define database-filename
+   "bpm.db")

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Mon Sep 28 14:06:51 2026 (serrano)                */
+;*    Last change :  Tue Sep 29 08:12:32 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Emacs bgl-mode                                                   */
 ;*=====================================================================*/
@@ -174,7 +174,7 @@
 		 "with-trace\\|trace-item\\|when-trace\\|"
 		 "bind-exit\\|call/cc\\|try\\|unwind-protect\\|"
 		 "with-exception-handler\\|with-handler\\|with-alarm\\|current-exception-handler\\|raise\\|"
-		 "profile\\|profile/gc\\|delay\\|force\\)"
+		 "profile\\|profile/gc\\)"
 		 "[ \n\t:]")
 	 1
 	 'bgl-font-lock-face-8)

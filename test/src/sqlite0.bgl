@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Jun  5 08:49:59 2026                          */
-;*    Last change :  Sun Jul 12 06:37:08 2026 (serrano)                */
+;*    Last change :  Tue Sep 29 13:32:19 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the sqlite library.                                      */
@@ -41,6 +41,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
+(define-test %sqlite
+   %sqlite
+   :expected class?)
+
 (define-test sqltiny
    (isa? (instantiate::sqltiny) sqltiny))
 

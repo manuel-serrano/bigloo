@@ -31,6 +31,11 @@ the whole sql query language SQLite does and it is slower.
 
 Classes
 -------
+
+### %sqlite ###
+
+The root class of SQL databases.
+
 ### sqltiny ###
 
 The instances of the class `sqlite` hold SQLite databases. A database

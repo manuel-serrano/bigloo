@@ -252,11 +252,13 @@ library `browser` is imported only when compiling for Wasm.
 The module object
 -----------------
 
-Inside a module the variable `filename` qualified with the module identifier
-is a constant bound to the actual path of the module.
+Inside a module the variables `filename` and `dirname` qualified with
+the module identifier are constants bound to the actual path of the
+module and its diectory.
 
 In the following example, the module `ex2`, exports its file name via the
 variable `ex2c`.
 
 [Module path](../test/src/modules/module5_ex2.bgl).
 
+These two variabls are also bound when macro-expanding the module.
