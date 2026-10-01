@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Thu Oct  1 07:00:42 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 07:40:51 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -13,10 +13,10 @@
 ;*    bpm                                                              */
 ;*---------------------------------------------------------------------*/
 (module bpm
-   (library bpmlib)
    (import "./config.bgl" . config)
    (import "./database.bgl" . db)
    (import "./project.bgl" . proj)
+   (import "./package.bgl" . pkg)
    (main))
 
 ;*---------------------------------------------------------------------*/
@@ -32,70 +32,85 @@
 ;*    parse-cmdline ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (parse-cmdline cmdline)
+   
+   (define (usage args-parse-usage)
+      (printf "~a v~a\n" config.name config.version)
+      (print "usage: " config.name " [options] command arg0 arg1 ...")
+      (args-parse-usage #f)
+      (exit 0))
+
    (let ((action #f)
          (force #f)
-         (help #f))
-
+         (rec #f))
+      
       (bind-exit (break)
          (args-parse (cdr cmdline)
-
+            
+            ;; empty command line
+            (()
+             (set! action (lambda () (usage args-parse-usage))))
+            
             ;; common options
             (section "Common options")
             ((("-h" "--help") (help "This message (use -v -h for long help)"))
-             (set! action args-parse-usage)
-             (set! help #t))
+             (set! action args-parse-usage))
             (("-v?<level>" (help "Increase/set verbosity level (-v0 silence)"))
              (if (string=? <level> "")
-                 (config.verbose-level-set! (+fx (config.verbose-level) 1))
-                 (config.verbose-level-set! (string->integer <level>))))
+                 (config.verbose-set! (+fx config.verbose 1))
+                 (config.verbose-set! (string->integer <level>))))
             (("--no-color" (help "Disable colored traces"))
              (bigloo-trace-color-set! #f))
             (("--force" (help "Force execution action"))
              (set! force #t))
             (("--rc-dir" ?dir (help "Uses an alternate RC directory (see \"BMP_RC_DIRECTORY\")"))
              (config.rc-directory-set! dir))
+            (("-r" (help "Proceed recursively"))
+             (set! rec #t))
             
             ;; sub commands
             (section "Sub commands")
             (("config" (help "config commands"))
-             (set! action (config.parse-cmdline (cdr cmdline)))
+             (set! action (config.parse-cmdline the-remaining-args))
              (break #t))
             (("db" (help "database commands"))
-             (set! action (db.parse-cmdline (cdr cmdline)))
+             (set! action (db.parse-cmdline the-remaining-args))
              (break #t))
             (("pkg" (help "package commands"))
-             (set! action (parse-pkg-cmdline (cdr cmdline)))
+             (set! action (pkg-parse-cmdline the-remaining-args rec))
              (break #t))
             (("proj" (help "project commands"))
-             (set! action (proj.parse-cmdline (cdr cmdline) force))
+             (set! action (proj.parse-cmdline the-remaining-args force))
              (break #t))
             
             (else
-             (usage args-parse-usage))))
-
+             (set! action (lambda () (usage args-parse-usage))))))
+      
       action))
 
 ;*---------------------------------------------------------------------*/
-;*    usage ...                                                        */
+;*    pkg-parse-cmdline ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (usage args-parse-usage #!key (exitval 0) (msg #f))
-   (when (string? msg)
-      (print msg)
-      (newline))
-   (printf "~a v~a" (config.name) (bpmlib-version))
-   (print "usage: " (config.name) " [options] command arg0 arg1 ...")
-   (when (procedure? args-parse-usage)
-      (args-parse-usage #f))
-   (exit exitval))
+(define (pkg-parse-cmdline cmdline::pair-nil rec::bool)
+   
+   (define (usage args-parse-usage)
+      (printf "~a v~a\n" config.name config.version)
+      (print "usage: " config.name " [options] "
+         (trace-color 2 "pkg") " arg0 arg1 ...")
+      (args-parse-usage #f)
+      (exit 0))
 
-;*---------------------------------------------------------------------*/
-;*    parse-config-cmdline ...                                         */
-;*---------------------------------------------------------------------*/
-(define (parse-config-cmdline cmdline)
-   #f)
+   (bind-exit (break)
+      (args-parse cmdline
+         (()
+          (lambda () (usage args-parse-usage)))
+         (("install" ?pkg (help "Install a package"))
+          (break
+             (lambda ()
+                (proj.install-pkg pkg))))
+         (("upgrade" (help "Update the dependency packages"))
+          (break
+             (lambda ()
+                (tprint "TODO"))))
+         (else
+          (break (lambda () (usage args-parse-usage)))))))
 
-;*---------------------------------------------------------------------*/
-;*    parse-pkg-cmdline ...                                            */
-;*---------------------------------------------------------------------*/
-(define (parse-pkg-cmdline cmdline)
-   #f)

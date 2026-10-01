@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Sep 10 14:13:38 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 11:27:45 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -210,8 +210,12 @@
 		     (lambda (i)
                         (let ((args (cdr exp)))
                            (if (null? (cddr l))
-                               (field-call->node (car l) (cadr l) args exp
-                                  stack loc site genv)
+                               (or (field-call->node (car l) (cadr l) args exp
+                                      stack loc site genv)
+                                   (error-sexp->node
+                                      (format "Variable ~a is not a Java class"
+                                         (car l))
+                                      exp loc genv))
                                (sexp->node
                                   `((-> ,(car l) ,@(cdr l)) ,@args)
                                   stack loc site genv)))))

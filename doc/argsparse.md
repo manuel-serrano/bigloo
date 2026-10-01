@@ -63,6 +63,9 @@ of these matches, `args-parse` proceeds as follows:
 In addition to parsing the command line arguments, `args-parse` enables
 help message printing. 
 
+In rule expressions, the variable `the-remaining-args` is bound
+to the list of arguments that remained to be parsed.
+
 
 ### (args-parse-usage) ###
 <!-- [:args-parse-usage@NoDef] -->

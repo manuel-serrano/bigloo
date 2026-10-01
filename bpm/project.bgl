@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Tue Sep 29 13:51:08 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 08:37:44 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -15,7 +15,9 @@
 (module project
    (import "./config.bgl" . config)
    (import "./utils.bgl" . utils)
-   (export parse-cmdline init))
+   (import "./database.bgl" . db)
+   (import "./package.bgl" . pkg)
+   (export parse-cmdline init install-pkg))
 
 ;*---------------------------------------------------------------------*/
 ;*    template ...                                                     */
@@ -27,12 +29,23 @@
 ;*---------------------------------------------------------------------*/
 ;*    parse-cmdline ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (parse-cmdline::pair-nil cmdline::pair force::bool)
-   (args-parse (cdr cmdline)
-      (("init" ?dir (help "Create a new project in directory"))
-       (list init dir force))
-      (else
-       (list args-parse-usage #f))))
+(define (parse-cmdline cmdline::pair-nil force::bool)
+   
+   (define (usage args-parse-usage)
+      (printf "~a v~a\n" config.name config.version)
+      (print "usage: " config.name " [options] "
+         (trace-color 2 "proj") " arg0 arg1 ...")
+      (args-parse-usage #f)
+      (exit 0))
+   
+   (bind-exit (break)
+      (args-parse cmdline
+         (()
+          (lambda () (usage args-parse-usage)))
+         (("init" ?dir (help "Create a new project in directory"))
+          (break (lambda () (init dir force))))
+         (else
+          (break (lambda () (usage args-parse-usage)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    init ...                                                         */
@@ -57,6 +70,16 @@
    (unless (directory? qpath)
       (err "Cannot create directory" path))
    
+   (init-in-dir path))
+
+;*---------------------------------------------------------------------*/
+;*    init-in-dir ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (init-in-dir qpath::bstring)
+   
+   (define (err msg obj)
+      (utils.error "project init" msg obj))
+   
    (let ((pkgdir (make-file-name qpath "pkg")))
       (make-directory pkgdir)
       (unless (directory? pkgdir)
@@ -69,3 +92,26 @@
       
       (unless (file-exists? pkgsexp)
          (err "Cannot create package.sexp file" pkgsexp))))
+
+;*---------------------------------------------------------------------*/
+;*    is-a-project? ...                                                */
+;*    -------------------------------------------------------------    */
+;*    Is the directory a project?                                      */
+;*---------------------------------------------------------------------*/
+(define (is-a-project? dir::bstring)
+   (file-exists? (make-file-name dir "package.sexp")))
+
+;*---------------------------------------------------------------------*/
+;*    install-pkg ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (install-pkg namev::bstring)
+   (unless (is-a-project? (pwd))
+      (print "The current directory \"" (pwd) "\" is not a bpm project.")
+      (if (utils.yes-no? "Shall I initialize it? ")
+          (init-in-dir (pwd))
+          (exit 0)))
+   (bind-values (name version)
+      (pkg.decode-name namev)
+      (let ((pv::PackageVersion (db.find-package-version name version)))
+         (tprint "TODO " pv))))
+

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:42:40 2026                          */
-;*    Last change :  Thu Oct  1 07:05:45 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 07:59:24 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Utilities                                                        */
@@ -17,13 +17,14 @@
    (export
       (error bmp-error)
       (error/loc bmp-error/loc)
+      verb
       version<=?
       rm-rf cp* cp-r
       download download-package
       read-file
       tarball-untar tarball-untar-gz
       url?
-      yes-or-no?
+      yes-no?
       color))
 
 ;*---------------------------------------------------------------------*/
@@ -43,6 +44,12 @@
           (else
            (error (format "~a ~a" config.name cmd) msg obj)))
        (error (format "~a ~a" config.name cmd) msg obj)))
+
+;*---------------------------------------------------------------------*/
+;*    verb ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (verb msg::bstring #!key (lvl::long 1))
+   (when (>=fx config.verbose lvl) (print msg)))
 
 ;*---------------------------------------------------------------------*/
 ;*    version<=? ...                                                   */
@@ -153,7 +160,7 @@
 	    (trace-item "tmp=" tmp)
 	    (unwind-protect
 	       (let ((op (open-output-file tmp)))
-		  (when (config.verbose? 2)
+		  (when (>=fx config.verbose 2)
 		     (print "  downloading "
 			    (color 'arg0 url)
 			    " into "
@@ -189,7 +196,7 @@
 						   (laap)))))
 					((301 302 307)
 					 (let ((nu (download-redirect url ip)))
-					    (when (config.verbose? 3)
+					    (when (>=fx config.verbose 3)
 					       (print
 						"  download redirected to "
 						(color 'arg0 nu)))
@@ -312,29 +319,27 @@
    (or (string-prefix? "http://" str) (string-prefix? "https://" str)))
 
 ;*---------------------------------------------------------------------*/
-;*    yes-or-no? ...                                                   */
+;*    yes-no? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (yes-or-no? message obj #!key confirm)
-   (if confirm
-       (begin
-	  (cond
-	     ((pair? obj)
-	      (for-each (lambda (f)
-			   (display f)
-			   (display " "))
-                 obj)
-	      (newline))
-	     ((string? obj)
-	      (print obj)))
-	  (let loop ()
-	     (display message)
-	     (let ((c (read)))
-		(if (eq? c 'y)
-		    #t
-		    (if (eq? c 'n)
-			#f
-			(loop))))))
-       #t))
+(define (yes-no?::bool message::bstring #!key (obj '()))
+   (begin
+      (cond
+         ((pair? obj)
+          (for-each (lambda (f)
+                       (display f)
+                       (display " "))
+             obj)
+          (newline))
+         ((string? obj)
+          (print obj)))
+      (let loop ()
+         (display message)
+         (let ((c (read)))
+            (if (eq? c 'y)
+                #t
+                (if (eq? c 'n)
+                    #f
+                    (loop)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    color ...                                                        */
@@ -360,6 +365,7 @@
      (arg1 4)
      (arg2 5)
      (package 6)
+     (version 7)
      (variable 7)
      (macro 3)
      (function 4)

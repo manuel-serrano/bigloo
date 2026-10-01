@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 15:41:34 2026                          */
-;*    Last change :  Thu Oct  1 07:31:24 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 08:27:24 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Package data type and tools                                      */
@@ -15,7 +15,7 @@
 (module package
    (import "./config.bgl" . config)
    (import "./utils.bgl" . utils)
-   (export Package PackageVersion list->package-version))
+   (export Package PackageVersion decode-name list->package-version))
 
 ;*---------------------------------------------------------------------*/
 ;*    Package ...                                                      */
@@ -39,6 +39,33 @@
    (dependencies::pair-nil read-only))
 
 ;*---------------------------------------------------------------------*/
+;*    serialization                                                    */
+;*---------------------------------------------------------------------*/
+(register-class-serialization! Package
+   (lambda (o::Package)
+      (vector o.name o.description o.versions))
+   (lambda (o v)
+      (instantiate::Package
+         (name (vector-ref o 0))
+         (description (vector-ref o 1))
+         (versions (vector-ref o 2)))))
+
+(register-class-serialization! PackageVersion
+   (lambda (o::PackageVersion)
+      (vector o.version o.note o.author o.url o.checksum o.backends o.bigloo
+         o.dependencies))
+   (lambda (o v)
+      (instantiate::PackageVersion
+         (version (vector-ref o 0))
+         (note (vector-ref o 1))
+         (author (vector-ref o 2))
+         (url (vector-ref o 3))
+         (checksum (vector-ref o 4))
+         (backends (vector-ref o 5))
+         (bigloo (vector-ref o 6))
+         (dependencies (vector-ref o 7)))))
+
+;*---------------------------------------------------------------------*/
 ;*    list->package-version ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (list->package-version::PackageVersion l::pair)
@@ -49,19 +76,20 @@
       (let loop ((l c))
          (cond
             ((pair? l)
-             (if (eq? (car l) key)
-                 (if (pair? (cdr l))
+             (if (pair? (cdr l))
+                 (if (eq? (car l) key)
                      (let ((r (cadr l)))
                         (set! cache l)
                         r)
-                     (utils.error/loc "package" "syntax error" l))))
+                     (loop (cddr l)))
+                 (utils.error/loc "package" "syntax error" l)))
             ((null? l)
              opt)
             (else
              (utils.error/loc "package" "syntax error" l)))))
 
    (define (plist-get l::pair-nil key::keyword #!optional opt)
-      (or (plist-get/list cache key opt)
+      (or (plist-get/list cache key #f)
           (plist-get/list l key opt)
           (utils.error/loc "package" (format "missing attribute ~a" key) l)))
 
@@ -74,3 +102,16 @@
       (bigloo (plist-get l bigloo: #t))
       (backends (plist-get l backends: '(c jvm wasm)))
       (dependencies (plist-get l dependencies: '()))))
+
+;*---------------------------------------------------------------------*/
+;*    decode-name ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (decode-name pkg::bstring)
+   (cond
+      ((pregexp-match "(.*)/([0-9]+.[0-9]+.[0-9]+)" pkg)
+       =>
+       (lambda (m)
+          (values (cadr m) (caddr m))))
+      (else
+       (values pkg #f))))
+      

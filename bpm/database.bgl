@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Thu Oct  1 06:58:37 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 07:44:06 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -16,14 +16,29 @@
    (import "./config.bgl" . config)
    (import "./utils.bgl" . utils)
    (import "./package.bgl" . pkg)
-   (export Database parse-cmdline update list-packages))
+   (export Database parse-cmdline update list-packages find-package-version))
 
 ;*---------------------------------------------------------------------*/
 ;*    Database ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-class Database
    (path::bstring read-only)
-   (packages::struct read-only))
+   (packages::struct read-only (default (make-hashtable :keys 'string))))
+
+;*---------------------------------------------------------------------*/
+;*    serialization                                                    */
+;*---------------------------------------------------------------------*/
+(register-class-serialization! Database
+   (lambda (o::Database)
+      (vector o.path (hashtable-map o.packages cons)))
+   (lambda (o v)
+      (let* ((db::Database (instantiate::Database
+                              (path (vector-ref o 0))))
+             (pkgs db.packages))
+         (for-each (lambda (kb)
+                      (hashtable-put! pkgs (car kb) (cdr kb)))
+            (vector-ref o 1))
+         db)))
 
 ;*---------------------------------------------------------------------*/
 ;*    database ...                                                     */
@@ -33,16 +48,29 @@
 ;*---------------------------------------------------------------------*/
 ;*    parse-cmdline ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (parse-cmdline cmdline::pair)
-   (args-parse (cdr cmdline)
-      (("list" (help "List packages"))
-       (list list-packages (load-database config.rc-directory)))
-      (("update" (help "Update database"))
-       #f)
-      (("init" ?url (help "Initialize a database"))
-       (init url))
-      (else
-       (list args-parse-usage #f))))
+(define (parse-cmdline cmdline::pair-nil)
+   
+   (define (usage args-parse-usage)
+      (printf "~a v~a\n" config.name config.version)
+      (print "usage: " config.name " [options] "
+         (trace-color 2 "db") " arg0 arg1 ...")
+      (args-parse-usage #f)
+      (exit 0))
+
+   (bind-exit (break)
+      (args-parse cmdline
+         (()
+          (lambda () (usage args-parse-usage)))
+         (("list" (help "List packages"))
+          (break
+             (lambda ()
+                (list-packages (load-database config.rc-directory)))))
+         (("update" (help "Update database"))
+          #f)
+         (("init" ?url (help "Initialize a database from a url"))
+          (break (lambda () (init url))))
+         (else
+          (break (lambda () (usage args-parse-usage)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    init ...                                                         */
@@ -51,7 +79,10 @@
    (let ((rcdir config.rc-directory))
       (if (directory? rcdir)
           (utils.error "db init" "RC directory already exists" rcdir)
-          (make-directories rcdir))
+          (begin
+             (utils.verb
+                (format "creating directory ~a" (utils.color 'arg0 rcdir)))
+             (make-directories rcdir)))
       (cond
          ((directory? url)
           (init-from-directory rcdir url))
@@ -61,9 +92,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    load-database ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (load-database rcdir::bstring)
+(define (load-database::Database rcdir::bstring)
    (let* ((n (make-file-name rcdir config.database-filename))
           (p (open-input-binary-file n)))
+      (utils.verb (format "loading database ~a" (utils.color 'arg0 n)))
       (if (binary-port? p)
           (unwind-protect
              (input-obj p)
@@ -87,34 +119,63 @@
    
    (define db::Database
       (instantiate::Database
-         (path (make-file-name rcdir config.database-filename))
-         (packages (make-hashtable :keys 'string))))
-   
-   (define (add-package dir)
-      (let ((versions (map (lambda (p)
-                              (pkg.list->package-version
-                                 (call-with-input-file (make-file-name dir p)
-                                    (lambda (ip)
-                                       (read ip #t)))))
-                         (sort utils.version<=?
-                            (filter (lambda (f)
-                                       (string-suffix? ".sexp" f))
-                               (directory->list dir))))))
-         (if (pair? versions)
-             (with-access::PackageVersion (car versions) (note)
-                (let* ((name (basename dir))
-                       (pkg (instantiate::Package
-                              (name name)
-                              (description note)
-                              (versions versions))))
-                   (hashtable-put! db.packages name pkg)))
-             (utils.error "db init" "Empty package directory" dir))))
-   
-   (for-each add-package (filter directory? (directory->path-list url)))
+         (path (make-file-name rcdir config.database-filename))))
 
-   (save-database rcdir db)
-
-   db)
+   (define (package-name file sexp::pair-nil)
+      (let ((l (memq name: sexp)))
+         (cond
+            ((and (pair? l) (pair? (cdr l)) (string? (cadr l)))
+             (cadr l))
+            (else
+             (utils.error/loc file "Cannot find package name" sexp)))))
+   
+   (define (read-package-version file)
+      (if (string-suffix? ".sexp" file)
+          (with-handler
+             (lambda (e)
+                (exception-notify e)
+                #f)
+             (let ((sexp (call-with-input-file file
+                            (lambda (ip) (read ip #t)))))
+                (cons (package-name file sexp)
+                   (pkg.list->package-version sexp))))
+          (begin
+             (print "ignoring file " (utils.color 'warning file))
+             #f)))
+   
+   (let ((versions (filter-map read-package-version (directory->path-list url))))
+      (for-each (lambda (x)
+                   (let ((name (car x))
+                         (v::PackageVersion (cdr x)))
+                      (let ((o (hashtable-get db.packages name)))
+                         (if (isa? o pkg.Package)
+                             (let ((o::Package o))
+                                (utils.verb 
+                                   (format "  adding ~a version ~a"
+                                      name
+                                      (utils.color 'version v.version))
+                                   :lvl 2)
+                                (set! o.versions (append! o.versions (list v))))
+                             (begin
+                                (utils.verb 
+                                   (format "adding package ~a"
+                                      (utils.color 'package name)))
+                                (hashtable-put! db.packages name
+                                   (instantiate::Package
+                                      (name name)
+                                      (description v.note)
+                                      (versions (list v)))))))))
+         (sort (lambda (x y)
+                  (if (string=? (car x) (car y))
+                      (let ((vx::PackageVersion (cdr x))
+                            (vy::PackageVersion (cdr y)))
+                         (<=fx (string-natural-compare3 vx.version vy.version) 0))
+                      (string<? (car x) (car y))))
+            versions))
+      
+      (save-database rcdir db)
+      
+      db))
 
 ;*---------------------------------------------------------------------*/
 ;*    update ...                                                       */
@@ -127,15 +188,38 @@
 ;*---------------------------------------------------------------------*/
 (define (list-packages db::Database)
    (for-each (lambda (p::Package)
-                (display (utils.color 'arg0 p.name))
-                (display " ")
                 (let ((v0::PackageVersion (car (last-pair p.versions))))
-                   (display v0.version))
-                (newline)
-                (display "  ")
-                (display p.description)
-                (newline))
+                   (print (utils.color 'package p.name) " " v0.version)
+                   (print "  " p.description)
+                   (when (>=fx config.verbose 1)
+                      (for-each (lambda (pv::PackageVersion)
+                                   (print "  version: " pv.version)
+                                   (print "  author: " pv.author)
+                                   (print "  url: " pv.url)
+                                   (unless (or (string=? pv.note "")
+                                               (string=? pv.note p.description))
+                                      (print "  note: " pv.note))
+                                   (print "  bigloo: " pv.bigloo)
+                                   (print "  dependencies: " pv.dependencies))
+                         p.versions))
+                   (newline)))
       (sort (lambda (p::Package q::Package)
                (string<=? p.name q.name))
          (hashtable->list db.packages))))
 
+;*---------------------------------------------------------------------*/
+;*    find-package ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (find-package-version::PackageVersion name::bstring version)
+   (let ((db::Database (load-database config.rc-directory)))
+      (let ((p (hashtable-get db.packages name)))
+         (if (isa? p pkg.Package)
+             (let ((p::Package p))
+                (if version
+                    (or (find (lambda (pv::PackageVersion)
+                                 (string=? pv.version version))
+                           p.versions)
+                        (utils.error name "Cannot find package version" version))
+                    (car p.versions)))
+             (utils.error db.path "Cannot find package in database" name)))))
+                       
