@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct 20 15:11:28 2025                          */
-;*    Last change :  Thu Jul 30 09:20:05 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 07:13:30 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST construction of the toplevel forms                           */
@@ -562,7 +562,10 @@
 	     ;; be checked when defining the global variable
 	     (reverse! (cons (make-user-local-svar id type) res))))
 	 ((dsssl-named-constant? (car args))
-	  (let ((arg (id-of-id (dsssl-find-first-formal args) loc)))
+          (tprint "ICI " (dsssl-find-first-formal args))
+          (let* ((arg0 (dsssl-find-first-formal args))
+                 (arg (id-of-id arg0 loc)))
+             (tprint "ICI.arg " arg)
 	     (if arg
 		 (if (or (eq? (car args) #!rest)
 			 (any dsssl-named-constant? (cdr args)))
@@ -570,18 +573,18 @@
 		     (reverse! (cons (make-user-local-svar arg *obj*) res))
 		     ;; MS 20may2026, changed *obj* to support
 		     ;; optionally typed arguments in optimized dsssl functions
-		     (let ((id (id-of-id arg loc))
-			   (ty (type-of-id arg loc)))
+		     (let ((id arg)
+			   (ty (type-of-id arg0 loc)))
 			(reverse! (cons (make-user-local-svar id ty) res))))
 		 (reverse! res))))
 	 (else
 	  (let* ((pid (check-id (parse-id (car args) loc) src))
 		 (id (car pid))
-		 (type (cdr pid)))
+		 (ty (cdr pid)))
 	     (loop (cdr args)
 		(cons (if (user-symbol? id)
-			  (make-user-local-svar id type)
-			  (make-local-svar id type))
+			  (make-user-local-svar id ty)
+			  (make-local-svar id ty))
 		   res)))))))
 
 ;*---------------------------------------------------------------------*/

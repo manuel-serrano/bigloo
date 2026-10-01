@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:33:09 1996                          */
-;*    Last change :  Sat Sep 12 12:39:57 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 07:09:21 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The identifier managment                                         */
 ;*=====================================================================*/
@@ -125,9 +125,9 @@
    (if (not (symbol? id))
        (user-error/location loc "parse" "Illegal identifier" id)
        (let* ((string (symbol->string id))
-	      (len    (string-length string)))
-	  (let loop ((walker     0)
-		     (id-stop    0)
+	      (len (string-length string)))
+	  (let loop ((walker 0)
+		     (id-stop 0)
 		     (type-start 0))
 	     (cond
 		((=fx walker len)
@@ -143,10 +143,10 @@
 		     (cons id (get-default-type)))
 		    ((=fx type-start len)
 		     ;; empty type are erroneous
-		     (user-error "type-of-id"
-				 "Illegal formal identifier"
-				 id
-				 (cons 'error-ident (get-default-type))))
+		     (user-error/location loc "parse-id/use"
+                        "Illegal formal identifier"
+                        id
+                        (cons 'error-ident (get-default-type))))
 		    (else
 		     (let ((id  (string->symbol (substring string 0 id-stop)))
 			   (tid (string->symbol
@@ -156,10 +156,10 @@
 		      (<fx walker (-fx len 1))
 		      (char=? (string-ref string (+fx walker 1)) #\:))
 		 (if (>fx type-start 0)
-		     (user-error "type-of-id"
-				 "Illegal formal identifier"
-				 id
-				 (cons 'error-ident (get-default-type)))
+		     (user-error/location loc "parse-id/use"
+                        "Illegal formal identifier"
+                        id
+                        (cons 'error-ident (get-default-type)))
 		     (loop (+fx walker 2) walker (+fx walker 2))))
 		(else
 		 (loop (+fx walker 1) id-stop type-start)))))))

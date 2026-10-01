@@ -1,0 +1,76 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/bpm/package.bgl                */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Tue Sep 29 15:41:34 2026                          */
+;*    Last change :  Thu Oct  1 07:31:24 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Package data type and tools                                      */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    package                                                          */
+;*---------------------------------------------------------------------*/
+(module package
+   (import "./config.bgl" . config)
+   (import "./utils.bgl" . utils)
+   (export Package PackageVersion list->package-version))
+
+;*---------------------------------------------------------------------*/
+;*    Package ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-class Package
+   (name::bstring read-only)
+   (description::bstring read-only)
+   (versions::pair-nil (default '())))
+
+;*---------------------------------------------------------------------*/
+;*    PackageVersion ...                                               */
+;*---------------------------------------------------------------------*/
+(define-class PackageVersion
+   (version::bstring read-only)
+   (note::bstring read-only)
+   (author::bstring read-only)
+   (url::bstring read-only)
+   (checksum::bstring read-only)
+   (backends::pair-nil read-only)
+   (bigloo read-only)
+   (dependencies::pair-nil read-only))
+
+;*---------------------------------------------------------------------*/
+;*    list->package-version ...                                        */
+;*---------------------------------------------------------------------*/
+(define (list->package-version::PackageVersion l::pair)
+
+   (define cache l)
+
+   (define (plist-get/list c::pair-nil key::keyword opt)
+      (let loop ((l c))
+         (cond
+            ((pair? l)
+             (if (eq? (car l) key)
+                 (if (pair? (cdr l))
+                     (let ((r (cadr l)))
+                        (set! cache l)
+                        r)
+                     (utils.error/loc "package" "syntax error" l))))
+            ((null? l)
+             opt)
+            (else
+             (utils.error/loc "package" "syntax error" l)))))
+
+   (define (plist-get l::pair-nil key::keyword #!optional opt)
+      (or (plist-get/list cache key opt)
+          (plist-get/list l key opt)
+          (utils.error/loc "package" (format "missing attribute ~a" key) l)))
+
+   (instantiate::PackageVersion
+      (version (plist-get l version:))
+      (note (plist-get l description:))
+      (author (plist-get l author:))
+      (url (plist-get l url:))
+      (checksum (plist-get l sha256:))
+      (bigloo (plist-get l bigloo: #t))
+      (backends (plist-get l backends: '(c jvm wasm)))
+      (dependencies (plist-get l dependencies: '()))))

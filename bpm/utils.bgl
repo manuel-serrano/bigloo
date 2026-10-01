@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:42:40 2026                          */
-;*    Last change :  Tue Sep 29 13:34:17 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 07:05:45 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Utilities                                                        */
@@ -47,8 +47,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    version<=? ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (version<=?::bool v1::bstring b2::bstring)
-   (<=fx (string-natural-compare3 v1 v2)) 0)
+(define (version<=?::bool vx::bstring vy::bstring)
+   (<=fx (string-natural-compare3 vx vy) 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    rm-rf ...                                                        */

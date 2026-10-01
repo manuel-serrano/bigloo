@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Tue Sep 29 09:51:16 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 06:58:37 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -51,12 +51,12 @@
    (let ((rcdir config.rc-directory))
       (if (directory? rcdir)
           (utils.error "db init" "RC directory already exists" rcdir)
-          (make-directories rcdir)))
-   (cond
-      ((directory? url)
-       (init-from-directory url))
-      (else
-       (utils.error "db init" "URL not supported" url))))
+          (make-directories rcdir))
+      (cond
+         ((directory? url)
+          (init-from-directory rcdir url))
+         (else
+          (utils.error "db init" "URL not supported" url)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    load-database ...                                                */
@@ -66,7 +66,7 @@
           (p (open-input-binary-file n)))
       (if (binary-port? p)
           (unwind-protect
-             (input-port db p)
+             (input-obj p)
              (close-binary-port p))
           (utils.error "load-database" "Cannot find database" p))))
 
@@ -77,7 +77,7 @@
    (let* ((n (make-file-name rcdir config.database-filename))
           (p (open-output-binary-file n)))
       (unwind-protect
-         (output-port db p)
+         (output-obj p db)
          (close-binary-port p))))
 
 ;*---------------------------------------------------------------------*/
@@ -86,14 +86,13 @@
 (define (init-from-directory::Database rcdir::bstring url::bstring)
    
    (define db::Database
-      (initialize-db!
-         (instantiate::Database
-            (path (make-file-name rcdir config.database-filename))
-            (packages (make-hashtable :keys 'string)))))
+      (instantiate::Database
+         (path (make-file-name rcdir config.database-filename))
+         (packages (make-hashtable :keys 'string))))
    
    (define (add-package dir)
       (let ((versions (map (lambda (p)
-                              (list->package-version
+                              (pkg.list->package-version
                                  (call-with-input-file (make-file-name dir p)
                                     (lambda (ip)
                                        (read ip #t)))))
@@ -102,12 +101,13 @@
                                        (string-suffix? ".sexp" f))
                                (directory->list dir))))))
          (if (pair? versions)
-             (with-access::pkg.PackageVersion (car versions) (note)
-                (let ((pkg (instantiate::pkg.Package
-                              (name (basename dir))
+             (with-access::PackageVersion (car versions) (note)
+                (let* ((name (basename dir))
+                       (pkg (instantiate::Package
+                              (name name)
                               (description note)
                               (versions versions))))
-                   (hashtable-add! db.packages name pkg)))
+                   (hashtable-put! db.packages name pkg)))
              (utils.error "db init" "Empty package directory" dir))))
    
    (for-each add-package (filter directory? (directory->path-list url)))

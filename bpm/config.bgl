@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:38:54 2026                          */
-;*    Last change :  Tue Sep 29 08:10:05 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 07:00:28 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm configuration                                                */
@@ -14,7 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module config
    (export parse-cmdline name verbose? verbose-level verbose-level-set!
-      show repository rc-directory tmp-directory
+      show repository rc-directory rc-directory-set! tmp-directory
       database-filename))
 
 ;*---------------------------------------------------------------------*/
@@ -22,10 +22,13 @@
 ;*---------------------------------------------------------------------*/
 (define (parse-cmdline cmdline::pair)
    (args-parse (cdr cmdline)
+      (()
+       (when (null? (cdr cmdline))
+          (lambda () (args-parse-usafe #f))))
       (("show" (help "Show configuration"))
-       (list show))
+       show)
       (else
-       (list args-parse-usage #f))))
+       (lambda () (args-parse-usage #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    name ...                                                         */
@@ -77,6 +80,12 @@
 (define rc-directory
    (or (getenv "BPM_RC_DIRECTORY")
        (make-file-path (getenv "HOME") ".config" "bpm")))
+
+;*---------------------------------------------------------------------*/
+;*    rc-directory-set! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (rc-directory-set! v)
+   (set! rc-directory v))
 
 ;*---------------------------------------------------------------------*/
 ;*    tmp-directory ...                                                */

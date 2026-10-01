@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Tue Sep 29 07:31:50 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 07:00:42 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -32,9 +32,8 @@
 ;*    parse-cmdline ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (parse-cmdline cmdline)
-   (let ((action '())
+   (let ((action #f)
          (force #f)
-         (usage-action #f)
          (help #f))
 
       (bind-exit (break)
@@ -43,7 +42,7 @@
             ;; common options
             (section "Common options")
             ((("-h" "--help") (help "This message (use -v -h for long help)"))
-             (set! usage-action args-parse-usage)
+             (set! action args-parse-usage)
              (set! help #t))
             (("-v?<level>" (help "Increase/set verbosity level (-v0 silence)"))
              (if (string=? <level> "")
@@ -54,18 +53,18 @@
             (("--force" (help "Force execution action"))
              (set! force #t))
             (("--rc-dir" ?dir (help "Uses an alternate RC directory (see \"BMP_RC_DIRECTORY\")"))
-             (config.set-rc-directory dir))
+             (config.rc-directory-set! dir))
             
             ;; sub commands
             (section "Sub commands")
             (("config" (help "config commands"))
-             (set! action (config.parse-config (cddr cmdline)))
+             (set! action (config.parse-cmdline (cdr cmdline)))
              (break #t))
             (("db" (help "database commands"))
-             (set! action (db.parse-cmdline (cddr cmdline)))
+             (set! action (db.parse-cmdline (cdr cmdline)))
              (break #t))
             (("pkg" (help "package commands"))
-             (set! action (parse-pkg-cmdline (cddr cmdline)))
+             (set! action (parse-pkg-cmdline (cdr cmdline)))
              (break #t))
             (("proj" (help "project commands"))
              (set! action (proj.parse-cmdline (cdr cmdline) force))
@@ -74,9 +73,7 @@
             (else
              (usage args-parse-usage))))
 
-      (if (and (not action) usage-action)
-          (lambda () (usage usage-action))
-          action)))
+      action))
 
 ;*---------------------------------------------------------------------*/
 ;*    usage ...                                                        */

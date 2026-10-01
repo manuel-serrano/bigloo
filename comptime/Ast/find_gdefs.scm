@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/find_gdefs.scm     */
+;*    .../prgm/project/bigloo/5.0.x/comptime/Ast/find_gdefs.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 11:21:26 1996                          */
-;*    Last change :  Mon Oct 20 14:33:03 2025 (serrano)                */
+;*    Last change :  Thu Oct  1 07:28:00 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which travers an entire        */
 ;*    unit in order to find the global declared variable and their     */
@@ -327,7 +327,8 @@
 (define (push-args expr0 list loc)
    (let loop ((expr  expr0)
 	      (list  list)
-	      (dsssl #f))
+	      (dsssl #f)
+              (loc loc))
       (cond
 	 ((null? expr)
 	  list)
@@ -346,7 +347,7 @@
 	 ((not (symbol? (car expr)))
 	  (cond
 	     ((dsssl-named-constant? (car expr))
-	      (loop (cdr expr) list #t))
+	      (loop (cdr expr) list #t (or (find-location (cdr expr)) loc)))
 	     ((not dsssl)
 	      (user-error/location (or (find-location expr) loc) 'lambda
 		 "Illegal formal parameter, symbol expected"
@@ -355,7 +356,8 @@
 	      (loop (cdr expr)
 		 (cons (id-of-id (dsssl-default-formal (car expr)) loc)
 		    list)
-		 #t))
+		 #t
+                 (or (find-location (cdr expr)) loc)))
 	     (else
 	      (user-error/location (or (find-location expr) loc) 'lambda
 		 "Illegal formal parameter, symbol or named constant expected"
@@ -363,5 +365,6 @@
 	 (else
 	  (loop (cdr expr)
 	     (cons (id-of-id (car expr) loc) list)
-	     dsssl)))))
+	     dsssl
+             (or (find-location (cdr expr)) loc))))))
 
