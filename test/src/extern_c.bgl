@@ -50,34 +50,34 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
-(define-test binary-macro (PLUS 1 3) :expected 4)   
-(define-test cnst-macro CNST :expected 1234)
-(define-test infix-macro (PLUS_OP 142 328) :expected 470)
+(define-test binary-macro (PLUS 1 3) :result 4)   
+(define-test cnst-macro CNST :result 1234)
+(define-test infix-macro (PLUS_OP 142 328) :result 470)
 
-(define-test function (strtod "3.14" $0L) :eq ~equal? :expected 3.14)
+(define-test function (strtod "3.14" $0L) :eq ~equal? :result 3.14)
 
-(define-test type ($any->obj ($obj->any (cons 1 2))) :expected '(1 . 2))
+(define-test type ($any->obj ($obj->any (cons 1 2))) :result '(1 . 2))
 
-(define-test variable count :expected 10)
-(define-test variable (begin (set! count 20) count) :expected 20)
+(define-test variable count :result 10)
+(define-test variable (begin (set! count 20) count) :result 20)
 
-(define-test cigloo ($inc $init) :expected 0)
+(define-test cigloo ($inc $init) :result 0)
 
 (define-test pragma
    (pragma::long "$1 + 10" 14)
-   :expected 24)
+   :result 24)
 
 (define-test pragma
    (pragma::bint "BINT($1 + 10)" 14)
-   :expected 24)
+   :result 24)
 
 (define-test free-pragma
    (free-pragma::bint "BINT($1 + 10)" 14)
-   :expected 24)
+   :result 24)
 
 (define-test pragma-id
    (let ((x/y::obj 3))
       (pragma "$1 = BINT(24)" (pragma x/y))
       x/y)
-   :expected 24)
+   :result 24)
 

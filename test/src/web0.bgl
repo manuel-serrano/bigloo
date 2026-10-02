@@ -35,13 +35,13 @@
    (call-with-input-string "[{\"a\": 1, \"b\": [1, 2]}, false, null]"
       read-json)
    :cond-expand (library web)
-   :expected '#((("a" . 1) ("b" . #(1 2))) #f ()))
+   :result '#((("a" . 1) ("b" . #(1 2))) #f ()))
 
 (define-test read-json
    (call-with-input-string "[{\"a\": 1, \"b\": [1, 2]}, false, null]"
       (lambda (ip) (read-json ip :symbol #t)))
    :cond-expand (library web)
-   :expected '#(((a . 1) (b . #(1 2))) #f ()))
+   :result '#(((a . 1) (b . #(1 2))) #f ()))
 
 (define-test obj->json
    (call-with-output-string
@@ -49,17 +49,17 @@
          (obj->json '#((("a" . 1) ("b" . #(1 2))) #f ()) op
             (lambda (obj op proc) #f))))
    :cond-expand (library web)
-   :expected "[{\"a\":1,\"b\":[1,2]},false,null]")
+   :result "[{\"a\":1,\"b\":[1,2]},false,null]")
 
 (define-test json-stringify
    (json-stringify '#((("a" . 1) ("b" . #(1 2))) #f ()))
    :cond-expand (library web)
-   :expected "[{\"a\":1,\"b\":[1,2]},false,null]")
+   :result "[{\"a\":1,\"b\":[1,2]},false,null]")
 
 (define-test json-stringify
    (json-stringify '#(((a . 1) (b . #(1 2))) #f ()))
    :cond-expand (library web)
-   :expected "[{\"a\":1,\"b\":[1,2]},false,null]")
+   :result "[{\"a\":1,\"b\":[1,2]},false,null]")
 
 ;*---------------------------------------------------------------------*/
 ;*    xml                                                              */
@@ -67,7 +67,7 @@
 (define-test XmlElement
    XmlElement
    :cond-expand (library web)
-   :expected class?)
+   :result class?)
 
 (define-test xml-element
    (isa? (xml-element 'div '() '()) XmlElement)
@@ -80,7 +80,7 @@
 (define-test xml-element-children
    (length (xml-element-children (xml-element 'div '() (list "foo" "bar"))))
    :cond-expand (library web)
-   :expected 2)
+   :result 2)
 
 ;*---------------------------------------------------------------------*/
 ;*    html                                                             */
@@ -94,7 +94,7 @@
       (xml-element-children
          (car
             (call-with-input-string "<tr><td>1</td><td>2</td></tr>" html-parse))))
-   :expected 2)
+   :result 2)
 
 (define-test write-html
    (pregexp-replace* "\n"
@@ -107,4 +107,4 @@
                      html-parse))
                op)))
       "")
-   :expected "<div class=\"C\"><span>bar</span></div>")
+   :result "<div class=\"C\"><span>bar</span></div>")

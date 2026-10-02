@@ -36,14 +36,14 @@
       (sqlite #t)
       (sqltiny #t)
       (else #f))
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
 (define-test %sqlite
    %sqlite
-   :expected class?)
+   :result class?)
 
 (define-test sqltiny
    (isa? (instantiate::sqltiny) sqltiny))
@@ -67,32 +67,32 @@
       (sqlite-exec db "INSERT INTO table1 VALUES(~a, ~a)" 1 4)
       (sqlite-close db))
    :cond-expand sqlite
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test close
    (let ((db (instantiate::sqltiny)))
       (sqlite-close db))
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test sqlite-format
    (sqlite-format "~a" "foo'bar")
-   :expected "foo'bar")
+   :result "foo'bar")
 
 (define-test sqlite-format
    (sqlite-format "~q" "foo'bar")
-   :expected "'foo''bar'")
+   :result "'foo''bar'")
 
 (define-test sqlite-format
    (sqlite-format "~a" '("foo'bar" "foo"))
-   :expected "(foo'bar foo)")
+   :result "(foo'bar foo)")
 
 (define-test sqlite-format 
    (sqlite-format "~k" '("foo'bar" "foo"))
-   :expected "'foo''bar','foo'")
+   :result "'foo''bar','foo'")
 
 (define-test sqlite-format
    (sqlite-format "~l" '("foo'bar" "foo"))
-   :expected "foo'bar,foo")
+   :result "foo'bar,foo")
 
 (define-test sqltiny-exec
    (let ((db (instantiate::sqltiny)))
@@ -101,7 +101,7 @@
                    (sqlite-exec db  "INSERT INTO foo VALUES(~A, ~A)" x (* x x)))
          (iota 5 2))
       (sqlite-exec db "SELECT * FROM foo"))
-   :expected "2")
+   :result "2")
 
 (define-test sqlite-exec
    (let ((db (instantiate::sqlite)))
@@ -111,7 +111,7 @@
          (iota 5 2))
       (sqlite-exec db "SELECT * FROM foo"))
    :cond-expand sqlite
-   :expected "2")
+   :result "2")
 
 '(define-test sqltiny-eval
    (let ((db (instantiate::sqltiny)))
@@ -126,7 +126,7 @@
 	 "select MAX(k1)
            from assoc1
            where k1 < (select MIN(v2) from assoc2 where k2 > k1)"))
-   :expected "9")
+   :result "9")
 
 (define-test sqlite-eval
    (let ((db (instantiate::sqlite)))
@@ -140,7 +140,7 @@
             (lambda (x) x)
 	 "select MAX(k1) from assoc1 where k1 < (select MIN(v2) from assoc2 where k2 > k1)"))
    :cond-expand sqlite
-   :expected "9")
+   :result "9")
 
 '(define-test sqltiny-get
    (let ((db (instantiate::sqltiny)))
@@ -152,7 +152,7 @@
 	    (loop (-fx i 1))))
       (sqlite-get db cons
 	 "select MAX(k1) from assoc1 where k1 < (select MIN(v2) from assoc2 where k2 > k1)"))
-   :expected "9")
+   :result "9")
 
 (define-test sqlite-get
    (let ((db (instantiate::sqlite)))
@@ -165,7 +165,7 @@
       (sqlite-get db cons
 	 "select MAX(k1) from assoc1 where k1 < (select MIN(v2) from assoc2 where k2 > k1)"))
    :cond-expand sqlite
-   :expected '(#("MAX(k1)") . #("9")))
+   :result '(#("MAX(k1)") . #("9")))
 
 (define-test sqltiny-get
    (let ((db (instantiate::sqltiny)))
@@ -176,7 +176,7 @@
 	    (loop (-fx i 1))))
       (sqlite-get db cons
 	 "select y from foo where x > 4"))
-   :expected '(#("y") . #("11")))
+   :result '(#("y") . #("11")))
 
 (define-test sqlite-get
    (let ((db (instantiate::sqlite)))
@@ -188,7 +188,7 @@
       (sqlite-get db cons
 	 "select y from foo where x > 4"))
    :cond-expand sqlite
-   :expected '(#("y") . #("11")))
+   :result '(#("y") . #("11")))
 
 (define-test sqltiny-for-each
    (let ((db (instantiate::sqltiny))
@@ -201,7 +201,7 @@
          (lambda (keys vals) (set! res (cons keys vals)))
          "SELECT * FROM foo")
       res)
-   :expected '(#("x" "y") . #("9" "81")))
+   :result '(#("x" "y") . #("9" "81")))
 
 (define-test sqlite-for-each
    (let ((db (instantiate::sqlite))
@@ -215,7 +215,7 @@
          "SELECT * FROM foo")
       res)
    :cond-expand sqlite
-   :expected '(#("x" "y") . #("9" "81")))
+   :result '(#("x" "y") . #("9" "81")))
 
 (define-test sqlite-map
    (let ((db (instantiate::sqltiny)))
@@ -226,7 +226,7 @@
       (sqlite-map db 
             (lambda (s1 s2) (+ (string->integer s1) (string->integer s2))) 
          "SELECT * FROM foo"))
-   :expected '(0 2 6 12 20 30 42 56 72 90))
+   :result '(0 2 6 12 20 30 42 56 72 90))
 
 (define-test sqltiny-map
    (let ((db (instantiate::sqltiny)))
@@ -237,7 +237,7 @@
       (sqlite-map db 
             vector 
          "SELECT * FROM foo"))
-   :expected '(#("0" "0")
+   :result '(#("0" "0")
                #("1" "1")
                #("2" "4")
                #("3" "9")
@@ -258,7 +258,7 @@
             vector 
          "SELECT * FROM foo"))
    :cond-expand sqlite
-   :expected '(#("0" "0")
+   :result '(#("0" "0")
                #("1" "1")
                #("2" "4")
                #("3" "9")
@@ -274,7 +274,7 @@
       (sqlite-exec db "create table foo (x INTEGER, y INTEGER)")
       (sqlite-exec db "create table bar (x INTEGER, y INTEGER, z INTEGER)")
       (sqlite-name-of-tables db))
-   :expected '("foo" "bar"))
+   :result '("foo" "bar"))
 
 (define-test sqlite-name-of-tables
    (let ((db (instantiate::sqlite)))
@@ -282,7 +282,7 @@
       (sqlite-exec db "create table bar (x INTEGER, y INTEGER, z INTEGER)")
       (sqlite-name-of-tables db))
    :cond-expand sqlite
-   :expected '("foo" "bar"))
+   :result '("foo" "bar"))
 
 (define-test sqltiny-name-of-tables
    (let ((db (instantiate::sqltiny)))
@@ -290,7 +290,7 @@
       (sqlite-exec db "create table bar (x INTEGER, y INTEGER, z INTEGER)")
       (sqlite-map db (lambda (x) x)
          "SELECT name FROM sqlite_master WHERE type='table'"))
-   :expected '("foo" "bar"))
+   :result '("foo" "bar"))
 
 (define-test sqlite-name-of-tables
    (let ((db (instantiate::sqlite)))
@@ -299,14 +299,14 @@
       (sqlite-map db (lambda (x) x)
          "SELECT name FROM sqlite_master WHERE type='table'"))
    :cond-expand sqlite
-   :expected '("foo" "bar"))
+   :result '("foo" "bar"))
 
 (define-test sqltiny-table-name-of-columns
    (let ((db (instantiate::sqltiny)))
       (sqlite-exec db "create table foo (x INTEGER, y INTEGER)")
       (sqlite-exec db "create table bar (x INTEGER, y INTEGER, z INTEGER)")
       (sqlite-table-name-of-columns db "bar"))
-   :expected '("x" "y" "z"))
+   :result '("x" "y" "z"))
 
 (define-test sqlite-table-name-of-columns
    (let ((db (instantiate::sqlite)))
@@ -314,7 +314,7 @@
       (sqlite-exec db "create table bar (x INTEGER, y INTEGER, z INTEGER)")
       (sqlite-table-name-of-columns db "bar"))
    :cond-expand sqlite
-   :expected '("x" "y" "z"))
+   :result '("x" "y" "z"))
 
 (define-test sqlite-last-insert-rowid
    (let ((db (instantiate::sqltiny)))
@@ -323,7 +323,7 @@
                    (sqlite-exec db "insert into foo values(~A, ~A)" x (* x x)))
          (iota 8))
       (sqlite-last-insert-rowid db))
-   :expected "8")
+   :result "8")
 
 (define-test sqlite-last-insert-rowid
    (let ((db (instantiate::sqlite)))
@@ -337,7 +337,7 @@
          (iota 4))
       (sqlite-last-insert-rowid db))
    :cond-expand sqlite
-   :expected "4")
+   :result "4")
 
 (define-test sqlite-last-insert-rowid
    (let ((db (instantiate::sqltiny)))
@@ -346,7 +346,7 @@
                    (sqlite-exec db "insert into foo values(~A, ~A)" x (* x x)))
          (iota 8))
       (sqlite-exec db "SELECT last_insert_rowid()"))
-   :expected "8")
+   :result "8")
 
 (define-test sqlite-last-insert-rowid
    (let ((db (instantiate::sqlite)))
@@ -360,7 +360,7 @@
          (iota 4))
       (sqlite-exec db "SELECT last_insert_rowid()"))
    :cond-expand sqlite
-   :expected "4")
+   :result "4")
 
 (define-test insert
    (let ((db (instantiate::sqltiny)))
@@ -370,7 +370,7 @@
                        insert into foo (f1,f2) values ('foo4','foo3');
                        insert into bar values ('bar1','bar2','bar3');")
       (sqlite-map db list "select * from bar"))
-   :expected '(("bar1" "bar2" "bar3")))
+   :result '(("bar1" "bar2" "bar3")))
 
 (define-test insert
    (let ((db (instantiate::sqlite)))
@@ -381,7 +381,7 @@
                        insert into bar values ('bar1','bar2','bar3');")
       (sqlite-map db list "select * from bar"))
    :cond-expand sqlite
-   :expected '(("bar1" "bar2" "bar3")))
+   :result '(("bar1" "bar2" "bar3")))
 
 (define-test insert
    (let ((db (instantiate::sqltiny)))
@@ -391,7 +391,7 @@
                        insert into foo (f1,f2) values ('foo4','foo3');
                        insert into bar values ('bar1','bar2','bar3');")
       (sqlite-map db list "select * from foo,bar"))
-   :expected '(("foo3" "foo4" "bar1" "bar2" "bar3")))
+   :result '(("foo3" "foo4" "bar1" "bar2" "bar3")))
 
 (define-test insert
    (let ((db (instantiate::sqlite)))
@@ -402,7 +402,7 @@
                        insert into bar values ('bar1','bar2','bar3');")
       (sqlite-map db list "select * from foo,bar"))
    :cond-expand sqlite
-   :expected '(("foo3" "foo4" "bar1" "bar2" "bar3")))
+   :result '(("foo3" "foo4" "bar1" "bar2" "bar3")))
 
 ;*---------------------------------------------------------------------*/
 ;*    *db* ...                                                         */
@@ -436,7 +436,7 @@
 (define-test select
    (sqlite-map  *db* vector "SELECT * FROM gee")
    :cond-expand sqlite
-   :expected '(#("0" "0")
+   :result '(#("0" "0")
                #("1" "1")
                #("2" "4")
                #("3" "9")
@@ -453,7 +453,7 @@
 (define-test select
    (sqlite-map *db* vector "SELECT y,x FROM gee WHERE y > 50")
    :cond-expand sqlite
-   :expected '(#("64" "8") #("81" "9")))
+   :result '(#("64" "8") #("81" "9")))
 
 ;*---------------------------------------------------------------------*/
 ;*    create.2                                                         */
@@ -510,62 +510,62 @@
 (define-test select
    (sqlite-map *db* list "select * from foo")
    :cond-expand sqlite
-   :expected '(("foo2" "foo1") ("foo3" "foo4")))
+   :result '(("foo2" "foo1") ("foo3" "foo4")))
 
 (define-test select
    (sqlite-map *db* list "select * from foo where (f1=f2)")
    :cond-expand sqlite
-   :expected '())
+   :result '())
 
 (define-test select
    (sqlite-map *db* list "select l1,l2 from lee where (l1=1) || (l1=2)")
    :cond-expand sqlite
-   :expected '(("1" "2") ("1" "2") ("2" "3") ("2" "4")))
+   :result '(("1" "2") ("1" "2") ("2" "3") ("2" "4")))
 
 (define-test select
    (sqlite-map *db* list "select l1,l2 from lee where (l1=3) or (l2>=5)")
    :cond-expand sqlite
-   :expected '(("3" "4") ("4" "5") ("4" "6")))
+   :result '(("3" "4") ("4" "5") ("4" "6")))
 
 (define-test select
    (sqlite-map *db* list "select l1,l2 from lee where (l1=4) and (l2>=5)")
    :cond-expand sqlite
-   :expected '(("4" "5") ("4" "6")))
+   :result '(("4" "5") ("4" "6")))
 
 (define-test select
    (sqlite-map *db* list "select l1,l2 from lee where (l1=4) and (l2<2)")
    :cond-expand sqlite
-   :expected '())
+   :result '())
 
 (define-test select
    (sqlite-map *db* list "select * from foo where (f1<f2)")
    :cond-expand sqlite
-   :expected '(("foo2" "foo1")))
+   :result '(("foo2" "foo1")))
 
 (define-test select
    (sqlite-map *db* list "select * from foo where (foo.f1<foo.f2)")
    :cond-expand sqlite
-   :expected '(("foo2" "foo1")))
+   :result '(("foo2" "foo1")))
 
 (define-test select
    (sqlite-map *db* list "select f1 from foo")
    :cond-expand sqlite
-   :expected '(("foo1") ("foo4")))
+   :result '(("foo1") ("foo4")))
 
 (define-test select
    (sqlite-map *db* list "select f2 from foo")
    :cond-expand sqlite
-   :expected '(("foo2") ("foo3")))
+   :result '(("foo2") ("foo3")))
 
 (define-test select
    (sqlite-map *db* list "select f1,f2 from foo")
    :cond-expand sqlite
-   :expected '(("foo1" "foo2") ("foo4" "foo3")))
+   :result '(("foo1" "foo2") ("foo4" "foo3")))
 
 (define-test select
    (sqlite-map *db* list "select * from foo,bar")
    :cond-expand sqlite
-   :expected '(("foo2" "foo1" "bar1" "bar2" "bar3")
+   :result '(("foo2" "foo1" "bar1" "bar2" "bar3")
                ("foo2" "foo1" "bar4" "bar6" "bar5")
                ("foo3" "foo4" "bar1" "bar2" "bar3")
                ("foo3" "foo4" "bar4" "bar6" "bar5")))
@@ -573,7 +573,7 @@
 (define-test select
    (sqlite-map *db* list "select f1 from foo,bar ORDER BY f1")
    :cond-expand sqlite
-   :expected '(("foo1")
+   :result '(("foo1")
                ("foo1")
                ("foo4")
                ("foo4")))
@@ -581,7 +581,7 @@
 (define-test select
    (sqlite-map *db* list "select b1 from foo,bar ORDER BY b1")
    :cond-expand sqlite
-   :expected '(("bar1")
+   :result '(("bar1")
                ("bar1")
                ("bar4")
                ("bar4")))
@@ -589,7 +589,7 @@
 (define-test select
    (sqlite-map *db* list "select h1 from hux where h2 in (10,11)")
    :cond-expand sqlite
-   :expected '(("hux10")
+   :result '(("hux10")
                ("hux11")))
 
 ;*---------------------------------------------------------------------*/
@@ -598,12 +598,12 @@
 (define-test distinct
    (sqlite-map *db* list "select DISTINCT b1 from foo,bar")
    :cond-expand sqlite
-   :expected '(("bar1") ("bar4")))
+   :result '(("bar1") ("bar4")))
 
 (define-test distinct
    (sqlite-map *db* list "select DISTINCT l1 from lee")
    :cond-expand sqlite
-   :expected '(("1") ("2") ("3") ("4")))
+   :result '(("1") ("2") ("3") ("4")))
 
 ;*---------------------------------------------------------------------*/
 ;*    join                                                             */
@@ -613,19 +613,19 @@
                             from lee l1, lee l2
                            where (l1.l1=l2.l2) and (l1.l2=3)")
    :cond-expand sqlite
-   :expected '(("2" "3" "0") ("2" "3" "0")))
+   :result '(("2" "3" "0") ("2" "3" "0")))
 
 (define-test join
    (sqlite-map *db* list "select DISTINCT l1.*
                             from lee l1, lee l2
                            where (l1.l1=l2.l2) and (l1.l2=3)")
    :cond-expand sqlite
-   :expected '(("2" "3" "0")))
+   :result '(("2" "3" "0")))
 
 (define-test join
    (sqlite-map *db* list "select h1, l2 from hux, lee where (h2=l1)")
    :cond-expand sqlite
-   :expected '(("hux14" "2") ("hux14" "2") ("hux15" "3") ("hux15" "4")))
+   :result '(("hux14" "2") ("hux14" "2") ("hux15" "3") ("hux15" "4")))
 
 ;*---------------------------------------------------------------------*/
 ;*    like                                                             */
@@ -633,12 +633,12 @@
 (define-test like
    (sqlite-map *db* list "select DISTINCT h2 from hux where h1 like 'hux%' ORDER BY h2")
    :cond-expand sqlite
-   :expected '(("1") ("2") ("10") ("11") ("12")))
+   :result '(("1") ("2") ("10") ("11") ("12")))
 
 (define-test like
    (sqlite-map *db* list "select DISTINCT h2 from hux where h1 like 'hux1_' ORDER BY h2")
    :cond-expand sqlite
-   :expected '(("1") ("2") ("10") ("11") ("12")))
+   :result '(("1") ("2") ("10") ("11") ("12")))
 
 ;*---------------------------------------------------------------------*/
 ;*    subqueries                                                       */
@@ -660,7 +660,7 @@
                                       from tb
                                       where tb1>=ta2);")
    :cond-expand sqlite
-   :expected '(("1" "2")))
+   :result '(("1" "2")))
 
 (define-test subquery
    (sqlite-map *db* list "select h1
@@ -669,7 +669,7 @@
                                         from lee l2
                                         where l2.l2=h2)")
    :cond-expand sqlite
-   :expected '(("hux15")))
+   :result '(("hux15")))
 
 (define-test subquery
    (sqlite-map *db* list "select *
@@ -678,7 +678,7 @@
                                          from tb
                                          where tb1>3);")
    :cond-expand sqlite
-   :expected '(("1" "2")))
+   :result '(("1" "2")))
 
 (define-test subquery
    (sqlite-map *db* list "select *
@@ -687,7 +687,7 @@
                                              from tb
                                              where ta2<tb1);")
    :cond-expand sqlite
-   :expected '(("3" "5")))
+   :result '(("3" "5")))
 
 (define-test subquery
    (sqlite-map *db* list "select *
@@ -696,7 +696,7 @@
                                        from ta
                                        where ta1.ta2 = ta2)")
    :cond-expand sqlite
-   :expected '(("1" "2")))
+   :result '(("1" "2")))
 
 (define-test subquery
    (let ((db (instantiate::sqlite)))
@@ -714,7 +714,7 @@
            from assoc1
            where k1 < (select MIN(v2) from assoc2 where k2 > k1)"))
    :cond-expand sqlite
-   :expected "9")
+   :result "9")
 
 ;*---------------------------------------------------------------------*/
 ;*    null                                                             */
@@ -722,12 +722,12 @@
 (define-test isnull
    (sqlite-map *db* list "select m1 from mee where m2 ISNULL")
    :cond-expand sqlite
-   :expected '(("1")))
+   :result '(("1")))
 
 (define-test notnull
    (sqlite-map *db* list "select m1 from mee where m2 NOTNULL")
    :cond-expand sqlite
-   :expected '(("2")))
+   :result '(("2")))
 
 ;*---------------------------------------------------------------------*/
 ;*    order-by                                                         */
@@ -735,7 +735,7 @@
 (define-test order-by
    (sqlite-map *db* list "select b2 from foo,bar ORDER BY b2 ASC")
    :cond-expand sqlite
-   :expected '(("bar2")
+   :result '(("bar2")
 	     ("bar2")
 	     ("bar6")
 	     ("bar6")))
@@ -743,7 +743,7 @@
 (define-test order-by
    (sqlite-map *db* list "select b2 from foo,bar ORDER BY b2 DESC")
    :cond-expand sqlite
-   :expected '(("bar6")
+   :result '(("bar6")
 	     ("bar6")
 	     ("bar2")
 	     ("bar2")))
@@ -751,44 +751,44 @@
 (define-test order-by.3
    (sqlite-map *db* list "select b2 from foo,bar ORDER BY b2 DESC LIMIT 2")
    :cond-expand sqlite
-   :expected '(("bar6")
+   :result '(("bar6")
 	     ("bar6")))
 
 (define-test order-by
    (sqlite-map *db* list "select b2 from foo,bar ORDER BY b2 DESC LIMIT 2,2")
    :cond-expand sqlite
-   :expected '(("bar2")
+   :result '(("bar2")
 	     ("bar2")))
 
 (define-test order-by
    (sqlite-map *db* list "select l3 from lee WHERE l1=1 ORDER BY l1,l2,l3 DESC")
    :cond-expand sqlite
-   :expected '(("1") ("0")))
+   :result '(("1") ("0")))
 
 (define-test order-by
    (sqlite-map *db* list "select l3 from lee WHERE l1=1 ORDER BY l1,l2,l3 ASC")
    :cond-expand sqlite
-   :expected '(("0") ("1")))
+   :result '(("0") ("1")))
 
 (define-test order-by
    (sqlite-map *db* list "select l1, l3 from lee WHERE l1<3 ORDER BY l1 ASC,l2,l3 DESC")
    :cond-expand sqlite
-   :expected '(("1" "1") ("1" "0") ("2" "0") ("2" "0")))
+   :result '(("1" "1") ("1" "0") ("2" "0") ("2" "0")))
 
 (define-test order-by
    (sqlite-map *db* list "select l1,l2,l3 from lee WHERE l1<3 ORDER BY l1 DESC,l2,l3 ASC")
    :cond-expand sqlite
-   :expected '(("2" "3" "0") ("2" "4" "0") ("1" "2" "0") ("1" "2" "1")))
+   :result '(("2" "3" "0") ("2" "4" "0") ("1" "2" "0") ("1" "2" "1")))
 
 (define-test order-by
    (sqlite-map *db* list "select l1,l2,l3 from lee WHERE l1=4 ORDER BY l1 ASC,l2 DESC,l3 ASC")
    :cond-expand sqlite
-   :expected '(("4" "6" "7") ("4" "5" "8")))
+   :result '(("4" "6" "7") ("4" "5" "8")))
 
 (define-test order-by
    (sqlite-map *db* list "select ALL b1 from foo,bar order BY b1")
    :cond-expand sqlite
-   :expected '(("bar1")
+   :result '(("bar1")
 	     ("bar1")
 	     ("bar4")
 	     ("bar4")))
@@ -799,32 +799,32 @@
 (define-test group-by
    (sqlite-map *db* list "select MIN(h1) from hux GROUP BY h2 ORDER BY h1")
    :cond-expand sqlite
-   :expected '(("hux10") ("hux11") ("hux12") ("hux14") ("hux15")))
+   :result '(("hux10") ("hux11") ("hux12") ("hux14") ("hux15")))
 
 (define-test group-by
    (sqlite-map *db* list "select MIN(l2) from lee group by l1")
    :cond-expand sqlite
-   :expected '(("2") ("3") ("4") ("5")))
+   :result '(("2") ("3") ("4") ("5")))
 
 (define-test group-by
    (sqlite-map *db* list "select MAX(l2) from lee group by l1")
    :cond-expand sqlite
-   :expected '(("2") ("4") ("4") ("6")))
+   :result '(("2") ("4") ("4") ("6")))
 
 (define-test group-by
    (sqlite-map *db* list "select MAX(l3) from lee group by l1,l2")
    :cond-expand sqlite
-   :expected '(("1") ("0") ("0") ("0") ("8") ("7")))
+   :result '(("1") ("0") ("0") ("0") ("8") ("7")))
 
 (define-test group-by
    (sqlite-map *db* list "select MIN(l3) from lee group by l1,l2")
    :cond-expand sqlite
-   :expected '(("0") ("0") ("0") ("0") ("8") ("7")))
+   :result '(("0") ("0") ("0") ("0") ("8") ("7")))
 
 (define-test group-by
    (sqlite-map *db* list "select l1 from lee group by l1")
    :cond-expand sqlite
-   :expected '(("1") ("2") ("3") ("4")))
+   :result '(("1") ("2") ("3") ("4")))
 
 ;*---------------------------------------------------------------------*/
 ;*    replace ...                                                      */
@@ -836,7 +836,7 @@
        REPLACE INTO foo (f1,f2) values ('foo1', 'foo1-2');
        SELECT f2 from foo WHERE (f1='foo1')")
    :cond-expand sqlite
-   :expected '("foo1-2"))
+   :result '("foo1-2"))
 
 (define-test replace
    (sqlite-map *db*
@@ -844,14 +844,14 @@
       "REPLACE INTO foo (f1,f2) values ('foo4', 'foo4-3');
        SELECT f2 from foo WHERE (f1='foo4')")
    :cond-expand sqlite
-   :expected '("foo4-3"))
+   :result '("foo4-3"))
 
 (define-test replace
    (sqlite-map *db*
       (lambda (x) x)
       "SELECT f2 from foo WHERE (f1='foo1')")
    :cond-expand sqlite
-   :expected '("foo1-2"))
+   :result '("foo1-2"))
 
 (define-test replace
    (sqlite-map *db*
@@ -860,7 +860,7 @@
        VACUUM;
        SELECT f2 from foo WHERE (f1='foo5')")
    :cond-expand sqlite
-   :expected '("foo5-4"))
+   :result '("foo5-4"))
 
 ;*---------------------------------------------------------------------*/
 ;*    update                                                           */
@@ -871,7 +871,7 @@
       "UPDATE foo SET f2 ='new-foo5-4' WHERE (f1='foo5');
        SELECT f2 from foo WHERE (f1='foo5')")
    :cond-expand sqlite
-   :expected '("new-foo5-4"))
+   :result '("new-foo5-4"))
 
 ;*---------------------------------------------------------------------*/
 ;*    number-of-rows                                                   */
@@ -879,12 +879,12 @@
 (define-test sqlite-table-number-of-rows
    (sqlite-table-number-of-rows *db* "bar")
    :cond-expand sqlite
-   :expected 2)
+   :result 2)
 
 (define-test sqlite-table-number-of-rows
    (sqlite-eval *db* (lambda (x) x) "select MAX(rowid) from bar")
    :cond-expand sqlite
-   :expected "2")
+   :result "2")
 
 ;*---------------------------------------------------------------------*/
 ;*    sqlite-table-name-of-columns                                     */
@@ -892,7 +892,7 @@
 (define-test sqlite-table-name-of-columns
    (sqlite-table-name-of-columns *db* "bar")
    :cond-expand sqlite
-   :expected '("b1" "b2" "b3"))
+   :result '("b1" "b2" "b3"))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqlite-name-of-tables ...                                        */
@@ -900,7 +900,7 @@
 (define-test sqlite-name-of-tables
    (sqlite-name-of-tables *db*)
    :cond-expand sqlite
-   :expected '("gee" "foo" "bar" "hux" "lee" "mee" "ta" "tb"))
+   :result '("gee" "foo" "bar" "hux" "lee" "mee" "ta" "tb"))
 
 (define-test drop-table
    (begin
@@ -908,7 +908,7 @@
       ;(sqlite-exec *db* "DROP TABLE IF EXISTS mee")
       (sqlite-name-of-tables *db*))
    :cond-expand sqlite
-   :expected '("gee" "foo" "bar" "hux" "lee" "ta" "tb"))
+   :result '("gee" "foo" "bar" "hux" "lee" "ta" "tb"))
 
 ;*---------------------------------------------------------------------*/
 ;*    transaction                                                      */
@@ -925,7 +925,7 @@
    (sqlite-exec *db*
       "END TRANSACTION; select f2 from foo where f1='foo6'")
    :cond-expand sqlite
-   :expected "10")
+   :result "10")
 
 (define-test roolback
    (let ((db (instantiate::sqlite)))
@@ -941,7 +941,7 @@
       (sqlite-exec db "ROLLBACK")
       'ok)
    :cond-expand sqlite
-   :expected 'ok)
+   :result 'ok)
 
 ;*---------------------------------------------------------------------*/
 ;*    delete ...                                                       */
@@ -950,19 +950,19 @@
    (sqlite-exec *db* "DELETE FROM foo where (f1='foo1');
                       SELECT * FROM  foo where (f1='foo1')")
    :cond-expand sqlite
-   :expected #f)
+   :result #f)
 
 (define-test delete
    (sqlite-exec *db* "SELECT f2 FROM  foo where (f1='foo4')")
    :cond-expand sqlite
-   :expected "foo4-3")
+   :result "foo4-3")
 
 (define-test delete
    (sqlite-map *db* (lambda (x) x)
 	       "DELETE FROM hux where (h2 >= 12);
                 SELECT h1 FROM  hux where (h2 >= 10)")
    :cond-expand sqlite
-   :expected '("hux10" "hux11"))
+   :result '("hux10" "hux11"))
 
 
 

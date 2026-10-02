@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 16:23:19 2026                          */
-;*    Last change :  Tue Sep 22 06:38:07 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 17:00:28 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Documentation buildler                                           */
@@ -933,11 +933,11 @@
 		
    (for-each (lambda (e)
 		(match-case e
-		   ((define-test ?id ?expr :cond-expand ?- :expected ?val)
+		   ((define-test ?id ?expr :cond-expand ?- :result ?val)
 		    (hashtable-add! tests-table (symbol->string id) (cons expr val)))
-		   ((define-test ?id ?expr :eq ?- :expected ?val)
+		   ((define-test ?id ?expr :eq ?- :result ?val)
 		    (hashtable-add! tests-table (symbol->string id) (cons expr val)))
-		   ((define-test ?id ?expr :expected ?val)
+		   ((define-test ?id ?expr :result ?val)
 		    (hashtable-add! tests-table (symbol->string id) (cons expr val)))
 		   ((define-test ?id ?expr)
 		    (hashtable-add! tests-table (symbol->string id) (cons expr #t)))

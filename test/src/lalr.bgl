@@ -50,7 +50,7 @@
          ((expr@a op-mult expr@b) (* a b))
          ((expr@a op-div expr@b) (/ a b))
          ((op-lparen expr op-rparen) expr)))
-   :expected procedure?)
+   :result procedure?)
 
 (define-test read/lalrp
    (let ((rg (regular-grammar ((number (posix "[0-9]+"))
@@ -86,7 +86,7 @@
       (call-with-input-string "3*2+5-2*5;"
          (lambda (in)
             (read/lalrp lg rg in))))
-   :expected -9)
+   :result -9)
 
 (define-test read/lalrp
    (let ((rg (regular-grammar ((number (posix "[0-9]+"))
@@ -123,5 +123,5 @@
       (call-with-input-string "3*2+5-2*5;"
          (lambda (in)
             (read/lalrp lg rg in))))
-   :expected 1)
+   :result 1)
 

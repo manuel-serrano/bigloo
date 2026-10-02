@@ -60,7 +60,7 @@
       (list (process-alive? proc)
          (process-exit-status proc)
          line))
-   :expected '(#f 1 "68"))
+   :result '(#f 1 "68"))
 
 (define-test output:file
    (let ((temp-filename "process.output.tmp"))
@@ -78,7 +78,7 @@
                      (read-line port)))))
          (if (file-exists? temp-filename)
              (delete-file temp-filename))))
-   :expected '(#f 2 "-68"))
+   :result '(#f 2 "-68"))
 
 (define-test error:pipe
    (let* ((proc (run-process (bigloo-config 'bigloo)
@@ -90,7 +90,7 @@
           (line (read-line proc-error)))
       (close-input-port proc-error)
       (list (process-alive? proc) (process-exit-status proc) line))
-   :expected '(#f 3 "136"))
+   :result '(#f 3 "136"))
 
 (define-test error:file
    (let ((temp-filename "process.error.tmp"))
@@ -108,7 +108,7 @@
                      (read-line port)))))
          (if (file-exists? temp-filename)
              (delete-file temp-filename))))
-   :expected '(#f 4 "-136"))
+   :result '(#f 4 "-136"))
 
 (define-test input:file
    (let ((temp-filename "process.input.tmp"))
@@ -132,7 +132,7 @@
                   line)))
          (if (file-exists? temp-filename)
              (delete-file temp-filename))))
-   :expected '(#f 5 "-204"))
+   :result '(#f 5 "-204"))
 
 (define-test input:pipe
    (let* ((proc (run-process (bigloo-config 'bigloo)
@@ -152,7 +152,7 @@
             (process-exit-status proc)
             line)))
    :cond-expand (or C jvm)
-   :expected '(#f 6 "204"))
+   :result '(#f 6 "204"))
 
 (define-test &io-timeout-error
    (let* ((proc  (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (sleep 4)"
@@ -184,7 +184,7 @@
          (process-exit-status proc)
          line))
    :cond-expand (not (or bigloo-jvm bigloo-wasm))
-   :expected '(#f 7 "bar"))
+   :result '(#f 7 "bar"))
 
 (define-test kill
    (let ((proc (run-process (bigloo-config 'bigloo)
@@ -194,7 +194,7 @@
       (list (process-alive? proc)
          (begin (sleep 500) (process-kill proc) (sleep 500) '-)
          '-))
-   :expected '(#t - -))
+   :result '(#t - -))
 
 (define-test close-process-ports
    (let ((p (run-process (bigloo-config 'bigloo)
@@ -206,7 +206,7 @@
 
 (define-test process-pid
    (process-pid (run-process (bigloo-config 'bigloo) "-eval" "(exit 1)"))
-   :expected integer?)
+   :result integer?)
 
 (define-test process-input-port
    (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"
@@ -216,7 +216,7 @@
          (process-input-port p)
          (process-kill p)))
    :cond-expand (or C jvm)
-   :expected output-port?)
+   :result output-port?)
 
 (define-test process-output-port
    (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"
@@ -226,7 +226,7 @@
          (process-output-port p)
          (process-kill p)))
    :cond-expand (or C jvm)
-   :expected input-port?)
+   :result input-port?)
 
 (define-test process-error-port
    (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"
@@ -237,7 +237,7 @@
          (process-error-port p)
          (process-kill p)))
    :cond-expand (or C jvm)
-   :expected input-port?)
+   :result input-port?)
 
 (define-test process-wait
    (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(exit 0)"
@@ -246,7 +246,7 @@
                input: pipe:)))
       (process-wait p))
    :cond-expand (or C jvm)
-   :expected boolean?)
+   :result boolean?)
 
 (define-test process-exit-status
    (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(exit 4)"
@@ -256,7 +256,7 @@
       (process-wait p)
       (process-exit-status p))
    :cond-expand (or C jvm)
-   :expected 4)
+   :result 4)
 
 (define-test process-send-signal
    (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"
@@ -307,7 +307,7 @@
          (process-list)
          (process-kill p)))
 ;;   :cond-expand (or C jvm)
-   :expected list?)
+   :result list?)
 
 (define-test process-list
    (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(exit 0)"
@@ -315,6 +315,6 @@
                input: pipe:
                wait: #f)))
       (process-list))
-   :expected list?)
+   :result list?)
 
    

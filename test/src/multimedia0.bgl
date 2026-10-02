@@ -34,7 +34,7 @@
 (define-test exif
    exif
    :cond-expand (library multimedia)
-   :expected class?)
+   :result class?)
 
 (define-test jpeg-exif
    (isa? (jpeg-exif "misc/img.jpg") exif)
@@ -44,60 +44,60 @@
    (let ((ex::exif (jpeg-exif "misc/img.jpg")))
       (-> ex comment))
    :cond-expand (library multimedia)
-   :expected "an exif comment")
+   :result "an exif comment")
 
 (define-test jpeg-exif
    (let ((ex::exif (jpeg-exif "misc/img.jpg")))
       (-> ex width))
    :cond-expand (library multimedia)
-   :expected 64)
+   :result 64)
 
 (define-test jpeg-parse-dimensions
    (bind-values (width height)
       (call-with-input-file "misc/img.jpg" jpeg-parse-dimensions)
       (cons width height))
    :cond-expand (library multimedia)
-   :expected '(64 . 64))
+   :result '(64 . 64))
 
 (define-test jpeg-dimensions
    (bind-values (width height)
       (jpeg-dimensions "misc/img.jpg")
       (cons width height))
    :cond-expand (library multimedia)
-   :expected '(64 . 64))
+   :result '(64 . 64))
 
 (define-test make-hex-color
    (make-hex-color 127 255 10)
-   :expected "#7fff0a")
+   :result "#7fff0a")
 
 (define-test parse-hex-color
    (call-with-values (lambda () (parse-hex-color "#7fff0a")) list)
-   :expected '(127 255 10))
+   :result '(127 255 10))
 
 (define-test parse-web-color
    (call-with-values (lambda () (parse-web-color "#7fff0a")) list)
-   :expected '(127 255 10))
+   :result '(127 255 10))
 
 (define-test parse-web-color
    (call-with-values (lambda () (parse-web-color "rgb(234,43,25)")) list)
-   :expected '(234 43 25))
+   :result '(234 43 25))
 
 (define-test parse-web-color
    (call-with-values (lambda () (parse-web-color "rgb(100%,0%,51%)")) list)
-   :expected '(255 0 130))
+   :result '(255 0 130))
 
 (define-test parse-web-color
    (call-with-values (lambda () (parse-web-color "hsl(23,50%,74%)")) list)
-   :expected '(222 181 156))
+   :result '(222 181 156))
 
 (define-test hsv->rgb
    (call-with-values (lambda () (hsv->rgb 34 43 19)) list)
-   :expected '(48 39 27))
+   :result '(48 39 27))
 
 (define-test hsl->rgb
    (call-with-values (lambda () (hsl->rgb 23 50 74)) list)
-   :expected '(222 181 156))
+   :result '(222 181 156))
 
 (define-test rgb->hsl
    (call-with-values (lambda () (rgb->hsl 222 181 156)) list)
-   :expected '(23 50 74))
+   :result '(23 50 74))

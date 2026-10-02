@@ -35,12 +35,12 @@
 (define-test read-csv-record
    (call-with-input-string "dog,cat,horse\npig,cow,squirrel"
       read-csv-record)
-   :expected '("dog" "cat" "horse"))
+   :result '("dog" "cat" "horse"))
 
 (define-test read-csv-records
    (call-with-input-string "dog,cat,horse\npig,cow,squirrel"
       read-csv-records)
-   :expected '(("dog" "cat" "horse") ("pig" "cow" "squirrel")))
+   :result '(("dog" "cat" "horse") ("pig" "cow" "squirrel")))
 
 (define-test csv-for-each
    (let ((rec #f))
@@ -48,31 +48,31 @@
          (lambda (in)
             (csv-for-each (lambda (r) (set! rec r)) in)))
       rec)
-   :expected '("pig" "cow" "squirrel"))
+   :result '("pig" "cow" "squirrel"))
 
 (define-test csv-map
    (let ((rec #f))
       (call-with-input-string "dog,cat,horse\npig,cow,squirrel"
          (lambda (in)
             (csv-map (lambda (r) r) in))))
-   :expected '(("dog" "cat" "horse") ("pig" "cow" "squirrel")))
+   :result '(("dog" "cat" "horse") ("pig" "cow" "squirrel")))
 
 (define-test +csv-lexer+
    (call-with-input-string "dog,cat,horse\npig,cow,squirrel"
       (lambda (in) (read-csv-record in +csv-lexer+)))
-   :expected '("dog" "cat" "horse"))
+   :result '("dog" "cat" "horse"))
 
 (define-test +ssv-lexer+
    (call-with-input-string "dog;cat;horse\npig;cow;squirrel"
       (lambda (in) (read-csv-records in +ssv-lexer+)))
-   :expected '(("dog" "cat" "horse") ("pig" "cow" "squirrel")))
+   :result '(("dog" "cat" "horse") ("pig" "cow" "squirrel")))
 
 (define-test +tsv-lexer+
    (call-with-input-string "dog\tcat\thorse\npig\tcow\tsquirrel"
       (lambda (in) (read-csv-record in +tsv-lexer+)))
-   :expected '("dog" "cat" "horse"))
+   :result '("dog" "cat" "horse"))
 
 (define-test +psv-lexer+
    (call-with-input-string "dog|cat|horse\npig|cow|squirrel"
       (lambda (in) (read-csv-record in +psv-lexer+)))
-   :expected '("dog" "cat" "horse"))
+   :result '("dog" "cat" "horse"))

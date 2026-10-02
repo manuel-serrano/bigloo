@@ -43,7 +43,7 @@
             (unwind-protect
                (read-char in)
                (close-input-port in)))))
-   :expected #\h)
+   :result #\h)
 
 (define-test port->zlib-port
    (call-with-input-string gunzip
@@ -52,7 +52,7 @@
             (unwind-protect
                (read-char in)
                (close-input-port in)))))
-   :expected #\h)
+   :result #\h)
 
 (define-test port->inflate-port
    (call-with-input-string gunzip
@@ -61,11 +61,11 @@
             (unwind-protect
                (read-char in)
                (close-input-port in)))))
-   :expected #\h)
+   :result #\h)
 
 (define-test open-input-inflate-file
    open-input-inflate-file
-   :expected procedure?)
+   :result procedure?)
    
 (define-test gunzip-sendchars
    (call-with-input-string gunzip
@@ -76,7 +76,7 @@
                   (lambda (out)
                      (gunzip-sendchars in out)))
                (close-input-port in)))))
-   :expected "hello world\n")
+   :result "hello world\n")
 
 (define-test inflate-sendchars
    (call-with-input-string gunzip
@@ -87,5 +87,5 @@
                   (lambda (out)
                      (gunzip-sendchars in out)))
                (close-input-port in)))))
-   :expected "hello world\n")
+   :result "hello world\n")
    

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 15:41:34 2026                          */
-;*    Last change :  Fri Oct  2 11:13:35 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 16:47:58 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Package data type and tools                                      */
@@ -34,6 +34,7 @@
    (version::bstring read-only)
    (note::bstring read-only)
    (author::bstring read-only)
+   (homepage::bstring read-only)
    (url::bstring read-only)
    (checksum::bstring read-only)
    (backends::pair-nil read-only)
@@ -54,18 +55,19 @@
 
 (register-class-serialization! PackageVersion
    (lambda (o::PackageVersion)
-      (vector o.version o.note o.author o.url o.checksum o.backends o.bigloo
+      (vector o.version o.note o.author o.homepage o.url o.checksum o.backends o.bigloo
          o.dependencies))
    (lambda (o v)
       (instantiate::PackageVersion
          (version (vector-ref o 0))
          (note (vector-ref o 1))
          (author (vector-ref o 2))
-         (url (vector-ref o 3))
-         (checksum (vector-ref o 4))
-         (backends (vector-ref o 5))
-         (bigloo (vector-ref o 6))
-         (dependencies (vector-ref o 7)))))
+         (homepage (vector-ref o 3))
+         (url (vector-ref o 4))
+         (checksum (vector-ref o 5))
+         (backends (vector-ref o 6))
+         (bigloo (vector-ref o 7))
+         (dependencies (vector-ref o 8)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pp ...                                                           */
@@ -113,6 +115,7 @@
    (instantiate::PackageVersion
       (version (plist-get l version:))
       (note (plist-get l description:))
+      (homepage (plist-get l homepage: ""))
       (author (plist-get l author:))
       (url (plist-get l url:))
       (checksum (plist-get l sha256:))

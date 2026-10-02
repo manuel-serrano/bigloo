@@ -34,193 +34,193 @@
 (define-test integer? (integer? 1.0))
 (define-test integer? (integer? #z1353659392368234))
 (define-test integer? (integer? 1.1)
-   :expected #f)
+   :result #f)
 
 (define-test fixnum? (fixnum? 1))
 (define-test fixnum? (fixnum? #e1)
-   :expected #f)
+   :result #f)
 (define-test fixnum? (fixnum? #l1)
-   :expected #f)
+   :result #f)
 (define-test fixnum? (fixnum? 1.0)
-   :expected #f)
+   :result #f)
 
 (define-test elong? (elong? 1)
-   :expected #f)
+   :result #f)
 (define-test elong? (elong? #e1)
-   :expected #t)
+   :result #t)
 (define-test elong? (elong? 1.0)
-   :expected #f)
+   :result #f)
 
 (define-test llong? (llong? 1)
-   :expected #f)
+   :result #f)
 (define-test llong? (llong? #l1)
-   :expected #t)
+   :result #t)
 (define-test llong? (llong? #e1)
-   :expected #f)
+   :result #f)
 
 (define-test int8? (int8? 1)
-   :expected #f)
+   :result #f)
 (define-test int8? (int8? #s8:1)
-   :expected #t)
+   :result #t)
 (define-test int8? (int8? #u8:1)
-   :expected #f)
+   :result #f)
 
 (define-test uint8? (uint8? 1)
-   :expected #f)
+   :result #f)
 (define-test uint8? (uint8? #u8:1)
-   :expected #t)
+   :result #t)
 (define-test uint8? (uint8? #s8:1)
-   :expected #f)
+   :result #f)
 
 (define-test int16? (int16? 1)
-   :expected #f)
+   :result #f)
 (define-test int16? (int16? #s16:1)
-   :expected #t)
+   :result #t)
 (define-test int16? (int16? #u16:1)
-   :expected #f)
+   :result #f)
 
 (define-test uint16? (uint16? 1)
-   :expected #f)
+   :result #f)
 (define-test uint16? (uint16? #u16:1)
-   :expected #t)
+   :result #t)
 (define-test uint16? (uint16? #s16:1)
-   :expected #f)
+   :result #f)
 
 (define-test int32? (int32? 1)
-   :expected #f)
+   :result #f)
 (define-test int32? (int32? #s32:1)
-   :expected #t)
+   :result #t)
 (define-test int32? (int32? #u32:1)
-   :expected #f)
+   :result #f)
 
 (define-test uint32? (uint32? 1)
-   :expected #f)
+   :result #f)
 (define-test uint32? (uint32? #u32:1)
-   :expected #t)
+   :result #t)
 (define-test uint32? (uint32? #s32:1)
-   :expected #f)
+   :result #f)
 
 (define-test int64? (int64? 1)
-   :expected #f)
+   :result #f)
 (define-test int64? (int64? #s64:1)
-   :expected #t)
+   :result #t)
 (define-test int64? (int64? #u64:1)
-   :expected #f)
+   :result #f)
 
 (define-test uint64? (uint64? 1)
-   :expected #f)
+   :result #f)
 (define-test uint64? (uint64? #u64:1)
-   :expected #t)
+   :result #t)
 (define-test uint64? (uint64? #s64:1)
-   :expected #f)
+   :result #f)
 
-(define-test zero? (zero? 2) :expected #f)
-(define-test zero? (zero? 0) :expected #t)
+(define-test zero? (zero? 2) :result #f)
+(define-test zero? (zero? 0) :result #t)
 
-(define-test zerofx? (zerofx? 2) :expected #f)
-(define-test zerofx? (zerofx? 0) :expected #t)
+(define-test zerofx? (zerofx? 2) :result #f)
+(define-test zerofx? (zerofx? 0) :result #t)
 
-(define-test zeroelong? (zeroelong? #e2) :expected #f)
-(define-test zeroelong? (zeroelong? #e0) :expected #t)
+(define-test zeroelong? (zeroelong? #e2) :result #f)
+(define-test zeroelong? (zeroelong? #e0) :result #t)
 
-(define-test zerollong? (zerollong? #l2) :expected #f)
-(define-test zerollong? (zerollong? #l0) :expected #t)
+(define-test zerollong? (zerollong? #l2) :result #f)
+(define-test zerollong? (zerollong? #l0) :result #t)
 
-(define-test zeros8? (zeros8? #s8:2) :expected #f)
-(define-test zeros8? (zeros8? #s8:0) :expected #t)
+(define-test zeros8? (zeros8? #s8:2) :result #f)
+(define-test zeros8? (zeros8? #s8:0) :result #t)
 
-(define-test zeros16? (zeros16? #s16:2) :expected #f)
-(define-test zeros16? (zeros16? #s16:0) :expected #t)
+(define-test zeros16? (zeros16? #s16:2) :result #f)
+(define-test zeros16? (zeros16? #s16:0) :result #t)
 
-(define-test zeros32? (zeros32? #s32:2) :expected #f)
-(define-test zeros32? (zeros32? #s32:0) :expected #t)
+(define-test zeros32? (zeros32? #s32:2) :result #f)
+(define-test zeros32? (zeros32? #s32:0) :result #t)
 
-(define-test zeros64? (zeros64? #s64:2) :expected #f)
-(define-test zeros64? (zeros64? #s64:0) :expected #t)
+(define-test zeros64? (zeros64? #s64:2) :result #f)
+(define-test zeros64? (zeros64? #s64:0) :result #t)
 
-(define-test zerou8? (zerou8? #u8:2) :expected #f)
-(define-test zerou8? (zerou8? #u8:0) :expected #t)
+(define-test zerou8? (zerou8? #u8:2) :result #f)
+(define-test zerou8? (zerou8? #u8:0) :result #t)
 
-(define-test zerou16? (zerou16? #u16:2) :expected #f)
-(define-test zerou16? (zerou16? #u16:0) :expected #t)
+(define-test zerou16? (zerou16? #u16:2) :result #f)
+(define-test zerou16? (zerou16? #u16:0) :result #t)
 
-(define-test zerou32? (zerou32? #u32:2) :expected #f)
-(define-test zerou32? (zerou32? #u32:0) :expected #t)
+(define-test zerou32? (zerou32? #u32:2) :result #f)
+(define-test zerou32? (zerou32? #u32:0) :result #t)
 
-(define-test zerou64? (zerou64? #u64:2) :expected #f)
-(define-test zerou64? (zerou64? #u64:0) :expected #t)
+(define-test zerou64? (zerou64? #u64:2) :result #f)
+(define-test zerou64? (zerou64? #u64:0) :result #t)
 
-(define-test odd? (odd? 2) :expected #f)
-(define-test odd? (odd? 3) :expected #t)
+(define-test odd? (odd? 2) :result #f)
+(define-test odd? (odd? 3) :result #t)
 
-(define-test oddfx? (oddfx? 2) :expected #f)
-(define-test oddfx? (oddfx? 3) :expected #t)
+(define-test oddfx? (oddfx? 2) :result #f)
+(define-test oddfx? (oddfx? 3) :result #t)
 
-(define-test oddelong? (oddelong? #e2) :expected #f)
-(define-test oddelong? (oddelong? #e3) :expected #t)
+(define-test oddelong? (oddelong? #e2) :result #f)
+(define-test oddelong? (oddelong? #e3) :result #t)
 
-(define-test oddllong? (oddllong? #l2) :expected #f)
-(define-test oddllong? (oddllong? #l3) :expected #t)
+(define-test oddllong? (oddllong? #l2) :result #f)
+(define-test oddllong? (oddllong? #l3) :result #t)
 
-(define-test odds8? (odds8? #s8:2) :expected #f)
-(define-test odds8? (odds8? #s8:3) :expected #t)
+(define-test odds8? (odds8? #s8:2) :result #f)
+(define-test odds8? (odds8? #s8:3) :result #t)
 
-(define-test odds16? (odds16? #s16:2) :expected #f)
-(define-test odds16? (odds16? #s16:3) :expected #t)
+(define-test odds16? (odds16? #s16:2) :result #f)
+(define-test odds16? (odds16? #s16:3) :result #t)
 
-(define-test odds32? (odds32? #s32:2) :expected #f)
-(define-test odds32? (odds32? #s32:3) :expected #t)
+(define-test odds32? (odds32? #s32:2) :result #f)
+(define-test odds32? (odds32? #s32:3) :result #t)
 
-(define-test odds64? (odds64? #s64:2) :expected #f)
-(define-test odds64? (odds64? #s64:3) :expected #t)
+(define-test odds64? (odds64? #s64:2) :result #f)
+(define-test odds64? (odds64? #s64:3) :result #t)
 
-(define-test oddu8? (oddu8? #u8:2) :expected #f)
-(define-test oddu8? (oddu8? #u8:3) :expected #t)
+(define-test oddu8? (oddu8? #u8:2) :result #f)
+(define-test oddu8? (oddu8? #u8:3) :result #t)
 
-(define-test oddu16? (oddu16? #u16:2) :expected #f)
-(define-test oddu16? (oddu16? #u16:3) :expected #t)
+(define-test oddu16? (oddu16? #u16:2) :result #f)
+(define-test oddu16? (oddu16? #u16:3) :result #t)
 
-(define-test oddu32? (oddu32? #u32:2) :expected #f)
-(define-test oddu32? (oddu32? #u32:3) :expected #t)
+(define-test oddu32? (oddu32? #u32:2) :result #f)
+(define-test oddu32? (oddu32? #u32:3) :result #t)
 
-(define-test oddu64? (oddu64? #u64:2) :expected #f)
-(define-test oddu64? (oddu64? #u64:3) :expected #t)
+(define-test oddu64? (oddu64? #u64:2) :result #f)
+(define-test oddu64? (oddu64? #u64:3) :result #t)
 
-(define-test even? (even? 2) :expected #t)
-(define-test even? (even? 3) :expected #f)
+(define-test even? (even? 2) :result #t)
+(define-test even? (even? 3) :result #f)
 
-(define-test evenfx? (evenfx? 2) :expected #t)
-(define-test evenfx? (evenfx? 3) :expected #f)
+(define-test evenfx? (evenfx? 2) :result #t)
+(define-test evenfx? (evenfx? 3) :result #f)
 
-(define-test evenelong? (evenelong? #e2) :expected #t)
-(define-test evenelong? (evenelong? #e3) :expected #f)
+(define-test evenelong? (evenelong? #e2) :result #t)
+(define-test evenelong? (evenelong? #e3) :result #f)
 
-(define-test evenllong? (evenllong? #l2) :expected #t)
-(define-test evenllong? (evenllong? #l3) :expected #f)
+(define-test evenllong? (evenllong? #l2) :result #t)
+(define-test evenllong? (evenllong? #l3) :result #f)
 
-(define-test evens8? (evens8? #s8:2) :expected #t)
-(define-test evens8? (evens8? #s8:3) :expected #f)
+(define-test evens8? (evens8? #s8:2) :result #t)
+(define-test evens8? (evens8? #s8:3) :result #f)
 
-(define-test evens16? (evens16? #s16:2) :expected #t)
-(define-test evens16? (evens16? #s16:3) :expected #f)
+(define-test evens16? (evens16? #s16:2) :result #t)
+(define-test evens16? (evens16? #s16:3) :result #f)
 
-(define-test evens32? (evens32? #s32:2) :expected #t)
-(define-test evens32? (evens32? #s32:3) :expected #f)
+(define-test evens32? (evens32? #s32:2) :result #t)
+(define-test evens32? (evens32? #s32:3) :result #f)
 
-(define-test evens64? (evens64? #s64:2) :expected #t)
-(define-test evens64? (evens64? #s64:3) :expected #f)
+(define-test evens64? (evens64? #s64:2) :result #t)
+(define-test evens64? (evens64? #s64:3) :result #f)
 
-(define-test evenu8? (evenu8? #u8:2) :expected #t)
-(define-test evenu8? (evenu8? #u8:3) :expected #f)
+(define-test evenu8? (evenu8? #u8:2) :result #t)
+(define-test evenu8? (evenu8? #u8:3) :result #f)
 
-(define-test evenu16? (evenu16? #u16:2) :expected #t)
-(define-test evenu16? (evenu16? #u16:3) :expected #f)
+(define-test evenu16? (evenu16? #u16:2) :result #t)
+(define-test evenu16? (evenu16? #u16:3) :result #f)
 
-(define-test evenu32? (evenu32? #u32:2) :expected #t)
-(define-test evenu32? (evenu32? #u32:3) :expected #f)
+(define-test evenu32? (evenu32? #u32:2) :result #t)
+(define-test evenu32? (evenu32? #u32:3) :result #f)
 
-(define-test evenu64? (evenu64? #u64:2) :expected #t)
-(define-test evenu64? (evenu64? #u64:3) :expected #f)
+(define-test evenu64? (evenu64? #u64:2) :result #t)
+(define-test evenu64? (evenu64? #u64:3) :result #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    Ranges                                                           */
@@ -237,270 +237,270 @@
 ;*---------------------------------------------------------------------*/
 ;*    Conversions                                                      */
 ;*---------------------------------------------------------------------*/
-(define-test fixnum->int8 (fixnum->int8 4) :expected #s8:4)
-(define-test fixnum->uint8 (fixnum->uint8 4) :expected #u8:4)
+(define-test fixnum->int8 (fixnum->int8 4) :result #s8:4)
+(define-test fixnum->uint8 (fixnum->uint8 4) :result #u8:4)
 
-(define-test fixnum->int16 (fixnum->int16 4) :expected #s16:4)
-(define-test fixnum->uint16 (fixnum->uint16 4) :expected #u16:4)
+(define-test fixnum->int16 (fixnum->int16 4) :result #s16:4)
+(define-test fixnum->uint16 (fixnum->uint16 4) :result #u16:4)
 
-(define-test fixnum->int32 (fixnum->int32 4) :expected #s32:4)
-(define-test fixnum->uint32 (fixnum->uint32 4) :expected #u32:4)
+(define-test fixnum->int32 (fixnum->int32 4) :result #s32:4)
+(define-test fixnum->uint32 (fixnum->uint32 4) :result #u32:4)
 
-(define-test fixnum->int64 (fixnum->int64 4) :expected #s64:4)
-(define-test fixnum->uint64 (fixnum->uint64 4) :expected #u64:4)
+(define-test fixnum->int64 (fixnum->int64 4) :result #s64:4)
+(define-test fixnum->uint64 (fixnum->uint64 4) :result #u64:4)
 
-(define-test int8->fixnum (int8->fixnum #s8:-7) :expected -7)
-(define-test uint8->fixnum (uint8->fixnum #u8:200) :expected 200)
+(define-test int8->fixnum (int8->fixnum #s8:-7) :result -7)
+(define-test uint8->fixnum (uint8->fixnum #u8:200) :result 200)
 
-(define-test int16->fixnum (int16->fixnum #s16:-7) :expected -7)
-(define-test uint16->fixnum (uint16->fixnum #u16:200) :expected 200)
+(define-test int16->fixnum (int16->fixnum #s16:-7) :result -7)
+(define-test uint16->fixnum (uint16->fixnum #u16:200) :result 200)
 
-(define-test int32->fixnum (int32->fixnum #s32:-7) :expected -7)
-(define-test uint32->fixnum (uint32->fixnum #u32:200) :expected 200)
+(define-test int32->fixnum (int32->fixnum #s32:-7) :result -7)
+(define-test uint32->fixnum (uint32->fixnum #u32:200) :result 200)
 
-(define-test int64->fixnum (int64->fixnum #s64:-7) :expected -7)
-(define-test uint64->fixnum (uint64->fixnum #u64:200) :expected 200)
+(define-test int64->fixnum (int64->fixnum #s64:-7) :result -7)
+(define-test uint64->fixnum (uint64->fixnum #u64:200) :result 200)
 
-(define-test int64->bignum (int64->bignum #s64:-7) :expected #z-7)
-(define-test uint64->bignum (int64->bignum #u64:7) :expected #z7)
+(define-test int64->bignum (int64->bignum #s64:-7) :result #z-7)
+(define-test uint64->bignum (int64->bignum #u64:7) :result #z7)
 
-(define-test bignum->int64 (bignum->int64 #z-7) :expected #s64:-7)
-(define-test bignum->uint64 (bignum->uint64 #z7) :expected #u64:7)
+(define-test bignum->int64 (bignum->int64 #z-7) :result #s64:-7)
+(define-test bignum->uint64 (bignum->uint64 #z7) :result #u64:7)
 
-(define-test integer->string (integer->string 1234) :expected "1234")
-(define-test integer->string (integer->string 1234 2) :expected "10011010010")
-(define-test integer->string (integer->string 1234 8) :expected "2322")
-(define-test integer->string (integer->string 1234 16) :expected "4d2")
+(define-test integer->string (integer->string 1234) :result "1234")
+(define-test integer->string (integer->string 1234 2) :result "10011010010")
+(define-test integer->string (integer->string 1234 8) :result "2322")
+(define-test integer->string (integer->string 1234 16) :result "4d2")
 
 (define-test integer->string/padding (integer->string/padding 34 4)
-   :expected "0034")
+   :result "0034")
 
-(define-test fixnum->string (fixnum->string 56) :expected "56")
-(define-test elong->string (elong->string #e56 16) :expected "38")
-(define-test llong->string (llong->string #l56 16) :expected "38")
-(define-test bignum->string (bignum->string #z56 16) :expected "38")
-(define-test bignum->string (bignum->string #z39984323456) :expected "39984323456")
-(define-test elong->string (elong->string -519994705) :expected "-519994705")
+(define-test fixnum->string (fixnum->string 56) :result "56")
+(define-test elong->string (elong->string #e56 16) :result "38")
+(define-test llong->string (llong->string #l56 16) :result "38")
+(define-test bignum->string (bignum->string #z56 16) :result "38")
+(define-test bignum->string (bignum->string #z39984323456) :result "39984323456")
+(define-test elong->string (elong->string -519994705) :result "-519994705")
 
-(define-test unsigned->string (unsigned->string 56 2) :expected "111000")
+(define-test unsigned->string (unsigned->string 56 2) :result "111000")
 (define-test unsigned->string (unsigned->string -56 2)
    cond-expand: (and C (config int-size 61))
-   :expected "1111111111111111111111111111111111111111111111111111111111001000")
+   :result "1111111111111111111111111111111111111111111111111111111111001000")
 (define-test unsigned->string (unsigned->string -56 2)
    cond-expand: (and C (config int-size 30))
-   :expected "11111111111111111111111111001000")
+   :result "11111111111111111111111111001000")
 (define-test unsigned->string (unsigned->string -56 2)
    cond-expand: (and jvm (config int-size 32))
-   :expected "1111111111111111111111111111001000")
+   :result "1111111111111111111111111111001000")
 
-(define-test string->integer (string->integer "123") :expected 123)
-(define-test string->integer (string->integer "10" 16) :expected 16)
-(define-test string->integer (string->integer "fz" 16) :expected 15)
+(define-test string->integer (string->integer "123") :result 123)
+(define-test string->integer (string->integer "10" 16) :result 16)
+(define-test string->integer (string->integer "fz" 16) :result 15)
 
-(define-test string->elong (string->elong "123") :expected #e123)
-(define-test string->llong (string->llong "123") :expected #l123)
+(define-test string->elong (string->elong "123") :result #e123)
+(define-test string->llong (string->llong "123") :result #l123)
 
 ;*---------------------------------------------------------------------*/
 ;*    Comparisons                                                      */
 ;*---------------------------------------------------------------------*/
 (define-test =fx (=fx 2 (+fx 1 1)))
-(define-test =fx (=fx 2 (+fx 1 2)) :expected #f)
+(define-test =fx (=fx 2 (+fx 1 2)) :result #f)
 
 (define-test =elong (=elong #e2 (+elong #e1 #e1)))
-(define-test =elong (=elong #e2 (+elong #e1 #e2)) :expected #f)
+(define-test =elong (=elong #e2 (+elong #e1 #e2)) :result #f)
 
 (define-test =llong (=llong #l2 (+llong #l1 #l1)))
-(define-test =llong (=llong #l2 (+llong #l1 #l2)) :expected #f)
+(define-test =llong (=llong #l2 (+llong #l1 #l2)) :result #f)
 
 (define-test =s8 (=s8 #s8:23 (+s8 #s8:19 #s8:4)))
-(define-test =s8 (=s8 #s8:23 (+s8 #s8:19 #s8:3)) :expected #f)
+(define-test =s8 (=s8 #s8:23 (+s8 #s8:19 #s8:3)) :result #f)
 
 (define-test =u8 (=u8 #u8:23 (+s8 #u8:19 #u8:4)))
-(define-test =u8 (=u8 #u8:23 (+s8 #u8:19 #u8:3)) :expected #f)
+(define-test =u8 (=u8 #u8:23 (+s8 #u8:19 #u8:3)) :result #f)
 
 (define-test =s16 (=s16 #s16:23 (+s16 #s16:19 #s16:4)))
-(define-test =s16 (=s16 #s16:23 (+s16 #s16:19 #s16:3)) :expected #f)
+(define-test =s16 (=s16 #s16:23 (+s16 #s16:19 #s16:3)) :result #f)
 
 (define-test =u16 (=u16 #u16:23 (+s16 #u16:19 #u16:4)))
-(define-test =u16 (=u16 #u16:23 (+s16 #u16:19 #u16:3)) :expected #f)
+(define-test =u16 (=u16 #u16:23 (+s16 #u16:19 #u16:3)) :result #f)
 
 (define-test =s32 (=s32 #s32:23 (+s32 #s32:19 #s32:4)))
-(define-test =s32 (=s32 #s32:23 (+s32 #s32:19 #s32:3)) :expected #f)
+(define-test =s32 (=s32 #s32:23 (+s32 #s32:19 #s32:3)) :result #f)
 
 (define-test =u32 (=u32 #u32:23 (+s32 #u32:19 #u32:4)))
-(define-test =u32 (=u32 #u32:23 (+s32 #u32:19 #u32:3)) :expected #f)
+(define-test =u32 (=u32 #u32:23 (+s32 #u32:19 #u32:3)) :result #f)
 
 (define-test =s64 (=s64 #s64:23 (+s64 #s64:19 #s64:4)))
-(define-test =s64 (=s64 #s64:23 (+s64 #s64:19 #s64:3)) :expected #f)
+(define-test =s64 (=s64 #s64:23 (+s64 #s64:19 #s64:3)) :result #f)
 
 (define-test =u64 (=u64 #u64:23 (+s64 #u64:19 #u64:4)))
-(define-test =u64 (=u64 #u64:23 (+s64 #u64:19 #u64:3)) :expected #f)
+(define-test =u64 (=u64 #u64:23 (+s64 #u64:19 #u64:3)) :result #f)
 
 (define-test <fx (<fx 2 (+fx 1 18)))
-(define-test <fx (<fx 2 (+fx 1 -1)) :expected #f)
+(define-test <fx (<fx 2 (+fx 1 -1)) :result #f)
 
 (define-test <elong (<elong #e2 (+elong #e1 #e54)))
-(define-test <elong (<elong #e245 (+elong #e1 #e2)) :expected #f)
+(define-test <elong (<elong #e245 (+elong #e1 #e2)) :result #f)
 
 (define-test <llong (<llong #l24 (+llong #l1 #l183998)))
-(define-test <llong (<llong #l2324 (+llong #l1 #l2)) :expected #f)
+(define-test <llong (<llong #l2324 (+llong #l1 #l2)) :result #f)
 
 (define-test <s8 (<s8 #s8:23 (+s8 #s8:19 #s8:22)))
-(define-test <s8 (<s8 #s8:23 (+s8 #s8:1 #s8:-2)) :expected #f)
+(define-test <s8 (<s8 #s8:23 (+s8 #s8:1 #s8:-2)) :result #f)
 
 (define-test <u8 (<u8 #u8:213 (+u8 #u8:19 #u8:220)))
-(define-test <u8 (<u8 #u8:23 (+u8 #u8:19 #u8:2)) :expected #f)
+(define-test <u8 (<u8 #u8:23 (+u8 #u8:19 #u8:2)) :result #f)
 
 (define-test <s16 (<s16 #s16:23 (+s16 #s16:19 #s16:433)))
-(define-test <s16 (<s16 #s16:2333 (+s16 #s16:19 #s16:3)) :expected #f)
+(define-test <s16 (<s16 #s16:2333 (+s16 #s16:19 #s16:3)) :result #f)
 
 (define-test <u16 (<u16 #u16:23 (+u16 #u16:1930 #u16:4)))
-(define-test <u16 (<u16 #u16:32323 (+u16 #u16:19 #u16:3)) :expected #f)
+(define-test <u16 (<u16 #u16:32323 (+u16 #u16:19 #u16:3)) :result #f)
 
 (define-test <s32 (<s32 #s32:23 (+s32 #s32:19323 #s32:4)))
-(define-test <s32 (<s32 #s32:5423 (+s32 #s32:19 #s32:3)) :expected #f)
+(define-test <s32 (<s32 #s32:5423 (+s32 #s32:19 #s32:3)) :result #f)
 
 (define-test <u32 (<u32 #u32:23 (+u32 #u32:19 #u32:4324)))
-(define-test <u32 (<u32 #u32:984723 (+u32 #u32:19 #u32:3)) :expected #f)
+(define-test <u32 (<u32 #u32:984723 (+u32 #u32:19 #u32:3)) :result #f)
 
 (define-test <s64 (<s64 #s64:23 (+s64 #s64:1938 #s64:4)))
-(define-test <s64 (<s64 #s64:320923 (+s64 #s64:19 #s64:3)) :expected #f)
+(define-test <s64 (<s64 #s64:320923 (+s64 #s64:19 #s64:3)) :result #f)
 
 (define-test <u64 (<u64 #u64:23 (+u64 #u64:19 #u64:4322)))
-(define-test <u64 (<u64 #u64:23928798 (+u64 #u64:19 #u64:9879803)) :expected #f)
+(define-test <u64 (<u64 #u64:23928798 (+u64 #u64:19 #u64:9879803)) :result #f)
 
 (define-test <=fx (<=fx 2 (+fx 1 18)))
-(define-test <=fx (<=fx 2 (+fx 1 -1)) :expected #f)
+(define-test <=fx (<=fx 2 (+fx 1 -1)) :result #f)
 
 (define-test <=elong (<=elong #e2 (+elong #e1 #e54)))
-(define-test <=elong (<=elong #e245 (+elong #e1 #e2)) :expected #f)
+(define-test <=elong (<=elong #e245 (+elong #e1 #e2)) :result #f)
 
 (define-test <=llong (<=llong #l24 (+llong #l1 #l183998)))
-(define-test <=llong (<=llong #l2324 (+llong #l1 #l2)) :expected #f)
+(define-test <=llong (<=llong #l2324 (+llong #l1 #l2)) :result #f)
 
 (define-test <=s8 (<=s8 #s8:23 (+s8 #s8:19 #s8:22)))
-(define-test <=s8 (<=s8 #s8:23 (+s8 #s8:1 #s8:-2)) :expected #f)
+(define-test <=s8 (<=s8 #s8:23 (+s8 #s8:1 #s8:-2)) :result #f)
 
 (define-test <=u8 (<=u8 #u8:233 (+u8 #u8:19 #u8:220)))
-(define-test <=u8 (<=u8 #u8:23 (+u8 #u8:19 #u8:2)) :expected #f)
+(define-test <=u8 (<=u8 #u8:23 (+u8 #u8:19 #u8:2)) :result #f)
 
 (define-test <=s16 (<=s16 #s16:23 (+s16 #s16:19 #s16:433)))
-(define-test <=s16 (<=s16 #s16:2333 (+s16 #s16:19 #s16:3)) :expected #f)
+(define-test <=s16 (<=s16 #s16:2333 (+s16 #s16:19 #s16:3)) :result #f)
 
 (define-test <=u16 (<=u16 #u16:23 (+u16 #u16:1930 #u16:4)))
-(define-test <=u16 (<=u16 #u16:32323 (+u16 #u16:19 #u16:3)) :expected #f)
+(define-test <=u16 (<=u16 #u16:32323 (+u16 #u16:19 #u16:3)) :result #f)
 
 (define-test <=s32 (<=s32 #s32:23 (+s32 #s32:19323 #s32:4)))
-(define-test <=s32 (<=s32 #s32:5423 (+s32 #s32:19 #s32:3)) :expected #f)
+(define-test <=s32 (<=s32 #s32:5423 (+s32 #s32:19 #s32:3)) :result #f)
 
 (define-test <=u32 (<=u32 #u32:23 (+u32 #u32:19 #u32:4324)))
-(define-test <=u32 (<=u32 #u32:984723 (+u32 #u32:19 #u32:3)) :expected #f)
+(define-test <=u32 (<=u32 #u32:984723 (+u32 #u32:19 #u32:3)) :result #f)
 
 (define-test <=s64 (<=s64 #s64:23 (+s64 #s64:1938 #s64:4)))
-(define-test <=s64 (<=s64 #s64:320923 (+s64 #s64:19 #s64:3)) :expected #f)
+(define-test <=s64 (<=s64 #s64:320923 (+s64 #s64:19 #s64:3)) :result #f)
 
 (define-test <=u64 (<=u64 #u64:23 (+u64 #u64:19 #u64:4322)))
-(define-test <=u64 (<=u64 #u64:23928798 (+u64 #u64:19 #u64:9879803)) :expected #f)
+(define-test <=u64 (<=u64 #u64:23928798 (+u64 #u64:19 #u64:9879803)) :result #f)
 
-(define-test >fx (>fx 2 (+fx 1 18)) :expected #f)
-(define-test >fx (>fx 2 (+fx 1 -1)) :expected #t)
+(define-test >fx (>fx 2 (+fx 1 18)) :result #f)
+(define-test >fx (>fx 2 (+fx 1 -1)) :result #t)
 
-(define-test >elong (>elong #e2 (+elong #e1 #e54)) :expected #f)
-(define-test >elong (>elong #e245 (+elong #e1 #e2)) :expected #t)
+(define-test >elong (>elong #e2 (+elong #e1 #e54)) :result #f)
+(define-test >elong (>elong #e245 (+elong #e1 #e2)) :result #t)
 
-(define-test >llong (>llong #l24 (+llong #l1 #l183998)) :expected #f)
-(define-test >llong (>llong #l2324 (+llong #l1 #l2)) :expected #t)
+(define-test >llong (>llong #l24 (+llong #l1 #l183998)) :result #f)
+(define-test >llong (>llong #l2324 (+llong #l1 #l2)) :result #t)
 
-(define-test >s8 (>s8 #s8:23 (+s8 #s8:19 #s8:22)) :expected #f)
-(define-test >s8 (>s8 #s8:23 (+s8 #s8:1 #s8:-2)) :expected #t)
+(define-test >s8 (>s8 #s8:23 (+s8 #s8:19 #s8:22)) :result #f)
+(define-test >s8 (>s8 #s8:23 (+s8 #s8:1 #s8:-2)) :result #t)
 
-(define-test >u8 (>u8 #u8:233 (+u8 #u8:19 #u8:220)) :expected #f)
-(define-test >u8 (>u8 #u8:23 (+u8 #u8:19 #u8:2)) :expected #t)
+(define-test >u8 (>u8 #u8:233 (+u8 #u8:19 #u8:220)) :result #f)
+(define-test >u8 (>u8 #u8:23 (+u8 #u8:19 #u8:2)) :result #t)
 
-(define-test >s16 (>s16 #s16:23 (+s16 #s16:19 #s16:433)) :expected #f)
-(define-test >s16 (>s16 #s16:2333 (+s16 #s16:19 #s16:3)) :expected #t)
+(define-test >s16 (>s16 #s16:23 (+s16 #s16:19 #s16:433)) :result #f)
+(define-test >s16 (>s16 #s16:2333 (+s16 #s16:19 #s16:3)) :result #t)
 
-(define-test >u16 (>u16 #u16:23 (+u16 #u16:1930 #u16:4)) :expected #f)
-(define-test >u16 (>u16 #u16:32323 (+u16 #u16:19 #u16:3)) :expected #t)
+(define-test >u16 (>u16 #u16:23 (+u16 #u16:1930 #u16:4)) :result #f)
+(define-test >u16 (>u16 #u16:32323 (+u16 #u16:19 #u16:3)) :result #t)
 
-(define-test >s32 (>s32 #s32:23 (+s32 #s32:19323 #s32:4)) :expected #f)
-(define-test >s32 (>s32 #s32:5423 (+s32 #s32:19 #s32:3)) :expected #t)
+(define-test >s32 (>s32 #s32:23 (+s32 #s32:19323 #s32:4)) :result #f)
+(define-test >s32 (>s32 #s32:5423 (+s32 #s32:19 #s32:3)) :result #t)
 
-(define-test >u32 (>u32 #u32:23 (+u32 #u32:19 #u32:4324)) :expected #f)
-(define-test >u32 (>u32 #u32:984723 (+u32 #u32:19 #u32:3)) :expected #t)
+(define-test >u32 (>u32 #u32:23 (+u32 #u32:19 #u32:4324)) :result #f)
+(define-test >u32 (>u32 #u32:984723 (+u32 #u32:19 #u32:3)) :result #t)
 
-(define-test >s64 (>s64 #s64:23 (+s64 #s64:1938 #s64:4)) :expected #f)
-(define-test >s64 (>s64 #s64:320923 (+s64 #s64:19 #s64:3)) :expected #t)
+(define-test >s64 (>s64 #s64:23 (+s64 #s64:1938 #s64:4)) :result #f)
+(define-test >s64 (>s64 #s64:320923 (+s64 #s64:19 #s64:3)) :result #t)
 
-(define-test >u64 (>u64 #u64:23 (+u64 #u64:19 #u64:4322)) :expected #f)
-(define-test >u64 (>u64 #u64:23928798 (+u64 #u64:19 #u64:9879803)) :expected #t)
+(define-test >u64 (>u64 #u64:23 (+u64 #u64:19 #u64:4322)) :result #f)
+(define-test >u64 (>u64 #u64:23928798 (+u64 #u64:19 #u64:9879803)) :result #t)
 
-(define-test >=fx (>=fx 2 (+fx 1 18)) :expected #f)
-(define-test >=fx (>=fx 2 (+fx 1 -1)) :expected #t)
+(define-test >=fx (>=fx 2 (+fx 1 18)) :result #f)
+(define-test >=fx (>=fx 2 (+fx 1 -1)) :result #t)
 
-(define-test >=elong (>=elong #e2 (+elong #e1 #e54)) :expected #f)
-(define-test >=elong (>=elong #e245 (+elong #e1 #e2)) :expected #t)
+(define-test >=elong (>=elong #e2 (+elong #e1 #e54)) :result #f)
+(define-test >=elong (>=elong #e245 (+elong #e1 #e2)) :result #t)
 
-(define-test >=llong (>=llong #l24 (+llong #l1 #l183998)) :expected #f)
-(define-test >=llong (>=llong #l2324 (+llong #l1 #l2)) :expected #t)
+(define-test >=llong (>=llong #l24 (+llong #l1 #l183998)) :result #f)
+(define-test >=llong (>=llong #l2324 (+llong #l1 #l2)) :result #t)
 
-(define-test >=s8 (>=s8 #s8:23 (+s8 #s8:19 #s8:22)) :expected #f)
-(define-test >=s8 (>=s8 #s8:23 (+s8 #s8:1 #s8:-2)) :expected #t)
+(define-test >=s8 (>=s8 #s8:23 (+s8 #s8:19 #s8:22)) :result #f)
+(define-test >=s8 (>=s8 #s8:23 (+s8 #s8:1 #s8:-2)) :result #t)
 
-(define-test >=u8 (>=u8 #u8:233 (+u8 #u8:19 #u8:220)) :expected #f)
-(define-test >=u8 (>=u8 #u8:23 (+u8 #u8:19 #u8:2)) :expected #t)
+(define-test >=u8 (>=u8 #u8:233 (+u8 #u8:19 #u8:220)) :result #f)
+(define-test >=u8 (>=u8 #u8:23 (+u8 #u8:19 #u8:2)) :result #t)
 
-(define-test >=s16 (>=s16 #s16:23 (+s16 #s16:19 #s16:433)) :expected #f)
-(define-test >=s16 (>=s16 #s16:2333 (+s16 #s16:19 #s16:3)) :expected #t)
+(define-test >=s16 (>=s16 #s16:23 (+s16 #s16:19 #s16:433)) :result #f)
+(define-test >=s16 (>=s16 #s16:2333 (+s16 #s16:19 #s16:3)) :result #t)
 
-(define-test >=u16 (>=u16 #u16:23 (+u16 #u16:1930 #u16:4)) :expected #f)
-(define-test >=u16 (>=u16 #u16:32323 (+u16 #u16:19 #u16:3)) :expected #t)
+(define-test >=u16 (>=u16 #u16:23 (+u16 #u16:1930 #u16:4)) :result #f)
+(define-test >=u16 (>=u16 #u16:32323 (+u16 #u16:19 #u16:3)) :result #t)
 
-(define-test >=s32 (>=s32 #s32:23 (+s32 #s32:19323 #s32:4)) :expected #f)
-(define-test >=s32 (>=s32 #s32:5423 (+s32 #s32:19 #s32:3)) :expected #t)
+(define-test >=s32 (>=s32 #s32:23 (+s32 #s32:19323 #s32:4)) :result #f)
+(define-test >=s32 (>=s32 #s32:5423 (+s32 #s32:19 #s32:3)) :result #t)
 
-(define-test >=u32 (>=u32 #u32:23 (+u32 #u32:19 #u32:4324)) :expected #f)
-(define-test >=u32 (>=u32 #u32:984723 (+u32 #u32:19 #u32:3)) :expected #t)
+(define-test >=u32 (>=u32 #u32:23 (+u32 #u32:19 #u32:4324)) :result #f)
+(define-test >=u32 (>=u32 #u32:984723 (+u32 #u32:19 #u32:3)) :result #t)
 
-(define-test >=s64 (>=s64 #s64:23 (+s64 #s64:1938 #s64:4)) :expected #f)
-(define-test >=s64 (>=s64 #s64:320923 (+s64 #s64:19 #s64:3)) :expected #t)
+(define-test >=s64 (>=s64 #s64:23 (+s64 #s64:1938 #s64:4)) :result #f)
+(define-test >=s64 (>=s64 #s64:320923 (+s64 #s64:19 #s64:3)) :result #t)
 
-(define-test >=u64 (>=u64 #u64:23 (+u64 #u64:19 #u64:4322)) :expected #f)
-(define-test >=u64 (>=u64 #u64:23928798 (+u64 #u64:19 #u64:9879803)) :expected #t)
+(define-test >=u64 (>=u64 #u64:23 (+u64 #u64:19 #u64:4322)) :result #f)
+(define-test >=u64 (>=u64 #u64:23928798 (+u64 #u64:19 #u64:9879803)) :result #t)
 
 (define-test elong
    (typeof (-elong #e3 (fixnum->elong 3)))
-   :expected "belong")
+   :result "belong")
 
 (define-test llong
    (let* ((octet 116)
           (len 64)
           (value (bit-lshllong (fixnum->llong octet) (-fx len 8))))
       value)
-   :expected #l8358680908399640576)
+   :result #l8358680908399640576)
 
 (define-test llong
    (let ((len 64))
       (bit-lshllong #l1 (-fx len 1)))
-   :expected (string->llong "-9223372036854775808"))
+   :result (string->llong "-9223372036854775808"))
 
 (define-test llong
    (let ((len 64))
       (llong->string (bit-lshllong #l1 (-fx len 1))))
-   :expected "-9223372036854775808")
+   :result "-9223372036854775808")
 
 (define-test llong
    (llong->bignum #l3548480059929027183)
-   :expected #z3548480059929027183)
+   :result #z3548480059929027183)
 
 (define-test llong
    (let* ((n::llong #l162748894)
           (m::llong (+llong (*llong n #l10) #l3)))
       (llong->string m))
-   :expected "1627488943")
+   :result "1627488943")
 
 (define-test llong
    (let* ((n::llong #l162748894)
           (m::llong (+llong (*llong n #l10) #l3)))
       m)
-   :expected (string->llong "1627488943"))
+   :result (string->llong "1627488943"))

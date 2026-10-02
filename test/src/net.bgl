@@ -44,7 +44,7 @@
 
 (define-test socket?
    (socket? '#(1))
-   :expected #f)
+   :result #f)
 
 (define-test socket?
    (with-handler
@@ -73,7 +73,7 @@
             (socket-server? s)
             (socket-close s))))
    :cond-expand (not wasm)
-   :expected #f)
+   :result #f)
 
 (define-test socket-server?
    (with-handler
@@ -92,7 +92,7 @@
          (unwind-protect
             (socket-down? s)
             (socket-close s))))
-   :expected #f)
+   :result #f)
 
 (define-test socket-down?
    (with-handler
@@ -101,7 +101,7 @@
       (let ((s (make-server-socket)))
          (socket-close s)
          (socket-down? s)))
-   :expected #t)
+   :result #t)
 
 (define-test datagram-socket?
    (with-handler
@@ -112,7 +112,7 @@
             (datagram-socket? s)
             (socket-close s))))
    :cond-expand (not wasm)
-   :expected #f)
+   :result #f)
 
 (define-test make-client-socket
    (with-handler
@@ -141,7 +141,7 @@
             (socket-hostname s)
             (socket-close s))))
    :cond-expand (not wasm)
-   :expected "localhost")
+   :result "localhost")
 
 (define-test socket-host-address
    (with-handler
@@ -152,7 +152,7 @@
             (socket-host-address s)
             (socket-close s))))
    :cond-expand (not wasm)
-   :expected "127.0.0.1")
+   :result "127.0.0.1")
 
 (define-test socket-host-address=?
    (with-handler
@@ -174,7 +174,7 @@
             (socket-local-address s)
             (socket-close s))))
    :cond-expand (not wasm)
-   :expected "127.0.0.1")
+   :result "127.0.0.1")
 
 (define-test socket-port-number
    (with-handler
@@ -184,7 +184,7 @@
          (unwind-protect
             (socket-port-number s)
             (socket-close s))))
-   :expected 22)
+   :result 22)
 
 (define-test socket-input
    (with-handler
@@ -264,7 +264,7 @@
          (socket-option s :SO_KEEPALIVE)
          (socket-close s)))
    :cond-expand (not wasm)
-   :expected #f)
+   :result #f)
 
 (define-test socket-option-set!
    (let ((s (make-client-socket "localhost" 22)))
@@ -273,7 +273,7 @@
          (socket-close s))
       #t)
    :cond-expand (not wasm)
-   :expected #t)
+   :result #t)
 
 (define-test make-datagram-client-socket
    (with-handler
@@ -332,12 +332,12 @@
 (define-test datagram-socket-receive
    (procedure-arity datagram-socket-receive)
    :cond-expand (not wasm)
-   :expected 2)
+   :result 2)
 
 (define-test datagram-socket-send
    (procedure-arity datagram-socket-send)
    :cond-expand (not wasm)
-   :expected 4)
+   :result 4)
 
 (define-test datagram-socket-hostname
    (with-handler
@@ -346,7 +346,7 @@
          #f)
       (datagram-socket-hostname (make-datagram-client-socket "localhost" 22)))
    :cond-expand (not wasm)
-   :expected "localhost")
+   :result "localhost")
 
 (define-test datagram-socket-host-address
    (with-handler
@@ -355,7 +355,7 @@
          #f)
       (datagram-socket-host-address (make-datagram-client-socket "localhost" 22)))
    :cond-expand (not wasm)
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test datagram-socket-close
    (with-handler
@@ -365,17 +365,17 @@
       (datagram-socket-close (make-datagram-client-socket "localhost" 22))
       #t)
    :cond-expand (not wasm)
-   :expected #t)
+   :result #t)
 
 (define-test datagram-socket-option
    (procedure-arity datagram-socket-option)
    :cond-expand (not wasm)
-   :expected 2)
+   :result 2)
 
 (define-test datagram-socket-option-set!
    (procedure-arity datagram-socket-option-set!)
    :cond-expand (not wasm)
-   :expected 3)
+   :result 3)
 
 (define-test host
    (string? (host "localhost"))
@@ -384,7 +384,7 @@
 (define-test hostname
    (hostname "127.0.1")
    :cond-expand (not wasm)
-   :expected "localhost")
+   :result "localhost")
 
 (define-test hostinfo
    (pair? (hostinfo "localhost"))

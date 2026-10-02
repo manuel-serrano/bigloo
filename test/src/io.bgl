@@ -31,22 +31,22 @@
 ;*    tests ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-test eof-object? (eof-object? '())
-   :expected #f)
+   :result #f)
 
 (define-test eof-object? (eof-object? (read (open-input-string "")))
-   :expected #t)
+   :result #t)
 
 (define-test read-char
    (call-with-input-string "AB" (lambda (ip) (read-char ip) (read-char ip)))
-   :expected #\B)
+   :result #\B)
 
 (define-test read-byte
    (call-with-input-string "AB" (lambda (ip) (read-char ip) (read-byte ip)))
-   :expected (char->integer #\B))
+   :result (char->integer #\B))
 
 (define-test peek-char
    (call-with-input-string "AB" (lambda (ip) (peek-char ip) (read-char ip)))
-   :expected #\A)
+   :result #\A)
 
 (define-test peek-char-pos
    (let ((p (open-input-string "foo bar gee")))
@@ -58,7 +58,7 @@
       (let ((r (input-port-position p)))
 	 (close-input-port p)
 	 r))
-   :expected 5)
+   :result 5)
 
 (define-test peek-char-big
    (let ()
@@ -94,11 +94,11 @@
       
       (read-twice (make-string 66000 #\a)))
    
-   :expected 66000)
+   :result 66000)
 
 (define-test peek-byte
    (call-with-input-string "AB" (lambda (ip) (peek-byte ip) (read-byte ip)))
-   :expected (char->integer #\A))
+   :result (char->integer #\A))
 
 (define-test char-ready?
    (cond-expand
@@ -115,7 +115,7 @@
                     (close-input-port port)
                     ready)
                  (loop (read-line port)))))))
-   :expected #t)
+   :result #t)
 
 (define-test unread-char!
    (call-with-input-string "AB"
@@ -123,7 +123,7 @@
          (read-char ip)
          (unread-char! #\C ip)
          (read-char ip)))
-   :expected #\C)
+   :result #\C)
 
 (define-test unread-string!
    (call-with-input-string "AB"
@@ -131,7 +131,7 @@
          (read-char ip)
          (unread-string! "DE" ip)
          (read-char ip)))
-   :expected #\D)
+   :result #\D)
 
 (define-test unread-substring!
    (call-with-input-string "AB"
@@ -139,33 +139,33 @@
          (read-char ip)
          (unread-substring! "DEFG" 1 3 ip)
          (read-char ip)))
-   :expected #\E)
+   :result #\E)
 
 (define-test read (call-with-input-string "(Foo \"Bar\" Gee)" read)
-   :expected '(Foo "Bar" Gee))
+   :result '(Foo "Bar" Gee))
 
 (define-test read-line (call-with-input-string "foo\nbar\ngee" read-line)
-   :expected "foo")
+   :result "foo")
 
 (define-test read-line-newline (call-with-input-string "foo\nbar\ngee" read-line-newline)
-   :expected "foo\n")
+   :result "foo\n")
 
 (define-test read-lines (call-with-input-string "foo\nbar\ngee" read-lines)
-   :expected '("foo" "bar" "gee"))
+   :result '("foo" "bar" "gee"))
 
 (define-test read-lines-newline (call-with-input-string "foo\nbar\ngee" read-lines-newline)
-   :expected '("foo\n" "bar\n" "gee"))
+   :result '("foo\n" "bar\n" "gee"))
 
 (define-test read-of-strings (call-with-input-string "abcd efgh ijkl" read-of-strings)
-   :expected "abcd")
+   :result "abcd")
 
 (define-test read-string (call-with-input-string "abcd efgh ijkl" read-string)
-   :expected "abcd efgh ijkl")
+   :result "abcd efgh ijkl")
 
 (define-test read-chars
    (call-with-input-string "abcd efgh ijkl"
       (lambda (ip) (read-chars 3 ip)))
-   :expected "abc")
+   :result "abc")
 
 (define-test read-chars!
    (call-with-input-string "abcd efgh ijkl"
@@ -173,7 +173,7 @@
 	 (let ((s (make-string 11)))
 	    (read-chars! s 11 ip)
             s)))
-   :expected "abcd efgh i")
+   :result "abcd efgh i")
 
 (define-test read-fill-string!
    (let* ((str "abcdefgihjkl")
@@ -183,23 +183,23 @@
          (lambda ()
             (read-fill-string! res 0 len (current-input-port))))
       res)
-   :expected "abcdefgihjkl")
+   :result "abcdefgihjkl")
 
 (define-test port->string-list
    (call-with-input-string "abcd 123 efgh ijkl" port->string-list)
-   :expected '("abcd" "123" "efgh" "ijkl"))
+   :result '("abcd" "123" "efgh" "ijkl"))
 
 (define-test port->list
    (call-with-input-string "abcd 123" (lambda (ip) (port->list read-char ip)))
-   :expected '(#\a #\b #\c #\d #\space #\1 #\2 #\3))
+   :result '(#\a #\b #\c #\d #\space #\1 #\2 #\3))
 
 (define-test port->sexp-list
    (call-with-input-string "abcd 123 efgh ijkl" port->sexp-list)
-   :expected '(abcd 123 efgh ijkl))
+   :result '(abcd 123 efgh ijkl))
 
 (define-test file->string
    (>fx (string-length (file->string "misc/input.txt")) 0)
-   :expected #t)
+   :result #t)
 
 (define-test display-circle
    (with-output-to-string
@@ -208,62 +208,62 @@
          (set-car! (cdr l) l)
          (set-car! (cddr l) l)
          (display-circle l)))
-   :expected "#0=(1 #0# #0#)")
+   :result "#0=(1 #0# #0#)")
 
 (define-test format
    (format "Hello, ~a" "World!") 
-   :expected "Hello, World!")
+   :result "Hello, World!")
 
 (define-test format
    (format "Error, list is too short: ~s~%" '(one "two" 3))
-   :expected "Error, list is too short: (one \"two\" 3)\n")
+   :result "Error, list is too short: (one \"two\" 3)\n")
 
 (define-test format 
    (format "a ~l: ~l" "list" '(1 2 3))
-   :expected "a list: 1 2 3")
+   :result "a list: 1 2 3")
 
 (define-test format 
    (format "a ~l: ~(, )" "list" '(1 2 3))
-   :expected "a list: 1, 2, 3")
+   :result "a list: 1, 2, 3")
 
 (define-test format
    (format "~3d ~3,-d ~3x ~3,0d" 4 4 16 5)
-   :expected "  4 --4  10 005")
+   :result "  4 --4  10 005")
 
 (define-test printf
    (with-output-to-string
       (lambda ()
          (printf "~3d ~3,-d ~3x ~3,0d" 4 4 16 5)))
-   :expected "  4 --4  10 005")
+   :result "  4 --4  10 005")
 
 (define-test fprintf
    (call-with-output-string
       (lambda (op)
          (fprintf op "~3d ~3,-d ~3x ~3,0d" 4 4 16 5)))
-   :expected "  4 --4  10 005")
+   :result "  4 --4  10 005")
 
 (define-test pp
    (string-trim-both
       (call-with-output-string
                   (lambda (op)
                      (pp '(cons 1 2) op))))
-   :expected "(cons 1 2)")
+   :result "(cons 1 2)")
 
 (define-test define-reader-ctor
    (begin
       (define-reader-ctor 'list list)
       (with-input-from-string "#,(list 1 2 #f \"4 5\")" read))
-   :expected '(1 2 #f "4 5"))
+   :result '(1 2 #f "4 5"))
 
 (define-test define-reader-ctor
    (begin
       (define-reader-ctor '+ +)
       (with-input-from-string "#,(+ 1 2)" read))
-   :expected 3)
+   :result 3)
 
 (define-test password
    (procedure? password)
-   :expected #t)
+   :result #t)
 
 (define-test send-chars
    (call-with-input-string "foo bar"
@@ -271,13 +271,13 @@
          (call-with-output-string
             (lambda (op)
                (send-chars ip op)))))
-   :expected "foo bar")
+   :result "foo bar")
 
 (define-test send-file
    (call-with-output-string
       (lambda (op)
          (send-file "misc/input.txt" op)))
-   :expected (file->string "misc/input.txt"))
+   :result (file->string "misc/input.txt"))
 
 (define-test write
    (let ((s "toto\"\\\ntiti"))
@@ -290,7 +290,7 @@
                   (close-input-port p)
                   res))
             s)))
-   :expected #t)
+   :result #t)
 
 (define-test write
    (let ((s (string->symbol "01234")))
@@ -300,14 +300,14 @@
          (lambda ()
             (let ((res (read)))
                res))))
-   :expected '|01234|)
+   :result '|01234|)
 
 (define-test write
    (with-input-from-string (with-output-to-string
                               (lambda ()
                                  (write "T\"\\\ni\tt")))
       read-string)
-   :expected (list->string '(#\" #\T #\\ #\" #\\ #\\ #\\ #\n #\i #\\ #\t #\t #\")))
+   :result (list->string '(#\" #\T #\\ #\" #\\ #\\ #\\ #\n #\i #\\ #\t #\t #\")))
 
 (define-test write
    (let ((s #"toto\"\\\nti\tti"))
@@ -318,7 +318,7 @@
                                           (display 1 (current-error-port))
                                           (write s)))))
          read))
-   :expected 1)
+   :result 1)
 
 (define-test write
    (with-input-from-string (with-error-to-string
@@ -328,84 +328,84 @@
                                        (display 1 (current-error-port))
                                        (write #"foobar")))))
       read)
-   :expected 1)
+   :result 1)
 
 (define-test display
    (with-input-from-string (with-output-to-string
                               (lambda ()
                                  (display "T\"\\\ni\tt")))
       read-string)
-   :expected (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t)))
+   :result (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t)))
 
 (define-test display*
    (with-input-from-string (with-output-to-string
                               (lambda ()
                                  (display* "T\"\\\n" "i\tt")))
       read-string)
-   :expected (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t)))
+   :result (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t)))
 
 (define-test print
    (with-input-from-string (with-output-to-string
                               (lambda ()
                                  (print "T\"\\\n" "i\tt")))
       read-string)
-   :expected (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t #\Newline)))
+   :result (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t #\Newline)))
 
 (define-test fprint
    (with-input-from-string (with-error-to-string
                               (lambda ()
                                  (fprint (current-error-port) "T\"\\\n" "i\tt")))
       read-string)
-   :expected (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t #\Newline)))
+   :result (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t #\Newline)))
 
 (define-test display-string
    (with-input-from-string (with-output-to-string
                               (lambda ()
                                  (display-string "T\"\\\ni\tt" (current-output-port))))
       read-string)
-   :expected (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t)))
+   :result (list->string '(#\T #\" #\\ #\newline #\i #\tab #\t)))
 
 (define-test display-substring
    (with-input-from-string (with-output-to-string
                               (lambda ()
                                  (display-substring "T\"\\\ni\tt" 1 7 (current-output-port))))
       read-string)
-   :expected (list->string '(#\" #\\ #\newline #\i #\tab #\t)))
+   :result (list->string '(#\" #\\ #\newline #\i #\tab #\t)))
 
 (define-test display-object
    (string?
       (with-output-to-string
          (lambda ()
             (display-object (instantiate::&condition)))))
-   :expected #t)
+   :result #t)
 
 (define-test write-object
    (string?
       (call-with-output-string
          (lambda (port)
             (write-object (instantiate::&condition) port))))
-   :expected #t)
+   :result #t)
                           
 (define-test write-char
    (with-input-from-string (with-output-to-string
                               (lambda ()
                                  (write-char #\Z)))
       read)
-   :expected 'Z)
+   :result 'Z)
 
 (define-test write-byte
    (with-input-from-string (with-output-to-string
                               (lambda ()
                                  (write-byte (char->integer #\A))))
       read)
-   :expected 'A)
+   :result 'A)
 
 (define-test newline
    (with-input-from-string (with-output-to-string
                               (lambda ()
                                  (newline)))
       read-string)
-   :expected "\n")
+   :result "\n")
 
 (define-test write-circle
    (let* ((obj (list 1 2 3 4))
@@ -424,7 +424,7 @@
          (let ((port (open-output-string)))
             (write-circle obj port)
             (close-output-port port))))
-   :expected #t)
+   :result #t)
 
 (define-test write-circle
    (let ((s "#0=(#0# #1=(#1#))"))
@@ -433,7 +433,7 @@
 	    (lambda (op)
 	       (write-circle (call-with-input-string s read) op)))
          s))
-   :expected #t)
+   :result #t)
 
 (define-test write-circle
    (let ((s "#0=(#0# #1=(#1# #2=(#2#)) #2#)"))
@@ -448,14 +448,14 @@
       (unwind-protect
          (input-char p)
          (close-binary-port p)))
-   :expected #\;)
+   :result #\;)
 
 (define-test input-string
    (let ((p (open-input-binary-file i/o.filename)))
       (unwind-protect
          (input-string p 4)
          (close-binary-port p)))
-   :expected ";*==")
+   :result ";*==")
 
 (define-test input-fill-string!
    (let ((p (open-input-binary-file i/o.filename))
@@ -463,7 +463,7 @@
       (unwind-protect
          (when (=fx (input-fill-string! p s) 4) s)
          (close-binary-port p)))
-   :expected ";*==")
+   :result ";*==")
 
 (define-test output-char
    (let ((p (open-output-binary-file "/dev/null")))

@@ -453,82 +453,82 @@
 
 (define-test param-make
    (run test1)
-   :expected (get-expected-result test1))
+   :result (get-expected-result test1))
 
 (define-test param-make
    (run test2)
-   :expected (get-expected-result test2))
+   :result (get-expected-result test2))
 
 (define-test param-make
    (run test3)
-   :expected (get-expected-result test3))
+   :result (get-expected-result test3))
 
 (define-test param-make
    (run test4)
-   :expected (get-expected-result test4))
+   :result (get-expected-result test4))
 
 (define-test param-make
    (run test5)
-   :expected (get-expected-result test5))
+   :result (get-expected-result test5))
 
 (define-test param-make
    (run test6)
-   :expected (get-expected-result test6))
+   :result (get-expected-result test6))
 
 (define-test param-make
    (run test7)
-   :expected (get-expected-result test7))
+   :result (get-expected-result test7))
 
 (define-test param-make
    (run test8)
-   :expected (get-expected-result test8))
+   :result (get-expected-result test8))
 
 (define-test param-make
    (run test9)
-   :expected (get-expected-result test9))
+   :result (get-expected-result test9))
 
 (define-test param-make
    (run test10)
-   :expected (get-expected-result test10))
+   :result (get-expected-result test10))
 
 (define-test param-make
    (run test11)
-   :expected (get-expected-result test11))
+   :result (get-expected-result test11))
 
 (define-test param-make
    (run test12)
-   :expected (get-expected-result test12))
+   :result (get-expected-result test12))
 
 (define-test param-make
    (run test13)
-   :expected (get-expected-result test13))
+   :result (get-expected-result test13))
 
 (define-test param-make
    (run test14)
-   :expected (get-expected-result test14))
+   :result (get-expected-result test14))
 
 (define-test param-make
    (run test15)
-   :expected (get-expected-result test15))
+   :result (get-expected-result test15))
 
 (define-test param-make
    (run test16)
-   :expected (get-expected-result test16))
+   :result (get-expected-result test16))
 
 (define-test param-make
    (run test17)
-   :expected (get-expected-result test17))
+   :result (get-expected-result test17))
       
 (define-test ssr-make-graph
    (ssr-make-graph :source 1)
-   :expected vector?)
+   :result vector?)
 
 (define-test ssr-add-edge!
    (let ((g (ssr-make-graph :source 1))
          (r 0))
       (ssr-add-edge! g 1 2 :onconnect (lambda (n) (set! r n)))
       r)
-   :expected 2)
+   :result 2)
 
 (define-test ssr-remove-edge!
    (let ((g (ssr-make-graph :source 1))
@@ -540,7 +540,7 @@
       (ssr-add-edge! g 2 5)
       (ssr-remove-edge! g 3 4 :ondisconnect (lambda (n) (set! r n)))
       r)
-   :expected 4)
+   :result 4)
 
 (define-test ssr-redirect!
    (let ((g (ssr-make-graph :source 1))
@@ -552,7 +552,7 @@
       (ssr-add-edge! g 2 5)
       (ssr-redirect! g 3 5 :ondisconnect (lambda (n) (set! r n)))
       r)
-   :expected 4)
+   :result 4)
 
 (define-test ssr-connected?
    (let ((g (ssr-make-graph :source 1)))

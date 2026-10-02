@@ -32,7 +32,7 @@
 ;*---------------------------------------------------------------------*/
 (define-test obj->string
    (obj->string (cons 1 2))
-   :expected string?)
+   :result string?)
 
 (define-class SPoint x y)
 
@@ -55,7 +55,7 @@
            (eq? (caadr o) (cdadr o)))))
 
 (define-test flonum (string->obj (obj->string 0.5))
-   :expected real?)
+   :result real?)
 
 (let ((o '(#s8:0 #s8:1 #s8:-1 #u8:0 #u8:1 #u8:250
            #s16:0 #s16:1 #s16:-1 #u16:0 #u16:1 #u16:250
@@ -68,13 +68,13 @@
            #s64:70000 #s64:-70000 #u64:70000)))
    (define-test int8
       (string->obj (obj->string o))
-      :expected o))
+      :result o))
 
 (let* ((s (make-string 3 #\a))
        (l (list s s)))
    (define-test list
       (string->obj (obj->string l))
-      :expected l))
+      :result l))
 
 (define-test mixed
    (let* ((s "toto n'est pas content")
@@ -117,7 +117,7 @@
          (unwind-protect
             (car (string->obj (obj->string (list (lambda (x) x)))))
             (register-procedure-serialization! serializer unserializer))))
-   :expected procedure?)
+   :result procedure?)
 
 (define-test get-procedure-serialization
    (bind-values (serializer unserializer)
@@ -167,7 +167,7 @@
                                (instantiate::SPoint3D (x 1) (y 2) (z 3)))
                             #unspecified 100)))
          (-> o x)))
-   :expected 101)
+   :result 101)
 
 (define-test get-class-serialization
    (bind-values (serializer unserializer)

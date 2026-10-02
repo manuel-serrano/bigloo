@@ -43,7 +43,7 @@
        #unspecified)
       (else
        (with-output-to-string args-parse-usage)))
-   :expected string?)
+   :result string?)
 
 (define-test args-parse
    (let ((res 0))
@@ -68,24 +68,24 @@
       
       res)
    
-   :expected (bit-or 31 (bit-or 32 64)))
+   :result (bit-or 31 (bit-or 32 64)))
 
 (define-test args-parse
    (args-parse '("-o" "a.out" "23")
       (("-o" ?file) #unspecified)
       (else (string->integer else)))
-   :expected 23)
+   :result 23)
 
 (define-test args-parse
    (args-parse '("--size" "20")
       (("--size" ?w (?h)) (list w h)))
-   :expected (list "20" #f))
+   :result (list "20" #f))
 
 (define-test args-parse
    (args-parse '()
       (() 'done)
       (("-o" ?file) (list file)))
-   :expected 'done)
+   :result 'done)
 
 (define-test args-parse-usage
    (args-parse '("--help")
@@ -94,5 +94,5 @@
       (("-c" (help "do not link")) #unspecified)
       (("-o" ?name (help "target name")) #unspecified)
       (else (exit 1)))
-   :expected string?)
+   :result string?)
 

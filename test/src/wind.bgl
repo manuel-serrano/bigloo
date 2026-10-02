@@ -38,22 +38,22 @@
                (write "foo" port)
                'done)
             (close-output-port port))))
-   :expected 'done)
+   :result 'done)
 
 (define-test unwind-protect
    (unwind-protect 10 10)
-   :expected 10)
+   :result 10)
 
 (define-test unwind-protect
    (bind-exit (exit) (unwind-protect (exit 10) 9))
-   :expected 10)
+   :result 10)
 
 (define-test unwind-protect
    (call-with-output-string
       (lambda (op)
          (bind-exit (exit)
             (unwind-protect (exit 10) (display "here" op)))))
-   :expected "here")
+   :result "here")
 
 (define-test unwind-protect
    (let ((res 0))
@@ -63,19 +63,19 @@
             (raise 'an-error)
             (set! res 1)))
       res)
-   :expected 10)
+   :result 10)
 
 (define-test unwind-protect
    (eval '(unwind-protect 10 10))
-   :expected 10)
+   :result 10)
 
 (define-test unwind-protect
    (eval '(bind-exit (exit) (unwind-protect (exit 10) 9)))
-   :expected 10)
+   :result 10)
 
 (define-test unwind-protect
     (eval '(bind-exit (exit) (unwind-protect 10 9)))
-    :expected 10)
+    :result 10)
 
 (define-test unwind-protect
    (let ((r #f))
@@ -94,7 +94,7 @@
 	    (set! x 2)
 	    (set! x 1)))
       x)
-   :expected 1)
+   :result 1)
 
 (define-test unwind-protect
    (let ((x 0))
@@ -105,7 +105,7 @@
 	    (raise 1)
 	    (set! x 1)))
       x)
-   :expected 1)
+   :result 1)
 
 (define-test unwind-protect
    (let ((x 0))
@@ -117,7 +117,7 @@
 	       (raise 1)
 	       (set! x 1))))
       x)
-   :expected 1)
+   :result 1)
 
 (define-test unwind-protect
    (let ((x 0))
@@ -130,7 +130,7 @@
 		  (raise 1)
 		  (set! x 1)))))
       x)
-   :expected 1)
+   :result 1)
 
 (define-test unwind-protect
    (let ((x 0))
@@ -143,7 +143,7 @@
 	       (set! x 1))
 	    (set! x 2)))
       x)
-   :expected 1)
+   :result 1)
 
 (define-test unwind-protect
    (let ((x 0))
@@ -156,7 +156,7 @@
 	       (set! x 1))
 	 (set! x 2)))
       x)
-   :expected 1)
+   :result 1)
 
 (define-test unwind-protect
    (let ()
@@ -194,4 +194,4 @@
          (error 1 2 3))
       
       (unwind-nesting '()))
-   :expected '(foo bar gee hux))
+   :result '(foo bar gee hux))

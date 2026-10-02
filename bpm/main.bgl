@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Fri Oct  2 12:59:40 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 17:23:57 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -130,7 +130,7 @@
           (break
              (lambda ()
                 (proj.install-pkg pkg version))))
-         (("upgrade" (help "Update the dependency packages"))
+         (("upgrade" (help "Upgrade the dependency packages"))
           (break
              (lambda ()
                 (tprint "TODO"))))

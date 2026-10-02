@@ -33,17 +33,17 @@
 ;*---------------------------------------------------------------------*/
 (define-test get-element-by-id
    get-element-by-id
-   :expected procedure?)
+   :result procedure?)
 
 (define-test element-inner-html
    element-inner-html
-   :expected procedure?)
+   :result procedure?)
 
 (define-test element-inner-html-set!
    element-inner-html-set!
-   :expected procedure?)
+   :result procedure?)
 
 (define-test alert
    alert
-   :expected procedure?)
+   :result procedure?)
 

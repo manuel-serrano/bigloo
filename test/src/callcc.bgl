@@ -41,4 +41,4 @@
 		     (set! x (+ 1 x)))))
       x)
    :cond-expand call/cc
-   :expected 6)
+   :result 6)

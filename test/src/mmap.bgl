@@ -36,10 +36,10 @@
       (unwind-protect
          (mmap? mm)
          (close-mmap mm)))
-   :expected #t)
-(define-test mmap? (mmap? list) :expected #f)
-(define-test mmap? (mmap? 1) :expected #f)
-(define-test mmap? (mmap? "foo") :expected #f)
+   :result #t)
+(define-test mmap? (mmap? list) :result #f)
+(define-test mmap? (mmap? 1) :result #f)
+(define-test mmap? (mmap? "foo") :result #f)
 
 (define-test open-mmap
    (let ((mm (open-mmap mmap.filename :write #f)))
@@ -55,36 +55,36 @@
 
 (define-test call-with-output-mmap
    call-with-output-mmap
-   :expected procedure?)
+   :result procedure?)
 
 (define-test call-with-output-mmap
    (procedure-arity call-with-output-mmap)
-   :expected 2)
+   :result 2)
 
 (define-test mmap-length
    (let ((mm (open-mmap mmap.filename)))
       (unwind-protect
          (mmap-length mm)
          (close-mmap mm)))
-   :expected (file-size mmap.filename))
+   :result (file-size mmap.filename))
 
 (define-test string->mmap
    (mmap? (string->mmap "foo bar")))
 
 (define-test mmap->string
    (string-length (mmap->string (string->mmap "foo bar")))
-   :expected 7)
+   :result 7)
 
 (define-test mmap->bstring
    (mmap->bstring (string->mmap "foo bar"))
-   :expected string?)
+   :result string?)
 
 (define-test mmap-name
    (let ((mm (open-mmap mmap.filename)))
       (unwind-protect
          (mmap-name mm)
          (close-mmap mm)))
-   :expected mmap.filename)
+   :result mmap.filename)
 
 (define-test mmap-ref
    (call-with-input-mmap mmap.filename
@@ -98,21 +98,21 @@
       (mmap-set! m 0 #\b)
       (close-mmap m)
       (string-ref s 0))
-   :expected #\b)
+   :result #\b)
 
 (define-test mmap-substring
    (call-with-input-mmap mmap.filename
       (lambda (mm)
          (mmap-substring mm 3 8)))
-   :expected "DON'T")
+   :result "DON'T")
 
 (define-test mmap-substring-set!
    mmap-substring-set!
-   :expected procedure?)
+   :result procedure?)
 
 (define-test mmap-substring-set!
    (procedure-arity mmap-substring-set!)
-   :expected 3)
+   :result 3)
       
 (define-test mmap-ref
    (call-with-input-mmap "misc/img.jpg"

@@ -67,13 +67,13 @@
 (define-test predicate
    (Intf? (Point.new)))
 (define-test predicate
-   (Intf? 3) :expected #f)
+   (Intf? 3) :result #f)
 
 ;; tag-start doc2
 (define-test field
-   (let ((o::Point (Point.new2 1 2))) (-> o x)) :expected 1)
+   (let ((o::Point (Point.new2 1 2))) (-> o x)) :result 1)
 (define-test field
-   (let ((o::Point (Point.new2 1 2))) (-> o y)) :expected 2)
+   (let ((o::Point (Point.new2 1 2))) (-> o y)) :result 2)
 
 (define-test method
    (let ((o::Point (Point.new))) (string? ((-> o toString)))))
@@ -90,16 +90,16 @@
 ;; tag-start doc3
 (define-test array
    (Point*? 3)
-   :expected #f)
+   :result #f)
 
 (define-test array
    (Point*? (Point*.new 0))
-   :expected #t)
+   :result #t)
 
 (define-test array-length
    (let ((a (Point*.new 4)))
       (Point*.length a))
-   :expected 4)
+   :result 4)
 
 (define-test array-accessors
    (let ((a (Point*.new 4)))
@@ -112,11 +112,11 @@
       (float*.set! a 0 4.5)
       (float*.set! a 1 .5)
       (+fl (float*.ref a 0) (float*.ref a 1)))
-   :expected 5.)
+   :result 5.)
 
 (define-test array-double*
    (let ((a (double*.new 4)))
       (double*.set! a 0 4.5)
       (double*.set! a 1 .5)
       (+fl (double*.ref a 0) (double*.ref a 1)))
-   :expected 5.)
+   :result 5.)

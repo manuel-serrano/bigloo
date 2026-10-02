@@ -37,16 +37,16 @@
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
 (define-test command-line (command-line)
-   :expected pair?)
+   :result pair?)
    
 (define-test executable-name (executable-name)
-   :expected string?)
+   :result string?)
 
 (define-test time
    (bind-values (res real user sys)
       (time (lambda () (begin (sleep 10) 30)))
       (cons res (and (>= real 0) (>= real (+ user sys)))))
-   :expected '(30 . #t))
+   :result '(30 . #t))
 
 (define-test register-exit-function!
    (begin (register-exit-function! (lambda (n) n)) #t))
@@ -65,280 +65,280 @@
 
 (define-test getenv
    (getenv "HOME")
-   :expected string?)
+   :result string?)
 
 (define-test getenv
    (getenv)
-   :expected list?)
+   :result list?)
 
 (define-test putenv
    (begin
       (putenv "XXX" "24")
       (getenv "XXX"))
    :cond-expand C
-   :expected "24")
+   :result "24")
 
 (define-test file-separator
    (file-separator)
-   :expected char?)
+   :result char?)
 
 (define-test path-separator
    (file-separator)
-   :expected char?)
+   :result char?)
 
 (define-test basename
    (basename "foo")
-   :expected "foo")
+   :result "foo")
 (define-test basename
    (basename (make-file-name "foo" "bar"))
-   :expected "bar")
+   :result "bar")
 (define-test basename
    (basename (make-file-path "foo" "bar" "gee"))
-   :expected "gee")
+   :result "gee")
 
 (define-test prefix
    (prefix "foo.scm") 
-   :expected  "foo")
+   :result  "foo")
 (define-test prefix
    (prefix "./foo.scm") 
-   :expected  "./foo")
+   :result  "./foo")
 (define-test prefix
    (prefix "foo.tar.gz") 
-   :expected  "foo.tar")
+   :result  "foo.tar")
 (define-test prefix
    (prefix "foo.scm")
-   :expected "foo")
+   :result "foo")
 (define-test prefix
    (prefix (make-file-name "bar" "foo.scm"))
-   :expected 
+   :result 
    (make-file-name "bar" "foo"))
 
 (define-test suffix
    (suffix "foo.scm") 
-   :expected  "scm")
+   :result  "scm")
 (define-test suffix
    (suffix "./foo.scm") 
-   :expected  "scm")
+   :result  "scm")
 (define-test suffix
    (suffix "foo.tar.gz") 
-   :expected  "gz")
+   :result  "gz")
 (define-test suffix
    (suffix "foo.scm")
-   :expected "scm")
+   :result "scm")
 (define-test suffix
    (suffix (make-file-name "bar" "foo.scm"))
-   :expected "scm")
+   :result "scm")
 
 (define-test dirname
    (dirname "abc/def/ghi") 
-   :expected  "abc/def")
+   :result  "abc/def")
 (define-test dirname
    (dirname "abc") 
-   :expected   ".")
+   :result   ".")
 (define-test dirname
    (dirname "abc/") 
-   :expected  "abc")
+   :result  "abc")
 (define-test dirname
    (dirname "/abc") 
-   :expected  "/")
+   :result  "/")
  (define-test dirname
     (dirname "foo")
-    :expected ".")
+    :result ".")
 (define-test dirname
    (dirname "")
-   :expected ".")
+   :result ".")
 (define-test dirname
    (dirname (make-file-name "foo" "bar"))
-   :expected "foo")
+   :result "foo")
 (define-test dirname
    (dirname (make-file-path "foo" "bar" "gee"))
-   :expected (make-file-name "foo" "bar"))
+   :result (make-file-name "foo" "bar"))
 
 (define-test file-name-absolute?
    (file-name-absolute? "foo/bar")
-   :expected #f)
+   :result #f)
 
 (define-test file-name-absolute?
    (file-name-absolute? "/tmp/foo/bar")
-   :expected #t)
+   :result #t)
 
 (define-test make-file-name
    (make-file-name "foo" "bar")
-   :expected (format "foo~abar" (file-separator)))
+   :result (format "foo~abar" (file-separator)))
 
 (define-test make-file-path
    (make-file-path "foo" "bar" "gee")
-   :expected (format "foo~abar~agee" (file-separator) (file-separator)))
+   :result (format "foo~abar~agee" (file-separator) (file-separator)))
 
 (define-test file-name->list
    (file-name->list "/etc/passwd")
-   :expected '("" "etc" "passwd"))
+   :result '("" "etc" "passwd"))
 
 (define-test file-name->list
    (file-name->list "etc/passwd")
-   :expected '("etc" "passwd"))
+   :result '("etc" "passwd"))
 
 (define-test unix-path->list
    (unix-path->list ".")
-   :expected '("."))
+   :result '("."))
 
 (define-test unix-path->list
    (unix-path->list ".:/usr/bin")
-   :expected '("." "/usr/bin"))
+   :result '("." "/usr/bin"))
 
 (define-test file-name-canonicalize
    (file-name-canonicalize "/etc/passwd")
-   :expected "/etc/passwd")
+   :result "/etc/passwd")
 (define-test file-name-canonicalize
    (file-name-canonicalize "/etc/../tmp/passwd")
-   :expected "/tmp/passwd")
+   :result "/tmp/passwd")
 (define-test file-name-canonicalize
    (file-name-canonicalize "")
-   :expected "")
+   :result "")
 (define-test file-name-canonicalize
    (file-name-canonicalize "~/passwd")
-   :expected "~/passwd")
+   :result "~/passwd")
 (define-test file-name-canonicalize!
    (file-name-canonicalize "/etc/../tmp/passwd")
-   :expected "/tmp/passwd")
+   :result "/tmp/passwd")
 
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize "~/passwd")
-   :expected (make-file-name (getenv "HOME") "passwd"))
+   :result (make-file-name (getenv "HOME") "passwd"))
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize "~foo/passwd")
-   :expected (make-file-name (dirname (getenv "HOME")) "foo/passwd"))
+   :result (make-file-name (dirname (getenv "HOME")) "foo/passwd"))
 (define-test file-name-unix-canonicalize!
    (file-name-unix-canonicalize "/foo/passwd")
-   :expected "/foo/passwd")
+   :result "/foo/passwd")
 (define-test file-name-unix-canonicalize!
    (file-name-unix-canonicalize "/")
-   :expected "/")
+   :result "/")
 
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/tmp/bin"))
-   :expected (fname "/tmp/bin"))
+   :result (fname "/tmp/bin"))
 
 (define-test file-name-canonicalize
    (file-name-canonicalize! (fname "/tmp/bin"))
-   :expected (fname "/tmp/bin"))
+   :result (fname "/tmp/bin"))
 
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/tmp/bin/"))
-   :expected (fname "/tmp/bin/"))
+   :result (fname "/tmp/bin/"))
 (define-test file-name-canonicalize
    (file-name-canonicalize! (string-copy (fname "/tmp/bin/")))
-   :expected (fname "/tmp/bin/"))
+   :result (fname "/tmp/bin/"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/tmp//bin/"))
-   :expected (fname "/tmp/bin/"))
+   :result (fname "/tmp/bin/"))
 (define-test file-name-canonicalize!
    (let ((s (fname "/tmp//bin/")))
       (file-name-canonicalize! (string-copy s)))
-   :expected (fname "/tmp/bin/"))
+   :result (fname "/tmp/bin/"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/tmp/../bin/"))
-   :expected (fname "/bin/"))
+   :result (fname "/bin/"))
 (define-test file-name-canonicalize!
    (let ((s (fname "/tmp/../bin/")))
       (file-name-canonicalize! (string-copy (fname "/tmp/../bin/"))))
-   :expected (fname "/bin/"))
+   :result (fname "/bin/"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/tmp/abc/../../bin/"))
-   :expected (fname "/bin/"))
+   :result (fname "/bin/"))
 (define-test file-name-canonicalize!
    (let ((s (fname "/tmp/../bin/")))
       (file-name-canonicalize! (string-copy (fname "/tmp/abc/../../bin/"))))
-      :expected (fname "/bin/"))
+      :result (fname "/bin/"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/foo/bar/."))
-   :expected (fname "/foo/bar"))
+   :result (fname "/foo/bar"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/../foo/bar"))
-   :expected (fname "/foo/bar"))
+   :result (fname "/foo/bar"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/foo/./bar"))
-   :expected (fname "/foo/bar"))
+   :result (fname "/foo/bar"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/foo/././bar"))
-   :expected (fname "/foo/bar"))
+   :result (fname "/foo/bar"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/foo/././////bar"))
-   :expected (fname "/foo/bar"))
+   :result (fname "/foo/bar"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/foo/././////../bar"))
-   :expected (fname "/bar"))
+   :result (fname "/bar"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/foo/././////../////.//bar"))
-   :expected (fname "/bar"))
+   :result (fname "/bar"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/foo/././////../////.//bar/./././."))
-   :expected (fname "/bar"))
+   :result (fname "/bar"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/foo/bar/.."))
-   :expected (fname "/foo"))
+   :result (fname "/foo"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/.."))
-   :expected (fname "/"))
+   :result (fname "/"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "/foo/.bar/gee"))
-   :expected (fname "/foo/.bar/gee"))
+   :result (fname "/foo/.bar/gee"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "./foo"))
-   :expected (fname "foo"))
+   :result (fname "foo"))
 (define-test file-name-canonicalize
    (file-name-canonicalize (fname "."))
-   :expected (fname "."))
+   :result (fname "."))
 (define-test file-name-canonicalize
    (file-name-canonicalize "")
-   :expected "")
+   :result "")
 (define-test file-name-canonicalize
    (file-name-canonicalize ".")
-   :expected ".")
+   :result ".")
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize "./")
-   :expected ".")
+   :result ".")
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize ".//")
-   :expected "")
+   :result "")
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize "././")
-   :expected ".")
+   :result ".")
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize ".//a")
-   :expected "a")
+   :result "a")
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize "test/..")
-   :expected "")
+   :result "")
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize "./test/..")
-   :expected "")
+   :result "")
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize "../test/bar/..")
-   :expected "../test")
+   :result "../test")
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize "../test/foo")
-   :expected "../test/foo")
+   :result "../test/foo")
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize "../../test/foo")
-   :expected "../../test/foo")
+   :result "../../test/foo")
 (define-test file-name-unix-canonicalize
    (file-name-unix-canonicalize "..test/foo")
-   :expected "..test/foo")
+   :result "..test/foo")
 
 (define-test relative-file-name
    (relative-file-name "/etc/passwd" "/etc")
-   :expected "passwd")
+   :result "passwd")
 
 (define-test find-file/path
    (find-file/path "/etc/passwd" '("/toto" "/titi")) 
-   :expected  "/etc/passwd")
+   :result  "/etc/passwd")
 (define-test find-file/path
    (find-file/path "passwd" '("/toto" "/etc"))
-   :expected  "/etc/passwd")
+   :result  "/etc/passwd")
 (define-test find-file/path
    (find-file/path "pass-wd" '("." "/etc"))
-   :expected  #f)
+   :result  #f)
 
 (define-test signal
    (begin (signal sigint 'default) #t)
@@ -347,45 +347,45 @@
 (define-test get-signal-handler
    (get-signal-handler sigint)
    :cond-expand C
-   :expected 'default)
+   :result 'default)
 
 (define-test sigsetmask
    (sigsetmask 0)
    :cond-expand C
-   :expected 0)
+   :result 0)
    
 (define-test system
    (system "true > /dev/null")
    :cond-expand (or C wasm)
-   :expected 0)
+   :result 0)
 
 (define-test system->string
    (system->string "echo \"hello\"")
    :cond-expand C
-   :expected "hello\n")
+   :result "hello\n")
 
 (define-test os-class (os-class)
-   :expected string?)
+   :result string?)
 
 (define-test os-name
    (os-name)
-   :expected string?)
+   :result string?)
 
 (define-test os-version
    (os-version)
-   :expected string?)
+   :result string?)
 
 (define-test os-tmp
    (os-tmp)
-   :expected string?)
+   :result string?)
 
 (define-test os-charset
    (os-charset)
-   :expected string?)
+   :result string?)
 
 (define-test os-arch
    (os-arch)
-   :expected string?)
+   :result string?)
 
 (define-test getuid
    (>=fx (getuid) 0)
@@ -394,7 +394,7 @@
 (define-test setuid
    setuid
    :cond-expand C
-   :expected procedure?)
+   :result procedure?)
 
 (define-test getgid
    (>=fx (getgid) 0)
@@ -403,7 +403,7 @@
 (define-test setgid
    setgid
    :cond-expand C
-   :expected procedure?)
+   :result procedure?)
 
 (define-test getpid
    (>=fx (getpid) 0)
@@ -416,17 +416,17 @@
 (define-test getgroups
    (getgroups)
    :cond-expand C
-   :expected vector?)
+   :result vector?)
 
 (define-test getpwnam
    (getpwnam (getenv "USER"))
    :cond-expand C
-   :expected pair?)
+   :result pair?)
 
 (define-test getpwuid
    (getpwuid (getuid))
    :cond-expand C
-   :expected pair?)
+   :result pair?)
 
 (define-test getrlimit
    (bind-values (soft hard)
@@ -439,14 +439,14 @@
       (rlimit 'supported)
       (else 'unsupported))
    :cond-expand C
-   :expected 'supported)
+   :result 'supported)
 
 (define-test getrlimit
    (cond-expand
       (rlimit 'supported)
       (else 'unsupported))
    :cond-expand (not C)
-   :expected 'unsupported)
+   :result 'unsupported)
 
 (define-test setrlimit!
    (begin (setrlimit! 'NOFILE #e256 #e1048576) #t)
@@ -457,7 +457,7 @@
       (syslog-option 'LOG_PID 'LOG_ODELAY)
       (syslog-facility 'LOG_MAIL))
    :cond-expand C
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test syslog
    (begin
@@ -466,14 +466,14 @@
          (syslog-facility 'LOG_MAIL))
       (syslog (syslog-level 'LOG_INFO) "this is a log message"))
    :cond-expand C
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test syslog-option
    (openlog "/dev/null"
       (syslog-option 'LOG_PID 'LOG_CONS)
       (syslog-facility 'LOG_MAIL))
    :cond-expand C
-   :expected #unspecified)
+   :result #unspecified)
    
 (define-test syslog-level
    (begin
@@ -482,19 +482,19 @@
          (syslog-facility 'LOG_MAIL))
       (syslog (syslog-level 'LOG_DEBUG) "this is a log message"))
    :cond-expand C
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test syslog-facility
    (openlog "/dev/null"
       (syslog-option 'LOG_PID 'LOG_CONS)
       (syslog-facility 'LOG_CRON))
    :cond-expand C
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test closelog
    (closelog)
    :cond-expand C
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test sleep
    (begin (sleep 1) #t))
@@ -509,11 +509,11 @@
 
 (define-test file-exists?
    (file-exists? (string-append os.filename " does not exists"))
-   :expected #f)
+   :result #f)
 
 (define-test file-gzip?
    (file-gzip? os.filename)
-   :expected #f)
+   :result #f)
 
 (define-test delete-file
    (let loop ()
@@ -566,7 +566,7 @@
                    (when (truncate-file f 4)
                       (file-size f))
                    (delete-file f))))))
-   :expected 4)
+   :result 4)
 
 (define-test copy-file
    (let loop ()
@@ -640,7 +640,7 @@
                    (when (file-times-set! f #e100 #e10)
                       (cons #e100 #e10))
                    (delete-file f))))))
-   :expected '(#e100 . #e10))
+   :result '(#e100 . #e10))
 
 (define-test file-size
    (>elong (file-size os.filename) #e1000))
@@ -660,7 +660,7 @@
                 (unwind-protect
                    (file-uid f)
                    (delete-file f))))))
-   :expected (getuid))
+   :result (getuid))
 
 (define-test file-gid
    (let loop ()
@@ -698,7 +698,7 @@
                       (chmod f #o777)
                       (file-mode f))
                    (delete-file f))))))
-   :expected #o777)
+   :result #o777)
 
 (define-test chmod
    (let loop ()
@@ -717,26 +717,26 @@
                       (chmod f 'read 'write)
                       (file-mode f))
                    '(delete-file f))))))
-   :expected #o600)
+   :result #o600)
 
 (define-test file-type
    (file-type os.filename)
-   :expected 'regular)
+   :result 'regular)
 
 (define-test file-type
    (file-type (dirname os.filename))
-   :expected 'directory)
+   :result 'directory)
 
 (define-test pwd
    (pwd)
-   :expected string?)
+   :result string?)
 
 (define-test pwd
    (directory? (pwd)))
 
 (define-test pwd
    (file-type (pwd))
-   :expected 'directory)
+   :result 'directory)
 
 (define-test chdir
    (let ((cur (pwd))
@@ -752,7 +752,7 @@
 
 (define-test directory?
    (directory? os.filename)
-   :expected #f)
+   :result #f)
 
 (define-test make-directory
    (let loop ()
@@ -820,20 +820,20 @@
 
 (define-test directory->list
    (member (basename os.filename) (directory->list (dirname os.filename)))
-   :expected pair?)
+   :result pair?)
 
 (define-test directory->path-list
    (member os.filename (directory->path-list (dirname os.filename)))
-   :expected pair?)
+   :result pair?)
 
 (define-test directory->vector
    (member (basename os.filename)
       (vector->list (directory->vector (dirname os.filename))))
-   :expected pair?)
+   :result pair?)
 
 (define-test directory->path-vector
    (member os.filename
       (vector->list (directory->path-vector (dirname os.filename))))
-   :expected pair?)
+   :result pair?)
 
 

@@ -32,40 +32,40 @@
 ;*    tests ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-test current-thread (thread? (current-thread))
-   :expected #f)
+   :result #f)
 
 (define-test thread? (thread? (make-thread list))
-   :expected #t)
+   :result #t)
 
 (define-test thread? (thread? 'a-symbol)
-   :expected #f)
+   :result #f)
 
 (define-test make-thread (thread? (make-thread (lambda () 'done)))
-   :expected #t)
+   :result #t)
 
 (define-test make-thread (thread-name (make-thread (lambda () 'done) "foo"))
-   :expected "foo")
+   :result "foo")
 
 (define-test thread-name (thread-name (make-thread list "a thread"))
-   :expected "a thread")
+   :result "a thread")
                             
 (define-test thread-name-set!
    (let ((th (make-thread list)))
       (thread-name-set! th "another thread")
       (thread-name th))
-   :expected "another thread")
+   :result "another thread")
                             
 (define-test thread-specific (thread-specific (make-thread list))
-   :expected #unspecified)
+   :result #unspecified)
                             
 (define-test thread-specific-set!
    (let ((th (make-thread list)))
       (thread-specific-set! th (cons 1 2))
       (thread-specific th))
-   :expected '(1 . 2))
+   :result '(1 . 2))
                             
 (define-test thread-parameter (thread-parameter 'key)
-   :expected #f)
+   :result #f)
                             
 (define-test thread-parameter-set!
    (let* ((res #f)
@@ -77,11 +77,11 @@
                           (set! res (thread-parameter 'key))))))))
       res)
    :cond-expand (library pthread)
-   :expected '(1 . 2))
+   :result '(1 . 2))
 
 (define-test thread-cleanup
    (thread-cleanup (make-thread list))
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test thread-cleanup-set!
    (let* ((res #f)
@@ -94,49 +94,49 @@
       (thread-join! (thread-start-joinable! t))
       res)
    :cond-expand (library pthread)
-   :expected (cons #t #t))
+   :result (cons #t #t))
 
 (define-test thread-start!
    (begin (thread-start! (make-thread list)) #t)
    :cond-expand (library pthread)
-   :expected #t)
+   :result #t)
 
 (define-test thread-start-joinable!
    (begin (thread-start-joinable! (make-thread list)) #t)
    :cond-expand (library pthread)
-   :expected #t)
+   :result #t)
 
 (define-test thread-join!
    (begin (thread-join! (thread-start-joinable! (make-thread list))) #t)
    :cond-expand (library pthread)
-   :expected #t)
+   :result #t)
 
 (define-test thread-kill!
    (procedure? thread-kill!)
    :cond-expand (library pthread)
-   :expected #t)
+   :result #t)
 
 (define-test mutex? (mutex? (make-mutex))
-   :expected #t)
+   :result #t)
 
 (define-test mutex? (mutex? (make-thread list))
-   :expected #f)
+   :result #f)
 
 (define-test make-mutex (mutex? (make-mutex))
-   :expected #t)
+   :result #t)
 
 (define-test make-spinlock (mutex? (make-spinlock))
-   :expected #t)
+   :result #t)
 
 (define-test mutex-name (mutex-name (make-mutex "a-mutex"))
-   :expected "a-mutex")
+   :result "a-mutex")
 
 (define-test mutex-state (mutex-state (make-mutex))
    :cond-expand (library pthread)
-   :expected 'unlocked)
+   :result 'unlocked)
 
 (define-test mutex-lock! (begin (mutex-lock! (make-mutex)) #t)
-   :expected #t)
+   :result #t)
 
 (define-test mutex-unlock!
    (let ((m (make-mutex)))
@@ -144,22 +144,22 @@
       (unwind-protect
          #t
          (mutex-unlock! m)))
-   :expected #t)
+   :result #t)
 
 (define-test synchronize (synchronize (make-mutex) #t)
-   :expected #t)
+   :result #t)
 
 (define-test condition-variable? (condition-variable? (make-condition-variable))
-   :expected #t)
+   :result #t)
 
 (define-test condition-variable? (condition-variable? (make-mutex))
-   :expected #f)
+   :result #f)
 
 (define-test make-condition-variable (condition-variable? (make-condition-variable))
-   :expected #t)
+   :result #t)
 
 (define-test condition-variable-name (condition-variable-name (make-condition-variable "a condv"))
-   :expected "a condv")
+   :result "a condv")
 
 (define-test condition-variable-wait!
    (let* ((res 0)
@@ -180,51 +180,51 @@
       (thread-join! (thread-start-joinable! th2))
       res)
    :cond-expand (library pthread)
-   :expected 2)
+   :result 2)
 
 (define-test condition-variable-signal!
    (let ((cv (make-condition-variable)))
       (condition-variable-signal! cv)
       #t)
    :cond-expand (library pthread)
-   :expected #t)
+   :result #t)
    
 (define-test condition-variable-broadcast!
    (let ((cv (make-condition-variable)))
       (condition-variable-broadcast! cv)
       #t)
    :cond-expand (library pthread)
-   :expected #t)
+   :result #t)
 
 (define-test pthread
     (thread? (instantiate::pthread (body list)))
     :cond-expand (library pthread)
-    :expected #t)
+    :result #t)
 
 (define-test open-semaphore
    (semaphore? (open-semaphore "semaphore1"))
    :cond-expand (and C (library pthread))
-   :expected #t)
+   :result #t)
 
 (define-test semaphore?
    (semaphore? (open-semaphore "semaphore1"))
    :cond-expand (and C (library pthread))
-   :expected #t)
+   :result #t)
 
 (define-test semaphore?
    (semaphore? (make-mutex))
    :cond-expand (and C (library pthread))
-   :expected #f)
+   :result #f)
 
 (define-test close-semaphore
    (close-semaphore (open-semaphore "semaphore2"))
    :cond-expand (and C (library pthread))
-   :expected #t)
+   :result #t)
 
 (define-test delete-semaphore
    (delete-semaphore (open-semaphore "semaphore2"))
    :cond-expand (and C (library pthread))
-   :expected #t)
+   :result #t)
 
 (define-test semaphore-post
    (let* ((res 0)
@@ -239,7 +239,7 @@
       (thread-join! (thread-start-joinable! th2))
       res)
    :cond-expand (and C (library pthread))
-   :expected 2)
+   :result 2)
 
 (define-test semaphore-trywait
    (let* ((res 0)
@@ -254,11 +254,11 @@
       (thread-join! (thread-start-joinable! th2))
       (+ res (semaphore-value sem)))
    :cond-expand (and C (library pthread))
-   :expected 3)
+   :result 3)
 
 (define-test semaphore-value
    (semaphore-value (open-semaphore "semaphore4" :value 20))
    :cond-expand (and C (library pthread))
-   :expected 20)
+   :result 20)
 
 

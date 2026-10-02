@@ -44,7 +44,7 @@
    (cond-expand
       (rust #t)
       (else #f))
-   :expected #f)
+   :result #f)
 
 (define-test cond-expand
    (cond-expand
@@ -60,7 +60,7 @@
    (cond-expand
       ((and C (or (config int-size 30) (config int-size 61))) #t)
       (else #t))
-   :expected #t)
+   :result #t)
 
 (define-test register-srfi!
    (unwind-protect
@@ -88,21 +88,21 @@
       (register-srfi! 'foobar)
       (unregister-srfi! 'foobar)
       (compile-srfi? 'foobar))
-   :expected #f)
+   :result #f)
 
 (define-test unregister-eval-srfi!
    (begin
       (register-eval-srfi! 'foobar)
       (unregister-eval-srfi! 'foobar)
       (eval-srfi? 'foobar))
-   :expected #f)
+   :result #f)
 
 (define-test unregister-compile-srfi!
    (begin
       (register-compile-srfi! 'foobar)
       (unregister-compile-srfi! 'foobar)
       (compile-srfi? 'foobar))
-   :expected #f)
+   :result #f)
 
 (define-test eval-srfi? (eval-srfi? 'bigloo-eval))
 

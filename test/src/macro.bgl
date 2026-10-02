@@ -166,16 +166,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    test-macro ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-test expander (foo 1 2) :expected 1)
-(define-test O-macro (integer->char) :expected 1)
-(define-test O-macro (bar (lambda () 1)) :expected 1)
-(define-test eval eval-macro :expected 10)
-(define-test case-macro (case-macro 2) :expected 2)
-(define-test nested-define (nested-define) :expected 31)
-(define-test nested-define nested-define2 :expected #f)
-(define-test nested-define nested-define3 :expected #f)
-(define-test nested-define nested-define4 :expected #f)
-(define-test nested-define (nested-define5 #t) :expected #f)
-(define-test inner-define (inner-define 4) :expected '(inner-define 4))
+(define-test expander (foo 1 2) :result 1)
+(define-test O-macro (integer->char) :result 1)
+(define-test O-macro (bar (lambda () 1)) :result 1)
+(define-test eval eval-macro :result 10)
+(define-test case-macro (case-macro 2) :result 2)
+(define-test nested-define (nested-define) :result 31)
+(define-test nested-define nested-define2 :result #f)
+(define-test nested-define nested-define3 :result #f)
+(define-test nested-define nested-define4 :result #f)
+(define-test nested-define (nested-define5 #t) :result #f)
+(define-test inner-define (inner-define 4) :result '(inner-define 4))
 
 

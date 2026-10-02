@@ -49,7 +49,7 @@
 (define-test ssl-version
    (let ((v (ssl-version)))
       (and (string? v) (>fx (string-length v) 0)))
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    random                                                           */
@@ -57,45 +57,45 @@
 (define-test ssl-rand-bytes
    (let ((r (ssl-rand-bytes 32)))
       (and (string? r) (=fx (string-length r) 32)))
-   :expected #t)
+   :result #t)
 
 (define-test ssl-rand-pseudo-bytes
    (let ((r (ssl-rand-pseudo-bytes 16)))
       (and (string? r) (=fx (string-length r) 16)))
-   :expected #t)
+   :result #t)
 
 (define-test ssl-rand-status
    (ssl-rand-status)
-   :expected #t)
+   :result #t)
 
 (define-test ssl-rand-poll
    (ssl-rand-poll)
-   :expected #t)
+   :result #t)
 
 (define-test ssl-clear-error
    (ssl-clear-error)
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    certificates                                                     */
 ;*---------------------------------------------------------------------*/
 (define-test read-certificate
    (isa? (read-certificate "./scripts/recette-cert.pem") certificate)
-   :expected #t)
+   :result #t)
 
 (define-test certificate-subject
    (let ((s (certificate-subject *cert*)))
       (and (string? s) (>=fx (string-contains s "test") 0)))
-   :expected #t)
+   :result #t)
 
 (define-test certificate-issuer
    (string? (certificate-issuer *cert*))
-   :expected #t)
+   :result #t)
 
 (define-test read-pem-file
    (let ((certs (read-pem-file "./scripts/recette-cert.pem")))
       (and (pair? certs) (isa? (car certs) certificate)))
-   :expected #t)
+   :result #t)
 
 (define-test read-pem-file
    (with-handler
@@ -103,15 +103,15 @@
          #t)
       (let ((certs (read-pem-file "./scripts/DOEST-NOT-EXISTS")))
          #f))
-   :expected #t)
+   :result #t)
 
 (define-test read-private-key
    (isa? (read-private-key "./scripts/recette-key.pem") private-key)
-   :expected #t)
+   :result #t)
 
 (define-test read-private-key
    (isa? (read-private-key "./scripts/recette-key-pkcs1.pem") private-key)
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    hash                                                             */
@@ -123,31 +123,31 @@
    (let ((h (instantiate::ssl-hash (type "sha256"))))
       (ssl-hash-update! h "hello" 0 5)
       (string-length (ssl-hash-digest h)))
-   :expected 32)
+   :result 32)
 
 (define-test ssl-hash-digest
    (let ((h (instantiate::ssl-hash (type "sha1"))))
       (ssl-hash-update! h "test" 0 4)
       (string-length (ssl-hash-digest h)))
-   :expected 20)
+   :result 20)
 
 (define-test hash-sha384
    (let ((h (instantiate::ssl-hash (type "sha384"))))
       (ssl-hash-update! h "test" 0 4)
       (string-length (ssl-hash-digest h)))
-   :expected 48)
+   :result 48)
 
 (define-test hash-sha512
    (let ((h (instantiate::ssl-hash (type "sha512"))))
       (ssl-hash-update! h "test" 0 4)
       (string-length (ssl-hash-digest h)))
-   :expected 64)
+   :result 64)
 
 (define-test hash-md5
    (let ((h (instantiate::ssl-hash (type "md5"))))
       (ssl-hash-update! h "test" 0 4)
       (string-length (ssl-hash-digest h)))
-   :expected 16)
+   :result 16)
 
 (define-test hash-sha3-256
    (with-handler
@@ -155,7 +155,7 @@
       (let ((h (instantiate::ssl-hash (type "sha3-256"))))
 	 (ssl-hash-update! h "test" 0 4)
 	 (string-length (ssl-hash-digest h))))
-   :expected 32)
+   :result 32)
 
 ;*---------------------------------------------------------------------*/
 ;*    hmac                                                             */
@@ -168,14 +168,14 @@
       (ssl-hmac-init h "sha256" "secret-key")
       (ssl-hmac-update! h "message" 0 7)
       (string-length (ssl-hmac-digest h)))
-   :expected 32)
+   :result 32)
 
 (define-test ssl-hmac-update!
    (let ((h (instantiate::ssl-hmac)))
       (ssl-hmac-init h "sha1" "key")
       (ssl-hmac-update! h "data" 0 4)
       (string-length (ssl-hmac-digest h)))
-   :expected 20)
+   :result 20)
 
 (define-test ssl-hmac-digest
    (let ((h (instantiate::ssl-hash (type "sha256"))))
@@ -184,7 +184,7 @@
       (let* ((h2 (instantiate::ssl-hash (type "sha256"))))
 	 (ssl-hash-update! h2 "hello world" 0 11)
 	 (string=? (ssl-hash-digest h) (ssl-hash-digest h2))))
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    hash - multiple updates                                          */
@@ -196,7 +196,7 @@
       (let* ((h2 (instantiate::ssl-hash (type "sha256"))))
 	 (ssl-hash-update! h2 "hello world" 0 11)
 	 (string=? (ssl-hash-digest h) (ssl-hash-digest h2))))
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    sign / verify                                                    */
@@ -218,7 +218,7 @@
       (ssl-verify-final verifier
 	 *cert-data* 0 (string-length *cert-data*)
 	 sig 0 (string-length sig)))
-   :expected #t)
+   :result #t)
 
 (define-test ssl-sign-sign
    (let* ((signer (instantiate::ssl-sign))
@@ -231,7 +231,7 @@
       (ssl-verify-final verifier
 	 *cert-data* 0 (string-length *cert-data*)
 	 sig 0 (string-length sig)))
-   :expected #f)
+   :result #f)
 
 (define-test sign-verify-pkcs1-key
    (let* ((key-pkcs1 (file->string "./scripts/recette-key-pkcs1.pem"))
@@ -245,7 +245,7 @@
       (ssl-verify-final verifier
 	 *cert-data* 0 (string-length *cert-data*)
 	 sig 0 (string-length sig)))
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    cipher                                                           */
@@ -267,7 +267,7 @@
 	       (let* ((dpart (ssl-cipher-update! dec ct 0 (string-length ct)))
 		      (dfinal (ssl-cipher-final dec)))
 		  (string-append dpart dfinal))))))
-   :expected "hello world 1234")
+   :result "hello world 1234")
 
 (define-test ssl-cipher-update!
    (let ((key (make-string 16 #\a))
@@ -283,7 +283,7 @@
 	       (let* ((dpart (ssl-cipher-update! dec ct 0 (string-length ct)))
 		      (dfinal (ssl-cipher-final dec)))
 		  (string-append dpart dfinal))))))
-   :expected "test aes128 cbc!")
+   :result "test aes128 cbc!")
 
 (define-test ssl-cipher-final
    (with-handler
@@ -301,7 +301,7 @@
 		  (let* ((dpart (ssl-cipher-update! dec ct 0 (string-length ct)))
 			 (dfinal (ssl-cipher-final dec)))
 		     (string-append dpart dfinal)))))))
-   :expected "des test")
+   :result "des test")
 
 (define-test cipher-des-ede3-cbc
    (let ((key (make-string 24 #\a))
@@ -317,7 +317,7 @@
 	       (let* ((dpart (ssl-cipher-update! dec ct 0 (string-length ct)))
 		      (dfinal (ssl-cipher-final dec)))
 		  (string-append dpart dfinal))))))
-   :expected "3des tst")
+   :result "3des tst")
 
 (define-test cipher-no-iv
    (let ((key (make-string 32 #\a))
@@ -332,7 +332,7 @@
 	       (let* ((dpart (ssl-cipher-update! dec ct 0 (string-length ct)))
 		      (dfinal (ssl-cipher-final dec)))
 		  (string-append dpart dfinal))))))
-   :expected "hello world 1234")
+   :result "hello world 1234")
 
 (define-test ssl-cipher-set-auto-padding
    (let ((enc (instantiate::ssl-cipher)))
@@ -340,7 +340,7 @@
 	 (make-string 32 #\a) 0 32
 	 (make-string 16 #\b) 0 16 #t)
       (ssl-cipher-set-auto-padding enc #t))
-   :expected #t)
+   :result #t)
 
 (define-test cipher-set-auto-padding-false
    ;; 16 bytes = exactly one AES block. With padding disabled,
@@ -354,7 +354,7 @@
       (let* ((part (ssl-cipher-update! enc plaintext 0 16))
 	     (final (ssl-cipher-final enc)))
 	 (string-length (string-append part final))))
-   :expected 16)
+   :result 16)
 
 (define-test cipher-aes-256-gcm
    (with-handler
@@ -372,7 +372,7 @@
 		  (let* ((dpart (ssl-cipher-update! dec ct 0 (string-length ct)))
 			 (dfinal (ssl-cipher-final dec)))
 		     (string-append dpart dfinal)))))))
-   :expected "gcm test data!!")
+   :result "gcm test data!!")
 
 ;; AES-256-CTR (stream mode, NoPadding)
 (define-test cipher-aes-256-ctr
@@ -391,7 +391,7 @@
 		  (let* ((dpart (ssl-cipher-update! dec ct 0 (string-length ct)))
 			 (dfinal (ssl-cipher-final dec)))
 		     (string-append dpart dfinal)))))))
-   :expected "ctr test!")
+   :result "ctr test!")
 
 ;; DES-EDE3-CBC with EVP_BytesToKey (no explicit IV)
 (define-test ssl-cipher-init
@@ -409,14 +409,14 @@
 		  (let* ((dpart (ssl-cipher-update! dec ct 0 (string-length ct)))
 			 (dfinal (ssl-cipher-final dec)))
 		     (string-append dpart dfinal)))))))
-   :expected "3des no iv")
+   :result "3des no iv")
 
 ;*---------------------------------------------------------------------*/
 ;*    pbkdf2                                                           */
 ;*---------------------------------------------------------------------*/
 (define-test pkcs5-pbkdf2-hmac-sha1
    (string-length (pkcs5-pbkdf2-hmac-sha1 "password" "salt" 1000 20))
-   :expected 20)
+   :result 20)
 
 ;*---------------------------------------------------------------------*/
 ;*    enumeration                                                      */
@@ -424,16 +424,16 @@
 (define-test ssl-get-ciphers
    (let ((c (ssl-get-ciphers)))
       (and (vector? c) (>fx (vector-length c) 0)))
-   :expected #t)
+   :result #t)
 
 (define-test evp-get-hashes
    (let ((h (evp-get-hashes)))
       (and (pair? h) (not (null? h))))
-   :expected #t)
+   :result #t)
 
 (define-test evp-get-ciphers
    (pair? (evp-get-ciphers))
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    secure-context                                                   */
@@ -445,14 +445,14 @@
    (let ((sc (instantiate::secure-context)))
       (secure-context-close sc)
       #t)
-   :expected #t)
+   :result #t)
 
 (define-test secure-context-add-root-certs!
    (let ((sc (instantiate::secure-context)))
       (let ((r (secure-context-add-root-certs! sc)))
 	 (secure-context-close sc)
 	 r))
-   :expected #t)
+   :result #t)
 
 (define-test secure-context-add-ca-cert
    (let ((sc (instantiate::secure-context)))
@@ -460,7 +460,7 @@
 		  (string-length *cert-data*))))
 	 (secure-context-close sc)
 	 r))
-   :expected #t)
+   :result #t)
 
 (define-test secure-context-set-cert!
    (let ((sc (instantiate::secure-context)))
@@ -470,7 +470,7 @@
 		   (string-length *key-data*))))
 	 (secure-context-close sc)
 	 (and r1 r2)))
-   :expected #t)
+   :result #t)
 
 (define-test secure-context-set-key!
    (let ((sc (instantiate::secure-context)))
@@ -480,21 +480,21 @@
 		   (string-length *cert-data*))))
 	 (secure-context-close sc)
 	 (and r1 r2)))
-   :expected #t)
+   :result #t)
 
 (define-test secure-context-set-ciphers!
    (let ((sc (instantiate::secure-context)))
       (let ((r (secure-context-set-ciphers! sc "TLS_AES_256_GCM_SHA384")))
 	 (secure-context-close sc)
 	 r))
-   :expected #t)
+   :result #t)
 
 (define-test secure-context-set-session-id-context!
    (let ((sc (instantiate::secure-context)))
       (let ((r (secure-context-set-session-id-context! sc "mysession" 0 9)))
 	 (secure-context-close sc)
 	 r))
-   :expected #t)
+   :result #t)
 
 ;; NOTE: CRL test omitted - secure-context-add-crl! causes a segfault
 ;; on the C backend when run after other secure-context tests that
@@ -508,7 +508,7 @@
       (let ((r (secure-context-load-pkcs12 sc p12 "testpass")))
 	 (secure-context-close sc)
 	 r))
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    DH                                                               */
@@ -519,25 +519,25 @@
 (define-test dh-generate-parameters-ex
    (let ((dh (instantiate::dh)))
       (dh-generate-parameters-ex dh 512 'DH-GENERATOR-2))
-   :expected #t)
+   :result #t)
 
 (define-test dh-size
    (let ((dh (instantiate::dh)))
       (dh-generate-parameters-ex dh 512 'DH-GENERATOR-2)
       (>fx (dh-size dh) 0))
-   :expected #t)
+   :result #t)
 
 (define-test dh-check
    (let ((dh (instantiate::dh)))
       (dh-generate-parameters-ex dh 512 'DH-GENERATOR-2)
       (dh-check dh))
-   :expected #f)
+   :result #f)
 
 (define-test dh-generate-key
    (let ((dh (instantiate::dh)))
       (dh-generate-parameters-ex dh 512 'DH-GENERATOR-2)
       (dh-generate-key dh))
-   :expected #t)
+   :result #t)
 
 (define-test dh-field-accessors
    (let ((dh (instantiate::dh)))
@@ -545,7 +545,7 @@
       (dh-generate-key dh)
       (with-access::dh dh (p g public-key private-key)
 	 (and p g public-key private-key #t)))
-   :expected #t)
+   :result #t)
 
 (define-test dh-compute-key
    (let ((dh1 (instantiate::dh))
@@ -562,7 +562,7 @@
 	    (s2 (with-access::dh dh1 (public-key)
 		   (dh-compute-key dh2 public-key))))
 	 (string=? s1 s2)))
-   :expected #t)
+   :result #t)
 
 (define-test dh-check-pub-key
    (let ((dh (instantiate::dh)))
@@ -570,14 +570,14 @@
       (dh-generate-key dh)
       (with-access::dh dh (public-key)
 	 (dh-check-pub-key dh public-key)))
-   :expected #f)
+   :result #f)
 
 (define-test dh-check-pub-key-invalid
    (let ((dh (instantiate::dh)))
       (dh-generate-parameters-ex dh 512 'DH-GENERATOR-2)
       (let ((zero (bn-bin2bn (make-string 1 #a000))))
 	 (not (not (dh-check-pub-key dh zero)))))
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    bn                                                               */
@@ -585,23 +585,23 @@
 (define-test bn-bin2bn
    (let ((bn (bn-bin2bn "test")))
       (bn-bn2bin bn))
-   :expected "test")
+   :result "test")
 
 (define-test bn-num-bytes
    (>fx (bn-num-bytes (bn-bin2bn "test")) 0)
-   :expected #t)
+   :result #t)
 
 (define-test bn-new
    (not (not (bn-new)))
-   :expected #t)
+   :result #t)
 
 (define-test bn-set-word
    (not (not (bn-set-word (bn-new) 42)))
-   :expected #t)
+   :result #t)
 
 (define-test bn-free
    (begin (bn-free (bn-bin2bn "test")) #t)
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    sockets                                                          */
@@ -644,7 +644,7 @@
                   (socket-close server)
                   reply)))))
    :cond-expand (library pthread)
-   :expected "tls12")
+   :result "tls12")
 
 (define-test ssl-client-socket-https
    (with-handler
@@ -657,7 +657,7 @@
 	    (socket-close s)
 	    (and (string? line) (>=fx (string-contains line "HTTP") 0)))))
    :eq (lambda (x y) (or (eq? x 'skip) (equal? x y)))
-   :expected #t)
+   :result #t)
 
 (define-test ssl-socket?
    (with-handler
@@ -667,7 +667,7 @@
 	    (socket-close s)
 	    r)))
    :eq (lambda (x y) (or (eq? x 'skip) (equal? x y)))
-   :expected #t)
+   :result #t)
 
 (define-test ssl-server-client-echo
    (let* ((server (make-ssl-server-socket 0 :cert *cert* :pkey *pkey*))
@@ -693,7 +693,7 @@
 	       (socket-close server)
 	       reply))))
    :cond-expand (library pthread)
-   :expected "echo-test")
+   :result "echo-test")
 
 (define-test make-ssl-server-socket
    (let* ((server (make-ssl-server-socket 0
@@ -721,7 +721,7 @@
 	       (socket-close server)
 	       reply))))
    :cond-expand (library pthread)
-   :expected "named")
+   :result "named")
 
 (define-test client-socket-use-ssl!
    (let* ((server (make-ssl-server-socket 0 :cert *cert* :pkey *pkey*))
@@ -747,7 +747,7 @@
 	       (socket-close server)
 	       reply))))
    :cond-expand (library pthread)
-   :expected "upgrade")
+   :result "upgrade")
 
 (define-test make-ssl-client-socket
    (let* ((server (make-ssl-server-socket 0 :cert *cert* :pkey *pkey*))
@@ -770,7 +770,7 @@
 	       (socket-close server)
 	       r))))
    :cond-expand (library pthread)
-   :expected #t)
+   :result #t)
 
 ;; 192.0.2.1 is RFC 5737 TEST-NET-1, guaranteed non-routable.
 ;; Depending on the network, this may time out or fail immediately
@@ -780,11 +780,11 @@
       (lambda (e) (isa? e &io-error))
       (make-client-socket "192.0.2.1" 12345 :timeout 1000000)
       #f)
-   :expected #t)
+   :result #t)
 
 (define-test ssl-client-socket-timeout
    (with-handler
       (lambda (e) (isa? e &io-error))
       (make-ssl-client-socket "192.0.2.1" 12345 :timeout 1000000)
       #f)
-   :expected #t)
+   :result #t)

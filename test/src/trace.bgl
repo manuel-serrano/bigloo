@@ -32,7 +32,7 @@
 ;*---------------------------------------------------------------------*/
 (define-test with-trace
    (with-trace 'debug "with-trace" 'a-value)
-   :expected 'a-value)
+   :result 'a-value)
 
 (define-test trace-item
    (with-trace 'debug 'with-trace
@@ -41,25 +41,25 @@
 
 (define-test trace-bold
    (trace-bold '(1 2))
-   :expected string?)
+   :result string?)
 
 (define-test trace-color
    (trace-color 3 "foo bar")
-   :expected string?)
+   :result string?)
 
 (define-test trace-margin
    trace-margin
-   :expected procedure?)
+   :result procedure?)
 
 (define-test trace-margin-set!
    (begin
       (trace-margin-set! "~")
       (trace-margin))
-   :expected "~")
+   :result "~")
 
 (define-test trace-port
    trace-port
-   :expected procedure?)
+   :result procedure?)
 
 (define-test trace-port-set!
    (let ((op (open-output-string)))

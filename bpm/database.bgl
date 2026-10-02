@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Fri Oct  2 12:58:24 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 16:50:00 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -178,6 +178,7 @@
                       (for-each (lambda (pv::PackageVersion)
                                    (print "  version: " pv.version)
                                    (print "  author: " pv.author)
+                                   (print "  homepage: " pv.homepage)
                                    (print "  url: " pv.url)
                                    (unless (or (string=? pv.note "")
                                                (string=? pv.note p.description))

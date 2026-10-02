@@ -37,11 +37,11 @@
 
 (define-test tar-header
    tar-header
-   :expected class?)
+   :result class?)
 
 (define-test tar-read-header
    tar-read-header
-   :expected procedure?)
+   :result procedure?)
 
 (define-test tar-read-header
    (call-with-input-string tgz
@@ -75,7 +75,7 @@
                                    (-> h::tar-header type))
                                 (-> h::tar-header name)))))))
                (close-input-port in)))))
-   :expected '((dir . "E/") (normal "E/B" "b\n") (normal "E/A" "a\n")))
+   :result '((dir . "E/") (normal "E/B" "b\n") (normal "E/A" "a\n")))
 
 (define-test untar
    (call-with-input-string tgz
@@ -84,6 +84,6 @@
             (unwind-protect
                (untar in :file "E/A")
                (close-input-port in)))))
-   :expected "a\n")
+   :result "a\n")
 
 

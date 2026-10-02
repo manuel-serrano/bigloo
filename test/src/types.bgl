@@ -32,23 +32,23 @@
 ;*---------------------------------------------------------------------*/
 (define-test typeof
    (typeof (cons 1 2))
-   :expected "pair")
+   :result "pair")
 
 (define-test typeof
    (typeof 4.3)
-   :expected "real")
+   :result "real")
 
 (define-test typeof
    (typeof typeof)
-   :expected "procedure")
+   :result "procedure")
 
 (define-test typeof
    (typeof #l54)
-   :expected "bllong")
+   :result "bllong")
 
 (define-test typeof
    (typeof #z3435)
-   :expected "bignum")
+   :result "bignum")
 
 
 

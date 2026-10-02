@@ -31,23 +31,23 @@
 ;*    tests ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-test current-input-port (input-port? (current-input-port))
-   :expected #t)
+   :result #t)
    
 (define-test current-error-port (output-port? (current-error-port))
-   :expected #t)
+   :result #t)
    
 (define-test current-output-port (output-port? (current-output-port))
-   :expected #t)
+   :result #t)
    
 (define-test open-input-file (let ((p (open-input-file "misc/input.txt")))
                                 (unwind-protect
                                    (input-port? p)
                                    (close-input-port p)))
-   :expected #t)
+   :result #t)
 (define-test open-input-file (input-string-port? (open-input-file "string:foo"))
-   :expected #t)
+   :result #t)
 (define-test open-input-file (input-port? (open-input-file "wrong"))
-   :expected #f)
+   :result #f)
 
 (define-test input-port-reopen!
    (call-with-input-string "\"foo\" bar gee"
@@ -55,7 +55,7 @@
          (read ip)
          (input-port-reopen! ip)
          (read ip)))
-   :expected "foo")
+   :result "foo")
 
 (define-test open-input-procedure
    (let ((p (open-input-procedure
@@ -69,30 +69,30 @@
       (unwind-protect
          (read p)
          (close-input-port p)))
-   :expected 'foobar)
+   :result 'foobar)
                               
 (define-test open-input-descriptor
    (let ((p (open-input-descriptor 0)))
       (unwind-protect
          (input-port? p)
          (close-input-port p)))
-   :expected #t)
+   :result #t)
 
 (define-test open-input-string
    (read-char (open-input-string "A"))
-   :expected #\A)
+   :result #\A)
 
 (define-test open-input-string
    (read-string (open-input-string "ABCDE" 1 3))
-   :expected "BC")
+   :result "BC")
 
 (define-test open-input-string!
    (read (open-input-string! "1900"))
-   :expected 1900)
+   :result 1900)
 
 (define-test open-input-c-string
    (read-char (open-input-c-string "A"))
-   :expected #\A)
+   :result #\A)
 
 (define-test open-input-mmap
    (let* ((mmap (open-mmap "misc/input.txt" :read #t :write #f))
@@ -102,14 +102,14 @@
          (begin
             (close-input-port ip)
             (close-mmap mmap))))
-   :expected 'Toto)
+   :result 'Toto)
 
 (define-test open-input-gzip-file
    (let ((ip (open-input-gzip-file "misc/input.txt.gz")))
       (unwind-protect
          (read ip)
          (close-input-port ip)))
-   :expected 'Toto)
+   :result 'Toto)
 
 (define-test open-input-gzip-port
    (let* ((zp (open-input-file "misc/input.txt.gz"))
@@ -119,14 +119,14 @@
          (begin
             (close-input-port ip)
             (close-input-port zp))))
-   :expected 'Toto)
+   :result 'Toto)
 
 (define-test open-input-zlib-file
    (let ((ip (open-input-zlib-file "misc/input.txt.zlib")))
       (unwind-protect
          (read ip)
          (close-input-port ip)))
-   :expected 'Toto)
+   :result 'Toto)
 
 (define-test open-input-zlib-port
    (let* ((zp (open-input-file "misc/input.txt.zlib"))
@@ -136,40 +136,40 @@
          (begin
             (close-input-port ip)
             (close-input-port zp))))
-   :expected 'Toto)
+   :result 'Toto)
 
 (define-test close-input-port
    (closed-input-port? (close-input-port (open-input-file "/dev/null")))
-   :expected #t)
+   :result #t)
 
 (define-test close-input-port
    (let ((p (open-input-file "misc/input.txt")))
       (close-input-port p)
       (close-input-port p)
       #f)
-   :expected #f)
+   :result #f)
 
 (define-test closed-input-port?
    (closed-input-port? (close-input-port (open-input-file "/dev/null")))
-   :expected #t)
+   :result #t)
 
 (define-test close-output-port
    (begin (close-output-port (open-output-file "/dev/null")) #unspecified)
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test close-output-port
    (let ((p (open-output-string)))
       (display "foo" p)
       (close-output-port p))
-   :expected "foo")
+   :result "foo")
 
 (define-test closed-output-port?
    (closed-output-port? (close-output-port (open-output-file "/dev/null")))
-   :expected #t)
+   :result #t)
 
 (define-test closed-output-port?
    (closed-output-port? (open-output-string ""))
-   :expected #f)
+   :result #f)
 
 (define-test flush-output-port
    (let ((outp (open-output-string)))
@@ -178,7 +178,7 @@
              (v2 (flush-output-port outp)))
          (display "zot" outp)
          (list v1 v2 (flush-output-port outp))))
-   :expected '("this is some text" "this is some text" "this is some textzot"))
+   :result '("this is some text" "this is some text" "this is some textzot"))
 
 (define-test reset-output-port
    (let ((outp (open-output-string)))
@@ -188,7 +188,7 @@
              (v2 (flush-output-port outp)))
          (display "zot" outp)
          (list v1 v2 (flush-output-port outp))))
-   :expected '("this is some text" "" "zot"))
+   :result '("this is some text" "" "zot"))
 
 (define-test open-output-file
    (let ((p (open-output-file "/dev/null")))
@@ -207,7 +207,7 @@
       (display "foo" p)
       (display 100 p)
       (close-output-port p))
-   :expected "foo100")
+   :result "foo100")
 
 (define-test open-output-procedure
    (letrec* ((buf #f)
@@ -226,48 +226,48 @@
             (display "bar" op)
             (cons flush buf))
          (close-output-port op)))
-   :expected '("foo" . "bar"))
+   :result '("foo" . "bar"))
 
 (define-test input-port? (input-port? (current-input-port))
-   :expected #t)
+   :result #t)
 (define-test input-port? (input-port? (current-output-port))
-   :expected #f)
+   :result #f)
 (define-test input-port? (input-port? (open-input-string "foo"))
-   :expected #t)
+   :result #t)
 
 (define-test input-string-port? (input-string-port? (current-input-port))
-   :expected #f)
+   :result #f)
 (define-test input-string-port? (input-string-port? (current-output-port))
-   :expected #f)
+   :result #f)
 (define-test input-string-port? (input-string-port? (open-input-string "foo"))
-   :expected #t)
+   :result #t)
 
 (define-test output-port? (output-port? (current-output-port))
-   :expected #t)
+   :result #t)
 (define-test output-port? (output-port? (current-output-port))
-   :expected #t)
+   :result #t)
 (define-test output-port? (output-port? (open-output-string))
-   :expected #t)
+   :result #t)
 
 (define-test output-string-port? (output-string-port? (current-output-port))
-   :expected #f)
+   :result #f)
 (define-test output-string-port? (output-string-port? (current-output-port))
-   :expected #f)
+   :result #f)
 (define-test output-string-port? (output-port? (open-output-string))
-   :expected #t)
+   :result #t)
 
 (define-test port? (port? (current-output-port))
-   :expected #t)
+   :result #t)
 (define-test port? (port? (current-output-port))
-   :expected #t)
+   :result #t)
 (define-test port? (port? (open-output-string))
-   :expected #t)
+   :result #t)
 (define-test port?
    (let ((p (open-input-binary-file "/dev/null")))
       (unwind-protect
          (port? p)
          (close-binary-port p)))
-   :expected #f)
+   :result #f)
 
 (define-test call-with-input-file
    (call-with-input-file "misc/input.txt"
@@ -277,23 +277,23 @@
          (read-chars 30 port)
          (peek-char port)
          (read-char port)))
-   :expected #\e)
+   :result #\e)
 
 (define-test call-with-input-string
    (call-with-input-string "(foo 2.3)" read)
-   :expected '(foo 2.3))
+   :result '(foo 2.3))
 
 (define-test call-with-output-file
    (call-with-output-file "/dev/null" output-port?)
-   :expected #t)
+   :result #t)
 
 (define-test call-with-append-file
    (call-with-append-file "/dev/null" output-port?)
-   :expected #t)
+   :result #t)
 
 (define-test call-with-output-string
    (call-with-output-string (lambda (op) (display '(1 2) op)))
-   :expected "(1 2)")
+   :result "(1 2)")
 
 (define-test with-input-from-file
    (with-input-from-file "misc/input.txt"
@@ -303,13 +303,13 @@
          (read-chars 30)
          (peek-char)
          (read-char)))
-   :expected #\e)
+   :result #\e)
 
 (define-test with-input-from-string
    (with-input-from-string "foo bar"
       (lambda ()
          (read)))
-   :expected 'foo)
+   :result 'foo)
          
 (define-test with-input-from-procedure
    (with-input-from-procedure
@@ -320,7 +320,7 @@
                   r)))
       (lambda ()
          (read)))
-   :expected 1)
+   :result 1)
 
 (define-test with-input-from-port
    (call-with-input-string "(7 8)"
@@ -328,27 +328,27 @@
          (with-input-from-port ip
             (lambda ()
                (read)))))
-   :expected '(7 8))
+   :result '(7 8))
             
 (define-test with-output-to-file
    (with-output-to-file "/dev/null"
       (lambda ()
          (display 1)
          #t))
-   :expected #t)
+   :result #t)
          
 (define-test with-append-to-file
    (with-append-to-file "/dev/null"
       (lambda ()
          (display 1)
          #t))
-   :expected #t)
+   :result #t)
          
 (define-test with-output-to-string
    (with-output-to-string
       (lambda ()
          (display 1)))
-   :expected "1")
+   :result "1")
 
 (define-test with-output-to-procedure
    (let ((buf #f)
@@ -362,7 +362,7 @@
                (display #t)
                (display #f)))
          buf))
-   :expected "#f")
+   :result "#f")
 
 (define-test with-output-to-port
    (call-with-output-string
@@ -370,20 +370,20 @@
          (with-output-to-port op
             (lambda ()
                (display '#(123))))))
-   :expected "#(123)")
+   :result "#(123)")
    
 (define-test with-error-to-string
    (with-error-to-string
       (lambda ()
          (display 1 (current-error-port))))
-   :expected "1")
+   :result "1")
          
 (define-test with-error-to-file
    (with-error-to-file "/dev/null"
       (lambda ()
          (display 1 (current-error-port))
          #t))
-   :expected #t)
+   :result #t)
          
 (define-test with-error-to-procedure
    (let ((buf #f))
@@ -392,7 +392,7 @@
             (lambda ()
                (display 123 (current-error-port))))
          buf))
-   :expected "123")
+   :result "123")
          
 (define-test with-error-to-port
    (call-with-output-string
@@ -400,34 +400,34 @@
          (with-error-to-port op
             (lambda ()
                (display '#(123) (current-error-port))))))
-   :expected "#(123)")
+   :result "#(123)")
 
 (define-test input-port-name
    (call-with-input-file "/etc/passwd" input-port-name)
-   :expected "/etc/passwd")
+   :result "/etc/passwd")
 
 (define-test input-port-name-set!
    (begin
       (input-port-name-set! (current-input-port) "foo")
       (input-port-name (current-input-port)))
-   :expected "foo")
+   :result "foo")
 
 (define-test output-port-name
    (call-with-output-file "/dev/null" output-port-name)
-   :expected "/dev/null")
+   :result "/dev/null")
 
 (define-test output-port-name-set!
    (begin
       (output-port-name-set! (current-output-port) "foo")
       (output-port-name (current-output-port)))
-   :expected "foo")
+   :result "foo")
 
 (define-test input-port-position
    (call-with-input-file "/etc/passwd"
       (lambda (ip)
          (read-chars 10 ip)
          (input-port-position ip)))
-   :expected 10)
+   :result 10)
 
 (define-test input-port-position-set!
    (call-with-input-file "/etc/passwd"
@@ -435,7 +435,7 @@
          (input-port-position-set! ip 10)
          (read-chars 10 ip)
          (input-port-position ip)))
-   :expected 20)
+   :result 20)
 
 (define-test output-port-position
    (let ((op (open-output-string)))
@@ -446,7 +446,7 @@
             (display "bar" op)
             (output-port-position op))
          (close-output-port op)))
-   :expected 4)
+   :result 4)
 
 (define-test output-port-position-set!
    (let ((op (open-output-string)))
@@ -457,11 +457,11 @@
             (display "bar" op)
             (output-port-position op))
          (close-output-port op)))
-   :expected 4)
+   :result 4)
 
 (define-test input-port-length
    (call-with-input-string "foo" input-port-length)
-   :expected 3)
+   :result 3)
 
 (define-test get-output-string
    (let ((p (open-output-string)))
@@ -470,18 +470,18 @@
          (display "foo" p)
          (close-output-port p)
          s))
-   :expected "1234")
+   :result "1234")
 
 (define-test input-port-timeout
    (integer? (input-port-timeout (current-input-port)))
-   :expected #t)
+   :result #t)
 
 (define-test input-port-timeout-set!
    (call-with-input-file "/dev/null"
       (lambda (ip)
          (input-port-timeout-set! ip 10000)
          (integer? (input-port-timeout ip))))
-   :expected #t)
+   :result #t)
 
 (define-test input-port-timeout-set!
    (call-with-input-file "/dev/null"
@@ -490,11 +490,11 @@
          (cond-expand
             (c (input-port-timeout ip))
             (else 10000))))
-   :expected 10000)
+   :result 10000)
 
 (define-test output-port-timeout
    (integer? (output-port-timeout (current-output-port)))
-   :expected #t)
+   :result #t)
 
 (define-test output-port-timeout-set!
    (let ((op (open-output-string)))
@@ -503,7 +503,7 @@
             (output-port-timeout-set! op 10000)
             (integer? (output-port-timeout op)))
          (close-output-port op)))
-   :expected #t)
+   :result #t)
 
 (define-test output-port-timeout-set!
    (let ((op (open-output-string)))
@@ -514,11 +514,11 @@
                (c (output-port-timeout op))
                (else 10000)))
          (close-output-port op)))
-   :expected 10000)
+   :result 10000)
 
 (define-test output-port-flush-hook
    (output-port-flush-hook (open-output-string ""))
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test output-port-flush-hook-set!
    (let ((res #unspecified))
@@ -530,7 +530,7 @@
             (display "foo" op)
             (flush-output-port op)))
       res)
-   :expected '(#t . #t))
+   :result '(#t . #t))
 
 (define-test output-port-flush-hook-set!
    (let* ((f (make-file-name (os-tmp) "recette.TMP"))
@@ -545,22 +545,22 @@
       (close-output-port p)
       (delete-file f)
       n)
-   :expected 17)
+   :result 17)
 
 (define-test output-port-flush-buffer
    (output-port-flush-buffer (current-output-port))
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test output-port-flush-buffer-set!
    (let* ((buf (make-string 80))
           (p (open-output-string)))
       (output-port-flush-buffer-set! p buf)
       (eq? buf (output-port-flush-buffer p)))
-   :expected #t)
+   :result #t)
 
 (define-test input-port-close-hook
    (input-port-close-hook (open-input-string ""))
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test input-port-close-hook-set!
    (let ((ip (open-input-string ""))
@@ -568,11 +568,11 @@
       (input-port-close-hook-set! ip (lambda (p) (set! res (eq? ip p))))
       (close-input-port ip)
       res)
-   :expected #t)
+   :result #t)
       
 (define-test output-port-close-hook
    (output-port-close-hook (open-output-string ""))
-   :expected #unspecified)
+   :result #unspecified)
 
 (define-test output-port-close-hook-set!
    (let ((ip (open-output-string ""))
@@ -580,7 +580,7 @@
       (output-port-close-hook-set! ip (lambda (p) (set! res (eq? ip p))))
       (close-output-port ip)
       res)
-   :expected #t)
+   :result #t)
       
 (define-test open-input-ftp-file
    (let ((p (open-input-ftp-file "ftp-sop.inria.fr/ls-lR.gz")))
@@ -589,7 +589,7 @@
              (string? (read-string p))
              (close-input-port p))
           #t))
-   :expected #t)
+   :result #t)
 
 (define-test open-input-ftp-file
    (let ((p (open-input-ftp-file "anonymous:foo@ftp-sop.inria.fr/ls-lR.gz")))
@@ -598,7 +598,7 @@
              (string? (read-string p))
              (close-input-port p))
           #t))
-   :expected #t)
+   :result #t)
 
 (define-test open-pipes
    (cond-expand
@@ -611,7 +611,7 @@
           (close-input-port in)
           (close-output-port out)
           #t)))
-   :expected #t)
+   :result #t)
 
 (define-test select
    (cond-expand
@@ -622,7 +622,7 @@
                 (select :read (list (current-input-port) ip))
                 (>fx (length readfs) 0)))))
       (else #t))
-   :expected #t)
+   :result #t)
 
 (define-test lockf
    (cond-expand
@@ -638,13 +638,13 @@
              (when (file-exists? path)
                 (delete-file path)))))
       (else #t))
-   :expected #t)
+   :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    binary ports                                                     */
 ;*---------------------------------------------------------------------*/
 (define-test binary-port? (binary-port? (current-output-port))
-   :expected #f)
+   :result #f)
 (define-test binary-port?
    (let ((p (open-input-binary-file port.filename)))
       (unwind-protect
