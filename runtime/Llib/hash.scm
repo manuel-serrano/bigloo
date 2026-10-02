@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Llib/hash.scm                       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/hash.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Thu Jun  4 10:24:55 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 06:51:41 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -155,17 +155,6 @@
 	    (hashtable-filter! ::struct ::procedure)
 	    (hashtable-clear! ::struct)
             (hashtable-collisions::pair-nil ::struct)
-	    (open-string-hashtable-contains?::bool ::struct ::bstring)
-	    (open-string-hashtable-update!::obj ::struct ::bstring ::procedure ::obj)
-	    (open-string-hashtable-add! ::struct ::bstring ::procedure obj init)
-	    (open-string-hashtable-remove! ::struct ::bstring)
-            (open-string-hashtable->vector::vector table::struct)
-            (open-string-hashtable->list::pair-nil table::struct)
-	    (open-string-hashtable-map::pair-nil ::struct ::procedure)
-	    (open-string-hashtable-filter ::struct ::procedure)
-	    (open-string-hashtable-filter-map ::struct ::procedure)
-	    (open-string-hashtable-for-each ::struct ::procedure)
-	    (open-string-hashtable-filter! ::struct ::procedure)
 	    (string-hashtable-contains?::bool ::struct ::bstring)
 	    (string-hashtable-update!::obj ::struct ::bstring ::procedure ::obj)
 	    (string-hashtable-add! ::struct ::bstring ::procedure obj init)
@@ -1378,28 +1367,3 @@
 	  (string-hashtable-rehash! t)
 	  (%hashtable-size-set! t (+fx n 1)))))
 
-;*---------------------------------------------------------------------*/
-;*    bootstrap temprorary functions                                   */
-;*---------------------------------------------------------------------*/
-(define (open-string-hashtable-contains?::bool a b)
-   (string-hashtable-contains? a b))
-(define (open-string-hashtable-update!::obj a b c d)
-   (string-hashtable-update! a b c d))
-(define (open-string-hashtable-add! a::struct b::bstring c::procedure obj init)
-   (string-hashtable-add! a b c obj init))
-(define (open-string-hashtable-remove! a::struct b::bstring)
-   (string-hashtable-remove! a b))
-(define (open-string-hashtable->vector::vector table::struct)
-   (string-hashtable->vector table))
-(define (open-string-hashtable->list::pair-nil table::struct)
-   (string-hashtable->list table))
-(define (open-string-hashtable-map::pair-nil a::struct b::procedure)
-   (string-hashtable-map a b))
-(define (open-string-hashtable-filter a b)
-   (string-hashtable-filter a b))
-(define (open-string-hashtable-filter-map a b)
-   (string-hashtable-filter-map a b))
-(define (open-string-hashtable-for-each a b)
-   (string-hashtable-for-each a b))
-(define (open-string-hashtable-filter! a b)
-   (string-hashtable-filter! a b))

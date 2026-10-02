@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 15:41:34 2026                          */
-;*    Last change :  Thu Oct  1 08:27:24 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 14:11:36 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Package data type and tools                                      */
@@ -15,7 +15,8 @@
 (module package
    (import "./config.bgl" . config)
    (import "./utils.bgl" . utils)
-   (export Package PackageVersion decode-name list->package-version))
+   (export Package PackageVersion pp decode-name list->package-version
+      check-version))
 
 ;*---------------------------------------------------------------------*/
 ;*    Package ...                                                      */
@@ -64,6 +65,21 @@
          (backends (vector-ref o 5))
          (bigloo (vector-ref o 6))
          (dependencies (vector-ref o 7)))))
+
+;*---------------------------------------------------------------------*/
+;*    pp ...                                                           */
+;*---------------------------------------------------------------------*/
+(define (pp l op::output-port)
+   (fprint op "(")
+   (let loop ((l l))
+      (when (pair? l)
+         (display "  " op)
+         (display (car l) op)
+         (display " " op)
+         (write (cadr l) op)
+         (newline op)
+         (loop (cddr l))))
+   (fprint op ")"))
 
 ;*---------------------------------------------------------------------*/
 ;*    list->package-version ...                                        */
@@ -115,3 +131,9 @@
       (else
        (values pkg #f))))
       
+;*---------------------------------------------------------------------*/
+;*    check-version ...                                                */
+;*---------------------------------------------------------------------*/
+(define (check-version pv::PackageVersion dir::bstring)
+   #t)
+           

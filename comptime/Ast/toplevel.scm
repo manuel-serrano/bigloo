@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct 20 15:11:28 2025                          */
-;*    Last change :  Thu Oct  1 07:13:30 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:00:32 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST construction of the toplevel forms                           */
@@ -562,10 +562,8 @@
 	     ;; be checked when defining the global variable
 	     (reverse! (cons (make-user-local-svar id type) res))))
 	 ((dsssl-named-constant? (car args))
-          (tprint "ICI " (dsssl-find-first-formal args))
           (let* ((arg0 (dsssl-find-first-formal args))
                  (arg (id-of-id arg0 loc)))
-             (tprint "ICI.arg " arg)
 	     (if arg
 		 (if (or (eq? (car args) #!rest)
 			 (any dsssl-named-constant? (cdr args)))

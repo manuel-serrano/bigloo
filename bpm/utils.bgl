@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:42:40 2026                          */
-;*    Last change :  Thu Oct  1 07:59:24 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 12:49:34 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Utilities                                                        */
@@ -20,12 +20,12 @@
       verb
       version<=?
       rm-rf cp* cp-r
-      download download-package
-      read-file
-      tarball-untar tarball-untar-gz
+      download
+      untar
       url?
       yes-no?
-      color))
+      color
+      plist-get plist-set))
 
 ;*---------------------------------------------------------------------*/
 ;*    bmp-error ...                                                    */
@@ -109,20 +109,6 @@
 	  (copy-file src (make-file-name dest (basename src))))))
 
 ;*---------------------------------------------------------------------*/
-;*    read-file ...                                                    */
-;*---------------------------------------------------------------------*/
-(define (read-file file)
-   (unless (file-exists? file)
-      (raise (instantiate::&io-error
-		(proc "read-file")
-		(msg "File does not exist")
-		(obj file))))
-   (let* ((p (open-input-file file))
-	  (s (read-string p)))
-      (close-input-port p)
-      s))
-
-;*---------------------------------------------------------------------*/
 ;*    download-error ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (download-error line url)
@@ -147,95 +133,85 @@
 ;*---------------------------------------------------------------------*/
 ;*    download ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (download path url #!key md5 sha256 sha512 force (delete-tmp-files #t))
+(define (download::bstring url::bstring name::bstring #!key md5 sha256 sha512)
+   
+   (define (http-download url name)
+      
+      (unless (directory? config.tmp-directory)
+         (make-directories config.tmp-directory)
+         (unless (directory? config.tmp-directory)
+            (bmp-error "download" "Cannot create tmp directory"
+               config.tmp-directory)))
+      
+      (let* ((tgz (string-append name ".tgz"))
+             (tmp (make-file-name config.tmp-directory tgz)))
+         (call-with-output-file tmp
+            (lambda (op)
+               (let liip ((url url))
+                  (trace-item "url=" url)
+                  (let ((ip (open-input-file url)))
+                     (unless (input-port? ip)
+                        (raise
+                           (instantiate::&io-read-error
+                              (proc "download")
+                              (msg "Cannot open url")
+                              (obj url))))
+                     (unwind-protect
+                        (let* ((line (read-line ip))
+                               (status (string-split line " ")))
+                           (unless (and (pair? status)
+                                        (pair? (cdr status)))
+                              (download-error line url))
+                           (case (string->integer (cadr status))
+                              ((200)
+                               (let laap ()
+                                  (let ((e (read-line ip)))
+                                     (if (string=? e "")
+                                         (send-chars ip op)
+                                         (laap)))))
+                              ((301 302 307)
+                               (let ((nu (download-redirect url ip)))
+                                  (when (>=fx config.verbose 3)
+                                     (print
+                                        "  download redirected to "
+                                        (color 'arg0 nu)))
+                                  (liip nu)))
+                              (else
+                               (download-error line url))))
+                        (close-input-port ip))))))
+         tmp))
+   
+   (define (git-download url name)
+      (error "git-download" "not implemented" url))
+   
    ;; download the file if it does not exist
-   (with-trace 3 'download
-      (trace-item "path=" path)
-      (trace-item "url=" url)
-      (when (or (not (file-exists? path))
-		(and force (not (string=? url ""))))
-	 (unless (and (string? url) (not (string=? url "")))
-	    (error 'download "No URL for tarball" path))
-	 (let ((tmp (make-file-name config.tmp-directory (basename path))))
-	    (trace-item "tmp=" tmp)
-	    (unwind-protect
-	       (let ((op (open-output-file tmp)))
-		  (when (>=fx config.verbose 2)
-		     (print "  downloading "
-			    (color 'arg0 url)
-			    " into "
-			    (color 'arg1 (basename path))))
-		  (if (not (output-port? op))
-		      (raise
-                         (instantiate::&io-write-error
-                            (proc "download")
-                            (msg "Cannot open file for output")
-                            (obj tmp)))
-		      (unwind-protect
-			 (let liip ((url url))
-			    (trace-item "url=" url)
-			    (let ((ip (open-input-file url)))
-			       (unless (input-port? ip)
-				  (raise
-                                     (instantiate::&io-read-error
-                                        (proc "download")
-                                        (msg "Cannot open url")
-                                        (obj url))))
-			       (unwind-protect
-				  (let* ((line (read-line ip))
-					 (status (string-split line " ")))
-				     (unless (and (pair? status)
-						  (pair? (cdr status)))
-					(download-error line url))
-				     (case (string->integer (cadr status))
-					((200)
-					 (let laap ()
-					    (let ((e (read-line ip)))
-					       (if (string=? e "")
-						   (send-chars ip op)
-						   (laap)))))
-					((301 302 307)
-					 (let ((nu (download-redirect url ip)))
-					    (when (>=fx config.verbose 3)
-					       (print
-						"  download redirected to "
-						(color 'arg0 nu)))
-					    (liip nu)))
-					(else
-					 (download-error line url))))
-				  (close-input-port ip))))
-			 (close-output-port op)))
-		  ;; checksum
-                  (cond
-                     ((sha512)
-                      (unless (string=? (sha512sum-file tmp) sha512)
-                         (error "download" "Corrupted tarball" url)))
-                     ((sha256)
-                      (unless (string=? (sha256sum-file tmp) sha256)
-                         (error "download" "Corrupted tarball" url)))
-                     ((md5)
-                      (unless (string=? (md5sum-file tmp) md5)
-                         (error "download" "Corrupted tarball" url))))
-		  (make-directories (dirname path))
-		  (unless (string=? tmp path)
-		     (rename-file tmp path)))
-	       (when (and (file-exists? tmp)
-			  delete-tmp-files
-			  (not (string=? tmp path)))
-		  (delete-file tmp)))))))
-
-;*---------------------------------------------------------------------*/
-;*    download-package ...                                             */
-;*---------------------------------------------------------------------*/
-(define (download-package url)
-   (let* ((match (pregexp-match ".*tarball=([^&]+)" url))
-	  (match (or match (pregexp-match ".*/([^/]+[.]tar[.]gz)" url))))
-      (unless (pair? match)
-	 (error "bpm" "Cannot infer package name from url" url))
-      (let* ((name (cadr match))
-	     (path (make-file-name config.tmp-directory name)))
-	 (download path url)
-	 path)))
+   (let ((tgz (cond
+                 ((or (string-prefix? "http://" url)
+                      (string-prefix? "https://" url))
+                  (http-download url name))
+                 ((string-prefix? "git://" url)
+                  (git-download url name))
+                 ((string-prefix? "file://" url)
+                  (substring url 7))
+                 (else
+                  url))))
+      (if (file-exists? tgz)
+          (cond
+             (sha512
+              (if (string=? (sha512sum-file tgz) sha512)
+                  tgz
+                  (bmp-error "download" "Corrupted tgz" url)))
+             (sha256
+              (if (string=? (sha256sum-file tgz) sha256)
+                  tgz
+                  (bmp-error "download" "Corrupted tgz" url)))
+             (md5
+              (if (string=? (md5sum-file tgz) md5)
+                  tgz
+                  (bmp-error "download" "Corrupted tgz" url)))
+             (else
+              tgz))
+          (bmp-error "download" "Cannot download url" url))))
 
 ;*---------------------------------------------------------------------*/
 ;*    tar-header-type ...                                              */
@@ -254,23 +230,24 @@
 ;*---------------------------------------------------------------------*/
 ;*    port-untar ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (port-untar pz path base file)
-   (let loop ((lst '()))
+(define (port-untar pz::input-port path::bstring outdir::bstring)
+   (let loop ((rootdir #f))
       (let ((h (tar-read-header pz)))
 	 (if (not h)
-	     lst
+	     rootdir
 	     (case (tar-header-type h)
 		((dir)
-		 (let ((path (make-file-name base (tar-header-name h))))
+		 (let* ((dir (tar-header-name h))
+                        (path (make-file-name outdir dir)))
 		    (if (or (directory? path) (make-directory path))
-			(loop lst)
+			(loop (or rootdir dir))
 			(raise
                            (instantiate::&io-write-error
                               (proc "tarball-untar")
                               (msg "Cannot create directory")
                               (obj path))))))
 		((normal)
-		 (let* ((path (make-file-name base (tar-header-name h)))
+		 (let* ((path (make-file-name outdir (tar-header-name h)))
 			(dir (dirname path)))
 		    (when (and (file-exists? dir) (not (directory? dir)))
 		       (delete-file dir))
@@ -286,32 +263,47 @@
                                  (proc "untar")
                                  (msg "Cannot open file for output")
                                  (obj p)))))
-		    (loop (cons path lst))))
+		    (loop rootdir)))
 		(else
 		 (raise (instantiate::&io-parse-error
 			   (proc 'tarball-untar)
 			   (msg (format "Illegal file type `~a'"
-					(tar-header-type h)))
+                                   (tar-header-type h)))
 			   (obj path)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    tarball-untar ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (tarball-untar path base #!optional file)
+(define (tarball-untar path::bstring outdir::bstring)
    (let ((pz (open-input-file path)))
       (unwind-protect
-	 (port-untar pz path base file)
+	 (port-untar pz path outdir)
 	 (close-input-port pz))))
 
 ;*---------------------------------------------------------------------*/
 ;*    tarball-untar-gz ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (tarball-untar-gz path base #!optional file)
+(define (tarball-untar-gz path::bstring outdir::bstring)
    (let ((pz (open-input-gzip-file path)))
       (unwind-protect
-         (port-untar pz path base file)
+         (port-untar pz path outdir)
 	 (close-input-port pz))))
 
+;*---------------------------------------------------------------------*/
+;*    untar ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (untar::bstring path::bstring outdir::bstring)
+   
+   (when (>= config.verbose 1)
+      (print "untar " (color 'arg0 path) "\n  -> " (color 'arg1 outdir)))
+   
+   (let ((dir (if (or (string-suffix? ".tgz" path) (string-suffix? ".gz" path))
+                  (tarball-untar-gz path (dirname outdir))
+                  (tarball-untar path (dirname outdir)))))
+      (unless (string=? dir (basename outdir))
+         (rename-file dir outdir))
+      outdir))
+       
 ;*---------------------------------------------------------------------*/
 ;*    url? ...                                                         */
 ;*---------------------------------------------------------------------*/
@@ -321,25 +313,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    yes-no? ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (yes-no?::bool message::bstring #!key (obj '()))
-   (begin
-      (cond
-         ((pair? obj)
-          (for-each (lambda (f)
-                       (display f)
-                       (display " "))
-             obj)
-          (newline))
-         ((string? obj)
-          (print obj)))
-      (let loop ()
-         (display message)
-         (let ((c (read)))
-            (if (eq? c 'y)
-                #t
-                (if (eq? c 'n)
-                    #f
-                    (loop)))))))
+(define (yes-no?::bool message::bstring . rest)
+   (for-each display rest)
+   (let loop ()
+      (display message)
+      (let ((c (read)))
+         (if (eq? c 'y)
+             #t
+             (if (eq? c 'n)
+                 #f
+                 (loop))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    color ...                                                        */
@@ -371,3 +354,37 @@
      (function 4)
      (record 5)
      (exception 6)))
+
+;*---------------------------------------------------------------------*/
+;*    plist-get ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (plist-get l::pair-nil key::keyword def)
+   (let loop ((l l))
+      (cond
+         ((pair? l)
+          (if (pair? (cdr l))
+              (if (eq? (car l) key)
+                  (cadr l)
+                  (loop (cddr l)))
+              (bmp-error/loc "plist" "syntax error" l)))
+         ((null? l)
+          def)
+         (else
+          (bmp-error/loc "plist" "syntax error" l)))))
+
+;*---------------------------------------------------------------------*/
+;*    plist-set ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (plist-set l::pair-nil key::keyword value)
+   (let loop ((l l))
+      (cond
+         ((pair? l)
+          (if (pair? (cdr l))
+              (if (eq? (car l) key)
+                  (cons* key value (cddr l))
+                  (cons* (car l) (cadr l) (loop (cddr l))))
+              (bmp-error/loc "package" "syntax error" l)))
+         ((null? l)
+          (append l (list key value)))
+         (else
+          (bmp-error/loc "plist" "syntax error" l)))))

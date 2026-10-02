@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Thu Oct  1 08:37:44 2026 (serrano)                */
+;*    Last change :  Thu Oct  1 12:46:51 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -106,12 +106,35 @@
 ;*---------------------------------------------------------------------*/
 (define (install-pkg namev::bstring)
    (unless (is-a-project? (pwd))
-      (print "The current directory \"" (pwd) "\" is not a bpm project.")
-      (if (utils.yes-no? "Shall I initialize it? ")
+      (if (utils.yes-no? "Shall I initialize it? "
+             (format "The current directory ~s is not a bpm project.\n" (pwd)))
           (init-in-dir (pwd))
           (exit 0)))
    (bind-values (name version)
       (pkg.decode-name namev)
       (let ((pv::PackageVersion (db.find-package-version name version)))
-         (tprint "TODO " pv))))
+         (let ((dir (make-file-path (pwd) "pkg" name)))
+            (if (directory? dir)
+                (when (utils.yes-no? "Shall I remove it? "
+                         (format "Directory ~s already exists.\n" dir))
+                   (delete-directories dir)))
+            (unless (directory? dir)
+               (utils.untar (utils.download pv.url name) dir)
+               (pkg.check-version pv dir)
+               (add-dependency! (pwd) name pv))))))
+
+;*---------------------------------------------------------------------*/
+;*    add-dependency! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (add-dependency! dir::bstring name::bstring pv::PackageVersion)
+   (let ((path (make-file-name dir "package.sexp")))
+      (let* ((sexp (call-with-input-file path (lambda (ip) (read ip #t))))
+             (dep (utils.plist-get sexp :dependencies '()))
+             (l (utils.plist-set sexp
+                   :dependencies (cons (list name pv.version) dep))))
+         (call-with-output-file path
+            (lambda (op)
+               (pkg.pp l op))))))
+
+
 
