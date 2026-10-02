@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 15:41:34 2026                          */
-;*    Last change :  Fri Oct  2 09:01:10 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 11:13:35 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Package data type and tools                                      */
@@ -15,8 +15,8 @@
 (module package
    (import "./config.bgl" . config)
    (import "./utils.bgl" . utils)
-   (import "./version.bgl" . version)
-   (export Package PackageVersion pp decode-name list->package-version
+   (import "./versions.bgl" . versions)
+   (export Package PackageVersion pp list->package-version
       check-package-version))
 
 ;*---------------------------------------------------------------------*/
@@ -121,21 +121,9 @@
       (dependencies (plist-get l dependencies: '()))))
 
 ;*---------------------------------------------------------------------*/
-;*    decode-name ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (decode-name pkg::bstring)
-   (cond
-      ((pregexp-match "(.*)/([0-9]+.[0-9]+.[0-9]+)" pkg)
-       =>
-       (lambda (m)
-          (values (cadr m) (caddr m))))
-      (else
-       (values pkg #f))))
-      
-;*---------------------------------------------------------------------*/
 ;*    check-package-version ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (check-package-version pv::PackageVersion name::bstring)
-   (unless (version.version? pv.version)
+   (unless (versions.version? pv.version)
       (utils.error name "Illegal version" pv.version)))
            

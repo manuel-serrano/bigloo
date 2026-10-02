@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Fri Oct  2 09:02:46 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 11:26:28 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -17,7 +17,7 @@
    (import "./utils.bgl" . utils)
    (import "./database.bgl" . db)
    (import "./package.bgl" . pkg)
-   (export parse-cmdline init install-pkg))
+   (export init install-pkg))
 
 ;*---------------------------------------------------------------------*/
 ;*    template ...                                                     */
@@ -25,27 +25,6 @@
 (define-macro (template)
    (call-with-input-file (make-file-name project.dirname "package.sexp")
       read-string))
-
-;*---------------------------------------------------------------------*/
-;*    parse-cmdline ...                                                */
-;*---------------------------------------------------------------------*/
-(define (parse-cmdline cmdline::pair-nil force::bool)
-   
-   (define (usage args-parse-usage)
-      (printf "~a v~a\n" config.name config.version)
-      (print "usage: " config.name " [options] "
-         (trace-color 2 "proj") " arg0 arg1 ...")
-      (args-parse-usage #f)
-      (exit 0))
-   
-   (bind-exit (break)
-      (args-parse cmdline
-         (()
-          (lambda () (usage args-parse-usage)))
-         (("init" ?dir (help "Create a new project in directory"))
-          (break (lambda () (init dir force))))
-         (else
-          (break (lambda () (usage args-parse-usage)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    init ...                                                         */
@@ -133,3 +112,30 @@
          (call-with-output-file path
             (lambda (op)
                (pkg.pp l op))))))
+
+;*---------------------------------------------------------------------*/
+;*    get-rec-dependencies ...                                         */
+;*    -------------------------------------------------------------    */
+;*    Get the recursive dependencies of a package version.             */
+;*---------------------------------------------------------------------*/
+(define (get-rec-dependencies::pair-nil pv::PackageVersion)
+
+   (define table (make-hashtable :keys 'string))
+
+   (define (rec-pv pv::PackageVersion recdeps)
+      (let loop ((flatdeps pv.dependencies)
+                 (recdeps recdeps))
+         (cond
+            ((null? flatdeps)
+             recdeps)
+            ((hashtable-get table (caar flatdeps))
+             (loop (cdr flatdeps) recdeps))
+            (else
+             (let ((dep (car flatdeps)))
+                (loop (cdr flatdeps)
+                   (rec-pv (db.find-package-version (car dep) (cadr dep))
+                      recdeps)))))))
+
+   (rec-pv pv '()))
+   
+

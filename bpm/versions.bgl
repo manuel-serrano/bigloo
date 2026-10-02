@@ -1,0 +1,116 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/bpm/versions.bgl               */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Fri Oct  2 08:48:41 2026                          */
+;*    Last change :  Fri Oct  2 11:15:57 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Dealing with versions                                            */
+;*    -------------------------------------------------------------    */
+;*    Version string literals are defined by:                          */
+;*                                                                     */
+;*      version := [0-9]+.[0-9]+.[0-9*]                                */
+;*      minor   := [0-9]+.[0-9]+.x                                     */
+;*      major   := [0-9]+.x.x                                          */
+;*                                                                     */
+;*    The meaning of a version expression is as follows:               */
+;*                                                                     */
+;*      * *: matches any version                                       */
+;*      * version: must match version exactly;                         */
+;*      * >version: must be greater than version.                      */
+;*      * >=version: etc                                               */
+;*      * <version:                                                    */
+;*      * <=version:                                                   */
+;*      * =version:                                                    */
+;*      * minor: matches any minor version                             */
+;*      * major: matches any major version                             */
+;*      * version1 - version2:  same as >=version1 <=version2.         */
+;*      * vexpr | vexpr: any version expression that is either one     */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    versions                                                         */
+;*---------------------------------------------------------------------*/
+(module versions
+   (import "./utils.bgl" . utils)
+   (export version? compile match))
+
+;*---------------------------------------------------------------------*/
+;*    version? ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (version?::bool str::bstring)
+   (pregexp-match "^[0-9]+.[0-9]+.[0-9]+$" str))
+
+;*---------------------------------------------------------------------*/
+;*    compile ...                                                      */
+;*    -------------------------------------------------------------    */
+;*    Returns a function that matches the expression it receives.      */
+;*---------------------------------------------------------------------*/
+(define (compile::procedure vexpr::bstring loc)
+   (cond
+      ((string=? vexpr "*")
+       (lambda (v::bstring) #t))
+      ((version? vexpr)
+       (lambda (v::bstring)
+          (string=? vexpr v)))
+      ((pregexp-match "^=[0-9]+.[0-9]+.[0-9]+$" vexpr)
+       (let ((e (substring vexpr 1)))
+          (lambda (v::bstring)
+             (string=? vexpr e))))
+      ((pregexp-match "^<[0-9]+.[0-9]+.[0-9]+$" vexpr)
+       (let ((e (substring vexpr 2)))
+          (lambda (v::bstring)
+             (<fx (string-natural-compare3 vexpr e) 0))))
+      ((pregexp-match "^<=[0-9]+.[0-9]+.[0-9]+$" vexpr)
+       (let ((e (substring vexpr 3)))
+          (lambda (v::bstring)
+             (<=fx (string-natural-compare3 vexpr e) 0))))
+      ((pregexp-match "^>[0-9]+.[0-9]+.[0-9]+$" vexpr)
+       (let ((e (substring vexpr 2)))
+          (lambda (v::bstring)
+             (>fx (string-natural-compare3 vexpr e) 0))))
+      ((pregexp-match "^>=[0-9]+.[0-9]+.[0-9]+$" vexpr)
+       (let ((e (substring vexpr 2)))
+          (lambda (v::bstring)
+             (>=fx (string-natural-compare3 vexpr e) 0))))
+      ((pregexp-match "^([0-9]+.[0-9]+.)x$" vexpr)
+       =>
+       (lambda (m)
+          (let ((e (cadr m)))
+             (lambda (v::bstring)
+                (string-prefix? e vexpr)))))
+      ((pregexp-match "^([0-9]+.)x.x$" vexpr)
+       =>
+       (lambda (m)
+          (let ((e (cadr m)))
+             (lambda (v::bstring)
+                (string-prefix? e vexpr)))))
+      ((pregexp-match "^([0-9]+.[0-9]+.[0-9]+)[ ]*-[ ]*([0-9]+.[0-9]+.[0-9]+)"
+          vexpr)
+       =>
+       (lambda (m)
+          (let ((min (cadr m))
+                (max (caddr m)))
+             (lambda (v::bstring)
+                (and (>=fx (string-natural-compare3 vexpr min) 0)
+                     (<=fx (string-natural-compare3 vexpr max) 0))))))
+      (else
+       (let ((l (string-split vexpr "|")))
+          (if (<fx (length l) 2)
+              (utils.error/loc "compile-vexpr"
+                 "Illegal version expression" vexpr loc)
+              (let ((ps (map (lambda (ve)
+                                (compile (string-trim-both ve) loc))
+                           l)))
+                 (lambda (m)
+                    (any (lambda (p) (p m)) ps))))))))
+
+;*---------------------------------------------------------------------*/
+;*    match ...                                                        */
+;*    -------------------------------------------------------------    */
+;*    Does vexpr matches version?                                      */
+;*---------------------------------------------------------------------*/
+(define (match::bool vexpr::bstring version::bstring #!optional loc)
+   ((compile vexpr loc) version))
+   

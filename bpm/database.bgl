@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Fri Oct  2 09:24:44 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 11:05:56 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -16,13 +16,16 @@
    (import "./config.bgl" . config)
    (import "./utils.bgl" . utils)
    (import "./package.bgl" . pkg)
-   (export Database parse-cmdline update list-packages find-package-version))
+   (import "./versions.bgl" . versions)
+   (export Database init update load-database
+      list-packages find-package-version))
 
 ;*---------------------------------------------------------------------*/
 ;*    Database ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-class Database
    (path::bstring read-only)
+   (url::bstring read-only)
    (packages::struct read-only (default (make-hashtable :keys 'string))))
 
 ;*---------------------------------------------------------------------*/
@@ -30,10 +33,11 @@
 ;*---------------------------------------------------------------------*/
 (register-class-serialization! Database
    (lambda (o::Database)
-      (vector o.path (hashtable-map cons o.packages)))
+      (vector o.path o.url (hashtable-map cons o.packages)))
    (lambda (o v)
       (let* ((db::Database (instantiate::Database
-                              (path (vector-ref o 0))))
+                              (path (vector-ref o 0))
+                              (url (vector-ref o 1))))
              (pkgs db.packages))
          (for-each (lambda (kb)
                       (hashtable-put! pkgs (car kb) (cdr kb)))
@@ -46,33 +50,6 @@
 (define database #f)
 
 ;*---------------------------------------------------------------------*/
-;*    parse-cmdline ...                                                */
-;*---------------------------------------------------------------------*/
-(define (parse-cmdline cmdline::pair-nil)
-   
-   (define (usage args-parse-usage)
-      (printf "~a v~a\n" config.name config.version)
-      (print "usage: " config.name " [options] "
-         (trace-color 2 "db") " arg0 arg1 ...")
-      (args-parse-usage #f)
-      (exit 0))
-
-   (bind-exit (break)
-      (args-parse cmdline
-         (()
-          (lambda () (usage args-parse-usage)))
-         (("list" (help "List packages"))
-          (break
-             (lambda ()
-                (list-packages (load-database config.rc-directory)))))
-         (("update" (help "Update database"))
-          #f)
-         (("init" ?url (help "Initialize a database from a url"))
-          (break (lambda () (init url))))
-         (else
-          (break (lambda () (usage args-parse-usage)))))))
-
-;*---------------------------------------------------------------------*/
 ;*    init ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (init url)
@@ -83,11 +60,14 @@
              (utils.verb
                 (format "creating directory ~a" (utils.color 'arg0 rcdir)))
              (make-directories rcdir)))
-      (cond
-         ((directory? url)
-          (init-from-directory rcdir url))
-         (else
-          (utils.error "db init" "URL not supported" url)))))
+      (let ((db (instantiate::Database
+                   (path (make-file-name rcdir config.database-filename))
+                   (url url))))
+         (cond
+            ((directory? url)
+             (init-from-directory db))
+            (else
+             (utils.error "db init" "URL not supported" url))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    load-database ...                                                */
@@ -105,9 +85,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    save-database ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (save-database rcdir::bstring db::Database)
-   (let* ((n (make-file-name rcdir config.database-filename))
-          (p (open-output-binary-file n)))
+(define (save-database db::Database)
+   (let ((p (open-output-binary-file config.database-filename)))
       (unwind-protect
          (output-obj p db)
          (close-binary-port p))))
@@ -115,12 +94,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    init-from-directory ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (init-from-directory::Database rcdir::bstring url::bstring)
+(define (init-from-directory::Database db::Database)
    
-   (define db::Database
-      (instantiate::Database
-         (path (make-file-name rcdir config.database-filename))))
-
    (define (package-name file sexp::pair-nil)
       (let ((l (memq name: sexp)))
          (cond
@@ -143,7 +118,8 @@
              (print "ignoring file " (utils.color 'warning file))
              #f)))
    
-   (let ((versions (filter-map read-package-version (directory->path-list url))))
+   (let ((versions (filter-map read-package-version
+                      (directory->path-list db.url))))
       (for-each (lambda (x)
                    (let ((name (car x))
                          (v::PackageVersion (cdr x)))
@@ -173,14 +149,14 @@
                       (string<? (car x) (car y))))
             versions))
       
-      (save-database rcdir db)
+      (save-database db)
       
       db))
 
 ;*---------------------------------------------------------------------*/
 ;*    update ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (update)
+(define (update db::database)
    #unspecified)
    
 ;*---------------------------------------------------------------------*/
@@ -217,11 +193,14 @@
              (let ((p::Package p))
                 (if version
                     (or (find (lambda (pv::PackageVersion)
-                                 (string=? pv.version version))
+                                 (versions.match version pv.version))
                            p.versions)
-                        (utils.error
-                           (format "Cannot find package version \"~a\"" version)
+                        (utils.error utils.command
+                           (format "Cannot find package version \"~a\""
+                              (utils.color 'error version))
                            name))
                     (car p.versions)))
-             (utils.error db.path "Cannot find package in database" name)))))
+             (utils.error utils.command
+                "Cannot find package in database"
+                (utils.color 'error name))))))
                        

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 13 10:04:17 2006                          */
-#*    Last change :  Fri Oct  2 08:51:14 2026 (serrano)                */
+#*    Last change :  Fri Oct  2 11:13:15 2026 (serrano)                */
 #*    Copyright   :  2006-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the Bigloo bglbpm command.                 */
@@ -40,7 +40,7 @@ JVMZIPLIBS	= $(BOOTLIBDIR)/bigloo_s.zip \
 #*---------------------------------------------------------------------*/
 #*    Sources    					               */
 #*---------------------------------------------------------------------*/
-SOURCES		= main config utils database project package version
+SOURCES		= main config utils database project package versions
 FILES		= $(SOURCES:%=%.bgl)
 
 MODULES		= $(SOURCES)

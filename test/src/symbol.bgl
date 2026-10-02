@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Tue Jun 30 10:22:00 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 12:48:05 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing symbols and keywords                                     */
@@ -188,7 +188,7 @@
          (display :bar p)
          (display " " p)
          (display bar: p)))
-   :expected ":bar :bar")
+   :expected "bar: bar:")
 
 (define-test symbol->string (symbol->string '|foo bar|)
    :expected "foo bar")

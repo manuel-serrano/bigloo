@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/dsssl.scm               */
+;*    serrano/prgm/project/bigloo/5.0.x/recette/dsssl.scm              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 31 09:21:59 1998                          */
-;*    Last change :  Thu Oct  9 15:09:51 2025 (serrano)                */
+;*    Last change :  Fri Oct  2 12:45:34 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    DSSSL funcall tests                                              */
 ;*=====================================================================*/
@@ -346,7 +346,7 @@
 			    (display :bar p)
 			    (display " " p)
 			    (display bar: p)))
-      ":bar :bar")
+      "bar: bar:")
    (test "dsssl.1" (foo 1 2 3 4 i: 5) '(1 2 3 4 i: 5 j: 1))
    (test "dsssl.2" (foo 1 2 3 4 i: 5 j: 3) '(1 2 3 4 i: 5 j: 3))
    (test "dsssl.3" ((lambda (x y #!optional z #!rest r #!key i (j 1))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Fri Oct  2 10:02:53 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 11:06:48 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -14,6 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (module bpm
    (import "./config.bgl" . config)
+   (import "./utils.bgl" . utils)
    (import "./database.bgl" . db)
    (import "./project.bgl" . proj)
    (import "./package.bgl" . pkg)
@@ -73,13 +74,13 @@
              (set! action (config.parse-cmdline the-remaining-args))
              (break #t))
             (("db" (help "database commands"))
-             (set! action (db.parse-cmdline the-remaining-args))
+             (set! action (db-parse-cmdline the-remaining-args))
              (break #t))
             (("pkg" (help "package commands"))
              (set! action (pkg-parse-cmdline the-remaining-args rec))
              (break #t))
             (("proj" (help "project commands"))
-             (set! action (proj.parse-cmdline the-remaining-args force))
+             (set! action (proj-parse-cmdline the-remaining-args force))
              (break #t))
             
             (else
@@ -104,6 +105,7 @@
          (()
           (lambda () (usage args-parse-usage)))
          (("install" ?pkg (?version) (help "Install a package"))
+          (utils.command-set! "pkg install")
           (break
              (lambda ()
                 (proj.install-pkg pkg version))))
@@ -111,6 +113,55 @@
           (break
              (lambda ()
                 (tprint "TODO"))))
+         (else
+          (break (lambda () (usage args-parse-usage)))))))
+
+;*---------------------------------------------------------------------*/
+;*    proj-parse-cmdline ...                                           */
+;*---------------------------------------------------------------------*/
+(define (proj-parse-cmdline cmdline::pair-nil force::bool)
+   
+   (define (usage args-parse-usage)
+      (printf "~a v~a\n" config.name config.version)
+      (print "usage: " config.name " [options] "
+         (trace-color 2 "proj") " arg0 arg1 ...")
+      (args-parse-usage #f)
+      (exit 0))
+   
+   (bind-exit (break)
+      (args-parse cmdline
+         (()
+          (lambda () (usage args-parse-usage)))
+         (("init" ?dir (help "Create a new project in directory DIR"))
+          (break (lambda () (proj.init dir force))))
+         (else
+          (break (lambda () (usage args-parse-usage)))))))
+
+;*---------------------------------------------------------------------*/
+;*    db-parse-cmdline ...                                             */
+;*---------------------------------------------------------------------*/
+(define (db-parse-cmdline cmdline::pair-nil)
+   
+   (define (usage args-parse-usage)
+      (printf "~a v~a\n" config.name config.version)
+      (print "usage: " config.name " [options] "
+         (trace-color 2 "db") " arg0 arg1 ...")
+      (args-parse-usage #f)
+      (exit 0))
+
+   (bind-exit (break)
+      (args-parse cmdline
+         (()
+          (lambda () (usage args-parse-usage)))
+         (("list" (help "List packages"))
+          (break
+             (lambda ()
+                (db.list-packages (db.load-database config.rc-directory)))))
+         (("update" (help "Update database"))
+          (break (lambda ()
+                    (db.update (db.load-database config.rc-directory)))))
+         (("init" ?url (help "Initialize a database from a url"))
+          (break (lambda () (db.init url))))
          (else
           (break (lambda () (usage args-parse-usage)))))))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Wed Jul  1 18:08:02 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 11:58:30 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -900,8 +900,8 @@
 ;*    display-keyword ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (display-keyword obj port)
-   ($display-char #\: port)
-   (display-string (keyword->string! obj) port))
+   (display-string (keyword->string! obj) port)
+   ($display-char #\: port))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-fixnum ...                                               */
