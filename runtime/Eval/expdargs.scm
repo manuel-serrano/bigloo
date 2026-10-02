@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr  1 06:28:06 2000                          */
-;*    Last change :  Tue Sep 29 08:52:25 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 10:05:25 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    args-parse expansion.                                            */
@@ -156,12 +156,22 @@
 ;*    synopsis-arg ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (synopsis-arg arg)
-   (string-upcase arg))
+   (if (pair? arg)
+       (let loop ((arg arg))
+          (if (null? arg)
+              ""
+              (string-append "["
+                 (string-upcase (car arg))
+                 (if (pair? (cdr arg))
+                     (string-append " " (loop (cdr arg)) "]")
+                     "]"))))
+       (string-upcase arg)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-synopsis-name ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (make-synopsis-name clause)
+
    (define (make-simple-synopsis-name opt o args)
       (bind-values (oid aid)
 	 (fetch-option-embed-argument o)
@@ -174,21 +184,22 @@
 	     (string-append oid (synopsis-arg aid)))
 	    (else
 	     (string-append
-	      oid
-	      (let loop ((args args))
-		 (if (null? args)
-		     ""
-		     (string-append " "
-				    (synopsis-arg 
-				     (fetch-argument-name (car args) clause))
-				    (loop (cdr args))))))))))
+                oid
+                (let loop ((args args))
+                   (if (null? args)
+                       ""
+                       (string-append " "
+                          (synopsis-arg 
+                             (fetch-argument-name (car args) clause))
+                          (loop (cdr args))))))))))
+   
    (define (make-multiple-synopsis-name opt o+ args)
+      
       (define (concat l)
 	 (if (null? (cdr l))
 	     (car l)
-	     (string-append (car l)
-			    ","
-			    (concat (cdr l)))))
+	     (string-append (car l) "," (concat (cdr l)))))
+      
       (bind-values (oid+ aid+)
 	 (let loop ((o+ o+)
 		    (oid+ '())
@@ -205,10 +216,10 @@
 	      (let loop ((args args))
 		 (if (null? args)
 		     ""
-		     (string-append " "
-				    (synopsis-arg
-				     (fetch-argument-name (car args) clause))
-				    (loop (cdr args)))))))
+		     (string-append
+                        " "
+                        (synopsis-arg (fetch-argument-name (car args) clause))
+                        (loop (cdr args)))))))
 	    ((null? args)
 	     (if (null? aid+)
 		 (concat oid+)
@@ -219,6 +230,7 @@
 			     aid+))))
 	    (else
 	     (expand-time-error-clause clause "Illegal options")))))
+   
    (let* ((opt (car clause))
 	  (o (car opt))
 	  (args (fetch-option-arguments opt)))
@@ -416,28 +428,51 @@
       (let loop ((args args))
          (if (pair? args)
              (let ((id (fetch-argument-name (car args) clause)))
-                (cons* `(,(string->symbol id)
-                         (if (pair? ,na)
-                             (car ,na)
-                             (error ',(car args) "missing argument"
-                                (format "~a ~a - ~a"
-                                   (car ,a+) ',(car args) ,(clause-msg clause)))))
-                   `(,na (cdr ,na))
-                   (loop (cdr args))))
+                (if (string? id)
+                    (cons* `(,(string->symbol id)
+                             (if (pair? ,na)
+                                 (car ,na)
+                                 (error ',(car args) "missing argument"
+                                    (format "~a ~a ... - ~a"
+                                       (car ,a+) ',(car args) ,(clause-msg clause)))))
+                       `(,na (cdr ,na))
+                       (loop (cdr args)))
+                    (let liip ((ids id))
+                       (if (pair? ids)
+                           (cons* `(,(string->symbol (car ids))
+                                    (if (pair? ,na)
+                                        (car ,na)
+                                        #f))
+                              `(,na (if (pair? ,na) (cdr ,na) '()))
+                              (liip (cdr ids)))
+                           (cons `(,na (if (pair? ,na)
+                                           (error ',(car args)
+                                              "extra arguments"
+                                              ,na)
+                                           '()))
+                              (loop (cdr args)))))))
              '()))))
+
 
 ;*---------------------------------------------------------------------*/
 ;*    fetch-argument-name ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (fetch-argument-name a clause)
-   (if (not (symbol? a))
-       (expand-time-error-clause clause "Illegal option argument")
-       (let ((s (symbol->string a)))
-	  (if (not (char=? (string-ref s 0) #\?))
-	      (expand-time-error-clause
-	       clause
-	       (string-append "Illegal option argument `" s "'"))
-	      (substring s 1 (string-length s))))))
+
+   (define (fetch-symbol-argument a)
+      (let ((s (symbol->string a)))
+         (if (not (char=? (string-ref s 0) #\?))
+             (expand-time-error-clause clause
+                (string-append "Illegal option argument `" s "'"))
+             (substring s 1 (string-length s)))))
+   
+   (cond
+      ((symbol? a)
+       (fetch-symbol-argument a))
+      ((and (pair? a) (every symbol? a))
+       (map fetch-symbol-argument a))
+      (else
+       (expand-time-error-clause clause "Illegal option argument"))))
       
 ;*---------------------------------------------------------------------*/
 ;*    fetch-option-embed-argument ...                                  */

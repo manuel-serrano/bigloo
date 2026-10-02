@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 22 06:59:58 2026                          */
-;*    Last change :  Mon Jun 22 08:39:31 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 10:54:34 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Command line parsing                                             */
@@ -76,6 +76,17 @@
       (else (string->integer else)))
    :expected 23)
 
+(define-test args-parse
+   (args-parse '("--size" "20")
+      (("--size" ?w (?h)) (list w h)))
+   :expected (list "20" #f))
+
+(define-test args-parse
+   (args-parse '()
+      (() 'done)
+      (("-o" ?file) (list file)))
+   :expected 'done)
+
 (define-test args-parse-usage
    (args-parse '("--help")
       ((("-h" "--help") (help "this message"))
@@ -84,3 +95,4 @@
       (("-o" ?name (help "target name")) #unspecified)
       (else (exit 1)))
    :expected string?)
+

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:42:40 2026                          */
-;*    Last change :  Thu Oct  1 12:49:34 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 08:53:43 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Utilities                                                        */
@@ -18,7 +18,6 @@
       (error bmp-error)
       (error/loc bmp-error/loc)
       verb
-      version<=?
       rm-rf cp* cp-r
       download
       untar
@@ -31,31 +30,29 @@
 ;*    bmp-error ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (bmp-error cmd msg obj)
-   (error (format "~a ~a" config.name cmd) msg obj))
+   (if (epair? obj)
+       (match-case (cer obj)
+          ((at ?fname ?loc)
+           (error/location (format "~a~a" config.name cmd) msg obj fname loc))
+          (else
+           (error (format "~a ~a" config.name cmd) msg obj)))
+       (error (format "~a ~a" config.name cmd) msg obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bmp-error/loc ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (bmp-error/loc cmd msg obj)
-   (if (epair? obj)
-       (match-case (cer obj)
-          ((at ?fname ?loc)
-           (error/location (format "~a ~a" config.name cmd) msg obj fname loc))
-          (else
-           (error (format "~a ~a" config.name cmd) msg obj)))
-       (error (format "~a ~a" config.name cmd) msg obj)))
+(define (bmp-error/loc cmd msg obj loc)
+   (match-case (cer loc)
+      ((at ?fname ?loc)
+       (error/location (format "~a ~a" config.name cmd) msg obj fname loc))
+      (else
+       (error (format "~a ~a" config.name cmd) msg obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    verb ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (verb msg::bstring #!key (lvl::long 1))
    (when (>=fx config.verbose lvl) (print msg)))
-
-;*---------------------------------------------------------------------*/
-;*    version<=? ...                                                   */
-;*---------------------------------------------------------------------*/
-(define (version<=?::bool vx::bstring vy::bstring)
-   (<=fx (string-natural-compare3 vx vy) 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    rm-rf ...                                                        */
@@ -366,11 +363,11 @@
               (if (eq? (car l) key)
                   (cadr l)
                   (loop (cddr l)))
-              (bmp-error/loc "plist" "syntax error" l)))
+              (bmp-error "plist" "syntax error" l)))
          ((null? l)
           def)
          (else
-          (bmp-error/loc "plist" "syntax error" l)))))
+          (bmp-error "plist" "syntax error" l)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    plist-set ...                                                    */
@@ -383,8 +380,8 @@
               (if (eq? (car l) key)
                   (cons* key value (cddr l))
                   (cons* (car l) (cadr l) (loop (cddr l))))
-              (bmp-error/loc "package" "syntax error" l)))
+              (bmp-error "package" "syntax error" l)))
          ((null? l)
           (append l (list key value)))
          (else
-          (bmp-error/loc "plist" "syntax error" l)))))
+          (bmp-error "plist" "syntax error" l)))))

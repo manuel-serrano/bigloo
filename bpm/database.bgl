@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Fri Oct  2 08:37:59 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 09:24:44 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -127,7 +127,7 @@
             ((and (pair? l) (pair? (cdr l)) (string? (cadr l)))
              (cadr l))
             (else
-             (utils.error/loc file "Cannot find package name" sexp)))))
+             (utils.error file "Cannot find package name" sexp)))))
    
    (define (read-package-version file)
       (if (string-suffix? ".sexp" file)
@@ -219,8 +219,9 @@
                     (or (find (lambda (pv::PackageVersion)
                                  (string=? pv.version version))
                            p.versions)
-                        (utils.error name "Cannot find package version"
-                           version))
+                        (utils.error
+                           (format "Cannot find package version \"~a\"" version)
+                           name))
                     (car p.versions)))
              (utils.error db.path "Cannot find package in database" name)))))
                        

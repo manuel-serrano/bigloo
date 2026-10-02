@@ -35,6 +35,7 @@ by the &lt;rule&gt; is defined by the following grammar:
   | ((<option>) <s-expression>)
   | ((<flag> <var> <var> ...) <s-expression>)
   | ((<flag> <var> <var> ... <help>) <s-expression>)
+  | ((<flag> <var> (<var> ...) <help>) <s-expression>)
   
 <null-rule> --> ( () <s-expression> )
 
@@ -59,6 +60,8 @@ of these matches, `args-parse` proceeds as follows:
   * The &lt;s-expression&gt; associated to the matching rule
    is evaluated in an environment where the rule variables are bound. 
   * The argument parsing is resumed with the rest of `args`.
+  * Variables declared inside a parenthetical group are optional but can
+    only be used for the last command line option.
 
 In addition to parsing the command line arguments, `args-parse` enables
 help message printing. 

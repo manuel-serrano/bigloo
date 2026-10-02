@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 15:41:34 2026                          */
-;*    Last change :  Thu Oct  1 14:11:36 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 09:01:10 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Package data type and tools                                      */
@@ -15,8 +15,9 @@
 (module package
    (import "./config.bgl" . config)
    (import "./utils.bgl" . utils)
+   (import "./version.bgl" . version)
    (export Package PackageVersion pp decode-name list->package-version
-      check-version))
+      check-package-version))
 
 ;*---------------------------------------------------------------------*/
 ;*    Package ...                                                      */
@@ -98,16 +99,16 @@
                         (set! cache l)
                         r)
                      (loop (cddr l)))
-                 (utils.error/loc "package" "syntax error" l)))
+                 (utils.error "package" "syntax error" l)))
             ((null? l)
              opt)
             (else
-             (utils.error/loc "package" "syntax error" l)))))
+             (utils.error "package" "syntax error" l)))))
 
    (define (plist-get l::pair-nil key::keyword #!optional opt)
       (or (plist-get/list cache key #f)
           (plist-get/list l key opt)
-          (utils.error/loc "package" (format "missing attribute ~a" key) l)))
+          (utils.error "package" (format "missing attribute ~a" key) l)))
 
    (instantiate::PackageVersion
       (version (plist-get l version:))
@@ -132,8 +133,9 @@
        (values pkg #f))))
       
 ;*---------------------------------------------------------------------*/
-;*    check-version ...                                                */
+;*    check-package-version ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (check-version pv::PackageVersion dir::bstring)
-   #t)
+(define (check-package-version pv::PackageVersion name::bstring)
+   (unless (version.version? pv.version)
+      (utils.error name "Illegal version" pv.version)))
            
