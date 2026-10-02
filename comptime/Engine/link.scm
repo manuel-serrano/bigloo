@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Mon Jun 22 13:56:04 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 16:21:04 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
@@ -115,10 +115,10 @@
 	      (car files))
 	     (else
 	      (warning "link" "Several source files found for object `"
-		       bname "'. Using file -- " (car files))
+                 bname "'. Using file -- " (car files))
 	      (car files)))
 	  (let* ((suf (car suffix))
-		 (f   (find-file-for-link (string-append prefix "." suf))))
+		 (f (find-file-for-link (string-append prefix "." suf))))
 	     (if (string? f)
 		 (loop (cdr suffix) (cons f files))
 		 (let ((f (find-file-for-link (string-append bname "." suf))))

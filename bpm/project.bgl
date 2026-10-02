@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Fri Oct  2 13:11:51 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 15:22:25 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -63,6 +63,11 @@
       (make-directory pkgdir)
       (unless (directory? pkgdir)
          (err "Cannot create directory" pkgdir)))
+
+   (let ((odir (make-file-name qpath "obj")))
+      (make-directory odir)
+      (unless (directory? odir)
+         (err "Cannot create directory" odir)))
    
    (let ((pkgsexp (make-file-name qpath "package.sexp")))
       (call-with-output-file pkgsexp
@@ -89,6 +94,8 @@
              (format "The current directory ~s is not a bpm project.\n" (pwd)))
           (init-in-dir (pwd))
           (exit 0)))
+   (unless (directory? "pkg")
+      (make-directory "pkg"))
    (let ((pv::PackageVersion (db.find-package-version name version)))
       (download-pkg name pv)
       (for-each (lambda (e)
@@ -108,8 +115,55 @@
              (delete-directories dir)))
       (unless (directory? dir)
          (utils.untar (utils.download pv.url name) dir)
-         (pkg.check-package-version pv name))))
-   
+         (pkg.check-package-version pv name)
+         (let ((mf (make-file-name dir "Makefile.pkg")))
+            (unless (file-exists? mf)
+               (generate-auto-makefile name dir mf pv.backends))
+            (let ((odir (make-file-name dir "obj")))
+               (unless (directory? odir)
+                  (make-directories odir)))
+            (call-with-append-file (make-file-path (pwd) "pkg" "Makefile.pkg")
+               (lambda (op)
+                  (fprint op "include " mf)))))))
+
+;*---------------------------------------------------------------------*/
+;*    generate-auto-makefile ...                                       */
+;*---------------------------------------------------------------------*/
+(define (generate-auto-makefile name::bstring dir::bstring mf::bstring backends)
+   (call-with-output-file mf
+      (lambda (op)
+         (let ((files (filter-map (lambda (s)
+                                     (when (string-suffix? ".bgl" s)
+                                        (prefix s)))
+                         (directory->list (make-file-name dir "src")))))
+            (when (pair? files)
+               (fprint op "BFLAGS += -I pkg/" name "/src")
+               (when (memq 'c backends)
+                  (fprintf op "PKG_OBJECTS += ~( )\n"
+                     (map (lambda (s)
+                             (string-append "pkg/" name "/$(OBJ)/" s ".o"))
+                        files)))
+               (when (memq 'wasm backends)
+                  (fprintf op "PKG_WOBJECTS += ~( )\n"
+                     (map (lambda (s)
+                             (string-append "pkg/" name "/$(OBJ)/" s ".wasm"))
+                        files)))
+               (when (memq 'jvm backends)
+                  (fprintf op "PKG_JOBJECTS += ~( )\n"
+                     (map (lambda (s)
+                             (string-append "pkg/" name "/$(OBJ)/" s ".class"))
+                        files))))
+            (newline op)
+            (when (memq 'c backends)
+               (fprint op "pkg/" name "/$(OBJ)/%.o: pkg/" name "/src/%.bgl")
+               (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $< -o $@"))
+            (when (memq 'jvm backends)
+               (fprint op "pkg/" name "/$(OBJ)/%.class: pkg/" name "/src/%.bgl")
+               (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BJFLAGS) $< -o $@"))
+            (when (memq 'wasm backends)
+               (fprint op "pkg/" name "/$(OBJ)/%.obj: pkg/" name "/src/%.bgl")
+               (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BWFLAGS) $< -o $@"))))))
+         
 ;*---------------------------------------------------------------------*/
 ;*    add-dependency! ...                                              */
 ;*---------------------------------------------------------------------*/

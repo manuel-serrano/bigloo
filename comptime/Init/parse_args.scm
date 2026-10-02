@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Sep 21 07:49:13 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 16:13:02 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -808,10 +808,6 @@
        (set! *shared-cnst?* #t))
       (("-fno-sharing" (help "Do not attempt to share constant data"))
        (set! *shared-cnst?* #f))
-      (("-fmco" (help "Produce an .mco file"))
-       (set! *module-checksum-object?* #t))
-      (("-fmco-include-path" ?dir (help "Add dir to mco C include path"))
-       (set! *mco-include-path* (cons dir *mco-include-path*)))
       
 ;*--- Back-end compilation and link -----------------------------------*/
       (section "Native specific options")
@@ -1018,9 +1014,6 @@
       
 ;*--- Compiler stages -------------------------------------------------*/
       (section "Compilation stages")
-      (("-mco" (help "Stop after .mco production"))
-       (set! *module-checksum-object?* #t)
-       (set! *pass* 'mco))
       (("-syntax" (help "Stop after the syntax stage (see -hygiene)"))
        (set! *pass* 'syntax))
       (("-expand" (help "Stop after the preprocessing stage"))

@@ -251,6 +251,9 @@ is called on such a port, the optional `close` procedure is invoked.
 
 For the the optional argument `bufinfo` see [buffers](#buffers).
 
+### append-output-file ###
+Opens a file for append.
+
 ### open-output-binary-file ###
 Opens an output binary port on `path`. Returns `#f` if the port cannot be
 opened.

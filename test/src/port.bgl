@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Fri Sep 18 07:40:27 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 15:33:18 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing ports                                                    */
@@ -192,6 +192,12 @@
 
 (define-test open-output-file
    (let ((p (open-output-file "/dev/null")))
+      (unwind-protect
+         (output-port? p)
+         (close-output-port p))))
+
+(define-test append-output-file
+   (let ((p (append-output-file "/dev/null")))
       (unwind-protect
          (output-port? p)
          (close-output-port p))))
