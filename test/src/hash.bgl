@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/test/src/hash.bgl               */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/hash.bgl              */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 08:32:16 2026                          */
-;*    Last change :  Mon Apr 27 17:57:03 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:29:37 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing hash tables                                              */
@@ -197,14 +197,14 @@
    (let ((t (make-hashtable)))
       (hashtable-put! t 123 "foo")
       (hashtable-put! t 124 "bar")
-      (sort (lambda (x y) (< (car x) (car y))) (hashtable-map t cons)))
+      (sort (lambda (x y) (< (car x) (car y))) (hashtable-map cons t)))
    :expected '((123 . "foo") (124 . "bar")))
 
 (define-test string-hashtable-map
    (let ((t (make-hashtable :keys 'string)))
       (string-hashtable-put! t "foo" 123)
       (string-hashtable-put! t "bar" 124)
-      (sort (lambda (x y) (string>? (car x) (car y))) (string-hashtable-map t cons)))
+      (sort (lambda (x y) (string>? (car x) (car y))) (string-hashtable-map cons t)))
    :expected '(("foo" . 123) ("bar" . 124)))
       
 (define-test hashtable-for-each
@@ -214,9 +214,10 @@
       (hashtable-put! t 124 "bar")
       (sort (lambda (x y) (< (car x) (car y)))
          (begin
-            (hashtable-for-each t
+            (hashtable-for-each 
                (lambda (x y)
-                  (set! r (cons (cons x y) r))))
+                  (set! r (cons (cons x y) r)))
+               t)
             r)))
    :expected '((123 . "foo") (124 . "bar")))
 
@@ -227,9 +228,10 @@
       (string-hashtable-put! t "bar" 124)
       (sort (lambda (x y) (string>? (car x) (car y)))
          (begin
-            (string-hashtable-for-each t
+            (string-hashtable-for-each
                (lambda (x y)
-                  (set! r (cons (cons x y) r))))
+                  (set! r (cons (cons x y) r)))
+               t)
             r)))
    :expected '(("foo" . 123) ("bar" . 124)))
       
@@ -237,28 +239,28 @@
    (let ((t (make-hashtable)))
       (hashtable-put! t 123 "foo")
       (hashtable-put! t 124 "bar")
-      (hashtable-filter t (lambda (x y) (< x 124))))
+      (hashtable-filter (lambda (x y) (< x 124)) t))
    :expected '("foo"))
 
 (define-test hashtable-filter
    (let ((t (make-hashtable :weak 'keys)))
       (hashtable-put! t 123 "foo")
       (hashtable-put! t 124 "bar")
-      (hashtable-filter t (lambda (x y) (< x 124))))
+      (hashtable-filter (lambda (x y) (< x 124)) t))
    :expected '("foo"))
 
 (define-test string-hashtable-filter
    (let ((t (make-hashtable :keys 'string)))
       (string-hashtable-put! t "foo" 123)
       (string-hashtable-put! t "bar" 124)
-      (string-hashtable-filter t (lambda (x y) (string=? x "foo"))))
+      (string-hashtable-filter (lambda (x y) (string=? x "foo")) t))
    :expected '(123))
       
 (define-test hashtable-filter!
    (let ((t (make-hashtable)))
       (hashtable-put! t 123 "foo")
       (hashtable-put! t 124 "bar")
-      (hashtable-filter! t (lambda (x y) (< x 124)))
+      (hashtable-filter! (lambda (x y) (< x 124)) t)
       (hashtable->list t))
    :expected '("foo"))
 
@@ -266,7 +268,7 @@
    (let ((t (make-hashtable :weak 'keys)))
       (hashtable-put! t 123 "foo")
       (hashtable-put! t 124 "bar")
-      (hashtable-filter! t (lambda (x y) (< x 124)))
+      (hashtable-filter! (lambda (x y) (< x 124)) t)
       (hashtable->list t))
    :expected '("foo"))
 
@@ -274,7 +276,7 @@
    (let ((t (make-hashtable :keys 'string)))
       (string-hashtable-put! t "foo" 123)
       (string-hashtable-put! t "bar" 124)
-      (string-hashtable-filter! t (lambda (x y) (string=? x "foo")))
+      (string-hashtable-filter! (lambda (x y) (string=? x "foo")) t)
       (hashtable->list t))
    :expected '(123))
 
@@ -282,18 +284,20 @@
    (let ((t (make-hashtable)))
       (hashtable-put! t 123 "foo")
       (hashtable-put! t 124 "bar")
-      (hashtable-filter-map t
+      (hashtable-filter-map
          (lambda (x y)
-            (when (< x 124) 'yes))))
+            (when (< x 124) 'yes))
+         t))
    :expected '(yes))
 
 (define-test string-hashtable-filter-map
    (let ((t (make-hashtable :keys 'string)))
       (string-hashtable-put! t "foo" 123)
       (string-hashtable-put! t "bar" 124)
-      (string-hashtable-filter-map t
+      (string-hashtable-filter-map
          (lambda (x y)
-            (when (< y 124) 'yes))))
+            (when (< y 124) 'yes))
+         t))
    :expected '(yes))
 
 (define-test hashtable-clear!

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Fri Oct  2 06:51:41 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:19:25 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -148,11 +148,11 @@
 	    (hashtable->vector::vector ::struct)
 	    (hashtable->list::pair-nil ::struct)
 	    (hashtable-key-list::pair-nil ::struct)
-	    (hashtable-map::pair-nil ::struct ::procedure)
-	    (hashtable-for-each ::struct ::procedure)
-	    (hashtable-filter ::struct ::procedure)
-	    (hashtable-filter-map ::struct ::procedure)
-	    (hashtable-filter! ::struct ::procedure)
+	    (hashtable-map::pair-nil ::obj ::obj)
+	    (hashtable-for-each ::obj ::obj)
+	    (hashtable-filter ::obj ::obj)
+	    (hashtable-filter-map ::obj ::obj)
+	    (hashtable-filter! ::obj ::obj)
 	    (hashtable-clear! ::struct)
             (hashtable-collisions::pair-nil ::struct)
 	    (string-hashtable-contains?::bool ::struct ::bstring)
@@ -161,11 +161,11 @@
 	    (string-hashtable-remove! ::struct ::bstring)
             (string-hashtable->vector::vector table::struct)
             (string-hashtable->list::pair-nil table::struct)
-	    (string-hashtable-map::pair-nil ::struct ::procedure)
-	    (string-hashtable-filter ::struct ::procedure)
-	    (string-hashtable-filter-map ::struct ::procedure)
-	    (string-hashtable-for-each ::struct ::procedure)
-	    (string-hashtable-filter! ::struct ::procedure)
+	    (string-hashtable-map::pair-nil ::procedure ::struct)
+	    (string-hashtable-filter ::procedure ::struct)
+	    (string-hashtable-filter-map ::procedure ::struct)
+	    (string-hashtable-for-each ::procedure ::struct)
+	    (string-hashtable-filter! ::procedure ::struct)
 	    )
 
    (pragma  (hashtable-contains? side-effect-free)
@@ -468,10 +468,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-map ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-map::pair-nil table::struct fun::procedure)
+(define (hashtable-map::pair-nil table::obj fun::obj)
    (cond
       ((hashtable-string? table)
-       (string-hashtable-map table fun))
+       (string-hashtable-map fun table))
       ((hashtable-weak? table)
        (weak-hashtable-map table fun))
       (else
@@ -480,7 +480,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-map ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (string-hashtable-map::pair-nil table::struct fun)
+(define (string-hashtable-map::pair-nil fun::procedure table::struct)
    (let* ((size (%hashtable-max-bucket-len table))
 	  (size3 (*fx 3 size))
 	  (buckets (%hashtable-buckets table)))
@@ -516,10 +516,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-for-each ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-for-each table::struct fun::procedure)
+(define (hashtable-for-each table::obj fun::obj)
    (cond
       ((hashtable-string? table)
-       (string-hashtable-for-each table fun))
+       (string-hashtable-for-each fun table))
       ((hashtable-weak? table)
        (weak-hashtable-for-each table fun))
       (else
@@ -528,7 +528,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-for-each ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (string-hashtable-for-each table::struct fun)
+(define (string-hashtable-for-each fun::procedure table::struct)
    (let* ((size (%hashtable-max-bucket-len table))
 	  (size3 (*fx 3 size))
 	  (buckets (%hashtable-buckets table)))
@@ -555,10 +555,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-filter ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-filter table::struct fun::procedure)
+(define (hashtable-filter table::obj fun::obj)
    (cond
       ((hashtable-string? table)
-       (string-hashtable-filter table fun))
+       (string-hashtable-filter fun table))
       ((hashtable-weak? table)
        (weak-hashtable-filter table fun))
       (else
@@ -567,7 +567,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-filter ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (string-hashtable-filter table::struct fun)
+(define (string-hashtable-filter fun::procedure table::struct)
    (let* ((size (%hashtable-max-bucket-len table))
 	  (size3 (*fx 3 size))
 	  (buckets (%hashtable-buckets table)))
@@ -605,10 +605,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-filter-map ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-filter-map table::struct fun::procedure)
+(define (hashtable-filter-map table::obj fun::obj)
    (cond
       ((hashtable-string? table)
-       (string-hashtable-filter-map table fun))
+       (string-hashtable-filter-map fun table))
       ((hashtable-weak? table)
        (weak-hashtable-filter-map table fun))
       (else
@@ -617,7 +617,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-filter-map ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (string-hashtable-filter-map table::struct fun)
+(define (string-hashtable-filter-map fun::procedure table::struct)
    (let* ((size (%hashtable-max-bucket-len table))
 	  (size3 (*fx 3 size))
 	  (buckets (%hashtable-buckets table)))
@@ -654,10 +654,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-filter! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-filter! table::struct fun::procedure)
+(define (hashtable-filter! table::obj fun::obj)
    (cond
       ((hashtable-string? table)
-       (string-hashtable-filter! table fun))
+       (string-hashtable-filter! fun table))
       ((hashtable-weak? table)
        (weak-hashtable-filter! table fun))
       (else
@@ -666,7 +666,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-filter! ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (string-hashtable-filter! table::struct fun)
+(define (string-hashtable-filter! fun::procedure table::struct)
    (let* ((size (%hashtable-max-bucket-len table))
 	  (size3 (*fx 3 size))
 	  (buckets (%hashtable-buckets table)))

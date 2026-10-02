@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Thu Oct  1 07:44:06 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:22:48 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -30,7 +30,7 @@
 ;*---------------------------------------------------------------------*/
 (register-class-serialization! Database
    (lambda (o::Database)
-      (vector o.path (hashtable-map o.packages cons)))
+      (vector o.path (hashtable-map cons o.packages)))
    (lambda (o v)
       (let* ((db::Database (instantiate::Database
                               (path (vector-ref o 0))))
