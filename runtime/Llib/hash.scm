@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Fri Oct  2 07:19:25 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:30:42 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -468,14 +468,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-map ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-map::pair-nil table::obj fun::obj)
-   (cond
-      ((hashtable-string? table)
-       (string-hashtable-map fun table))
-      ((hashtable-weak? table)
-       (weak-hashtable-map table fun))
-      (else
-       (plain-hashtable-map table fun))))
+(define (hashtable-map::pair-nil fun::obj table::obj)
+   (if (struct? table)
+       (cond
+          ((hashtable-string? table) (string-hashtable-map fun table))
+          ((hashtable-weak? table) (weak-hashtable-map table fun))
+          (else (plain-hashtable-map table fun)))
+      ;; old backward compatible api
+       (cond
+          ((hashtable-string? fun) (string-hashtable-map table fun))
+          ((hashtable-weak? fun) (weak-hashtable-map fun table))
+          (else (plain-hashtable-map fun table)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-map ...                                         */
@@ -516,14 +519,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-for-each ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-for-each table::obj fun::obj)
-   (cond
-      ((hashtable-string? table)
-       (string-hashtable-for-each fun table))
-      ((hashtable-weak? table)
-       (weak-hashtable-for-each table fun))
-      (else
-       (plain-hashtable-for-each table fun))))
+(define (hashtable-for-each fun::obj table::obj)
+   (if (struct? table)
+       (cond
+          ((hashtable-string? table) (string-hashtable-for-each fun table))
+          ((hashtable-weak? table) (weak-hashtable-for-each table fun))
+          (else (plain-hashtable-for-each table fun)))
+       (cond
+          ;; old backward compatible api
+          ((hashtable-string? fun) (string-hashtable-for-each table fun))
+          ((hashtable-weak? fun) (weak-hashtable-for-each fun table))
+          (else (plain-hashtable-for-each fun table)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-for-each ...                                    */
@@ -555,14 +561,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-filter ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-filter table::obj fun::obj)
-   (cond
-      ((hashtable-string? table)
-       (string-hashtable-filter fun table))
-      ((hashtable-weak? table)
-       (weak-hashtable-filter table fun))
-      (else
-       (plain-hashtable-filter table fun))))
+(define (hashtable-filter fun::obj table::obj)
+   (if (struct? table)
+       (cond
+          ((hashtable-string? table) (string-hashtable-filter fun table))
+          ((hashtable-weak? table) (weak-hashtable-filter table fun))
+          (else (plain-hashtable-filter table fun)))
+       (cond
+          ;; old bacward compatible api
+          ((hashtable-string? fun) (string-hashtable-filter table fun))
+          ((hashtable-weak? fun) (weak-hashtable-filter fun table))
+          (else (plain-hashtable-filter fun table)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-filter ...                                      */
@@ -605,14 +614,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-filter-map ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-filter-map table::obj fun::obj)
-   (cond
-      ((hashtable-string? table)
-       (string-hashtable-filter-map fun table))
-      ((hashtable-weak? table)
-       (weak-hashtable-filter-map table fun))
-      (else
-       (plain-hashtable-filter-map table fun))))
+(define (hashtable-filter-map fun::obj table::obj)
+   (if (struct? table)
+       (cond
+          ((hashtable-string? table) (string-hashtable-filter-map fun table))
+          ((hashtable-weak? table) (weak-hashtable-filter-map table fun))
+          (else (plain-hashtable-filter-map table fun)))
+      ;; old backward compatible api
+       (cond
+          ((hashtable-string? fun) (string-hashtable-filter-map table fun))
+          ((hashtable-weak? fun) (weak-hashtable-filter-map fun table))
+          (else (plain-hashtable-filter-map fun table)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-filter-map ...                                  */
@@ -654,14 +666,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-filter! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (hashtable-filter! table::obj fun::obj)
-   (cond
-      ((hashtable-string? table)
-       (string-hashtable-filter! fun table))
-      ((hashtable-weak? table)
-       (weak-hashtable-filter! table fun))
-      (else
-       (plain-hashtable-filter! table fun))))
+(define (hashtable-filter! fun::obj table::obj)
+   (if (struct? table)
+       (cond
+          ((hashtable-string? table) (string-hashtable-filter! fun table))
+          ((hashtable-weak? table) (weak-hashtable-filter! table fun))
+          (else (plain-hashtable-filter! table fun)))
+       (cond
+          ;; old backward compatible api
+          ((hashtable-string? table) (string-hashtable-filter! table fun))
+          ((hashtable-weak? table) (weak-hashtable-filter! fun table))
+          (else (plain-hashtable-filter! fun table)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-filter! ...                                     */
