@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Fri Oct  2 08:13:52 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 08:29:59 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -382,12 +382,9 @@
 ;*---------------------------------------------------------------------*/
 (define (hashtable->list::pair-nil table::struct)
    (cond
-      ((hashtable-string? table)
-       (string-hashtable->list table))
-      ((hashtable-weak? table)
-       (weak-hashtable->list table))
-      (else
-       (plain-hashtable->list table))))
+      ((hashtable-string? table) (string-hashtable->list table))
+      ((hashtable-weak? table) (weak-hashtable->list table))
+      (else (plain-hashtable->list table))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable->list ...                                       */
@@ -426,12 +423,9 @@
 ;*---------------------------------------------------------------------*/
 (define (hashtable-key-list::pair-nil table::struct)
    (cond
-      ((hashtable-string? table)
-       (string-hashtable-key-list table))
-      ((hashtable-weak? table)
-       (weak-hashtable-key-list table))
-      (else
-       (plain-hashtable-key-list table))))
+      ((hashtable-string? table) (string-hashtable-key-list table))
+      ((hashtable-weak? table) (weak-hashtable-key-list table))
+      (else (plain-hashtable-key-list table))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-key-list ...                                    */
@@ -472,12 +466,12 @@
    (if (struct? table)
        (cond
           ((hashtable-string? table) (string-hashtable-map fun table))
-          ((hashtable-weak? table) (weak-hashtable-map table fun))
+          ((hashtable-weak? table) (weak-hashtable-map fun table))
           (else (plain-hashtable-map fun table)))
       ;; old backward compatible api
        (cond
           ((hashtable-string? fun) (string-hashtable-map table fun))
-          ((hashtable-weak? fun) (weak-hashtable-map fun table))
+          ((hashtable-weak? fun) (weak-hashtable-map table fun))
           (else (plain-hashtable-map table fun)))))
 
 ;*---------------------------------------------------------------------*/
@@ -523,12 +517,12 @@
    (if (struct? table)
        (cond
           ((hashtable-string? table) (string-hashtable-for-each fun table))
-          ((hashtable-weak? table) (weak-hashtable-for-each table fun))
+          ((hashtable-weak? table) (weak-hashtable-for-each fun table))
           (else (plain-hashtable-for-each fun table)))
        (cond
           ;; old backward compatible api
           ((hashtable-string? fun) (string-hashtable-for-each table fun))
-          ((hashtable-weak? fun) (weak-hashtable-for-each fun table))
+          ((hashtable-weak? fun) (weak-hashtable-for-each table fun))
           (else (plain-hashtable-for-each table fun)))))
 
 ;*---------------------------------------------------------------------*/
@@ -565,12 +559,12 @@
    (if (struct? table)
        (cond
           ((hashtable-string? table) (string-hashtable-filter fun table))
-          ((hashtable-weak? table) (weak-hashtable-filter table fun))
+          ((hashtable-weak? table) (weak-hashtable-filter fun table))
           (else (plain-hashtable-filter fun table)))
        (cond
           ;; old bacward compatible api
           ((hashtable-string? fun) (string-hashtable-filter table fun))
-          ((hashtable-weak? fun) (weak-hashtable-filter fun table))
+          ((hashtable-weak? fun) (weak-hashtable-filter table fun))
           (else (plain-hashtable-filter table fun)))))
 
 ;*---------------------------------------------------------------------*/
@@ -618,12 +612,12 @@
    (if (struct? table)
        (cond
           ((hashtable-string? table) (string-hashtable-filter-map fun table))
-          ((hashtable-weak? table) (weak-hashtable-filter-map table fun))
+          ((hashtable-weak? table) (weak-hashtable-filter-map fun table))
           (else (plain-hashtable-filter-map fun table)))
       ;; old backward compatible api
        (cond
           ((hashtable-string? fun) (string-hashtable-filter-map table fun))
-          ((hashtable-weak? fun) (weak-hashtable-filter-map fun table))
+          ((hashtable-weak? fun) (weak-hashtable-filter-map table fun))
           (else (plain-hashtable-filter-map table fun)))))
 
 ;*---------------------------------------------------------------------*/
@@ -670,12 +664,12 @@
    (if (struct? table)
        (cond
           ((hashtable-string? table) (string-hashtable-filter! fun table))
-          ((hashtable-weak? table) (weak-hashtable-filter! table fun))
+          ((hashtable-weak? table) (weak-hashtable-filter! fun table))
           (else (plain-hashtable-filter! fun table)))
        (cond
           ;; old backward compatible api
           ((hashtable-string? table) (string-hashtable-filter! table fun))
-          ((hashtable-weak? table) (weak-hashtable-filter! fun table))
+          ((hashtable-weak? table) (weak-hashtable-filter! table fun))
           (else (plain-hashtable-filter! table fun)))))
 
 ;*---------------------------------------------------------------------*/
@@ -718,12 +712,9 @@
 ;*---------------------------------------------------------------------*/
 (define (hashtable-clear! table::struct)
    (cond
-      ((hashtable-string? table)
-       (string-hashtable-clear! table))
-      ((hashtable-weak? table)
-       (weak-hashtable-clear! table))
-      (else
-       (plain-hashtable-clear! table))))
+      ((hashtable-string? table) (string-hashtable-clear! table))
+      ((hashtable-weak? table) (weak-hashtable-clear! table))
+      (else (plain-hashtable-clear! table))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-clear! ...                                      */
@@ -751,12 +742,9 @@
 ;*---------------------------------------------------------------------*/
 (define (hashtable-contains?::bool table::struct key::obj)
    (cond
-      ((hashtable-string? table)
-       (string-hashtable-contains? table key))
-      ((hashtable-weak? table)
-       (weak-hashtable-contains? table key))
-      (else
-       (plain-hashtable-contains? table key))))
+      ((hashtable-string? table) (string-hashtable-contains? table key))
+      ((hashtable-weak? table) (weak-hashtable-contains? table key))
+      (else (plain-hashtable-contains? table key))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-contains? ...                                   */
@@ -871,12 +859,9 @@
 ;*---------------------------------------------------------------------*/
 (define (hashtable-put! table::struct key::obj obj::obj)
    (cond
-      ((hashtable-string? table)
-       (string-hashtable-put! table key obj))
-      ((hashtable-weak? table)
-       (weak-hashtable-put! table key obj))
-      (else
-       (plain-hashtable-put! table key obj))))
+      ((hashtable-string? table) (string-hashtable-put! table key obj))
+      ((hashtable-weak? table) (weak-hashtable-put! table key obj))
+      (else (plain-hashtable-put! table key obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-put/hash! ...                                   */
@@ -953,12 +938,9 @@
 ;*---------------------------------------------------------------------*/
 (define (hashtable-update! table::struct key::obj proc::procedure obj)
    (cond
-      ((hashtable-string? table)
-       (string-hashtable-update! table key proc obj))
-      ((hashtable-weak? table)
-       (weak-hashtable-update! table key proc obj))
-      (else
-       (plain-hashtable-update! table key proc obj))))
+      ((hashtable-string? table) (string-hashtable-update! table key proc obj))
+      ((hashtable-weak? table) (weak-hashtable-update! table key proc obj))
+      (else (plain-hashtable-update! table key proc obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-update! ...                                     */
@@ -1087,12 +1069,9 @@
 ;*---------------------------------------------------------------------*/
 (define (hashtable-remove! table::struct key::obj)
    (cond
-      ((hashtable-string? table)
-       (string-hashtable-remove! table key))
-      ((hashtable-weak? table)
-       (weak-hashtable-remove! table key))
-      (else
-       (plain-hashtable-remove! table key))))
+      ((hashtable-string? table) (string-hashtable-remove! table key))
+      ((hashtable-weak? table) (weak-hashtable-remove! table key))
+      (else (plain-hashtable-remove! table key))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-hashtable-remove! ...                                     */

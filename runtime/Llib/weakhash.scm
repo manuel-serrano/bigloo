@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/weakhash.scm       */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/weakhash.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Sun Apr 26 17:26:02 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 08:26:13 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The weak hash tables.                                            */
 ;*    -------------------------------------------------------------    */
@@ -54,11 +54,11 @@
    (export (weak-hashtable->vector::vector ::struct)
 	   (weak-hashtable->list::pair-nil ::struct)
 	   (weak-hashtable-key-list::pair-nil ::struct)
-	   (weak-hashtable-map::pair-nil ::struct ::procedure)
-	   (weak-hashtable-for-each ::struct ::procedure)
-	   (weak-hashtable-filter::pair-nil ::struct ::procedure)
-	   (weak-hashtable-filter-map::pair-nil ::struct ::procedure)
-	   (weak-hashtable-filter! ::struct ::procedure)
+	   (weak-hashtable-map::pair-nil ::procedure ::struct)
+	   (weak-hashtable-for-each ::procedure ::struct)
+	   (weak-hashtable-filter::pair-nil ::procedure ::struct)
+	   (weak-hashtable-filter-map::pair-nil ::procedure ::struct)
+	   (weak-hashtable-filter! ::procedure ::struct)
 	   (weak-hashtable-clear! ::struct)
 	   (weak-hashtable-contains?::bool ::struct ::obj)
 	   (weak-hashtable-get ::struct ::obj)
@@ -188,7 +188,7 @@
 ;*---------------------------------------------------------------------*/
 (define (keys-traverse-hash table::struct fun)
    ;; cleanup all dead references
-   (weak-keys-hashtable-filter! table (lambda (k v) #t))
+   (weak-keys-hashtable-filter! (lambda (k v) #t) table)
    ;; apply fun to all live entries
    (let* ((buckets (%hashtable-buckets table))
 	  (buckets-len (vector-length buckets)))
@@ -290,7 +290,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    weak-hashtable-map ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (weak-hashtable-map table::struct fun::procedure)
+(define (weak-hashtable-map fun::procedure table::struct)
    (let ((res '()))
       (traverse-hash table
 	 (lambda (key val)
@@ -300,13 +300,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    weak-hashtable-for-each ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (weak-hashtable-for-each table::struct fun::procedure)
+(define (weak-hashtable-for-each fun::procedure table::struct)
    (traverse-hash table fun))
 
 ;*---------------------------------------------------------------------*/
 ;*    weak-hashtable-filter ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (weak-hashtable-filter table::struct fun::procedure)
+(define (weak-hashtable-filter fun::procedure table::struct)
    (let ((res '()))
       (traverse-hash table
 	 (lambda (key val)
@@ -317,7 +317,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    weak-hashtable-filter-map ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (weak-hashtable-filter-map table::struct fun::procedure)
+(define (weak-hashtable-filter-map fun::procedure table::struct)
    (let ((res '()))
       (traverse-hash table
 	 (lambda (key val)
@@ -329,7 +329,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    weak-keys-hashtable-filter! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (weak-keys-hashtable-filter! table::struct fun::procedure)
+(define (weak-keys-hashtable-filter! fun::procedure table::struct)
    (let* ((buckets (%hashtable-buckets table))
 	  (buckets-len (vector-length buckets)))
       (let loop ((i 0))
@@ -351,7 +351,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    weak-old-hashtable-filter! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (weak-old-hashtable-filter! table::struct fun::procedure)
+(define (weak-old-hashtable-filter! fun::procedure table::struct)
    (let* ((buckets (%hashtable-buckets table))
 	  (buckets-len (vector-length buckets)))
       (let loop ((i 0))
@@ -367,18 +367,18 @@
 ;*---------------------------------------------------------------------*/
 ;*    weak-hashtable-filter! ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (weak-hashtable-filter! table::struct fun::procedure)
+(define (weak-hashtable-filter! fun::procedure table::struct)
    (if (hashtable-weak-keys? table)
-       (weak-keys-hashtable-filter! table fun)
-       (weak-old-hashtable-filter! table fun)))
+       (weak-keys-hashtable-filter! fun table)
+       (weak-old-hashtable-filter! fun table)))
        
 ;*---------------------------------------------------------------------*/
 ;*    weak-hashtable-clear! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (weak-hashtable-clear! table::struct)
    (if (hashtable-weak-keys? table)
-       (weak-keys-hashtable-filter! table (lambda (k v) #f))
-       (weak-old-hashtable-filter! table (lambda (k v) #f))))
+       (weak-keys-hashtable-filter! (lambda (k v) #f) table)
+       (weak-old-hashtable-filter! (lambda (k v) #f) table)))
 
 ;*---------------------------------------------------------------------*/
 ;*    weak-keys-hashtable-contains? ...                                */

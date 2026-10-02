@@ -167,6 +167,10 @@ is a key and the second one, an associated object.  If the hash table
 is weak, `fun` will only be mapped on sets of key/datum which haven't
 dissapeared yet.
 
+> [!NOTE] For the sake of backward compatibility, the arguments `fun` and 
+> `table`can be swapped, that is passing the hashtable first and the procedure
+> second. 
+
 ### hashtable-for-each ###
 
 Applies `fun` to each of the keys and elements of `table` (no order is
@@ -175,22 +179,38 @@ arguments. The first one is a key and the second one, an associated
 object.  If the hash table is weak, `fun` will only be called on sets
 of key/datum which haven't dissapeared yet.
 
+> [!NOTE] For the sake of backward compatibility, the arguments `fun` and 
+> `table`can be swapped, that is passing the hashtable first and the procedure
+> second. 
+
 ### hashtable-filter ###
 Applies `fun` to each of the keys and elements of `table` 
 (no order is specified). In consequence, `fun` must be a procedure
 of two arguments. Returns a list of elements for which the predicate
 `fun` evaluated to `#t`.
 
+> [!NOTE] For the sake of backward compatibility, the arguments `fun` and 
+> `table`can be swapped, that is passing the hashtable first and the procedure
+> second. 
+
 ### hashtable-filter! ###
 Filter out elements from `table` according to predicate `fun`.
 If the hash table is weak, `fun` will only be called on sets of key/datum
 which haven't dissapeared yet.
+
+> [!NOTE] For the sake of backward compatibility, the arguments `fun` and 
+> `table`can be swapped, that is passing the hashtable first and the procedure
+> second. 
 
 ### hashtable-filter-map ###
 Applies `fun` to each of the keys and elements of `table` 
 (no order is specified). In consequence, `fun` must be a procedure
 of two arguments. Returns a list of values produced by the call to `fun`
 that did not return the value `#f`.
+
+> [!NOTE] For the sake of backward compatibility, the arguments `fun` and 
+> `table`can be swapped, that is passing the hashtable first and the procedure
+> second. 
 
 ### hashtable-clear! ###
 Remove all the elements from `table`.

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Fri Oct  2 07:22:48 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 08:37:59 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -169,7 +169,7 @@
                   (if (string=? (car x) (car y))
                       (let ((vx::PackageVersion (cdr x))
                             (vy::PackageVersion (cdr y)))
-                         (<=fx (string-natural-compare3 vx.version vy.version) 0))
+                         (>=fx (string-natural-compare3 vx.version vy.version) 0))
                       (string<? (car x) (car y))))
             versions))
       
@@ -219,7 +219,8 @@
                     (or (find (lambda (pv::PackageVersion)
                                  (string=? pv.version version))
                            p.versions)
-                        (utils.error name "Cannot find package version" version))
+                        (utils.error name "Cannot find package version"
+                           version))
                     (car p.versions)))
              (utils.error db.path "Cannot find package in database" name)))))
                        

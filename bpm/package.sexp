@@ -5,7 +5,7 @@
   author: "-"
   url: "https://"
   sha256: ""
-  bigloo: (>= "5.0.0")
+  bigloo: ">=5.0.0"
   backends: (c jvm wasm)
   dependencies: ()
 )
