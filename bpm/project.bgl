@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Fri Oct  2 11:26:28 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 13:11:51 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -90,16 +90,26 @@
           (init-in-dir (pwd))
           (exit 0)))
    (let ((pv::PackageVersion (db.find-package-version name version)))
-      (let ((dir (make-file-path (pwd) "pkg" name)))
-         (if (directory? dir)
-             (when (utils.yes-no? "Shall I remove it? "
-                      (format "Directory ~s already exists.\n" dir))
-                (delete-directories dir)))
-         (unless (directory? dir)
-            (utils.untar (utils.download pv.url name) dir)
-            (pkg.check-package-version pv name)
-            (add-dependency! (pwd) name (or version "*"))))))
+      (download-pkg name pv)
+      (for-each (lambda (e)
+                   (download-pkg (car e)
+                      (db.find-package-version (car e) (cadr e))))
+         (get-rec-dependencies pv))
+      (add-dependency! (pwd) name (or version "*"))))
 
+;*---------------------------------------------------------------------*/
+;*    download-pkg ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (download-pkg name::bstring pv::PackageVersion)
+   (let ((dir (make-file-path (pwd) "pkg" name)))
+      (if (directory? dir)
+          (when (utils.yes-no? "Shall I remove it? "
+                   (format "Directory ~s already exists.\n" dir))
+             (delete-directories dir)))
+      (unless (directory? dir)
+         (utils.untar (utils.download pv.url name) dir)
+         (pkg.check-package-version pv name))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    add-dependency! ...                                              */
 ;*---------------------------------------------------------------------*/
@@ -134,7 +144,7 @@
              (let ((dep (car flatdeps)))
                 (loop (cdr flatdeps)
                    (rec-pv (db.find-package-version (car dep) (cadr dep))
-                      recdeps)))))))
+                      (cons (car flatdeps) recdeps))))))))
 
    (rec-pv pv '()))
    

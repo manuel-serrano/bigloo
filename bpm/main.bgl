@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Fri Oct  2 11:06:48 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 12:59:40 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -71,7 +71,7 @@
             ;; sub commands
             (section "Sub commands")
             (("config" (help "config commands"))
-             (set! action (config.parse-cmdline the-remaining-args))
+             (set! action (config-parse-cmdline the-remaining-args))
              (break #t))
             (("db" (help "database commands"))
              (set! action (db-parse-cmdline the-remaining-args))
@@ -87,6 +87,27 @@
              (set! action (lambda () (usage args-parse-usage))))))
       
       action))
+
+;*---------------------------------------------------------------------*/
+;*    config-parse-cmdline ...                                         */
+;*---------------------------------------------------------------------*/
+(define (config-parse-cmdline cmdline::pair-nil)
+   
+   (define (usage args-parse-usage)
+      (printf "~a v~a\n" config.name config.version)
+      (print "usage: " config.name " [options] "
+         (trace-color 2 "config") " arg0 arg1 ...")
+      (args-parse-usage #f)
+      (exit 0))
+   
+   (bind-exit (break)
+      (args-parse cmdline
+         (()
+          (lambda () (usage args-parse-usage)))
+         (("show" (help "Show configuration"))
+          (break config.show))
+         (else
+          (break (lambda () (usage args-parse-usage)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pkg-parse-cmdline ...                                            */
@@ -159,7 +180,7 @@
                 (db.list-packages (db.load-database config.rc-directory)))))
          (("update" (help "Update database"))
           (break (lambda ()
-                    (db.update (db.load-database config.rc-directory)))))
+                    (db.update! (db.load-database config.rc-directory)))))
          (("init" ?url (help "Initialize a database from a url"))
           (break (lambda () (db.init url))))
          (else

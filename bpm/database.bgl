@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Fri Oct  2 11:05:56 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 12:58:24 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -17,7 +17,7 @@
    (import "./utils.bgl" . utils)
    (import "./package.bgl" . pkg)
    (import "./versions.bgl" . versions)
-   (export Database init update load-database
+   (export Database init update! load-database
       list-packages find-package-version))
 
 ;*---------------------------------------------------------------------*/
@@ -41,7 +41,7 @@
              (pkgs db.packages))
          (for-each (lambda (kb)
                       (hashtable-put! pkgs (car kb) (cdr kb)))
-            (vector-ref o 1))
+            (vector-ref o 2))
          db)))
 
 ;*---------------------------------------------------------------------*/
@@ -65,7 +65,7 @@
                    (url url))))
          (cond
             ((directory? url)
-             (init-from-directory db))
+             (update-from-directory! db))
             (else
              (utils.error "db init" "URL not supported" url))))))
 
@@ -86,15 +86,15 @@
 ;*    save-database ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (save-database db::Database)
-   (let ((p (open-output-binary-file config.database-filename)))
+   (let ((p (open-output-binary-file db.path)))
       (unwind-protect
          (output-obj p db)
          (close-binary-port p))))
 
 ;*---------------------------------------------------------------------*/
-;*    init-from-directory ...                                          */
+;*    update-from-directory! ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (init-from-directory::Database db::Database)
+(define (update-from-directory!::Database db::Database)
    
    (define (package-name file sexp::pair-nil)
       (let ((l (memq name: sexp)))
@@ -112,6 +112,8 @@
                 #f)
              (let ((sexp (call-with-input-file file
                             (lambda (ip) (read ip #t)))))
+                (unless (pair? sexp)
+                   (utils.error "read" "Corrupted file" file))
                 (cons (package-name file sexp)
                    (pkg.list->package-version sexp))))
           (begin
@@ -154,10 +156,14 @@
       db))
 
 ;*---------------------------------------------------------------------*/
-;*    update ...                                                       */
+;*    update! ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (update db::database)
-   #unspecified)
+(define (update! db::Database)
+   (cond
+      ((directory? db.url)
+       (update-from-directory! db))
+      (else
+       (utils.error "db init" "URL not supported" db.url))))
    
 ;*---------------------------------------------------------------------*/
 ;*    list-packages ...                                                */
@@ -166,7 +172,8 @@
    (for-each (lambda (p::Package)
                 (let ((v0::PackageVersion (car (last-pair p.versions))))
                    (print (utils.color 'package p.name) " " v0.version)
-                   (print "  " p.description)
+                   (when (>fx (string-length p.description) 0)
+                      (print "  " p.description))
                    (when (>=fx config.verbose 1)
                       (for-each (lambda (pv::PackageVersion)
                                    (print "  version: " pv.version)

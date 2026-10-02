@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:38:54 2026                          */
-;*    Last change :  Thu Oct  1 07:39:08 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 13:00:55 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm configuration                                                */
@@ -13,31 +13,11 @@
 ;*    config                                                           */
 ;*---------------------------------------------------------------------*/
 (module config
-   (export parse-cmdline name version
+   (export show name version
       verbose verbose-set!
       repository tmp-directory
       rc-directory rc-directory-set!
       database-filename))
-
-;*---------------------------------------------------------------------*/
-;*    parse-cmdline ...                                                */
-;*---------------------------------------------------------------------*/
-(define (parse-cmdline cmdline::pair)
-
-   (define (usage args-parse-usage)
-      (printf "~a v~a\n" name version)
-      (print "usage: " name " [options] "
-         (trace-color 2 "config") " arg0 arg1 ...")
-      (args-parse-usage #f)
-      (exit 0))
-   
-   (args-parse cmdline
-      (()
-       (lambda () (usage args-parse-usage)))
-      (("show" (help "Show configuration"))
-       show)
-      (else
-       (lambda () (usage args-parse-usage)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    name ...                                                         */
@@ -68,6 +48,7 @@
 (define (show)
    (print "repository: " (trace-color 30 repository))
    (print "rc-directory: " (trace-color 30 rc-directory))
+   (print "database: " (trace-color 30 database-filename))
    (print "tmp-directory: " (trace-color 30 tmp-directory)))
 
 ;*---------------------------------------------------------------------*/
