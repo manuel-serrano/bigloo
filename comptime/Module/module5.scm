@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Tue Sep 22 17:41:06 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:56:36 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -385,7 +385,7 @@
       (let ((types '())
 	    (classes '())
 	    (others '()))
-	 (hashtable-for-each defs
+	 (hashtable-for-each 
 	    (lambda (k def)
 	       (with-access::Def def (id type)
 		  (let ((scope (def-scope def)))
@@ -394,14 +394,15 @@
 			   (cond
 			      ((isa? def KDef) (set! classes (cons e classes)))
 			      ((isa? def TDef) (set! types (cons e types)))
-			      (else (set! others (cons e others))))))))))
+			      (else (set! others (cons e others)))))))))
+            defs)
 	 (values types classes others)))
    
    (define (split-imported-declarations mid decls)
       (let ((types '())
 	    (classes '())
 	    (others '()))
-	 (hashtable-for-each decls
+	 (hashtable-for-each 
 	    (lambda (k decl)
 	       (with-access::Decl decl (mod xid id alias def)
 		  (with-access::Module mod ((dmid id))
@@ -423,7 +424,8 @@
 			      ((isa? d ADef) #unspecified)
 			      ((isa? d KDef) (set! classes (cons e classes)))
 			      ((isa? d TDef) (set! types (cons e types)))
-			      (else (set! others (cons e others))))))))))
+			      (else (set! others (cons e others)))))))))
+            decls)
 	 (values types classes others)))
    
    (define (split-definitions mid defs decls)
@@ -676,11 +678,12 @@
 				     (when xdecl
 					(with-access::Decl xdecl (def)
 					   def)))
-			 (hashtable-map decls
+			 (hashtable-map 
 			    (lambda (k decl)
 			       (with-access::Decl decl ((dmod mod) def)
 				  (when (and (eq? dmod mod) (isa? def KDef))
-				     decl)))))))
+				     decl)))
+                            decls))))
 	     (body (map (lambda (def)
 			   (with-access::KDef def (id registration)
 			      `(define ,id ,registration)))
@@ -723,7 +726,7 @@
 (define (module5-imported-inline mod::Module env)
    (with-trace 'module_module5 "module5-imported-inline"
       (with-access::Module mod (imports)
-	 (hashtable-for-each imports
+	 (hashtable-for-each 
 	    (lambda (k decl)
 	       (with-access::Decl decl (xid id (imod mod) alias attributes)
 		  (let ((def (module5-get-export-def imod (or xid id)))
@@ -762,7 +765,8 @@
 							  (local-type-set! a *obj*)))
 					     (sfun-args fi))
 					  (sfun-body-set! fi node)
-					  (global-value-set! gl fi)))))))))))))))
+					  (global-value-set! gl fi)))))))))))
+            imports))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error/loc ...                                                    */
@@ -801,7 +805,7 @@
 ;*---------------------------------------------------------------------*/
 (define (module5-resolve-pragma! mod::Module env)
    '''(with-access::Module mod (decls (mid id) (mexpr expr))
-      (hashtable-for-each decls
+      (hashtable-for-each 
 	 (lambda (k d)
 	    (with-access::Decl d ((dmod mod) id attributes scope def expr)
 	       (when (and (eq? dmod mod) (pair? attributes))
@@ -817,7 +821,8 @@
 			(else
 			 (error/loc mod
 			    (format "Cannot find global definition \"~a\"" id)
-			    expr mexpr))))))))))
+			    expr mexpr)))))))
+         decls)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *heap4-modules* ...                                              */

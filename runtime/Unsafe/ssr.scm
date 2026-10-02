@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Olivier Melancon                                  */
 ;*    Creation    :  Fri Jun 21 15:42:17 2024                          */
-;*    Last change :  Wed Jul  8 10:57:03 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:50:16 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Olivier Melancon                          */
 ;*    -------------------------------------------------------------    */
 ;*    ssr                                                              */
@@ -91,17 +91,18 @@
 (define-macro (table-for-each proc set)
    `(hashtable-for-each ,set ,proc))
 (define-macro (table->list set)
-   `(hashtable-map ,set cons))
+   `(hashtable-map cons ,set))
 (define-macro (table-search proc set)
    (let ((k (gensym 'k))
 	 (v (gensym 'v))
 	 (r (gensym 'r))
 	 (t (gensym 't)))
    `(bind-exit (,r)
-       (hashtable-for-each ,set
+       (hashtable-for-each
 	  (lambda (,k ,v)
 	     (let ((,t (,proc ,k ,v)))
-		(when ,t (,r ,t)))))
+		(when ,t (,r ,t))))
+           ,set)
        #f)))
 (define-macro (list->table lst)
    (let ((t (gensym 'table)))

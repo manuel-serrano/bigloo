@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Jul 25 19:30:17 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:57:21 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -587,14 +587,15 @@
 	       :qualified-names (jvm-qualified-names))
 	    (module5-checksum! mod)
 	    
-	    (hashtable-for-each decls
+	    (hashtable-for-each 
 	       (lambda (k d)
 		  (with-access::Decl d (scope alias id)
 		     (when (eq? scope 'import)
 			(let ((def (module5-import-def mod d)))
 			   (with-access::Def def (expr kind)
 			      (when (memq kind '(macro expander))
-				 (add-macro-definition! expr alias))))))))
+				 (add-macro-definition! expr alias)))))))
+               decls)
 	    
 	    (set! *module* id)
 	    (set! *module-mod* mod)
@@ -675,10 +676,11 @@
 	    ((jvm)
 	     (module5-module-qualified-name-set! mod)
 	     (with-access::Module mod (imports)
-		(hashtable-for-each imports
+		(hashtable-for-each 
 		   (lambda (k decl)
 		      (with-access::Decl decl (mod)
-			 (module5-module-qualified-name-set! mod)))))
+			 (module5-module-qualified-name-set! mod)))
+                   imports))
 	     (let ((u (java-finalizer-sans-exports)))
 	       (when (pair? u) (set! units (cons (car u) units))))))
 	 

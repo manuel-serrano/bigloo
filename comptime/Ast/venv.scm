@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Thu Jun 11 11:36:47 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:57:08 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -65,7 +65,6 @@
 ;*---------------------------------------------------------------------*/
 (define (add-genv! Genv)
    (hashtable-for-each
-      Genv
       (lambda (k bucket)
 	 (for-each (lambda (new)
 		      (delay-restore-global! new)
@@ -88,7 +87,8 @@
 			    (else
 			     (set-cdr! (cdr bucket)
 				(cons new (cddr bucket)))))))
-	    (cdr bucket))))
+	    (cdr bucket)))
+      Genv)
    (set! *restored* '()))
 
 ;*---------------------------------------------------------------------*/
@@ -410,8 +410,8 @@
 ;*    for-each-global! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (for-each-global! env proc::procedure)
-   (hashtable-for-each env
-      (lambda (k bucket) (for-each proc (cdr bucket)))))
+   (hashtable-for-each (lambda (k bucket) (for-each proc (cdr bucket)))
+      env))
    
 ;*---------------------------------------------------------------------*/
 ;*    global-bucket-position                                           */

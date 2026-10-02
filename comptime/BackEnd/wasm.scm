@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Thu Aug 29 16:30:13 2024                          */
-;*    Last change :  Thu Sep 17 10:45:28 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:56:23 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Hubert Gruniaux and Manuel Serrano        */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo WASM backend driver                                       */
@@ -1576,7 +1576,7 @@ esac")
 ;*    emit-strings ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (emit-strings)
-   (hashtable-map *allocated-strings* emit-string-data))
+   (hashtable-map emit-string-data *allocated-strings*))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-imports ...                                                 */

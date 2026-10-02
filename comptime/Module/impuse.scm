@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Thu May 14 08:42:53 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:58:26 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
@@ -272,7 +272,7 @@
 (define (import-finalizer)
    ;; first read all the module declaration until nothing new is read
    (let loop ((num *import-number*))
-      (hashtable-for-each *imports* (lambda (k i) (read-import! i)))
+      (hashtable-for-each (lambda (k i) (read-import! i)) *imports*)
       (when (>fx *import-number* num)
 	 (loop *import-number*)))
    ;; get the ordered list of imported modules

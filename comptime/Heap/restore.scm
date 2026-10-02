@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Mon Jun  8 09:50:59 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:58:16 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -148,10 +148,12 @@
 		   (read-cache-heap fname)
 		   (let ((ge (create-hashtable))
 			 (te (create-hashtable)))
-		      (hashtable-for-each genv
-			 (lambda (k e) (hashtable-put! ge k e)))
-		      (hashtable-for-each tenv
-			 (lambda (k e) (hashtable-put! te k e)))
+		      (hashtable-for-each
+                         (lambda (k e) (hashtable-put! ge k e))
+                         genv)
+		      (hashtable-for-each 
+			 (lambda (k e) (hashtable-put! te k e))
+                         tenv)
 		      (values ge te)))
 		(let ((m (format "Cannot open heap file ~s" *heap-name*)))
 		   (error "restore-heap" m *lib-dir*)
@@ -260,12 +262,12 @@
 				   global-package-and-qualified-type-set!))
 			     ;; we add all the heap modules
 			     (hashtable-for-each
-				Genv
 				(lambda (k bucket)
 				   (for-each (lambda (new)
 						(heap-module-list
 						   (global-module new)))
-				      (cdr bucket))))
+				      (cdr bucket)))
+                                Genv)
 			     ;; we store the list of includes
 			     (unless (eq? *pass* 'make-heap)
 				(set! *additional-include-foreign*

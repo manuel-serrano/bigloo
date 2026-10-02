@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Tue Sep 29 08:29:49 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:54:16 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -396,7 +396,7 @@
 (define (serialize mod::Module)
 
    (define (decls->list decls)
-      (hashtable-map decls
+      (hashtable-map
 	 (lambda (k d::Decl)
 	    (with-access::Decl d (mod)
 	       (with-access::Module mod (path version id heap)
@@ -407,15 +407,17 @@
 			(let ((def::Def (object-copy (-> d def))))
 			   (set! (-> decl def) def)
 			   (set! (-> def decl) decl)))
-		     (cons k decl)))))))
+		     (cons k decl)))))
+          decls))
 
    (define (classes->list classes exports)
-      (hashtable-filter-map (-> mod classes)
+      (hashtable-filter-map
 	 (lambda (k ci)
 	    (let* ((id (class-info-id ci))
 		   (d (hashtable-get exports (symbol->string! id))))
 	       (when d
-		  (cons k ci))))))
+		  (cons k ci))))
+          (-> mod classes)))
 
    (with-trace '__module5 "serialize"
       (trace-item "mod=" (-> mod id))
@@ -618,9 +620,10 @@
 	 (trace-item "stack=" stack)
 	 (when (hashtable-get *modules-by-path* path)
 	    (with-access::Module (hashtable-get *modules-by-path* path) (exports)
-	       (trace-item "exports=" (hashtable-map exports
+	       (trace-item "exports=" (hashtable-map
 					 (lambda (k d::Decl)
-					    (cons (-> d id) (-> d xid)))))))
+					    (cons (-> d id) (-> d xid)))
+                                          exports))))
 	 (or (hashtable-get *modules-by-path* path)
 	     ;;(filecache-get path lib-path cache-dir hsuffix expand parse)
 	     (let ((exprs (call-with-input-file path
@@ -640,20 +643,22 @@
 (define (compare-modules mr::Module mc::Module)
    (tprint "CMP-MODULE " (-> mr id) " " (-> mc id))
    (let ((kr (sort string<=?
-		(hashtable-map (-> mr exports) (lambda (k d) k))))
+		(hashtable-map (lambda (k d) k) (-> mr exports))))
 	 (kc (sort string<=?
-		(hashtable-map (-> mc exports) (lambda (k d) k)))))
+		(hashtable-map (lambda (k d) k) (-> mc exports)))))
       (tprint " exports k=" (equal? kr kc))
       (tprint "mr.k=" kr)
       (tprint "mc.k=" kc)
       (tprint " exports defs="
 	 (equal?
-	    (hashtable-map (-> mr exports)
+	    (hashtable-map
 	       (lambda (k d::Decl)
-		  (list (-> d id) (-> d alias) (-> d xid))))
-	    (hashtable-map (-> mc exports)
+		  (list (-> d id) (-> d alias) (-> d xid)))
+                (-> mr exports))
+	    (hashtable-map 
 	       (lambda (k d::Decl)
-		  (list (-> d id) (-> d alias) (-> d xid))))))))
+		  (list (-> d id) (-> d alias) (-> d xid)))
+               (-> mc exports))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-read ...                                                 */
@@ -790,10 +795,11 @@
 	 (else
 	  (let ((mod::Module (vector-ref-ur heap 3)))
 	     (set! (-> mod heap) path)
-	     (hashtable-for-each (-> mod exports)
+	     (hashtable-for-each
 		(lambda (key d::Decl)
 		   (let ((imod::Module (-> d mod)))
-		      (set! (-> imod heap) path))))
+		      (set! (-> imod heap) path)))
+                 (-> mod exports))
 	     mod)))))
 
 ;*---------------------------------------------------------------------*/
@@ -833,19 +839,21 @@
 
 	 (with-access::Module mod (imports exports)
 	    (trace-item "imports="
-	       (hashtable-map imports
+	       (hashtable-map
 		  (lambda (k d::Decl)
 		     (let ((m::Module (-> d mod)))
 			(format "~a"
 			   (vector k
-			      alias: (-> d alias) id: (-> d id) mod: (-> m id)))))))
+			      alias: (-> d alias) id: (-> d id) mod: (-> m id)))))
+                   imports))
 	    (trace-item "exports="
-	       (hashtable-map exports
+	       (hashtable-map
 		  (lambda (k d::Decl)
 		     (let ((m::Module (-> d mod)))
 			(format "~a"
 			   (vector k
-			      alias: (-> d alias) id: (-> d id) mod: (-> m id))))))))
+			      alias: (-> d alias) id: (-> d id) mod: (-> m id)))))
+                   exports)))
 	 
 	 (with-access::Module mod (inits libraries)
 	    (trace-item "libraries=" libraries)
@@ -857,14 +865,15 @@
 	    ;; import all the hidden variables from all the imported modules
 	    (for-each (lambda (imod::Module)
 			 (with-access::Module imod (exports)
-			    (hashtable-for-each exports
+			    (hashtable-for-each
 			       (lambda (key decl::Decl)
 				  (let ((b (-> decl id)))
 				     (when (memq 'hidden (-> decl attributes))
 					(let ((nd::Decl (import-decl! decl b b b b mod)))
 					   (set! (-> nd attributes)
 					      (cons 'hidden 
-						 (-> nd attributes))))))))))
+						 (-> nd attributes)))))))
+                                exports)))
 	       inits))
 	 
 	 mod))
@@ -974,14 +983,15 @@
 				       :expand expand
 				       :stack stack))
 		      (mid (-> mod id)))
-		   (hashtable-for-each (-> imod exports)
+		   (hashtable-for-each
 		      (lambda (key d::Decl)
 			 (let ((nd (duplicate::Decl d
 				      (scope 'import))))
 			    (trace-item "id=" (-> d id)
 			       " imod=" (-> imod id)
 			       " (reexport-all)")
-			    (hashtable-put! (-> mod exports) key nd))))
+			    (hashtable-put! (-> mod exports) key nd)))
+                       (-> imod exports))
 		   (set! (-> mod inits)
 		      (append! (-> mod inits) (list imod)))))))))
    
@@ -1010,9 +1020,10 @@
 				   rest)))
 		      (set! (-> imod body)
 			 (append (-> imod body) rbody))))
-		(hashtable-for-each (-> imod exports)
+		(hashtable-for-each
 		   (lambda (key d::Decl)
-		      (hashtable-put! (-> mod exports) key d)))
+		      (hashtable-put! (-> mod exports) key d))
+                    (-> imod exports))
 		(set! (-> mod inits)
 		   (append! (-> mod inits) (list imod))))))))
    
@@ -1083,7 +1094,7 @@
 				       :heap-suffix hsuffix
 				       :expand expand
 				       :stack stack)))
-		   (hashtable-for-each (-> imod exports)
+		   (hashtable-for-each
 		      (lambda (key d::Decl)
 			 (let* ((alias (cond
 					  ((eq? (-> d scope) 'extern)
@@ -1104,7 +1115,8 @@
 			    (import-decl! d (-> d alias) alias alias alias mod)
 			    (trace-item "id=" (-> d id)
 			       " alias=" alias
-			       " imod=" (-> imod id) " (import-all)"))))
+			       " imod=" (-> imod id) " (import-all)")))
+                       (-> imod exports))
 		   (module-add-libraries! mod (-> imod libraries))
 		   (set! (-> mod inits)
 		      (append! (-> mod inits) (list imod)))))))))
@@ -1129,8 +1141,7 @@
 				       :expand expand
 				       :stack stack)))
 		   (trace-item "exports="
-		      (hashtable-map (-> imod exports)
-			 (lambda (key d) key)))
+		      (hashtable-map (lambda (key d) key) (-> imod exports)))
 		   (for-each (lambda (b)
 				(trace-item "b=" b
 				   " imod=" (-> imod id) " (import-some)")
@@ -1159,16 +1170,16 @@
 				       :expand expand
 				       :stack stack)))
 		   (trace-item "exports="
-		      (hashtable-map (-> imod exports)
-			 (lambda (key d) key)))
-		   (hashtable-for-each (-> imod exports)
+		      (hashtable-map (lambda (key d) key) (-> imod exports)))
+		   (hashtable-for-each
 		      (lambda (key d::Decl)
 			 (let* ((alias (-> d alias))
 				(nd (duplicate::Decl d
 				       (alias alias)
 				       (scope 'import))))
 			    (hashtable-put! (-> mod decls) key nd)
-			    (hashtable-put! (-> mod imports) key nd))))
+			    (hashtable-put! (-> mod imports) key nd)))
+                       (-> imod exports))
 		   (set! (-> mod inits)
 		      (append! (-> mod inits) (list imod)))))))))
 
@@ -1228,7 +1239,7 @@
 	     (rlib (module5-resolve-library lib lib-path)))
 	 (if (string? rlib)
 	     (let ((lmod::Module (module5-read-library rlib clause mod hsuffix)))
-		(hashtable-for-each (-> lmod exports)
+		(hashtable-for-each 
 		   (lambda (k d::Decl)
 		      (let* ((alias (if id
 					(module5-qualified-name d id)
@@ -1237,7 +1248,8 @@
 				    (alias alias)
 				    (scope 'import))))
 			 (hashtable-put! (-> mod decls) k nd)
-			 (hashtable-put! (-> mod imports) k nd))))
+			 (hashtable-put! (-> mod imports) k nd)))
+                   (-> lmod exports))
 		;; MS 14may2026, not sure lib init modules must be
 		;; imported explicitly or not
 		(set! (-> mod inits)
@@ -1336,14 +1348,15 @@
 ;*    a heap4 file (see comptime/Module/module5.scm).                  */
 ;*---------------------------------------------------------------------*/
 (define (module5-import-all! mod::Module imod::Module)
-   (hashtable-for-each (-> imod exports)
+   (hashtable-for-each
       (lambda (key d::Decl)
 	 (let* ((alias (-> d alias))
 		(nd (duplicate::Decl d
 		       (alias alias)
 		       (scope 'import))))
 	    (hashtable-put! (-> mod decls) key nd)
-	    (hashtable-put! (-> mod imports) key nd))))
+	    (hashtable-put! (-> mod imports) key nd)))
+       (-> imod exports))
    (module-add-libraries! mod (-> imod libraries))
    (set! (-> mod inits) (append! (-> mod inits) (list imod))))
 
@@ -1396,17 +1409,20 @@
 	    " resolved=" (-> mod resolved)
 	    " qualified-name=" (-> mod qualified-name))
 	 (trace-item "> decls="
-	    (hashtable-map (-> mod decls)
+	    (hashtable-map
 	       (lambda (k d::Decl)
-		  (format "~a/~a(~a)" (-> d id) (-> d alias) (-> d scope)))))
+		  (format "~a/~a(~a)" (-> d id) (-> d alias) (-> d scope)))
+                (-> mod decls)))
 	 (trace-item "> defs="
-	    (hashtable-map (-> mod defs)
+	    (hashtable-map
 	       (lambda (k d::Def)
-		  (format "~a::~a" (-> d id) (typeof d)))))
+		  (format "~a::~a" (-> d id) (typeof d)))
+                (-> mod defs)))
 	 (trace-item "> exports="
-	    (hashtable-map (-> mod exports)
+	    (hashtable-map
 	       (lambda (k d::Decl)
-		  (format "~a" (-> d id)))))
+		  (format "~a" (-> d id)))
+                (-> mod exports)))
 	 (trace-item "heap-modules="
 	    (map (lambda (m)
 		    (with-access::Module m (id) id))
@@ -1434,7 +1450,7 @@
 	       '(co-instantiate) ko)
 	    (install-module5-expander xenv 'include
 	       '(include) ki)
-	    (hashtable-for-each (-> mod decls)
+	    (hashtable-for-each
 	       (lambda (k d::Decl)
 		  (with-access::Decl d ((imod mod) alias id xid def scope expr)
 		     (trace-item "dedl=" id " xid=" xid
@@ -1466,7 +1482,8 @@
 				  (set! def idef)
 				  (with-access::KDef idef (ci decl)
 				     (module5-bind-class! mod id ci)
-				     (install-class-expanders ci xenv mod))))))))))
+				     (install-class-expanders ci xenv mod)))))))))
+                (-> mod decls))
 	    ;; static binding of the module filename and dirname
 	    (set! (-> mod body)
 	       (let* ((id (string->symbol (format "~a.filename" (-> mod id))))
@@ -1492,19 +1509,20 @@
 	    ;; class registration cannot be expanded before all the classes
 	    ;; are defined, otherwise a class that would have an instance
 	    ;; as a default field value could not be declared
-	    (hashtable-for-each (-> mod classes)
+	    (hashtable-for-each
 	       (lambda (k ci)
 		  (class-info-registration-set! ci
 		     (expand/env
 			(localize (registration-expand ci mod)
 			   (class-info-expr ci))
-			xenv))))
+			xenv)))
+                (-> mod classes))
 
 	    ;; Macro and class definitions are erased by the macro-expansion.
 	    ;; Because these definitions are needed to resolve the module
 	    ;; exports, INSTALL-MODULE5-EXPANDER (runtime/macro.scm),
 	    ;; stores these definitions in XENV.
-	    (let ((dm (hashtable-filter-map xenv (lambda (k e) (car e)))))
+	    (let ((dm (hashtable-filter-map (lambda (k e) (car e)) xenv)))
 	       (collect-defines! mod dm))
 
 	    ;; bind variables and macros
@@ -1537,14 +1555,17 @@
 	 (filecache-put! (-> mod path) mod)
 	 
 	 (trace-item "< decls="
-	    (hashtable-map (-> mod decls)
-	       (lambda (k d) (with-access::Decl d (id) id))))
+	    (hashtable-map
+	       (lambda (k d) (with-access::Decl d (id) id))
+                (-> mod decls)))
 	 (trace-item "< exports="
-	    (hashtable-map (-> mod exports)
-	       (lambda (k d) (with-access::Decl d (id) id))))
+	    (hashtable-map 
+	       (lambda (k d) (with-access::Decl d (id) id))
+               (-> mod exports)))
 	 (trace-item "< defs="
-	    (hashtable-map (-> mod defs)
-	       (lambda (k d) (with-access::Def d (id kind) (cons id kind)))))))
+	    (hashtable-map
+	       (lambda (k d) (with-access::Def d (id kind) (cons id kind)))
+                (-> mod defs)))))
    mod)
 
 ;*---------------------------------------------------------------------*/
@@ -1702,7 +1723,7 @@
 			     :heap-suffix hsuffix
 			     :expand expand
 			     :stack stack)))
-	 (hashtable-for-each (-> imod exports)
+	 (hashtable-for-each
 	    (lambda (key d::Decl)
 	       (let* ((alias (if id
 				 (string->symbol
@@ -1713,7 +1734,8 @@
 			     (alias alias)
 			     (scope 'import))))
 		  (hashtable-put! (-> mod decls) key nd)
-		  (hashtable-put! (-> mod imports) key nd))))
+		  (hashtable-put! (-> mod imports) key nd)))
+             (-> imod exports))
 	 (module-add-libraries! mod (-> imod libraries))
 	 (set! (-> mod inits)
 	    (append! (-> mod inits) (list imod)))))
@@ -1725,7 +1747,7 @@
 			     :heap-suffix hsuffix
 			     :expand expand
 			     :stack stack)))
-	 (hashtable-for-each (-> imod exports)
+	 (hashtable-for-each
 	    (lambda (key d::Decl)
 	       (when (memq (-> d id) syms)
 		  (let* ((alias (if id
@@ -1737,7 +1759,8 @@
 				(alias alias)
 				(scope 'import))))
 		     (hashtable-put! (-> mod decls) key nd)
-		     (hashtable-put! (-> mod imports) key nd)))))
+		     (hashtable-put! (-> mod imports) key nd))))
+             (-> imod exports))
 	 (module-add-libraries! mod (-> imod libraries))
 	 (set! (-> mod inits)
 	    (append! (-> mod inits) (list imod)))))
@@ -1896,7 +1919,7 @@
 		(rlib (module5-resolve-library lib lib-path)))
 	    (if (string? rlib)
 		(let ((lmod::Module (module5-read-library rlib clause mod hsuffix)))
-		   (hashtable-for-each (-> lmod exports)
+		   (hashtable-for-each
 		      (lambda (k d::Decl)
 			 (let* ((alias (if id
 					   (module5-qualified-name d id)
@@ -1905,8 +1928,8 @@
 				       (alias alias)
 				       (scope 'import))))
 			    (hashtable-put! (-> mod decls) k nd)
-			    (hashtable-put! (-> mod imports) k nd)
-			    )))
+			    (hashtable-put! (-> mod imports) k nd)))
+                       (-> lmod exports))
 		   (set! (-> mod inits)
 		      (append! (-> mod inits) (list lmod)))
 		   (set! (-> mod libraries)
@@ -2012,17 +2035,17 @@
       (trace-item "mod=" (-> mod id))
       (with-access::Module mod (decls (mid id) defs)
 	 (let ((unbounds '()))
-	    (hashtable-for-each decls
+	    (hashtable-for-each
 	       (lambda (k d)
 		  (with-access::Decl d (def id scope (dmod mod))
 		     (unless (or (isa? def Def) (not (eq? dmod mod)))
 			(when (or (eq? scope 'export) (eq? scope 'static))
-			   (set! unbounds (cons d unbounds)))))))
+			   (set! unbounds (cons d unbounds))))))
+                decls)
 	    (when (pair? unbounds)
 	       (trace-item "decls="
-		  (hashtable-map decls
-		     (lambda (k d)
-			(with-access::Decl d (id) id))))
+		  (hashtable-map (lambda (k d) (with-access::Decl d (id) id))
+                      decls))
 	       (for-each (lambda (d)
 			    (with-access::Decl d (id expr)
 			       (with-handler
@@ -2353,7 +2376,7 @@
    
    (with-trace '__module5 "auto-export-hidden!"
       (trace-item "mod=" (-> mod id))
-      (hashtable-for-each (-> mod exports)
+      (hashtable-for-each
 	 (lambda (k decl::Decl)
 	    (when (isa? (-> decl def) Def)
 	       (let ((def::Def (-> decl def)))
@@ -2383,7 +2406,8 @@
 					     (ds::pair-nil (free-vars!  v '() '() e)))
 					 (for-each export-hidden-global! ds)))
 			    (class-info-properties (-> kdef ci)))
-			 )))))))))
+			 ))))))
+          (-> mod exports))))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    collect-classes! ...                                             */
@@ -2421,12 +2445,13 @@
 
    (define talias (create-hashtable :size 64 :weak 'open-string))
 
-   (hashtable-for-each (-> mod decls)
+   (hashtable-for-each
       (lambda (k d::Decl)
 	 (hashtable-put! talias
-	    (symbol->string! (-> d id)) (symbol->string! (-> d alias)))))
+	    (symbol->string! (-> d id)) (symbol->string! (-> d alias))))
+       (-> mod decls))
       
-   (hashtable-for-each (-> mod classes)
+   (hashtable-for-each
       (lambda (k ci)
 	 (with-access::Module mod (defs decls)
 	    (let* ((name (symbol->string! (class-info-id ci)))
@@ -2461,7 +2486,8 @@
 			    (hashtable-put! decls alias decl)
 			    (with-access::Def def ((ddecl decl))
 			       (set! ddecl decl))))
-		      def)))))))
+		      def)))))
+       (-> mod classes)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ronly! ...                                                       */
@@ -2579,7 +2605,7 @@
       (for-each (lambda (expr)
 		   (ronly-expr! expr '() defs))
 	 body)
-      (hashtable-for-each defs
+      (hashtable-for-each
 	 (lambda (k d)
 	    (with-access::Def d (ronly expr kind)
 	       (when (eq? ronly #unspecified)
@@ -2588,7 +2614,8 @@
 		     ((define ?- (lambda . ?-))
 		      (set! kind 'procedure))
 		     ((define (?- . ?-) . ?-)
-		      (set! kind 'procedure)))))))))
+		      (set! kind 'procedure))))))
+          defs)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-checksum ...                                             */
@@ -2616,7 +2643,7 @@
    (with-access::Module mod (defs decls checksum)
       (when (<fx checksum 0)
 	 (let ((cs 0))
-	    (hashtable-for-each defs
+	    (hashtable-for-each
 	       (lambda (k d)
 		  (with-access::Def d (kind decl)
 		     (when (isa? decl Decl)
@@ -2626,7 +2653,8 @@
 			      (set! cs (add-hash (scope-number scope) cs))
 			      (set! cs (add-hash (get-hashnumber alias) cs))
 			      (set! cs (add-hash (get-hashnumber k) cs))
-			      (set! cs (add-hash (kind-number kind) cs))))))))
+			      (set! cs (add-hash (kind-number kind) cs)))))))
+                defs)
 	    (set! checksum cs)))
       mod))
 

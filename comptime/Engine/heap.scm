@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Mon Jun  8 09:56:50 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:57:42 2026 (serrano)                */
 ;*    Copyright   :  2007-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
@@ -92,11 +92,11 @@
 				 (set-genv! Genv)))
 			  ;; we add all the heap modules
 			  (hashtable-for-each
-			     Genv
 			     (lambda (k bucket)
 				(for-each (lambda (new)
 					     (heap-module-list (global-module new)))
-				   (cdr bucket))))
+				   (cdr bucket)))
+                             Genv)
 			  (values heap includes Genv Tenv))
 		       (close-binary-port port))))
 	     (let ((m (format "Cannot open heap file ~s" heap)))
@@ -178,15 +178,14 @@
 				 (package ,pkg)
 				 "\n    "
 				 (qualified-type-name ,jt))))))))
-   (hashtable-for-each
-      Genv
-      (lambda (k bucket) (for-each dump-var (cdr bucket)))))
+   (hashtable-for-each (lambda (k bucket) (for-each dump-var (cdr bucket)))
+      Genv))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-Tenv ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (dump-Tenv Tenv)
-   (hashtable-for-each Tenv
+   (hashtable-for-each 
       (lambda (k new)
 	 (let* ((id  (type-id new))
 		(name (type-name new)))
@@ -196,5 +195,6 @@
 		      `(class ,(shape new)
 			  (super ,(shape its-super))
 			  ,@(map shape slots))))
-		(print "   " `(type ,id (name ,name))))))))
+		(print "   " `(type ,id (name ,name))))))
+      Tenv))
 

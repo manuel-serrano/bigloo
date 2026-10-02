@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Sat Jun 20 17:12:37 2026 (serrano)                */
+;*    Last change :  Fri Oct  2 07:59:04 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
@@ -190,7 +190,7 @@
 	 ;; hash table (the one restored, not the current compiler's one).
 	 ;; The last traversal used to construct the class accessors
 	 ;; The same thing apply to tvectors
-	 (hashtable-for-each Tenv
+	 (hashtable-for-each 
 	    (lambda (k new)
 	       (let* ((id  (type-id new))
 		      (old (hashtable-get *Tenv* id)))
@@ -215,15 +215,17 @@
 		     (else
 		      ;; we have to store the new coercers 
 		      ;; for the old type
-		      (add-type-coercers! old new))))))
-	 (hashtable-for-each Tenv
+		      (add-type-coercers! old new)))))
+            Tenv)
+	 (hashtable-for-each 
 	    (lambda (k new)
 	       (let* ((id  (type-id new))
 		      (old (hashtable-get *Tenv* id)))
 		  (when (ctype? old)
 		     (let ((l (type-location old)))
 			(foreign-accesses-add!
-			   (make-ctype-accesses! old old l *module*)))))))
+			   (make-ctype-accesses! old old l *module*))))))
+            Tenv)
 	 ;; we have to walk thru the remember list in order to
 	 ;; setup the correct super class fields
 	 (for-each (lambda (new)
@@ -265,9 +267,10 @@
       ;; we have to walk thru all types, not only the freshly defined ones
       ;; because old types may have coercion to new types (for instance, for
       ;; fresh classes).
-      (hashtable-for-each *Tenv*
+      (hashtable-for-each 
 	 (lambda (k new)
-	    (adjust-type-coercers! new)))))
+	    (adjust-type-coercers! new))
+         *Tenv*)))
 		 
 ;*---------------------------------------------------------------------*/
 ;*    find-type ...                                                    */
@@ -496,7 +499,7 @@
 ;*    for-each-type! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (for-each-type! proc)
-   (hashtable-for-each *Tenv* (lambda (k x) (proc x))))
+   (hashtable-for-each (lambda (k x) (proc x)) *Tenv*))
 
 ;*---------------------------------------------------------------------*/
 ;*    uninitialized-types ...                                          */
