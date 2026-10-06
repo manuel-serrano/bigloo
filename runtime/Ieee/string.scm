@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Jun 16 19:17:56 2026 (serrano)                */
+;*    Last change :  Tue Oct  6 19:20:29 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1150,13 +1150,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn blit-string!@ ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (blit-string! s1::bstring o1::long s2::bstring o2::long l::long)
-   (if (and ($string-bound-check? (+fx l o1) (+fx (string-length s1) 1))
-	    ($string-bound-check? (+fx l o2) (+fx (string-length s2) 1)))
-       ($blit-string s1 o1 s2 o2 l)
+(define (blit-string! src::bstring soff::long tgt::bstring toff::long len::long)
+   (if (and ($string-bound-check? (+fx len soff) (+fx (string-length src) 1))
+	    ($string-bound-check? (+fx len toff) (+fx (string-length tgt) 1)))
+       ($blit-string src soff tgt toff len)
        (error "blit-string!:Index and length out of range"
-	      (string-append "[src:" s1 "] [dest:" s2 "]")
-	      (list (string-length s1) o1 (string-length s2) o2 l))))
+	      (string-append "[src:" src "] [dest:" tgt "]")
+	      (list (string-length src) soff (string-length tgt) toff len))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-shrink!@ ...                                       */

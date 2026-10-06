@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Sun Oct  4 06:57:15 2026 (serrano)                */
+;*    Last change :  Tue Oct  6 18:33:34 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -38,8 +38,6 @@
 	      (jpeg-compress (default #f))
 	      (software (default #f))
 	      (comment (default #f))
-	      (%commentpos (default #f))
-	      (%commentlen (default #f))
 	      (description (default #f))
 	      (date (default #f))
 	      (offset-time (default #f))
@@ -784,9 +782,11 @@
 		     ((#x9003 #x9004)
 		      ;; TAG_DATE_TIME_ORIGINAL, TAG_DATE_TIME_DIGITIZED
 		      (with-access::exif exif (date)
-			 (set! date
-			    (parse-exif-date
-			       (strncpy valptr 19)))))
+                         (cond
+                            ((eq? mode 'read)
+                             (set! date (parse-exif-date (strncpy valptr 19))))
+                            ((date? date)
+                             (strnwrt valptr bcount (date->exif-date date))))))
 		     ((#x9010)
 		      ;; OFFSET_TIME
 		      (with-access::exif exif (offset-time)
@@ -863,15 +863,20 @@
 			    (set! focal-length fl))))
 		     ((#x9286)
 		      ;; TAG_USERCOMMENT
-		      (with-access::exif exif (%commentpos
-						 %commentlen
-						 comment)
-			 (set! %commentpos (+ valptr o0))
-			 (set! %commentlen 199)
+		      (with-access::exif exif (comment)
 			 (when (substring-at? bytes "ASCII\000\000\000" valptr)
-			    (set! comment
-			       (remove-trailing-spaces!
-				  (strncpy (+fx 8 valptr) 191))))))
+                            (cond
+                               ((eq? mode 'read)
+                                (set! comment
+                                   (remove-trailing-spaces!
+                                      (strncpy (+fx 8 valptr) 191))))
+                               ((string? comment)
+                                (let ((buf (make-string 191 #\space)))
+                                   (blit-string! comment 0 buf 0
+                                      (minfx (string-length comment)
+                                         (string-length buf)))
+                                   (strnwrt (+fx 8 valptr) (string-length buf)
+                                      buf)))))))
 		     ((#x927c)
 		      ;; MAKER NOTE
 		      (with-access::exif exif (maker-note)
@@ -1248,20 +1253,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-COM! ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (read-COM! exif bytes pos)
-   (with-access::exif exif (comment %commentpos %commentlen)
-      (let ((len (string-length bytes)))
-	 (let loop ((i 0))
-	    (cond
-	       ((=fx i len)
-		(set! comment bytes))
-	       ((char=? (string-ref bytes i) #a000)
-		(let ((s (substring bytes 0 i)))
-		   (set! comment s)
-		   (set! %commentpos pos)
-		   (set! %commentlen i)))
-	       (else
-		(loop (+fx i 1))))))))
+(define (read-COM! bytes)
+   (let ((len (string-length bytes)))
+      (let loop ((i 0))
+         (cond
+            ((=fx i len)
+             bytes)
+            ((char=? (string-ref bytes i) #a000)
+             (substring bytes 0 i))
+            (else
+             (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-SOFn! ...                                                   */
@@ -1320,10 +1321,21 @@
 		   ((#xd9) ;; M_EOI
 		    'eoi)
 		   ((#xfe) ;; M_COM
-		    (read-COM! exif
-		       bytes
-		       (- (mmap-read-position mm)
-			  (string-length bytes)))
+                    (with-access::exif exif (comment)
+                       (cond
+                          ((eq? mode 'read)
+                           (set! comment
+                              (read-COM! bytes)))
+                          ((string? comment)
+                           (let ((len (minfx (string-length comment)
+                                         (string-length bytes))))
+                              (blit-string! comment 0 bytes 0 len)
+                              (when (> (string-length comment)
+                                       (string-length bytes))
+                                 (string-set! bytes (-fx (string-length bytes) 1)
+                                    #a000))
+                              (mmap-substring-set! mm (fixnum->elong offset)
+                                 bytes)))))
 		    (loop))
 		   ((#xe0) ;; MJFIF
 		    ;; not implemented
@@ -1770,39 +1782,8 @@
 ;*    jpeg-exif-comment-set! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (jpeg-exif-comment-set! path comment)
-   (if (not (file-exists? path))
-       (error/errno $errno-io-file-not-found-error
-	  "jpeg-exif-comment-set!" "Can't find file" path)
-       (let ((mm (open-mmap path))
-	     (exf (instantiate::exif))
-	     (mtime #f))
-	  (unwind-protect
-	     (when (> (mmap-length mm) 0)
-		(read-jpeg-sections exf mm 'read)
-		(with-access::exif exf (%commentpos %commentlen)
-		   (and %commentpos
-			(let* ((len (string-length comment))
-			       (s (if (<fx len %commentlen)
-				      comment
-				      (substring comment 0 %commentlen))))
-			   (mmap-write-position-set! mm %commentpos)
-			   (mmap-put-string! mm "ASCII\000\000\000")
-			   (mmap-put-string! mm s)
-			   (mmap-put-string! mm "\000")
-			   (set! mtime #t)
-			   s))))
-	     (begin
-		(close-mmap mm)
-		;; the glibc is buggous, since mmap does not update mtime,
-		;; we force the update here
-		(when mtime
-		   (let ((pr (open-input-file path))
-			 (pw (append-output-file path)))
-		      (let ((c (read-char pr)))
-			 (set-output-port-position! pw 0)
-			 (write-char c pw))
-		      (close-input-port pr)
-		      (close-output-port pw))))))))
+   (jpeg-exif-update! path
+      (instantiate::exif (comment comment))))
 		
 ;*---------------------------------------------------------------------*/
 ;*    jpeg-exif-orientation-set! ...                                   */
@@ -1856,7 +1837,7 @@
 ;*    date->exif-date ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (date->exif-date::bstring d::date)
-   (format "~a:~2,0d:~2,0d ~2,0d:~2,0d:~2,od"
+   (format "~a:~2,0d:~2,0d ~2,0d:~2,0d:~2,0d"
       (date-year d) (date-month d) (date-day d)
       (date-hour d) (date-minute d) (date-second d)))
 
