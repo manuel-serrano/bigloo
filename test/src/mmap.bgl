@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  1 07:36:15 2026                          */
-;*    Last change :  Thu Aug 27 22:34:43 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 11:14:14 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing mmap                                                     */
@@ -139,3 +139,16 @@
                    #t)
                   (else
                    (loop (+elong i #e1)))))))))
+
+(define-test string->mmap
+   (let* ((img (call-with-input-file "misc/img.jpg" read-string))
+          (mm (string->mmap img)))
+      (unwind-protect
+         (let loop ((i 0))
+            (if (<fx i (string-length img))
+                (if (char=? (string-ref img i) (mmap-ref mm i))
+                    (loop (+fx i 1))
+                    #f)
+                #t))
+         (close-mmap mm)))
+   :result #t)

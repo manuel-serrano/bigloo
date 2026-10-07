@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Oct  2 16:13:02 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 10:05:25 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -322,6 +322,12 @@
       ;; query
       (("-query" (help "Dump the current configuration"))
        (query))
+      (("-config" ?key (help "Show the value of the configuration key"))
+       (print (bigloo-config (string->symbol key)))
+       (exit 0))
+      (("-config-all" (help "Show all the configuration keys"))
+       (for-each print (bigloo-config))
+       (exit 0))
       ;; -q
       (("-q" (help "Do not load any rc file"))
        'nothing-to-do)

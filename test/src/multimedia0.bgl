@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug 24 23:47:58 2026                          */
-;*    Last change :  Fri Sep 18 07:40:20 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 09:09:08 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the multimedia library.                                  */
@@ -51,6 +51,42 @@
       (-> ex width))
    :cond-expand (library multimedia)
    :result 64)
+
+(define-test jpeg-exif-mmap
+   (let ((ex::exif (jpeg-exif-mmap (open-mmap "misc/img.jpg" :write #f))))
+      (-> ex width))
+   :cond-expand (library multimedia)
+   :result 64)
+
+(define-test jpeg-exif-update!
+   jpeg-exif-update!
+   :cond-expand (library multimedia)
+   :result procedure?)
+
+(define-test jpeg-exif-mmap-update!
+   (let* ((img (call-with-input-file "misc/img.jpg" read-string))
+          (mm (string->mmap img))
+          (ex (instantiate::exif
+                 (comment "bigloo"))))
+      (jpeg-exif-mmap-update! mm ex)
+      (let ((ex::exif (jpeg-exif-mmap mm)))
+         ex.comment))
+   :cond-expand (library multimedia)
+   :result "bigloo")
+
+(define-test jpeg-exif-reset!
+   jpeg-exif-reset!
+   :cond-expand (library multimedia)
+   :result procedure?)
+
+(define-test jpeg-exif-mmap-reset!
+   (let* ((img (call-with-input-file "misc/img.jpg" read-string))
+          (mm (string->mmap img)))
+      (jpeg-exif-mmap-reset! mm)
+      (let ((ex::exif (jpeg-exif-mmap mm)))
+         ex.comment))
+   :cond-expand (library multimedia)
+   :result "")
 
 (define-test jpeg-parse-dimensions
    (bind-values (width height)

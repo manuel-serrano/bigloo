@@ -1,11 +1,11 @@
 /* @CONFIGURE@ */
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/autoconf/configure.java.in           */
+/*    serrano/prgm/project/bigloo/5.0.x/autoconf/configure.java.in     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Oct 12 09:29:49 2004                          */
-/*    Last change :  Tue Oct 12 12:38:01 2004 (serrano)                */
-/*    Copyright   :  2004 Manuel Serrano                               */
+/*    Last change :  Wed Oct  7 10:36:00 2026 (serrano)                */
+/*    Copyright   :  2004-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java configuration                                               */
 /*=====================================================================*/
@@ -15,6 +15,9 @@ public class configure {
   public static final byte[] BGL_RELEASE_NUMBER = "@BGL_RELEASE_NUMBER@".getBytes();
   public static final byte[] BGL_HOMEURL = "@BGL_HOMEURL@".getBytes();
   public static final byte[] BGL_SPECIFIC_VERSION = "@BGL_SPECIFIC_VERSION@".getBytes();
+  public static final boolean BGL_BACKEND_C = (@BGL_BACKEND_C@ == 1);
+  public static final boolean BGL_BACKEND_JVM = true;
+  public static final boolean BGL_BACKEND_WASM = (@BGL_BACKEND_WASM@ == 1);
   public static final byte[] BGL_BUILD_TAG = "@BGL_BUILD_TAG@".getBytes();
   public static final byte[] BGL_DEFAULT_BACK_END = "@BGL_DEFAULT_BACK_END@".getBytes();
   public static final boolean STACK_GROWS_DOWN = (@STACK_GROWS_DOWN@ == 1);

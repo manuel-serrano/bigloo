@@ -40,6 +40,33 @@ The function `jpeg-exif` tries to extract as much information as possible
 but depending on the exif version or the tool that generated it, not all
 fields of the `exif` class are filled.
 
+### jpeg-exif-mmap ###
+As `jpeg-exif` but extrace the exif data from an open 
+[memory-mapped area](./mmap.html).
+
+### jpeg-exif-update! ###
+Updates the exif information from that receive in the exif object.
+
+> [!IMPORTANT] The function `jpeg-exif-update!` only updates the exif
+> information of the image. It does not add new tags and when updating
+> a string information, it limits the number of character written to
+> that of the old string.
+
+### jpeg-exif-mmap-update! ###
+As `jpeg-exif-update!` but updates the exif data of a 
+[memory mapped area](./mmap.html).
+
+### jpeg-exif-reset! ###
+Resets the exif information of a image. This does not remove any tag
+but set all found tags corresponding to `exif` instances to default
+values.
+
+This function might be useful to remove the private information stored
+in an jpeg exif metadata.
+
+### jpeg-exif-mmap-reset! ###
+As `jpeg-exif-reset!` but for [memory mapped area](./mmap.html).
+
 Jpeg
 ----
 

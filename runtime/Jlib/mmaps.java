@@ -1,3 +1,17 @@
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Jlib/mmaps.java        */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Wed Oct  7 11:32:11 2026                          */
+/*    Last change :                                                    */
+/*    Copyright   :  2026 Manuel Serrano                               */
+/*    -------------------------------------------------------------    */
+/*    java string->mmap implementation                                 */
+/*=====================================================================*/
+
+/*---------------------------------------------------------------------*/
+/*    package                                                          */
+/*---------------------------------------------------------------------*/
 package bigloo;
 
 import java.util.*;
@@ -5,10 +19,13 @@ import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 
+/*---------------------------------------------------------------------*/
+/*    mmaps ...                                                        */
+/*---------------------------------------------------------------------*/
 public class mmaps extends mmap {
    private boolean read, write;
    
-   public mmaps( byte[] s, boolean r, boolean w ) {
+   public mmaps(byte[] s, boolean r, boolean w) {
       super();
       map = null;
       name = s;
@@ -21,19 +38,20 @@ public class mmaps extends mmap {
       return this;
    }
    
-   public int get( long i ) {
-      if( read ) 
-	 return name[ (int)i ];
-      else {
-	 foreign.fail( "mmap", "write only mmap", this );
+   public int get(long i) {
+      if (read) {
+	 return name[(int)i] & 0xff;
+      } else {
+	 foreign.fail("mmap", "write only mmap", this);
 	 return -1;
       }
    }
 
-   public void put( long i, byte c ) {
-      if( write ) 
-	 name[ (int)i ] = c;
-      else
-	 foreign.fail( "mmap", "read only mmap", this );
+   public void put(long i, byte c) {
+      if (write) {
+	 name[(int)i] = c;
+      } else {
+	 foreign.fail("mmap", "read only mmap", this);
+      }
    }
-}   
+} 

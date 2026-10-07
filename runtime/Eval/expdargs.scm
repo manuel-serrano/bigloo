@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr  1 06:28:06 2000                          */
-;*    Last change :  Fri Oct  2 10:05:25 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 09:43:59 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    args-parse expansion.                                            */
@@ -30,6 +30,7 @@
 	    __object
 	    __thread
 	    __match_normalize
+            __dsssl
 	     
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -509,7 +510,7 @@
 ;*    args-parse-usage ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (args-parse-usage descrs)
-   (lambda (#!optional manual?)
+   (lambda (#!optional manual? #!key breakline)
       (if manual? (print "("))
       (let* ((descrs descrs)
              (mlen-sym 0)
@@ -532,6 +533,9 @@
                                    (manual?
                                     (write `(,name ,desc))
                                     (newline))
+                                   (breakline
+                                    (print "   " name)
+                                    (print "      " desc))
                                    ((>=fx len max-len)
                                     (print "   " name)
                                     (print "   "

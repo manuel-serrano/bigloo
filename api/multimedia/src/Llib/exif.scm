@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Wed Oct  7 07:41:33 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 09:07:21 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -127,13 +127,16 @@
 	      (gps-date-stamp (default #f)))
 	   
 	   (jpeg-exif::exif ::bstring)
-	   (jpeg-exif-comment-set! ::bstring ::bstring)
-	   (jpeg-exif-orientation-set! ::bstring ::symbol)
-
+	   (jpeg-exif-mmap::exif ::mmap)
 	   (parse-exif-date::date ::bstring)
 
            (jpeg-exif-update! ::bstring ::exif)
-           (jpeg-exif-reset! ::bstring)))
+           (jpeg-exif-mmap-update! ::mmap ::exif)
+           (jpeg-exif-reset! ::bstring)
+           (jpeg-exif-mmap-reset! ::mmap)
+           
+           (jpeg-exif-comment-set! ::bstring ::bstring)
+	   (jpeg-exif-orientation-set! ::bstring ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    exif-error ...                                                   */
@@ -1033,7 +1036,8 @@
                                    (blit-string! comment 0 buf 0
                                       (minfx (string-length comment)
                                          (string-length buf)))
-                                   (strnwrt bytes (+fx 8 valptr) (string-length buf)
+                                   (strnwrt bytes (+fx 8 valptr)
+                                      (string-length buf)
                                       buf)))))))
 		     ((#x927c)
 		      ;; MAKER NOTE
@@ -1517,16 +1521,12 @@
                     (with-access::exif exif (comment)
                        (cond
                           ((eq? mode 'read)
-                           (set! comment
-                              (read-COM! bytes)))
+                           (set! comment (read-COM! bytes)))
                           ((string? comment)
+                           (string-fill! bytes #a000)
                            (let ((len (minfx (string-length comment)
                                          (string-length bytes))))
                               (blit-string! comment 0 bytes 0 len)
-                              (when (> (string-length comment)
-                                       (string-length bytes))
-                                 (string-set! bytes (-fx (string-length bytes) 1)
-                                    #a000))
                               (mmap-substring-set! mm (fixnum->elong offset)
                                  bytes)))))
 		    (loop))
@@ -1956,6 +1956,24 @@
       res))
 
 ;*---------------------------------------------------------------------*/
+;*    jpeg-exif-mmap ...                                               */
+;*---------------------------------------------------------------------*/
+(define (jpeg-exif-mmap::exif mm::mmap)
+   (let ((exf (instantiate::exif)))
+      (when (> (mmap-length mm) 64)
+         (cond
+            ((tiff? mm)
+             (read-tiff-sections exf mm 'read))
+            ((rw2? mm)
+             (read-rw2-sections exf mm 'read))
+            ((raf? mm)
+             (read-raf-sections exf mm 'read))
+            (else
+             (mmap-read-position-set! mm 0)
+             (read-jpeg-sections exf mm 'read))))
+      exf))
+   
+;*---------------------------------------------------------------------*/
 ;*    jpeg-exif ...                                                    */
 ;*    -------------------------------------------------------------    */
 ;*    This is the main function which reads a JPEG image a             */
@@ -1965,36 +1983,10 @@
    (if (not (file-exists? path))
        (error/errno $errno-io-file-not-found-error
 	  "jpeg-exif" "Can't find file" path)
-       (let ((mm (open-mmap path write: #f))
-	     (exf (instantiate::exif)))
-	  (unwind-protect
-	     (when (> (mmap-length mm) 64)
-		(cond
-		   ((tiff? mm)
-		    (read-tiff-sections exf mm 'read))
-		   ((rw2? mm)
-		    (read-rw2-sections exf mm 'read))
-		   ((raf? mm)
-		    (read-raf-sections exf mm 'read))
-		   (else
-		    (mmap-read-position-set! mm 0)
-		    (read-jpeg-sections exf mm 'read))))
-	     (close-mmap mm))
-	  exf)))
-		
-;*---------------------------------------------------------------------*/
-;*    jpeg-exif-comment-set! ...                                       */
-;*---------------------------------------------------------------------*/
-(define (jpeg-exif-comment-set! path comment)
-   (jpeg-exif-update! path
-      (instantiate::exif (comment comment))))
-		
-;*---------------------------------------------------------------------*/
-;*    jpeg-exif-orientation-set! ...                                   */
-;*---------------------------------------------------------------------*/
-(define (jpeg-exif-orientation-set! path orientation)
-   (jpeg-exif-update! path
-      (instantiate::exif (orientation orientation))))
+       (let ((mm (open-mmap path write: #f)))
+          (unwind-protect
+             (jpeg-exif-mmap mm)
+             (close-mmap mm)))))
 		
 ;*---------------------------------------------------------------------*/
 ;*    parse-exif-date ...                                              */
@@ -2046,6 +2038,22 @@
       (date-hour d) (date-minute d) (date-second d)))
 
 ;*---------------------------------------------------------------------*/
+;*    jpeg-exif-mmap-update! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (jpeg-exif-mmap-update! mm::mmap exf::exif)
+   (when (> (mmap-length mm) 64)
+      (cond
+         ((tiff? mm)
+          (read-tiff-sections exf mm 'write))
+         ((rw2? mm)
+          (read-rw2-sections exf mm 'write))
+         ((raf? mm)
+          (read-raf-sections exf mm 'write))
+         (else
+          (mmap-read-position-set! mm 0)
+          (read-jpeg-sections exf mm 'write)))))
+
+;*---------------------------------------------------------------------*/
 ;*    jpeg-exif-update! ...                                            */
 ;*    -------------------------------------------------------------    */
 ;*    Update exif values                                               */
@@ -2053,27 +2061,16 @@
 (define (jpeg-exif-update! path::bstring exf::exif)
    (if (not (file-exists? path))
        (error/errno $errno-io-file-not-found-error
-	  "jpeg-exif" "Can't find file" path)
+	  "jpeg-exif-update!" "Can't find file" path)
        (let ((mm (open-mmap path read: #t write: #t)))
 	  (unwind-protect
-	     (when (> (mmap-length mm) 64)
-		(cond
-		   ((tiff? mm)
-		    (read-tiff-sections exf mm 'write))
-		   ((rw2? mm)
-		    (read-rw2-sections exf mm 'write))
-		   ((raf? mm)
-		    (read-raf-sections exf mm 'write))
-		   (else
-		    (mmap-read-position-set! mm 0)
-		    (read-jpeg-sections exf mm 'write))))
-	     (close-mmap mm))
-	  exf)))
+	     (jpeg-exif-mmap-update! mm exf)
+	     (close-mmap mm)))))
 
 ;*---------------------------------------------------------------------*/
-;*    jpeg-exif-reset! ...                                             */
+;*    jpeg-exif-mmap-reset! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (jpeg-exif-reset! path::bstring)
+(define (jpeg-exif-mmap-reset! mm::mmap)
    (let ((exf (instantiate::exif
                  (make "")
                  (model "")
@@ -2093,4 +2090,33 @@
                  (exposure-time '(1 . 1))
                  (iso 1)
                  (shutter-speed-value '(1 . 1)))))
-      (jpeg-exif-update! path exf)))
+      (jpeg-exif-mmap-update! mm exf)))
+
+;*---------------------------------------------------------------------*/
+;*    jpeg-exif-reset! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (jpeg-exif-reset! path::bstring)
+   (if (not (file-exists? path))
+       (error/errno $errno-io-file-not-found-error
+	  "jpeg-exif-reset!" "Can't find file" path)
+       (let ((mm (open-mmap path read: #t write: #t)))
+	  (unwind-protect
+	     (jpeg-exif-mmap-reset! mm)
+	     (close-mmap mm)))))
+
+;*---------------------------------------------------------------------*/
+;*    jpeg-exif-comment-set! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (jpeg-exif-comment-set! path comment)
+   (jpeg-exif-update! path
+      (instantiate::exif (comment comment))))
+		
+;*---------------------------------------------------------------------*/
+;*    jpeg-exif-orientation-set! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (jpeg-exif-orientation-set! path orientation)
+   (jpeg-exif-update! path
+      (instantiate::exif (orientation orientation))))
+		
+
+

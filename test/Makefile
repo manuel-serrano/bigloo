@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Wed Oct  7 08:27:42 2026 (serrano)                */
+#*    Last change :  Wed Oct  7 09:58:55 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -65,10 +65,10 @@ J_OBJECTS = $(COMMON:%=%.class) $(BACKEND_J:%=%.class)
 W_OBJECTS = $(COMMON:%=%.wat) $(BACKEND_W:%=%.wat)
 
 #*---------------------------------------------------------------------*/
-#*     Les suffixes ...                                                */
+#*     Suffixes ...                                                    */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .o .scm .c .class .java .wasm .wat
+.SUFFIXES: .bgl .c .java .wat .class .java .wasm
 
 #*---------------------------------------------------------------------*/
 #*    tests                                                            */

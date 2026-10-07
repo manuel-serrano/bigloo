@@ -1,11 +1,11 @@
 ;; @CONFIGURE@
 ;*=====================================================================*/
-;*    .../project/bigloo/wasm/autoconf/bconfigure-generic.sch.in       */
+;*    .../project/bigloo/5.0.x/autoconf/bconfigure-generic.sch.in      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 16 13:12:00 2024                          */
-;*    Last change :  Wed Jun 25 09:54:30 2025 (serrano)                */
-;*    Copyright   :  2024-25 Manuel Serrano                            */
+;*    Last change :  Wed Oct  7 10:32:36 2026 (serrano)                */
+;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic configuration                                            */
 ;*=====================================================================*/
@@ -17,6 +17,9 @@
    (export 
       $$configure-release-number
       $$configure-specific-version
+      $$configure-backend-c
+      $$configure-backend-jvm
+      $$configure-backend-wasm
       $$configure-build-tag
       $$configure-homeurl
       $$configure-shell
@@ -104,6 +107,9 @@
 ;*---------------------------------------------------------------------*/
 (define $$configure-release-number "@BGL_RELEASE_NUMBER@")
 (define $$configure-specific-version "@BGL_SPECIFIC_VERSION@")
+(define $$configure-backend-c "@BGL_BACKEND_C@")
+(define $$configure-backend-jvm "@BGL_BACKEND_JVM@")
+(define $$configure-backend-wasm "@BGL_BACKEND_WASM@")
 (define $$configure-build-tag "@BGL_BUILD_TAG@")
 (define $$configure-homeurl "@BGL_HOMEURL@")
 (define $$configure-shell "@SHELL@")

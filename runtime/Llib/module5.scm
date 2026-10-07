@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Oct  2 14:16:16 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 08:58:55 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -342,17 +342,21 @@
       (char=? (string-ref path 0) #\/)))
 
 ;*---------------------------------------------------------------------*/
-;*    package-name? ...                                                */
+;*    package-name ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (package-name? path)
-   (string-prefix? "pkg:" path))
+(define (package-name path)
+   (let ((i (string-index path #\:)))
+      (when i
+         (let ((j (string-index path #\/)))
+            (when (<fx i j)
+               (substring path 0 i))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    resolve-package-path ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (resolve-package-path path base)
-   (let* ((pkg (substring path 4))
-          (bgl (make-file-path "pkg" pkg "src" (string-append pkg ".bgl"))))
+(define (resolve-package-path path pkg base)
+   (let* ((file (substring path 0 (+fx (string-length pkg) 1)))
+          (bgl (make-file-path pkg file)))
       (if (file-exists? bgl)
           bgl
           (let loop ((dir (dirname (file-name-unix-canonicalize base))))
@@ -372,7 +376,7 @@
       (trace-item "base=" base)
       (let ((path (cond
                      ((absolute-file-name? rel) rel)
-                     ((package-name? rel) rel)
+                     ((package-name rel) rel)
                      (else (make-file-name (dirname base) rel)))))
 	 (synchronize module-mutex
 	    (let ((m (hashtable-get *modules-by-path* path)))
@@ -382,8 +386,10 @@
 		      path))
 		  ((file-exists? path)
 		   (file-name-unix-canonicalize! path))
-                  ((package-name? path)
-                   (resolve-package-path path base))))))))
+                  ((package-name path)
+                   =>
+                   (lambda (pkg)
+                      (resolve-package-path pkg path base)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-resolve-library ...                                      */

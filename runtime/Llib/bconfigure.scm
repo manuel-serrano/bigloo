@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Llib/bconfigure.scm                 */
+;*    .../prgm/project/bigloo/5.0.x/runtime/Llib/bconfigure.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Fri Jul  3 10:21:36 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 10:13:46 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -51,6 +51,8 @@
 
    (extern (macro $configure-release-number::string "BGL_RELEASE_NUMBER")
 	   (macro $configure-specific-version::string "BGL_SPECIFIC_VERSION")
+           (macro $configure-backend-jvm::bool "BGL_BACKEND_JVM")
+           (macro $configure-backend-wasm::bool "BGL_BACKEND_WASM")
 	   (macro $configure-build-tag::string "BGL_BUILD_TAG")
 	   (macro $configure-homeurl::string "BGL_HOMEURL")
 	   (macro $configure-shell::string "SHELL")
@@ -140,6 +142,8 @@
    (java   (class $configure
 	      (field static release-number::string "BGL_RELEASE_NUMBER")
 	      (field static specific-version::string "BGL_SPECIFIC_VERSION")
+              (field static backend-c::bool "BGL_BACKEND_C")
+              (field static backend-wasm::bool "BGL_BACKEND_WASM")
 	      (field static build-tag::string "BGL_BUILD_TAG")
 	      (field static homeurl::string "BGL_HOMEURL")
 	      (field static shell::string "SHELL")
@@ -241,7 +245,11 @@
    `((version . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-release-number) (else $$configure-release-number)))
      (build-tag . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-build-tag) (else $$configure-build-tag)))
      (release-number . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-release-number) (else $$configure-release-number)))
-     (specific-version . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-specific-version) (else $$configure-specific-version)))     (library-safety . ,(library-safety))
+     (specific-version . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-specific-version) (else $$configure-specific-version)))
+     (backend-c . ,(cond-expand (bigloo-c #t) (bigloo-jvm $configure-backend-c) (else $$configure-backend-c)))
+     (backend-jvm . ,(cond-expand (bigloo-c $configure-backend-jvm) (bigloo-jvm #t) (else $$configure-backend-jvm)))
+     (backend-wasm . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-backend-wasm) (bigloo-wasm #t)))
+     (library-safety . ,(library-safety))
      (homeurl . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-homeurl) (else $$configure-homeurl)))
      (shell . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-shell) (else $$configure-shell)))
      (c-compiler-style . ,(cond-expand ((or bigloo-c bigloo-jvm) $configure-c-compiler-style) (else $$configure-c-compiler-style)))

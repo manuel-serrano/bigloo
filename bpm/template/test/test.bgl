@@ -1,0 +1,12 @@
+(module test
+   (main))
+
+(include "pkg:test/src/test.bgh")
+
+(define (main argv)
+   (test-all #t "-"))
+   
+(define-test will-fail-if-executed
+   #t
+   :result #f)
+

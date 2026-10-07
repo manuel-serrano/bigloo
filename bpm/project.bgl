@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Fri Oct  2 15:22:25 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 11:38:51 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -22,8 +22,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    template ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-macro (template)
-   (call-with-input-file (make-file-name project.dirname "package.sexp")
+(define-macro (template file)
+   (call-with-input-file (make-file-path project.dirname "template" file)
       read-string))
 
 ;*---------------------------------------------------------------------*/
@@ -63,7 +63,7 @@
       (make-directory pkgdir)
       (unless (directory? pkgdir)
          (err "Cannot create directory" pkgdir)))
-
+   
    (let ((odir (make-file-name qpath "obj")))
       (make-directory odir)
       (unless (directory? odir)
@@ -72,10 +72,25 @@
    (let ((pkgsexp (make-file-name qpath "package.sexp")))
       (call-with-output-file pkgsexp
          (lambda (op)
-            (display (template) op)))
+            (display (template "package.sexp") op)))
       
       (unless (file-exists? pkgsexp)
-         (err "Cannot create package.sexp file" pkgsexp))))
+         (err "Cannot create package.sexp file" pkgsexp)))
+   
+   (let ((tdir (make-file-name qpath "test")))
+      (make-directory tdir)
+      (unless (directory? tdir)
+         (err "Cannot create directory" tdir))
+      
+      (let ((makefile (make-file-path qpath "test" "Makefile")))
+         (call-with-output-file makefile
+            (lambda (op)
+               (display (template "test/Makefile") op))))
+      
+      (let ((test (make-file-path qpath "test" "test.bgl")))
+         (call-with-output-file test
+            (lambda (op)
+               (display (template "test/test.bgl") op))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    is-a-project? ...                                                */

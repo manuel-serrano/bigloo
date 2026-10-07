@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jul 30 09:48:35 2026 (serrano)                */
+#*    Last change :  Wed Oct  7 10:21:52 2026 (serrano)                */
 #*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3692,6 +3692,24 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
         gciscustom=0
       fi
 
+      if [ $nativebackend = "yes" ]; then
+        havenative=1
+      else
+        havenative=0
+      fi     
+
+      if [ $jvmbackend = "yes" ]; then
+        havejvm=1
+      else
+        havejvm=0
+      fi     
+
+      if [ $wasmbackend = "yes" ]; then
+        havewasm=1
+      else
+        havewasm=0
+      fi     
+
       cat autoconf/`basename $p`.in \
         | sed -e "s|@CONFIGURE@|Automatically generated file (don't edit)|" \
               -e "s|@BGL_RELEASE@|BGL_$rel|" \
@@ -3701,6 +3719,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_BUILD_TAG@|$buildtag|" \
               -e "s|@BGL_HOMEURL@|$bigloourl|" \
               -e "s|@BGL_SPECIFIC_VERSION@|$specific|" \
+              -e "s|@BGL_BACKEND_C@|$havenative|" \
+              -e "s|@BGL_BACKEND_JVM@|$havejvm|" \
+              -e "s|@BGL_BACKEND_WASM@|$havewasm|" \
               -e "s|@GC_VERSION@|$gcversion|" \
               -e "s|@GC_ISCUSTOM@|$gciscustom|" \
               -e "s|@GC_BUMP@|$gcbump|" \
