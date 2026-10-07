@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Feb  2 13:01:18 2026                          */
-/*    Last change :  Fri Sep 25 07:58:57 2026 (serrano)                */
+/*    Last change :  Wed Oct  7 07:15:21 2026 (serrano)                */
 /*    Copyright   :  2026 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Java global interface file                                       */
@@ -398,6 +398,22 @@ public final class foreign {
       return (byte)n;
    }
 
+   public static long INT_TO_ELONG(int n) {
+      return (long)n;
+   }
+   
+   public static long INT_TO_UELONG(int n) {
+      return (long)n;
+   }
+   
+   public static long INT_TO_LLONG(int n) {
+      return (long)n;
+   }
+   
+   public static long INT_TO_ULLONG(int n) {
+      return (long)n;
+   }
+   
    public static byte BYTE_TO_UBYTE(byte n) {
       return (byte)n;
    }

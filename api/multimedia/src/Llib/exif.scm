@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Tue Oct  6 18:33:34 2026 (serrano)                */
+;*    Last change :  Tue Oct  6 19:56:01 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -130,13 +130,49 @@
 
 	   (parse-exif-date::date ::bstring)
 
-           (jpeg-exif-update! ::bstring ::exif)))
+           (jpeg-exif-update! ::bstring ::exif)
+           (jpeg-exif-reset! ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    exif-error ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (exif-error proc msg obj)
    (error/errno $errno-io-parse-error proc msg obj))
+
+;*---------------------------------------------------------------------*/
+;*    strnwrt ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (strnwrt bytes o max str)
+   
+   (define (string-strnwrt o max str)
+      (let ((len (string-length str)))
+         (let loop ((i 0))
+            (cond
+               ((=fx i max)
+                (string-set! bytes (+fx o (-fx i 1)) #a000))
+               ((>=fx i len)
+                (string-set! bytes (+fx o i) #a000)
+                (loop (+fx i 1)))
+               (else
+                (string-set! bytes (+fx o i) (string-ref str i))
+                (loop (+fx i 1)))))))
+   
+   (define (mmap-strnwrt o max str)
+      (let ((len (string-length str)))
+         (let loop ((i 0))
+            (cond
+               ((=fx i max)
+                (mmap-set! bytes (+fx o (-fx i 1)) #a000))
+               ((>=fx i len)
+                (mmap-set! bytes (+fx o i) #a000)
+                (loop (+fx i 1)))
+               (else
+                (mmap-set! bytes (+fx o i) (string-ref str i))
+                (loop (+fx i 1)))))))
+   
+   (if (string? bytes)
+       (string-strnwrt o max str)
+       (mmap-strnwrt o max str)))
 
 ;*---------------------------------------------------------------------*/
 ;*    getbuffer ...                                                    */
@@ -152,7 +188,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    getascii ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (getascii::bstring en::bool bytes o::int)
+(define (getascii::bstring bytes o::int)
    
    (define (string-getascii bytes::bstring o)
       (let loop ((i o))
@@ -169,6 +205,27 @@
    (if (string? bytes)
        (string-getascii bytes o)
        (mmap-getascii bytes o)))
+   
+;*---------------------------------------------------------------------*/
+;*    setascii! ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (setascii! bytes o::int str::bstring)
+   
+   (define (string-setascii! bytes::bstring o str)
+      (let loop ((i 0))
+	 (unless (char=? (string-ref bytes (+fx i o)) #a000)
+            (string-set! bytes (+fx i o) (string-ref str i))
+            (loop (+fx i 1)))))
+   
+   (define (mmap-setascii! bytes::mmap o str)
+      (let loop ((i 0))
+	 (unless (char=? (mmap-ref bytes (+fx i o)) #a000)
+            (mmap-set! bytes (+fx i o) (string-ref str i))
+            (loop (+fx i 1)))))
+   
+   (if (string? bytes)
+       (string-setascii! bytes o str)
+       (mmap-setascii! bytes o str)))
    
 ;*---------------------------------------------------------------------*/
 ;*    get16u ...                                                       */
@@ -196,6 +253,28 @@
    (if (string? bytes)
        (string-get16u en bytes o)
        (mmap-get16u en bytes o)))
+
+;*---------------------------------------------------------------------*/
+;*    set16u! ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (set16u! en::bool bytes o::int val::elong)
+   (let ((a (integer->char (bit-and #xff (elong->fixnum val))))
+         (b (integer->char (bit-and #xff (bit-lsh (elong->fixnum val) 8)))))
+      (if en
+          (if (string? bytes)
+              (begin
+                 (string-set! bytes o a)
+                 (string-set! bytes (+fx o 1) b))
+              (begin
+                 (mmap-set! bytes o a)
+                 (mmap-set! bytes (+fx o 1) b)))
+          (if (string? bytes)
+              (begin
+                 (string-set! bytes o b)
+                 (string-set! bytes (+fx o 1) a))
+              (begin
+                 (mmap-set! bytes o b)
+                 (mmap-set! bytes (+fx o 1) a))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get32u ...                                                       */
@@ -243,6 +322,38 @@
        (mmap-get32u en bytes o)))
 
 ;*---------------------------------------------------------------------*/
+;*    set32u! ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (set32u! en::bool bytes o::int val::elong)
+   (let ((a (integer->char (bit-and #xff (elong->fixnum val))))
+         (b (integer->char (bit-and #xff (bit-lsh (elong->fixnum val) 8))))
+         (c (integer->char (bit-and #xff (bit-lsh (elong->fixnum val) 16))))
+         (d (integer->char (bit-and #xff (bit-lsh (elong->fixnum val) 24)))))
+      (if en
+          (if (string? bytes)
+              (begin
+                 (string-set! bytes o a)
+                 (string-set! bytes (+fx o 1) b)
+                 (string-set! bytes (+fx o 2) c)
+                 (string-set! bytes (+fx o 3) d))
+              (begin
+                 (mmap-set! bytes o a)
+                 (mmap-set! bytes (+fx o 1) b)
+                 (mmap-set! bytes (+fx o 2) c)
+                 (mmap-set! bytes (+fx o 3) d)))
+          (if (string? bytes)
+              (begin
+                 (string-set! bytes o d)
+                 (string-set! bytes (+fx o 1) c)
+                 (string-set! bytes (+fx o 2) b)
+                 (string-set! bytes (+fx o 3) a))
+              (begin
+                 (mmap-set! bytes o d)
+                 (mmap-set! bytes (+fx o 1) c)
+                 (mmap-set! bytes (+fx o 2) b)
+                 (mmap-set! bytes (+fx o 3) a))))))
+
+;*---------------------------------------------------------------------*/
 ;*    getformat ...                                                    */
 ;*    -------------------------------------------------------------    */
 ;*    Get a value (e.g., a number) according to the specified format.  */
@@ -257,7 +368,7 @@
 	      (mmap-ref bytes (fixnum->elong o)))))
       ((2)
        ;; ASCII
-       (getascii en bytes o))
+       (getascii bytes o))
       ((3 8)
        ;; FMT_USHORT, FMT_SSHORT
        (get16u en bytes o))
@@ -290,8 +401,52 @@
       (else
        (tprint "unknown format " fmt)
        0)))
-;*        (exif-error "exif" "Unsupported number format" fmt))))       */
 
+;*---------------------------------------------------------------------*/
+;*    setformat! ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (setformat!::obj en::bool bytes o::int fmt::int val)
+   (case fmt
+      ((1 6 7) 
+       ;; FMT_BYTE, FMT_SBYTE, UNKNOWN_BYTE
+       (if (string? bytes)
+           (string-set! bytes o (integer->char val))
+           (mmap-set! bytes (fixnum->elong o) (integer->char val))))
+      ((2)
+       ;; ASCII
+       (setascii! bytes o val))
+      ((3 8)
+       ;; FMT_USHORT, FMT_SSHORT
+       (set16u! en bytes o val))
+      ((4 9)
+       ;; FMT_ULONG, FMT_SLONG
+       (set32u! en bytes o val))
+      ((5 10)
+       ;; FMT_URATIONAL, FMT_SRATIONAL
+       (let ((num (car val))
+             (den (cdr val)))
+          (set32u! en bytes o num)
+          (set32u! en bytes (+fx o 4) den)))
+      ((11)
+       ;; FMT_SINGLE 32bit
+       (exif-error "exif" "Unsupported number format" fmt))
+      ((12)
+       ;; FMT_DOUBLE 64bit
+       (exif-error "exif" "Unsupported number format" fmt))
+      ((257)
+       ;; PANASONIC bool
+       (if (string? bytes)
+           (string-set! bytes o (integer->char val))
+           (mmap-set! bytes (fixnum->elong o) (integer->char val))))
+      ((258)
+       ;; PANASONIC 1|2|3
+       (if (string? bytes)
+           (string-set! bytes o (integer->char val))
+           (mmap-set! bytes (fixnum->elong o) (integer->char val))))
+      (else
+       (tprint "unknown format " fmt)
+       0)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    getformat/fx ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -380,37 +535,7 @@
 	  (string-strncpy o max)
 	  (mmap-strncpy o max)))
 
-   (define (strnwrt o max str)
-
-      (define (string-strnwrt o max str)
-         (let ((len (string-length str)))
-            (let loop ((i 0))
-               (cond
-                  ((=fx i max)
-                   (string-set! bytes (+fx o (-fx i 1)) #a000))
-                  ((>=fx i len)
-                   (string-set! bytes (+fx o i) #a000)
-                   (loop (+fx i 1)))
-                  (else
-                   (string-set! bytes (+fx o i) (string-ref str i))
-                   (loop (+fx i 1)))))))
-      
-      (define (mmap-strnwrt o max str)
-         (let ((len (string-length str)))
-            (let loop ((i 0))
-               (cond
-                  ((=fx i max)
-                   (mmap-set! bytes (+fx o (-fx i 1)) #a000))
-                  ((>=fx i len)
-                   (mmap-set! bytes (+fx o i) #a000)
-                   (loop (+fx i 1)))
-                  (else
-                   (mmap-set! bytes (+fx o i) (string-ref str i))
-                   (loop (+fx i 1)))))))
-
-      (if (string? bytes)
-	  (string-strnwrt o max str)
-	  (mmap-strnwrt o max str)))
+   
 
    (define (charwrt o char)
       (if (string? bytes)
@@ -589,7 +714,7 @@
                             ((eq? mode 'read)
                              (set! description (strncpy valptr bcount)))
                             ((string? description)
-                             (strnwrt valptr bcount description)))))
+                             (strnwrt bytes valptr bcount description)))))
 		     ((#x10f)
 		      ;; TAG_MAKE
 		      (with-access::exif exif (make)
@@ -597,7 +722,7 @@
                             ((eq? mode 'read)
                              (set! make (strncpy valptr 31)))
                             ((string? make)
-                             (strnwrt valptr bcount make)))))
+                             (strnwrt bytes valptr bcount make)))))
 		     ((#x110)
 		      ;; TAG_MODEL
 		      (with-access::exif exif (model)
@@ -605,7 +730,7 @@
                             ((eq? mode 'read)
                              (set! model (strncpy valptr 31)))
                             ((string? model)
-                             (strnwrt valptr bcount model)))))
+                             (strnwrt bytes valptr bcount model)))))
 		     ((#x111)
 		      ;; STRIP_OFFSET
 		      '(tprint "STRIP_OFFSET=" (getformat en bytes valptr fmt)))
@@ -661,7 +786,7 @@
                             ((eq? mode 'read)
                              (set! software (strncpy valptr bcount)))
                             ((string? software)
-                             (strnwrt valptr bcount software)))))
+                             (strnwrt bytes valptr bcount software)))))
 		     ((#x132)
 		      ;; TAG_DATE_TIME
 		      (let ((dt (strncpy valptr 31)))
@@ -670,7 +795,7 @@
                                ((eq? mode 'read)
                                 (set! date (parse-exif-date dt)))
                                ((date? date)
-                                (strnwrt valptr bcount (date->exif-date date)))))))
+                                (strnwrt bytes valptr bcount (date->exif-date date)))))))
 		     ((#x13b)
 		      ;; ARTIST
                       (with-access::exif exif (artist)
@@ -678,7 +803,7 @@
                             ((eq? mode 'read)
                              (set! artist (strncpy valptr bcount)))
                             ((string? artist)
-                             (strnwrt valptr bcount artist)))))
+                             (strnwrt bytes valptr bcount artist)))))
 		     ((#x14a)
 		      ;; TIFF_SUB_ID
 		      ;; https://web.archive.org/web/20060114005938/http://partners.adobe.com/public/developer/en/tiff/TIFFPM6.pdf
@@ -786,7 +911,7 @@
                             ((eq? mode 'read)
                              (set! date (parse-exif-date (strncpy valptr 19))))
                             ((date? date)
-                             (strnwrt valptr bcount (date->exif-date date))))))
+                             (strnwrt bytes valptr bcount (date->exif-date date))))))
 		     ((#x9010)
 		      ;; OFFSET_TIME
 		      (with-access::exif exif (offset-time)
@@ -860,7 +985,13 @@
 		      ;; TAG_FOCALLENGTH
 		      (let ((fl (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (focal-length)
-			    (set! focal-length fl))))
+                            (tprint "FL=" focal-length " " (typeof focal-length) " " fl
+                               " " fmt)
+                            (cond
+                               ((eq? mode 'read)
+                                (set! focal-length fl))
+                               ((pair? focal-length)
+                                (setformat! en bytes valptr fmt focal-length))))))
 		     ((#x9286)
 		      ;; TAG_USERCOMMENT
 		      (with-access::exif exif (comment)
@@ -875,7 +1006,7 @@
                                    (blit-string! comment 0 buf 0
                                       (minfx (string-length comment)
                                          (string-length buf)))
-                                   (strnwrt (+fx 8 valptr) (string-length buf)
+                                   (strnwrt bytes (+fx 8 valptr) (string-length buf)
                                       buf)))))))
 		     ((#x927c)
 		      ;; MAKER NOTE
@@ -999,7 +1130,11 @@
 		      ;; FOCAL_LENGTH_IN_35MM
 		      (let ((fl (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (focal-length35)
-			    (set! focal-length35 fl))))
+                            (cond
+                               ((eq? mode 'read)
+                                (set! focal-length35 fl))
+                               ((fixnum? focal-length35)
+                                (setformat! en bytes valptr fmt focal-length35))))))
 		     ((#xa406)
 		      ;; SCENE_CAPTURE_TYPE
 		      (let ((mm (case (getformat/fx en bytes valptr fmt)
@@ -1062,11 +1197,19 @@
 		     ((#xa433)
 		      ;; LENS_MAKE
 		      (with-access::exif exif (lens-make)
-			 (set! lens-make (strncpy valptr bcount))))
+                         (cond
+                            ((eq? mode 'read)
+                             (set! lens-make (strncpy valptr bcount)))
+                            ((string? lens-make)
+                             (strnwrt bytes valptr bcount lens-make)))))
 		     ((#xa434)
 		      ;; LENS_MODEL
-		      (with-access::exif exif (lens-model)
-			 (set! lens-model (strncpy valptr bcount))))
+                      (with-access::exif exif (lens-model)
+                         (cond
+                            ((eq? mode 'read)
+                             (set! lens-model (strncpy valptr bcount)))
+                            ((string? lens-model)
+                             (strnwrt bytes valptr bcount lens-model)))))
 		     ((#xa460)
 		      ;; COMPOSITE_IMAGE
 		      (with-access::exif exif (composite-image)
@@ -1602,10 +1745,18 @@
 	  '(tprint "LensAttached " (getformat en bytes valptr fmt)))
 	 ((#x1201)
 	  (with-access::exif exif (lens-make)
-	     (set! lens-make (strncpy valptr bcount))))
+             (cond
+                ((eq? mode 'read)
+                 (set! lens-make (strncpy valptr bcount)))
+                ((string? lens-make)
+                 (strnwrt bytes valptr bcount lens-make)))))
 	 ((#x1202)
 	  (with-access::exif exif (lens-model)
-	     (set! lens-model (strncpy valptr bcount))))
+             (cond
+                ((eq? mode 'read)
+                 (set! lens-model (strncpy valptr bcount)))
+                ((string? lens-model)
+                 (strnwrt bytes valptr bcount lens-model)))))
 	 ((#x1203)
 	  (with-access::exif exif (focal-length35)
 	     (set! focal-length35 (getformat en bytes valptr fmt))))
@@ -1865,3 +2016,19 @@
 		    (read-jpeg-sections exf mm 'write))))
 	     (close-mmap mm))
 	  exf)))
+
+;*---------------------------------------------------------------------*/
+;*    jpeg-exif-reset! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (jpeg-exif-reset! path::bstring)
+   (let ((exf (instantiate::exif
+                 (make "")
+                 (model "")
+                 (orientation 'upsidedown)
+                 (software "")
+                 (description "")
+                 (comment "")
+                 (lens-make "")
+                 (lens-model "")
+                 (date (seconds->date #e0)))))
+      (jpeg-exif-update! path exf)))

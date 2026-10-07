@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/runtime/Llib/type.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/type.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Fri Mar  6 17:56:23 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 07:09:01 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -573,6 +573,10 @@
       (coerce int int64 () ($int->int64))
       (coerce int uint64 () ($int->uint64))
       (coerce int bool () ())
+      (coerce int elong () ($int->elong))
+      (coerce int uelong () ($int->uelong))
+      (coerce int llong () ($int->llong))
+      (coerce int ullong () ($int->ullong))
       
       ;; uint
       (coerce uint bool () ((lambda (x::uint) #t)))
@@ -953,6 +957,10 @@
       (macro $int->uint32::int32 (::int) "(uint32_t)")
       (macro $int->int64::int64 (::int) "(int64_t)")
       (macro $int->uint64::int64 (::int) "(uint64_t)")
+      (macro $int->elong::elong (::int) "(long)")
+      (macro $int->uelong::uelong (::int) "(unsigned long)")
+      (macro $int->llong::elong (::int) "(BGL_LONGLONG_T)")
+      (macro $int->ullong::uelong (::int) "(unsigned BGL_LONGLONG_T)")
       
       (macro $uint->byte::byte (::uint) "(signed char)")
       (macro $uint->ubyte::ubyte (::uint) "(unsigned char)")
@@ -1235,7 +1243,11 @@
       ($int->uint32 "~0")
       ($int->int64 "(i64.extend_i32_s ~0)")
       ($int->uint64 "(i64.extend_i32_s ~0)")
-
+      ($int->elong "(i64.extend_i32_s ~0)")
+      ($int->uelong "(i64.extend_i32_s ~0)")
+      ($int->llong "(i64.extend_i32_s ~0)")
+      ($int->uelong "(i64.extend_i32_s ~0)")
+      
       ($uint->byte "~0")
       ($uint->ubyte "~0")
       ($uint->short "~0")
@@ -1462,6 +1474,10 @@
 	 (method static $int->long::long (::int) "<inlined>")
 	 (method static $int->ulong::ulong (::int) "INT_TO_ULONG")
 	 (method static $int->uint8::uint8 (::int) "INT_TO_UINT")
+         (method static $int->elong::elong (::int) "INT_TO_ELONG")
+         (method static $int->uelong::uelong (::int) "INT_TO_UELONG")
+         (method static $int->llong::llong (::int) "INT_TO_LLONG")
+         (method static $int->ullong::ullong (::int) "INT_TO_ULLONG")
 	 
 	 (method static $uint->byte::byte (::uint) "UINT_TO_BYTE")
 	 (method static $uint->ubyte::ubyte (::uint) "UINT_TO_UBYTE")
