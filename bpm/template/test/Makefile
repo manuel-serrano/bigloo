@@ -4,8 +4,6 @@ BCFLAGS =
 BWFLAGS = -wasm
 BJFLAGS = -jvm
 
-DEP_TEST_BGH =
-
 .SUFFIXES:
 .SUFFIXES: .bgl .o .class .wasm
 
@@ -18,20 +16,29 @@ c: check_c
 jvm: check_jvm
 wasm: check_wasm
 
-test_c: test.bgl $(DEP_TEST_BGH)
-	$(BIGLOO) $(BCFLAGS) test.bgl -o $@
+test_c: test.bgl 
+	$(BIGLOO) $(BCFLAGS) $+ -o $@
 check_c: test_c
 	./test_c
 
-test_jvm: test.bgl $(DEP_TEST_BGH)
-	$(BIGLOO) $(BJFLAGS) test.bgl -o $@
+test_jvm: test.bgl 
+	$(BIGLOO) $(BJFLAGS) $+ -o $@
 check_jvm: test_jvm
 	./test_jvm
 
-test_wasm: test.bgl $(DEP_TEST_BGH)
-	$(BIGLOO) $(BWFLAGS) test.bgl -o $@
+test_wasm: test.bgl
+	$(BIGLOO) $(BWFLAGS) $+ -o $@
 check_wasm: test_wasm
 	./test_wasm
 clean:
-	rm -f test.o test.class test.wasm
+	rm -f *.o *.class *.wat 2> /dev/null
 	rm -f test_c test_jvm test_wasm
+
+%.o: ../src/%.bgl
+	$(BIGLOO) -c $(BCFLAGS) $< -o $@
+
+%.class: ../src/%.bgl
+	$(BIGLOO) -c $(BJFLAGS) $< -o $@
+
+%.wat: ../src/%.bgl
+	$(BIGLOO) -c $(BWFLAGS) $< -o $@

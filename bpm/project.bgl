@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Wed Oct  7 11:50:59 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 13:37:56 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -17,7 +17,7 @@
    (import "./utils.bgl" . utils)
    (import "./database.bgl" . db)
    (import "./package.bgl" . pkg)
-   (export init install-pkg install-deps))
+   (export init clone install-pkg install-deps))
 
 ;*---------------------------------------------------------------------*/
 ;*    template ...                                                     */
@@ -104,6 +104,13 @@
                   op))))))
 
 ;*---------------------------------------------------------------------*/
+;*    clone ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (clone name::bstring version force::bool)
+   (let ((pv (db.find-package-version name version)))
+      (download-pkg name pv name)))
+
+;*---------------------------------------------------------------------*/
 ;*    is-a-project? ...                                                */
 ;*    -------------------------------------------------------------    */
 ;*    Is the directory a project?                                      */
@@ -123,37 +130,53 @@
    (unless (directory? "pkg")
       (make-directory "pkg"))
    (let ((pv::PackageVersion (db.find-package-version name version)))
-      (download-pkg name pv)
+      (utils.verb
+         (format "installing package ~a..."
+            (utils.color 'command name)))
+      (download-pkg-and-makefile name pv (make-file-path (pwd) "pkg" name))
       (for-each (lambda (e)
-                   (download-pkg (car e)
-                      (db.find-package-version (car e) (cadr e))))
+                   (download-pkg-and-makefile (car e)
+                      (db.find-package-version (car e) (cadr e))
+                      (make-file-path (pwd) "pkg" (car e))))
          (get-rec-dependencies pv))
       (when adddep
          (add-dependency! (pwd) name (or version "*")))))
 
 ;*---------------------------------------------------------------------*/
+;*    download-pkg-and-makefile ...                                    */
+;*---------------------------------------------------------------------*/
+(define (download-pkg-and-makefile name::bstring pv::PackageVersion dir::bstring)
+   (download-pkg name pv dir)
+   (install-pkg-makefile name pv dir))
+
+;*---------------------------------------------------------------------*/
 ;*    download-pkg ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (download-pkg name::bstring pv::PackageVersion)
-   (let ((dir (make-file-path (pwd) "pkg" name)))
-      (if (directory? dir)
-          (when (utils.yes-no? "Shall I remove it? "
-                   (format "Directory ~s already exists.\n" dir))
-             (delete-directories dir)))
-      (unless (directory? dir)
-         (utils.untar (utils.download pv.url name) dir)
-         (pkg.check-package-version pv name)
-         (let* ((mf (make-file-name dir "Makefile.pkg"))
-                (inc (if (file-exists? mf)
-                         mf
-                         (generate-auto-makefile name
-                            (format "Makefile.~a" name)
-                            mf pv.backends))))
-            (when (string? inc)
-               (call-with-append-file
-                  (make-file-path (pwd) "pkg" "Makefile.pkg")
-                  (lambda (op)
-                     (fprint op "include " inc))))))))
+(define (download-pkg name::bstring pv::PackageVersion dir::bstring)
+   (if (directory? dir)
+       (when (utils.yes-no? "Shall I remove it? "
+                (format "Directory ~s already exists.\n" dir))
+          (delete-directories dir)))
+   (unless (directory? dir)
+      (utils.untar (utils.download pv.url name) dir)
+      (pkg.check-package-version pv name)))
+
+;*---------------------------------------------------------------------*/
+;*    install-pkg-makefile ...                                         */
+;*---------------------------------------------------------------------*/
+(define (install-pkg-makefile name::bstring pv::PackageVersion dir::bstring)
+   (let* ((mf (make-file-name dir "Makefile.pkg"))
+          (inc (if (file-exists? mf)
+                   mf
+                   (generate-auto-makefile name
+                      dir
+                      (format "pkg/Makefile.~a" name)
+                      pv.backends))))
+      (when (string? inc)
+         (call-with-append-file
+            (make-file-path (pwd) "pkg" "Makefile.pkg")
+            (lambda (op)
+               (fprint op "include " inc))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    generate-auto-makefile ...                                       */
@@ -166,6 +189,9 @@
       (when (pair? files)
          (call-with-output-file mf
             (lambda (op)
+               (utils.verb
+                  (format "  generating ~a..." (utils.color 'command mf))
+                  :lvl 2)
                (fprint op "BFLAGS += -I pkg/" name "/src")
                (when (memq 'c backends)
                   (fprintf op "PKG_OBJECTS += ~( )\n"

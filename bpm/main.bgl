@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Wed Oct  7 11:58:55 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 14:12:24 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -35,7 +35,7 @@
 (define (parse-cmdline cmdline)
    
    (define (usage args-parse-usage)
-      (printf "~a v~a\n" config.name config.version)
+      (printf "~a ~a\n" config.name config.version)
       (print "usage: " config.name " [options] command arg0 arg1 ...")
       (args-parse-usage)
       (exit 0))
@@ -94,9 +94,9 @@
 (define (config-parse-cmdline cmdline::pair-nil)
    
    (define (usage args-parse-usage)
-      (printf "~a v~a\n" config.name config.version)
+      (printf "~a ~a\n" config.name config.version)
       (print "usage: " config.name " [options] "
-         (trace-color 2 "config") " arg0 arg1 ...")
+         (utils.color 'command "config") " arg0 arg1 ...")
       (args-parse-usage :breakline #t)
       (exit 0))
    
@@ -115,9 +115,9 @@
 (define (pkg-parse-cmdline cmdline::pair-nil rec::bool)
    
    (define (usage args-parse-usage)
-      (printf "~a v~a\n" config.name config.version)
+      (printf "~a ~a\n" config.name config.version)
       (print "usage: " config.name " [options] "
-         (trace-color 2 "pkg") " arg0 arg1 ...")
+         (utils.color 'command "pkg") " arg0 arg1 ...")
       (args-parse-usage :breakline #t)
       (exit 0))
 
@@ -145,9 +145,9 @@
 (define (proj-parse-cmdline cmdline::pair-nil force::bool)
    
    (define (usage args-parse-usage)
-      (printf "~a v~a\n" config.name config.version)
+      (printf "~a ~a\n" config.name config.version)
       (print "usage: " config.name " [options] "
-         (trace-color 2 "proj") " arg0 arg1 ...")
+         (utils.color 'command "proj") " arg0 arg1 ...")
       (args-parse-usage :breakline #t)
       (exit 0))
    
@@ -157,6 +157,8 @@
           (lambda () (usage args-parse-usage)))
          (("init" ?dir (help "Create a new project in directory DIR"))
           (break (lambda () (proj.init dir force))))
+         (("clone" ?pkg (?version) (help "Create a new project from existing package PKG"))
+          (break (lambda () (proj.clone pkg version force))))
          (("info" (help "Project information"))
           (break (lambda () (tprint "not implemented yet"))))
          (else
@@ -168,9 +170,9 @@
 (define (db-parse-cmdline cmdline::pair-nil)
    
    (define (usage args-parse-usage)
-      (printf "~a v~a\n" config.name config.version)
+      (printf "~a ~a\n" config.name config.version)
       (print "usage: " config.name " [options] "
-         (trace-color 2 "db") " arg0 arg1 ...")
+         (utils.color 'command "db") " arg0 arg1 ...")
       (args-parse-usage :breakline #t)
       (exit 0))
 

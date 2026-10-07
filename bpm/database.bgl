@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Fri Oct  2 16:50:00 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 13:41:29 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -45,9 +45,9 @@
          db)))
 
 ;*---------------------------------------------------------------------*/
-;*    database ...                                                     */
+;*    dbcache ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define database #f)
+(define dbcache '())
 
 ;*---------------------------------------------------------------------*/
 ;*    init ...                                                         */
@@ -74,13 +74,18 @@
 ;*---------------------------------------------------------------------*/
 (define (load-database::Database rcdir::bstring)
    (let* ((n (make-file-name rcdir config.database-filename))
-          (p (open-input-binary-file n)))
-      (utils.verb (format "loading database ~a" (utils.color 'arg0 n)))
-      (if (binary-port? p)
-          (unwind-protect
-             (input-obj p)
-             (close-binary-port p))
-          (utils.error "load-database" "Cannot find database" p))))
+          (db (assoc n dbcache)))
+      (if (pair? db)
+          (cdr db)
+          (let ((p (open-input-binary-file n)))
+             (utils.verb (format "loading database ~a" (utils.color 'database n)))
+             (if (binary-port? p)
+                 (unwind-protect
+                    (let ((db (input-obj p)))
+                       (set! dbcache (cons (cons n db) dbcache))
+                       db)
+                    (close-binary-port p))
+                 (utils.error "load-database" "Cannot find database" p))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    save-database ...                                                */
@@ -192,7 +197,7 @@
          (hashtable->list db.packages))))
 
 ;*---------------------------------------------------------------------*/
-;*    find-package ...                                                 */
+;*    find-package-version ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (find-package-version::PackageVersion name::bstring version)
    (let ((db::Database (load-database config.rc-directory)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:42:40 2026                          */
-;*    Last change :  Fri Oct  2 13:57:34 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 13:40:33 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Utilities                                                        */
@@ -156,6 +156,7 @@
       
       (let* ((tgz (string-append name ".tgz"))
              (tmp (make-file-name config.tmp-directory tgz)))
+         (verb (format "downloading ~a...\n" (color 'arg1 tgz)) :lvl 2)
          (call-with-output-file tmp
             (lambda (op)
                (let liip ((url url))
@@ -305,8 +306,8 @@
 ;*---------------------------------------------------------------------*/
 (define (untar::bstring path::bstring outdir::bstring)
    
-   (when (>= config.verbose 1)
-      (print "untar " (color 'arg0 path) "\n  -> " (color 'arg1 outdir)))
+   (when (>= config.verbose 2)
+      (print "  untar " (color 'file path) "\n     -> " (color 'dir outdir)))
    
    (let ((dir (if (or (string-suffix? ".tgz" path) (string-suffix? ".gz" path))
                   (tarball-untar-gz path (dirname outdir))
@@ -364,7 +365,10 @@
      (macro 3)
      (function 4)
      (record 5)
-     (exception 6)))
+     (exception 6)
+     (file 4)
+     (file 5)
+     (database 7)))
 
 ;*---------------------------------------------------------------------*/
 ;*    plist-get ...                                                    */
