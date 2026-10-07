@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Wed Oct  7 09:07:21 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 17:31:52 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -465,12 +465,9 @@
 (define (getformat/fx::int en::bool bytes o::int fmt::int)
    (let ((res (getformat en bytes o fmt)))
       (cond
-	 ((fixnum? res)
-	  res)
-	 ((elong? res)
-	  (elong->fixnum res))
-	 (else
-	  0))))
+	 ((fixnum? res) res)
+	 ((elong? res) (elong->fixnum res))
+	 (else 0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    getformatRat3 ...                                                */
@@ -483,7 +480,30 @@
       (+fl (/fl (elong->flonum (car r0)) (elong->flonum (cdr r0)))
 	 (+fl (/fl (elong->flonum (car r1)) (*fl 60. (elong->flonum (cdr r1))))
 	    (/fl (elong->flonum (car r2)) (*fl 3600. (elong->flonum (cdr r2))))))))
-      
+
+;*---------------------------------------------------------------------*/
+;*    setformatRat3! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (setformatRat3! en bytes valptr fmt val::double)
+   
+   (define (real->rational x precision)
+      (let* ((n (flonum->fixnum (round (* x precision))))
+             (g (gcd n precision)))
+         (cons (/fx n g) (/fx precision g))))
+   
+   (let* ((x (absfl val))
+          (degrees (floorfl val))
+          (minutes-dec (*fl (-fl val degrees) 60.))
+          (minutes (floorfl minutes-dec))
+          (seconds (*fl (-fl minutes-dec minutes) 60.)))
+      (let ((r0 (cons (flonum->fixnum degrees) 1))
+            (r1 (cons (flonum->fixnum minutes) 1))
+            (r2 (real->rational seconds 1000)))
+         (let ((sz (vector-ref *exif-formats-size* fmt)))
+            (setformat! en bytes valptr fmt r0)
+            (setformat! en bytes (+fx valptr sz) fmt r1)
+            (setformat! en bytes (+fx valptr (+fx sz sz)) fmt r2)))))
+
 ;*---------------------------------------------------------------------*/
 ;*    *exif-formats-size* ...                                          */
 ;*---------------------------------------------------------------------*/
@@ -547,8 +567,6 @@
 	  (string-strncpy o max)
 	  (mmap-strncpy o max)))
 
-   
-
    (define (charwrt o char)
       (if (string? bytes)
           (string-set! bytes o char)
@@ -588,7 +606,11 @@
          ((#x10002)
           ;; TAG_GPS_LATITUDE
           (with-access::exif exif (gps-latitude)
-             (set! gps-latitude (getformatRat3 en bytes valptr fmt)))
+             (cond
+                ((eq? mode 'read)
+                 (set! gps-latitude (getformatRat3 en bytes valptr fmt)))
+                ((real? gps-latitude)
+                 (setformatRat3! en bytes valptr fmt gps-latitude))))
           #t)
          ((#x10003)
           ;; TAG_GPS_LONGITUDE_REF
@@ -598,7 +620,11 @@
          ((#x10004)
           ;; TAG_GPS_LONGITUDE
           (with-access::exif exif (gps-longitude)
-             (set! gps-longitude (getformatRat3 en bytes valptr fmt)))
+             (cond
+                ((eq? mode 'read)
+                 (set! gps-longitude (getformatRat3 en bytes valptr fmt)))
+                ((real? gps-longitude)
+                 (setformatRat3! en bytes valptr fmt gps-longitude))))
           #t)
          ((#x10005)
           ;; TAG_GPS_ALTITUDE_REF
@@ -608,7 +634,11 @@
          ((#x10006)
           ;; TAG_GPS_ALTITUDE
           (with-access::exif exif (gps-altitude)
-             (set! gps-altitude (getformat en bytes valptr fmt)))
+             (cond
+                ((eq? mode 'read)
+                 (set! gps-altitude (getformat en bytes valptr fmt)))
+                ((number? gps-altitude)
+                 (setformat! en bytes valptr fmt gps-altitude))))
           #t)
          ((#x10007)
           ;; TAG_GPS_TIMESPTAMP
@@ -662,6 +692,7 @@
           #f)))
 
    (let ((dnum (elong->fixnum (get16u en bytes start))))
+      
       (let loop ((de 0))
 	 (when (<fx de dnum)
 	    (let* ((da (+ start 2 (*fx 12 de)))
@@ -1376,6 +1407,7 @@
                       (or (exif-gps tag tag-base valptr bcount fmt)
                           (extension exif tag en bytes fmt bcount valptr))))
 		  (loop (+fx de 1))))))
+      
       (when (and read-next
 		 (< (+ start 2 4 (*fx 12 dnum)) (if (string? bytes) (string-length bytes) (mmap-length bytes))))
 	 (let ((of (get32u en bytes (+ start 2 (*fx 12 dnum)))))
@@ -1542,7 +1574,8 @@
 				(string-length bytes))
                              mode)
                           (when (eq? mode 'write)
-                             (mmap-substring-set! mm (fixnum->elong offset) bytes))
+                             (mmap-substring-set! mm (fixnum->elong offset)
+                                bytes))
 			  ;; gps
 			  (when %gps-tag
 			     (process-exif-dir! endianess bytes
@@ -1550,6 +1583,9 @@
 				(lambda (exif tag en bytes fmt bcount valptr)
 				   'unknown)
                                 mode)
+                             (when (eq? mode 'write)
+                                (mmap-substring-set! mm (fixnum->elong offset)
+                                   bytes))
 			     (with-access::exif exif (gps-altitude
 							gps-latitude
 							gps-longitude
@@ -2074,7 +2110,6 @@
    (let ((exf (instantiate::exif
                  (make "")
                  (model "")
-                 (orientation 'upsidedown)
                  (software "")
                  (description "")
                  (comment "")
@@ -2089,7 +2124,10 @@
                  (aperture '(1 . 1))
                  (exposure-time '(1 . 1))
                  (iso 1)
-                 (shutter-speed-value '(1 . 1)))))
+                 (shutter-speed-value '(1 . 1))
+                 (gps-latitude 1.)
+                 (gps-longitude 1.)
+                 (gps-altitude 1.))))
       (jpeg-exif-mmap-update! mm exf)))
 
 ;*---------------------------------------------------------------------*/
