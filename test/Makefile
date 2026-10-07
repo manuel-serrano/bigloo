@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Sep 22 06:41:53 2026 (serrano)                */
+#*    Last change :  Wed Oct  7 08:27:42 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -128,6 +128,9 @@ distrib: clean
 #*---------------------------------------------------------------------*/
 objs_c/%.o: src/%.bgl src/test.bgh
 	$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
+
+objs_c/extern_c.o: src/extern_c.bgl src/c.h src/extern_c.h
+	$(BIGLOO) -c -bin-dir $(BOOTDIR)/bin $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
 
 objs_c/%.o: src/%.c
 	$(CC) -c $(CFLAGS) $< -o $@

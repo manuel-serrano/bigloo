@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Oct  7 07:09:01 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 07:37:14 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -544,15 +544,6 @@
       (coerce bint uint () ($bint->uint))
       (coerce bint long () ($bint->long))
       (coerce bint ulong () ($bint->ulong))
-      
-;*     (coerce bint int8 () ($bint->int8))                             */
-;*     (coerce bint uint8 () ($bint->uint8))                           */
-;*     (coerce bint int16 () ($bint->int16))                           */
-;*     (coerce bint uint16 () ($bint->uint16))                         */
-;*     (coerce bint int32 () ($bint->int32))                           */
-;*     (coerce bint uint32 () ($bint->uint32))                         */
-;*     (coerce bint int64 () ($bint->int64))                           */
-;*     (coerce bint uint64 () ($bint->uint64))                         */
       
       ;; int
       (coerce int bool () ((lambda (x::int) #t)))

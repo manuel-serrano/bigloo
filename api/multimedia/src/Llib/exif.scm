@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Tue Oct  6 19:56:01 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 07:41:33 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -86,6 +86,8 @@
 	      (colorspace (default #f))
 	      (sensing-method (default #f))
 	      (composite-image (default #f))
+              (lens-serial-number (default #f))
+              (lens-info (default #f))
 	      (lens-make (default #f))
 	      (lens-model (default #f))
 	      (digitalZoomRatio (default #f))
@@ -263,18 +265,18 @@
       (if en
           (if (string? bytes)
               (begin
-                 (string-set! bytes o a)
-                 (string-set! bytes (+fx o 1) b))
-              (begin
-                 (mmap-set! bytes o a)
-                 (mmap-set! bytes (+fx o 1) b)))
-          (if (string? bytes)
-              (begin
                  (string-set! bytes o b)
                  (string-set! bytes (+fx o 1) a))
               (begin
                  (mmap-set! bytes o b)
-                 (mmap-set! bytes (+fx o 1) a))))))
+                 (mmap-set! bytes (+fx o 1) a)))
+          (if (string? bytes)
+              (begin
+                 (string-set! bytes o a)
+                 (string-set! bytes (+fx o 1) b))
+              (begin
+                 (mmap-set! bytes o a)
+                 (mmap-set! bytes (+fx o 1) b))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get32u ...                                                       */
@@ -332,17 +334,6 @@
       (if en
           (if (string? bytes)
               (begin
-                 (string-set! bytes o a)
-                 (string-set! bytes (+fx o 1) b)
-                 (string-set! bytes (+fx o 2) c)
-                 (string-set! bytes (+fx o 3) d))
-              (begin
-                 (mmap-set! bytes o a)
-                 (mmap-set! bytes (+fx o 1) b)
-                 (mmap-set! bytes (+fx o 2) c)
-                 (mmap-set! bytes (+fx o 3) d)))
-          (if (string? bytes)
-              (begin
                  (string-set! bytes o d)
                  (string-set! bytes (+fx o 1) c)
                  (string-set! bytes (+fx o 2) b)
@@ -351,7 +342,18 @@
                  (mmap-set! bytes o d)
                  (mmap-set! bytes (+fx o 1) c)
                  (mmap-set! bytes (+fx o 2) b)
-                 (mmap-set! bytes (+fx o 3) a))))))
+                 (mmap-set! bytes (+fx o 3) a)))
+          (if (string? bytes)
+              (begin
+                 (string-set! bytes o a)
+                 (string-set! bytes (+fx o 1) b)
+                 (string-set! bytes (+fx o 2) c)
+                 (string-set! bytes (+fx o 3) d))
+              (begin
+                 (mmap-set! bytes o a)
+                 (mmap-set! bytes (+fx o 1) b)
+                 (mmap-set! bytes (+fx o 2) c)
+                 (mmap-set! bytes (+fx o 3) d))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    getformat ...                                                    */
@@ -406,6 +408,13 @@
 ;*    setformat! ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (setformat!::obj en::bool bytes o::int fmt::int val)
+   
+   (define (number->elong n)
+      (cond
+         ((elong? n) n)
+         ((fixnum? n) (fixnum->elong n))
+         (else #e0)))
+          
    (case fmt
       ((1 6 7) 
        ;; FMT_BYTE, FMT_SBYTE, UNKNOWN_BYTE
@@ -417,14 +426,14 @@
        (setascii! bytes o val))
       ((3 8)
        ;; FMT_USHORT, FMT_SSHORT
-       (set16u! en bytes o val))
+       (set16u! en bytes o (number->elong val)))
       ((4 9)
        ;; FMT_ULONG, FMT_SLONG
-       (set32u! en bytes o val))
+       (set32u! en bytes o (number->elong val)))
       ((5 10)
        ;; FMT_URATIONAL, FMT_SRATIONAL
-       (let ((num (car val))
-             (den (cdr val)))
+       (let ((num (number->elong (car val)))
+             (den (number->elong (cdr val))))
           (set32u! en bytes o num)
           (set32u! en bytes (+fx o 4) den)))
       ((11)
@@ -875,12 +884,20 @@
 		      ;; TAG_EXPOSURETIME
 		      (let ((et (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (exposure-time)
-			    (set! exposure-time et))))
+                            (cond
+                               ((eq? mode 'read)
+                                (set! exposure-time et))
+                               ((pair? exposure-time)
+                                (setformat! en bytes valptr fmt exposure-time))))))
 		     ((#x829D)
 		      ;; TAG_FNUMBER
 		      (let ((fn (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (fnumber)
-			    (set! fnumber fn))))
+                            (cond
+                               ((eq? mode 'read)
+                                (set! fnumber fn))
+                               ((pair? fnumber)
+                                (setformat! en bytes valptr fmt fnumber))))))
 		     ((#x8769)
 		      ;; TAG_EXIF_OFFSET
 		      (let ((ss (+fx base (elong->fixnum (get32u en bytes valptr)))))
@@ -899,7 +916,11 @@
 		      ;; ISO
 		      (let ((is (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (iso)
-			    (set! iso is))))
+                            (cond
+                               ((eq? mode 'read)
+                                (set! iso is))
+                               ((number? iso)
+                                (setformat! en bytes valptr fmt iso))))))
 		     ((#x9000)
 		      ;; TAG_EXIF_VERSION
 		      (with-access::exif exif (version)
@@ -934,7 +955,11 @@
 		      ;; TAG_SHUTTER_SPEED_VALUE
 		      (let ((sv (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (shutter-speed-value)
-			    (set! shutter-speed-value sv))))
+                            (cond
+                               ((eq? mode 'read)
+                                (set! shutter-speed-value sv))
+                               ((pair? shutter-speed-value)
+                                (setformat! en bytes valptr fmt shutter-speed-value))))))
 		     ((#x9203)
 		      ;; TAG_BRIGHTNESS_VALUE
 		      (let ((bv (getformat en bytes valptr fmt)))
@@ -944,7 +969,11 @@
 		      ;; TAG_APERTURE
 		      (let ((ap (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (aperture)
-			    (set! aperture ap))))
+                            (cond
+                               ((eq? mode 'read)
+                                (set! aperture ap))
+                               ((pair? aperture)
+                                (setformat! en bytes valptr fmt aperture))))))
 		     ((#x9204)
 		      ;; TAG_EXPOSURE_BIAS_VALUE
 		      (let ((bv (getformat en bytes valptr fmt)))
@@ -985,8 +1014,6 @@
 		      ;; TAG_FOCALLENGTH
 		      (let ((fl (getformat en bytes valptr fmt)))
 			 (with-access::exif exif (focal-length)
-                            (tprint "FL=" focal-length " " (typeof focal-length) " " fl
-                               " " fmt)
                             (cond
                                ((eq? mode 'read)
                                 (set! focal-length fl))
@@ -1133,7 +1160,7 @@
                             (cond
                                ((eq? mode 'read)
                                 (set! focal-length35 fl))
-                               ((fixnum? focal-length35)
+                               ((number? focal-length35)
                                 (setformat! en bytes valptr fmt focal-length35))))))
 		     ((#xa406)
 		      ;; SCENE_CAPTURE_TYPE
@@ -1194,6 +1221,29 @@
 				  (else "???"))))
 			 (with-access::exif exif (distance-subject-range)
 			    (set! distance-subject-range d))))
+                     ((#xa431 #xa435)
+                      ;; LENS_SERIAL_NUMBER
+                      (with-access::exif exif (lens-serial-number)
+                         (cond
+                            ((eq? mode 'read)
+                             (set! lens-serial-number (strncpy valptr bcount)))
+                            ((string? lens-serial-number)
+                             (strnwrt bytes valptr bcount lens-serial-number)))))
+                     ((#xa432)
+                      ;; LENS_INFO
+                      (with-access::exif exif (lens-info)
+                         (cond
+                            ((eq? mode 'read)
+                             (set! lens-info
+                                (vector (getformat en bytes valptr fmt)
+                                   (getformat en bytes (+fx valptr 8) fmt)
+                                   (getformat en bytes (+fx valptr 16) fmt)
+                                   (getformat en bytes (+fx valptr 24) fmt))))
+                            ((and (vector lens-info) (=fx (vector-length lens-info) 4))
+                             (setformat! en bytes valptr fmt (vector-ref lens-info 0))
+                             (setformat! en bytes (+fx valptr 8) fmt (vector-ref lens-info 1))
+                             (setformat! en bytes (+fx valptr 16) fmt (vector-ref lens-info 2))
+                             (setformat! en bytes (+fx valptr 24) fmt (vector-ref lens-info 3))))))
 		     ((#xa433)
 		      ;; LENS_MAKE
 		      (with-access::exif exif (lens-make)
@@ -1779,6 +1829,9 @@
 	 ((#x1412)
 	  '(tprint "FacesDetected "
 	    (getformat en bytes valptr fmt)))
+	 ((#x1447)
+	  '(tprint "FujiModel "
+	    (getformat en bytes valptr fmt)))
 	 ((#x3200 3201 3202)
 	  '(tprint "WC_CFA" tag " "
 	    (getformat en bytes valptr fmt)))
@@ -2028,7 +2081,16 @@
                  (software "")
                  (description "")
                  (comment "")
+                 (lens-serial-number "")
+                 (lens-info '#((1 . 1) (1 . 1) (1 . 1) (1 . 1)))
                  (lens-make "")
                  (lens-model "")
-                 (date (seconds->date #e0)))))
+                 (date (seconds->date #e0))
+                 (focal-length '(1 . 1))
+                 (focal-length35 1)
+                 (fnumber '(1 . 1))
+                 (aperture '(1 . 1))
+                 (exposure-time '(1 . 1))
+                 (iso 1)
+                 (shutter-speed-value '(1 . 1)))))
       (jpeg-exif-update! path exf)))
