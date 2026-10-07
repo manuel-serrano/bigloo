@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Wed Oct  7 09:42:00 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 11:58:55 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -125,11 +125,13 @@
       (args-parse cmdline
          (()
           (lambda () (usage args-parse-usage)))
-         (("install" ?pkg (?version) (help "Install a package"))
+         (("install" (?pkg ?version) (help "Install a package"))
           (utils.command-set! "pkg install")
           (break
              (lambda ()
-                (proj.install-pkg pkg version))))
+                (if (not pkg)
+                    (proj.install-deps)
+                    (proj.install-pkg pkg version #t)))))
          (("upgrade" (help "Upgrade the dependency packages"))
           (break
              (lambda ()

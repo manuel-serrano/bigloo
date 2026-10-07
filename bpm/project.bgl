@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Wed Oct  7 11:38:51 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 11:50:59 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -17,7 +17,7 @@
    (import "./utils.bgl" . utils)
    (import "./database.bgl" . db)
    (import "./package.bgl" . pkg)
-   (export init install-pkg))
+   (export init install-pkg install-deps))
 
 ;*---------------------------------------------------------------------*/
 ;*    template ...                                                     */
@@ -58,6 +58,9 @@
    
    (define (err msg obj)
       (utils.error "project init" msg obj))
+
+   (define pkg
+      (basename qpath))
    
    (let ((pkgdir (make-file-name qpath "pkg")))
       (make-directory pkgdir)
@@ -72,11 +75,17 @@
    (let ((pkgsexp (make-file-name qpath "package.sexp")))
       (call-with-output-file pkgsexp
          (lambda (op)
-            (display (template "package.sexp") op)))
+            (display (pregexp-replace "@PKG@" (template "package.sexp") pkg)
+               op)))
       
       (unless (file-exists? pkgsexp)
          (err "Cannot create package.sexp file" pkgsexp)))
    
+   (let ((sdir (make-file-name qpath "src")))
+      (make-directory sdir)
+      (unless (directory? sdir)
+         (err "Cannot create directory" sdir)))
+      
    (let ((tdir (make-file-name qpath "test")))
       (make-directory tdir)
       (unless (directory? tdir)
@@ -90,7 +99,9 @@
       (let ((test (make-file-path qpath "test" "test.bgl")))
          (call-with-output-file test
             (lambda (op)
-               (display (template "test/test.bgl") op))))))
+               (display (pregexp-replace "@PKG@"
+                           (template "test/test.bgl") pkg)
+                  op))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    is-a-project? ...                                                */
@@ -103,7 +114,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    install-pkg ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (install-pkg name::bstring version)
+(define (install-pkg name::bstring version adddep::bool)
    (unless (is-a-project? (pwd))
       (if (utils.yes-no? "Shall I initialize it? "
              (format "The current directory ~s is not a bpm project.\n" (pwd)))
@@ -117,7 +128,8 @@
                    (download-pkg (car e)
                       (db.find-package-version (car e) (cadr e))))
          (get-rec-dependencies pv))
-      (add-dependency! (pwd) name (or version "*"))))
+      (when adddep
+         (add-dependency! (pwd) name (or version "*")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    download-pkg ...                                                 */
@@ -131,27 +143,29 @@
       (unless (directory? dir)
          (utils.untar (utils.download pv.url name) dir)
          (pkg.check-package-version pv name)
-         (let ((mf (make-file-name dir "Makefile.pkg")))
-            (unless (file-exists? mf)
-               (generate-auto-makefile name dir mf pv.backends))
-            (let ((odir (make-file-name dir "obj")))
-               (unless (directory? odir)
-                  (make-directories odir)))
-            (call-with-append-file (make-file-path (pwd) "pkg" "Makefile.pkg")
-               (lambda (op)
-                  (fprint op "include " mf)))))))
+         (let* ((mf (make-file-name dir "Makefile.pkg"))
+                (inc (if (file-exists? mf)
+                         mf
+                         (generate-auto-makefile name
+                            (format "Makefile.~a" name)
+                            mf pv.backends))))
+            (when (string? inc)
+               (call-with-append-file
+                  (make-file-path (pwd) "pkg" "Makefile.pkg")
+                  (lambda (op)
+                     (fprint op "include " inc))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    generate-auto-makefile ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (generate-auto-makefile name::bstring dir::bstring mf::bstring backends)
-   (call-with-output-file mf
-      (lambda (op)
-         (let ((files (filter-map (lambda (s)
-                                     (when (string-suffix? ".bgl" s)
-                                        (prefix s)))
-                         (directory->list (make-file-name dir "src")))))
-            (when (pair? files)
+   (let ((files (filter-map (lambda (s)
+                               (when (string-suffix? ".bgl" s)
+                                  (prefix s)))
+                   (directory->list (make-file-name dir "src")))))
+      (when (pair? files)
+         (call-with-output-file mf
+            (lambda (op)
                (fprint op "BFLAGS += -I pkg/" name "/src")
                (when (memq 'c backends)
                   (fprintf op "PKG_OBJECTS += ~( )\n"
@@ -167,17 +181,18 @@
                   (fprintf op "PKG_JOBJECTS += ~( )\n"
                      (map (lambda (s)
                              (string-append "pkg/" name "/$(OBJ)/" s ".class"))
-                        files))))
-            (newline op)
-            (when (memq 'c backends)
-               (fprint op "pkg/" name "/$(OBJ)/%.o: pkg/" name "/src/%.bgl")
-               (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $< -o $@"))
-            (when (memq 'jvm backends)
-               (fprint op "pkg/" name "/$(OBJ)/%.class: pkg/" name "/src/%.bgl")
-               (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BJFLAGS) $< -o $@"))
-            (when (memq 'wasm backends)
-               (fprint op "pkg/" name "/$(OBJ)/%.obj: pkg/" name "/src/%.bgl")
-               (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BWFLAGS) $< -o $@"))))))
+                        files)))
+               (newline op)
+               (when (memq 'c backends)
+                  (fprint op "pkg/" name "/$(OBJ)/%.o: pkg/" name "/src/%.bgl")
+                  (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $< -o $@"))
+               (when (memq 'jvm backends)
+                  (fprint op "pkg/" name "/$(OBJ)/%.class: pkg/" name "/src/%.bgl")
+                  (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BJFLAGS) $< -o $@"))
+               (when (memq 'wasm backends)
+                  (fprint op "pkg/" name "/$(OBJ)/%.obj: pkg/" name "/src/%.bgl")
+                  (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BWFLAGS) $< -o $@"))
+               mf)))))
          
 ;*---------------------------------------------------------------------*/
 ;*    add-dependency! ...                                              */
@@ -217,4 +232,14 @@
 
    (rec-pv pv '()))
    
-
+;*---------------------------------------------------------------------*/
+;*    install-deps ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (install-deps)
+   (unless (is-a-project? (pwd))
+      (utils.error utils.command "Current directory is not a bpm project"
+         (pwd)))
+   (let ((sexp (call-with-input-file "package.sexp" read)))
+      (for-each (lambda (d) (install-pkg (car d) (cadr d) #f))
+         (utils.plist-get sexp dependencies: '()))))
+      

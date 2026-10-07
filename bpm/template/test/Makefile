@@ -4,6 +4,8 @@ BCFLAGS =
 BWFLAGS = -wasm
 BJFLAGS = -jvm
 
+DEP_TEST_BGH =
+
 .SUFFIXES:
 .SUFFIXES: .bgl .o .class .wasm
 
@@ -16,17 +18,17 @@ c: check_c
 jvm: check_jvm
 wasm: check_wasm
 
-test_c: test.bgl ../src/test.bgh
+test_c: test.bgl $(DEP_TEST_BGH)
 	$(BIGLOO) $(BCFLAGS) test.bgl -o $@
 check_c: test_c
 	./test_c
 
-test_jvm: test.bgl ../src/test.bgh
+test_jvm: test.bgl $(DEP_TEST_BGH)
 	$(BIGLOO) $(BJFLAGS) test.bgl -o $@
 check_jvm: test_jvm
 	./test_jvm
 
-test_wasm: test.bgl ../src/test.bgh
+test_wasm: test.bgl $(DEP_TEST_BGH)
 	$(BIGLOO) $(BWFLAGS) test.bgl -o $@
 check_wasm: test_wasm
 	./test_wasm

@@ -4,7 +4,7 @@
 (include "pkg:test/src/test.bgh")
 
 (define (main argv)
-   (test-all #t "-"))
+   (test-all #t "@PKG@"))
    
 (define-test will-fail-if-executed
    #t

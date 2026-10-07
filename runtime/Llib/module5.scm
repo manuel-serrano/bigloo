@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Oct  7 08:58:55 2026 (serrano)                */
+;*    Last change :  Wed Oct  7 13:04:52 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -354,8 +354,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    resolve-package-path ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (resolve-package-path path pkg base)
-   (let* ((file (substring path 0 (+fx (string-length pkg) 1)))
+(define (resolve-package-path path base pkg)
+   (let* ((file (substring path (+fx (string-length pkg) 1)))
           (bgl (make-file-path pkg file)))
       (if (file-exists? bgl)
           bgl
@@ -364,7 +364,7 @@
                 (cond
                    ((file-exists? path) path)
                    ((string=? dir "/") #f)
-                   ((string=? dir ".") #f)
+                   ((string=? dir ".") (loop (dirname (pwd))))
                    (else (loop (dirname dir)))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -389,7 +389,7 @@
                   ((package-name path)
                    =>
                    (lambda (pkg)
-                      (resolve-package-path pkg path base)))))))))
+                      (resolve-package-path path base pkg)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module5-resolve-library ...                                      */

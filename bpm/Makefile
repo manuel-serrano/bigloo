@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 13 10:04:17 2006                          */
-#*    Last change :  Fri Oct  2 11:13:15 2026 (serrano)                */
+#*    Last change :  Wed Oct  7 11:57:56 2026 (serrano)                */
 #*    Copyright   :  2006-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the Bigloo bglbpm command.                 */
@@ -203,5 +203,9 @@ distclean: devclean
 #*    Dependencies                                                     */
 #*---------------------------------------------------------------------*/
 $(OBJECTS):
+
+o/project.o: template/package.sexp
+o/project.o: template/test/Makefile
+o/project.o: template/test/test.bgl
 
 #bdepend stop
