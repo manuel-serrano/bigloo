@@ -127,6 +127,9 @@ and `ex1b` is exported under the name `EX1b`.
 
 [aliasing](../test/src/modules/module5_ex1.bgl)
 
+> [!WARNING] Renamed export is limited to variables and functions. The
+> current version does not enable exported classed to be renamed.
+
 ReExport
 --------
 
@@ -177,6 +180,10 @@ for importing any definition. In the example below, `module5_ex7.bgl` is
 imported only for initialization.
 
 [imports](../test/src/modules/module5_ex19.bgl)
+
+> [!WARNING] Qualified imports are limited to variables and functions.
+> Types are always defined under their genuine unqualified identifiers.
+
 
 Include
 -------
