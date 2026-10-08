@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  JosÃ© Romildo Malaquias                           */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Mon Jun  1 10:17:12 2026 (serrano)                */
+/*    Last change :  Thu Oct  8 09:51:52 2026 (serrano)                */
 /*    Copyright   :  2003-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */

@@ -40,6 +40,9 @@ The function `jpeg-exif` tries to extract as much information as possible
 but depending on the exif version or the tool that generated it, not all
 fields of the `exif` class are filled.
 
+If the keyword argument `xmp` is `#t`, the `jpeg-exif` also extracts
+the `XMP` section, if found.
+
 ### jpeg-exif-mmap ###
 As `jpeg-exif` but extrace the exif data from an open 
 [memory-mapped area](./mmap.html).

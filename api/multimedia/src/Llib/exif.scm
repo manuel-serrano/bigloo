@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Wed Oct  7 17:31:52 2026 (serrano)                */
+;*    Last change :  Thu Oct  8 08:10:35 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -124,10 +124,12 @@
 	      (gps-measure-mode (default #f))
 	      (gps-status (default #f))
 	      (gps-time-stamp (default #f))
-	      (gps-date-stamp (default #f)))
+	      (gps-date-stamp (default #f))
+              (xmp (default #f)))
 	   
-	   (jpeg-exif::exif ::bstring)
-	   (jpeg-exif-mmap::exif ::mmap)
+	   (jpeg-exif::exif ::bstring #!key (xmp::bool #f))
+	   (jpeg-exif-mmap::exif ::mmap #!key (xmp::bool #f))
+           
 	   (parse-exif-date::date ::bstring)
 
            (jpeg-exif-update! ::bstring ::exif)
@@ -143,6 +145,24 @@
 ;*---------------------------------------------------------------------*/
 (define (exif-error proc msg obj)
    (error/errno $errno-io-parse-error proc msg obj))
+
+;*---------------------------------------------------------------------*/
+;*    xmp-tables ...                                                   */
+;*---------------------------------------------------------------------*/
+(define bmh-xmp-beg-table #f)
+(define bmh-xmp-end-table #f)
+
+(define (xmp-beg-table)
+   (unless bmh-xmp-beg-table
+      (set! bmh-xmp-beg-table
+         (bmh-table "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"XMP Core 4.4.0-Exiv2\">")))
+   bmh-xmp-beg-table)
+
+(define (xmp-end-table)
+   (unless bmh-xmp-end-table
+      (set! bmh-xmp-end-table
+         (bmh-table "</x:xmpmeta>")))
+   bmh-xmp-end-table)
 
 ;*---------------------------------------------------------------------*/
 ;*    strnwrt ...                                                      */
@@ -1274,7 +1294,7 @@
                                    (getformat en bytes (+fx valptr 8) fmt)
                                    (getformat en bytes (+fx valptr 16) fmt)
                                    (getformat en bytes (+fx valptr 24) fmt))))
-                            ((and (vector lens-info) (=fx (vector-length lens-info) 4))
+                            ((and (vector? lens-info) (=fx (vector-length lens-info) 4))
                              (setformat! en bytes valptr fmt (vector-ref lens-info 0))
                              (setformat! en bytes (+fx valptr 8) fmt (vector-ref lens-info 1))
                              (setformat! en bytes (+fx valptr 16) fmt (vector-ref lens-info 2))
@@ -1536,7 +1556,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    read-jpeg-sections ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (read-jpeg-sections exif mm::mmap mode::symbol)
+(define (read-jpeg-sections exif mm::mmap mode::symbol decode-xmp::bool)
    (let ((m (read-jpeg-marker mm)))
       (if (not (eq? m #xd8)) ;; M_SOI
 	  (exif-error "read-jpeg-sections" "Illegal section marker"
@@ -1566,41 +1586,73 @@
 		    ;; not implemented
 		    (loop))
 		   ((#xe1) ;; M_EXIF
-		    (when (substring=? bytes "Exif\000\000" 6)
-		       (with-access::exif exif (%gps-tag endianess)
-			  (read-jpeg-exif! exif
-			     bytes
-			     (- (mmap-read-position mm)
-				(string-length bytes))
-                             mode)
-                          (when (eq? mode 'write)
-                             (mmap-substring-set! mm (fixnum->elong offset)
-                                bytes))
-			  ;; gps
-			  (when %gps-tag
-			     (process-exif-dir! endianess bytes
-				(+fx %gps-tag 6) 6 exif 0 #x10000 #t
-				(lambda (exif tag en bytes fmt bcount valptr)
-				   'unknown)
-                                mode)
-                             (when (eq? mode 'write)
-                                (mmap-substring-set! mm (fixnum->elong offset)
-                                   bytes))
-			     (with-access::exif exif (gps-altitude
-							gps-latitude
-							gps-longitude
-							%gps-altitude-ref
-							%gps-latitude-ref
-							%gps-longitude-ref)
-				;; patch the relative values
-				(when (and (integer? %gps-altitude-ref)
-					   (=fx %gps-altitude-ref 1))
-				   (set-car! gps-altitude
-				      (- (car gps-altitude))))
-				(when (equal? %gps-latitude-ref "S")
-				   (set! gps-latitude (negfl gps-latitude)))
-				(when (equal? %gps-longitude-ref "W")
-				   (set! gps-longitude (negfl gps-longitude)))))))
+		    (cond
+                       ((substring=? bytes "Exif\000\000" 6)
+                        ;; EXIF segment
+                        (with-access::exif exif (%gps-tag endianess)
+                           (read-jpeg-exif! exif
+                              bytes
+                              (- (mmap-read-position mm)
+                                 (string-length bytes))
+                              mode)
+                           (when (eq? mode 'write)
+                              (mmap-substring-set! mm (fixnum->elong offset)
+                                 bytes))
+                           ;; gps
+                           (when %gps-tag
+                              (process-exif-dir! endianess bytes
+                                 (+fx %gps-tag 6) 6 exif 0 #x10000 #t
+                                 (lambda (exif tag en bytes fmt bcount valptr)
+                                    'unknown)
+                                 mode)
+                              (when (eq? mode 'write)
+                                 (mmap-substring-set! mm (fixnum->elong offset)
+                                    bytes))
+                              (with-access::exif exif (gps-altitude
+                                                         gps-latitude
+                                                         gps-longitude
+                                                         %gps-altitude-ref
+                                                         %gps-latitude-ref
+                                                         %gps-longitude-ref)
+                                 ;; patch the relative values
+                                 (when (and (integer? %gps-altitude-ref)
+                                            (=fx %gps-altitude-ref 1))
+                                    (set-car! gps-altitude
+                                       (- (car gps-altitude))))
+                                 (when (equal? %gps-latitude-ref "S")
+                                    (set! gps-latitude (negfl gps-latitude)))
+                                 (when (equal? %gps-longitude-ref "W")
+                                    (set! gps-longitude (negfl gps-longitude)))))))
+                       ((substring=? bytes "http://ns.adobe.com/xap/1.0/" 28)
+                        ;; APP1 segment
+                        (cond
+                           ((eq? mode 'read)
+                            (when decode-xmp
+                               (let ((i (bmh-string (xmp-beg-table) bytes 28)))
+                                  (when (>fx i 0)
+                                     (let ((j (bmh-string (xmp-end-table) bytes i)))
+                                        (when (>fx j 0)
+                                           (with-access::exif exif (xmp)
+                                              (set! xmp
+                                                 (substring bytes i (+fx j 13))))))))))
+                           (else
+                            (with-access::exif exif (xmp)
+                               (if (string? xmp)
+                                   (if (>fx (string-length xmp) 0)
+                                       (let ((i (bmh-string (xmp-beg-table) bytes 28)))
+                                          (when (>fx i 0)
+                                             (let ((j (bmh-string (xmp-end-table) bytes i)))
+                                                (when (>fx j 0)
+                                                   (string-fill! bytes #\space i (+fx j 13))
+                                                   (blit-string! xmp 0 bytes i
+                                                      (minfx (string-length xmp)
+                                                         (+fx (-fx j i) 13)))
+                                                   (set! xmp
+                                                      (substring bytes i (+fx j 13)))))))
+                                       ;; replace the whole APP1 segment with an APP segment
+                                       (begin
+                                          (mmap-set! mm (-fx offset 3) (integer->char #xef))
+                                          (string-fill! bytes #\space)))))))))
 		    (loop))
 		   ((#xc0) ;; M_SOFO
 		    (read-SOFn! exif bytes "baseline")
@@ -1676,7 +1728,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    https://www.awaresystems.be/imaging/tiff/specification/TIFF6.pdf */
 ;*---------------------------------------------------------------------*/
-(define (read-tiff-sections exif::exif mm::mmap mode::symbol)
+(define (read-tiff-sections exif::exif mm::mmap mode::symbol decode-xmp::bool)
 
    (define (tiff-endianess)
       ;; big endian
@@ -1707,7 +1759,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    https://www.exiftool.org/TagNames/PanasonicRaw.html              */
 ;*---------------------------------------------------------------------*/
-(define (read-rw2-sections exif mm::mmap mode::symbol)
+(define (read-rw2-sections exif mm::mmap mode::symbol decode-xmp::bool)
    
    (define (tiff-endianess)
       ;; big endian
@@ -1783,7 +1835,7 @@
 	     (set! %thumbnail-offset valptr)
 	     (set! %thumbnail-length bcount)
 	     (set! thumbnail (getbuffer bytes valptr (+fx valptr bcount)))
-	     (read-jpeg-sections exif (string->mmap thumbnail) mode)))
+	     (read-jpeg-sections exif (string->mmap thumbnail) mode decode-xmp)))
 	 ((#x002f #x0030 #x0031 #x0032)
 	  '(tprint "crop " tag " " (getformat en bytes valptr fmt)))
 	 ((#x004b)
@@ -1910,7 +1962,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    https://libopenraw.freedesktop.org/formats/raf/                  */
 ;*---------------------------------------------------------------------*/
-(define (read-raf-sections exif mm::mmap mode::symbol)
+(define (read-raf-sections exif mm::mmap mode::symbol decode-xmp::bool)
    (let* ((pos (mmap-read-position mm))
 	  (fmtv (mmap-substring mm pos (+elong pos 4)))
 	  (id (mmap-substring mm (+elong pos 4) (+elong pos 12))))
@@ -1934,7 +1986,7 @@
 		   (unknownlen (mmap-get-string mm 12))
 		   (someoff (mmap-get-string mm 4)))
 	       (mmap-read-position-set! mm (+elong (mmap-read-position mm) 28))
-	       (read-jpeg-sections exif mm mode))))))
+	       (read-jpeg-sections exif mm mode decode-xmp))))))
 		
 ;*---------------------------------------------------------------------*/
 ;*    tiff? ...                                                        */
@@ -1994,19 +2046,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    jpeg-exif-mmap ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (jpeg-exif-mmap::exif mm::mmap)
+(define (jpeg-exif-mmap::exif mm::mmap #!key (xmp::bool #f))
    (let ((exf (instantiate::exif)))
       (when (> (mmap-length mm) 64)
          (cond
             ((tiff? mm)
-             (read-tiff-sections exf mm 'read))
+             (read-tiff-sections exf mm 'read xmp))
             ((rw2? mm)
-             (read-rw2-sections exf mm 'read))
+             (read-rw2-sections exf mm 'read xmp))
             ((raf? mm)
-             (read-raf-sections exf mm 'read))
+             (read-raf-sections exf mm 'read xmp))
             (else
              (mmap-read-position-set! mm 0)
-             (read-jpeg-sections exf mm 'read))))
+             (read-jpeg-sections exf mm 'read xmp))))
       exf))
    
 ;*---------------------------------------------------------------------*/
@@ -2015,13 +2067,13 @@
 ;*    This is the main function which reads a JPEG image a             */
 ;*    returns an EXIF structure.                                       */
 ;*---------------------------------------------------------------------*/
-(define (jpeg-exif::exif path)
+(define (jpeg-exif::exif path::bstring #!key (xmp::bool #f))
    (if (not (file-exists? path))
        (error/errno $errno-io-file-not-found-error
 	  "jpeg-exif" "Can't find file" path)
        (let ((mm (open-mmap path write: #f)))
           (unwind-protect
-             (jpeg-exif-mmap mm)
+             (jpeg-exif-mmap mm :xmp xmp)
              (close-mmap mm)))))
 		
 ;*---------------------------------------------------------------------*/
@@ -2080,14 +2132,14 @@
    (when (> (mmap-length mm) 64)
       (cond
          ((tiff? mm)
-          (read-tiff-sections exf mm 'write))
+          (read-tiff-sections exf mm 'write #t))
          ((rw2? mm)
-          (read-rw2-sections exf mm 'write))
+          (read-rw2-sections exf mm 'write #t))
          ((raf? mm)
-          (read-raf-sections exf mm 'write))
+          (read-raf-sections exf mm 'write #t))
          (else
           (mmap-read-position-set! mm 0)
-          (read-jpeg-sections exf mm 'write)))))
+          (read-jpeg-sections exf mm 'write #t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    jpeg-exif-update! ...                                            */
@@ -2127,7 +2179,8 @@
                  (shutter-speed-value '(1 . 1))
                  (gps-latitude 1.)
                  (gps-longitude 1.)
-                 (gps-altitude 1.))))
+                 (gps-altitude 1.)
+                 (xmp ""))))
       (jpeg-exif-mmap-update! mm exf)))
 
 ;*---------------------------------------------------------------------*/

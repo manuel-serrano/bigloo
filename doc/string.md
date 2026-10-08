@@ -736,12 +736,12 @@ is found, its position in the string is returned. Otherwise
 ### bm-mmap ###
 Similar to `bm-string` but operates on memory mapped areas.
 
-###  bmh-table ###
-This function creates a _bm_-table used for fast search of `pattern`
+### bmh-table ###
+This function creates a _bmh_-table used for fast search of `pattern`
 using the _Boyer, Moore, Hoorspool_ algorithm.
 
 ### bmh-string ###
-This function searches the pattern described by _bm_-table `bt`
+This function searches the pattern described by _bmh_-table `bt`
 in the string `string`. The search starts at `offset`. If an occurrence
 is found, its position in the string is returned. Otherwise
 `-1` is returned.

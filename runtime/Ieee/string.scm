@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Oct  6 19:20:29 2026 (serrano)                */
+;*    Last change :  Thu Oct  8 09:12:37 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -209,7 +209,7 @@
 	    (string->list::pair-nil ::bstring)
 	    (list->string::bstring ::pair-nil)
 	    (string-copy::bstring ::bstring)
-	    (string-fill!::obj ::bstring ::uchar)
+	    (string-fill!::obj str::bstring ::uchar #!optional (start::long 0) (end::long (string-length str)))
 	    (string-upcase::bstring ::bstring)
 	    (string-downcase::bstring ::bstring)
 	    (string-upcase!::bstring ::bstring)
@@ -395,8 +395,8 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (substring-ci-at?::bool string1::bstring string2::bstring off #!optional (len::long -1))
    (if (=fx len -1)
-	   ($prefix-ci-at? string1 string2 off)
-	   ($substring-ci-at? string1 string2 off len)))
+       ($prefix-ci-at? string1 string2 off)
+       ($substring-ci-at? string1 string2 off len)))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn empty-string?@ ...                                        */
@@ -626,14 +626,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-fill!@ ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (string-fill! string::bstring char::uchar)
-   (let ((len (string-length string)))
-      (let loop ((i 0))
-	 (if (=fx i len)
-	     #unspecified
-	     (begin
-		(string-set-ur! string i char)
-		(loop (+fx i 1)))))))
+(define (string-fill! str::bstring char::uchar
+           #!optional (start::long 0) (end::long (string-length str)))
+   (let loop ((i start))
+      (if (>=fx i end)
+          #unspecified
+          (begin
+             (string-set-ur! str i char)
+             (loop (+fx i 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-upcase@ ...                                        */

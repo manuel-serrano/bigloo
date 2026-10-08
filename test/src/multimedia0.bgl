@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug 24 23:47:58 2026                          */
-;*    Last change :  Wed Oct  7 09:09:08 2026 (serrano)                */
+;*    Last change :  Thu Oct  8 09:08:14 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the multimedia library.                                  */
@@ -42,19 +42,19 @@
 
 (define-test jpeg-exif
    (let ((ex::exif (jpeg-exif "misc/img.jpg")))
-      (-> ex comment))
+      ex.comment)
    :cond-expand (library multimedia)
    :result "an exif comment")
 
 (define-test jpeg-exif
    (let ((ex::exif (jpeg-exif "misc/img.jpg")))
-      (-> ex width))
+      ex.width)
    :cond-expand (library multimedia)
    :result 64)
 
 (define-test jpeg-exif-mmap
    (let ((ex::exif (jpeg-exif-mmap (open-mmap "misc/img.jpg" :write #f))))
-      (-> ex width))
+      ex.width)
    :cond-expand (library multimedia)
    :result 64)
 

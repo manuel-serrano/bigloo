@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Mon Sep 14 13:18:00 2026 (serrano)                */
+;*    Last change :  Thu Oct  8 09:14:52 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing strings                                                  */
@@ -985,12 +985,18 @@
    (string-length (string-shrink! (make-string 10000 #\a) 5000))
    :result 5000)
 
-(define-test string-fill! (let ((s (string-append "abc" "de"))) (string-fill! s #\-) s)
+(define-test string-fill!
+   (let ((s (string-append "abc" "de"))) (string-fill! s #\-) s)
    :result "-----")
+(define-test string-fill!
+   (let ((s (string-append "abc" "defghij"))) (string-fill! s #\- 1 5) s)
+   :result "a----fghij")
 
-(define-test string-replace (string-replace "foo-bar" #\- #\_)
+(define-test string-replace
+   (string-replace "foo-bar" #\- #\_)
    :result "foo_bar")
-(define-test string-replace! (let ((s (string-append "foo" "-bar"))) (string-replace! s #\- #\_) s)
+(define-test string-replace!
+   (let ((s (string-append "foo" "-bar"))) (string-replace! s #\- #\_) s)
    :result "foo_bar")
 
 (define-test string-split (string-split "foo  bar gee")
