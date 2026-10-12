@@ -1,0 +1,139 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/bpm/solver.bgl                 */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Mon Oct 12 09:14:11 2026                          */
+;*    Last change :  Mon Oct 12 15:32:22 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    The dependencies solver.                                         */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    solver                                                           */
+;*---------------------------------------------------------------------*/
+(module solver
+   (import "./package.bgl" . pkg)
+   (import "./database.bgl" . db)
+   (import "./versions.bgl" . versions)
+   (import "./utils.bgl" . utils)
+   (export resolve-package))
+
+;*---------------------------------------------------------------------*/
+;*    resolve-package-version ...                                      */
+;*---------------------------------------------------------------------*/
+(define (resolve-package::pair-nil p::Package versions)
+   (with-trace 'solver "resolve-package"
+      (trace-item "p=" p)
+      (trace-item "v=" versions)
+      (resolve-package-version p
+         (if (not versions)
+             p.versions
+             (resolve-versions-flat p (list versions)))
+         '())))
+
+;*---------------------------------------------------------------------*/
+;*    resolve-package-version ...                                      */
+;*---------------------------------------------------------------------*/
+(define (resolve-package-version p::Package pvs::pair-nil env::pair-nil)
+   (with-trace 'solver "resolve-package-version"
+      (trace-item "p=" p)
+      (trace-item "pvs=" pvs)
+      (trace-item "env=" env)
+      (let ((e (assq p env)))
+         (if (pair? e)
+             (let ((pv (cdr e)))
+                (if (memq pv pvs)
+                    env
+                    #f))
+             (let loop ((pvs pvs))
+                (if (null? pvs)
+                    #f
+                    (let* ((pv (car pvs))
+                           (rdeps (resolve-package-version-dependencies pv
+                                     (cons (cons p pv) env))))
+                       (if (not rdeps)
+                           (loop (cdr pvs))
+                           rdeps))))))))
+
+;*---------------------------------------------------------------------*/
+;*    resolve-package-version-dependencies ...                         */
+;*---------------------------------------------------------------------*/
+(define (resolve-package-version-dependencies pv::PackageVersion env::pair)
+   (with-trace 'solver "resolve-package-version-dependencies"
+      (trace-item "pv=" pv)
+      (trace-item "env=" env)
+      (let ((deps (filter-map (lambda (d::pair)
+                                 (let ((q (db.find-package (car d))))
+                                    (unless (assq q env)
+                                       (map (lambda (pv)
+                                               (cons q pv))
+                                          (resolve-versions-flat q (cdr d))))))
+                     pv.dependencies)))
+         (trace-item "deps=" deps)
+         (if (null? deps)
+             env
+             (let loop ((product (cartesian-product deps)))
+                (trace-item "product=" product)
+                (if (null? product)
+                    #f
+                    (let liip ((d (car product))
+                               (env env))
+                       (if (null? d)
+                           env
+                           (let ((nenv (cons (car d) env)))
+                              (trace-item "car d=" (car d))
+                              (let ((r (resolve-package-version
+                                          (caar d) (list (cdar d)) nenv)))
+                                 (if (pair? r)
+                                     (liip (cdr d) nenv)
+                                     (loop (cdr product)))))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    resolve-dependencies ...                                         */
+;*---------------------------------------------------------------------*/
+;;; (define (resolve-dependencies::pair-nil deps::pair-nil)
+;;;    (let ((vs (map (lambda (dep::pair)
+;;;                      (resolve-versions-flat (car dep) (cdr dep)))
+;;;                 deps)))
+;;;       '()))
+
+;*---------------------------------------------------------------------*/
+;*    resolve-versions-flat ...                                        */
+;*    -------------------------------------------------------------    */
+;*    For a package p and a list of constraints, computes the set      */
+;*    of available versions.                                           */
+;*---------------------------------------------------------------------*/
+(define (resolve-versions-flat::pair-nil p::Package constraints::pair-nil)
+   (with-trace 'solver "resolve-versions-flat"
+      (trace-item "p=" p)
+      (trace-item "constraints=" constraints)
+      (let ((table (make-hashtable :keys 'string)))
+         (filter (lambda (ctt::bstring)
+                    (let ((c (versions.compile ctt)))
+                       (for-each (lambda (pv::PackageVersion)
+                                    (unless (hashtable-get table pv.version)
+                                       (when (c pv.version)
+                                          (hashtable-put! table pv.version pv))))
+                          p.versions)))
+            constraints)
+         (let ((l (hashtable->list table)))
+            (trace-item l)
+            l))))
+
+;*---------------------------------------------------------------------*/
+;*    cartesian-product ...                                            */
+;*    -------------------------------------------------------------    */
+;*    (cp '(a b) '(e f)) => ((a e) (a f) (b e) (b f))                  */
+;*---------------------------------------------------------------------*/
+(define (cartesian-product::pair-nil ls::pair-nil)
+   (cond
+      ((null? ls)
+       '())
+      ((null? (cdr ls))
+       (map list (car ls)))
+      (else
+       (let ((subs (cartesian-product (cdr ls))))
+          (append-map (lambda (x)
+                         (map (lambda (l) (cons x l)) subs))
+             (car ls))))))
