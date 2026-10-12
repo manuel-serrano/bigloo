@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  2 08:48:41 2026                          */
-;*    Last change :  Fri Oct  2 11:15:57 2026 (serrano)                */
+;*    Last change :  Mon Oct 12 09:33:32 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with versions                                            */
@@ -47,45 +47,45 @@
 ;*    -------------------------------------------------------------    */
 ;*    Returns a function that matches the expression it receives.      */
 ;*---------------------------------------------------------------------*/
-(define (compile::procedure vexpr::bstring loc)
+(define (compile::procedure vexpr::bstring #!optional loc)
    (cond
       ((string=? vexpr "*")
        (lambda (v::bstring) #t))
       ((version? vexpr)
        (lambda (v::bstring)
-          (string=? vexpr v)))
+          (string=? v vexpr)))
       ((pregexp-match "^=[0-9]+.[0-9]+.[0-9]+$" vexpr)
        (let ((e (substring vexpr 1)))
           (lambda (v::bstring)
-             (string=? vexpr e))))
+             (string=? v e))))
       ((pregexp-match "^<[0-9]+.[0-9]+.[0-9]+$" vexpr)
-       (let ((e (substring vexpr 2)))
+       (let ((e (substring vexpr 1)))
           (lambda (v::bstring)
-             (<fx (string-natural-compare3 vexpr e) 0))))
+             (<fx (string-natural-compare3 v e) 0))))
       ((pregexp-match "^<=[0-9]+.[0-9]+.[0-9]+$" vexpr)
-       (let ((e (substring vexpr 3)))
-          (lambda (v::bstring)
-             (<=fx (string-natural-compare3 vexpr e) 0))))
-      ((pregexp-match "^>[0-9]+.[0-9]+.[0-9]+$" vexpr)
        (let ((e (substring vexpr 2)))
           (lambda (v::bstring)
-             (>fx (string-natural-compare3 vexpr e) 0))))
+             (<=fx (string-natural-compare3 v e) 0))))
+      ((pregexp-match "^>[0-9]+.[0-9]+.[0-9]+$" vexpr)
+       (let ((e (substring vexpr 1)))
+          (lambda (v::bstring)
+             (>fx (string-natural-compare3 v e) 0))))
       ((pregexp-match "^>=[0-9]+.[0-9]+.[0-9]+$" vexpr)
        (let ((e (substring vexpr 2)))
           (lambda (v::bstring)
-             (>=fx (string-natural-compare3 vexpr e) 0))))
+             (>=fx (string-natural-compare3 v e) 0))))
       ((pregexp-match "^([0-9]+.[0-9]+.)x$" vexpr)
        =>
        (lambda (m)
           (let ((e (cadr m)))
              (lambda (v::bstring)
-                (string-prefix? e vexpr)))))
+                (string-prefix? e v)))))
       ((pregexp-match "^([0-9]+.)x.x$" vexpr)
        =>
        (lambda (m)
           (let ((e (cadr m)))
              (lambda (v::bstring)
-                (string-prefix? e vexpr)))))
+                (string-prefix? e v)))))
       ((pregexp-match "^([0-9]+.[0-9]+.[0-9]+)[ ]*-[ ]*([0-9]+.[0-9]+.[0-9]+)"
           vexpr)
        =>
@@ -93,8 +93,8 @@
           (let ((min (cadr m))
                 (max (caddr m)))
              (lambda (v::bstring)
-                (and (>=fx (string-natural-compare3 vexpr min) 0)
-                     (<=fx (string-natural-compare3 vexpr max) 0))))))
+                (and (>=fx (string-natural-compare3 v min) 0)
+                     (<=fx (string-natural-compare3 v max) 0))))))
       (else
        (let ((l (string-split vexpr "|")))
           (if (<fx (length l) 2)

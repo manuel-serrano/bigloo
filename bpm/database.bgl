@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Wed Oct  7 13:41:29 2026 (serrano)                */
+;*    Last change :  Mon Oct 12 09:53:26 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -18,7 +18,7 @@
    (import "./package.bgl" . pkg)
    (import "./versions.bgl" . versions)
    (export Database init update! load-database
-      list-packages find-package-version))
+      list-packages find-package find-package-version))
 
 ;*---------------------------------------------------------------------*/
 ;*    Database ...                                                     */
@@ -133,12 +133,17 @@
                       (let ((o (hashtable-get db.packages name)))
                          (if (isa? o pkg.Package)
                              (let ((o::Package o))
-                                (utils.verb 
-                                   (format "  adding ~a version ~a"
-                                      name
-                                      (utils.color 'version v.version))
-                                   :lvl 2)
-                                (set! o.versions (append! o.versions (list v))))
+                                (unless (find (lambda (w::PackageVersion)
+                                                 (string=? v.version
+                                                    w.version))
+                                           o.versions)
+                                   (utils.verb 
+                                      (format "  adding ~a version ~a"
+                                         name
+                                         (utils.color 'version v.version))
+                                      :lvl 2)
+                                   (set! o.versions
+                                      (append! o.versions (list v)))))
                              (begin
                                 (utils.verb 
                                    (format "adding package ~a"
@@ -195,6 +200,17 @@
       (sort (lambda (p::Package q::Package)
                (string<=? p.name q.name))
          (hashtable->list db.packages))))
+
+;*---------------------------------------------------------------------*/
+;*    find-package ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (find-package::Package name::bstring)
+   (let ((db::Database (load-database config.rc-directory)))
+      (let ((p (hashtable-get db.packages name)))
+         (or p
+             (utils.error utils.command
+                "Cannot find package"
+                (utils.color 'error name))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-package-version ...                                         */

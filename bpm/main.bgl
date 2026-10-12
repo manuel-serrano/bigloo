@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Wed Oct  7 14:12:24 2026 (serrano)                */
+;*    Last change :  Mon Oct 12 09:27:32 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -18,6 +18,7 @@
    (import "./database.bgl" . db)
    (import "./project.bgl" . proj)
    (import "./package.bgl" . pkg)
+   (import "./solver.bgl" . solver)
    (main))
 
 ;*---------------------------------------------------------------------*/
@@ -125,17 +126,25 @@
       (args-parse cmdline
          (()
           (lambda () (usage args-parse-usage)))
-         (("install" (?pkg ?version) (help "Install a package"))
+         (("install" ?pkg (?version) (help "Install package in the current project"))
           (utils.command-set! "pkg install")
           (break
              (lambda ()
-                (if (not pkg)
-                    (proj.install-deps)
-                    (proj.install-pkg pkg version #t)))))
+                (proj.add-pkg (pwd) pkg version))))
          (("upgrade" (help "Upgrade the dependency packages"))
           (break
              (lambda ()
                 (tprint "TODO"))))
+         (("resolve" (?pkg ?version) (help "Resolve the package dependencies"))
+          (utils.command-set! "pkg resolve")
+          (break
+             (lambda ()
+                (let* ((p (db.find-package pkg))
+                       (r (solver.resolve-package p version)))
+                   (if (pair? r)
+                       (let ((i (reverse r)))
+                          (print-dependencies (caar i) (cdar i) (cdr i)))
+                       (print (utils.color 'error pkg) "cannot resolve"))))))
          (else
           (break (lambda () (usage args-parse-usage)))))))
 
@@ -161,6 +170,23 @@
           (break (lambda () (proj.clone pkg version force))))
          (("info" (help "Project information"))
           (break (lambda () (tprint "not implemented yet"))))
+         (("resolve" (?dir) (help "Resolve project dependencies"))
+          (utils.command-set! "proj resolve")
+          (break
+             (lambda ()
+                (let* ((path (if dir (make-file-name (pwd) dir) (pwd)))
+                       (p::Package (proj.load path))
+                       (r (solver.resolve-package p #f)))
+                   (if (pair? r)
+                       (let ((i (reverse r)))
+                          (print-dependencies (caar i) (cdar i) (cdr i)))
+                       (print (utils.color 'error p) "cannot resolve"))))))
+         (("install-deps" (?dir) (help "Install the project dependencies"))
+          (utils.command-set! "proj install-deps")
+          (break
+             (lambda ()
+                (let ((path (if dir (make-file-name (pwd) dir) (pwd))))
+                   (proj.install-dependencies path)))))
          (else
           (break (lambda () (usage args-parse-usage)))))))
 
@@ -192,3 +218,14 @@
          (else
           (break (lambda () (usage args-parse-usage)))))))
 
+;*---------------------------------------------------------------------*/
+;*    print-dependencies ...                                           */
+;*---------------------------------------------------------------------*/
+(define (print-dependencies p::Package pv::PackageVersion deps::pair-nil)
+   (print (utils.color 'package p.name) ": "
+      (utils.color 'version pv.version))
+   (for-each (lambda (e)
+                (let ((p::Package (car e))
+                      (v::PackageVersion (cdr e)))
+                   (print "   " (utils.color 'package p.name) " (" v.version ")")))
+      deps))

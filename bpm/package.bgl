@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 15:41:34 2026                          */
-;*    Last change :  Fri Oct  2 16:47:58 2026 (serrano)                */
+;*    Last change :  Mon Oct 12 10:20:25 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Package data type and tools                                      */
@@ -40,6 +40,37 @@
    (backends::pair-nil read-only)
    (bigloo read-only)
    (dependencies::pair-nil read-only))
+
+;*---------------------------------------------------------------------*/
+;*    display-object ...                                               */
+;*---------------------------------------------------------------------*/
+(define-method (display-object o::Package #!optional (port (current-output-port)))
+   (fprintf port "#<Package ~a>" o.name))
+
+(define-method (display-object o::PackageVersion #!optional (port (current-output-port)))
+   (fprintf port "#<PackageVersion ~a>" o.version))
+
+;*---------------------------------------------------------------------*/
+;*    write-object ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-method (write-object o::Package #!optional (port (current-output-port)))
+   (fprintf port "#<Package ~a>" o.name))
+
+(define-method (write-object o::PackageVersion #!optional (port (current-output-port)))
+   (fprintf port "#<PackageVersion ~a>" o.version))
+
+;*---------------------------------------------------------------------*/
+;*    object-print ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-method (object-print o::Package port::output-port print-slot::procedure)
+   (display "#<Package " port)
+   (print-slot o.name)
+   (display ">" port))
+
+(define-method (object-print o::PackageVersion port::output-port print-slot::procedure)
+   (display "#<PackageVersion " port)
+   (print-slot o.version)
+   (display ">" port))
 
 ;*---------------------------------------------------------------------*/
 ;*    serialization                                                    */
@@ -112,6 +143,19 @@
           (plist-get/list l key opt)
           (utils.error "package" (format "missing attribute ~a" key) l)))
 
+   (define (normalize-deps d)
+      (let loop ((l d))
+         (cond
+            ((null? l)
+             '())
+            ((string? (car l))
+             (cons (list (car l) "*") (loop (cdr l))))
+            ((and (pair? (car l)) (string? (caar l)) (string? (cadar l)))
+             (cons (car l) (loop (cdr l))))
+            (else
+             (utils.error "package"
+                (format "illegal dependency ~a" (car l)) d)))))
+             
    (instantiate::PackageVersion
       (version (plist-get l version:))
       (note (plist-get l description:))
@@ -121,7 +165,7 @@
       (checksum (plist-get l sha256:))
       (bigloo (plist-get l bigloo: #t))
       (backends (plist-get l backends: '(c jvm wasm)))
-      (dependencies (plist-get l dependencies: '()))))
+      (dependencies (normalize-deps (plist-get l dependencies: '())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-package-version ...                                        */

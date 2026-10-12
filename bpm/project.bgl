@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Wed Oct  7 13:37:56 2026 (serrano)                */
+;*    Last change :  Mon Oct 12 15:46:48 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -17,7 +17,8 @@
    (import "./utils.bgl" . utils)
    (import "./database.bgl" . db)
    (import "./package.bgl" . pkg)
-   (export init clone install-pkg install-deps))
+   (import "./solver.bgl" . solver)
+   (export init clone load add-pkg install-pkg install-dependencies))
 
 ;*---------------------------------------------------------------------*/
 ;*    template ...                                                     */
@@ -119,28 +120,49 @@
    (file-exists? (make-file-name dir "package.sexp")))
 
 ;*---------------------------------------------------------------------*/
+;*    add-pkg ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (add-pkg dir::bstring name::bstring version)
+   (let ((pv::PackageVersion (db.find-package-version name version)))
+      (add-dependency! dir name (or version "*"))
+      (install-dependencies dir)))
+
+;*---------------------------------------------------------------------*/
 ;*    install-pkg ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (install-pkg name::bstring version adddep::bool)
-   (unless (is-a-project? (pwd))
+(define (install-pkg dir::bstring name::bstring pv::PackageVersion)
+   (unless (is-a-project? dir)
       (if (utils.yes-no? "Shall I initialize it? "
              (format "The current directory ~s is not a bpm project.\n" (pwd)))
-          (init-in-dir (pwd))
+          (init-in-dir dir)
           (exit 0)))
    (unless (directory? "pkg")
-      (make-directory "pkg"))
-   (let ((pv::PackageVersion (db.find-package-version name version)))
-      (utils.verb
-         (format "installing package ~a..."
-            (utils.color 'command name)))
-      (download-pkg-and-makefile name pv (make-file-path (pwd) "pkg" name))
-      (for-each (lambda (e)
-                   (download-pkg-and-makefile (car e)
-                      (db.find-package-version (car e) (cadr e))
-                      (make-file-path (pwd) "pkg" (car e))))
-         (get-rec-dependencies pv))
-      (when adddep
-         (add-dependency! (pwd) name (or version "*")))))
+      (make-directory "pkg")
+      (call-with-output-file "pkg/Makefile.pkg"
+         (lambda (op) (display "" op))))
+   (utils.verb
+      (format "installing package ~a..."
+         (utils.color 'command name)))
+   (download-pkg-and-makefile name pv (make-file-path (pwd) "pkg" name)))
+
+;*---------------------------------------------------------------------*/
+;*    install-dependencies ...                                         */
+;*---------------------------------------------------------------------*/
+(define (install-dependencies dir::bstring)
+   (let* ((p::Package (load dir))
+          (r (solver.resolve-package p #f)))
+      (when (file-exists? (make-file-path dir "pkg" "Makefile.pkg"))
+         (delete-file (make-file-path dir "pkg" "Makefile.pkg"))
+         (call-with-output-file (make-file-path dir "pkg" "Makefile.pkg")
+            (lambda (op)
+               (display "" op))))
+      (if (pair? r)
+          (for-each (lambda (d)
+                       (let ((p::Package (car d))
+                             (v::PackageVersion (cdr d)))
+                          (install-pkg dir p.name v)))
+             (cdr (reverse r)))
+          (print (utils.color 'error p) "cannot resolve"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    download-pkg-and-makefile ...                                    */
@@ -174,7 +196,7 @@
                       pv.backends))))
       (when (string? inc)
          (call-with-append-file
-            (make-file-path (pwd) "pkg" "Makefile.pkg")
+            (make-file-path "pkg" "Makefile.pkg")
             (lambda (op)
                (fprint op "include " inc))))))
 
@@ -227,45 +249,36 @@
    (let ((path (make-file-name dir "package.sexp")))
       (let* ((sexp (call-with-input-file path (lambda (ip) (read ip #t))))
              (dep (utils.plist-get sexp :dependencies '()))
-             (l (utils.plist-set sexp
+             (e (assoc name dep)))
+         (if (pair? e)
+             (set-car! (cdr e) version)
+             (set! dep
+                (utils.plist-set sexp
                    :dependencies (cons (list name version) dep))))
          (call-with-output-file path
             (lambda (op)
-               (pkg.pp l op))))))
+               (pkg.pp dep op))))))
 
 ;*---------------------------------------------------------------------*/
-;*    get-rec-dependencies ...                                         */
-;*    -------------------------------------------------------------    */
-;*    Get the recursive dependencies of a package version.             */
+;*    load ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (get-rec-dependencies::pair-nil pv::PackageVersion)
-
-   (define table (make-hashtable :keys 'string))
-
-   (define (rec-pv pv::PackageVersion recdeps)
-      (let loop ((flatdeps pv.dependencies)
-                 (recdeps recdeps))
-         (cond
-            ((null? flatdeps)
-             recdeps)
-            ((hashtable-get table (caar flatdeps))
-             (loop (cdr flatdeps) recdeps))
-            (else
-             (let ((dep (car flatdeps)))
-                (loop (cdr flatdeps)
-                   (rec-pv (db.find-package-version (car dep) (cadr dep))
-                      (cons (car flatdeps) recdeps))))))))
-
-   (rec-pv pv '()))
-   
-;*---------------------------------------------------------------------*/
-;*    install-deps ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (install-deps)
-   (unless (is-a-project? (pwd))
-      (utils.error utils.command "Current directory is not a bpm project"
-         (pwd)))
-   (let ((sexp (call-with-input-file "package.sexp" read)))
-      (for-each (lambda (d) (install-pkg (car d) (cadr d) #f))
-         (utils.plist-get sexp dependencies: '()))))
-      
+(define (load path::bstring)
+   (if (is-a-project? path)
+       (let* ((file (make-file-name path "package.sexp"))
+              (l (call-with-input-file file read))
+              (version (instantiate::PackageVersion
+                          (version (utils.plist-get l version: #f))
+                          (note (utils.plist-get l :note ""))
+                          (author (utils.plist-get l :author ""))
+                          (homepage (utils.plist-get l :homage ""))
+                          (url (utils.plist-get l :url ""))
+                          (checksum (utils.plist-get l :checksum ""))
+                          (backends (utils.plist-get l :backends #f))
+                          (bigloo (utils.plist-get l :bigloo "5.0.0"))
+                          (dependencies (utils.plist-get l :dependencies '())))))
+          (instantiate::Package
+             (name (utils.plist-get l name: #f))
+             (description (utils.plist-get l description: ""))
+             (versions (list version))))
+       (utils.error utils.command "Directory is not a bpm project"
+          path)))
