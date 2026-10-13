@@ -1,0 +1,117 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/bpm/check.bgl                  */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Tue Oct 13 11:56:41 2026                          */
+;*    Last change :  Tue Oct 13 13:22:53 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    This module is in a separate file which is compatible with       */
+;*    Bigloo 4.x. This enables CI to use with old pre-compiled         */
+;*    native Bigloo versions.                                          */
+;*    -------------------------------------------------------------    */
+;*    This module must remains standalone with no imports              */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    check                                                            */
+;*---------------------------------------------------------------------*/
+(module check
+   (export package version?))
+
+;*---------------------------------------------------------------------*/
+;*    package ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (package dir::bstring)
+   (let ((path (make-file-name dir "package.sexp")))
+      (if (file-exists? path)
+          (let ((sexp (call-with-input-file path (lambda (ip) (read ip #t)))))
+             (check-attribute path sexp name: string?)
+             (check-attribute path sexp version: version?)
+             (check-attribute path sexp description: string?)
+             (check-attribute path sexp author: string?)
+             (check-attribute path sexp url: string?)
+             (check-attribute path sexp sha256: string?)
+             (check-attribute path sexp bigloo: vconstraint?)
+             (check-attribute path sexp backends: backend?)
+             (check-attribute path sexp dependencies: dependencies? #t)
+             sexp)
+          (error "bpm pkg check" "package.sexp is missing" dir))))
+
+;*---------------------------------------------------------------------*/
+;*    error/loc ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (error/loc proc msg obj)
+   (if (epair? obj)
+       (let ((loc (cer obj)))
+          (if (and (and (pair? loc) (eq? (car loc) 'at))
+                   (and (pair? (cdr loc)) (string? (cadr loc)))
+                   (and (pair? (cddr loc)) (integer? (caddr loc))))
+              (error/location proc msg obj (cadr loc) (caddr loc))
+              (error proc msg obj)))
+       (error proc msg obj)))
+
+;*---------------------------------------------------------------------*/
+;*    check-attribute ...                                              */
+;*---------------------------------------------------------------------*/
+(define (check-attribute path::bstring sexp key::keyword pred::procedure
+           #!optional (optional #t))
+   (let loop ((l sexp))
+      (cond
+         ((pair? l)
+          (if (pair? (cdr l))
+              (if (eq? (car l) key)
+                  (if (pred (cadr l))
+                      (loop (cddr l))
+                      (error path (format "illegal \"~a\"" key) (cadr l)))
+                  (loop (cddr l)))
+              (error/loc path "syntax error" l)))
+         ((null? l)
+          (unless optional
+             (error path (format "property \"~a\" missing" key) sexp)))
+         (else
+          (error path "syntax error" l)))))
+
+;*---------------------------------------------------------------------*/
+;*    vconstraint? ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (vconstraint?::bool vexpr::bstring)
+   (or (version? vexpr)
+       (string=? vexpr "*")
+       (pregexp-match "^=[0-9]+.[0-9]+.[0-9]+$" vexpr)
+       (pregexp-match "^<[0-9]+.[0-9]+.[0-9]+$" vexpr)
+       (pregexp-match "^<=[0-9]+.[0-9]+.[0-9]+$" vexpr)
+       (pregexp-match "^>[0-9]+.[0-9]+.[0-9]+$" vexpr)
+       (pregexp-match "^>=[0-9]+.[0-9]+.[0-9]+$" vexpr)
+       (pregexp-match "^([0-9]+.[0-9]+.)x$" vexpr)
+       (pregexp-match "^([0-9]+.)x.x$" vexpr)
+       (pregexp-match "^([0-9]+.[0-9]+.[0-9]+)[ ]*-[ ]*([0-9]+.[0-9]+.[0-9]+)" vexpr)))
+
+;*---------------------------------------------------------------------*/
+;*    dependencies? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (dependencies? l)
+   (let loop ((l l))
+      (cond
+         ((pair? l)
+          (let ((dep (car l)))
+             (when (and (pair? dep) (pair? (cdr dep)) (null? (cddr dep))
+                        (string? (car dep)) (vconstraint? (cadr dep)))
+                (loop (cdr l)))))
+         ((null? l)
+          #t)
+         (else
+          #f))))
+
+;*---------------------------------------------------------------------*/
+;*    version? ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (version?::bool str::bstring)
+   (pregexp-match "^[0-9]+.[0-9]+.[0-9]+$" str))
+
+;*---------------------------------------------------------------------*/
+;*    backend? ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (backend? l)
+   (when (pair? l)
+      (every (lambda (k) (memq k '(c jvm wasm))) l)))

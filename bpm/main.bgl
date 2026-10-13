@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Mon Oct 12 09:27:32 2026 (serrano)                */
+;*    Last change :  Tue Oct 13 11:55:48 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -19,6 +19,7 @@
    (import "./project.bgl" . proj)
    (import "./package.bgl" . pkg)
    (import "./solver.bgl" . solver)
+   (import "./check.bgl" . check)
    (main))
 
 ;*---------------------------------------------------------------------*/
@@ -139,12 +140,18 @@
           (utils.command-set! "pkg resolve")
           (break
              (lambda ()
-                (let* ((p (db.find-package pkg))
+                (let* ((p (db.find-package (or pkg (pwd))))
                        (r (solver.resolve-package p version)))
                    (if (pair? r)
                        (let ((i (reverse r)))
                           (print-dependencies (caar i) (cdar i) (cdr i)))
                        (print (utils.color 'error pkg) "cannot resolve"))))))
+         (("check" (?pkg) (help "Check package syntax"))
+          (utils.command-set! "pkg check")
+          (break
+             (lambda ()
+                (when (check.package (or pkg (pwd)))
+                    (print "package ok.")))))
          (else
           (break (lambda () (usage args-parse-usage)))))))
 
@@ -174,13 +181,13 @@
           (utils.command-set! "proj resolve")
           (break
              (lambda ()
-                (let* ((path (if dir (make-file-name (pwd) dir) (pwd)))
+                (let* ((path (or dir (pwd)))
                        (p::Package (proj.load path))
                        (r (solver.resolve-package p #f)))
                    (if (pair? r)
                        (let ((i (reverse r)))
                           (print-dependencies (caar i) (cdar i) (cdr i)))
-                       (print (utils.color 'error p) "cannot resolve"))))))
+                       (print (utils.color 'error p.name) " cannot resolve."))))))
          (("install-deps" (?dir) (help "Install the project dependencies"))
           (utils.command-set! "proj install-deps")
           (break

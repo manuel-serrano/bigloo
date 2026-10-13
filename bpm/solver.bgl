@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct 12 09:14:11 2026                          */
-;*    Last change :  Mon Oct 12 15:32:22 2026 (serrano)                */
+;*    Last change :  Tue Oct 13 13:25:50 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The dependencies solver.                                         */
@@ -22,7 +22,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    resolve-package-version ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (resolve-package::pair-nil p::Package versions)
+(define (resolve-package p::Package versions)
    (with-trace 'solver "resolve-package"
       (trace-item "p=" p)
       (trace-item "v=" versions)
@@ -88,15 +88,6 @@
                                  (if (pair? r)
                                      (liip (cdr d) nenv)
                                      (loop (cdr product)))))))))))))
-
-;*---------------------------------------------------------------------*/
-;*    resolve-dependencies ...                                         */
-;*---------------------------------------------------------------------*/
-;;; (define (resolve-dependencies::pair-nil deps::pair-nil)
-;;;    (let ((vs (map (lambda (dep::pair)
-;;;                      (resolve-versions-flat (car dep) (cdr dep)))
-;;;                 deps)))
-;;;       '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    resolve-versions-flat ...                                        */

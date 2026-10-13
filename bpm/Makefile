@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 13 10:04:17 2006                          */
-#*    Last change :  Mon Oct 12 09:15:20 2026 (serrano)                */
+#*    Last change :  Tue Oct 13 11:59:44 2026 (serrano)                */
 #*    Copyright   :  2006-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the Bigloo bglbpm command.                 */
@@ -19,33 +19,25 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-BGLBPM		= bpm
-BACKEND		= auto
+BGLBPM = bpm
+BACKEND = auto
 
-# the executable used to compile
-EFLAGS		= 
-
-JFILE_BIN	= $(BGLBUILDBINDIR)/bgljfile.sh
-BTAGS_BIN	= $(BGLBUILDBINDIR)/bgltags.sh
-DEPEND_BIN	= $(BGLBUILDBINDIR)/bgldepend.sh
-
-UNZIP		= unzip
-JAR		= jar cfm
+UNZIP = unzip
+JAR = jar cfm
 
 # standard Jvm library
-JVMZIPLIBS	= $(BOOTLIBDIR)/bigloo_s.zip \
-                  $(BOOTLIBDIR)/bigloosqlite_s-$(RELEASE).zip \
-                  $(BOOTLIBDIR)/bigloobpmlib_s-$(RELEASE).zip
+JVMZIPLIBS = $(BOOTLIBDIR)/bigloo_s.zip \
+  $(BOOTLIBDIR)/bigloosqlite_s-$(RELEASE).zip \
+  $(BOOTLIBDIR)/bigloobpmlib_s-$(RELEASE).zip
 
 #*---------------------------------------------------------------------*/
 #*    Sources    					               */
 #*---------------------------------------------------------------------*/
-SOURCES		= main config utils database project package versions solver
-FILES		= $(SOURCES:%=%.bgl)
+SOURCES = main config utils database project package versions solver check
+ 
+FILES = $(SOURCES:%=%.bgl)
 
-MODULES		= $(SOURCES)
-
-INCLUDES	= 
+MODULES = $(SOURCES)
 
 #*---------------------------------------------------------------------*/
 #*    The bglbpm executable                                            */

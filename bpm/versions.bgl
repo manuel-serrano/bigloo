@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  2 08:48:41 2026                          */
-;*    Last change :  Mon Oct 12 09:33:32 2026 (serrano)                */
+;*    Last change :  Tue Oct 13 12:13:27 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with versions                                            */
@@ -34,13 +34,8 @@
 ;*---------------------------------------------------------------------*/
 (module versions
    (import "./utils.bgl" . utils)
-   (export version? compile match))
-
-;*---------------------------------------------------------------------*/
-;*    version? ...                                                     */
-;*---------------------------------------------------------------------*/
-(define (version?::bool str::bstring)
-   (pregexp-match "^[0-9]+.[0-9]+.[0-9]+$" str))
+   (import "./check.bgl" . check)
+   (export compile match))
 
 ;*---------------------------------------------------------------------*/
 ;*    compile ...                                                      */
@@ -51,7 +46,7 @@
    (cond
       ((string=? vexpr "*")
        (lambda (v::bstring) #t))
-      ((version? vexpr)
+      ((check.version? vexpr)
        (lambda (v::bstring)
           (string=? v vexpr)))
       ((pregexp-match "^=[0-9]+.[0-9]+.[0-9]+$" vexpr)

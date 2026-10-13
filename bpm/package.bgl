@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 15:41:34 2026                          */
-;*    Last change :  Mon Oct 12 10:20:25 2026 (serrano)                */
+;*    Last change :  Tue Oct 13 12:29:33 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Package data type and tools                                      */
@@ -16,8 +16,7 @@
    (import "./config.bgl" . config)
    (import "./utils.bgl" . utils)
    (import "./versions.bgl" . versions)
-   (export Package PackageVersion pp list->package-version
-      check-package-version))
+   (export Package PackageVersion pp list->package-version compare-package-version))
 
 ;*---------------------------------------------------------------------*/
 ;*    Package ...                                                      */
@@ -120,29 +119,6 @@
 ;*---------------------------------------------------------------------*/
 (define (list->package-version::PackageVersion l::pair)
 
-   (define cache l)
-
-   (define (plist-get/list c::pair-nil key::keyword opt)
-      (let loop ((l c))
-         (cond
-            ((pair? l)
-             (if (pair? (cdr l))
-                 (if (eq? (car l) key)
-                     (let ((r (cadr l)))
-                        (set! cache l)
-                        r)
-                     (loop (cddr l)))
-                 (utils.error "package" "syntax error" l)))
-            ((null? l)
-             opt)
-            (else
-             (utils.error "package" "syntax error" l)))))
-
-   (define (plist-get l::pair-nil key::keyword #!optional opt)
-      (or (plist-get/list cache key #f)
-          (plist-get/list l key opt)
-          (utils.error "package" (format "missing attribute ~a" key) l)))
-
    (define (normalize-deps d)
       (let loop ((l d))
          (cond
@@ -155,7 +131,8 @@
             (else
              (utils.error "package"
                 (format "illegal dependency ~a" (car l)) d)))))
-             
+
+   (set! plist-cache l)
    (instantiate::PackageVersion
       (version (plist-get l version:))
       (note (plist-get l description:))
@@ -168,9 +145,47 @@
       (dependencies (normalize-deps (plist-get l dependencies: '())))))
 
 ;*---------------------------------------------------------------------*/
-;*    check-package-version ...                                        */
+;*    compare-package-version ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (check-package-version pv::PackageVersion name::bstring)
-   (unless (versions.version? pv.version)
-      (utils.error name "Illegal version" pv.version)))
-           
+(define (compare-package-version::bool pv::PackageVersion sexp::pair-nil)
+   (set! plist-cache sexp)
+   (and (string=? pv.version (plist-get sexp version:))
+        (string=? pv.note (plist-get sexp description:))
+        (string=? pv.author (plist-get sexp author:))
+        (string=? pv.homepage (plist-get sexp homepage:))
+        (string=? pv.url (plist-get sexp url:))
+        (equal? pv.backends (plist-get sexp backends:))
+        (equal? pv.bigloo (plist-get sexp bigloo: ">=5.0.0"))
+        (equal? pv.dependencies (plist-get sexp backends: '()))))
+
+;*---------------------------------------------------------------------*/
+;*    plist-cache ...                                                  */
+;*---------------------------------------------------------------------*/
+(define plist-cache '())
+
+;*---------------------------------------------------------------------*/
+;*    plist-get ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (plist-get l::pair-nil key::keyword #!optional opt)
+   (or (plist-get/list plist-cache key #f)
+       (plist-get/list l key opt)
+       (utils.error "package" (format "missing attribute ~a" key) l)))
+
+;*---------------------------------------------------------------------*/
+;*    plist-get/list ...                                               */
+;*---------------------------------------------------------------------*/
+(define (plist-get/list c::pair-nil key::keyword opt)
+   (let loop ((l c))
+      (cond
+         ((pair? l)
+          (if (pair? (cdr l))
+              (if (eq? (car l) key)
+                  (let ((r (cadr l)))
+                     (set! plist-cache l)
+                     r)
+                  (loop (cddr l)))
+              (utils.error "package" "syntax error" l)))
+         ((null? l)
+          opt)
+         (else
+          (utils.error "package" "syntax error" l)))))
