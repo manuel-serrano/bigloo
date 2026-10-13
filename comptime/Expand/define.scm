@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:56:53 1994                          */
-;*    Last change :  Sat Jul 11 08:37:14 2026 (serrano)                */
+;*    Last change :  Wed Oct 14 01:19:05 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `define' forms                                               */
@@ -266,7 +266,8 @@
 		       (find-location src)
 		       (lambda () (e (normalize-progn/loc body loc) e)))))
 	 (leave-function)
-	 `(define ,(cons name (expand-args args e)) ,ebody))))
+	 (localize src
+            `(define ,(cons name (expand-args args e)) ,ebody)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-external-define-value ...                                     */

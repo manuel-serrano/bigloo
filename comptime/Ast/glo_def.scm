@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Sun Sep 13 05:59:59 2026 (serrano)                */
+;*    Last change :  Wed Oct 14 00:40:17 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the functions used to def (define) a      */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -78,6 +78,12 @@
 ;*    compiling a define expression.                                   */
 ;*---------------------------------------------------------------------*/
 (define (def-global-sfun! env id args locals module class src-exp rem expr)
+
+   (define (def-body x)
+      (match-case x
+         ((define ?- . ?-) (cddr x))
+         (else x)))
+   
    (with-trace 'ast_glo-def "def-global-sfun!"
       (trace-item "id=" id)
       (trace-item "args=" (shape args))
@@ -111,7 +117,8 @@
 			(else
 			 (check-sfun-definition old-global type-res
 			    args locals class src-exp))))
-	     (def-loc (find-location src-exp)))
+	     (def-loc (or (find-location (def-body src-exp))
+                          (find-location src-exp))))
 	 (if (sfun? (global-value global))
 	     ;; if global-value is not an sfun then it means that
 	     ;; check-sfun-definition has failed and so there is an error

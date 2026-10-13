@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Oct  2 07:57:21 2026 (serrano)                */
+;*    Last change :  Wed Oct 14 01:07:33 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -618,7 +618,7 @@
 	       (unit-sexp*-add! tu code)
 	       (when (>=fx *optim* 2)
 		  (unit-sexp*-add-head! tu (optimize-code)))))
-	 
+
 	 ;; check for errors that might have already occurred
 	 ;; when building the ast but delayed
 	 (pass-postlude #unspecified)

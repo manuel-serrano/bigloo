@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Fri Oct  2 07:56:36 2026 (serrano)                */
+;*    Last change :  Wed Oct 14 00:36:41 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -939,7 +939,7 @@
    (define (define-expander x e)
       (match-case x
 	 ((?def ?proto ?body)
-	  (localize x `(,def ,(expand-args proto e) ,(e body e))))
+          (localize x `(,def ,(expand-args proto e) ,(e body e))))
 	 ((?def ?proto . ?body)
 	  (localize x `(,def ,(expand-args proto e) ,@(map (lambda (x) (e x e)) body))))
 	 (else

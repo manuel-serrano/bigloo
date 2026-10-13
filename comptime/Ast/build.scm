@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 14:00:21 1996                          */
-;*    Last change :  Tue Jun  9 11:21:15 2026 (serrano)                */
+;*    Last change :  Wed Oct 14 00:26:37 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    From the code definition, we build the Ast                       */
 ;*=====================================================================*/
@@ -71,6 +71,12 @@
 ;*    sfun-def->ast ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (sfun-def->ast::global def::global genv)
+
+   (define (def-body x)
+      (match-case x
+         ((define ?- . ?-) (cddr x))
+         (else x)))
+   
    (with-trace 'ast_build "sfun-def->ast"
       (trace-item "def=" (global-id def))
       (enter-function (global-id def))
@@ -79,8 +85,15 @@
 		(sfun-args (sfun-args sfun))
 		(sfun-body-exp (sfun-body sfun))
 		(def-loc (find-location (global-src def)))
-		(loc (find-location/loc sfun-body-exp def-loc))
+                (def-body-loc (find-location (def-body (global-src def))))
+		(loc (find-location/loc sfun-body-exp (or def-body-loc def-loc)))
 		(body (sexp->node sfun-body-exp sfun-args loc 'value genv)))
 	    (sfun-body-set! sfun body))
 	 (leave-function))
       def))
+
+;*---------------------------------------------------------------------*/
+;*    def-body ...                                                     */
+;*---------------------------------------------------------------------*/
+
+       
