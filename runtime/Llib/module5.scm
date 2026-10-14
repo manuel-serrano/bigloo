@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Oct  7 13:04:52 2026 (serrano)                */
+;*    Last change :  Wed Oct 14 13:15:43 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -918,7 +918,7 @@
 	     (parse5 id path clauses expr (cdr exprs)))
 	    (else
 	     (error/location path "Illegal expression" expr path 1)))))
-   
+
    (with-trace '__module5 "module5-parse"
       (trace-item "path=" path)
       (trace-item "exprs=" exprs)
@@ -1533,9 +1533,8 @@
 	       (with-trace '__module5 "module-expand-and-resolve!, expand-body"
 		  (trace-item "mod=" (-> mod id))
 		  (trace-item "body=" (-> mod body))
-
 		  (set! (-> mod body)
-		     (map (lambda (x) (expand/env x xenv)) (-> mod body)))))
+		     (map! (lambda (x) (expand/env x xenv)) (-> mod body)))))
 
 	    ;; class registration cannot be expanded before all the classes
 	    ;; are defined, otherwise a class that would have an instance
@@ -1569,12 +1568,13 @@
 	    ;; inline functions and class defintions and patch the code
 	    ;; so that they only use qualified naming for global variables
 	    (auto-export-hidden! mod))
-
 	 (ronly! mod)
+
 	 ;; remove the macro and expanders definitions from body as these
 	 ;; have already been evaluated and declared
 	 (set! (-> mod body)
-	    (filter (lambda (x)
+            ;; use filter! instead of filter to preserve epairs.
+	    (filter! (lambda (x)
 		       (match-case x
 			  (#unspecified #f)
 			  ((define-macro . ?-) #f)
@@ -3020,4 +3020,3 @@
 ;*---------------------------------------------------------------------*/
 (define (hashtable-symbol-put! table id d)
    (hashtable-put! table (symbol->string! id) d))
-

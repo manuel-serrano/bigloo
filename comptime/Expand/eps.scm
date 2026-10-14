@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Wed Oct 14 01:12:47 2026 (serrano)                */
+;*    Last change :  Wed Oct 14 13:49:26 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
@@ -174,7 +174,10 @@
 							     (skip ''())))
 						      (lambda ()
 							 (comptime-expand obody))))))
-				     (loop (cdr src) (cons nbody res)))))))))
+				     (loop (cdr src)
+                                        (if (epair? src)
+                                            (econs nbody res (cer src))
+                                            (cons nbody res))))))))))
 	 units)
       ;; in a second time, we apply compile (i.e., optim/debug macros).
       (when (or *optim-O-macro?*
@@ -199,7 +202,10 @@
 							    (skip ''())))
 						     (lambda ()
 							(compile-expand obody))))))
-				    (loop (cdr src) (cons nbody res)))))))
+				    (loop (cdr src)
+                                       (if (epair? src)
+                                           (econs nbody res (cer src))
+                                           (cons nbody res))))))))
 	    units))
       ;; we are done
       (pass-postlude units check-to-be-macros)))

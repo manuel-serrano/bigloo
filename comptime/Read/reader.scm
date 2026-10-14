@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Read/reader.scm             */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Read/reader.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 20 06:48:17 1998                          */
-;*    Last change :  Mon Jun 22 10:04:05 2009 (serrano)                */
-;*    Copyright   :  1998-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Oct 14 12:59:18 2026 (serrano)                */
+;*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the function that physically reads on      */
 ;*    input ports.                                                     */

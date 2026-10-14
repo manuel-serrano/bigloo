@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/comptime/Ast/unit.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Ast/unit.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Mon Oct 20 14:38:26 2025 (serrano)                */
+;*    Last change :  Wed Oct 14 15:26:49 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -137,9 +137,13 @@
 			  (global-evaluable?-set! glo #f)))
 		    (cons init (reverse! def*)))
 		 (reverse! def*))
-	     (if (global? (car aexp*))
-		 (loop (cdr aexp*) init* (cons (car aexp*) def*))
-		 (loop (cdr aexp*) (cons (car aexp*) init*) def*))))))
+	     (cond
+                ((global? (car aexp*))
+		 (loop (cdr aexp*) init* (cons (car aexp*) def*)))
+                ((epair? aexp*)
+                 (loop (cdr aexp*) (econs (car aexp*) init* (cer aexp*)) def*))
+                (else
+		 (loop (cdr aexp*) (cons (car aexp*) init*) def*)))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    *unit-list* ...                                                  */

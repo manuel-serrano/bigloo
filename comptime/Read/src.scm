@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/Read/src.scm           */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/Read/src.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:44:03 1994                          */
-;*    Last change :  Fri Apr 24 07:56:22 2026 (serrano)                */
+;*    Last change :  Wed Oct 14 12:55:51 2026 (serrano)                */
 ;*    Copyright   :  1994-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We read the source file                                          */
@@ -40,9 +40,9 @@
 	  (let loop ((src (read-src/port))
 		     (sfiles (cdr *src-files*)))
 	     (if (null? sfiles)
-		 (cons mod (reverse! src))
-		 (loop (append (read-src-file (car sfiles)) src)
-		       (cdr sfiles)))))))
+		 (cons mod src)
+		 (loop (append! src (read-src-file (car sfiles)))
+                    (cdr sfiles)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-src-first-loc ...                                           */
@@ -97,18 +97,33 @@
 ;*    read-src/port ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (read-src/port)
+
+   (define (shift-pos r)
+      (cond
+         ((pair? r) 0)
+         ((symbol? r) (string-length (symbol->string! r)))
+         ((string? r) (string-length r))
+         ((keyword? r) (+fx 1 (string-length (keyword->string! r))))
+         ((boolean? r) 2)
+         ((number? r) (string-length (number->string r)))
+         (else 0)))
+   
    (let ((port *port*))
       (with-exception-handler
 	 read-handler
 	 (lambda ()
-	    (let loop ((r (compiler-read-src port #t))
-		       (acc '()))
-	       (if (eof-object? r)
-		   (begin
-		      (close-src-port)
-		      acc)
-		   (loop (compiler-read-src port #t)
-			 (cons r acc))))))))
+            (let ((name (input-port-name port)))
+               (let loop ((r (compiler-read-src port #t))
+                          (acc '()))
+                  (if (eof-object? r)
+                      (begin
+                         (close-src-port)
+                         (ereverse acc))
+                      (let* ((pos (input-port-position port))
+                             (loc (make-source-location name
+                                     (-fx pos (shift-pos r)))))
+                         (loop (compiler-read-src port #t)
+                            (econs r acc loc))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-src-file ...                                                */

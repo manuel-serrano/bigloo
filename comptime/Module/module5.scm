@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 17:14:08 2025                          */
-;*    Last change :  Wed Oct 14 00:36:41 2026 (serrano)                */
+;*    Last change :  Wed Oct 14 13:33:36 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compilation of a Module5 clause.                                 */
@@ -733,7 +733,7 @@
 			(g (find-global env alias)))
 		     ;; MS 12may26, I'm not sure if this is correct to consider
 		     ;; (eq? id alias) only for hiding identifiers
-		     (when (and (isa? def Def) (or (not g) (or #t (not (eq? id alias)))))
+		     (when (and (isa? def Def) (or (not g) (not (eq? id alias))))
 			(with-access::Def def (id kind expr decl)
 			   (when (eq? kind 'inline)
 			      (trace-item "inline def=" id)
@@ -747,11 +747,11 @@
 				       (trace-item "body=" (-> imod body))
 				       (trace-item "expr=" expr)
 				       (trace-item "expr=" (compile-expand (comptime-expand expr)))
-				       (let* ((eexpr (compile-expand (comptime-expand expr)))
-					      (gi (car (toplevel->ast eexpr '() mid env)))
+				       (let* ((loc (find-location expr))
+                                              (eexpr (compile-expand (comptime-expand expr)))
+					      (gi (car (toplevel->ast eexpr '() mid env loc)))
 					      (gl (find-global/module env alias mid))
 					      (fi (global-value gi))
-					      (loc (find-location expr))
 					      (args (sfun-args fi))
 					      (node (sexp->node (sfun-body fi)
 						       (sfun-args fi) loc 'value env)))

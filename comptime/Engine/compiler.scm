@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Oct 14 01:07:33 2026 (serrano)                */
+;*    Last change :  Wed Oct 14 12:41:41 2026 (serrano)                */
 ;*    Copyright   :  1996-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -150,7 +150,7 @@
 	      (exit 1)
 	      (user-error/location (read-src-first-loc)
 		 "Parse error" "Illegal source file" src))))
-      
+
       ;; now (and only now) we can say hello
       (hello-world)
       
@@ -532,7 +532,7 @@
    (with-trace 'engine_compiler "module5->ast"
       (trace-item "expr=" expr)
       (pass-prelude "Module5")
-      
+
       (module5-default-version-set! 5)
       (register-srfi! 'bigloo-module5)
       
@@ -558,7 +558,6 @@
 	 (set! *module* (cadr (car expr))))
 
       (let* ((expr-mod (car expr))
-	     (expr-body (cdr expr))
 	     (mod (module5-parse expr (car *src-files*)
 		     :lib-path *lib-dir*
 		     :expand module5-expand
@@ -570,24 +569,23 @@
 	     (units (list tu)))
 
 	 (trace-item "units=" units)
-	 (trace-item "body=" expr-body)
+	 (trace-item "body=" (cdr expr))
 
 	 ;; imported module unit (before processing the module body)
 	 (set! units
 	    (cons (module5-imported-unit mod comptime-expand genv) units))
 	 
 	 (with-access::Module mod (id body checksum main decls imports qualified-name)
-
 	    (when (eq? qualified-name #unspecified)
 	       (set! qualified-name (module-qualified-name-register! id)))
-
+            
 	    (module5-expand-and-resolve! mod module5-init-xenv!
 	       :heap-modules (module5-heap4-modules)
 	       :default-package (default-jvm-package)
 	       :qualified-names (jvm-qualified-names))
 	    (module5-checksum! mod)
-	    
-	    (hashtable-for-each 
+            
+            (hashtable-for-each 
 	       (lambda (k d)
 		  (with-access::Decl d (scope alias id)
 		     (when (eq? scope 'import)
@@ -613,13 +611,13 @@
 	       (profile mco (module-checksum-object)))
 	    (stop-on-pass 'mco (lambda () 0))
 	    
-	    ;; complete the module body
+            ;; complete the module body
 	    (let ((code (debug-code body)))
 	       (unit-sexp*-add! tu code)
 	       (when (>=fx *optim* 2)
 		  (unit-sexp*-add-head! tu (optimize-code)))))
 
-	 ;; check for errors that might have already occurred
+         ;; check for errors that might have already occurred
 	 ;; when building the ast but delayed
 	 (pass-postlude #unspecified)
 	 
@@ -651,7 +649,7 @@
 	    (when (pair? u)
 	       (set! units (cons (car u) units))))
 
-	 ;; user pass
+         ;; user pass
 	 (user-walk tu)
 	 (stop-on-pass 'user (lambda () (write-unit units)))
 	 
@@ -662,7 +660,7 @@
 	 ;; ... and the global user-defined macro expansion
 	 (profile expand (expand-units units))
 	 (stop-on-pass 'expand (lambda () (write-unit units)))
-	 
+
 	 ;; explicit GC roots registration
 	 (when (and *gc-force-register-roots?*
 		    (backend-force-register-gc-roots (the-backend)))
@@ -766,7 +764,7 @@
 	 ;; profiling initilization code
 	 (when (>=fx *profile-mode* 1)
 	    (set! units (cons (make-prof-unit) units)))
-	 
+
 	 ;; produce the mco file
 	 (when *module-checksum-object?*
 	    (profile mco (module-checksum-object)))

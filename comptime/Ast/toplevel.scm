@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct 20 15:11:28 2025                          */
-;*    Last change :  Fri Oct  2 07:00:32 2026 (serrano)                */
+;*    Last change :  Wed Oct 14 13:39:00 2026 (serrano)                */
 ;*    Copyright   :  2025-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST construction of the toplevel forms                           */
@@ -48,7 +48,7 @@
 	    expand_eps)
    
   (export  (toplevel*->ast::pair-nil ::pair-nil ::pair-nil ::symbol ::obj)
-	   (toplevel->ast::pair-nil ::obj ::pair-nil ::symbol ::obj)))
+	   (toplevel->ast::pair-nil ::obj ::pair-nil ::symbol ::obj ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    toplevel*->ast ...                                               */
@@ -60,17 +60,19 @@
 	 (if (null? sexp*)
 	     (reverse! aexp*)
 	     (loop (cdr sexp*)
-		(append (toplevel->ast (car sexp*) gdefs module genv)
-		   aexp*))))))
+                (append! (toplevel->ast (car sexp*) gdefs module genv
+                           (when (epair? sexp*) (cer sexp*)))
+                   aexp*))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    toplevel->ast ...                                                */
 ;*    -------------------------------------------------------------    */
 ;*    !!! WARNING: this function must build a reversed list !!!        */
 ;*---------------------------------------------------------------------*/
-(define (toplevel->ast sexp gdefs module genv)
+(define (toplevel->ast sexp gdefs module genv loc)
    (with-trace 'ast_toplevel "toplevel->ast"
       (trace-item "sexp=" sexp)
+      (trace-item "loc=" loc)
       (match-case sexp
 	 ((begin)
 	  (list sexp))
@@ -151,7 +153,8 @@
 	  (when (and (type-exists? var) (isa? (find-type var) tclass))
 	     (error-class-shadow var module sexp))
 	  (set-car! (cddr sexp) 1-exp)
-	  (toplevel->ast sexp gdefs module genv))
+	  (toplevel->ast sexp gdefs module genv
+             (or (find-location (cddr sexp)) (find-location/loc sexp loc))))
 	 ((define ?var (and (? symbol?) ?var2))
 	  (when (and (type-exists? var) (isa? (find-type var) tclass))
 	     (error-class-shadow var module sexp))
@@ -175,7 +178,8 @@
 			    (make-svar-definition var sexp genv))
 			   (else
 			    (let ((def (eta-expanse sexp arity)))
-			       (toplevel->ast def gdefs module genv))))
+			       (toplevel->ast def gdefs module genv
+                                  (or (find-location sexp) loc)))))
 			(make-svar-definition var sexp genv)))
 		 (make-svar-definition var sexp genv))))
 	 ((define ?var (@ (and (? symbol?) ?var2) (and (? symbol?) ?module)))
@@ -201,7 +205,8 @@
 			    (make-svar-definition var sexp genv))
 			   (else
 			    (let ((def (eta-expanse sexp arity)))
-			       (toplevel->ast def gdefs module genv))))
+			       (toplevel->ast def gdefs module genv
+                                  (find-location/loc sexp loc)))))
 			(make-svar-definition var sexp genv)))
 		 (make-svar-definition var sexp genv))))
 	 ((define ?var . ?exp)
@@ -242,7 +247,9 @@
 	     (normalize-progn/error exp sexp (find-location (cddr sexp)) genv)
 	     sexp genv))
 	 (else
-	  (list sexp)))))
+          (if loc
+              (econs sexp '() loc)
+              (list sexp))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    error-class-shadow ...                                           */
