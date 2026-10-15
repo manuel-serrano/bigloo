@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct 13 11:56:41 2026                          */
-;*    Last change :  Tue Oct 13 13:22:53 2026 (serrano)                */
+;*    Last change :  Thu Oct 15 15:53:43 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    This module is in a separate file which is compatible with       */
@@ -17,7 +17,30 @@
 ;*    check                                                            */
 ;*---------------------------------------------------------------------*/
 (module check
-   (export package version?))
+   (export entry sexp package version?))
+
+;*---------------------------------------------------------------------*/
+;*    entry ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (entry file::bstring)
+   (let ((m (pregexp-match ".+([0-9]+.[0-9]+.[0-9]+)[.]sexp$" file)))
+      (sexp file (lambda (v) (and (string? v) (string=? v (cadr m)))))))
+   
+;*---------------------------------------------------------------------*/
+;*    sexp ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (sexp path::bstring vcheck?::procedure)
+   (let ((sexp (call-with-input-file path (lambda (ip) (read ip #t)))))
+      (check-attribute path sexp name: string?)
+      (check-attribute path sexp version: vcheck?)
+      (check-attribute path sexp description: string?)
+      (check-attribute path sexp author: string?)
+      (check-attribute path sexp url: string?)
+      (check-attribute path sexp sha256: string?)
+      (check-attribute path sexp bigloo: vconstraint?)
+      (check-attribute path sexp backends: backend?)
+      (check-attribute path sexp dependencies: dependencies? #t)
+      sexp))
 
 ;*---------------------------------------------------------------------*/
 ;*    package ...                                                      */
@@ -25,17 +48,7 @@
 (define (package dir::bstring)
    (let ((path (make-file-name dir "package.sexp")))
       (if (file-exists? path)
-          (let ((sexp (call-with-input-file path (lambda (ip) (read ip #t)))))
-             (check-attribute path sexp name: string?)
-             (check-attribute path sexp version: version?)
-             (check-attribute path sexp description: string?)
-             (check-attribute path sexp author: string?)
-             (check-attribute path sexp url: string?)
-             (check-attribute path sexp sha256: string?)
-             (check-attribute path sexp bigloo: vconstraint?)
-             (check-attribute path sexp backends: backend?)
-             (check-attribute path sexp dependencies: dependencies? #t)
-             sexp)
+          (sexp path version?)
           (error "bpm pkg check" "package.sexp is missing" dir))))
 
 ;*---------------------------------------------------------------------*/
