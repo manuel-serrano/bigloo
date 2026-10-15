@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:38:54 2026                          */
-;*    Last change :  Fri Oct  2 13:00:55 2026 (serrano)                */
+;*    Last change :  Thu Oct 15 14:17:41 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm configuration                                                */
@@ -17,7 +17,8 @@
       verbose verbose-set!
       repository tmp-directory
       rc-directory rc-directory-set!
-      database-filename))
+      database-filename
+      git-command))
 
 ;*---------------------------------------------------------------------*/
 ;*    name ...                                                         */
@@ -83,3 +84,9 @@
 ;*---------------------------------------------------------------------*/
 (define database-filename
    "bpm.db")
+
+;*---------------------------------------------------------------------*/
+;*    git-command ...                                                  */
+;*---------------------------------------------------------------------*/
+(define git-command
+   "git")

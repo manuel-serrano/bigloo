@@ -1,0 +1,49 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/bpm/git.bgl                    */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Thu Oct 15 14:16:19 2026                          */
+;*    Last change :  Thu Oct 15 15:02:27 2026 (serrano)                */
+;*    Copyright   :  2026 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Git manipulation.                                                */
+;*    -------------------------------------------------------------    */
+;*    In the midterm, this is to be replaced with a complete Bigloo    */
+;*    independent implementation. As of 2026,, it relies on a git      */
+;*    command available on the host.                                   */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    git                                                              */
+;*---------------------------------------------------------------------*/
+(module git
+   (import "./config.bgl" git-command)
+   (import "./utils.bgl" url? system)
+   (export git-url? clone update))
+
+;*---------------------------------------------------------------------*/
+;*    git-url? ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (git-url?::bool str::bstring)
+   (cond
+      ((url? str) (string-suffix? ".git" str))
+      ((pregexp-match "^[^@]+@[^:]+:.+" str) #t)
+      (else #f)))
+            
+;*---------------------------------------------------------------------*/
+;*    clone ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (clone url::bstring dir::bstring)
+   (system
+      "~a clone -q --depth 1 --single-branch --no-tags --branch main ~a ~a"
+      git-command url dir))
+
+;*---------------------------------------------------------------------*/
+;*    update ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (update dir::bstring)
+   (when (directory? dir)
+      (system
+         (format "cd ~a && ~~a -q fetch origin && ~~a reset --hard origin/main"
+            dir)
+         git-command)))

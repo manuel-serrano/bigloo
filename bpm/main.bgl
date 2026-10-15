@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Tue Oct 13 11:55:48 2026 (serrano)                */
+;*    Last change :  Thu Oct 15 14:02:01 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -65,7 +65,7 @@
              (bigloo-trace-color-set! #f))
             (("--force" (help "Force execution action"))
              (set! force #t))
-            (("--rc-dir" ?dir (help "Uses an alternate RC directory (see \"BMP_RC_DIRECTORY\")"))
+            (("--rc-dir" ?dir (help "Uses an alternate RC directory (see \"BPM_RC_DIRECTORY\")"))
              (config.rc-directory-set! dir))
             (("-r" (help "Proceed recursively"))
              (set! rec #t))

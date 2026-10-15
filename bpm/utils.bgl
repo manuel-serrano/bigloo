@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:42:40 2026                          */
-;*    Last change :  Mon Oct 12 15:38:30 2026 (serrano)                */
+;*    Last change :  Thu Oct 15 14:13:28 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Utilities                                                        */
@@ -25,7 +25,8 @@
       url?
       yes-no?
       color
-      plist-get plist-set))
+      plist-get plist-set
+      (system system/verb)))
 
 ;*---------------------------------------------------------------------*/
 ;*    command ...                                                      */
@@ -319,7 +320,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    url? ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (url? str)
+(define (url?::bool str::bstring)
    (or (string-prefix? "http://" str) (string-prefix? "https://" str)))
 
 ;*---------------------------------------------------------------------*/
@@ -356,6 +357,7 @@
      (ok 3)
      (message 1)
      (command 2)
+     (arg 3)
      (arg0 3)
      (arg1 4)
      (arg2 5)
@@ -403,3 +405,14 @@
           (append l (list key value)))
          (else
           (bmp-error "plist" "syntax error" l)))))
+
+;*---------------------------------------------------------------------*/
+;*    system/verb ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (system/verb fmt::bstring #!key (lvl::long 2) #!rest args)
+   (if (pair? args)
+       (verb (apply format fmt (color 'command (car args))
+                (map (lambda (a) (color 'arg a)) (cdr args)))
+          :lvl lvl)
+       (verb fmt :lvl lvl))
+   (system (apply format fmt args)))

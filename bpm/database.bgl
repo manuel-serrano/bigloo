@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Mon Oct 12 09:53:26 2026 (serrano)                */
+;*    Last change :  Thu Oct 15 14:12:42 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -15,6 +15,7 @@
 (module database
    (import "./config.bgl" . config)
    (import "./utils.bgl" . utils)
+   (import "./git.bgl" . git)
    (import "./package.bgl" . pkg)
    (import "./versions.bgl" . versions)
    (export Database init update! load-database
@@ -24,8 +25,13 @@
 ;*    Database ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-class Database
+   ;; the path the .db file
    (path::bstring read-only)
+   ;; the url of the origin
    (url::bstring read-only)
+   ;; the local clone
+   dir::bstring
+   ;; the list of packages
    (packages::struct read-only (default (make-hashtable :keys 'string))))
 
 ;*---------------------------------------------------------------------*/
@@ -33,15 +39,16 @@
 ;*---------------------------------------------------------------------*/
 (register-class-serialization! Database
    (lambda (o::Database)
-      (vector o.path o.url (hashtable-map cons o.packages)))
+      (vector o.path o.url o.dir (hashtable-map cons o.packages)))
    (lambda (o v)
       (let* ((db::Database (instantiate::Database
                               (path (vector-ref o 0))
-                              (url (vector-ref o 1))))
+                              (url (vector-ref o 1))
+                              (dir (vector-ref o 2))))
              (pkgs db.packages))
          (for-each (lambda (kb)
                       (hashtable-put! pkgs (car kb) (cdr kb)))
-            (vector-ref o 2))
+            (vector-ref o 3))
          db)))
 
 ;*---------------------------------------------------------------------*/
@@ -62,10 +69,16 @@
              (make-directories rcdir)))
       (let ((db (instantiate::Database
                    (path (make-file-name rcdir config.database-filename))
-                   (url url))))
+                   (url url)
+                   (dir url))))
          (cond
             ((directory? url)
              (update-from-directory! db))
+            ((git.git-url? url)
+             (let ((db::Database db))
+                (set! db.dir (make-file-name rcdir "git"))
+                (init-git! db)
+                (update-from-directory! db)))
             (else
              (utils.error "db init" "URL not supported" url))))))
 
@@ -126,7 +139,7 @@
              #f)))
    
    (let ((versions (filter-map read-package-version
-                      (directory->path-list db.url))))
+                      (directory->path-list db.dir))))
       (for-each (lambda (x)
                    (let ((name (car x))
                          (v::PackageVersion (cdr x)))
@@ -172,8 +185,23 @@
    (cond
       ((directory? db.url)
        (update-from-directory! db))
+      ((git.git-url? db.url)
+       (when (git.update db.dir)
+          (update-from-directory! db)))
       (else
        (utils.error "db init" "URL not supported" db.url))))
+
+;*---------------------------------------------------------------------*/
+;*    init-git! ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (init-git! db::Database)
+   (if (directory? db.dir)
+       (utils.error "db init" "git directory already exists" db.dir)
+       (make-directory db.dir))
+   (unless (directory? db.dir)
+      (utils.error "db init" "cannot create git directory" db.dir))
+   (unless (git.clone db.url db.dir)
+      (utils.error "db init" "cannot clone git repository" db.url)))
    
 ;*---------------------------------------------------------------------*/
 ;*    list-packages ...                                                */
