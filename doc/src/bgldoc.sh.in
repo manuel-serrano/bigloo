@@ -1,0 +1,25 @@
+#!@SHELL@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/5.0.x/doc/src/bgldoc.sh.in           */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Tue Oct 13 14:06:20 2015                          */
+#*    Last change :  Fri Oct 16 14:14:38 2026 (serrano)                */
+#*    Copyright   :  2015-26 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    bgldoc wrapper                                                   */
+#*=====================================================================*/
+
+LD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$LD_LIBRARY_PATH
+DYLD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$DYLD_LIBRARY_PATH
+
+export LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH
+
+bin=`dirname $0`
+
+if [ $1 = "-i" ]; then
+  exec $bin/bgldoc "$@"
+else  
+  exec $bin/bgldoc @LDBIGLOOOPT@ "$@"
+fi       

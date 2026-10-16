@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Tue Sep 22 06:39:08 2026 (serrano)                */
+#*    Last change :  Fri Oct 16 14:10:35 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -62,7 +62,16 @@ EX = $(EX_C:%=c/%) $(EX_J:%=jvm/%) $(EX_W:%=wasm/%)
 all: doc
 
 doc: objs bin index.html download.html idx.html index.json
-	$(MAKE) bin/bgldoc
+	$(MAKE) bin/bgldoc.sh
+
+bin/bgldoc.sh: src/bgldoc.sh.in bin/bgldoc
+	cat $< | \
+          sed -e "s|@BGLBUILDBINDIR@|$(BGLBUILDBINDIR)|" \
+              -e "s|@BGLBUILDLIBDIR@|$(BGLBUILDLIBDIR)|" \
+              -e "s|@LDBIGLOOOPT@||" \
+              -e "s|@SHELL@|$(SHELL)|" \
+          > $@
+	chmod a+x bin/bgldoc.sh
 
 bin/bgldoc: $(C_OBJECTS:%=objs/%)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
@@ -153,62 +162,62 @@ objs/java/fib.ast.coerce: examples/java/fib.bgl objs/java
 objs/wasm/fib.ast.coerce: examples/wasm/fib.bgl objs/wasm
 	$(BIGLOO) $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ -wasm -coerce
 
-%.html: %.md bin/bgldoc
-	bin/bgldoc -t libs $< > $@ || rm -f $@
+%.html: %.md bin/bgldoc.sh
+	bin/bgldoc.sh -t libs $< > $@ || rm -f $@
 
-condexpand.html: condexpand.md bin/bgldoc 
-	bin/bgldoc -t lang $< > $@ || rm -f $@
+condexpand.html: condexpand.md bin/bgldoc.sh 
+	bin/bgldoc.sh -t lang $< > $@ || rm -f $@
 
-match.html: match.md bin/bgldoc
-	bin/bgldoc -t lang $< > $@ || rm -f $@
+match.html: match.md bin/bgldoc.sh
+	bin/bgldoc.sh -t lang $< > $@ || rm -f $@
 
-parser.html: parser.md bin/bgldoc
-	bin/bgldoc -t lang $< > $@ || rm -f $@
+parser.html: parser.md bin/bgldoc.sh
+	bin/bgldoc.sh -t lang $< > $@ || rm -f $@
 
-macro.html: macro.md bin/bgldoc
-	bin/bgldoc -t lang $< > $@ || rm -f $@
+macro.html: macro.md bin/bgldoc.sh
+	bin/bgldoc.sh -t lang $< > $@ || rm -f $@
 
-module5.html: module5.md bin/bgldoc
-	bin/bgldoc -t lang $< > $@ || rm -f $@
+module5.html: module5.md bin/bgldoc.sh
+	bin/bgldoc.sh -t lang $< > $@ || rm -f $@
 
-module4.html: module4.md bin/bgldoc
-	bin/bgldoc -t lang $< > $@ || rm -f $@
+module4.html: module4.md bin/bgldoc.sh
+	bin/bgldoc.sh -t lang $< > $@ || rm -f $@
 
-object.html: object.md bin/bgldoc
-	bin/bgldoc -t lang $< > $@ || rm -f $@
+object.html: object.md bin/bgldoc.sh
+	bin/bgldoc.sh -t lang $< > $@ || rm -f $@
 
-types.html: types.md bin/bgldoc
-	bin/bgldoc -t lang $< > $@ || rm -f $@
+types.html: types.md bin/bgldoc.sh
+	bin/bgldoc.sh -t lang $< > $@ || rm -f $@
 
-c.html: c.md bin/bgldoc
-	bin/bgldoc -t backends $< > $@ || rm -f $@
+c.html: c.md bin/bgldoc.sh
+	bin/bgldoc.sh -t backends $< > $@ || rm -f $@
 
-jvm.html: jvm.md bin/bgldoc
-	bin/bgldoc -t backends $< > $@ || rm -f $@
+jvm.html: jvm.md bin/bgldoc.sh
+	bin/bgldoc.sh -t backends $< > $@ || rm -f $@
 
-wasm.html: wasm.md bin/bgldoc
-	bin/bgldoc -t backends $< > $@ || rm -f $@
+wasm.html: wasm.md bin/bgldoc.sh
+	bin/bgldoc.sh -t backends $< > $@ || rm -f $@
 
-index.html: index.md bin/bgldoc
-	bin/bgldoc -t home $< > $@ || rm -f $@
+index.html: index.md bin/bgldoc.sh
+	bin/bgldoc.sh -t home $< > $@ || rm -f $@
 
-download.html: download.md bin/bgldoc
-	bin/bgldoc -t download $< > $@ || rm -f $@
+download.html: download.md bin/bgldoc.sh
+	bin/bgldoc.sh -t download $< > $@ || rm -f $@
 
-idx.html: index.sexp bin/bgldoc
-	bin/bgldoc -t index $< > $@ || rm -f $@
+idx.html: index.sexp bin/bgldoc.sh
+	bin/bgldoc.sh -t index $< > $@ || rm -f $@
 
 index.json: index.sexp
 	bigloo -i src/bglidx.bgl $+ > $@ || rm -f $@
 
-bgldemangle.html: bgldemangle.md bin/bgldoc
-	bin/bgldoc -t dev $< > $@ || rm -f $@
+bgldemangle.html: bgldemangle.md bin/bgldoc.sh
+	bin/bgldoc.sh -t dev $< > $@ || rm -f $@
 
-bglmem.html: bglmem.md bin/bgldoc
-	bin/bgldoc -t dev $< > $@ || rm -f $@
+bglmem.html: bglmem.md bin/bgldoc.sh
+	bin/bgldoc.sh -t dev $< > $@ || rm -f $@
 
-bglperf.html: bglperf.md bin/bgldoc
-	bin/bgldoc -t dev $< > $@ || rm -f $@
+bglperf.html: bglperf.md bin/bgldoc.sh
+	bin/bgldoc.sh -t dev $< > $@ || rm -f $@
 
 examples/c/trace-full.txt: objs/c/trace
 	BIGLOOTRACE="foo loop liip" objs/c/trace 2> $@
