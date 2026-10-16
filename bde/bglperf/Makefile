@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Fri Jul 31 08:41:07 2026 (serrano)                */
+#*    Last change :  Fri Oct 16 16:19:08 2026 (serrano)                */
 #*    Copyright   :  2003-26 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build and install bglperf                        */
@@ -50,7 +50,7 @@ install:
 	   cp flamegraph.pl $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglperf \
              && chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglperf/flamegraph.pl; \
 	   cp stackcollapse-perf.pl $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglperf \
-             && chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglperf/stackcollapse.pl; \
+             && chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglperf/stackcollapse-perf.pl; \
         fi
 	echo "#!/bin/sh" > $(DESTDIR)$(BINDIR)/bglperf
 	echo "exec $(DESTDIR)$(LIBDIR)/$(FILDIR)/bglperf/bglperf.sh --demangle $(DESTDIR)$(BINDIR)/bgldemangle \"$$""@\"" >> $(DESTDIR)$(BINDIR)/bglperf
