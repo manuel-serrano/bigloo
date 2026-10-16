@@ -14,7 +14,7 @@
 version=@VERSION@
 minor=@MINOR@
 
-bglprefix=/opt/hop
+bglprefix=/opt/bgl
 
 repodir=$HOME/prgm/distrib
 basedir=`dirname $0`
