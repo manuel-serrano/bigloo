@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Oct 16 14:10:35 2026 (serrano)                */
+#*    Last change :  Fri Oct 16 14:31:40 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the documentation                          */
@@ -226,7 +226,7 @@ examples/c/trace-loop.txt: objs/c/trace
 	BIGLOOTRACE="loop" objs/c/trace 2> $@
 
 objs/c/trace: examples/c/trace.bgl objs/c
-	$(BIGLOO) -g $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ 
+	$(BIGLOO) -static-bigloo -g $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@ 
 
 trace.html: examples/c/trace-full.txt examples/c/trace-loop.txt
 
