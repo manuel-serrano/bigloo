@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Fri Oct 16 12:47:35 2026 (serrano)                */
+;*    Last change :  Fri Oct 16 13:40:47 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -228,13 +228,16 @@
          (("init" ?url (help "Initialize a database from a url"))
           (utils.command-set! "db init")
           (break (lambda () (db.init url force))))
-         (("check" ?file (help "Check a repository entry"))
+         (("check" ?file (help "Check repository entries"))
           (utils.command-set! "db check")
           (break (lambda ()
-                    (when (check.entry file)
-                       (utils.verb
-                          (format "~a ok" (utils.color 'file file))
-                          :lvl 1)))))
+                    (for-each (lambda (file)
+                                 (when (check.entry file)
+                                    (utils.verb
+                                       (format "~a ok"
+                                          (utils.color 'file file))
+                                       :lvl 1)))
+                       (cons file the-remaining-args)))))
          (else
           (break (lambda () (usage args-parse-usage)))))))
 
