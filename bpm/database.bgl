@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Thu Oct 15 14:12:42 2026 (serrano)                */
+;*    Last change :  Fri Oct 16 12:34:23 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -59,14 +59,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    init ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (init url)
+(define (init url::bstring force::bool)
    (let ((rcdir config.rc-directory))
       (if (directory? rcdir)
-          (utils.error "db init" "RC directory already exists" rcdir)
-          (begin
-             (utils.verb
-                (format "creating directory ~a" (utils.color 'arg0 rcdir)))
-             (make-directories rcdir)))
+          (if force
+              (delete-directories rcdir)
+              (utils.error "db init" "RC directory already exists" rcdir)))
+      (utils.verb (format "Creating directory ~a" (utils.color 'arg0 rcdir)))
+      (make-directories rcdir)
+      (unless (directory? rcdir)
+         (utils.error "db init" "Cannot create RC directory" rcdir))
       (let ((db (instantiate::Database
                    (path (make-file-name rcdir config.database-filename))
                    (url url)
@@ -209,22 +211,28 @@
 (define (list-packages db::Database)
    (for-each (lambda (p::Package)
                 (let ((v0::PackageVersion (car (last-pair p.versions))))
-                   (print (utils.color 'package p.name) " " v0.version)
-                   (when (>fx (string-length p.description) 0)
-                      (print "  " p.description))
-                   (when (>=fx config.verbose 1)
-                      (for-each (lambda (pv::PackageVersion)
-                                   (print "  version: " pv.version)
-                                   (print "  author: " pv.author)
-                                   (print "  homepage: " pv.homepage)
-                                   (print "  url: " pv.url)
-                                   (unless (or (string=? pv.note "")
-                                               (string=? pv.note p.description))
-                                      (print "  note: " pv.note))
-                                   (print "  bigloo: " pv.bigloo)
-                                   (print "  dependencies: " pv.dependencies))
-                         p.versions))
-                   (newline)))
+                   (display (utils.color 'package p.name))
+                   (if (<fx config.verbose 1)
+                       (if (>fx (string-length p.description) 0)
+                           (print " - " p.description)
+                           (newline))
+                       (begin
+                          (print " " v0.version)
+                          (when (>fx (string-length p.description) 0)
+                             (print "  " p.description))
+                          (when (>=fx config.verbose 1)
+                             (for-each (lambda (pv::PackageVersion)
+                                          (print "  version: " pv.version)
+                                          (print "  author: " pv.author)
+                                          (print "  homepage: " pv.homepage)
+                                          (print "  url: " pv.url)
+                                          (unless (or (string=? pv.note "")
+                                                      (string=? pv.note p.description))
+                                             (print "  note: " pv.note))
+                                          (print "  bigloo: " pv.bigloo)
+                                          (print "  dependencies: " pv.dependencies))
+                                p.versions))
+                          (newline)))))
       (sort (lambda (p::Package q::Package)
                (string<=? p.name q.name))
          (hashtable->list db.packages))))

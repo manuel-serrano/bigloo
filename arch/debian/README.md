@@ -1,4 +1,4 @@
-Bigloo Debian Package - 19 jan 2020
+Bigloo Debian Package - 16 oct 2026
 ===================================
 
 This document explains how to use the `makedeb.sh' script to
@@ -8,7 +8,8 @@ This script installs the Bigloo version out of a tarball stored in:
 
    `$HOME/prgm/distrib`
 
-It uses the currently "configured" Bigloo version.
+It uses the currently "configured" Bigloo version, i.e., configured in 
+the script `makedeb.sh` in the same directory as this `README.md` file.
 
 
 1. Prerequisite
@@ -19,7 +20,7 @@ on the host. In particular
 
 ```shell
 sudo apt -qq update
-sudo apt install -y dh-make libssl1.1 libssl-dev libsqlite3-0 libsqlite3-dev
+sudo apt install -y dh-make libssl3t64 libssl-dev libsqlite3-0 libsqlite3-dev
 sudo apt install -y libasound2-dev libflac-dev libmpg123-dev libavahi-core-dev
 sudo apt install -y libavahi-common-dev libavahi-client-dev libpulse-dev
 sudo apt install -y libgmp-dev automake libtool fakeroot

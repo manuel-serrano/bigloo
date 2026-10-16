@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Thu Oct 15 14:02:01 2026 (serrano)                */
+;*    Last change :  Fri Oct 16 12:47:35 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -76,7 +76,7 @@
              (set! action (config-parse-cmdline the-remaining-args))
              (break #t))
             (("db" (help "database commands"))
-             (set! action (db-parse-cmdline the-remaining-args))
+             (set! action (db-parse-cmdline the-remaining-args force))
              (break #t))
             (("pkg" (help "package commands"))
              (set! action (pkg-parse-cmdline the-remaining-args rec))
@@ -172,10 +172,13 @@
          (()
           (lambda () (usage args-parse-usage)))
          (("init" ?dir (help "Create a new project in directory DIR"))
+          (utils.command-set! "proj init")
           (break (lambda () (proj.init dir force))))
          (("clone" ?pkg (?version) (help "Create a new project from existing package PKG"))
+          (utils.command-set! "proj clone")
           (break (lambda () (proj.clone pkg version force))))
          (("info" (help "Project information"))
+          (utils.command-set! "proj info")
           (break (lambda () (tprint "not implemented yet"))))
          (("resolve" (?dir) (help "Resolve project dependencies"))
           (utils.command-set! "proj resolve")
@@ -200,7 +203,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    db-parse-cmdline ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (db-parse-cmdline cmdline::pair-nil)
+(define (db-parse-cmdline cmdline::pair-nil force::bool)
    
    (define (usage args-parse-usage)
       (printf "~a ~a\n" config.name config.version)
@@ -214,14 +217,24 @@
          (()
           (lambda () (usage args-parse-usage)))
          (("list" (help "List packages"))
+          (utils.command-set! "db list")
           (break
              (lambda ()
                 (db.list-packages (db.load-database config.rc-directory)))))
          (("update" (help "Update database"))
+          (utils.command-set! "db update")
           (break (lambda ()
                     (db.update! (db.load-database config.rc-directory)))))
          (("init" ?url (help "Initialize a database from a url"))
-          (break (lambda () (db.init url))))
+          (utils.command-set! "db init")
+          (break (lambda () (db.init url force))))
+         (("check" ?file (help "Check a repository entry"))
+          (utils.command-set! "db check")
+          (break (lambda ()
+                    (when (check.entry file)
+                       (utils.verb
+                          (format "~a ok" (utils.color 'file file))
+                          :lvl 1)))))
          (else
           (break (lambda () (usage args-parse-usage)))))))
 

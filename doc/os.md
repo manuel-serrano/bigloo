@@ -10,8 +10,8 @@
 <!--==================================================================-->
 
 ,(implementation-path "../runtime/Llib/bigloo.scm")
-,(implementation-path "../runtime/Llib/os.scm")
 ,(implementation-path "../runtime/Llib/error.scm")
+,(implementation-path "../runtime/Llib/os.scm")
 ,(implementation-path "../runtime/Ieee/port.scm")
 ,(example-path "../test/src/os.bgl")
 
