@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Tue Oct 13 12:22:11 2026 (serrano)                */
+;*    Last change :  Fri Oct 16 18:04:05 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -147,6 +147,17 @@
    (download-pkg-and-makefile name pv (make-file-path (pwd) "pkg" name)))
 
 ;*---------------------------------------------------------------------*/
+;*    pkg-installed? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (pkg-installed? dir::bstring name::bstring pv::PackageVersion)
+   (let ((base (make-file-path dir "pkg" name)))
+      (when (directory? base)
+         (let ((file (make-file-name base "package.sexp")))
+            (when (file-exists? file)
+               (let ((sexp (call-with-input-file file read)))
+                  (null? (pkg.compare-package-version pv sexp))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    install-dependencies ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (install-dependencies dir::bstring)
@@ -161,7 +172,8 @@
           (for-each (lambda (d)
                        (let ((p::Package (car d))
                              (v::PackageVersion (cdr d)))
-                          (install-pkg dir p.name v)))
+                          (unless (pkg-installed? dir p.name v)
+                             (install-pkg dir p.name v))))
              (cdr (reverse r)))
           (print (utils.color 'error p) "cannot resolve"))))
 
@@ -184,10 +196,14 @@
       (let ((path (utils.untar (utils.download pv.url name) dir)))
          (let ((sexp (check.package path)))
             (when (pair? sexp)
-               (unless (pkg.compare-package-version pv sexp)
-                  (utils.error utils.command
-                     "Downloaded package does not correspond"
-                     (format "~a ~a" name pv.version))))))))
+               (let ((diffs (pkg.compare-package-version pv sexp)))
+                  (when (pair? diffs)
+                     (utils.error utils.command
+                        (format "Downloaded package ~a mismatch" name)
+                        (format "\n~(\n)"
+                           (map (lambda (d)
+                                   (apply format "  ~a\n    ~a\n    ~a" d))
+                              diffs))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-pkg-makefile ...                                         */

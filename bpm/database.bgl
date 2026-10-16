@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:52:43 2026                          */
-;*    Last change :  Fri Oct 16 12:34:23 2026 (serrano)                */
+;*    Last change :  Fri Oct 16 17:45:21 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    npm database                                                     */
@@ -230,7 +230,14 @@
                                                       (string=? pv.note p.description))
                                              (print "  note: " pv.note))
                                           (print "  bigloo: " pv.bigloo)
-                                          (print "  dependencies: " pv.dependencies))
+                                          (print "  dependencies: "
+                                             (format "~(, )"
+                                                (map (lambda (d)
+                                                        (format "~a ~a"
+                                                           (utils.color 'arg
+                                                              (car d))
+                                                           (cadr d)))
+                                                   pv.dependencies))))
                                 p.versions))
                           (newline)))))
       (sort (lambda (p::Package q::Package)

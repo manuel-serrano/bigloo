@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 15:41:34 2026                          */
-;*    Last change :  Tue Oct 13 12:29:33 2026 (serrano)                */
+;*    Last change :  Fri Oct 16 18:01:19 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Package data type and tools                                      */
@@ -147,16 +147,40 @@
 ;*---------------------------------------------------------------------*/
 ;*    compare-package-version ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (compare-package-version::bool pv::PackageVersion sexp::pair-nil)
+(define (compare-package-version::pair-nil pv::PackageVersion sexp::pair-nil)
    (set! plist-cache sexp)
-   (and (string=? pv.version (plist-get sexp version:))
-        (string=? pv.note (plist-get sexp description:))
-        (string=? pv.author (plist-get sexp author:))
-        (string=? pv.homepage (plist-get sexp homepage:))
-        (string=? pv.url (plist-get sexp url:))
-        (equal? pv.backends (plist-get sexp backends:))
-        (equal? pv.bigloo (plist-get sexp bigloo: ">=5.0.0"))
-        (equal? pv.dependencies (plist-get sexp backends: '()))))
+   (let ((diffs '()))
+      (unless (string=? pv.version (plist-get sexp version:))
+         (set! diffs
+            (cons (list version: pv.version (plist-get sexp version:))
+               diffs)))
+      (unless (string=? pv.note (plist-get sexp description: ""))
+         (set! diffs
+            (cons (list note: pv.note (plist-get sexp description: ""))
+               diffs)))
+      (unless (string=? pv.author (plist-get sexp author:))
+         (set! diffs
+            (cons (list author: pv.author (plist-get sexp author:))
+               diffs)))
+      (unless (string=? pv.homepage (plist-get sexp homepage: ""))
+         (set! diffs
+            (cons (list homepage: pv.homepage (plist-get sexp homepage: ""))
+               diffs)))
+      (unless (equal? pv.backends (plist-get sexp backends: '(c jvm wasm)))
+         (set! diffs
+            (cons (list backends: pv.backends
+                     (plist-get sexp backends: '(c jvm wasm)))
+               diffs)))
+      (unless (equal? pv.bigloo (plist-get sexp bigloo: ">=5.0.0"))
+         (set! diffs
+            (cons (list bigloo: pv.bigloo (plist-get sexp bigloo: ">=5.0.0"))
+               diffs)))
+      (unless (equal? pv.dependencies (plist-get sexp dependencies: '()))
+         (set! diffs
+            (cons (list dependencies: pv.dependencies
+                     (plist-get sexp dependencies: '()))
+               diffs)))
+      diffs))
 
 ;*---------------------------------------------------------------------*/
 ;*    plist-cache ...                                                  */

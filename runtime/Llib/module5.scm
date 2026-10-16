@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Wed Oct 14 13:15:43 2026 (serrano)                */
+;*    Last change :  Fri Oct 16 18:31:27 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -348,7 +348,7 @@
    (let ((i (string-index path #\:)))
       (when i
          (let ((j (string-index path #\/)))
-            (when (<fx i j)
+            (when (or (not j) (<fx i j))
                (substring path 0 i))))))
 
 ;*---------------------------------------------------------------------*/
