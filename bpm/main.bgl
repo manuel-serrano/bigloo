@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  8 11:23:31 2026                          */
-;*    Last change :  Fri Oct 16 13:40:47 2026 (serrano)                */
+;*    Last change :  Mon Oct 19 19:46:39 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bpm entry point                                                  */
@@ -69,6 +69,8 @@
              (config.rc-directory-set! dir))
             (("-r" (help "Proceed recursively"))
              (set! rec #t))
+            ((("-n" "--dry-run") (help "Dry run (don't executed actions)"))
+             (config.dry-run-set! #t))
             
             ;; sub commands
             (section "Sub commands")
@@ -197,6 +199,12 @@
              (lambda ()
                 (let ((path (if dir (make-file-name (pwd) dir) (pwd))))
                    (proj.install-dependencies path)))))
+         (("update-deps" (?dir) (help "Update the project dependencies"))
+          (utils.command-set! "proj update-deps")
+          (break
+             (lambda ()
+                (let ((path (if dir (make-file-name (pwd) dir) (pwd))))
+                   (proj.update-dependencies path)))))
          (else
           (break (lambda () (usage args-parse-usage)))))))
 

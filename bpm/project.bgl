@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Fri Oct 16 18:04:05 2026 (serrano)                */
+;*    Last change :  Mon Oct 19 13:54:29 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -19,7 +19,8 @@
    (import "./package.bgl" . pkg)
    (import "./solver.bgl" . solver)
    (import "./check.bgl" . check)
-   (export init clone load add-pkg install-pkg install-dependencies))
+   (export init clone load add-pkg install-pkg
+      install-dependencies update-dependencies))
 
 ;*---------------------------------------------------------------------*/
 ;*    template ...                                                     */
@@ -63,6 +64,32 @@
 
    (define pkg
       (basename qpath))
+
+   (define (init-makefile)
+      (let ((makefile (make-file-path qpath "test" "Makefile")))
+         (call-with-output-file makefile
+            (lambda (op)
+               (display (pregexp-replace "@PKG@"
+                           (template "Makefile") pkg)
+                  op)))))
+   
+   (define (init-test)
+      (let ((tdir (make-file-name qpath "test")))
+         (make-directory tdir)
+         (unless (directory? tdir)
+            (err "Cannot create directory" tdir))
+         
+         (let ((makefile (make-file-path qpath "test" "Makefile")))
+            (call-with-output-file makefile
+               (lambda (op)
+                  (display (template "test/Makefile") op))))
+         
+         (let ((test (make-file-path qpath "test" "test.bgl")))
+            (call-with-output-file test
+               (lambda (op)
+                  (display (pregexp-replace "@PKG@"
+                              (template "test/test.bgl") pkg)
+                     op))))))
    
    (let ((pkgdir (make-file-name qpath "pkg")))
       (make-directory pkgdir)
@@ -87,23 +114,9 @@
       (make-directory sdir)
       (unless (directory? sdir)
          (err "Cannot create directory" sdir)))
-      
-   (let ((tdir (make-file-name qpath "test")))
-      (make-directory tdir)
-      (unless (directory? tdir)
-         (err "Cannot create directory" tdir))
-      
-      (let ((makefile (make-file-path qpath "test" "Makefile")))
-         (call-with-output-file makefile
-            (lambda (op)
-               (display (template "test/Makefile") op))))
-      
-      (let ((test (make-file-path qpath "test" "test.bgl")))
-         (call-with-output-file test
-            (lambda (op)
-               (display (pregexp-replace "@PKG@"
-                           (template "test/test.bgl") pkg)
-                  op))))))
+
+   (init-makefile)
+   (init-test))
 
 ;*---------------------------------------------------------------------*/
 ;*    clone ...                                                        */
@@ -132,19 +145,25 @@
 ;*    install-pkg ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (install-pkg dir::bstring name::bstring pv::PackageVersion)
-   (unless (is-a-project? dir)
-      (if (utils.yes-no? "Shall I initialize it? "
-             (format "The current directory ~s is not a bpm project.\n" (pwd)))
-          (init-in-dir dir)
-          (exit 0)))
-   (unless (directory? "pkg")
-      (make-directory "pkg")
-      (call-with-output-file "pkg/Makefile.pkg"
-         (lambda (op) (display "" op))))
+   (unless config.dry-run
+      (unless (is-a-project? dir)
+         (if (utils.yes-no? "Shall I initialize it? "
+                (format "The current directory ~s is not a bpm project.\n"
+                   (pwd)))
+             (init-in-dir dir)
+             (exit 0)))
+      (unless (directory? "pkg")
+         (make-directory "pkg")
+         (call-with-output-file "pkg/Makefile.pkg"
+            (lambda (op)
+               (fprint op "BJFLAGS ?= -jvm")
+               (fprint op "BWFLAGS ?= -wasm")
+               (fprint op "OBJ ?= obj")
+               (newline op))))
+      (download-pkg-and-makefile name pv (make-file-path (pwd) "pkg" name)))
    (utils.verb
       (format "installing package ~a..."
-         (utils.color 'command name)))
-   (download-pkg-and-makefile name pv (make-file-path (pwd) "pkg" name)))
+         (utils.color 'command name))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pkg-installed? ...                                               */
@@ -156,6 +175,27 @@
             (when (file-exists? file)
                (let ((sexp (call-with-input-file file read)))
                   (null? (pkg.compare-package-version pv sexp))))))))
+
+;*---------------------------------------------------------------------*/
+;*    old-pkg-installed? ...                                           */
+;*---------------------------------------------------------------------*/
+(define (old-pkg-installed? dir::bstring name::bstring)
+   (let ((base (make-file-path dir "pkg" name)))
+      (when (directory? base)
+         (let ((file (make-file-name base "package.sexp")))
+            (file-exists? file)))))
+
+;*---------------------------------------------------------------------*/
+;*    backup-old-pkg ...                                               */
+;*---------------------------------------------------------------------*/
+(define (backup-old-pkg dir::bstring name::bstring)
+   (unless config.dry-run
+      (let ((base (make-file-path dir "pkg" name)))
+         (when (directory? base)
+            (let ((file (make-file-name base "package.sexp")))
+               (let* ((sexp (call-with-input-file file read))
+                      (version (utils.plist-get sexp :version "1.0.0")))
+                  (rename-file base (format "~-~a" base version))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-dependencies ...                                         */
@@ -173,6 +213,28 @@
                        (let ((p::Package (car d))
                              (v::PackageVersion (cdr d)))
                           (unless (pkg-installed? dir p.name v)
+                             (install-pkg dir p.name v))))
+             (cdr (reverse r)))
+          (print (utils.color 'error p) "cannot resolve"))))
+
+;*---------------------------------------------------------------------*/
+;*    update-dependencies ...                                          */
+;*---------------------------------------------------------------------*/
+(define (update-dependencies dir::bstring)
+   (let* ((p::Package (load dir))
+          (r (solver.resolve-package p #f)))
+      (when (file-exists? (make-file-path dir "pkg" "Makefile.pkg"))
+         (delete-file (make-file-path dir "pkg" "Makefile.pkg"))
+         (call-with-output-file (make-file-path dir "pkg" "Makefile.pkg")
+            (lambda (op)
+               (display "" op))))
+      (if (pair? r)
+          (for-each (lambda (d)
+                       (let ((p::Package (car d))
+                             (v::PackageVersion (cdr d)))
+                          (unless (pkg-installed? dir p.name v)
+                             (when (old-pkg-installed? dir p.name)
+                                (backup-old-pkg dir p.name))
                              (install-pkg dir p.name v))))
              (cdr (reverse r)))
           (print (utils.color 'error p) "cannot resolve"))))
@@ -229,8 +291,12 @@
    (let ((files (filter-map (lambda (s)
                                (when (string-suffix? ".bgl" s)
                                   (prefix s)))
-                   (directory->list (make-file-name dir "src")))))
+                   (directory->list (make-file-name dir "src"))))
+         (obj (string-append "pkg/$(OBJ)/" name)))
       (when (pair? files)
+         ;; create the obj directory
+         (make-directories (make-file-path (dirname mf) "obj" name))
+         ;; create the Makefile.name
          (call-with-output-file mf
             (lambda (op)
                (utils.verb
@@ -240,27 +306,28 @@
                (when (memq 'c backends)
                   (fprintf op "PKG_OBJECTS += ~( )\n"
                      (map (lambda (s)
-                             (string-append "pkg/" name "/$(OBJ)/" s ".o"))
+                             (string-append obj "/" s ".o"))
                         files)))
                (when (memq 'wasm backends)
                   (fprintf op "PKG_WOBJECTS += ~( )\n"
                      (map (lambda (s)
-                             (string-append "pkg/" name "/$(OBJ)/" s ".wasm"))
+                             (string-append obj "/" s ".wasm"))
                         files)))
                (when (memq 'jvm backends)
+                  (fprintf op "PKG_CLASSPATH += -jvm-classpath ~a\n" obj)
                   (fprintf op "PKG_JOBJECTS += ~( )\n"
                      (map (lambda (s)
-                             (string-append "pkg/" name "/$(OBJ)/" s ".class"))
+                             (string-append obj "/" s ".class"))
                         files)))
                (newline op)
                (when (memq 'c backends)
-                  (fprint op "pkg/" name "/$(OBJ)/%.o: pkg/" name "/src/%.bgl")
+                  (fprint op obj "/%.o: pkg/" name "/src/%.bgl")
                   (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BCFLAGS) $< -o $@"))
                (when (memq 'jvm backends)
-                  (fprint op "pkg/" name "/$(OBJ)/%.class: pkg/" name "/src/%.bgl")
+                  (fprint op obj "/%.class: pkg/" name "/src/%.bgl")
                   (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BJFLAGS) $< -o $@"))
                (when (memq 'wasm backends)
-                  (fprint op "pkg/" name "/$(OBJ)/%.obj: pkg/" name "/src/%.bgl")
+                  (fprint op obj "/%.obj: pkg/" name "/src/%.bgl")
                   (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BWFLAGS) $< -o $@"))
                mf)))))
          

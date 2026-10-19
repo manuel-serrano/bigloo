@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Sep 21 07:49:07 2026 (serrano)                */
+;*    Last change :  Mon Oct 19 19:42:12 2026 (serrano)                */
 ;*    Copyright   :  1995-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -773,7 +773,7 @@
    #f)
 (param-define *jvm-classpath*
    "JVM classpath"
-   ".")
+   '("."))
 (param-define *jvm-mainclass*
    "JVM main class"
    #f)

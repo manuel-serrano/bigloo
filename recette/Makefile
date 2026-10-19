@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Fri Jul 31 09:56:41 2026 (serrano)                */
+#*    Last change :  Mon Oct 19 20:51:30 2026 (serrano)                */
 #*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -182,7 +182,7 @@ recette-jvm-nojar: .jfile-jvm .afile-jvm objs_jvm
 	@ $(MAKE) recette-jvm
 
 recette-jvm: $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%) objs_jvm/main.class
-	$(BIGLOO) $(BFLAGS) -jfile .jfile-jvm -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -no-jvm-jar $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $^
+	$(BIGLOO) $(BFLAGS) -jfile .jfile-jvm -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -no-jvm-jar $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $^
 	@ echo "\e[1;37m$@$(SCRIPTEXTENSION)\e[0m done."
 
 jvm-jar: recette-jvm-jar
@@ -190,7 +190,7 @@ recette-jvm-jar: .jfile-jvm .afile-jvm
 	@ $(MAKE) recette-jar
 
 recette-jar: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%) objs_jvm/main.class
-	$(BIGLOO) $(BFLAGS) -jfile .jfile-jvm -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -jvm-jar $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $^
+	$(BIGLOO) $(BFLAGS) -jfile .jfile-jvm -jvm -jvm-directory objs_jvm -jvm-classpath "objs_jvm" -jvm-jar $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $^
 	@ echo "\e[1;38m$@$(SCRIPTEXTENSION)\e[0m done."
 
 djvm: recette-jvm-debug
@@ -198,7 +198,7 @@ recette-jvm-debug: .jfile-jvm .afile-jvm
 	@ $(MAKE) recette-class-debug
 
 recette-class-debug: objs_jvm $(JVM_OBJECTS:%=objs_jvm/%) $(OBJECT_JVM_FORE:%=objs_jvm/%) objs_jvm/main.class
-	$(BIGLOO) $(BFLAGS) -jfile .jfile-jvm -jvm $(BCFLAGS) $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $^
+	$(BIGLOO) $(BFLAGS) -jfile .jfile-jvm -jvm $(EFLAGS) $(JVMCLASSPATH) -o $@$(SCRIPTEXTENSION) $^
 	@ echo "\e[1;39m$@$(SCRIPTEXTENSION)\e[0m done."
 
 jvm-purify:

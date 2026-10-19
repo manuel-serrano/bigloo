@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/comptime/SawJvm/jld.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/comptime/SawJvm/jld.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct 24 10:32:46 2000                          */
-;*    Last change :  Mon Apr 27 10:15:01 2026 (serrano)                */
+;*    Last change :  Mon Oct 19 19:42:34 2026 (serrano)                */
 ;*    Copyright   :  2000-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The pseudo Jvm link (generation of a script shell that will run  */
@@ -345,15 +345,16 @@
 ;*    manifest-classpath-format ...                                    */
 ;*    the manifest classpath is separated by one or more spaces        */
 ;*---------------------------------------------------------------------*/
-(define (manifest-classpath-format classpath::bstring)
-   (cond ((string=? *jvm-shell* "sh")
-          (string-replace classpath #\:  #\space))
-         ((string=? *jvm-shell* "msdos")
-          (string-replace classpath #\; #\space))
-         (else
-          (warning "manifest-classpath-format"
-             "Illegal shell `:" *jvm-shell* "' --using `sh'")
-          (string-replace classpath #\:  #\space))))
+(define (manifest-classpath-format classpath::pair-nil)
+   (cond
+      ((string=? *jvm-shell* "sh")
+       (format "~( )" classpath))
+      ((string=? *jvm-shell* "msdos")
+       (format "~( )" classpath))
+      (else
+       (warning "manifest-classpath-format"
+          "Illegal shell `:" *jvm-shell* "' --using `sh'")
+       (format "~( )" classpath))))
    
 ;*---------------------------------------------------------------------*/
 ;*    generate-sh-jvm-manifest ...                                     */
@@ -365,8 +366,9 @@
 	 (print "Main-Class: " main)
 	 (display* "Class-Path: "
             (split-72  (manifest-classpath-format *jvm-classpath*)))
-         ;; at least 2 spaces are required after the newline to separate components
-         ;; of the classpath, otherwise it is interpreted as a line continuation
+         ;; at least 2 spaces are required after the newline to separate
+         ;; components of the classpath, otherwise it is interpreted as
+         ;; a line continuation
 	 (display "\n  ")
 	 (display (split-72
 		   (make-file-name
@@ -419,8 +421,7 @@
 	    (print "#!/bin/sh")
 	    (newline)
 	    (print "CLASSPATH=\""
-		   (list->sh-path-string
-		    `(,*jvm-classpath* ,obj-dir))
+		   (list->sh-path-string (cons obj-dir *jvm-classpath*))
 		   "\"")
 	    (print "export CLASSPATH")
 	    (newline)
@@ -449,7 +450,7 @@
 	    (newline)
 	    (print "CLASSPATH="
 		   (list->sh-path-string
-		    `(,*jvm-classpath*
+		    `(,@*jvm-classpath*
 		      "$BIGLOOCLASSPATH"
 		      ,(quotify
 			(make-file-name (jvm-bigloo-classpath)
@@ -457,8 +458,8 @@
 						 (not *purify*))
 					    "bigloo_u.zip"
 					    "bigloo_s.zip")))
-		      ,@(map (lambda (f) (quotify (user-library f))) zips)
-		      ,obj-dir)))
+                      ,obj-dir
+		      ,@(map (lambda (f) (quotify (user-library f))) zips))))
 	    (print "export CLASSPATH")
 	    (newline)
 	    (print "exec " *jvm-java* " "
@@ -497,7 +498,8 @@
 	       (if (not *purify*) (bigloo-config 'jvflags) "")
 	       " -cp \""
 	       (list->msdos-path-string
-		  `(,*jvm-classpath*
+		  `(,obj-dir
+                      ,@*jvm-classpath*
 		      ,(string-append (jvm-jarpath (dirname jarname))
 			  "\\"
 			  (basename jarname))
@@ -509,8 +511,7 @@
 			      "\\bigloo_s.zip"))
 		      ,@(map (lambda (x)
 				(string-replace! (user-library x) #\/ #\\))
-			   zips)
-		      ,obj-dir))
+			   zips)))
 	       "\" "
 	       *jvm-options* " "
 	       (generate-jvm-env)
@@ -529,7 +530,8 @@
 	       *jvm-options*
 	       " -cp \""
 	       (list->msdos-path-string
-		  `(,*jvm-classpath*
+		  `(,obj-dir
+                      ,@*jvm-classpath*
 		      ,(string-append (string-replace
 					 (jvm-bigloo-classpath)
 					 #\/ #\\)
@@ -538,8 +540,7 @@
 			      "\\bigloo_s.zip"))
 		      ,@(map (lambda (x)
 				(string-replace! (user-library x) #\/ #\\))
-			   zips)
-		      ,obj-dir))
+			   zips)))
 	       "\" "
 	       (generate-jvm-env)
 	       " %BIGLOOJAVAOPT% "

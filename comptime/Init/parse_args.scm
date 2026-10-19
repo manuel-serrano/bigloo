@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Oct  7 10:05:25 2026 (serrano)                */
+;*    Last change :  Mon Oct 19 19:41:40 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -896,7 +896,7 @@
        (set! *jvm-mainclass* class))
       ;; path
       (("-jvm-classpath" ?path (help "JVM application classpath"))
-       (set! *jvm-classpath* path))
+       (set! *jvm-classpath* (cons path *jvm-classpath*)))
       (("-jvm-bigloo-classpath" ?p (help "JVM Bigloo rts classpath"))
        (set! *jvm-bigloo-classpath* p))
       (("-jvm-path-separator" ?sep (help "Set the JVM classpath separator"))
