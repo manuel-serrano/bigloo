@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 05:30:36 2004                          */
-;*    Last change :  Thu Oct  8 08:10:35 2026 (serrano)                */
+;*    Last change :  Sat Oct 10 16:24:54 2026 (serrano)                */
 ;*    Copyright   :  2004-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Jpeg Exif information                                            */
@@ -657,7 +657,7 @@
              (cond
                 ((eq? mode 'read)
                  (set! gps-altitude (getformat en bytes valptr fmt)))
-                ((number? gps-altitude)
+                ((number? (pair? gps-altitude))
                  (setformat! en bytes valptr fmt gps-altitude))))
           #t)
          ((#x10007)
@@ -1605,24 +1605,24 @@
                                  (lambda (exif tag en bytes fmt bcount valptr)
                                     'unknown)
                                  mode)
-                              (when (eq? mode 'write)
-                                 (mmap-substring-set! mm (fixnum->elong offset)
-                                    bytes))
-                              (with-access::exif exif (gps-altitude
-                                                         gps-latitude
-                                                         gps-longitude
-                                                         %gps-altitude-ref
-                                                         %gps-latitude-ref
-                                                         %gps-longitude-ref)
-                                 ;; patch the relative values
-                                 (when (and (integer? %gps-altitude-ref)
-                                            (=fx %gps-altitude-ref 1))
-                                    (set-car! gps-altitude
-                                       (- (car gps-altitude))))
-                                 (when (equal? %gps-latitude-ref "S")
-                                    (set! gps-latitude (negfl gps-latitude)))
-                                 (when (equal? %gps-longitude-ref "W")
-                                    (set! gps-longitude (negfl gps-longitude)))))))
+                              (if (eq? mode 'write)
+                                  (mmap-substring-set! mm (fixnum->elong offset)
+                                     bytes)
+                                  (with-access::exif exif (gps-altitude
+                                                             gps-latitude
+                                                             gps-longitude
+                                                             %gps-altitude-ref
+                                                             %gps-latitude-ref
+                                                             %gps-longitude-ref)
+                                     ;; patch the relative values
+                                     (when (and (integer? %gps-altitude-ref)
+                                                (=fx %gps-altitude-ref 1))
+                                        (set-car! gps-altitude
+                                           (- (car gps-altitude))))
+                                     (when (equal? %gps-latitude-ref "S")
+                                        (set! gps-latitude (negfl gps-latitude)))
+                                     (when (equal? %gps-longitude-ref "W")
+                                        (set! gps-longitude (negfl gps-longitude))))))))
                        ((substring=? bytes "http://ns.adobe.com/xap/1.0/" 28)
                         ;; APP1 segment
                         (cond
@@ -2177,7 +2177,7 @@
                  (exposure-time '(1 . 1))
                  (iso 1)
                  (shutter-speed-value '(1 . 1))
-                 (gps-latitude 1.)
+                 (gps-latitude '(1 . 1))
                  (gps-longitude 1.)
                  (gps-altitude 1.)
                  (xmp ""))))
