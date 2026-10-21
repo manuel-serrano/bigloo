@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 07:54:32 2026                          */
-;*    Last change :  Mon Oct 19 13:54:29 2026 (serrano)                */
+;*    Last change :  Wed Oct 21 15:32:07 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Project commands                                                 */
@@ -311,7 +311,7 @@
                (when (memq 'wasm backends)
                   (fprintf op "PKG_WOBJECTS += ~( )\n"
                      (map (lambda (s)
-                             (string-append obj "/" s ".wasm"))
+                             (string-append obj "/" s ".wat"))
                         files)))
                (when (memq 'jvm backends)
                   (fprintf op "PKG_CLASSPATH += -jvm-classpath ~a\n" obj)
@@ -327,7 +327,7 @@
                   (fprint op obj "/%.class: pkg/" name "/src/%.bgl")
                   (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BJFLAGS) $< -o $@"))
                (when (memq 'wasm backends)
-                  (fprint op obj "/%.obj: pkg/" name "/src/%.bgl")
+                  (fprint op obj "/%.wat: pkg/" name "/src/%.bgl")
                   (fprint op "\t$(BIGLOO) -c $(BFLAGS) $(BWFLAGS) $< -o $@"))
                mf)))))
          

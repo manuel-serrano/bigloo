@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Sep 21 07:53:28 2026 (serrano)                */
+#*    Last change :  Wed Oct 21 15:18:43 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -459,6 +459,7 @@ fullbootstrap-sans-configure:
 	  $(MAKE) -C runtime heap-wasm libs-wasm; \
         fi
 	$(MAKE) -C cigloo -i clean; $(MAKE) -C cigloo
+	$(MAKE) -C bpm -i clean; $(MAKE) -C bpm
 	$(MAKE) -C api boot
 
 fullbootstrap-jvm:

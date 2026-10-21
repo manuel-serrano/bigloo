@@ -21,10 +21,10 @@ obj/@PKG@.o: src/@PKG@.bgl
 obj/@PKG@.class: src/@PKG@.bgl
         $(BIGLOO) -c $(BFLAGS) $(BJFLAGS) $< -o $@
 
-@PKG@.wasm: obj/@PKG@.obj $(PKG_WOBJECTS)
+@PKG@.wasm: obj/@PKG@.wat $(PKG_WOBJECTS)
         $(BIGLOO) $(BFLAGS) $(BWFLAGS) $+ -o $@
 
-obj/@PKG@.obj: src/@PKG@.bgl
+obj/@PKG@.wat: src/@PKG@.bgl
         $(BIGLOO) -c $(BFLAGS) $(BWFLAGS) $< -o $@
 
 clean:
