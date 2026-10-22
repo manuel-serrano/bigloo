@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Oct  8 09:12:37 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 16:40:08 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -46,19 +46,19 @@
    (extern  (macro $string?::bool (::obj) "STRINGP")
 	    ($make-string::bstring (::long ::uchar) "make_string")
 	    ($make-string/wo-fill::bstring (::long) "make_string_sans_fill")
-	    ($string->bstring-len::bstring (str::string len::int) "string_to_bstring_len")
+	    ($string->bstring-len::bstring (str::bytes len::int) "string_to_bstring_len")
 	    (macro $string-length::long (::bstring) "STRING_LENGTH")
 	    (macro $string-ref::uchar (::bstring ::long) "STRING_REF")
 	    (macro $string-ref-ur::uchar (::bstring ::long) "STRING_REF")
 	    (macro $string-set!::obj (::bstring ::long ::uchar) "STRING_SET")
 	    (macro $string-set-ur!::obj (::bstring ::long ::uchar) "STRING_SET")
 
-	    (macro $memchr::string (::string ::int ::long ::long) "BGL_MEMCHR")
-	    (macro $memchr-zero?::bool (::string) "BGL_MEMCHR_ZERO")
-	    (macro $memchr-diff::long (::string ::string) "BGL_MEMCHR_DIFF")
+	    (macro $memchr::bytes (::bytes ::int ::long ::long) "BGL_MEMCHR")
+	    (macro $memchr-zero?::bool (::bytes) "BGL_MEMCHR_ZERO")
+	    (macro $memchr-diff::long (::bytes ::bytes) "BGL_MEMCHR_DIFF")
 	    
 	    ($string=?::bool (::bstring ::bstring) "bigloo_strcmp")
-	    (macro $memcmp::int (::string ::string ::long) "memcmp")
+	    (macro $memcmp::int (::bytes ::bytes ::long) "memcmp")
 	    ($substring=?::bool (::bstring ::bstring ::long) "bigloo_strncmp")
 	    ($substring-ci=?::bool (::bstring ::bstring ::long) "bigloo_strncmp_ci")
 	    ($prefix-at?::bool (::bstring ::bstring ::long) "bigloo_strcmp_at")
@@ -80,7 +80,7 @@
 	    ($string-append-3::bstring (::bstring ::bstring ::bstring)
 					"string_append_3")
 	    
-	    ($constant-string-to-string::bstring (::string)
+	    ($constant-string-to-string::bstring (::bytes)
 						  "c_constant_string_to_string")
 	    
 	    (macro $string-bound-check?::bool (::long ::long) "BOUND_CHECK")
@@ -107,7 +107,7 @@
 	       (method static $make-string::bstring (::long ::uchar)
                   "make_string")
 
-               (method static $string->bstring-len::bstring (::string ::long)
+               (method static $string->bstring-len::bstring (::bytes ::long)
                   "string_to_bstring_len")
 	   
 	       (method static $string-length::long (::bstring)
@@ -163,7 +163,7 @@
 	       (method static $string-append-3::bstring (::bstring ::bstring ::bstring)
 		       "string_append_3")
 	       
-	       (method static $constant-string-to-string::bstring (::string)
+	       (method static $constant-string-to-string::bstring (::bytes)
 		       "c_constant_string_to_string")
 	       
 	       (method static $string-bound-check?::bool (::long ::long)
@@ -1340,8 +1340,8 @@
 (define (string-char-index-ur string char start::long n::long)
    (cond-expand
       (bigloo-c
-       (let* ((s0::string string)
-	      (s1::string ($memchr s0 (char->integer char) n start)))
+       (let* ((s0::bytes string)
+	      (s1::bytes ($memchr s0 (char->integer char) n start)))
 	  (unless ($memchr-zero? s1)
 	     ($memchr-diff s1 s0))))
       (else
