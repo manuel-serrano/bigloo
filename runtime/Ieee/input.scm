@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Thu Jul  2 08:00:31 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 09:57:39 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -46,11 +46,11 @@
    
    (extern  (macro c-eof-object?::bool (::obj) "EOF_OBJECTP")
 	    (c-char-ready?::bool (::input-port) "bgl_rgc_charready")
-	    ($file->string::bstring (::string) "bgl_file_to_string")
+	    ($file->string::bstring (::bytes) "bgl_file_to_string")
 	    ($sendchars::obj (::input-port ::output-port ::long ::long) "bgl_sendchars")
 	    ($sendfile::obj (::bstring ::output-port ::long ::long) "bgl_sendfile")
 	    (macro beof::obj "BEOF")
-	    ($password::bstring (::string) "bgl_password"))
+	    ($password::bstring (::bytes) "bgl_password"))
    
    (java    (class foreign
 	       (method static c-eof-object?::bool (::obj) "EOF_OBJECTP")

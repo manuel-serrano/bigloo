@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Hubert Gruniaux                                   */
 ;*    Creation    :  Sat Sep 14 08:29:47 2024                          */
-;*    Last change :  Mon Jul 27 11:52:24 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 09:04:21 2026 (serrano)                */
 ;*    Copyright   :  2024-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wasm code generation                                             */
@@ -341,7 +341,7 @@
 	 ((float) 'f32)
 	 ((double) 'f64)
 	 ((vector) (if nullable '(ref null $vector) '(ref $vector)))
-	 ((string bstring) (if nullable '(ref null $bstring) '(ref $bstring)))
+	 ((bytes string bstring) (if nullable '(ref null $bstring) '(ref $bstring)))
 	 ((hvector) '(ref array))
 	 ;;	 ((exit) '(ref null $exit))
 	 (else
@@ -425,7 +425,7 @@
       ((cell) '(global.get $cell-default-value))
       ((symbol) '(global.get $symbol-default-value))
       ((keyword) '(global.get $keyword-default-value))
-      ((string bstring) '(global.get $bstring-default-value))
+      ((bytes string bstring) '(global.get $bstring-default-value))
       ((ucs2string) '(global.get $ucs2string-default-value))
       ((regexp) '(global.get $regexp-default-value))
       ((vector) '(global.get $vector-default-value))

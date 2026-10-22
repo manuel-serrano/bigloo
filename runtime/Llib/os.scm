@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Tue Aug 25 22:14:29 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 09:33:58 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -78,47 +78,47 @@
 	    ($get-signal-handler::obj (::int) "bgl_get_signal_handler")
 	    ($restore-signal-handlers::void () "bgl_restore_signal_handlers")
 	    (*the-command-line*::obj "command_line")
-	    (*the-executable-name*::string "executable_name")
-	    (macro $getenv?::bool (::string) "(long)getenv")
-	    (macro $getenv::string (::string) "(char *)getenv")
+	    (*the-executable-name*::bytes "executable_name")
+	    (macro $getenv?::bool (::bytes) "(long)getenv")
+	    (macro $getenv::bytes (::bytes) "(char *)getenv")
 	    ($getenv-all::pair () "bgl_getenv_all")
-	    ($setenv::int (::string ::string) "bgl_setenv")
-	    (macro $system::int  (::string) "system")
-	    (macro c-chdir::bool (::string) "chdir")
-	    (macro $getcwd::string (::string ::int) "(char *)(long)getcwd")
-	    (macro $chdir::int (::string) "chdir")
-	    ($chmod::bool (::string ::bool ::bool ::bool) "bgl_chmod")
-	    (macro $chmod-int::bool (::string ::int) "chmod")
-	    (macro runtime-default-executable-name::string "BGL_DEFAULT_A_OUT")
-	    (macro runtime-default-script-name::string "BGL_DEFAULT_A_BAT")
-	    (macro runtime-os-class::string "OS_CLASS")
-	    (macro runtime-os-name::string "OS_NAME")
-	    (macro runtime-os-arch::string "OS_ARCH")
-	    (macro runtime-os-version::string "OS_VERSION")
-	    (macro runtime-os-tmp::string "OS_TMP")
+	    ($setenv::int (::bytes ::bytes) "bgl_setenv")
+	    (macro $system::int  (::bytes) "system")
+	    (macro c-chdir::bool (::bytes) "chdir")
+	    (macro $getcwd::bytes (::bytes ::int) "(char *)(long)getcwd")
+	    (macro $chdir::int (::bytes) "chdir")
+	    ($chmod::bool (::bytes ::bool ::bool ::bool) "bgl_chmod")
+	    (macro $chmod-int::bool (::bytes ::int) "chmod")
+	    (macro runtime-default-executable-name::bytes "BGL_DEFAULT_A_OUT")
+	    (macro runtime-default-script-name::bytes "BGL_DEFAULT_A_BAT")
+	    (macro runtime-os-class::bytes "OS_CLASS")
+	    (macro runtime-os-name::bytes "OS_NAME")
+	    (macro runtime-os-arch::bytes "OS_ARCH")
+	    (macro runtime-os-version::bytes "OS_VERSION")
+	    (macro runtime-os-tmp::bytes "OS_TMP")
 	    (macro runtime-file-separator::char "FILE_SEPARATOR")
 	    (macro runtime-path-separator::char "PATH_SEPARATOR")
-	    (macro runtime-static-library-suffix::string "STATIC_LIB_SUFFIX")
-	    (macro runtime-shared-library-suffix::string "SHARED_LIB_SUFFIX")
-	    (macro runtime-os-charset::string "OS_CHARSET")
+	    (macro runtime-static-library-suffix::bytes "STATIC_LIB_SUFFIX")
+	    (macro runtime-shared-library-suffix::bytes "SHARED_LIB_SUFFIX")
+	    (macro runtime-os-charset::bytes "OS_CHARSET")
 	    ($sleep::void (::long) "bgl_sleep")
-	    (macro %dload-init-sym::string "BGL_DYNAMIC_LOAD_INIT")
-	    (%dload::obj (::string ::string ::string) "bgl_dload")
+	    (macro %dload-init-sym::bytes "BGL_DYNAMIC_LOAD_INIT")
+	    (%dload::obj (::bytes ::bytes ::bytes) "bgl_dload")
 	    (%dunload::int (::bstring) "bgl_dunload")
-	    (%dload-error::string () "bgl_dload_error")
+	    (%dload-error::bytes () "bgl_dload_error")
 	    ($getuid::int () "bgl_getuid")
 	    ($getgid::int () "bgl_getgid")
 	    ($setuid::int (::int) "bgl_setuid")
 	    ($setgid::int (::int) "bgl_setgid")
-	    ($getpwnam::obj (::string) "bgl_getpwnam")
+	    ($getpwnam::obj (::bytes) "bgl_getpwnam")
 	    ($getpwuid::obj (::int) "bgl_getpwuid")
 	    (macro $umask::long (::long) "umask")
 	    (macro $getpid::int () "getpid")
 	    (macro $getppid::int () "getppid")
 	    ($getgroups::vector () "bgl_getgroups")
 	    ($ioctl::bool (::obj ::elong ::elong) "bgl_ioctl")
-	    (macro $openlog::void (::string ::int ::int) "openlog")
-	    (macro $syslog::void (::int ::string ::string) "syslog")
+	    (macro $openlog::void (::bytes ::int ::int) "openlog")
+	    (macro $syslog::void (::int ::bytes ::bytes) "syslog")
 	    (macro $closelog::void () "closelog")
 	    (macro $syslog-log-cons::int "LOG_CONS")
 	    (macro $syslog-log-ndelay::int "LOG_NDELAY")
@@ -185,7 +185,7 @@
 	       
 	       (field static *the-command-line*::obj
 		  "command_line")
-	       (field static *the-executable-name*::string
+	       (field static *the-executable-name*::bytes
 		  "executable_name")
 	       (method static $signal::obj (::int ::obj)
 		  "bgl_signal")
@@ -195,33 +195,33 @@
 		  "bgl_get_signal_handler")
 	       (method static $restore-signal-handlers::void ()
 		  "bgl_restore_signal_handlers")
-	       (method static $getenv?::bool (::string)
+	       (method static $getenv?::bool (::bytes)
 		  "getenv_exists")
-	       (method static $getenv::string (::string)
+	       (method static $getenv::bytes (::bytes)
 		  "getenv")
 	       (method static $getenv-all::obj ()
 		  "getenv_all")
-	       (method static $setenv::int (::string ::string)
+	       (method static $setenv::int (::bytes ::bytes)
 		  "bgl_setenv")
-	       (method static $system::int  (::string)
+	       (method static $system::int  (::bytes)
 		  "system")
-	       (method static c-chdir::bool (::string)
+	       (method static c-chdir::bool (::bytes)
 		  "chdir")
-	       (method static $getcwd::string (::string ::int)
+	       (method static $getcwd::bytes (::bytes ::int)
 		  "getcwd")
-	       (method static $chmod::bool (::string ::bool ::bool ::bool)
+	       (method static $chmod::bool (::bytes ::bool ::bool ::bool)
 		  "bgl_chmod")
-	       (method static $chmod-int::bool (::string ::int)
+	       (method static $chmod-int::bool (::bytes ::int)
 		  "bgl_chmod")
 	       (method static $sleep::void (::long)
 		  "bgl_sleep")
-	       (field static %dload-init-sym::string
+	       (field static %dload-init-sym::bytes
 		  "BGL_DYNAMIC_LOAD_INIT")
-	       (method static %dload::obj (::string ::string ::string)
+	       (method static %dload::obj (::bytes ::bytes ::bytes)
 		  "bgl_dload")
-	       (method static %dunload::int (::string)
+	       (method static %dunload::int (::bytes)
 		  "bgl_dunload")
-	       (method static %dload-error::string ()
+	       (method static %dload-error::bytes ()
 		  "bgl_dload_error")
 	       (method static $umask::int (::int)
 		  "bgl_umask")
@@ -233,29 +233,29 @@
 		  "bgl_dlsym_set"))
       
       (class runtime
-	 (field static default-executable-name::string
+	 (field static default-executable-name::bytes
 	    "BGL_DEFAULT_A_OUT")
-	 (field static default-script-name::string
+	 (field static default-script-name::bytes
 	    "BGL_DEFAULT_A_BAT")
-	 (field static os-class::string
+	 (field static os-class::bytes
 	    "OS_CLASS")
-	 (field static os-name::string
+	 (field static os-name::bytes
 	    "OS_NAME")
-	 (field static os-arch::string
+	 (field static os-arch::bytes
 	    "OS_ARCH")
-	 (field static os-version::string
+	 (field static os-version::bytes
 	    "OS_VERSION")
-	 (field static os-tmp::string
+	 (field static os-tmp::bytes
 	    "OS_TMP")
-	 (field static os-charset::string
+	 (field static os-charset::bytes
 	    "OS_CHARSET")
 	 (field static file-separator::char
 	    "FILE_SEPARATOR")
 	 (field static path-separator::char
 	    "PATH_SEPARATOR")
-	 (field static static-library-suffix::string
+	 (field static static-library-suffix::bytes
 	    "STATIC_LIB_SUFFIX")
-	 (field static shared-library-suffix::string
+	 (field static shared-library-suffix::bytes
 	    "SHARED_LIB_SUFFIX")
 	 "bigloo.os"))
    
@@ -283,12 +283,12 @@
 	    
 	    (getenv #!optional name)
 	    (putenv ::bstring ::bstring)
-	    (inline chdir::bool string::string)
+	    (inline chdir::bool string::bytes)
 	    (system::int . strings)
 	    (system->string::bstring . strings)
 	    (pwd::bstring)
 	    (command-line::pair)
-	    (executable-name::string)
+	    (executable-name::bytes)
 	    (basename::bstring ::bstring)
 	    (dirname::bstring ::bstring)
 	    (prefix::bstring ::bstring)

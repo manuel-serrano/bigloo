@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Rgc/rgc.scm             */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Rgc/rgc.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Thu Sep  4 09:55:29 2025 (serrano)                */
+;*    Last change :  Thu Oct 22 10:38:36 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -117,7 +117,7 @@
 	       "rgc_buffer_eof_p")
 	    ($rgc-buffer-eof2?::bool (::input-port ::long ::long)
 	       "rgc_buffer_eof2_p")
-	    ($rgc-blit-string!::long (::input-port ::string ::long ::long)
+	    ($rgc-blit-string!::long (::input-port ::bytes ::long ::long)
 	       "bgl_rgc_blit_string"))
 
    (java    (class foreign
@@ -187,7 +187,7 @@
 		  "rgc_buffer_eof_p")
 	       (method static $rgc-buffer-eof2?::bool (::input-port ::int ::int)
 		  "rgc_buffer_eof2_p")
-	       (method static $rgc-blit-string!::long (::input-port ::string ::long ::long)
+	       (method static $rgc-blit-string!::long (::input-port ::bytes ::long ::long)
 		  "bgl_rgc_blit_string")))
  
    (export  *unsafe-rgc*

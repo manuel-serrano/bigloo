@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/cunicode.c         */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Clib/cunicode.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Fri Dec 13 17:36:04 2024 (serrano)                */
+/*    Last change :  Thu Oct 22 09:08:58 2026 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -500,7 +500,7 @@ ucs2_to_utf8_string(ucs2_t *cucs2, long len) {
 
    /* now, we allocate the new string */
    result  = make_string(utf8_len, '0');
-   cresult = BSTRING_TO_USTRING(result);
+   cresult = BSTRING_TO_BYTES(result);
 
    /* and we fill it */
    if (utf8_len == len) {

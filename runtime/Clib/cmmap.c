@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cmmap.c          */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Clib/cmmap.c           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Jul 10 10:46:32 2005                          */
-/*    Last change :  Fri Nov 15 07:35:13 2024 (serrano)                */
-/*    Copyright   :  2005-24 Manuel Serrano                            */
+/*    Last change :  Thu Oct 22 09:09:24 2026 (serrano)                */
+/*    Copyright   :  2005-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Bigloo C mmap implementation                                 */
 /*=====================================================================*/
@@ -130,7 +130,7 @@ bgl_string_to_mmap(obj_t s, bool_t r, bool_t w) {
    mm->mmap.name = s;
    mm->mmap.length = STRING_LENGTH(s);
    mm->mmap.fd = 0;
-   mm->mmap.map = BSTRING_TO_USTRING(s);
+   mm->mmap.map = BSTRING_TO_BYTES(s);
    mm->mmap.rp = 0;
    mm->mmap.wp = 0;
 

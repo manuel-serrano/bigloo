@@ -426,6 +426,12 @@
 (define-inline-call $string? ; "STRINGP"
    (code! me '(instanceof (vector byte))) )
 
+(define-inline-call $bytes->bstring ; "string_to_bstring"
+   'ok )
+
+(define-inline-call $bstring->bytes ; "BSTRING_TO_STRING"
+   'ok )
+
 (define-inline-call $string->bstring ; "string_to_bstring"
    'ok )
 

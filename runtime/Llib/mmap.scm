@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 10 10:40:10 2005                          */
-;*    Last change :  Wed Jul  1 08:53:44 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 10:05:35 2026 (serrano)                */
 ;*    Copyright   :  2005-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Map IO                                                           */
@@ -46,7 +46,7 @@
    (extern  (macro $mmap?::bool (::obj) "BGL_MMAPP")
 	    (macro $mmap-open::mmap (::bstring ::bool ::bool) "bgl_open_mmap")
 	    (macro $string->mmap::mmap (::bstring ::bool ::bool) "bgl_string_to_mmap")
-	    (macro $mmap->string::string (::mmap) "BGL_MMAP_TO_STRING")
+	    (macro $mmap->string::bytes (::mmap) "BGL_MMAP_TO_STRING")
 	    (macro $mmap-close::obj (::mmap) "bgl_close_mmap")
 	    (macro $mmap-length::elong (::mmap) "BGL_MMAP_LENGTH")
 	    (macro $mmap-name::obj (::mmap) "BGL_MMAP_NAME")
@@ -65,7 +65,7 @@
 		  "bgl_open_mmap")
 	       (method static $string->mmap::mmap (::bstring ::bool ::bool)
 		  "bgl_string_to_mmap")
-	       (method static $mmap->string::string (::mmap)
+	       (method static $mmap->string::bytes (::mmap)
 		  "bgl_mmap_to_string")
 	       (method static $mmap-close::obj (::mmap)
 		  "bgl_close_mmap")
@@ -92,7 +92,7 @@
 	    (open-mmap::mmap ::bstring #!key (read #t) (write #t))
 	    (string->mmap::mmap ::bstring #!key (read #t) (write #t))
 	    (inline mmap-name::bstring ::mmap)
-	    (inline mmap->string::string ::mmap)
+	    (inline mmap->string::bytes ::mmap)
             (inline mmap->bstring::bstring ::mmap)
 	    (inline close-mmap ::mmap)
 	    (inline mmap-length::elong ::mmap)
@@ -140,7 +140,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    mmap->string ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (mmap->string::string mmap::mmap)
+(define-inline (mmap->string::bytes mmap::mmap)
    ($mmap->string mmap))
 
 ;*---------------------------------------------------------------------*/

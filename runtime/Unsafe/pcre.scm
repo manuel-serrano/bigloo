@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Unsafe/pcre.scm                     */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/pcre.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Tue Jul  7 11:18:35 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 10:38:50 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (PCRE)                                 */
@@ -18,8 +18,8 @@
            (macro $regexp?::bool (::obj) "BGL_REGEXPP")
            (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")
            (macro $regexp-capture-count::long (::regexp) "BGL_REGEXP_CAPTURE_COUNT")
-	   (macro $regmatch::obj (::regexp ::string ::bool ::int ::int ::int) "BGL_REGEXP_MATCH")
-	   (macro $regmatch-n::long (::regexp ::string ::vector ::int ::int ::int) "BGL_REGEXP_MATCH_N")
+	   (macro $regmatch::obj (::regexp ::bytes ::bool ::int ::int ::int) "BGL_REGEXP_MATCH")
+	   (macro $regmatch-n::long (::regexp ::bytes ::vector ::int ::int ::int) "BGL_REGEXP_MATCH_N")
            (macro $regfree::obj (::regexp) "BGL_REGEXP_FREE"))
    
    (java   (class foreign
@@ -31,9 +31,9 @@
                  "BGL_REGEXP_CAPTURE_COUNT")
 	      (method static $regcomp::regexp (::bstring ::obj ::bool)
 		 "bgl_regcomp")
-	      (method static $regmatch::obj (::regexp ::string ::bool ::int ::int ::int)
+	      (method static $regmatch::obj (::regexp ::bytes ::bool ::int ::int ::int)
 		 "bgl_regmatch")
-	      (method static $regmatch-n::long (::regexp ::string ::vector ::int ::int ::int)
+	      (method static $regmatch-n::long (::regexp ::bytes ::vector ::int ::int ::int)
 		 "bgl_regmatch_n")
 	      (method static $regfree::obj (::regexp)
 		 "bgl_regfree")))

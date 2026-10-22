@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/wasm/runtime/Clib/ci18n.c            */
+/*    serrano/prgm/project/bigloo/5.0.x/runtime/Clib/ci18n.c           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Dec 19 08:16:32 2013                          */
-/*    Last change :  Tue Jul 22 12:43:01 2025 (serrano)                */
-/*    Copyright   :  2013-25 Manuel Serrano                            */
+/*    Last change :  Thu Oct 22 09:09:42 2026 (serrano)                */
+/*    Copyright   :  2013-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C i18n implementation                                            */
 /*=====================================================================*/
@@ -22,7 +22,7 @@
 #endif
 
 #define BSTRING_TO_CONST_USTRING(s) \
-   (const unsigned char *)BSTRING_TO_USTRING(s)
+   (const unsigned char *)BSTRING_TO_BYTES(s)
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
@@ -47,7 +47,7 @@ bgl_utf8_string_locale_upcase(obj_t str) {
    size_t len = STRING_LENGTH(str);
    
 #if (BGL_HAVE_UNISTRING)
-   uint8_t *src = (uint8_t *)BSTRING_TO_USTRING(str);
+   uint8_t *src = (uint8_t *)BSTRING_TO_BYTES(str);
    size_t buflen;
    uint8_t *buf;
    obj_t res;
@@ -80,7 +80,7 @@ bgl_utf8_string_locale_downcase(obj_t str) {
    size_t len = STRING_LENGTH(str);
 
 #if (BGL_HAVE_UNISTRING)
-   uint8_t *src = (uint8_t *)BSTRING_TO_USTRING(str);
+   uint8_t *src = (uint8_t *)BSTRING_TO_BYTES(str);
    size_t buflen;
    uint8_t *buf;
    obj_t res;
@@ -113,7 +113,7 @@ bgl_utf8_string_locale_capitalize(obj_t str) {
    size_t len = STRING_LENGTH(str);
    
 #if (BGL_HAVE_UNISTRING)
-   uint8_t *src = (uint8_t *)BSTRING_TO_USTRING(str);
+   uint8_t *src = (uint8_t *)BSTRING_TO_BYTES(str);
    size_t buflen;
    uint8_t *buf;
    obj_t res;

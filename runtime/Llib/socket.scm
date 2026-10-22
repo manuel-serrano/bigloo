@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Fri Jun 19 19:28:40 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 10:05:40 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -80,7 +80,7 @@
 	    ($gethostname-by-address::bstring (::bstring) "bgl_gethostname_by_address")
 	    ($gethostinterfaces::pair-nil () "bgl_gethostinterfaces")
 	    ($getprotoents::pair-nil () "bgl_getprotoents")
-	    ($getprotobyname::obj (::string) "bgl_getprotobyname")
+	    ($getprotobyname::obj (::bytes) "bgl_getprotobyname")
 	    ($getprotobynumber::obj (::int) "bgl_getprotobynumber")
 	    
 	    ($getsockopt::obj (::socket ::keyword) "bgl_getsockopt")
@@ -166,7 +166,7 @@
 
 	       (method static $getprotoents::pair-nil ()
 		  "bgl_getprotoents")
-	       (method static $getprotobyname::obj (::string)
+	       (method static $getprotobyname::obj (::bytes)
 		  "bgl_getprotobyname")
 	       (method static $getprotobynumber::obj (::int)
 		  "bgl_getprotobynumber")

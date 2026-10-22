@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Mon Sep 14 08:23:25 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 10:04:58 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -64,8 +64,8 @@
 	    (macro $atan2::double (::double ::double) "atan2")
 	    (macro $sqrt::double (::double) "sqrt")
 	    (macro $pow::double (::double ::double) "pow")
-	    ;;(macro strtod::double (::string ::long) "strtod")
-	    (macro $strtod::double (::string) "STRTOD")
+	    ;;(macro strtod::double (::bytes ::long) "strtod")
+	    (macro $strtod::double (::bytes) "STRTOD")
 	    (macro $absfl::double (::double) "fabs")
 	    (macro $maxfl::double (::double ::double) "BGL_FL_MAX2")
 	    (macro $minfl::double (::double ::double) "BGL_FL_MIN2")
@@ -172,9 +172,9 @@
 		  "sqrt")
 	       (method static $pow::double (::double ::double)
 		  "pow")
-;* 	       (method static strtod::double (::string ::long)         */
+;* 	       (method static strtod::double (::bytes ::long)         */
 ;* 		  "strtod")                                            */
-	       (method static $strtod::double (::string)
+	       (method static $strtod::double (::bytes)
 		  "strtod")
 	       (method static $absfl::double (::double)
 		  "abs")

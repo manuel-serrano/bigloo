@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Jun  3 14:57:19 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 10:38:45 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo two implementations                                       */
@@ -134,11 +134,11 @@
 	    "GCD_BIGNUM")
 	 (method static $lcmbx::bignum (::bignum ::bignum)
 	    "LCM_BIGNUM")
-	 (method static $bignum->string::string (::bignum ::int)
+	 (method static $bignum->string::bytes (::bignum ::int)
 	    "bgl_bignum_to_string")
-	 (method static $string->bignum::bignum (::string ::int)
+	 (method static $string->bignum::bignum (::bytes ::int)
 	    "bgl_string_to_bignum")
-	 (method static $string->integer-obj::obj (::string ::int)
+	 (method static $string->integer-obj::obj (::bytes ::int)
 	    "bgl_string_to_integer_obj")
 	 (method static $randbx::bignum (::bignum)
 	    "bgl_rand_bignum")

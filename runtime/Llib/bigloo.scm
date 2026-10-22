@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Thu Sep 10 08:48:48 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 09:51:43 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -303,7 +303,7 @@
 	    (export bigloo-module-demangle "bigloo_module_demangle")
 	    (export bigloo-exit-apply "bigloo_exit_apply"))
 
-   (export  (check-version! ::obj ::string ::obj)
+   (export  (check-version! ::obj ::bytes ::obj)
 	    (inline cnst?::bool ::obj)
 	    (inline opaque?::bool ::obj)
 	    (inline opaque-nil::obj)

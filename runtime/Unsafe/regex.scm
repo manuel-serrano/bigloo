@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/runtime/Unsafe/regex.scm                    */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Unsafe/regex.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Tue Jul  7 13:40:35 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 10:39:28 2026 (serrano)                */
 ;*    Copyright   :  2011-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (REGEX)                                */
@@ -15,7 +15,7 @@
 (directives
    
    (extern ($regcomp::regexp (::bstring ::obj ::bool) "bgl_regcomp")
-           ($regmatch::obj (::regexp ::string ::bool ::int ::int ::int) "bgl_regmatch")
+           ($regmatch::obj (::regexp ::bytes ::bool ::int ::int ::int) "bgl_regmatch")
            ($regfree::obj (::regexp) "bgl_regfree")
 	   (macro $regexp?::bool (::obj) "BGL_REGEXPP")
            (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")

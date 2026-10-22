@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Fri Sep 25 07:58:28 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 09:51:24 2026 (serrano)                */
 ;*    Copyright   :  2003-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -51,10 +51,10 @@
 	    __r4_output_6_10_3
 	    __r4_input_6_10_2)
    
-   (extern  ($date::string () "c_date")
-            (macro c-date?::bool (::obj) "BGL_DATEP")
+   (extern  ($date::bytes () "c_date")
+            (macro $date?::bool (::obj) "BGL_DATEP")
 	    ($date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
-            ($date-tzname-new::date (::llong ::int ::int ::int ::int ::int ::int ::string ::int) "bgl_make_tzname_date")
+            ($date-tzname-new::date (::llong ::int ::int ::int ::int ::int ::int ::bytes ::int) "bgl_make_tzname_date")
 	    ($date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
 	    ($date->gmtdate!::date (::date) "bgl_date_to_gmtdate")
 
@@ -105,10 +105,10 @@
    (wasm    ($date-integer->second "~0"))
    
    (java    (class foreign
-	       (method static $date::string () "c_date")
-	       (method static c-date?::bool (::obj) "DATEP")
+	       (method static $date::bytes () "c_date")
+	       (method static $date?::bool (::obj) "DATEP")
 	       (method static $date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
-               (method static $date-tzname-new::date (::llong ::int ::int ::int ::int ::int ::int ::string ::int) "bgl_make_tzname_date")
+               (method static $date-tzname-new::date (::llong ::int ::int ::int ::int ::int ::int ::bytes ::int) "bgl_make_tzname_date")
 	       (method static $date-update::date (::date ::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_update_date")
 	       (method static $date->gmtdate!::date (::date) "bgl_date_to_gmtdate")
 	       (method static $date-from-seconds::date (::elong) "bgl_seconds_to_date")
@@ -220,7 +220,7 @@
             (date->iso8601-date::bstring ::date))
 
    (pragma  (date? (predicate-of date) no-cfa-top nesting)
-	    (c-date? (predicate-of date) no-cfa-top nesting)
+	    ($date? (predicate-of date) no-cfa-top nesting)
 
 	    ($date-integer->second args-safe)
 	    ($date-second args-safe)
@@ -248,7 +248,7 @@
 ;*    date? ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (date?::bool obj)
-   (c-date? obj))
+   ($date? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-date ...                                                    */

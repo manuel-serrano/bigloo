@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/runtime/Llib/tvector.scm        */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/tvector.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 09:38:41 1995                          */
-;*    Last change :  Wed Dec 25 09:34:19 2024 (serrano)                */
+;*    Last change :  Thu Oct 22 10:39:13 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The typed vectors Scheme management.                             */
 ;*=====================================================================*/
@@ -69,7 +69,7 @@
    (export  (inline tvector?::bool ::obj)
 	    (inline tvector-length::long ::tvector)
 	    (get-tvector-descriptor::obj ::symbol)
-	    (declare-tvector! ::string  ::procedure ::obj ::obj)
+	    (declare-tvector! ::bytes  ::procedure ::obj ::obj)
 	    (tvector-ref ::tvector)
 	    (tvector-id ::tvector)
 	    (list->tvector ::symbol ::pair-nil)

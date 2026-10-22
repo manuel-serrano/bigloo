@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/wasm/runtime/Include/bigloo_string.h     */
+/*    .../project/bigloo/5.0.x/runtime/Include/bigloo_string.h         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Jul 14 08:27:14 2025 (serrano)                */
-/*    Copyright   :  2016-25 Manuel Serrano                            */
+/*    Last change :  Thu Oct 22 09:00:44 2026 (serrano)                */
+/*    Copyright   :  2016-26 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
 /*=====================================================================*/
@@ -220,10 +220,10 @@ struct bgl_ucs2_string {
 
 #define STRING_LENGTH(_s) BGL_STRING_LENGTH(_s)
 
-#define BSTRING_TO_USTRING(s) (&(STRING(s).char0[0]))
-#define BSTRING_TO_STRING(s) ((char *)(BSTRING_TO_USTRING(s)))
+#define BSTRING_TO_BYTES(s) ((char *)(&(STRING(s).char0[0])))
+#define BSTRING_TO_STRING(s) BSTRING_TO_BYTES(s)
 
-#define STRING_REF(v, i) (((unsigned char *)BSTRING_TO_STRING(v))[i])
+#define STRING_REF(v, i) (((unsigned char *)BSTRING_TO_BYTES(v))[i])
 #define STRING_SET(s, i, c) (STRING_REF(s, i) = c, BUNSPEC)
 #define STRING_PTR_NULL(_p) (_p == 0)
 

@@ -23,9 +23,8 @@ Strings
 =======
 
 Strings are sequences of 8-bit characters. They are mutable. They are
-designated by the type `::bstring`. Native, backend depend strings,
-are denoted by the type `::string`. The native implementation of the
-native strings depends on the backend. 
+designated by the type `::bstring`. The native strings are denoted by
+the type `::bytes`. Their implementation depends on the backend.
 
 The syntax of string literals is:
 
@@ -56,25 +55,25 @@ argument with a `::bstring` value.
 The implementation of host `::string` depends on the backend, as does the
 operation to cast a `::bstring` in a `::string` and vice-versa:
 
-  * C: a `::string` is represented as a C `char *`. Casting from `::bstring`
-  to `::string` is a mere pointer shift. Casting from `::string` to `::bstring`
-  requires a whole copy of the characters. This is why the `::string` type
+  * C: a `::bytes` is implemented as a C `char *`. Casting from `::bstring`
+  to `::bytes` is a mere pointer shift. Casting from `::bytes` to `::bstring`
+  requires a whole copy of the characters. This is why the `::bytes` type
   should not be used in Bigloo code as it might implie many hidden copies
   of the sequence of characters.
    
-  * Java: a `::string` is represented as a Java `byte []`. There is no 
+  * Java: a `::bytes` is implemented as a Java `byte []`. There is no 
   dynamic operation, i.e., no runtime code in a `::bstring` from and to
-  a `::string`.
+  a `::bytes`.
   
-  * Wasm: a `::string` is an array of `i8` fixnums.  There is no 
+  * Wasm: a `::bytes` is an array of `i8` fixnums.  There is no 
   dynamic operation, i.e., no runtime code in a `::bstring` from and to
-  a `::string`.
+  a `::bytes`.
   
 Summary:
 
-|                            | C             | Java | Wasm |
-| `::bstring` to `::string`  | pointer shift |  _   |   _  |
-| `::string` to `::bstring`  | copy          |  _   |   _  |
+|                           | C             | Java | Wasm |
+| `::bstring` to `::bytes`  | pointer shift |  _   |   _  |
+| `::bytes` to `::bstring`  | copy          |  _   |   _  |
 
 
 String Constructors

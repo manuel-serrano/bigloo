@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Sep 22 06:48:05 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 09:51:52 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -52,7 +52,7 @@
 	    (macro $set-error-notifiers!::obj (::obj) "BGL_ERROR_NOTIFIERS_SET")
 	    (macro $get-interrupt-notifier::obj () "BGL_INTERRUPT_NOTIFIER_GET")
 	    (macro $set-interrupt-notifier!::void (::obj) "BGL_INTERRUPT_NOTIFIER_SET")
-	    (macro $foreign-typeof::string (::obj) "FOREIGN_TYPE_NAME")
+	    (macro $foreign-typeof::bytes (::obj) "FOREIGN_TYPE_NAME")
 	    
 	    (macro $errno-type-error::int "BGL_TYPE_ERROR")
 	    (macro $errno-typename-error::int "BGL_TYPENAME_ERROR")
@@ -97,7 +97,7 @@
 		       "BGL_ENV_SET_TRACE_LOCATION")
 	       (method static $env-pop-trace::obj (::dynamic-env)
 		       "BGL_ENV_POP_TRACE")
- 	       (method static $foreign-typeof::string (::obj)
+ 	       (method static $foreign-typeof::bytes (::obj)
 		       "FOREIGN_TYPE_NAME")
 	       
 	       (method static $get-error-handler::obj ()
@@ -230,9 +230,9 @@
 	    (type-error::obj fname loc proc type obj)
 	    (index-out-of-bounds-error::obj fname loc p o i::long len::long)
 	    (stack-overflow-error::obj)
-	    (module-init-error::obj ::string ::string)
+	    (module-init-error::obj ::bytes ::bytes)
 
-	    (error/c-location::obj ::obj ::obj ::obj ::string ::long)
+	    (error/c-location::obj ::obj ::obj ::obj ::bytes ::long)
 	    (bigloo-type-error::obj ::obj ::obj ::obj)
 	    (bigloo-type-error/location::obj ::obj ::obj ::obj ::obj ::obj)
 
@@ -248,13 +248,13 @@
 	    
 	    (find-runtime-type::bstring  ::obj)
 	    (typeof::bstring  ::obj)
-	    (c-debugging-show-type::string ::obj)
+	    (c-debugging-show-type::bytes ::obj)
 	    (bigloo-type-error-msg::bstring  ::bstring ::bstring ::bstring)
 	    
 	    (warning . args)
 	    (warning/location::obj ::obj ::obj . obj)
 	    (warning/loc::obj ::obj . obj)
-	    (warning/c-location::obj ::string ::long . obj)
+	    (warning/c-location::obj ::bytes ::long . obj)
 
 	    (&try ::procedure ::procedure)
 	    
@@ -481,7 +481,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    module-init-error ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (module-init-error current::string from::string)
+(define (module-init-error current::bytes from::bytes)
    (fprint (current-error-port)
 	   #"*** ERROR:" current ":Inconsistent module initialization\n"
 	   "Module `" current "' is inconsistently initialized by module `"

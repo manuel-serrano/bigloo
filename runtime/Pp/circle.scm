@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bigloo/runtime/Pp/circle.scm         */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Pp/circle.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Vladimir Tsyshevsky                               */
 ;*    Creation    :  Sat Aug 14 08:52:29 1999                          */
-;*    Last change :  Mon Jan 14 13:58:47 2019 (serrano)                */
+;*    Last change :  Thu Oct 22 10:39:20 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The circular displayer.                                          */
 ;*    -------------------------------------------------------------    */
@@ -74,7 +74,7 @@
 			    #!optional
 			    (port::output-port (current-output-port)))
 	    (c-debugging-print ::obj)
-	    (jvm-debugging-print::string ::obj ::int)))
+	    (jvm-debugging-print::bytes ::obj ::int)))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-circle ...                                               */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    /priv/serrano2/bigloo/wasm/runtime/Llib/custom.scm               */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/custom.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug 16 17:22:43 1999                          */
-;*    Last change :  Mon Sep 16 15:14:08 2024 (serrano)                */
+;*    Last change :  Thu Oct 22 09:51:06 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Scheme custom type manipulation.                                 */
 ;*=====================================================================*/
@@ -40,83 +40,83 @@
 
 	    __evenv)
 
-   (extern  (macro c-custom?::bool (::obj)
+   (extern  (macro $custom?::bool (::obj)
 		   "CUSTOMP")
-	    (macro c-custom-equal?::bool  (::custom ::custom)
+	    (macro $custom-equal?::bool  (::custom ::custom)
 		   "CUSTOM_CMP")
-	    (macro c-custom-hash::int (::custom)
+	    (macro $custom-hash::int (::custom)
 		   "CUSTOM_HASH_NUMBER")
-	    (macro c-custom-identifier::string (::custom)
+	    (macro $custom-identifier::bytes (::custom)
 		   "CUSTOM_IDENTIFIER")
-   	    (macro c-custom-identifier-set!::obj (::custom ::string)
+   	    (macro $custom-identifier-set!::obj (::custom ::bytes)
 		   "CUSTOM_IDENTIFIER_SET")
-	    (c-custom-nil::custom () "bgl_custom_nil"))
+	    ($custom-nil::custom () "bgl_custom_nil"))
 
-   (wasm    (c-custom? "(ref.test (ref $custom) ~0)")
-            (c-custom-equal? "(ref.eq ~0 ~1)")
-            (c-custom-hash "(i32.const 0)") ;; TODO: implement hashing for custom type
-            (c-custom-identifier "(struct.get $custom $ident ~0)")
-            (c-custom-nil "(struct.new $custom (global.get $bstring-default-value))"))
+   (wasm    ($custom? "(ref.test (ref $custom) ~0)")
+            ($custom-equal? "(ref.eq ~0 ~1)")
+            ($custom-hash "(i32.const 0)") ;; TODO: implement hashing for custom type
+            ($custom-identifier "(struct.get $custom $ident ~0)")
+            ($custom-nil "(struct.new $custom (global.get $bstring-default-value))"))
    
    (java    (class foreign
-	       (method static c-custom?::bool (::obj)
+	       (method static $custom?::bool (::obj)
 		       "CUSTOMP")
-	       (method static c-custom-nil::custom ()
+	       (method static $custom-nil::custom ()
 		       "bgl_custom_nil")
-	       (method static c-custom-equal?::bool  (::custom ::custom)
+	       (method static $custom-equal?::bool  (::custom ::custom)
 		       "CUSTOM_CMP")
-	       (method static c-custom-hash::int (::custom)
+	       (method static $custom-hash::int (::custom)
 		       "CUSTOM_HASH_NUMBER")
-	       (method static c-custom-identifier::string (::custom)
+	       (method static $custom-identifier::bytes (::custom)
 		       "CUSTOM_IDENTIFIER")
-	       (method static c-custom-identifier-set!::obj (::custom ::string)
+	       (method static $custom-identifier-set!::obj (::custom ::bytes)
 		       "CUSTOM_IDENTIFIER_SET")))
 
    (export  (inline custom?::bool ::obj)
 	    (inline custom-nil::custom)
 	    (inline custom-equal?::bool ::custom ::custom)
-	    (inline custom-identifier::string ::custom)
-	    (inline custom-identifier-set! ::custom ::string)
+	    (inline custom-identifier::bytes ::custom)
+	    (inline custom-identifier-set! ::custom ::bytes)
 	    (custom-hash ::custom ::int))
 
-   (pragma  (c-custom? nesting)
-	    (c-custom-equal? nesting args-safe)
-	    (c-custom-identifier nesting args-safe)
-	    (c-custom-identifier-set! nesting args-safe)))
+   (pragma  ($custom? nesting)
+	    ($custom-equal? nesting args-safe)
+	    ($custom-identifier nesting args-safe)
+	    ($custom-identifier-set! nesting args-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    custom? ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (custom? obj)
-   (c-custom? obj))
+   ($custom? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    custom-nil ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (custom-nil)
-   (c-custom-nil))
+   ($custom-nil))
 
 ;*---------------------------------------------------------------------*/
 ;*    custom-equal? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (custom-equal? obj1 obj2)
-   (c-custom-equal? obj1 obj2))
+   ($custom-equal? obj1 obj2))
 
 ;*---------------------------------------------------------------------*/
 ;*    custom-identifier ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-inline (custom-identifier::string custom::custom)
-   (c-custom-identifier custom))
+(define-inline (custom-identifier::bytes custom::custom)
+   ($custom-identifier custom))
 
 ;*---------------------------------------------------------------------*/
 ;*    custom-identifier-set! ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (custom-identifier-set! custom::custom str::string)
-   (c-custom-identifier-set! custom str))
+(define-inline (custom-identifier-set! custom::custom str::bytes)
+   ($custom-identifier-set! custom str))
 
 ;*---------------------------------------------------------------------*/
 ;*    custom-hash ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (custom-hash custom::custom mod::int)
-   (let ((num (c-custom-hash custom)))
+   (let ((num ($custom-hash custom)))
       (remainderfx num mod)))

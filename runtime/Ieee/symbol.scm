@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Tue Jun 30 09:56:35 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 10:05:10 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -45,8 +45,8 @@
 
    (extern  (macro $symbol?::bool (::obj) "SYMBOLP")
 	    (macro $make-symbol::symbol (::bstring) "")
-	    (c-string->symbol::symbol (::string) "string_to_symbol")
-	    ($string->symbol::symbol (::string) "string_to_symbol")
+	    (c-string->symbol::symbol (::bytes) "string_to_symbol")
+	    ($string->symbol::symbol (::bytes) "string_to_symbol")
 	    ($bstring->symbol::symbol (::bstring) "bstring_to_symbol")
 	    ($gensym::symbol (::obj) "bgl_gensym")
 	    (macro $symbol->string::bstring (::obj) "SYMBOL_TO_STRING")
@@ -54,12 +54,12 @@
 	    (macro $symbol-plist::obj (::obj) "GET_SYMBOL_PLIST")
 	    (macro c-symbol-plist::obj (::obj) "GET_SYMBOL_PLIST")
 	    (macro $set-symbol-plist::obj (::obj ::obj) "SET_SYMBOL_PLIST")
-	    ($symbol-exists?::bool (::string) "symbol_exists_p")
+	    ($symbol-exists?::bool (::bytes) "symbol_exists_p")
 	    
 	    (macro $keyword?::bool (::obj) "KEYWORDP")
 	    (macro $make-keyword::keyword (::bstring) "")
-	    (c-string->keyword::keyword (::string) "string_to_keyword")
-	    ($string->keyword::keyword (::string) "string_to_keyword")
+	    (c-string->keyword::keyword (::bytes) "string_to_keyword")
+	    ($string->keyword::keyword (::bytes) "string_to_keyword")
 	    ($bstring->keyword::keyword (::bstring) "bstring_to_keyword")
 	    (macro c-keyword->string::bstring (::keyword) "KEYWORD_TO_STRING")
 	    (macro $keyword->string::bstring (::keyword) "KEYWORD_TO_STRING")
@@ -91,9 +91,9 @@
    (java    (class foreign
 	       (method static $symbol?::bool (::obj)
 		       "SYMBOLP")
-	       (method static c-string->symbol::symbol (::string)
+	       (method static c-string->symbol::symbol (::bytes)
 		       "string_to_symbol")
-	       (method static $string->symbol::symbol (::string)
+	       (method static $string->symbol::symbol (::bytes)
 		       "string_to_symbol")
 	       (method static $symbol->string::bstring (::symbol)
 		       "SYMBOL_TO_STRING")
@@ -109,14 +109,14 @@
 		       "GET_SYMBOL_PLIST")
 	       (method static $set-symbol-plist::obj (::symbol ::obj)
 		       "SET_SYMBOL_PLIST")
-	       (method static $symbol-exists?::bool (::string)
+	       (method static $symbol-exists?::bool (::bytes)
 		       "symbol_exists_p")
 	       
 	       (method static $keyword?::bool (::obj)
 		       "KEYWORDP")
-	       (method static c-string->keyword::keyword (::string)
+	       (method static c-string->keyword::keyword (::bytes)
 		       "string_to_keyword")
-	       (method static $string->keyword::keyword (::string)
+	       (method static $string->keyword::keyword (::bytes)
 		       "string_to_keyword")
 	       (method static $bstring->keyword::keyword (::bstring)
 		       "string_to_keyword")

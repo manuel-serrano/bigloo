@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Fri Oct  2 08:29:59 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 10:05:29 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -64,8 +64,8 @@
 
    (include "Llib/hash.sch")
    
-   (extern  ($string-hash::long (::string ::int ::int) "bgl_string_hash")
-	    ($string-hash-persistent::long (::string ::int ::int) "bgl_string_hash_persistent")
+   (extern  ($string-hash::long (::bytes ::int ::int) "bgl_string_hash")
+	    ($string-hash-persistent::long (::bytes ::int ::int) "bgl_string_hash_persistent")
 	    (symbol-hash-number::long (::symbol) "bgl_symbol_hash_number")
 	    (symbol-hash-number-persistent::long (::symbol) "bgl_symbol_hash_number_persistent")
 	    (keyword-hash-number::long (::keyword) "bgl_keyword_hash_number")
@@ -75,16 +75,16 @@
 	    (foreign-hash-number::long (::foreign) "bgl_foreign_hash_number")
 	    (macro elong-hash-number::long (::elong) "(long)")
 	    (macro llong-hash-number::long (::llong) "(long)")
-	    (macro $strlen::long (::string) "strlen"))
+	    (macro $strlen::long (::bytes) "strlen"))
 
    (wasm    (elong-hash-number "~0")
             (llong-hash-number "~0")
             ($strlen "(array.len ~0)"))
    
    (java    (class foreign
-	       (method static $string-hash::long (::string ::int ::int)
+	       (method static $string-hash::long (::bytes ::int ::int)
 		       "bgl_string_hash")
-	       (method static $string-hash-persistent::int (::string ::int ::int)
+	       (method static $string-hash-persistent::int (::bytes ::int ::int)
 		       "bgl_string_hash")
 	       (method static symbol-hash-number::long (::symbol)
 		       "bgl_symbol_hash_number")
@@ -138,7 +138,7 @@
 	    (hashtable-contains?::bool ::struct ::obj)
 	    (hashtable-get::obj ::struct ::obj)
 	    (string-hashtable-get::obj ::struct ::bstring)
-	    ($string-hashtable-get::obj ::struct ::string)
+	    ($string-hashtable-get::obj ::struct ::bytes)
 	    (hashtable-put! ::struct ::obj ::obj)
 	    (string-hashtable-put!::obj ::struct ::bstring ::obj)
 	    (string-hashtable-put!::obj ::struct ::bstring ::obj)

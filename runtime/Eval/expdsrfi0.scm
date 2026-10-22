@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Fri Jun 26 05:32:06 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 09:57:18 2026 (serrano)                */
 ;*    Copyright   :  2001-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -49,11 +49,11 @@
 	    __configure
 	    __bit)
    
-   (extern  ($bigloo-backend::string () "bigloo_backend")
+   (extern  ($bigloo-backend::bytes () "bigloo_backend")
 	    (export register-eval-srfi! "bgl_register_eval_srfi"))
    
    (java    (class foreign
-	       (method static $bigloo-backend::string () "bigloo_backend"))
+	       (method static $bigloo-backend::bytes () "bigloo_backend"))
 	    (export register-eval-srfi! "bgl_register_eval_srfi"))
    
    (export  (expand-eval-cond-expand ::pair-nil ::procedure)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Oct  7 07:37:14 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 08:52:26 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -154,6 +154,7 @@
       (subtype uint64 "uint64_t" (cobj))
       (subtype bool "bool_t" (cobj))
       (subtype string "char *" (cobj))
+      (subtype bytes "char *" (cobj))
       (subtype file "FILE *" (cobj))
       (subtype double "double" (cobj))
       (subtype float "float" (cobj))
@@ -222,8 +223,8 @@
       (coerce obj socket ($socket?) ())
       (coerce obj datagram-socket ($datagram-socket?) ())
       (coerce obj regexp (regexp?) ())
-      (coerce obj custom (c-custom?) ())
-      (coerce obj date (c-date?) ())
+      (coerce obj custom ($custom?) ())
+      (coerce obj date ($date?) ())
       (coerce obj mutex ($mutex?) ())
       (coerce obj condvar ($condvar?) ())
       (coerce obj mmap ($mmap?) ())
@@ -260,6 +261,7 @@
       (coerce cobj int64 () ())
       (coerce cobj uint64 () ())
       (coerce cobj string () ())
+      (coerce cobj bytes () ())
       (coerce cobj double () ())
       (coerce cobj float () ())
       (coerce cobj file () ())
@@ -269,6 +271,7 @@
       ;; -> cobj
       (coerce bool cobj () ())
       (coerce string cobj () ())
+      (coerce bytes cobj () ())
       (coerce ucs2 cobj () ())
       (coerce char cobj () ())
       (coerce uchar cobj () ())
@@ -389,8 +392,14 @@
       (coerce keyword bool () ((lambda (x) #t)))
       
       ;; bstring
-      (coerce bstring string () ($bstring->string))
+      (coerce bytes string () ())
+      (coerce string bytes () ())
       (coerce bstring bool () ((lambda (x) #t)))
+      (coerce bstring bytes () ($bstring->bytes))
+      (coerce bytes bool () ((lambda (x::bytes) #t)))
+      (coerce bytes bstring () ($bytes->bstring))
+      
+      (coerce bstring string () ($bstring->string))
       (coerce string bool () ((lambda (x::string) #t)))
       (coerce string bstring () ($string->bstring))
       
@@ -1017,8 +1026,10 @@
       (macro $llong->int64::int64 (::long) "(int64_t)")
       (macro $llong->uint64::uint64 (::long) "(uint64_t)")
       
-      (macro $string->bstring::bstring (::string) "string_to_bstring")
+      (macro $bstring->bytes::string (::bstring) "BSTRING_TO_STRING")
+      (macro $bytes->bstring::bstring (::string) "string_to_bstring")
       (macro $bstring->string::string (::bstring) "BSTRING_TO_STRING")
+      (macro $string->bstring::bstring (::string) "string_to_bstring")
       
       (macro $char->bchar::bchar (::char) "BCHAR")
       (macro $char->uchar::uchar (::char) "(unsigned char)")
@@ -1510,6 +1521,8 @@
 	 (method static $bstring->String::String (::bstring) "bstring_to_String")
 	 (method static $CharSequence->bstring::bstring (::CharSequence) "CharSequence_to_bstring")
 	 (method static $bstring->CharSequence::CharSequence (::bstring) "bstring_to_CharSequence")
+	 (method static $bstring->bytes::bytes (::bstring) "BSTRING_TO_STRING")
+	 (method static $bytes->bstring::bstring (::bytes) "string_to_bstring")
 	 (method static $string->bstring::bstring (::string) "string_to_bstring")
 	 (method static $bstring->string::string (::bstring) "BSTRING_TO_STRING")
 	 

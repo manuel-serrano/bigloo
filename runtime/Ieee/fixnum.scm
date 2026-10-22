@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Mon Jul  6 09:42:12 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 09:57:28 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -223,12 +223,12 @@
 	   (infix macro $remainderu32::uint32 (::uint32 ::int32) "%")
 	   (infix macro $remainders64::int64 (::int64 ::int64) "%")
 	   (infix macro $remainderu64::uint64 (::uint64 ::int64) "%")
-	   (macro $strtol::long (::string ::long ::long) "BGL_STRTOL")
-	   (macro $strtoul::long (::string ::long ::long) "BGL_STRTOUL")
-	   (macro $strtoel::elong (::string ::long ::long) "BGL_STRTOEL")
-	   (macro $strtoeul::elong (::string ::long ::long) "BGL_STRTOUL")
-	   (macro $strtoll::llong (::string ::long ::long) "BGL_STRTOLL")
-	   (macro $strtoull::llong (::string ::long ::long) "BGL_STRTOULL")
+	   (macro $strtol::long (::bytes ::long ::long) "BGL_STRTOL")
+	   (macro $strtoul::long (::bytes ::long ::long) "BGL_STRTOUL")
+	   (macro $strtoel::elong (::bytes ::long ::long) "BGL_STRTOEL")
+	   (macro $strtoeul::elong (::bytes ::long ::long) "BGL_STRTOUL")
+	   (macro $strtoll::llong (::bytes ::long ::long) "BGL_STRTOLL")
+	   (macro $strtoull::llong (::bytes ::long ::long) "BGL_STRTOULL")
 	   ($fixnum->string::bstring  (::long ::long) "integer_to_string")
 	   
 	   ($integer->string/padding::bstring  (::long ::long ::long) "integer_to_string_padding")
@@ -757,23 +757,23 @@
 		  "REMAINDER_S64")
 	       (method static $remainderu64::uint64 (::uint64 ::uint64)
 		  "REMAINDER_S64")
-	       (method static $strtol::long (::string ::long ::long)
+	       (method static $strtol::long (::bytes ::long ::long)
 		  "strtol")
-	       (method static $strtoul::long (::string ::long ::long)
+	       (method static $strtoul::long (::bytes ::long ::long)
 		  "strtoul")
-	       (method static $strtoel::elong (::string ::long ::long)
+	       (method static $strtoel::elong (::bytes ::long ::long)
 		  "strtoll")
-	       (method static $strtoeul::elong (::string ::long ::long)
+	       (method static $strtoeul::elong (::bytes ::long ::long)
 		  "strtoll")
-	       (method static strtouel::elong (::string ::long ::long)
+	       (method static strtouel::elong (::bytes ::long ::long)
 		  "strtoull")
-	       (method static $strtoll::llong (::string ::long ::long)
+	       (method static $strtoll::llong (::bytes ::long ::long)
 		  "strtoll")
-	       (method static $strtoull::llong (::string ::long ::long)
+	       (method static $strtoull::llong (::bytes ::long ::long)
 		  "strtoull")
 	       (method static $fixnum->string::bstring (::long ::long)
 		  "integer_to_string")
-	       (method static $string->integer-obj::obj (::string ::long)
+	       (method static $string->integer-obj::obj (::bytes ::long)
 		  "bgl_string_to_integer_obj")
 	       (method static $integer->string/padding::bstring  (::long ::long ::long)
 		  "integer_to_string_padding")

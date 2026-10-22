@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0a/runtime/Llib/foreign.scm                     */
+;*    serrano/prgm/project/bigloo/5.0.x/runtime/Llib/foreign.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  5 16:50:26 1995                          */
-;*    Last change :  Wed Feb  4 18:08:14 2026 (serrano)                */
+;*    Last change :  Thu Oct 22 10:05:22 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign object management.                                   */
 ;*    -------------------------------------------------------------    */
@@ -41,10 +41,10 @@
 	    (macro $foreign-null?::bool (::obj) "FOREIGN_NULLP")
 	    (macro $foreign-eq?::bool (::foreign ::foreign) "FOREIGN_EQP")
 	    (macro foreign-id::symbol (::foreign) "FOREIGN_ID")
-	    (macro %string-ptr-null?::bool (::string) "STRING_PTR_NULL")
+	    (macro %string-ptr-null?::bool (::bytes) "STRING_PTR_NULL")
 	    (macro void*-null?::bool (::void*) "FOREIGN_PTR_NULL")
 	    (macro %void*-ptr-null?::bool (::void*) "FOREIGN_PTR_NULL")
-	    (infix macro $make-string-ptr-null::string () "0L")
+	    (infix macro $make-string-ptr-null::bytes () "0L")
 	    (infix macro $make-void*-null::void* () "0L"))
 
    (wasm    ($make-string-ptr-null "(array.new_fixed $bstring 0)")
@@ -59,24 +59,24 @@
 		       "FOREIGN_EQP")
 	       (method static foreign-id::symbol (::obj)
 		       "FOREIGN_ID")
-	       (method static %string-ptr-null?::bool (::string)
+	       (method static %string-ptr-null?::bool (::bytes)
 		       "STRING_PTR_NULL")
 	       (method static void*-null?::bool (::void*)
 		       "OBJECT_PTR_NULL")
 	       (method static %void*-ptr-null?::bool (::void*)
 		       "OBJECT_PTR_NULL")
-	       (method static $make-string-ptr-null::string ()
+	       (method static $make-string-ptr-null::bytes ()
 		       "MAKE_STRING_PTR_NULL")
 	       (method static $make-void*-null::void* ()
 		       "MAKE_VOID_STAR_NULL")
-	       (method static foreign-print::void (::string)
+	       (method static foreign-print::void (::bytes)
 		       "print")))
 	          
    (export  (inline foreign?::bool ::obj)
 	    (inline foreign-eq?::bool ::obj ::obj)
 	    (inline foreign-null?::bool ::obj)
-	    (inline string-ptr-null?::bool ::string)
-	    (inline make-string-ptr-null::string)
+	    (inline string-ptr-null?::bool ::bytes)
+	    (inline make-string-ptr-null::bytes)
 	    (inline make-void*-null::void*))
 
    (cond-expand
@@ -118,7 +118,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ptr-null?@ ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (string-ptr-null? obj::string)
+(define-inline (string-ptr-null? obj::bytes)
    (%string-ptr-null? obj))
  
 ;*---------------------------------------------------------------------*/
