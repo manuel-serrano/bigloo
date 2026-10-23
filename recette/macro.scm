@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 23 15:13:19 1992                          */
-;*    Last change :  Fri Oct 23 14:25:57 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 20:36:30 2026 (serrano)                */
 ;*                                                                     */
 ;*    Des tests d'expanseurs.                                          */
 ;*---------------------------------------------------------------------*/
@@ -14,7 +14,6 @@
 (module macro
    (import (utils "utils.scm"))
    (include "test.sch")
-   (static (integer->char))
    (export (test-macro)))
 
 ;*---------------------------------------------------------------------*/
