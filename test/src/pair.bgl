@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Tue Apr 14 08:32:16 2026                          */
-;*    Last change :  Tue Aug 25 22:24:37 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 08:39:43 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing pair functions                                           */
@@ -187,16 +187,29 @@
    :result '(3 4))
 (define-test assoc (assoc 1 '((2 3) (4 5)))
    :result #f)
-(define-test equal (equal? '(1 2 (3 4 (5) (6 7)) (5 6) "titi"
-			     #(1 2 (6 #(6 7)) titi) tutu)
-			 '(1 2 (3 4 (5) (6 7)) (5 6) "titi"
-			     #(1 2 (6 #(6 7)) titi) tutu))
+(define-test equal?
+   (equal? '(1 2 (3 4 (5) (6 7)) (5 6) "titi"
+             #(1 2 (6 #(6 7)) titi) tutu)
+      '(1 2 (3 4 (5) (6 7)) (5 6) "titi"
+        #(1 2 (6 #(6 7)) titi) tutu))
    :result #t)
-(define-test equal (equal? '(1 2 (3 4 (5) (6 7)) (5 6) "titi"
-			     #(1 2 (6 #(6 7)) titi) tutu)
-			 '(1 2 (3 4 (5) (6 7)) (5 6) "titi"
-			     #(1 2 (6 #(6 7)) toto) tutu))
+(define-test equal?
+   (equal? '(1 2 (3 4 (5) (6 7)) (5 6) "titi"
+             #(1 2 (6 #(6 7)) titi) tutu)
+      '(1 2 (3 4 (5) (6 7)) (5 6) "titi"
+        #(1 2 (6 #(6 7)) toto) tutu))
    :result #f)
+(define-test equal?
+   (equal? (cons 1 2) (cons 1 2))
+   :result #t)
+(define-test equal?
+   (equal? (cons 2 2) (cons 1 2))
+   :result #f)
+(define-test equal?
+   (equal? (list #s8:1 #u8:2 #s16:-1 #u16:45 #s32:6 #u32:2 #s64:-56 #u64:1234)
+      (list 1 2 -1 45 6 #l2 #l-56 #l1234))
+   :result #t)
+
 (define-test member (member '(1 2 3) '((0 1 2) (1 2 3) (4 5 6)))
    :result '((1 2 3) (4 5 6)))
 (define-test length (length '(1 2 3))

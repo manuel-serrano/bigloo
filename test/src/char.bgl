@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 28 19:21:00 2026                          */
-;*    Last change :  Sat Jul 11 06:35:09 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 08:14:19 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing characters                                               */
@@ -55,6 +55,8 @@
    :result #t)
 (define-test char=? (char=? #\a #\A)
    :result #f)
+(define-test char=? (char=? (integer->char 255) #a255)
+   :result #t)
 
 (define-test char<? (char<? #\a #\z)
    :result #t)
@@ -148,9 +150,36 @@
 (define-test char? (char? (maybe #\a)))
 (define-test char (char? (maybe 32)) :result #f)
 (define-test char? (char? (string-ref (maybe "hello") 1)))
+
 (define-test char->integer
    (char->integer (maybe #\a))
    :result (char->integer #\a))
 (define-test char->integer
    (char->integer (maybe #a200))
    :result 200)
+(define-test char->integer
+   (char->integer #\')
+   :result 39)
+(define-test char->integer
+   (char->integer #\xea)
+   :result #xea)
+(define-test char->integer
+   (char->integer #\010)
+   :result 8)
+(define-test char->integer
+   (char->integer #a008)
+   :result 8)
+(define-test char->integer
+   (char->integer #\null)
+   :result 0)
+
+(define-test eq? (eq? #\a #\a) :result #t)
+(define-test eq? (eq? #\a #\A) :result #f)
+(define-test eq? (eq? #\| #\|) :result #t)
+(define-test eqv? (eqv? #\a #\a) :result #t)
+(define-test eqv? (eqv? #\a #\A) :result #f)
+(define-test eqv? (eqv? #\| #\|) :result #t)
+(define-test eqv? (eqv? (integer->char 255) (car (list #a255))) :result #t)
+(define-test integer->char (integer->char 255) :result #a255)
+
+

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Fri Oct  2 12:48:05 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 08:45:48 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing symbols and keywords                                     */
@@ -139,7 +139,7 @@
 (define-test string->symbol (string->symbol "`")
    :result '|`|)
 
-(define-test gensym(symbol? (gensym))
+(define-test gensym (symbol? (gensym))
    :result #t)
 (define-test gensym (symbol? (gensym 'foo))
    :result #t)

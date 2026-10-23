@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Fri Jul  3 15:54:25 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 09:33:59 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing Child Processes                                          */
@@ -46,7 +46,9 @@
                   wait: #f)))
       (unwind-protect
          (process-alive? p)
-         (display "#t\n" (process-input-port p)))))
+         (begin
+            (display "#t\n" (process-input-port p))
+            (flush-output-port (process-input-port p))))))
 
 (define-test run-process
    (let* ((proc (run-process (bigloo-config 'bigloo)
@@ -207,6 +209,19 @@
 (define-test process-pid
    (process-pid (run-process (bigloo-config 'bigloo) "-eval" "(exit 1)"))
    :result integer?)
+
+(define-test process-output
+   (do ((i 0 (+ i 1)))
+       ((>= i 5)
+        (let loop ((proc (process-list)))
+           (if (pair? proc)
+               (begin
+                  (process-wait (car proc))
+                  (loop (process-list)))
+               #t)))
+       (run-process (bigloo-config 'bigloo) "-version" output: null:))
+   :cond-expand (or C jvm)
+   :result #t)
 
 (define-test process-input-port
    (let ((p (run-process (bigloo-config 'bigloo) "-eval" "(signal sigpipe (lambda (x) (exit 0))) (read)"

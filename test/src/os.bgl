@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Fri Sep 18 07:40:10 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 09:35:18 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing OS api                                                   */
@@ -511,6 +511,32 @@
    (file-exists? (string-append os.filename " does not exists"))
    :result #f)
 
+(define-test file-exists?
+   (let ((f (make-file-name (os-tmp) "FILE-EXISTS")))
+      (let ((v1 (file-exists? f)))
+         (let ((p (open-output-file f)))
+            (let ((v2 (begin
+                         (close-output-port p)
+                         (file-exists? f))))
+               (let ((v3 (begin
+                            (delete-file f)
+                            (file-exists? f))))
+                  (list v1 v2 v3))))))
+   :result '(#f #t #f))
+
+(define-test file-exists?
+   (let ((f (make-file-name (os-tmp) "FILE-EXISTS")))
+      (let ((v1 (file-exists? f)))
+         (let ((p (open-output-binary-file f)))
+            (let ((v2 (begin
+                         (close-binary-port p)
+                         (file-exists? f))))
+               (let ((v3 (begin
+                            (delete-file f)
+                            (file-exists? f))))
+                  (list v1 v2 v3))))))
+   :result '(#f #t #f))
+
 (define-test file-gzip?
    (file-gzip? os.filename)
    :result #f)
@@ -811,6 +837,40 @@
                       (when (directory? sub)
                          (delete-directories f)
                          #t))))))))
+
+(define-test directory-operations
+   (let ((dummydir (make-file-name (os-tmp) "dummydir")))
+      (unwind-protect
+         (let* ((v1 (begin
+                       (cond
+                          ((and (file-exists? dummydir)
+                                (directory? dummydir))
+                           (delete-directory dummydir))
+                          ((file-exists? dummydir)
+                           (delete-file dummydir)))
+                       (make-directory dummydir)))
+                (v2 (make-directory dummydir))
+                (v3 (and (file-exists? dummydir)
+                         (directory? dummydir)))
+                (v4  (or (file-exists?
+                            (make-file-path dummydir "doesnotexist"))
+                         (directory?
+                            (make-file-path dummydir "doesnotexist"))))
+                (v5 (make-directory (make-file-path dummydir "foo")))
+                (v6 (begin
+                       (delete-directory dummydir)
+                       (or (file-exists? dummydir)
+                           (directory? dummydir))))
+                (v7 (begin
+                       (delete-directory
+                          (make-file-path dummydir "foo"))
+                       (delete-directory dummydir)
+                       (or (file-exists? dummydir)
+                           (directory? dummydir))))
+                (v8 (delete-directory (make-file-path dummydir "foo"))))
+            (list v1 v2 v3 v4 v5 v6 v7 v8))
+         (delete-directories dummydir)))
+   :result '(#t #f #t #f #t #t #f #f))
 
 (define-test directory-length
    (> (directory-length (dirname os.filename)) 0))

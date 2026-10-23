@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 25 10:44:39 2026                          */
-;*    Last change :  Fri Sep 18 07:40:46 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 09:24:12 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing Bigloo specifics                                         */
@@ -64,6 +64,19 @@
    (bigloo-module-mangle "string->number" "lib")
    :result "BGl_stringzd2ze3numberz31zzlibz00")
 
+(define-test bigloo-mangle
+   (bigloo-demangle (bigloo-mangle "toto"))
+   :result "toto")
+
+(define-test bigloo-mangle
+   (bigloo-demangle (bigloo-mangle "toto!"))
+   :result "toto!")
+
+(define-test bigloo-mangle
+   (let ((s "toto!&^%_23_2342234___"))
+      (string=? (bigloo-demangle (bigloo-mangle s)) s))
+   :result #t)
+
 (define-test bigloo-mangled?
    (bigloo-mangled? "BgL_fibz00"))
 
@@ -73,6 +86,14 @@
 (define-test bigloo-mangled?
    (bigloo-mangled? "BGl_fibz00zzmodz")
    :result #f)
+
+(define-test bigloo-mangled?
+   (bigloo-mangled? "BgLtoto")
+   :result #f)
+
+(define-test bigloo-mangle?
+   (bigloo-mangled? (bigloo-mangle "BgL_toto"))
+   :result #t)
 
 (define-test bigloo-demangle
    (bigloo-demangle "BgL_fibz00")

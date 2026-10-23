@@ -3,7 +3,7 @@
 ;*    ------------------------------------------------------------     */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Fri Sep 25 05:36:43 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 08:11:57 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing numbers                                                  */
@@ -40,6 +40,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
+(define-test number 1 :result 1)
+(define-test number -1 :result -1)
+
 (define-test number? (number? 3))
 (define-test number? (number? 3.))
 (define-test number? (number? #z3))
@@ -174,9 +177,11 @@
 (define-test - (- #l2 #e1) :result #l1)
 (define-test - (- 1 2 3 4) :result -8)
 (define-test - (let ((x 1)) (- x 2 3 4)) :result -8)
+(define-test - (- 2) :result -2)
 (define-test * (* 1 2 3 4) :result 24)
 (define-test * (* #l2 #e2) :result #l4)
 (define-test * (* (car (list 0)) 0) :result 0)
+(define-test * (* 2 -1) :result -2)
 (define-test / (/ 12 3 2 1) :result 2)
 (define-test / (/ (/ 4)) :result 4.0)
 (define-test / (/ 4. #l2) :result 2.0)
@@ -652,3 +657,12 @@
 
 (define-test sqrt (sqrt 4.) :eq ~equal? :result 2.)
 (define-test sqrt (sqrt 9) :eq ~equal? :result 3.)
+
+(define-test int8? (int8? #!key) :result #f)
+(define-test int8? (int8? (car (list '#!key))) :result #f)
+(define-test int8? (int8? #!optional) :result #f)
+(define-test int8? (int8? (car (list '#!optional))) :result #f)
+(define-test int8? (int8? #!rest) :result #f)
+(define-test int8? (int8? (car (list '#!rest))) :result #f)
+(define-test int8? (int8? #s8:1) :result #t)
+(define-test int8? (int8? (car (list #s8:1))) :result #t)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Fri Sep 25 05:33:32 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 09:03:17 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the compiler                                             */
@@ -29,6 +29,180 @@
 (define (test verbose tests::pair-nil)
    (when (or (null? tests) (member "compiler" tests))
       (test-all verbose "compiler")))
+
+;*---------------------------------------------------------------------*/
+;*    declarations                                                     */
+;*---------------------------------------------------------------------*/
+(define var var)
+
+(define (mut-bar . l) l)
+(set! mut-bar 'toto)
+
+(define (fooo x)
+   (if (integer? x)
+       (begin
+	  (set! x #f)
+	  (integer? x))
+       #t))
+
+(define hoist-ref (make-cell 0))
+(define (hoist)
+   (let ((x1 (let ((x2 (cell-ref hoist-ref)))
+		(begin
+		   (cell-set! hoist-ref (+fx x2 1))
+		   x2)))
+	 (x2 (let ((x2 (cell-ref hoist-ref)))
+		(begin
+		   (cell-set! hoist-ref (+fx x2 1))
+		   x2))))
+      (eq? x1 x2)))
+
+(define (for-each-inline)
+   (let ((v 0))
+      (for-each (let ((j 0))
+		   (lambda (x)
+		      (set! v (+ j v))
+		      (set! j (+ j 1))))
+		'(a b c))
+      v))
+
+;*---------------------------------------------------------------------*/
+;*    reserved symbols                                                 */
+;*---------------------------------------------------------------------*/
+(define (compiler-reserved-labels fun labels)
+   (for-each (lambda (id) id) labels)
+   (fun (lambda (id) id) labels))
+
+(define (compiler-reserved-let x fun)
+   (let ((let (if (> x 0) (fun (+ x 1)) (fun (- x)))))
+      (if (> x 0) let (fun (- x)))))
+
+(define (compiler-reserved-let*)
+   (let* ((x 1) (x (+ 1 x))) x))
+
+;*---------------------------------------------------------------------*/
+;*    Top level definition orders                                      */
+;*---------------------------------------------------------------------*/
+(define order_foo 0)
+(define order_foo1 (begin (set! order_foo (+fx order_foo 1)) order_foo))
+(define order_foo2 (begin (set! order_foo (+fx order_foo 1)) order_foo))
+(begin
+   (define order_foo3 (begin (set! order_foo (+fx order_foo 1)) order_foo))
+   (define order_foo4 (begin (set! order_foo (+fx order_foo 1)) order_foo)))
+(define order_foo5 (begin (set! order_foo (+fx order_foo 1)) order_foo))
+
+(define order_bar 0)
+(define order_bar1 1)
+(define order_bar2 1)
+(define order_bar3 1)
+(define order_bar4 1)
+(define order_bar5 1)
+(define order_bar6 1)
+(define order_bar7 1)
+(define order_bar8 1)
+
+(begin
+   (begin
+      (begin
+	 (set! order_bar (+fx order_bar 1))
+	 (set! order_bar1 order_bar)
+	 (set! order_bar (+fx order_bar 1))
+	 (set! order_bar2 order_bar))
+      (begin
+	 (set! order_bar (+fx order_bar 1))
+	 (set! order_bar3 order_bar)
+	 (set! order_bar (+fx order_bar 1))
+	 (set! order_bar4 order_bar))
+      (set! order_bar (+fx order_bar 1))
+      (set! order_bar5 order_bar)
+      (set! order_bar (+fx order_bar 1))
+      (set! order_bar6 order_bar))
+   (set! order_bar (+fx order_bar 1))
+   (set! order_bar7 order_bar)
+   (set! order_bar (+fx order_bar 1))
+   (set! order_bar8 order_bar))
+
+;*---------------------------------------------------------------------*/
+;*    compilation bugs                                                 */
+;*---------------------------------------------------------------------*/
+;; compilation failure
+(let ((revtype2
+         (labels ((revtype (parent t flag)
+                     (let ((rev (lambda (q)
+                                   (revtype t q #f))))
+                        (if flag (rev 1)))))
+            revtype)))
+   (revtype2 1 2 #f))
+
+(define (test-type-data-flow x::int)
+   (if (pair? x)
+       (car x)
+       #t))
+
+(define (test-type-data-flow2 l::pair-nil)
+   (if (> (length l) 10)
+       (print 1 2 3 4 5 6 7 8 ))
+   (if (pair? l)
+       (car l)
+       l))
+
+(define (test-type-data-flow3 l::pair-nil)
+   (define (for-each-rest pred l)
+      (cond ((pair? l)
+	     (let loop ((x (car l))
+			(l1 (cdr l)))
+		(pred x l1)
+		(cond ((pair? l1)
+		       (loop (car l1) (cdr l1))))))))
+   (set! l (filter! pair? l))
+   (for-each-rest (lambda (l1 rest)
+		     (cond ((pair? rest)
+			    (append! l1 (car rest)))))
+      l)
+   (if (pair? l)
+       (car l)
+       l))
+
+(define (test-type-data-flow4 l::pair-nil)
+   (cond
+      ((pair? l) 1)
+      ((null? l) 2)
+      (else (print "this" "branch" "cannot" "be" "selected"))))
+
+(define (bug-jvm scm-files)
+   ;; This function was badly compiled up to bigloo3.5b. The JAS code
+   ;; is incorrect and the bytecode verifier breaks. This function
+   ;; cannot be executed hence, it is used in this file only as a
+   ;; procedural value
+   (begin
+      (labels ((try-120 (g-119) (try-120 8)))
+	 (try-120 9))
+      6))
+
+(define (bug-dataflow-lub x)
+   (when (string? x)
+      (cond
+	 ((string-prefix? "/" x)
+	  (set! x #f)))
+      (cond
+	 (x 111)
+	 (else 222))))
+
+(define (bug-data-flow-lub2 s newest-d)
+   (define check-date?
+      (if (getenv "foo") list cons))
+   (let ((date1 #f))
+      (if (= s 4)
+	  (begin
+	     (set! date1 "tutu")
+	     (if (check-date? date1 newest-d)
+		 #t
+		 (set! date1 #f)))
+	  (begin
+	     (set! date1 "toto")
+	     (set! date1 #f)))
+      (when date1
+	 4)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cse                                                              */
@@ -1099,3 +1273,63 @@
          ((car (list f2 f1)))))
    :result 31)
                    
+;*---------------------------------------------------------------------*/
+;*    core compilation                                                 */
+;*---------------------------------------------------------------------*/
+(define-test define mut-bar :result 'toto)
+
+(define-test app ((lambda args 2)) :result 2)
+(define-test app ((lambda args 2) 1 2 3 4) :result 2)
+
+(define-test set! (fooo 5) :result #f)
+(define-test set!
+   (let ((v (integer? var)))
+      (set! var 4)
+      (set! var 'toto)
+      v)
+   :result #f)
+
+(define-test hoist (hoist) :result #f)
+
+(define-test toplevel
+   (list order_foo1 order_foo2 order_foo3 order_foo4 order_foo5)
+   :result '(1 2 3 4 5))
+(define-test toplevel
+   (list order_bar1 order_bar2 order_bar3 order_bar4 order_bar5
+      order_bar6 order_bar7 order_bar8)
+   :result '(1 2 3 4 5 6 7 8))
+
+;*---------------------------------------------------------------------*/
+;*    inline optimizations                                             */
+;*---------------------------------------------------------------------*/
+(define-test for-each-inline (for-each-inline) :result 3)
+
+;*---------------------------------------------------------------------*/
+;*    reserved symbols                                                 */
+;*---------------------------------------------------------------------*/
+(define-test reserved
+   (compiler-reserved-labels map '(1 2 3))
+   :result '(1 2 3))
+(define-test reserved
+   (compiler-reserved-let 10 +)
+   :result 11)
+(define-test reserved
+   (compiler-reserved-let*)
+   :result 2)
+
+;*---------------------------------------------------------------------*/
+;*    compilation bugs                                                 */
+;*---------------------------------------------------------------------*/
+(define-test type-data-flow (test-type-data-flow 5) :result #t)
+(define-test type-data-flow2 (test-type-data-flow2 '()) :result '())
+(define-test type-data-flow2 (test-type-data-flow2 '(1)) :result 1)
+(define-test type-data-flow3 (test-type-data-flow3 '((1 2))) :result '(1 2))
+(define-test type-data-flow3 (test-type-data-flow4 '(1 2)) :result 1)
+(define-test type-data-flow3 (test-type-data-flow4 '()) :result 2)
+
+(define-test bug-jvm (procedure? bug-jvm) :result #t)
+(define-test bug-data-flow-lub (bug-dataflow-lub "foo") :result 111)
+(define-test bug-data-flow-lub (bug-dataflow-lub #f) :result #f)
+(define-test bug-data-flow-lub (bug-dataflow-lub "/foo") :result 222)
+(define-test bug-data-flow-lub2 (bug-data-flow-lub2 3 #f) :result #f)
+

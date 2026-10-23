@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Fri Sep 18 07:38:49 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 08:11:34 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the core constructs                                      */
@@ -26,6 +26,54 @@
 (define (test verbose tests::pair-nil)
    (when (or (null? tests) (member "core" tests))
       (test-all verbose "core")))
+
+;*---------------------------------------------------------------------*/
+;*    multiple values definitions                                      */
+;*---------------------------------------------------------------------*/
+(define (producer a b)
+   (values (+ a 1) (+ b 1)))
+
+(define (producer2 . args)
+   (match-case args
+      ((?a0)
+       (values a0))
+      ((?a0 ?a1)
+       (values a0 a1))
+      ((?a0 ?a1 ?a2)
+       (values a0 a1 a2))
+      ((?a0 ?a1 ?a2 ?a3)
+       (values a0 a1 a2 a3))
+      ((?a0 ?a1 ?a2 ?a3 ?a4)
+       (values a0 a1 a2 a3 a4))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5)
+       (values a0 a1 a2 a3 a4 a5))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5 ?a6)
+       (values a0 a1 a2 a3 a4 a5 a6))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5 ?a6 ?a7)
+       (values a0 a1 a2 a3 a4 a5 a6 a7))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5 ?a6 ?a7 ?a8)
+       (values a0 a1 a2 a3 a4 a5 a6 a7 a8))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5 ?a6 ?a7 ?a8 ?a9)
+       (values a0 a1 a2 a3 a4 a5 a6 a7 a8 a9))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5 ?a6 ?a7 ?a8 ?a9 ?a10)
+       (values a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5 ?a6 ?a7 ?a8 ?a9 ?a10 ?a11)
+       (values a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5 ?a6 ?a7 ?a8 ?a9 ?a10 ?a11 ?a12)
+       (values a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5 ?a6 ?a7 ?a8 ?a9 ?a10 ?a11 ?a12 ?a13)
+       (values a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5 ?a6 ?a7 ?a8 ?a9 ?a10 ?a11 ?a12 ?a13 ?a14)
+       (values a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5 ?a6 ?a7 ?a8 ?a9 ?a10 ?a11 ?a12 ?a13 ?a14 ?a15)
+       (values a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15))
+      ((?a0 ?a1 ?a2 ?a3 ?a4 ?a5 ?a6 ?a7 ?a8 ?a9 ?a10 ?a11 ?a12 ?a13 ?a14 ?a15 ?a16)
+       (values a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16))
+      (else
+       (error 'producer2 "Illegal number of arguments" (length args)))))
+
+(define (producer3 . args)
+   (apply values args))
 
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
@@ -75,6 +123,12 @@
    :result 'true)
 (define-test if
    (if #f 'true)
+   :result #f)
+(define-test if
+   (if #t #f #f)
+   :result #f)
+(define-test if
+   (let ((if (lambda (x y z) z))) (if #t #f #f))
    :result #f)
 
 (define-test and
@@ -180,6 +234,10 @@
       (cons z t))
    :result '(#unspecified . 23))
 
+(define-test let
+   (let ((x (begin 1 2 3))) x)
+   :result 3)
+
 (define-test letn
    (let loop ((l '(1 2 3)))
       (if (null? l)
@@ -233,6 +291,10 @@
          (+fx x 1)))
    :result 6)
 
+(define-test begin
+   (begin 4 5)
+   :result 5)
+
 (define-test do
    (do ((vec (make-vector 5))
         (i 0 (+ i 1)))
@@ -245,6 +307,21 @@
            (sum 0 (+ sum (car x))))
           ((null? x) sum)))
    :result 25)
+(define-test do
+   (let* ((append! (lambda (x y)
+		      (if (null? x)
+			  y
+			  (do ((a x b)
+			       (b (cdr x) (cdr b)))
+			      ((null? b)
+			       (set-cdr! a y)
+			       x)))))
+	  (l1 '(1 2 3))
+	  (l2 '(4 5 6)))
+      (append! l1 l2))
+   :result '(1 2 3 4 5 6))
+(define-test do (do ((i 1 2) (j 0 i)) ((positive? j) j))
+   :result 1)
 
 (define-test quasiquote
    `(list ,(+ 1 2) 4)
@@ -526,3 +603,298 @@
       (list a b))
    :result '(4 5))
 
+(define-test bind-values
+   (bind-values (a b c d)
+      (values 1 2 3 4)
+      (- a b c d))
+   :result -8)
+(define-test bind-values
+   (bind-values (x y) (producer 1 2) (+ x y))
+   :result 5)
+(define-test bind-values
+   (bind-values (a0)
+      (producer2 0)
+      (list a0))
+   :result '(0))
+(define-test bind-values
+   (bind-values (a0 a1)
+      (producer2 0 1)
+      (list a0 a1))
+   :result '(0 1))
+(define-test bind-values
+   (bind-values (a0 a1 a2)
+      (producer2 0 1 2)
+      (list a0 a1 a2))
+   :result '(0 1 2))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3)
+      (producer2 0 1 2 3)
+      (list a0 a1 a2 a3))
+   :result '(0 1 2 3))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4)
+      (producer2 0 1 2 3 4)
+      (list a0 a1 a2 a3 a4))
+   :result '(0 1 2 3 4))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5)
+      (producer2 0 1 2 3 4 5)
+      (list a0 a1 a2 a3 a4 a5))
+   :result '(0 1 2 3 4 5))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6)
+      (producer2 0 1 2 3 4 5 6)
+      (list a0 a1 a2 a3 a4 a5 a6))
+   :result '(0 1 2 3 4 5 6))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7)
+      (producer2 0 1 2 3 4 5 6 7)
+      (list a0 a1 a2 a3 a4 a5 a6 a7))
+   :result '(0 1 2 3 4 5 6 7))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8)
+      (producer2 0 1 2 3 4 5 6 7 8)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8))
+   :result '(0 1 2 3 4 5 6 7 8))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9)
+      (producer2 0 1 2 3 4 5 6 7 8 9)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9))
+   :result '(0 1 2 3 4 5 6 7 8 9))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10)
+      (producer2 0 1 2 3 4 5 6 7 8 9 10)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10))
+   :result '(0 1 2 3 4 5 6 7 8 9 10))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11)
+      (producer2 0 1 2 3 4 5 6 7 8 9 10 11)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12)
+      (producer2 0 1 2 3 4 5 6 7 8 9 10 11 12)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11 12))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13)
+      (producer2 0 1 2 3 4 5 6 7 8 9 10 11 12 13)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11 12 13))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14)
+      (producer2 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15)
+      (producer2 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16)
+      (producer2 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16))
+(define-test bind-values
+   (bind-values (a0)
+      (producer3 0)
+      (list a0))
+   :result '(0))
+(define-test bind-values
+   (bind-values (a0 a1)
+      (producer3 0 1)
+      (list a0 a1))
+   :result '(0 1))
+(define-test bind-values
+   (bind-values (a0 a1 a2)
+      (producer3 0 1 2)
+      (list a0 a1 a2))
+   :result '(0 1 2))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3)
+      (producer3 0 1 2 3)
+      (list a0 a1 a2 a3))
+   :result '(0 1 2 3))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4)
+      (producer3 0 1 2 3 4)
+      (list a0 a1 a2 a3 a4))
+   :result '(0 1 2 3 4))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5)
+      (producer3 0 1 2 3 4 5)
+      (list a0 a1 a2 a3 a4 a5))
+   :result '(0 1 2 3 4 5))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6)
+      (producer3 0 1 2 3 4 5 6)
+      (list a0 a1 a2 a3 a4 a5 a6))
+   :result '(0 1 2 3 4 5 6))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7)
+      (producer3 0 1 2 3 4 5 6 7)
+      (list a0 a1 a2 a3 a4 a5 a6 a7))
+   :result '(0 1 2 3 4 5 6 7))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8)
+      (producer3 0 1 2 3 4 5 6 7 8)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8))
+   :result '(0 1 2 3 4 5 6 7 8))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9)
+      (producer3 0 1 2 3 4 5 6 7 8 9)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9))
+   :result '(0 1 2 3 4 5 6 7 8 9))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10)
+      (producer3 0 1 2 3 4 5 6 7 8 9 10)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10))
+   :result '(0 1 2 3 4 5 6 7 8 9 10))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11)
+      (producer3 0 1 2 3 4 5 6 7 8 9 10 11)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12)
+      (producer3 0 1 2 3 4 5 6 7 8 9 10 11 12)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11 12))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13)
+      (producer3 0 1 2 3 4 5 6 7 8 9 10 11 12 13)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11 12 13))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14)
+      (producer3 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15)
+      (producer3 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15))
+(define-test bind-values
+   (bind-values (a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16)
+      (producer3 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16)
+      (list a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16))
+   :result '(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16))
+
+(define-test call-with-values
+   (call-with-values (lambda () (values 1 2 3 4))
+                     (lambda (a b c d) (+ a b c d)))
+   :result 10)
+(define-test call-with-values (call-with-values * -)
+   :result -1)
+
+;*---------------------------------------------------------------------*/
+;*    cond-expand                                                      */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   ((or glop pas-glop bigloo)
+    (define (cond-expand-foo x) x))
+   (else
+    (define (cond-expand-foo x) 4)))
+
+(define-test cond-expand
+   (cond-expand
+      (srfi-0 (* 1 2))
+      (else (+ 3 4)))
+   :result 2)
+(define-test cond-expand
+   (eval '(cond-expand
+           (srfi-0 (* 1 2))
+           (else (+ 3 4))))
+   :result 2)
+(define-test cond-expand
+   (cond-expand
+      (srfi-that-does-not-exists (* 1 2))
+      (else (+ 3 4)))
+   :result 7)
+(define-test cond-expand
+   (eval '(cond-expand
+           (srfi-that-does-not-exists (* 1 2))
+           (else (+ 3 4))))
+   :result 7)
+(define-test cond-expand
+   (cond-expand
+      ((and bigloo srfi-0) 8)
+      (else -1))
+   :result 8)
+(define-test cond-expand
+   (cond-expand
+      ((and bigloo srfi-0 (not bigloo-eval)) 9)
+      (else -1))
+   :result 9)
+(define-test cond-expand
+   (eval '(cond-expand
+           ((and bigloo bigloo-eval srfi-0) 4)
+           (else -1)))
+   :result 4)
+(define-test cond-expand
+   (cond-expand
+      ((or bigloo-eval bigloo) 2)
+      (else -1))
+   :result 2)
+(define-test cond-expand
+   (cond-expand
+      ((or bigloo-eval bigloo) 2)
+      (else -1))
+   :result 2)
+(define-test cond-expand
+   (let ((v 0))
+      (cond-expand
+         ((or bigloo1.1 bigloo1.2) (set! v (+ 1 v)))
+         (else (set! v (+ 1 v))))
+      v)
+   :result 1)
+(define-test cond-expand
+   (eval '(let ((v 0))
+           (cond-expand
+              ((or bigloo1.1 bigloo1.2) (set! v (+ 1 v)))
+              (else (set! v (+ 1 v))))
+           v))
+   :result 1)
+(define-test cond-expand
+   (eval '(cond-expand
+           ((or bigloo-eval bigloo) 5)
+           (else -1)))
+   :result 5)
+(define-test cond-expand
+   (cond-expand
+      ((or bigloo bigloo-eval) 2)
+      (else -1))
+   :result 2)
+(define-test cond-expand
+   (eval '(cond-expand
+           ((or bigloo bigloo-eval) 5)
+           (else -1)))
+   :result 5)
+(define-test cond-expand
+   (eval (cond-expand ((or chicken bigloo)) (else 3)))
+   :result #unspecified)
+(define-test cond-expand
+   (eval (cond-expand ((or chicken gambit)) (else 3)))
+   :result 3)
+(define-test cond-expand
+   (eval (cond-expand ((or chicken gambit)) (else)))
+   :result #unspecified)
+(define-test cond-expand
+   (cond-expand-foo 3) :result 3)
+(define-test cond-expand
+   (cond-expand ((and bigloo bigloo) 1) (else 2)) :result 1)
+(define-test cond-expand
+   (cond-expand (xxx 1) (else 2)) :result 2)
+(define-test cond-expand
+   (cond-expand ((and bigloo xxx) 1) (else 2)) :result 2)
+(define-test cond-expand
+   (cond-expand ((and xxx bigloo) 1) (else 2)) :result 2)
+
+;*---------------------------------------------------------------------*/
+;*    values                                                           */
+;*---------------------------------------------------------------------*/
+(define-test optional
+   (eq? (car (list #!optional)) #!optional)
+   :result #t)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/bigloo/5.0.x/test/src/weakptr.bgl                        */
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/weakptr.bgl           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Fri Jul  3 10:01:11 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 08:50:55 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing Weak Pointers                                            */
@@ -57,4 +57,3 @@
       (weakptr-ref-set! ptr 33)
       (weakptr-ref ptr))
    :result 33)
-

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Jun  8 08:45:19 2026                          */
-;*    Last change :  Thu Jun 25 10:45:24 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 09:01:42 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the C extern interface                                   */
@@ -70,6 +70,16 @@
 (define-test pragma
    (pragma::bint "BINT($1 + 10)" 14)
    :result 24)
+
+(define-test pragma
+   (let ((b (let ((ptr-align (pragma::long "PTR_ALIGNMENT")))
+		   (-fx (bit-lsh 1 (+fx ptr-align 3)) ptr-align))))
+      (let ((n (bit-lsh 1 b))
+            (n-1 (bit-lsh 1 (-fx b 1)))
+            (n-2 (bit-lsh 1 (-fx b 2))))
+         (and (>fx n n-1) (>fx n-1 n-2))))
+   :cond-expand bigloo-c
+   :result #t)
 
 (define-test free-pragma
    (free-pragma::bint "BINT($1 + 10)" 14)
