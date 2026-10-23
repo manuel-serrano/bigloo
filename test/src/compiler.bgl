@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Fri Oct 23 10:18:37 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 21:29:14 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the compiler                                             */
@@ -15,6 +15,9 @@
 (module compiler
    (export test)
    (eval (export letrec-foo-loop))
+   (export compilation-bug-1 compilation-bug-2 compilation-bug-3
+      compilation-bug-4 compilation-bug-5 compilation-bug-6
+      compilation-bug-7)
    (extern "C"
       ($dummy::obj ::obj ... "")))
 
@@ -1347,3 +1350,425 @@
 (define-test alias (foo2 1 2 3) :result (bar2 1 2 3))
 (define-test alias (foo3 1 2 3) :result (bar3 1 2 3))
 (define-test alias (bar0 1) :result (bar4 1))
+
+;*---------------------------------------------------------------------*/
+;*    Local functions compilation                                      */
+;*---------------------------------------------------------------------*/
+(define (compilation-bug-1 indent-general)
+   ;; compilation bug
+   (letrec ((pp-comment (lambda () (labels ((tag-101 () (begin
+							   0 1 2 3 4 5 6 7
+							   0 1 2 3 4 5 6 7
+							   0 1 2 3 4 5 6 7
+							   0 1 2 3 4 5 6 7
+							   0 1 2 3 4 5 6 7
+							   0 1 2 3 4 5 6 7
+							   0 1 2 3 4 5 6 7
+							   0 1 2 3 4 5 6 7
+							   0 1 2 3 4 5 6 7
+							   0 1 2 3 4 5 6 7
+							   0 1 2 3 4 5 6 7
+							   0 1 2 3 4 5 6 7
+							   (pp-general))))
+				      (tag-101))))
+	    (pp-general (lambda () (begin
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      indent-general)))
+	    (pp-expr	(lambda () (begin
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      0 1 2 3 4 5 6 7
+				      (let ((proc pp-comment))
+					 (pp-general))))))
+      pp-expr))
+
+(define (compilation-bug-2 x)
+   ;; compilation bug
+   (labels ((gee () (labels ((hux () (lee)))
+		       (hux)))
+	    (lee () x))
+      (lee)
+      gee))
+
+(define (compilation-bug-3)
+   
+   (define (type-unification t1 t2)
+      0 1 2 3 4 5 6 7 8 9
+      0 1 2 3 4 5 6 7 8 9
+      0 1 2 3 4 5 6 7 8 9)
+   
+   ;; compilation bug
+   (begin
+      (hux ((labels
+                  ((tag-103 () #f)
+                   (tag-102 () (type-unification 1 2))
+                   (tag-101 (body) #f))
+               (lambda (e-104)
+                  (begin
+                     (if (pair? e-104)
+                         (labels
+                               ((kap-108
+                                   ()
+                                   (if 1
+                                       (if 1 (if 1 (tag-101 1) (tag-103)) (tag-103))
+                                       (labels
+                                             ((kap-112 () (tag-102)))
+                                          (if 4 (kap-112) (if 3 (kap-112) (tag-103)))))))
+                            (if 4
+                                (kap-108)
+                                (if 4
+                                    (kap-108)
+                                    (labels
+                                          ((kap-121 () (tag-102)))
+                                       (if 7 (kap-121) (if 9 (kap-121) (tag-103)))))))
+                         (tag-103)))))
+            exp))))
+
+(define filter_list@types
+   (lambda (x)
+      0 1 2 3 4 5 6 7 8 9
+      0 1 2 3 4 5 6 7 8 9
+      0 1 2 3 4 5 6 7 8 9))
+
+(define compilation-bug-4
+   (lambda (x1)
+      (labels
+	    ((!-d-staticfail1024 () 9))
+	 (case x1
+	    ((2)
+	     (case x1
+		((2)
+		 4)
+		(else (!-d-staticfail1024))))
+	    ((3)
+	     (case x1
+		((3)
+		 x1)
+		(else (!-d-staticfail1024))))
+	    (else
+	     (case x1
+		((4)
+		 (if x1
+		     (filter_list@types 4)
+		     8))
+		(else (!-d-staticfail1024))))))))
+
+(define join_132@baltree
+   (lambda (x1)
+      (lambda (x2)
+	 (lambda (x3) 0))))
+  
+(define compilation-bug-5
+   (lambda (x1 x2)
+      (labels
+	    ((!-d-staticfail1016
+	      ()
+	      0))
+	 (labels
+	       ((!-d-staticfail1017
+		 ()
+		 (labels
+		       ((!-d-staticfail1018
+			 ()
+			 (case x1
+			    ((2)
+			     (case x2
+				((2)
+				 (((join_132@baltree 0) 0) 0))
+				(else (!-d-staticfail1016))))
+			    (else (!-d-staticfail1016)))))
+		    (!-d-staticfail1018))))
+	    (!-d-staticfail1017)))))
+
+(define (compilation-bug-6)
+   (letrec ((x1
+	     (lambda (x2)
+		(lambda (x3)
+		   (labels ((hux (!-d.1059) ((x1 x2) x3)))
+		      (hux 0)
+		      0)))))
+      (x1 '())))
+
+(define (compilation-bug-7)
+   (begin
+    (letrec ((gee (lambda ()
+		     (labels ((foo () (bar))
+			      (bar () (begin
+					 (gee)
+					 (foo))))
+                        (foo)))))
+       (gee))))
+
+(define (bug-compilation-1 y)
+   (let ((x 0))
+      (labels ((foo (a) (set! x a))
+	       (bar (b) (if (null? b)
+			    (set! x 3)
+			    (cons x (bar (cdr b))))))
+	 (set! x 1)
+	 (foo 2)
+	 (bar '(1 2 3))
+	 x)))
+
+(define-test local-function
+   (bug-compilation-1 '(1 2 3))
+   :result 3)
+
+(define (bug-compilation-2 a)
+   (labels ((gee (x)
+		 (set! a 4)
+		 a))
+      (gee 3)
+      (gee 3)
+      a))
+
+(define-test local-function
+   (bug-compilation-2 1)
+   :result 4)
+
+(define (bug-compilation-3 x)
+   (labels ((foo (x) (bar x))
+	    (bar (x) x)
+	    (gee (x) (if x
+			 (foo x)
+			 (bar x))))
+      (foo (gee x))))
+
+(define-test local-function
+   (bug-compilation-3 1)
+   :result 1)
+
+(define (bug-compilation-4)
+   (labels ((foo (x) (gee x))
+	    (gee (x) (foo x)))
+      5))
+
+(define-test bug-compilation
+   (bug-compilation-4)
+   :result 5)
+
+(define (bug-compilation-5)
+   (let ((x 1))
+      (if (begin (set! x 2) #t)
+	  x
+	  3)))
+
+(define-test compilation-bug
+   (bug-compilation-5)
+   :result 2)
+
+;*---------------------------------------------------------------------*/
+;*    free variables                                                   */
+;*---------------------------------------------------------------------*/
+(define (freevar1 a b)
+   (labels ((foo (x) (set! x b) x))
+      foo))
+
+(define-test free-var ((freevar1 1 2) 3) :result 2)
+
+(define (freevar2 a b . c)
+   (labels ((foo (x y) (set! c y) y)
+	    (bar (z) (foo 2 1))
+	    (hux (t) (set! a (foo t t)) c))
+      hux))
+
+(define-test free-var ((freevar2 1 2 3 4) 2) :result 2)
+
+(define (freevar3 . c)
+   (let ((a 0)
+	 (b 0))
+      (labels ((foo (x) (set! a x) a)
+	       (bar (y) (set! b y) (foo b)))
+	 (bar 1)
+	 foo)))
+
+(define-test free-var ((freevar3 1 2 3 4) 2) :result 2)
+
+;*---------------------------------------------------------------------*/
+;*    captured variables                                               */
+;*---------------------------------------------------------------------*/
+(define (capture1 x y z)
+   (labels ((hux (a)  x)
+	    (bar (a) (hux y))
+	    (gee ()  (bar z)))
+      gee))
+
+(define-test capture ((capture1 1 2 3)) :result 1)
+
+(define capture2
+   (labels ((lam_0 ()
+               (labels ((ignore ()
+                           (let ((v 1))
+                              (labels ((foo2 () v))
+                                 (foo2)))))
+                  (ignore))))
+      lam_0))
+
+(define-test capture (capture2) :result 1)
+
+(define capture3
+   (lambda ()
+      (let ((counter 0))
+	 (lambda x
+	    (set! counter (+ counter 1))
+	    (string->symbol
+	     ((if (null? x)
+		  (lambda (u)
+		     (string-append ":X"  u))
+		  (if (string? (car x))
+		      (lambda (u)
+			 (string-append (car x)  u))
+		      (lambda (u)
+			 (string-append (symbol->string (car x))  u))))
+	      (number->string counter)))))))
+
+(define-test capture (let ((gen-sym (capture3))) (gen-sym 'a)) :result 'a1)
+
+(define (capture4)
+   (labels ((gee (y) (lambda (x) (set! y x) y)))
+      ((gee 0) 2)))
+
+(define-test capture (capture4) :result 2)
+
+(define (capture5 file7)
+   (let* ((toto (lambda () file7))
+	  (foo7 (lambda ()
+                   (let ((bar (lambda ()
+                                 (let ((gee (lambda ()
+                                               (let ((hux (lambda () (toto))))
+                                                  (hux)))))
+                                    (gee)))))
+                      (bar)))))
+      (toto)
+      foo7))
+
+(define-test capture ((capture5 7)) :result 7)
+
+(define (capture6 file8)
+   (letrec ((lexer (begin
+		      (set-car! (cons 1 2) 4)
+		      (lambda (input-port)
+			 (labels ((toto () (labels ((gee () (foo8)))
+					      (parse)
+					      (gee))))
+			    (toto)))))
+	    (parse (lambda ()
+		      (letrec ((numl
+                                  (begin
+                                     (set-car! (cons 1 2) 4)
+                                     (lambda (input-port)
+                                        (labels ((tata ()
+                                                    (labels ((hux () (foo8)))
+                                                       (hux))))
+                                           (tata))))))
+			 (numl #f))))
+	    (foo8 (lambda () file8)))
+      (lexer file8)))
+
+(define-test capture (capture6 8) :result 8)
+
+(define (capture7 file9)
+   (let ((port (open-input-string file9)))
+
+      (define (lexical-error msg obj)
+	 (let ((name (input-port-name port))
+	       (filepos (input-port-position port)))
+	    (error 'lexer msg obj)))
+  
+      (define (number-parse str)
+	 (define number-lexer
+	    (regular-grammar ()
+	       ((+ (in #\0 #\9)) (the-fixnum))
+	       (else (lexical-error "ERR" str))))
+
+	 (let* ((oport (open-input-string str))
+		(value (read/rp number-lexer oport)))
+	    (close-input-port oport)
+	    value))
+
+      (define lexer
+	 (regular-grammar ()
+	    ((+ (in #\0 #\9)) (number-parse (the-string)))
+	    (else (lexical-error "ERR" (the-failure)))))
+
+      (if port
+          (read/rp lexer port)
+	  (error 'read-models "Cannot open file" file9))))
+
+(define-test capture (capture7 "9009") :result 9009)
+
+(define (capture8 l)
+   (let ((x (cons 2 l)))
+      (letrec ((f1 (lambda ()
+		      (set! x '#(2))))
+	       (f2 (lambda ()
+		      (if (pair? x)
+			  (begin
+			     (f1)
+			     (if (pair? x)
+				 (car x)
+				 (vector-ref x 0)))))))
+	 (f2))))
+
+(define-test capture (capture8 '(1)) :result 2)
+
+(define (capture9)
+   (define (f1) #t)
+   (define (f2) #f)
+   (+ (lightfuncall-foo f1) (lightfuncall-foo f2)))
+
+(define (lightfuncall-foo f)
+   (if (f) 1 2))
+
+(define-test capture (capture9) :result 3)
+
+(define (capture10::pair-nil locals::pair-nil node-or-nodes)
+   
+   (define (kill-used-in-node n)
+      (set! locals (remq n locals)))
+
+   (when (pair? locals)
+      (cond
+	 ((null? node-or-nodes)
+	  #unspecified)
+	 ((pair? node-or-nodes)
+	  (for-each kill-used-in-node node-or-nodes))
+	 (else
+	  (kill-used-in-node node-or-nodes))))
+
+   locals)
+
+(define-test capture (capture10 (list 1 2 4) (list 4 6 67)) :result '(1 2))
+   

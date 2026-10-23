@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Fri May 29 08:13:43 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 21:43:56 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing unicode functions                                        */
@@ -28,7 +28,7 @@
       (test-all verbose "unicode")))
 
 ;*---------------------------------------------------------------------*/
-;*    tests                                                            */
+;*    utf8                                                             */
 ;*---------------------------------------------------------------------*/
 (define-test string-minimal-charset (string-minimal-charset "foobar")
    :result 'ascii)
@@ -165,3 +165,459 @@
    :result "\xc3\xa9t\xc3\xa9")
    
 
+;*---------------------------------------------------------------------*/
+;*    ucs2                                                             */
+;*---------------------------------------------------------------------*/
+(define-test ucs2? (ucs2? (char->ucs2 #\a))
+   :result #t)
+(define-test ucs2? (ucs2? 10)
+   :result #f)
+(define-test ucs2? (ucs2? #u0101)
+   :result #t)
+
+(define-test ucs2=? (ucs2=? (char->ucs2 #\a) (ucs2-downcase (char->ucs2 #\A)))
+   :result #t)
+(define-test ucs2=? (ucs2=? (char->ucs2 #\a) (char->ucs2 #\b))
+   :result #f)
+
+(define-test ucs2<? (ucs2<? (char->ucs2 #\a) (char->ucs2 #\b))
+   :result #t)
+(define-test ucs2<? (ucs2<? (char->ucs2 #\b) (char->ucs2 #\a))
+   :result #f)
+
+(define-test ucs2<=? (ucs2<=? (char->ucs2 #\a) (char->ucs2 #\b))
+   :result #t)
+(define-test ucs2<=? (ucs2<=? (char->ucs2 #\b) (char->ucs2 #\b))
+   :result #t)
+(define-test ucs2<=? (ucs2<=? (char->ucs2 #\c) (char->ucs2 #\a))
+   :result #f)
+
+(define-test ucs2>? (ucs2>? (char->ucs2 #\a) (char->ucs2 #\b))
+   :result #f)
+(define-test ucs2>? (ucs2>? (char->ucs2 #\b) (char->ucs2 #\a))
+   :result #t)
+(define-test ucs2>=? (ucs2>=? (char->ucs2 #\a) (char->ucs2 #\b))
+   :result #f)
+(define-test ucs2>=? (ucs2>=? (char->ucs2 #\b) (char->ucs2 #\b))
+   :result #t)
+(define-test ucs2>=? (ucs2>=? (char->ucs2 #\c) (char->ucs2 #\a))
+   :result #t)
+
+(define-test ucs2-ci=? (ucs2-ci=? (char->ucs2 #\a) (char->ucs2 #\A))
+   :result #t)
+(define-test ucs2-ci=? (ucs2-ci=? (char->ucs2 #\a) (char->ucs2 #\b))
+   :result #f)
+
+(define-test ucs2-ci<? (ucs2-ci<? (char->ucs2 #\a) (char->ucs2 #\B))
+   :result #t)
+(define-test ucs2-ci<? (ucs2-ci<? (char->ucs2 #\b) (char->ucs2 #\a))
+   :result #f)
+
+(define-test ucs2-ci<=? (ucs2-ci<=? (char->ucs2 #\a) (char->ucs2 #\B))
+   :result #t)
+(define-test ucs2-ci<=? (ucs2-ci<=? (char->ucs2 #\B) (char->ucs2 #\B))
+   :result #t)
+(define-test ucs2-ci<=? (ucs2-ci<=? (char->ucs2 #\C) (char->ucs2 #\a))
+   :result #f)
+
+(define-test ucs2-ci>? (ucs2-ci>? (char->ucs2 #\a) (char->ucs2 #\b))
+   :result #f)
+(define-test ucs2-ci>? (ucs2-ci>? (char->ucs2 #\B) (char->ucs2 #\a))
+   :result #t)
+
+(define-test ucs2-ci>=? (ucs2-ci>=? (char->ucs2 #\a) (char->ucs2 #\B))
+   :result #f)
+(define-test ucs2-ci>=? (ucs2-ci>=? (char->ucs2 #\b) (char->ucs2 #\b))
+   :result #t)
+(define-test ucs2-ci>=? (ucs2-ci>=? (char->ucs2 #\c) (char->ucs2 #\a))
+   :result #t)
+
+(define-test ucs2-alphabetic? (ucs2-alphabetic? (char->ucs2 #\a))
+   :result #t)
+(define-test ucs2-alphabetic? (ucs2-alphabetic? (char->ucs2 #\0))
+   :result #f)
+(define-test ucs2-numeric? (ucs2-numeric? (char->ucs2 #\a))
+   :result #f)
+(define-test ucs2-numeric? (ucs2-numeric? (char->ucs2 #\0))
+   :result #t)
+
+(define-test ucs2-whitespace? (ucs2-whitespace? (char->ucs2 #\a))
+   :result #f)
+(define-test ucs2-whitespace? (ucs2-whitespace? (char->ucs2 #\space))
+   :result #t)
+
+(define-test ucs2-upper-case? (ucs2-upper-case? (char->ucs2 #\a))
+   :result #f)
+(define-test ucs2-upper-case? (ucs2-upper-case? (char->ucs2 #\A))
+   :result #t)
+
+(define-test ucs2-lower-case? (ucs2-lower-case? (char->ucs2 #\a))
+   :result #t)
+(define-test ucs2-lower-case? (ucs2-lower-case? (char->ucs2 #\A))
+   :result #f)
+
+(define-test ucs2<->integer (ucs2->integer (integer->ucs2 65))
+   :result 65)
+(define-test ucs2<->char (ucs2->char (char->ucs2 #\a))
+   :result #\a)
+(define-test ucs2<->char (ucs2->char (char->ucs2 #\b))
+   :result #\b)
+
+(define-test ucs2-downcase (char->ucs2 #\a)
+   :result (ucs2-downcase (char->ucs2 #\A)))
+(define-test ucs2-upcase (char->ucs2 #\A)
+   :result (ucs2-upcase (char->ucs2 #\a)))
+(define-test write
+   (let ((p (open-output-string)))
+      (write #u0101 p)
+      (close-output-port p))
+   :result "#u0101")
+
+;; unicode strings
+(define-test make-ucs2-string (ucs2-string? (make-ucs2-string 10))
+   :result #t)
+
+(define-test ucs2-string? (ucs2-string? #u"toto")
+   :result #t)
+(define-test ucs2-string? (ucs2-string? "toto")
+   :result #f)
+
+(define-test ucs2-string-ref
+   (ucs2-string-ref (make-ucs2-string 10 #u0101) 3)
+   :result #u0101)
+(define-test ucs2-string-set!
+   (let ((str (make-ucs2-string 10 #u0101)))
+      (ucs2-string-set! str 3 #u0102)
+      (ucs2-string-ref str 3))
+   :result #u0102)
+
+(define-test ucs2-string-length
+   (ucs2-string-length (make-ucs2-string 10))
+   :result 10)
+
+(define-test ucs2-string=?
+   (ucs2-string=? (let ((s (make-ucs2-string 10 #u0101)))
+                     (ucs2-string-set! s 2 (char->ucs2 #\a))
+                     (ucs2-string-set! s 3 #u0102)
+                     (ucs2-string-set! s 4 #u0103)
+                     s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0103)
+         s))
+   :result #t)
+(define-test ucs2-string=?
+   (ucs2-string=? (let ((s (make-ucs2-string 10 #u0101)))
+                     (ucs2-string-set! s 2 (char->ucs2 #\a))
+                     
+                     (ucs2-string-set! s 3 #u0102)
+                     (ucs2-string-set! s 4 #u0104)
+                     s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0103)
+         s))
+   :result #f)
+
+(define-test ucs2-string-ci=?
+   (ucs2-string-ci=? (let ((s (make-ucs2-string 10 #u0101)))
+                        (ucs2-string-set! s 2 (char->ucs2 #\a))
+                        (ucs2-string-set! s 3 (char->ucs2 #\a))
+                        s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 (char->ucs2 #\A))
+         s))
+   :result #t)
+(define-test ucs2-string-ci=?
+   (ucs2-string-ci=? (let ((s (make-ucs2-string 10 #u0101)))
+                        (ucs2-string-set! s 2 (char->ucs2 #\a))
+                        (ucs2-string-set! s 3 (char->ucs2 #\b))
+                        s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\A))
+         (ucs2-string-set! s 3 (char->ucs2 #\A))
+         s))
+   :result #f)
+
+(define-test ucs2-string<?
+   (ucs2-string<? (let ((s (make-ucs2-string 10 #u0101)))
+                     (ucs2-string-set! s 2 (char->ucs2 #\a))
+                     (ucs2-string-set! s 3 #u0102)
+                     (ucs2-string-set! s 4 #u0104)
+                     s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\b))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0104)
+         s)) :result #t)
+(define-test ucs2-string<?
+   (ucs2-string<? (let ((s (make-ucs2-string 10 #u0101)))
+                     (ucs2-string-set! s 2 (char->ucs2 #\a))
+                     (ucs2-string-set! s 3 #u0102)
+                     (ucs2-string-set! s 4 #u0104)
+                     s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0103)
+         s))
+   :result #f)
+
+(define-test ucs2-string<=?
+   (ucs2-string<=? (let ((s (make-ucs2-string 10 #u0101)))
+                      (ucs2-string-set! s 2 (char->ucs2 #\a))
+                      (ucs2-string-set! s 3 #u0102)
+                      (ucs2-string-set! s 4 #u0103)
+                      s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0104)
+         s))
+   :result #t)
+(define-test ucs2-string<=?
+   (ucs2-string<=? (let ((s (make-ucs2-string 10 #u0101)))
+                      (ucs2-string-set! s 2 (char->ucs2 #\a))
+                      (ucs2-string-set! s 3 #u0102)
+                      (ucs2-string-set! s 4 #u0104)
+                      s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0104)
+         s))
+   :result #t)
+(define-test ucs2-string<=?
+   (ucs2-string<=? (let ((s (make-ucs2-string 10 #u0101)))
+                      (ucs2-string-set! s 2 (char->ucs2 #\a))
+                      (ucs2-string-set! s 3 #u0102)
+                      (ucs2-string-set! s 4 #u0104)
+                      s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0103)
+         s))
+   :result #f)
+
+(define-test ucs2-string>=?
+   (ucs2-string>=? (let ((s (make-ucs2-string 10 #u0101)))
+                      (ucs2-string-set! s 2 (char->ucs2 #\a))
+                      (ucs2-string-set! s 3 #u0102)
+                      (ucs2-string-set! s 4 #u0104)
+                      s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0104)
+         s))
+   :result #t)
+(define-test ucs2-string>=?
+   (ucs2-string>=? (let ((s (make-ucs2-string 10 #u0101)))
+                      (ucs2-string-set! s 2 (char->ucs2 #\a))
+                      (ucs2-string-set! s 3 #u0102)
+                      (ucs2-string-set! s 4 #u0105)
+                      s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0104)
+         s))
+   :result #t)
+(define-test ucs2-string>=?
+   (ucs2-string>=? (let ((s (make-ucs2-string 10 #u0101)))
+                      (ucs2-string-set! s 2 (char->ucs2 #\a))
+                      (ucs2-string-set! s 3 #u0102)
+                      (ucs2-string-set! s 4 #u0104)
+                      s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0105)
+         s))
+   :result #f)
+
+(define-test ucs2-string-ci<?
+   (ucs2-string-ci<? (let ((s (make-ucs2-string 10 #u0101)))
+                        (ucs2-string-set! s 2 (char->ucs2 #\A))
+                        (ucs2-string-set! s 3 #u0102)
+                        (ucs2-string-set! s 4 (char->ucs2 #\B))
+                        s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 (char->ucs2 #\c))
+         s))
+   :result #t)
+(define-test ucs2-string-ci<?
+   (ucs2-string-ci<? (let ((s (make-ucs2-string 10 #u0101)))
+                        (ucs2-string-set! s 2 (char->ucs2 #\a))
+                        (ucs2-string-set! s 3 #u0102)
+                        (ucs2-string-set! s 4 (char->ucs2 #\c))
+                        s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\A))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 (char->ucs2 #\B))
+         s))
+   :result #f)
+
+(define-test ucs2-string-ci<=?
+   (ucs2-string-ci<=? (let ((s (make-ucs2-string 10 #u0101)))
+                         (ucs2-string-set! s 2 (char->ucs2 #\A))
+                         (ucs2-string-set! s 3 #u0102)
+                         (ucs2-string-set! s 4 (char->ucs2 #\c))
+                         s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 (char->ucs2 #\C))
+         s))
+   :result #t)
+(define-test ucs2-string-ci<=?
+   (ucs2-string-ci<=? (let ((s (make-ucs2-string 10 #u0101)))
+                         (ucs2-string-set! s 2 (char->ucs2 #\A))
+                         (ucs2-string-set! s 3 #u0102)
+                         (ucs2-string-set! s 4 (char->ucs2 #\C))
+                         s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 (char->ucs2 #\D))
+         s))
+   :result #t)
+(define-test ucs2-string-ci<=?
+   (ucs2-string-ci<=? (let ((s (make-ucs2-string 10 #u0101)))
+                         (ucs2-string-set! s 2 (char->ucs2 #\A))
+                         (ucs2-string-set! s 3 #u0102)
+                         (ucs2-string-set! s 4 (char->ucs2 #\d))
+                         s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 (char->ucs2 #\c))
+         s))
+   :result #f)
+
+(define-test ucs2-string-ci>=?
+   (ucs2-string-ci>=? (let ((s (make-ucs2-string 10 #u0101)))
+                         (ucs2-string-set! s 2 (char->ucs2 #\A))
+                         (ucs2-string-set! s 3 #u0102)
+                         (ucs2-string-set! s 4 #u0104)
+                         s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0104)
+         s))
+   :result #t)
+(define-test ucs2-string-ci>=?
+   (ucs2-string-ci>=? (let ((s (make-ucs2-string 10 #u0101)))
+                         (ucs2-string-set! s 2 (char->ucs2 #\A))
+                         (ucs2-string-set! s 3 #u0102)
+                         (ucs2-string-set! s 4 #u0105)
+                         s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\a))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0104)
+         s))
+   :result #t)
+(define-test ucs2-string-ci>=?
+   (ucs2-string-ci>=? (let ((s (make-ucs2-string 10 #u0101)))
+                         (ucs2-string-set! s 2 (char->ucs2 #\A))
+                         (ucs2-string-set! s 3 #u0102)
+                         (ucs2-string-set! s 4 #u0104)
+                         s)
+      (let ((s (make-ucs2-string 10 #u0101)))
+         (ucs2-string-set! s 2 (char->ucs2 #\B))
+         (ucs2-string-set! s 3 #u0102)
+         (ucs2-string-set! s 4 #u0105)
+         s))
+   :result #f)
+
+(define-test subucs2-string (subucs2-string #u"abcdefg" 1 4)
+   :result #u"bcd")
+
+(define-test ucs2-string-append (ucs2-string-append #u"abcde" #u"0123")
+   :result #u"abcde0123")
+
+(define-test ucs2-string->list
+   (ucs2-string->list #u"abcd")
+   :result (list (char->ucs2 #\a)
+              (char->ucs2 #\b)
+              (char->ucs2 #\c)
+              (char->ucs2 #\d)))
+(define-test list->ucs2-string
+   (list->ucs2-string (list (char->ucs2 #\a)
+                         (char->ucs2 #\b)
+                         (char->ucs2 #\c)
+                         (char->ucs2 #\d)))
+   :result #u"abcd")
+
+(define-test ucs2-string-copy
+   (ucs2-string-copy #u"abcd")
+   :result #u"abcd")
+
+(define-test ucs2-string-fill
+   (let ((s #u"abcd"))
+      (ucs2-string-fill! s (char->ucs2 #\a))
+      s)
+   :result #u"aaaa")
+
+(define-test ucs2-string-upcase
+   (ucs2-string-upcase #u"abcdABCD")
+   :result #u"ABCDABCD") 
+(define-test ucs2-string-downcase
+   (ucs2-string-downcase #u"abcdABCD")
+   :result #u"abcdabcd")
+
+(define-test ucs2<->utf8
+   (ucs2-string->utf8-string (utf8-string->ucs2-string "toto"))
+   :result "toto")
+
+(define-test write
+   (let ((p (open-output-string)))
+      (write #u"abcdef" p)
+      (close-output-port p))
+   :result "#u\"abcdef\"")
+
+   
+(define-test utf8/iso-latin
+   (let ((s "Ã©tÃ© maison pas glÃ¶p"))
+      (string=? (utf8->iso-latin (iso-latin->utf8 s)) s))
+   :result #t)
+
+         
+(define-test "utf8/cp1252"
+   (let ((s "\xe2\x82\xactoto\xe2\x80\x9a"))
+      (string=? (cp1252->utf8 (utf8->cp1252 s)) s))
+   :result #t)
+
+(define-test literal
+   (let* ((l '(#\" #\[ #\\ #\u #\0 #\0 #\4 #\1 #\] #\"))
+	  (s0 (apply string l))
+	  (s (with-input-from-string s0 read)))
+      (string->list s))
+   :result (list #\[ (integer->char #x41) #\]))
+
+(define-test literal
+   (let* ((l '(#\" #\[ #\\ #\u #\0 #\0 #\4 #\1 #\] #\"))
+	  (s0 (apply string l))
+	  (s (with-input-from-string s0 read)))
+      (string=? (list->string (string->list s)) s))
+   :result #t)
+
+(define-test ucs2-whitespace?
+   (let* ((bytes (list "E8" "BF" "99" "20" "20" "20" "E5" "8C" "B9" "20" "E5" "BF" "AB" "20" "20" "20" "20" "20" "20" "E9" "A9" "AC" "20" "20" "20" "20" "20" "E6" "8A" "8A" "20" "E8" "BD" "A6" "20" "20" "20" "20" "E6" "8B" "89" "20" "20" "20" "20" "20" "E5" "8E" "BB" "20" "20" "20" "20" "E5" "9F" "8E" "E5" "B8" "82" "2E"))
+	  (bytes-n (map (lambda (s) (integer->char (string->number s 16)))
+                      bytes))
+	  (s (list->string bytes-n)))
+      (ucs2-whitespace?
+         (ucs2-string-ref (utf8-string->ucs2-string (utf8-string-ref s 0)) 0)))
+   :result #f)
+	    
+   
