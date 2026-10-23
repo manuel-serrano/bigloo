@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 28 19:21:00 2026                          */
-;*    Last change :  Fri Oct 23 08:14:19 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 12:13:26 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing characters                                               */
@@ -57,16 +57,30 @@
    :result #f)
 (define-test char=? (char=? (integer->char 255) #a255)
    :result #t)
+(define-test char=? (let ((x #\a)) (char=? x #\a))
+   :result #t)
+(define-test char=? (let ((x #\b)) (char=? x #\a))
+   :result #f)
 
 (define-test char<? (char<? #\a #\z)
    :result #t)
 (define-test char<? (char<? #\a #\a)
    :result #f)
+(define-test char<? (let ((x #\b)) (char<? x #\a))
+   :result #f)
+(define-test char<? (let ((x #\b)) (char<? #\a x))
+   :result #t)
    
 (define-test char>? (char>? #\a #\z)
    :result #f)
 (define-test char>? (char>? #\a #\a)
    :result #f)
+(define-test char>? (let ((x #\b)) (char>? x #\a))
+   :result #t)
+(define-test char>? (let ((x #\b)) (char>? #\a x))
+   :result #f)
+(define-test char>? (let ((s "Ã©tÃ©")) (char>? (string-ref s 0) #a127))
+   :result #t)
    
 (define-test char<=? (char<=? #\a #\z)
    :result #t)
@@ -84,15 +98,27 @@
    :result #t)
 (define-test char-ci=? (char-ci=? #\a #\A)
    :result #t)
+(define-test char-ci=? (let ((x #\A)) (char-ci=? x #\a))
+   :result #t)
+(define-test char-ci=? (let ((x #\B)) (char-ci=? x #\a))
+   :result #f)
 
 (define-test char-ci<? (char-ci<? #\a #\z)
    :result #t)
 (define-test char-ci<? (char-ci<? #\a #\a)
    :result #f)
+(define-test char-ci<? (let ((x #\B)) (char-ci<? x #\a))
+   :result #f)
+(define-test char-ci<? (let ((x #\B)) (char-ci<? #\a x))
+   :result #t)
    
 (define-test char-ci>? (char-ci>? #\a #\z)
    :result #f)
 (define-test char-ci>? (char-ci>? #\a #\a)
+   :result #f)
+(define-test char-ci>? (let ((x #\B)) (char-ci>? x #\a))
+   :result #t)
+(define-test char-ci>? (let ((x #\B)) (char-ci>? #\a x))
    :result #f)
    
 (define-test char-ci<=? (char-ci<=? #\a #\z)
@@ -111,11 +137,17 @@
    :result #t)
 (define-test char-alphabetic? (char-alphabetic? #\?)
    :result #f)
+(define-test char-alphabetic? (char-alphabetic? #\0)
+   :result #f)
 
 (define-test char-numeric? (char-numeric? #\1)
    :result #t)
 (define-test char-numeric? (char-numeric? #\v)
    :result #f)
+(define-test char-numeric? (char-numeric? #\a)
+   :result #f)
+(define-test char-numeric? (char-numeric? #\0)
+   :result #t)
 
 (define-test char-whitespace? (char-whitespace? #\space)
    :result #t)
@@ -125,11 +157,18 @@
    :result #t)
 (define-test char-whitespace? (char-whitespace? #\.)
    :result #f)
+(define-test char-whitespace?.1 (char-whitespace? #\a)
+   :result #f)
 
 (define-test char-upper-case? (char-upper-case? #\A)
    :result #t)
+(define-test char-upper-case? (char-upper-case? #\a)
+   :result #f)
+
 (define-test char-lower-case? (char-lower-case? #\a)
    :result #t)
+(define-test char-lower-case? (char-lower-case? #\A)
+   :result #f)
 
 (define-test char-upcase (char-upcase #\a)
    :result #\A)
@@ -143,6 +182,8 @@
 
 (define-test char->integer (char->integer #\A)
    :result 65)
+(define-test char<->integer (char->integer (integer->char 128))
+   :result 128)
 
 (define-test integer->char (integer->char (char->integer #\A))
    :result #\A)
@@ -172,6 +213,10 @@
 (define-test char->integer
    (char->integer #\null)
    :result 0)
+(define-test char->integer (char->integer #\0)
+   :result 48)
+(define-test char->integer (char->integer #a200)
+   :result 200)
 
 (define-test eq? (eq? #\a #\a) :result #t)
 (define-test eq? (eq? #\a #\A) :result #f)
@@ -181,5 +226,6 @@
 (define-test eqv? (eqv? #\| #\|) :result #t)
 (define-test eqv? (eqv? (integer->char 255) (car (list #a255))) :result #t)
 (define-test integer->char (integer->char 255) :result #a255)
+(define-test integer->char (integer->char 48) :result #\0)
 
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Fri Oct  2 15:33:18 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 14:18:26 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing ports                                                    */
@@ -104,6 +104,51 @@
             (close-mmap mmap))))
    :result 'Toto)
 
+(define-test input-mmap-port?
+   (let* ((mm (open-mmap "misc/input.txt" :read #t))
+          (ip (open-input-mmap mm)))
+      (unwind-protect
+         (input-mmap-port? ip)
+         (begin
+            (close-input-port ip)
+            (close-mmap mm))))
+   :result #t)
+(define-test input-mmap-port?
+   (input-mmap-port? list)
+   :result #f)
+(define-test input-mmap-port?
+   (input-mmap-port? 1)
+   :result #f)
+(define-test input-mmap-port?
+   (input-mmap-port? "foo")
+   :result #f)
+(define-test input-mmap-port
+   (let* ((c (with-input-from-file "misc/input.txt" read-char))
+          (mm (open-mmap "misc/input.txt" :read #t))
+          (ip (open-input-mmap mm)))
+      (char=? (read-char ip) c))
+   :result #t)
+(define-test input-port-reopen!
+   (let* ((c (with-input-from-file "misc/input.txt" read-char))
+          (mm (open-mmap "misc/input.txt" :read #t))
+          (ip (open-input-mmap mm)))
+      (input-port-reopen! ip)
+      (char=? (read-char ip) c))
+   :result #t)
+(define-test set-input-port-position!
+   (let* ((c (with-input-from-file "misc/input.txt" read-char))
+          (s (with-input-from-file "misc/input.txt"
+                (lambda ()
+                   (read-chars 20)
+                   (read-chars 9))))
+          (mm (open-mmap "misc/input.txt" :read #t))
+          (ip (open-input-mmap mm)))
+      (input-port-reopen! ip)
+      (char=? (read-char ip) c)
+      (set-input-port-position! ip 20)
+      (string=? (read-chars 9 ip) s))
+   :result #t)
+         
 (define-test open-input-gzip-file
    (let ((ip (open-input-gzip-file "misc/input.txt.gz")))
       (unwind-protect

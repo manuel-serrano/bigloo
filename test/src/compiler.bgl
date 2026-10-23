@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Fri Oct 23 09:03:17 2026 (serrano)                */
+;*    Last change :  Fri Oct 23 10:18:37 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the compiler                                             */
@@ -1333,3 +1333,17 @@
 (define-test bug-data-flow-lub (bug-dataflow-lub "/foo") :result 222)
 (define-test bug-data-flow-lub2 (bug-data-flow-lub2 3 #f) :result #f)
 
+;*---------------------------------------------------------------------*/
+;*    aliases                                                          */
+;*---------------------------------------------------------------------*/
+(define (bar0 x) x)
+
+(define bar1 foo1)
+(define bar2 foo2)
+(define bar3 foo3)
+(define bar4 bar0)
+
+(define-test alias (foo1 1) :result (bar1 1))
+(define-test alias (foo2 1 2 3) :result (bar2 1 2 3))
+(define-test alias (foo3 1 2 3) :result (bar3 1 2 3))
+(define-test alias (bar0 1) :result (bar4 1))

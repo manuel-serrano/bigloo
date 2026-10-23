@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/alias.scm               */
+;*    serrano/prgm/project/bigloo/5.0.x/recette/alias.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 15 13:30:45 1993                          */
-;*    Last change :  Thu Oct  9 15:07:08 2025 (serrano)                */
+;*    Last change :  Fri Oct 23 10:19:58 2026 (serrano)                */
 ;*                                                                     */
 ;*    On test les alias                                                */
 ;*=====================================================================*/
@@ -18,26 +18,8 @@
    (export (test-alias)))
 
 ;*---------------------------------------------------------------------*/
-;*    bar0 ...                                                         */
-;*---------------------------------------------------------------------*/
-(define (bar0 x)
-   x)
-
-;*---------------------------------------------------------------------*/
-;*    Les alias                                                        */
-;*---------------------------------------------------------------------*/
-(define bar1 foo1)
-(define bar2 foo2)
-(define bar3 foo3)
-(define bar4 bar0)
-
-;*---------------------------------------------------------------------*/
 ;*    test-alias ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (test-alias)
-   (test-module "alias" "alias.scm")
-   (test "unary" (foo1 1) (bar1 1))
-   (test "arity -1" (foo2 1 2 3) (bar2 1 2 3))
-   (test "arity -n" (foo3 1 2 3) (bar3 1 2 3))
-   (test "local" (bar0 1) (bar4 1)))
+   (test-module "alias" "alias.scm"))
   

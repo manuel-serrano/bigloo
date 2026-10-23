@@ -302,6 +302,10 @@ Returns `#t` iff `obj` is an `input-port`. Returns `#f` otherwise.
 Returns `#t iff `obj` is an `input-port` opened on a string. Returns
 `#f` otherwise.
 
+### input-mmap-port? ###
+Returns `#t iff `obj` is an `input-port` opened on a mmap. Returns
+`#f` otherwise.
+
 ### output-port? ###
 Returns `#t` iff `obj` is an `output-port`. Returns `#f` otherwise.
 

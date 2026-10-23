@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/wasm/recette/cse.scm                 */
+;*    serrano/prgm/project/bigloo/5.0.x/recette/cse.scm                */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 29 17:25:53 1993                          */
-;*    Last change :  Thu Oct  9 15:09:14 2025 (serrano)                */
+;*    Last change :  Fri Oct 23 12:26:33 2026 (serrano)                */
 ;*                                                                     */
 ;*    On test l'elimination de sous expression commune.                */
 ;*=====================================================================*/
@@ -17,57 +17,9 @@
    (export (test-cse)))
 
 ;*---------------------------------------------------------------------*/
-;*    foo ...                                                          */
-;*---------------------------------------------------------------------*/
-(define (foo x)
-   (let ((y (car x)))
-      (set-car! x 3)
-      (let ((z (car x)))
-	 z)))
-
-;*---------------------------------------------------------------------*/
-;*    bar ...                                                          */
-;*---------------------------------------------------------------------*/
-(define (bar x)
-   (let ((y (car x)))
-      (foo x)
-      (let ((z (car x)))
-	 z)))
-
-;*---------------------------------------------------------------------*/
-;*    gee ...                                                          */
-;*---------------------------------------------------------------------*/
-(define (gee l::pair)
-   ;; this function was badly compiled due to a bug in the cse
-   ;; that propagate the binding (a (c-car l)) into the loop.
-   (let ((a ($car l)))
-      (let loop ((a a))
-	 (if ($pair? a)
-	     (begin
-		($set-car! l '(3))
-		(loop ($cdr a)))
-	     (let ((a ($car l)))
-		($set-cdr! a 4)
-		a))))) 
-
-;*---------------------------------------------------------------------*/
-;*    test9 ...                                                        */
-;*---------------------------------------------------------------------*/
-(define (test9)
-   (let ((p (open-input-string "1 2 3 4 5 6 7")))
-      (let* ((x (read p))
-	     (y (eq? 'toto (read p)))
-	     (z (read p)))
-	 (= (+ x z) 4))))
-
-;*---------------------------------------------------------------------*/
 ;*    test-cse ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (test-cse)
-   (test-module "cse" "cse.scm")
-   (test "cse" (foo '(1 2)) 3)
-   (test "cse" (bar '(1 2)) 3)
-   (test "cse" (gee '((1))) '(3 . 4))
-   (test "sbeta" (test9) #t))
+   (test-module "cse" "cse.scm"))
 
 
