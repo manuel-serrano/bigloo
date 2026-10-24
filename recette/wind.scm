@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  8 19:31:00 1998                          */
-;*    Last change :  Fri Oct 23 22:13:33 2026 (serrano)                */
+;*    Last change :  Sat Oct 24 09:48:06 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Wind test (dynamic-wind and unwind-protect).                     */
 ;*=====================================================================*/
@@ -13,7 +13,8 @@
 ;*---------------------------------------------------------------------*/
 (module wind
    (import (utils "utils.scm"))
-   (export (test-wind)))
+   (export (test-wind)
+      (test-wind-sans-handler end)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-wind ...                                                    */
@@ -21,3 +22,6 @@
 (define (test-wind)
    (let ((exg ($get-exitd-top)))
       (test-module "wind" "wind.scm")))
+
+(define (test-wind-sans-handler end)
+   (test-module "wind" "wind.scm"))
