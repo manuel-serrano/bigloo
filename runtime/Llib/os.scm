@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Oct 22 09:33:58 2026 (serrano)                */
+;*    Last change :  Sat Oct 24 14:41:29 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -305,7 +305,7 @@
 	    (file-name-unix-canonicalize::bstring ::bstring)
 	    (file-name-unix-canonicalize!::bstring ::bstring)
 	    (relative-file-name::bstring ::bstring ::bstring)
-	    (find-file/path ::bstring ::obj)
+	    (find-file/path ::bstring ::pair-nil)
 	    (make-static-library-name::bstring ::bstring)
 	    (make-shared-library-name::bstring ::bstring)
             (inline default-executable-name)
@@ -759,7 +759,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn find-file/path@ ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (find-file/path file-name::bstring path)
+(define (find-file/path file-name::bstring path::pair-nil)
    (define (mingw-full-qualified-path? file-name)
       (if (string=? (os-class) "mingw")
 	  (or (char=? (string-ref file-name 0) #\/)
@@ -780,12 +780,12 @@
            #f))
       (else
        (let loop ((path path))
-	  (if (null? path)
-	      #f
-	      (let ((fname (make-file-name (car path) file-name)))
-		 (if (file-exists? fname)
-		     fname
-		     (loop (cdr path)))))))))
+          (if (null? path)
+              #f
+              (let ((fname (make-file-name (car path) file-name)))
+                 (if (file-exists? fname)
+                     fname
+                     (loop (cdr path)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-name->list@ ...                                      */

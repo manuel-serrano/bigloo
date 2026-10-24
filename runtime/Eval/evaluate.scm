@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Thu Sep 17 10:46:34 2026 (serrano)                */
+;*    Last change :  Sat Oct 24 14:40:13 2026 (serrano)                */
 ;*    Copyright   :  2010-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -227,7 +227,6 @@
 			      e
 			      loc))))
 		   (else
-		    (tprint "e=" e " fields=" fields " klass=" klass)
 		    (error/source-location (or type name)
 		       "Static type not a class" e  loc)))))
 	  (error/source-location (cadr e) "Variable unbound" e  loc))))

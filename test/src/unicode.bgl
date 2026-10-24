@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 13 12:18:58 2026                          */
-;*    Last change :  Fri Oct 23 21:43:56 2026 (serrano)                */
+;*    Last change :  Sat Oct 24 12:22:01 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing unicode functions                                        */
@@ -592,7 +592,7 @@
    :result #t)
 
          
-(define-test "utf8/cp1252"
+(define-test utf8/cp1252
    (let ((s "\xe2\x82\xactoto\xe2\x80\x9a"))
       (string=? (cp1252->utf8 (utf8->cp1252 s)) s))
    :result #t)

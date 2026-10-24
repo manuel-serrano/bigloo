@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Fri Sep 11 11:16:50 2026 (serrano)                */
+;*    Last change :  Sat Oct 24 14:50:54 2026 (serrano)                */
 ;*    Copyright   :  2006-26 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -916,7 +916,10 @@
 	       (if (evmodule? evmod)
 		   evmod
 		   (begin
-		      (evmodule-loadq path #unspecified)
+                      (if (file-exists? path)
+                          (evmodule-loadq path #unspecified)
+                          (error/source-location id
+                             "Cannot find module source" path loc))
 		      (let ((evmod (eval-find-module id)))
 			 (%evmodule-mod-set! evmod mod)
 			 (module5-expand-and-resolve! mod (lambda (xenv mod) xenv))

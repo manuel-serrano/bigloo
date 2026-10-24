@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Fri Oct 16 18:31:27 2026 (serrano)                */
+;*    Last change :  Sat Oct 24 14:47:13 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -293,7 +293,7 @@
    (let* ((env (getenv "BIGLOOLIB"))
 	  (lib-env (if (string? env)
 		       (string-split env ":")
-		       (bigloo-config 'library-directory))))
+		       (list (bigloo-config 'library-directory)))))
       (cons "." lib-env)))
 
 ;*---------------------------------------------------------------------*/
