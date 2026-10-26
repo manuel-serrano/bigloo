@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Oct 26 09:31:01 2026 (serrano)                */
+#*    Last change :  Mon Oct 26 09:32:31 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -535,6 +535,8 @@ $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz:
              if [ -d $$d ]; then \
                echo "distribution $$d ..."; \
 	       ($(MAKE) -C $$d distrib) || exit 1; \
+		echo "TGZ.2b PWD=$$PWD"
+		ls -l $(BOOTBINDIR)/cigloo
              fi \
           done
 	echo "TGZ.3 PWD=$$PWD"
