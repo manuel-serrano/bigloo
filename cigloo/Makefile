@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/cigloo/Makefile                      */
+#*    serrano/prgm/project/bigloo/5.0.x/cigloo/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Sun Jul  9 10:22:24 2017 (serrano)                */
-#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Oct 26 09:27:23 2026 (serrano)                */
+#*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Cigloo. This makefile has to be processed  */
 #*    either by Gnu make or Sun make.                                  */
@@ -157,7 +157,7 @@ dep:
 #*    We prepare the compiler for a distribution                       */
 #*---------------------------------------------------------------------*/
 distrib: 
-	@ if [ `pwd` = $(BOODIR)/cigloo ]; then \
+	@ if [ `pwd` = $(BOOTDIR)/cigloo ]; then \
              echo "*** ERROR:Illegal dir to make a distrib `pwd`"; \
              exit 1; \
           fi

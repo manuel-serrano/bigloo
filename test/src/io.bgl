@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Mon Sep 28 18:05:23 2026 (serrano)                */
+;*    Last change :  Mon Oct 26 08:42:28 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing I/O                                                      */
@@ -100,6 +100,57 @@
    (call-with-input-string "AB" (lambda (ip) (peek-byte ip) (read-byte ip)))
    :result (char->integer #\A))
 
+(define-test peek-char
+   (let* ((s (with-output-to-string
+                (lambda ()
+                   (let loop ((n 300))
+                      (if (> n 0)
+                          (begin
+                             (display #\a)
+                             (loop (- n 1))))))))
+          (idx 0)
+          (step 1)
+          (read-char-bis
+             (lambda (port)
+                (set! idx (+ 1 idx))
+                (if (= (remainder idx step) 0)
+                    (peek-char port))
+                (read-char port)))
+          (read-twice
+             (lambda (s)
+                (let ((p1 (open-input-string s))
+                      (p2 (open-input-string s)))
+                   (unwind-protect
+                      (let loop ((n 0)
+                                 (c1 (read-char p1))
+                                 (c2 (read-char-bis p2)))
+                         (if (and (eq? c1 c2)
+                                  (not (eof-object? c1))
+                                  (not (eof-object? c2)))
+                             (loop (+ n 1)
+                                (read-char p1)
+                                (read-char-bis p2))
+                             (if (not (eq? c1 c2))
+                                 #f
+                                 n)))
+                      (begin
+                         (close-input-port p1)
+                         (close-input-port p2)))))))
+      (read-twice s))
+   :result 300)
+
+(define-test peek-char
+   (let ((p (open-input-string "foo bar gee")))
+      (let loop ((n 5))
+	 (when (> n 0)
+	    (read-char p)
+	    (peek-char p)
+	    (loop (- n 1))))
+      (let ((r (input-port-position p)))
+	 (close-input-port p)
+	 r))
+   :result 5)
+		 
 (define-test char-ready?
    (cond-expand
       (wasm
