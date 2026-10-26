@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Fri Oct 23 21:29:14 2026 (serrano)                */
+;*    Last change :  Mon Oct 26 11:21:21 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the compiler                                             */
@@ -17,7 +17,7 @@
    (eval (export letrec-foo-loop))
    (export compilation-bug-1 compilation-bug-2 compilation-bug-3
       compilation-bug-4 compilation-bug-5 compilation-bug-6
-      compilation-bug-7)
+      compilation-bug-7 compilation-bug-8)
    (extern "C"
       ($dummy::obj ::obj ... "")))
 
@@ -675,6 +675,12 @@
      3
      (lambda (x) x)) 3))
 
+(define (qnc-error x)
+   (labels ((f1 (a) (+fx a x)))
+      (set! x (+fx x 1))
+      f1))
+
+
 (define-test closure ((closure-test1)) :result 0)
 (define-test closure (((closure-test7 5) 6) 7) :result 5)
 (define-test closure ((closure-test2 1 2 3)) :result 1)
@@ -685,6 +691,7 @@
 (define-test closure (closure-test8 "(foo(bar(gee)))") :result '(foo bar gee))
 (define-test closure (_closure-plante-4 5 6) :result 11)
 (define-test closure (static-application) :result 3)
+(define-test closure ((qnc-error 4) 5) :result 10)
 
 ;*---------------------------------------------------------------------*/
 ;*    letrec                                                           */
@@ -1772,3 +1779,20 @@
 
 (define-test capture (capture10 (list 1 2 4) (list 4 6 67)) :result '(1 2))
    
+;*---------------------------------------------------------------------*/
+;*    compilation-bug-8 ...                                            */
+;*---------------------------------------------------------------------*/
+(define (compilation-bug-8)
+   (begin
+      (set-exit
+         (an-exit1013)
+         (let ()
+            (push-exit! an-exit1013 1)
+            (let ((exp (let ((body1018 (lambda () 9)))
+                          (set-exit
+                             (an-exit1025)
+                             (let ()
+                                (push-exit! an-exit1025 0)
+                                (body1018))))))
+               (set! exp #unspecified))))
+      9))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 18 07:41:58 2026                          */
-;*    Last change :  Fri Sep 18 07:52:10 2026 (serrano)                */
+;*    Last change :  Mon Oct 26 11:17:29 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    call/cc                                                          */
@@ -27,6 +27,11 @@
    (when (or (null? tests) (member "callcc" tests))
       (test-all verbose "callcc")))
 
+(cond-expand
+   ((not call/cc)
+    (define-macro (call/cc l)
+       `(list ,l))))
+
 ;*---------------------------------------------------------------------*/
 ;*    tests                                                            */
 ;*---------------------------------------------------------------------*/
@@ -42,3 +47,373 @@
       x)
    :cond-expand call/cc
    :result 6)
+
+;*---------------------------------------------------------------------*/
+;*    same-fringe ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-test same-fringe
+   (let ((ta 10)
+         (tb 1))
+      (labels ((walk (tree k)
+		  (cond
+		     ((not (pair? tree))
+		      (set! *result* tree)
+		      (call/cc k))
+		     (else
+		      (walk (cdr tree) (walk (car tree) k)))))
+               (compare-fringe (ka kb)
+                  (let* ((new-ka (call/cc ka))
+                         (leaf-ta *result*)
+                         (new-kb (call/cc kb))
+                         (leaf-tb *result*))
+                     (cond
+                        ((not (eq? leaf-ta leaf-tb))  #f)
+                        ((null? leaf-ta)              #t)
+                        (else
+                         (compare-fringe new-ka new-kb))))))
+         
+         (compare-fringe
+            (call/cc ;; one tree walker
+               (lambda (k)
+                  (let ((last-k (walk ta k)))
+                     (set! *result* '())
+                     (last-k '()))))
+            (call/cc ;; the other tree walker
+               (lambda (k)
+                  (let ((last-k (walk tb k)))
+                     (set! *result* '())
+                     (last-k '())))))))
+   :cond-expand call/cc
+   :result #t)
+
+(define (make-tree n)
+  (cond
+     ((= n 0) 1)
+     (else
+        (let ((mid (/fx n 2)))
+           (cons (make-tree mid) (make-tree (- (- n 1) mid)))))))
+
+(define (test_fringe comparator size count)
+  (let ((ta (make-tree size))
+        (tb (make-tree (+ size 1))))
+     (let loop ((idx 1))
+       (if (<= idx count)
+         (begin
+           (if (not (comparator ta tb)) #f)
+           (loop (+ idx 1)))))
+     #t))
+
+(define *result* 'void)
+
+;*---------------------------------------------------------------------*/
+;*    cons-gd ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-macro (cons-gd a d)
+   `(let ((a ,a))
+       (cons a ,d)))
+
+;*---------------------------------------------------------------------*/
+;*    list-length ...                                                  */
+;*---------------------------------------------------------------------*/
+(define list-length
+   (lambda (obj)
+      (call/cc
+       (lambda (return)
+	  (letrec ((r (lambda (obj)
+			 (cond ((null? obj) 0)
+			       ((pair? obj) (+ (r (cdr obj)) 1))
+			       (else (return #f))))))
+	     (r obj))))))
+
+;*---------------------------------------------------------------------*/
+;*    test-set ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (test-set)
+   (let (v)
+      (let ((k (call/cc (lambda (x) (set! v x)))))
+	 (if k
+	     v
+	     (lambda (x) x)))))
+
+;*---------------------------------------------------------------------*/
+;*    test2 ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (test2 prefix)
+   (call/cc (lambda (exit)
+	       (if (not (string? prefix))
+		   (exit #f)
+		   (exit (mgensym prefix))))))
+   
+(define mgensym
+   (let ((v -1))
+      (lambda args
+	 (set! v (+ 1 v))
+	 (if (null? args)
+	     (string->symbol (string-append "&" (integer->string v)))
+	     (string->symbol (string-append (car args)
+					    (integer->string v)))))))
+
+;*---------------------------------------------------------------------*/
+;*    test3 ...                                                        */
+;*    -------------------------------------------------------------    */
+;*    Cette fonction teste les interferences possibles entre le GC et  */
+;*    call/cc                                                          */
+;*---------------------------------------------------------------------*/
+(define (test3) 
+   (let ((s (make-string (* 1024 600))))
+      (eval '(define resume (lambda (v) (display "not initialized"))))
+      (eval '(define (callcc-foo n)
+		(bind-exit (stop)
+		   (define (loop f)
+		      (call/cc (lambda (k)
+				  (set! resume k)
+				  (f)))
+		      (loop f))
+		   (loop (lambda () (begin
+				       (set! n (- n 1))
+				       (if (= n 0)
+					   (stop n)
+					   (resume n))))))))
+      (eval '(callcc-foo 100))))
+
+;*---------------------------------------------------------------------*/
+;*    make-box ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (make-box value)
+  (let ((box
+         (call/cc
+          (lambda (exit)
+            (letrec
+                ((behavior
+                  (call/cc
+                   (lambda (store)
+                     (exit (lambda (msg . new)
+                             (call/cc
+                              (lambda (caller)
+                                (case msg
+                                  ((get) (store (cons (car behavior) caller)))
+                                  ((set)
+                                   (store (cons (car new) caller)) ) )))))))))
+              ((cdr behavior) (car behavior)) ) ) ) ) )
+    (box 'set value)
+    box ) )
+
+;*---------------------------------------------------------------------*/
+;*    lambda-trace                                                     */
+;*---------------------------------------------------------------------*/
+(define (lambda-trace x)
+   (let (r)
+      (try (ccbar1 x)
+	   (lambda (k a b c)
+	      (set! r c)
+	      (k #unspecified)))
+      r))
+
+(define (ccbar1 x)
+   (car (call/cc (lambda (exit)
+		    (ccbar2 exit x)))))
+
+(define (ccbar2 f x)
+   (f x))
+
+(define-test call/cc
+   (call/cc (lambda (exit)
+               (for-each (lambda (x)
+                            (if (negative? x)
+                                (exit x)))
+                  '(54 0 37 -3 245 19))
+               #t))
+   :cond-expand call/cc
+   :result -3)
+(define-test call/cc (list-length '(1 2 3 4))
+   :cond-expand call/cc
+   :result 4)
+(define-test call/cc (list-length '(a b . c))
+   :cond-expand call/cc
+   :result #f)
+(define-test call/cc (call/cc (lambda (k) 'a))
+   :cond-expand call/cc
+   :result 'a)
+(define-test call/cc (call/cc (lambda (k) (k 'a)))
+   :cond-expand call/cc
+   :result 'a)
+(define-test call/cc (call/cc (lambda (k) (cons (k 'a) 1)))
+   :cond-expand call/cc
+   :result 'a)
+
+;*---------------------------------------------------------------------*/
+;*    test-stack-traces ...                                            */
+;*---------------------------------------------------------------------*/
+(define-expander lbind-exit
+   (lambda (x e)
+      (match-case x
+	 ((lbind-exit (?exit) . ?body)
+	  (e `(call/cc (lambda (,exit)
+			  ,@body))
+	     e)))))
+
+(define (test-stack-traces-main x)
+   (car x)
+   (lbind-exit (exit)
+      (test-stack-traces-foo x exit))
+   (caddr (cddr x)))
+
+(define (test-stack-traces-foo x exit)
+   (cadr x)
+   (lbind-exit (stop)
+      (test-stack-traces-bar x stop))
+   (caddr (cdr x))
+   (exit 1))
+
+(define (test-stack-traces-bar x stop)
+   (caddr x)
+   (stop 2))
+
+(define (test-stack-traces)
+   (let ((l '(() (1) (1 2) (1 2 3) (1 2 3 4) (1 2 3 4 5)))
+	 (old (bigloo-debug)))
+      (bigloo-debug-set! 10)
+      (let ((r (= (apply + (map (lambda (v) 
+				   (try (begin (test-stack-traces-main v) 0)
+					(lambda (a b c d)
+					   (a 1))))
+				l))
+		  5)))
+	 (bigloo-debug-set! old)
+	 r)))
+
+(define-test call/cc ((test-set) #f)
+   :cond-expand call/cc
+   :result #f)
+(define-test call/cc
+   ((lambda (a)
+       (begin (set! a (call/cc (lambda (k) k)))
+              (a (lambda (x) 1))))
+    2)
+   :cond-expand call/cc
+   :result 1)
+(define-test call/cc
+   ((lambda (a b)
+       (begin (set! a (call/cc (lambda (k) k)))
+              (begin (set! b (+ 1 b))
+                     (a (lambda (x) b)))))
+    3 0)
+   :cond-expand call/cc
+   :result 2)
+(define-test call/cc
+   ((lambda (foo)
+       (begin
+          (set! foo ((lambda (z)
+                        (lambda (x)
+                           ((lambda (y) (begin (set! z x) y))
+                            z)))
+                     'z))
+          (cons-gd (foo (call/cc (lambda (k) ; store A and return Z
+                                    (k 'a))))
+             (cons-gd (foo (call/cc (lambda (k) ; store B, return A
+                                       (cons-gd 1 (k 'b)))))
+                (cons-gd (foo (call/cc (lambda (k)
+                                          (cons-gd 2 (k k)))))
+                   (cons-gd ((lambda (x)
+                                (if (symbol? x) 'ee (x 'e)))
+                             (foo 'd))
+                      (cons-gd (foo 'f)
+                         '())))))))
+    'foo)
+   :cond-expand call/cc
+   :result '(z a d ee d))
+(define-test call/cc
+   ((lambda (foo)
+       (begin
+          (set! foo ((lambda (z)
+                        (lambda (x u)
+                           ((lambda (y) (begin (set! z x) y))
+                            z)))
+                     'z))
+          (cons-gd (foo (call/cc (lambda (k)
+                                    (k 'a)))
+                      1)
+             (cons-gd (foo (call/cc (lambda (k)
+                                       (cons-gd 1 (k 'b))))
+                         2)
+                (cons-gd (foo (call/cc (lambda (k)
+                                          (cons-gd 2 (k k))))
+                            3)
+                   (cons-gd ((lambda (x)
+                                (if (symbol? x) 'ee (x 'e)) )
+                             (foo 'd 4))
+                      (cons-gd (foo 'f 5) '())))))))
+    'foo)
+   :cond-expand call/cc
+   :result '(z a d ee d))
+
+(define-test call/cc (test2 'toto)
+   :cond-expand call/cc
+   :result #f)
+(define-test call/cc (test2 "TOTO")
+   :cond-expand call/cc
+   :result 'TOTO0)
+(define-test call/cc (test3)
+   :cond-expand call/cc
+   :result 0)
+
+(define-test "box"
+   (let ((box1 (make-box 33))) (box1 'get))
+   :cond-expand call/cc
+   :result 33)
+(define-test "box"
+   (let ((box1 (make-box 33))) (begin (box1 'set 44) (box1 'get)))
+   :cond-expand call/cc
+   :result 44)
+
+(define-test eval
+   (begin
+      (eval '(define (next-leaf-generator obj eot)
+              (letrec ((return #f)
+                       (cont (lambda (x)
+                                (recur obj)
+                                (set! cont (lambda (x)
+                                              (return eot)))
+                                (cont #f)))
+                       (recur (lambda (obj)
+                                 (if (pair? obj)
+                                     (for-each recur obj)
+                                     (begin
+                                        (call/cc
+                                           (lambda (c)
+                                              (set! cont c)
+                                              (return obj))))))))
+                 (lambda ()
+                    (call/cc
+                       (lambda (ret)
+                          (set! return ret) (cont #f)))))))
+      
+      (eval '(define (leaf-eq? x y)
+              (let* ((eot (list 'eot))
+                     (xf (next-leaf-generator x eot))
+                     (yf (next-leaf-generator y eot)))
+                 (let loop ((x (xf)) (y (yf)))
+                    (cond ((not (eq? x y)) #f)
+                          ((eq? eot x) #t)
+                          (else
+                           (loop (xf) (yf))))))))
+      
+      (eval '(leaf-eq? '(a a) '(a b))))
+   :cond-expand call/cc
+   :result #f)
+
+(define-test lambda-stack (lambda-trace 1)
+   :cond-expand call/cc
+   :result 1)
+
+(define-test call-with-values
+   (call-with-values (lambda ()
+                        (call/cc (lambda (cont)
+                                    (cont 'x 'y))))
+                     cons)
+   :cond-expand call/cc
+   :result '(x . y))
+
+(define-test stack-traces (test-stack-traces)
+   :cond-expand call/cc
+   :result #t)
