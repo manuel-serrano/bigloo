@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  manuel serrano                                    */
 #*    Creation    :  Mon Apr 13 12:38:34 2026                          */
-#*    Last change :  Fri Oct 23 20:39:45 2026 (serrano)                */
+#*    Last change :  Mon Oct 26 10:13:19 2026 (serrano)                */
 #*    Copyright   :  2026 manuel serrano                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the non-regression tests                   */
@@ -40,10 +40,10 @@ BJFLAGS = -jvm
 #*---------------------------------------------------------------------*/
 TESTS = main argsparse bigloo bignum bit bool callcc case char closure \
   compiler condexpand core crc cse csv0 date digest dsssl error eval exn \
-  hash int1 int2 internet lalr io macro mail0 match mmap module multimedia0 \
-  net number object os pair port process reader real regexp rgc rgcinsert \
-  search serial sqlite0 ssr string struct symbol tar thread trace types \
-  unicode vector weakptr web0 wind zip
+  hash hygiene int1 int2 internet lalr io macro mail0 match mmap module \
+  multimedia0 net number object optim4 os pair port process reader real \
+  regexp rgc rgcinsert search serial sqlite0 ssr string struct symbol \
+  tar thread trace types unicode vector weakptr web0 wind zip
 
 MODULES4 = module4_ex12
 
@@ -157,6 +157,16 @@ objs_jvm/%.class: src/%.scm src/test.bgh
 	$(BGLJFILE) --strip 1 $(TESTS:%=src/%.bgl) $(MODULES5:%=src/modules/%.bgl) $(MODULES4:%=src/modules/%.scm) -o $@
 
 objs_jvm/Point.class: objs_jvm/Intf.class objs_jvm/extern_jvm.class
+
+objs_c/callcc.o: src/callcc.bgl src/test.bgh
+	$(BIGLOO) -c -call/cc $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
+
+objs_c/optim4.o: src/optim4.bgl src/test.bgh
+	$(BIGLOO) -c -O4 -unsafeter $(BFLAGS) $(BCFLAGS) $(EFLAGS) $< -o $@
+objs_wasm/optim4.wat: src/optim4.bgl src/test.bgh
+	$(BIGLOO) -c -O4 -unsafeter $(BFLAGS) $(BWFLAGS) $(EFLAGS) $< -o $@
+objs_jvm/optim4.class: src/optim4.bgl src/test.bgh
+	$(BIGLOO) -c -O4 -unsafeter $(BFLAGS) $(BJFLAGS) $(EFLAGS) $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    sub-directories                                                  */

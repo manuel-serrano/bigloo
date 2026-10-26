@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 11 06:24:20 2026                          */
-;*    Last change :  Fri Oct 23 08:11:34 2026 (serrano)                */
+;*    Last change :  Mon Oct 26 11:08:05 2026 (serrano)                */
 ;*    Copyright   :  2026 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing the core constructs                                      */
@@ -893,8 +893,20 @@
    (cond-expand ((and xxx bigloo) 1) (else 2)) :result 2)
 
 ;*---------------------------------------------------------------------*/
-;*    values                                                           */
+;*    varargs ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-test optional
-   (eq? (car (list #!optional)) #!optional)
-   :result #t)
+(define (vararg-test1 a b)
+   (labels ((f1 x x)
+	    (f2 (x . y) x))
+      (f1 (f2 a) b)))
+
+(define (vararg-test2 a b . c)
+   c)
+
+(define (vararg-test3 . c)
+   c)
+
+(define-test varargs (vararg-test1 1 2) :result (list 1 2))
+(define-test varargs (vararg-test2 -1 0 1 2) :result (list 1 2))
+(define-test varargs (vararg-test3 1 2) :result (list 1 2))
+

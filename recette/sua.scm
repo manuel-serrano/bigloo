@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/5.0a/recette/sua.scm                 */
+;*    serrano/prgm/project/bigloo/5.0.x/recette/sua.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 28 16:04:55 1998                          */
-;*    Last change :  Thu Oct  9 15:10:11 2025 (serrano)                */
+;*    Last change :  Mon Oct 26 11:06:21 2026 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `storage analysis tests'                                     */
 ;*=====================================================================*/
@@ -29,10 +29,6 @@
 ;*    test-sua ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (test-sua)
-   (test-module "sua" "sua.scm")
-   (test "vector"
-	 (let ((random-strings '#(#"d909ef3e" 0)))
-  	    (substring (vector-ref random-strings 0) 0 1))
-	 "d"))
+   (test-module "sua" "sua.scm"))
 
    

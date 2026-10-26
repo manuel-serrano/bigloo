@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Oct 26 09:33:03 2026 (serrano)                */
+#*    Last change :  Mon Oct 26 09:48:11 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -523,34 +523,22 @@ distrib: ChangeLog
 true-distrib: $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz
 
 $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz:
-	echo "TGZ.1 PWD=$$PWD"
-	ls -l $(BOOTBINDIR)/cigloo
 	@ $(RM) -f $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz
 	@ for p in $(NO_DIST_FILES); do \
              $(RM) -rf $$p; \
           done
-	echo "TGZ.2 PWD=$$PWD"
-	ls -l $(BOOTBINDIR)/cigloo
 	@ for d in $(DIRECTORIES); do \
              if [ -d $$d ]; then \
                echo "distribution $$d ..."; \
 	       ($(MAKE) -C $$d distrib) || exit 1; \
-		echo "TGZ.2b PWD=$$PWD"; \
-		ls -l $(BOOTBINDIR)/cigloo; \
              fi \
           done
-	echo "TGZ.3 PWD=$$PWD"
-	ls -l $(BOOTBINDIR)/cigloo
 	@ $(MAKE) -C $(BOOTDIR) log > $$PWD/ChangeLog
 	@ $(RM) -f Makefile.config;
 	@ $(RM) -f Makefile.buildconfig;
-	echo "TGZ.4 PWD=$$PWD"
-	ls -l $(BOOTBINDIR)/cigloo
 	@ (cd .. && \
            mv $(BUILDDIRNAME) bigloo-$(RELEASE)$(VERSION) && \
            tar cfz $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz --sort=name bigloo-$(RELEASE)$(VERSION))
-	echo "TGZ.5 PWD=$$PWD"
-	ls -l $(BOOTBINDIR)/cigloo
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 

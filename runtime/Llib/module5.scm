@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Fri Sep 12 07:29:51 2025                          */
-;*    Last change :  Sat Oct 24 14:47:13 2026 (serrano)                */
+;*    Last change :  Mon Oct 26 10:31:16 2026 (serrano)                */
 ;*    Copyright   :  2025-26 manuel serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    module5 parser                                                   */
@@ -1334,8 +1334,7 @@
 	     expr mod lib-path cache-dir hsuffix expand stack))
 	 ((import (? string?))
 	  ;;(error/loc mod "Illegal module clause" clause expr)
-	  (parse-import-all #f clause expr mod expand stack)
-	  )
+	  (parse-import-all #f clause expr mod expand stack))
 	 ((import (? string?) ())
 	  (parse-import-init clause expr mod expand stack))
 	 ((import (? string?) . (and (? symbol?) ?id))

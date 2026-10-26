@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Oct 19 19:41:40 2026 (serrano)                */
+;*    Last change :  Mon Oct 26 11:15:14 2026 (serrano)                */
 ;*    Copyright   :  1992-2026 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -404,8 +404,9 @@
        (set! *nil* #f))
       (("-call/cc" (help "Enable call/cc function"))
        ;; -g3 and -call/cc are incompatible
-       (if (>fx *compiler-debug* 1)
-	   (set! *compiler-debug* 1))
+       (when (>fx *compiler-debug* 1)
+          (set! *compiler-debug* 1))
+       (register-srfi! 'call/cc)
        (set! *call/cc?* #t))
       (("-hygien" (help "Obsolete (R5rs macros are always supported)"))
        #unspecified)

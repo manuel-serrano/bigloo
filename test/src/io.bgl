@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  manuel serrano                                    */
 ;*    Creation    :  Mon Apr 27 17:49:14 2026                          */
-;*    Last change :  Mon Oct 26 08:42:28 2026 (serrano)                */
+;*    Last change :  Mon Oct 26 10:03:55 2026 (serrano)                */
 ;*    Copyright   :  2026 manuel serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Testing I/O                                                      */
@@ -547,3 +547,4 @@
             (output-string p "foobar")
             #t)
          (close-binary-port p))))
+

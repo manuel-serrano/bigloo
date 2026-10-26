@@ -1,0 +1,197 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/5.0.x/test/src/optim4.bgl            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  manuel serrano                                    */
+;*    Creation    :  Mon Oct 26 10:12:19 2026                          */
+;*    Last change :  Mon Oct 26 11:06:15 2026 (serrano)                */
+;*    Copyright   :  2026 manuel serrano                               */
+;*    -------------------------------------------------------------    */
+;*    Testing compiler optimizations                                   */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    optim                                                            */
+;*---------------------------------------------------------------------*/
+(module optim4
+   (export test))
+
+;*---------------------------------------------------------------------*/
+;*    test machinery                                                   */
+;*---------------------------------------------------------------------*/
+(include "./test.bgh")
+
+;*---------------------------------------------------------------------*/
+;*    test ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (test verbose tests::pair-nil)
+   (when (or (null? tests) (member "optim4" tests))
+      (test-all verbose "optim4")))
+
+;*---------------------------------------------------------------------*/
+;*    cfa                                                              */
+;*---------------------------------------------------------------------*/
+(define (cfa-foo x)
+   (begin 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 1 2 3 4 5 6 7 8 9
+	  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 1 2 3 4 5 6 7 8 9)
+   (labels ((bar () gee1)
+            (gee1 (y) (+fx y 1)))
+      ((bar) 5)))
+
+(define (cfa-set-car)
+   (let ((l (cons 1 2)))
+      (let ((y (car l)))
+	 (set-car! l '())
+	 (integer? (car l)))))
+
+(define (foo-of-extra-light f)
+   (begin 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 1 2 3 4 5 6 7 8 9
+	  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 1 2 3 4 5 6 7 8 9)
+   (f))
+
+(define (cfa-extra-light x)
+   (labels ((f1 () x)
+	    (f2 () (f1)))
+      (foo-of-extra-light f2)))
+
+(define va-args
+    (lambda (name . default)
+       ((lambda (scan)
+           (begin
+	      (set! scan
+		    (lambda (i)
+		       (let ((class i))
+			  (if (pair? default)
+			      (let ((fun (car default)))
+				 (fun name))))))
+	      (scan 1)))
+	(unspecified))))
+
+
+(define (cfa-va-args-main)
+   (let ((gee (lambda (name) (begin #t))))
+      (va-args 0 gee)))
+
+(define (cfa-parse iport)
+   (let ((body1017 (lambda ()
+                      (let ((lalr::procedure (car (list (lambda (x) x)))))
+                         (let ((v (lalr 4)))
+                            v))))
+	 (result1019 '()))
+      (set! result1019 (body1017))))
+
+(define cfa2
+   (car (list (lambda (f) (f 5)))))
+
+(define (cfa-X-bug x)
+   (let ((f (lambda (y) x)))
+      (cfa2 f)))
+
+(define my-fetch-byte
+   (lambda (max-pc prgm)
+      0 1 2 3 4 5 6 7 8 9
+      0 1 2 3 4 5 6 7 8 9
+      0 1 2 3 4 5 6 7 8 9
+      (if (=fx max-pc 0)
+          #f
+          (let ((bug (vector-ref prgm 0)))
+             bug))))
+
+(define (cfa-sc-vm . action)
+   (+fx 1 (my-fetch-byte 1 (cadr action))))
+
+(define (cfa-dataflow-error x e)
+   ((labels ((TAG-1389
+	      (x y)
+	      (if (if (fixnum? x) (fixnum? y) #f)
+		  (-fx x y)
+		  0)))
+       (lambda (E-1391)
+	  (TAG-1389 (car E-1391) (car E-1391))))
+    x))
+
+(define (cfa-test-l-procedure argv)
+   (let ((l (list "just" "to" 'be 'sure 'that "there" 'is 'no
+		  'inlining 'in 'this 'function)))
+      (let ((f (bar argv)))
+	 (f 3 4 5))))
+
+(define (bar argv)
+   (cond
+      ((null? (cdr argv))
+       (lambda (a b c) (cons argv 1)))
+      ((null? (cddr argv))
+       (lambda (a b c) (cons argv 2)))
+      ((null? (cdddr argv))
+       (lambda (a b c) (cons argv 3)))
+      (else
+       (lambda (a b c) (cons argv 4)))))
+
+(define (cfa-dataflow-test x)
+   (let ((y #unspecified))
+      (set! y (list 1 2))
+      (set! y '())
+      (let loop ((x x))
+         (if (= x 0)
+             (car y)
+             (begin
+                (set! y (cons x y))
+                (loop (- x 1)))))))
+
+(define (cfa-test-l-procedure-type x)
+   (let ((f1 (lambda (x v)
+		(/ (vector-length (vector x)) 10)))
+	 (f2 (lambda (x v)
+		(vector-length (vector x x)))))
+      (case x
+	 ((1) (gee f1 x))
+	 ((2) (gee f2 x))
+	 (else (gee f3 x)))))
+
+(define (f3::pair x v)
+   (list (vector-length (vector x x x))))
+
+(define (gee f x)
+   (f x (vector 1 2 3)))
+
+;*---------------------------------------------------------------------*/
+;*    test-l-procedure-types2                                          */
+;*---------------------------------------------------------------------*/
+(define (test-l-procedure-type2-caller1 d::uchar p)
+   (let ((l (list "juste" "to" 'be 'sure 'that "there" 'is 'no
+	       'inlining 'in 'this 'function)))
+      (p d)))
+
+(define (test-l-procedure-type2-caller2 d::bchar p)
+   (let ((l (list "juste" "to" 'be 'sure 'that "there" 'is 'no
+	       'inlining 'in 'this 'function)))
+      (p d)))
+
+(define (test-l-procedure-type2 d0)
+   (let ((prac (lambda (d) (char=? d0 d)))
+	 (proc (lambda (d) (char=? d0 d)))
+	 (pric (lambda (d) (char=? d0 d))))
+      (when (test-l-procedure-type2-caller2 d0 prac)
+	 (when (test-l-procedure-type2-caller2 d0 pric)
+	    (when (test-l-procedure-type2-caller1 d0 pric)
+	       (test-l-procedure-type2-caller1 d0 proc))))))
+
+(define-test cfa (cfa-foo 1) :result 6)
+(define-test cfa (cfa-set-car) :result #f)
+(define-test cfa (cfa-extra-light 1) :result 1)
+(define-test cfa (cfa-va-args-main) :result #t)
+(define-test cfa (cfa-parse #t) :result #unspecified)
+(define-test cfa (cfa-X-bug 4) :result 4)
+(define-test cfa (cfa-sc-vm '- '#(99)) :result 100)
+(define-test cfa (cfa-dataflow-error '(x) (lambda (x) x)) :result 0)
+(define-test cfa (cfa-test-l-procedure '(1)) :result (cons '(1) 1))
+(define-test cfa (cfa-test-l-procedure '(1 2)) :result (cons '(1 2) 2))
+(define-test cfa (cfa-dataflow-test 10) :result 1)
+(define-test cfa (cfa-test-l-procedure-type 1) :result .1)
+(define-test cfa (cfa-test-l-procedure-type 2) :result 2)
+(define-test cfa (cfa-test-l-procedure-type 3) :result '(3))
+(define-test cfa (cfa-test-l-procedure-type #\a) :result '(3))
+
+(define-test cfa
+   (let ((random-strings '#(#"d909ef3e" 0)))
+       (substring (vector-ref random-strings 0) 0 1))
+   :result "d")
