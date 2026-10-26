@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Mon Oct 26 09:27:23 2026 (serrano)                */
+#*    Last change :  Mon Oct 26 09:35:27 2026 (serrano)                */
 #*    Copyright   :  1998-2026 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Cigloo. This makefile has to be processed  */
@@ -161,9 +161,7 @@ distrib:
              echo "*** ERROR:Illegal dir to make a distrib `pwd`"; \
              exit 1; \
           fi
-	@ $(MAKE) cleanall
 	@ $(MAKE) afile
-	$(RM) -f .afile~ Makefile~
 
 #*---------------------------------------------------------------------*/
 #*     clean ...                                                       */
